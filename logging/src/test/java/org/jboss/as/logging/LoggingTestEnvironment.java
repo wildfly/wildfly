@@ -23,6 +23,10 @@
 package org.jboss.as.logging;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -33,8 +37,9 @@ import org.jboss.as.subsystem.test.ControllerInitializer;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-class LoggingTestEnvironment extends AdditionalInitialization {
+class LoggingTestEnvironment extends AdditionalInitialization implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     private static final LoggingTestEnvironment INSTANCE;
     private static final LoggingTestEnvironment MANAGEMENT_INSTANCE;
 
@@ -80,11 +85,21 @@ class LoggingTestEnvironment extends AdditionalInitialization {
 
     @Override
     protected ControllerInitializer createControllerInitializer() {
-        return new ControllerInitializer() {
-            {
-                addPath("jboss.server.log.dir", logDir.getAbsolutePath(), null);
-                addPath("jboss.server.config.dir", configDir.getAbsolutePath(), null);
-            }
-        };
+        return new LoggingInitializer();
+    }
+
+    private void writeObject(final ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+    }
+
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+    }
+
+    class LoggingInitializer extends ControllerInitializer {
+        public LoggingInitializer() {
+            addPath("jboss.server.log.dir", logDir.getAbsolutePath(), null);
+            addPath("jboss.server.config.dir", configDir.getAbsolutePath(), null);
+        }
     }
 }

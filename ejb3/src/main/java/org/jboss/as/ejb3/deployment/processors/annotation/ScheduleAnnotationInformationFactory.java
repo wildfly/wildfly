@@ -41,7 +41,7 @@ public class ScheduleAnnotationInformationFactory extends ClassAnnotationInforma
     }
 
     @Override
-    protected AutoTimer fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected AutoTimer fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         final AutoTimer timer = new AutoTimer();
         for (ScheduleValues schedulePart : ScheduleValues.values()) {
             schedulePart.set(timer, annotationInstance);

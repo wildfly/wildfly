@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(Arquillian.class)
 @RunAsClient
+@org.junit.Ignore("WFLY-2409")
 public class SessionClusterDbPersistenceTestCase extends ClusteredWebFailoverAbstractCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)

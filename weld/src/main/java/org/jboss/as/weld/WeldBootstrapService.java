@@ -27,8 +27,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.enterprise.inject.spi.BeanManager;
-
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.services.ModuleGroupSingletonProvider;
@@ -39,6 +37,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.weld.Container;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environment;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
@@ -112,7 +111,8 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(deployment.getModule().getClassLoader());
-            bootstrap.startContainer(environment, deployment);
+            bootstrap.startContainer(deploymentName, environment, deployment);
+            WeldProvider.containerInitialized(Container.instance(deploymentName), getBeanManager(), deployment);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }
@@ -132,6 +132,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
         ClassLoader oldTccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(deployment.getModule().getClassLoader());
+            WeldProvider.containerShutDown(Container.instance(deploymentName));
             bootstrap.shutdown();
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
@@ -170,7 +171,7 @@ public class WeldBootstrapService implements Service<WeldBootstrapService> {
      *
      * @throws IllegalStateException if the container is not running
      */
-    public BeanManager getBeanManager() {
+    public BeanManagerImpl getBeanManager() {
         if (!started) {
             throw WeldMessages.MESSAGES.notStarted("WeldContainer");
         }

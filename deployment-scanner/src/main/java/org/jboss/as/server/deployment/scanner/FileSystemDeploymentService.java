@@ -63,11 +63,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
@@ -131,7 +133,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private volatile boolean autoDeployExploded;
     private volatile boolean autoDeployXml;
     private volatile long maxNoProgress = MAX_NO_PROGRESS;
-
+    private volatile boolean rollbackOnRuntimeFailure;
     private volatile long deploymentTimeout = DEFAULT_DEPLOYMENT_TIMEOUT;
 
     private final String relativeTo;
@@ -248,6 +250,11 @@ class FileSystemDeploymentService implements DeploymentScanner {
     public synchronized void startScanner() {
         assert deploymentOperationsFactory != null : "deploymentOperationsFactory is null";
         startScanner(deploymentOperationsFactory.create());
+    }
+
+    @Override
+    public void setRuntimeFailureCausesRollback(boolean rollbackOnRuntimeFailure) {
+        this.rollbackOnRuntimeFailure = rollbackOnRuntimeFailure;
     }
 
     /**
@@ -945,6 +952,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         for (ModelNode update : updates) {
             steps.add(update);
         }
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(rollbackOnRuntimeFailure);
         return op;
     }
 
@@ -954,6 +962,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
         for (ModelNode update : updates) {
             steps.add(update);
         }
+        op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(rollbackOnRuntimeFailure);
         return op;
     }
 

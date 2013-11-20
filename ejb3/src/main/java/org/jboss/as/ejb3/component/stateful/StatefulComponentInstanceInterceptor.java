@@ -55,7 +55,7 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
         if (sessionId == null) {
             throw MESSAGES.statefulSessionIdIsNull(component.getComponentName());
         }
-        ROOT_LOGGER.debug("Looking for stateful component instance with session id: " + sessionId);
+        ROOT_LOGGER.debugf("Looking for stateful component instance with session id: %s", sessionId);
         StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         if (instance == null) {
             //This exception will be transformed into the correct exception type by the exception transforming interceptor
@@ -75,20 +75,17 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
             }
             if (!(ex instanceof RemoveException)) {
                 if (ex instanceof RuntimeException || ex instanceof RemoteException) {
-                    if (ROOT_LOGGER.isTraceEnabled())
-                        ROOT_LOGGER.trace("Removing bean " + sessionId + " because of exception", ex);
+                    ROOT_LOGGER.tracef(ex, "Removing bean %s because of exception", sessionId);
                     instance.discard();
                 }
             }
             throw ex;
         } catch (final Error e) {
-            if (ROOT_LOGGER.isTraceEnabled())
-                ROOT_LOGGER.trace("Removing bean " + sessionId + " because of error", e);
+            ROOT_LOGGER.tracef(e, "Removing bean %s because of error", sessionId);
             instance.discard();
             throw e;
         } catch (final Throwable t) {
-            if (ROOT_LOGGER.isTraceEnabled())
-                ROOT_LOGGER.trace("Removing bean " + sessionId + " because of Throwable", t);
+            ROOT_LOGGER.tracef(t, "Removing bean %s because of Throwable", sessionId);
             instance.discard();
             throw new RuntimeException(t);
         }

@@ -21,13 +21,6 @@
  */
 package org.jboss.as.ee.component.deployers;
 
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -38,9 +31,10 @@ import org.jboss.as.ee.component.FixedInjectionSource;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
+import org.jboss.as.ee.utils.InjectionUtils;
+import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
-import org.jboss.as.naming.ValueManagedReference;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -52,7 +46,13 @@ import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceEnvironmentReferencesMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferenceMetaData;
 import org.jboss.metadata.javaee.spec.ResourceReferencesMetaData;
-import org.jboss.msc.value.ImmediateValue;
+
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
@@ -61,6 +61,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  * Deployment processor that sets up env-entry, resource-ref and resource-env-ref bindings
  *
  * @author Stuart Douglas
+ * @author Eduardo Martins
  */
 public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
@@ -161,41 +162,44 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             }
 
             // our injection (source) comes from the local (ENC) lookup, no matter what.
-            LookupInjectionSource injectionSource = new LookupInjectionSource(name);
+            InjectionSource injectionSource = new LookupInjectionSource(name);
             classType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
-            final BindingConfiguration bindingConfiguration;
             if (!isEmpty(resourceRef.getLookupName())) {
-                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceRef.getLookupName()));
+                if (classType != null) {
+                    injectionSource = InjectionUtils.getInjectionSource(resourceRef.getLookupName(), classType.getName());
+                } else {
+                    injectionSource = new LookupInjectionSource(resourceRef.getLookupName());
+                }
             } else if (!isEmpty(resourceRef.getResUrl())) {
-                //
+                final String url = resourceRef.getResUrl();
                 if (classType != null && classType.equals(URI.class)) {
                     try {
                         //we need a newURI every time
-                        bindingConfiguration = new BindingConfiguration(name, new FixedInjectionSource(new ManagedReferenceFactory() {
+                        injectionSource = new FixedInjectionSource(new ManagedReferenceFactory() {
                             @Override
                             public ManagedReference getReference() {
                                 try {
-                                    return new ValueManagedReference(new ImmediateValue(new URI(resourceRef.getResUrl())));
+                                    return new ImmediateManagedReference(new URI(url));
                                 } catch (URISyntaxException e) {
                                     throw new RuntimeException(e);
                                 }
                             }
-                        }, new URI(resourceRef.getResUrl())));
+                        }, new URI(url));
                     } catch (URISyntaxException e) {
                         throw MESSAGES.cannotParseResourceRefUri(e, resourceRef.getResUrl());
                     }
                 } else {
                     try {
-                        bindingConfiguration = new BindingConfiguration(name, new FixedInjectionSource(new ManagedReferenceFactory() {
+                        injectionSource = new FixedInjectionSource(new ManagedReferenceFactory() {
                             @Override
                             public ManagedReference getReference() {
                                 try {
-                                    return new ValueManagedReference(new ImmediateValue(new URL(resourceRef.getResUrl())));
+                                    return new ImmediateManagedReference(new URL(url));
                                 } catch (MalformedURLException e) {
                                     throw new RuntimeException(e);
                                 }
                             }
-                        }, new URL(resourceRef.getResUrl())));
+                        }, new URL(url));
                     } catch (MalformedURLException e) {
                         throw MESSAGES.cannotParseResourceRefUri(e, resourceRef.getResUrl());
                     }
@@ -207,14 +211,13 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 //check if it is a well known type
                 final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
                 if (lookup != null) {
-                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
+                    injectionSource = new LookupInjectionSource(lookup);
                 } else {
                     final EEResourceReferenceProcessor resourceReferenceProcessor = registry.getResourceReferenceProcessor(classType.getName());
                     if (resourceReferenceProcessor != null) {
-                        InjectionSource valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
-                        bindingConfiguration = new BindingConfiguration(name, valueSource);
+                        injectionSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
                     } else if (!resourceRef.getResourceRefName().startsWith("java:")) {
-                        bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceRef.getResourceRefName()));
+                        injectionSource = new LookupInjectionSource("java:jboss/resources/" + resourceRef.getResourceRefName());
                     } else {
                         //if we cannot resolve it just log
                         ROOT_LOGGER.cannotResolve("resource-env-ref", name);
@@ -222,7 +225,7 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                     }
                 }
             }
-            bindings.add(bindingConfiguration);
+            bindings.add(new BindingConfiguration(name, injectionSource));
         }
         return bindings;
     }

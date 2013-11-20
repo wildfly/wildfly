@@ -21,9 +21,6 @@
  */
 package org.jboss.as.weld.deployment;
 
-
-import java.util.Set;
-
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -45,12 +42,7 @@ public class WeldAttachments {
     /**
      * top level list of all additional bean deployment modules
      */
-    public static final AttachmentKey<AttachmentList<BeanDeploymentModule>> ADDITIONAL_BEAN_DEPLOYMENT_MODULES = AttachmentKey.createList(BeanDeploymentModule.class);
-
-    /**
-     * per DU list of all visible additional BDM's
-     */
-    public static final AttachmentKey<AttachmentList<BeanDeploymentModule>> VISIBLE_ADDITIONAL_BEAN_DEPLOYMENT_MODULE = AttachmentKey.createList(BeanDeploymentModule.class);
+    public static final AttachmentKey<AttachmentList<BeanDeploymentArchiveImpl>> ADDITIONAL_BEAN_DEPLOYMENT_MODULES = AttachmentKey.createList(BeanDeploymentArchiveImpl.class);
 
     /**
      * The {@link BeanDeploymentArchiveImpl} that corresponds to the main resource root of a deployment or sub deployment. For
@@ -62,7 +54,14 @@ public class WeldAttachments {
      * A set of bean defining annotations, as defined by the CDI specification.
      * @see CdiAnnotationProcessor
      */
-    public static final AttachmentKey<Set<AnnotationType>> BEAN_DEFINING_ANNOTATIONS = AttachmentKey.create(Set.class);
+    public static final AttachmentKey<AttachmentList<AnnotationType>> BEAN_DEFINING_ANNOTATIONS = AttachmentKey.createList(AnnotationType.class);
+
+    /**
+     * A set of injection target defining annotations. These are annotations that are not enough to cause weld to activate,
+     * however if weld is activated these will be turned into beans.
+     * @see CdiAnnotationProcessor
+     */
+    public static final AttachmentKey<AttachmentList<AnnotationType>> INJECTION_TARGET_DEFINING_ANNOTATIONS = AttachmentKey.createList(AnnotationType.class);
 
     /**
      * The {@link ResourceRoot} for WEB-INF/classes of a web archive.

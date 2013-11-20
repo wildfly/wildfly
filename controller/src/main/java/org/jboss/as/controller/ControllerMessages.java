@@ -1781,12 +1781,12 @@ public interface ControllerMessages {
      * @param handler the handler that failed.
      * @param op      the operation.
      * @param address the path address.
-     * @param msg     the error message.
+     * @param cause   the error.
      *
      * @return the message.
      */
     @Message(id = 14781, value = "Step handler %s for operation %s at address %s failed handling operation rollback -- %s")
-    String stepHandlerFailedRollback(OperationStepHandler handler, String op, PathAddress address, String msg);
+    String stepHandlerFailedRollback(OperationStepHandler handler, String op, PathAddress address, Throwable cause);
 
     /**
      * A message indicating an interruption awaiting subsystem boot operation execution.
@@ -2699,8 +2699,10 @@ public interface ControllerMessages {
     @Message(id = 13468, value = "Attempt was made to both remove and add a handler reference from a composite operation")
     IllegalStateException attemptToBothRemoveAndAddHandlerReferenceFromCompositeOperation();
 
-    @Message(id = 13469, value = "Unable to unmarshall Subject received for request.")
-    IOException unableToUnmarshallSubject(@Cause ClassNotFoundException e);
+    // This Message ID never made it to a Final release although it was close so may be referenced!
+
+    //@Message(id = 13469, value = "Unable to unmarshall Subject received for request.")
+    //IOException unableToUnmarshallSubject(@Cause ClassNotFoundException e);
 
     @Message(id = 13470, value = "Unknown role '%s'")
     IllegalArgumentException unknownRole(String roleName);
@@ -2726,9 +2728,23 @@ public interface ControllerMessages {
     @Message(id = 13477, value = "Incompatible permission type %s")
     IllegalArgumentException incompatiblePermissionType(Class<?> clazz);
 
-
     @Message(id = 13478, value = "Management resource '%s' not found")
     String managementResourceNotFoundMessage(PathAddress pathAddress);
+
+    @Message(id = 13479, value = "The following attributes are nillable in the current model but must be defined in the target model version: %s")
+    String attributesMustBeDefined(Set<String> keySet);
+
+    @Message(id = 13480, value = "Unsupported Principal type '%X' received.")
+    IOException unsupportedPrincipalType(byte type);
+
+    @Message(id = 13481, value = "Unsupported Principal parameter '%X' received parsing principal type '%X'.")
+    IOException unsupportedPrincipalParameter(byte parameterType, byte principalType);
+
+    @Message(id = 13482, value = "The following attributes must be defined as %s in the current model: %s")
+    String attributesMustBeDefinedAs(ModelNode value, Set<String> names);
+
+    @Message(id = 13483, value = "The following attributes must NOT be defined as %s in the current model: %s")
+    String attributesMustNotBeDefinedAs(ModelNode value, Set<String> names);
 
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

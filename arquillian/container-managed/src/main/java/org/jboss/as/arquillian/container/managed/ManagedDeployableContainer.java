@@ -181,7 +181,9 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             boolean serverAvailable = false;
             long sleep = 1000;
             while (timeout > 0 && serverAvailable == false) {
+                long before = System.currentTimeMillis();
                 serverAvailable = getManagementClient().isServerInRunningState();
+                timeout -= (System.currentTimeMillis() - before);
                 if (!serverAvailable) {
                     if (processHasDied(proc))
                         break;

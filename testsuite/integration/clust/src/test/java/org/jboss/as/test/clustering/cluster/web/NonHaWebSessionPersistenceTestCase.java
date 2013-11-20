@@ -95,8 +95,7 @@ public class NonHaWebSessionPersistenceTestCase extends ClusterAbstractTestCase 
             response = client.execute(new HttpGet(url));
             Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
             Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader("value").getValue()));
-            Assert.assertTrue("The session should have been serialized by now.",
-                    Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
+            Assert.assertFalse(Boolean.valueOf(response.getFirstHeader("serialized").getValue()));
             response.getEntity().getContent().close();
 
             stop(CONTAINER_SINGLE);

@@ -21,17 +21,4 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<!-- Dummy module for backwards compatibility -->
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.clustering.web.infinispan">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
-    <resources>
-        <!-- Insert resources here -->
-    </resources>
-
-    <dependencies>
-        <module name="org.wildfly.clustering.web.infinispan" services="import" export="true"/>
-    </dependencies>
-</module>
+<module-alias xmlns="urn:jboss:module:1.1" name="org.jboss.as.clustering.web.infinispan" target-name="org.wildfly.clustering.web.infinispan"/>

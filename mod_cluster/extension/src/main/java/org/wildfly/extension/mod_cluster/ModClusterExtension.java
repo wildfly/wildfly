@@ -74,6 +74,7 @@ import org.jboss.staxmapper.XMLElementReader;
  *
  * @author Jean-Frederic Clere
  * @author Tomaz Cerar
+ * @author Radoslav Husar
  */
 public class ModClusterExtension implements XMLStreamConstants, Extension {
 
@@ -109,10 +110,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_PROXIES_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_PROXIES);
 
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void initialize(ExtensionContext context) {
         ROOT_LOGGER.debugf("Activating mod_cluster extension");
@@ -132,6 +129,8 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         if (context.isRegisterTransformers()) {
             registerTransformers_1_2_0(subsystem);
+            registerTransformers_1_3_0(subsystem); // AS 7.2.0
+            registerTransformers_1_4_0(subsystem); // EAP 6.2.0
         }
     }
 
@@ -145,8 +144,12 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         }
     }
 
+    /**
+     * Transformation that rejects expressions, discards/rejects session draining strategy, and converts load provider capacity.
+     *
+     * @param subsystem
+     */
     private static void registerTransformers_1_2_0(SubsystemRegistration subsystem) {
-
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceTransformationDescriptionBuilder configurationBuilder = builder.addChildResource(CONFIGURATION_PATH);
         ResourceTransformationDescriptionBuilder dynamicLoadProvider = configurationBuilder
@@ -178,8 +181,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CIPHER_SUITE, KEY_ALIAS, PROTOCOL)
                 .end();
 
-        // TODO WFLY-1938 reflect whatever was changed for 2.0.0 in the above!!
-
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 2, 0));
     }
 
@@ -191,9 +192,22 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         TransformationDescription.Tools.register(get1_3_0_1_4_0Description(), subsystem, ModelVersion.create(1, 4, 0));
     }
 
+    /**
+     * Transformation that discards/rejects session draining strategy.
+     *
+     * @return TransformationDescription
+     */
     private static TransformationDescription get1_3_0_1_4_0Description() {
+
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        // TODO WFLY-1938 implement 2.0.0 -> 1.x transformation
+        ResourceTransformationDescriptionBuilder configurationBuilder = builder.addChildResource(CONFIGURATION_PATH);
+
+        configurationBuilder
+                .getAttributeBuilder()
+                .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
+                .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
+                .end();
+
         return builder.build();
     }
 

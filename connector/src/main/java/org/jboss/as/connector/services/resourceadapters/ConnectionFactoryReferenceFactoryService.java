@@ -35,16 +35,14 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Service responsible for exposing a {@link ManagedReferenceFactory} for a
- * {@link javax.resource.cci.ConnectionFactory}.
- * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
- *         Maestri</a>
+ * Service responsible for exposing a {@link ManagedReferenceFactory} for a connection factory
+ * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public class ConnectionFactoryReferenceFactoryService implements Service<ManagedReferenceFactory>, ManagedReferenceFactory {
     public static final ServiceName SERVICE_NAME_BASE = ServiceName.JBOSS.append("connection-factory").append(
             "reference-factory");
-    private final InjectedValue<Object> connectionFactoryValue = new InjectedValue<Object>();
 
+    private final InjectedValue<Object> connectionFactoryValue = new InjectedValue<Object>();
     private ManagedReference reference;
 
     public synchronized void start(StartContext startContext) throws StartException {
@@ -63,7 +61,7 @@ public class ConnectionFactoryReferenceFactoryService implements Service<Managed
         return reference;
     }
 
-    public Injector<Object> getDataSourceInjector() {
-        return connectionFactoryValue; // TODO: Should we use unique references
+    public Injector<Object> getConnectionFactoryInjector() {
+        return connectionFactoryValue;
     }
 }

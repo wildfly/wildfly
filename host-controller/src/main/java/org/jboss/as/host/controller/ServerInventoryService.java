@@ -27,6 +27,7 @@ import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.domain.controller.DomainController;
@@ -116,9 +117,7 @@ class ServerInventoryService implements Service<ServerInventory> {
     public synchronized void stop(final StopContext context) {
         final boolean shutdownServers = runningModeControl.getRestartMode() == RestartMode.SERVERS;
         if (shutdownServers) {
-            context.asynchronous();
-            Runnable r = new Runnable() {
-
+            Runnable task = new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -131,7 +130,13 @@ class ServerInventoryService implements Service<ServerInventory> {
                     }
                 }
             };
-            executorService.getValue().execute(r);
+            try {
+                executorService.getValue().execute(task);
+            } catch (RejectedExecutionException e) {
+                task.run();
+            } finally {
+                context.asynchronous();
+            }
         } else {
             // We have to set the shutdown flag in any case
             serverInventory.shutdown(false, -1, true);

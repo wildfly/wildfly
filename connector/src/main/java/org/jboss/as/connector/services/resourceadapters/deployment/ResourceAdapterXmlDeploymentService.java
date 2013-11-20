@@ -22,9 +22,6 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-
 import java.io.File;
 import java.net.URL;
 
@@ -117,8 +114,10 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
                     WritableServiceBasedNamingStore.popOwner();
                 }
             } catch (Throwable t) {
-                unregisterAll(raName);
-                throw MESSAGES.failedToStartRaDeployment(t, raName);
+                // To clean up we need to invoke blocking behavior, so do that in another thread
+                // and let this MSC thread return
+                cleanupStartAsync(context, raName, t);
+                return;
             }
             String id = ((ModifiableResourceAdapter) raxml).getId();
             final ServiceName raServiceName;
@@ -148,8 +147,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
      */
     @Override
     public void stop(StopContext context) {
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s",deploymentServiceName);
-        unregisterAll(raName);
+        stopAsync(context, raName, deploymentServiceName);
     }
 
     @Override
@@ -208,6 +206,15 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         @Override
         protected DeployersLogger getLogger() {
             return DEPLOYERS_LOGGER;
+        }
+
+        @Override
+        protected String registerResourceAdapterToResourceAdapterRepository(javax.resource.spi.ResourceAdapter instance) {
+            final String raIdentifier = raRepository.getValue().registerResourceAdapter(instance);
+            // make a note of this identifier for future use
+            ConnectorServices.registerResourceAdapterIdentifier( ((ModifiableResourceAdapter) raxml).getId(), raIdentifier);
+            return raIdentifier;
+
         }
 
     }

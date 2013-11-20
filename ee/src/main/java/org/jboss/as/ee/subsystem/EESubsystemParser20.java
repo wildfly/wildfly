@@ -38,7 +38,6 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.*;
-import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
@@ -92,6 +91,11 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
                         case JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT: {
                             final String enabled = parseJBossDescriptorPropertyReplacement(reader);
                             EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
+                            break;
+                        }
+                        case EJB_ANNOTATION_PROPERTY_REPLACEMENT: {
+                            final String enabled = parseEJBAnnotationPropertyReplacement(reader);
+                            EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
                             break;
                         }
                         case CONCURRENT: {
@@ -229,6 +233,14 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
         if (value == null || value.trim().isEmpty()) {
             throw MESSAGES.invalidValue(value, Element.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName(), reader.getLocation());
         }
+        return value.trim();
+    }
+
+    static String parseEJBAnnotationPropertyReplacement(XMLExtendedStreamReader reader) throws XMLStreamException {
+        // we don't expect any attributes for this element.
+        requireNoAttributes(reader);
+
+        final String value = reader.getElementText();
         return value.trim();
     }
 

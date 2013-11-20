@@ -41,7 +41,7 @@ import org.jboss.dmr.ModelType;
 public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends AbstractAttributeDefinitionBuilder, ATTRIBUTE extends AttributeDefinition> {
 
     protected final String name;
-    protected final ModelType type;
+    protected ModelType type;
     protected String xmlName;
     protected boolean allowNull;
     protected boolean allowExpression;

@@ -44,10 +44,16 @@ public class WeldManagedReferenceFactory implements ComponentFactory {
 
     @Override
     public ManagedReference create(final InterceptorContext context) {
-        ConstructionHandle<?> ctx = context.getPrivateData(ConstructionHandle.class);
-        CreationalContext<?> injectionCtx = context.getPrivateData(WeldInjectionContext.class).getContext();
-        Object instance = ctx.proceed(context.getParameters(), context.getContextData()); // let Weld create the instance now
-        return new WeldManagedReference(injectionCtx, instance);
+        final ConstructionHandle<?> ctx = context.getPrivateData(ConstructionHandle.class);
+        final WeldInjectionContext weldCtx = context.getPrivateData(WeldInjectionContext.class);
+        if (ctx != null) {
+            // @AroundConstructor interception enabled
+            Object instance = ctx.proceed(context.getParameters(), context.getContextData()); // let Weld create the instance now
+            return new WeldManagedReference(weldCtx.getContext(), instance);
+        } else {
+            // @AroundConstructor interception handled by Weld alone - no integration with EJB interceptors
+            return new WeldManagedReference(weldCtx.getContext(), weldCtx.produce());
+        }
     }
 
     private static final class WeldManagedReference implements ManagedReference, Serializable {

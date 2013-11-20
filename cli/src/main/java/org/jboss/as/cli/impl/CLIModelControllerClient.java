@@ -35,6 +35,7 @@ import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.ControllerAddress;
 import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ModelControllerClientFactory.ConnectionCloseHandler;
 import org.jboss.as.controller.client.impl.AbstractModelControllerClient;
@@ -114,8 +115,8 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
     private final ProtocolChannelClient.Configuration channelConfig;
     private boolean closed;
 
-    CLIModelControllerClient(final String protocol, CallbackHandler handler, String hostName, int connectionTimeout,
-            final ConnectionCloseHandler closeHandler, int port, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
+    CLIModelControllerClient(final ControllerAddress address, CallbackHandler handler, int connectionTimeout,
+            final ConnectionCloseHandler closeHandler, Map<String, String> saslOptions, SSLContext sslContext) throws IOException {
         this.handler = handler;
         this.sslContext = sslContext;
         this.closeHandler = closeHandler;
@@ -135,7 +136,7 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
         this.saslOptions = saslOptions;
         channelConfig.setSaslOptions(saslOptions);
         try {
-            channelConfig.setUri(new URI(protocol +"://" + formatPossibleIpv6Address(hostName) +  ":" + port));
+            channelConfig.setUri(new URI(address.getProtocol(), null, address.getHost(), address.getPort(), null, null, null));
         } catch (URISyntaxException e) {
             throw new IOException("Failed to create URI" , e);
         }
@@ -256,19 +257,6 @@ public class CLIModelControllerClient extends AbstractModelControllerClient {
                 }
             }
         }
-    }
-
-    private static String formatPossibleIpv6Address(String address) {
-        if (address == null) {
-            return address;
-        }
-        if (!address.contains(":")) {
-            return address;
-        }
-        if (address.startsWith("[") && address.endsWith("]")) {
-            return address;
-        }
-        return "[" + address + "]";
     }
 
     private final class ChannelCloseHandler implements CloseHandler<Channel> {

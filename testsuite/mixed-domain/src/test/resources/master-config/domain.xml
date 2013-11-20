@@ -647,23 +647,24 @@
                 <default-missing-method-permissions-deny-access value="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:2.0">
-                <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
+                <!-- In infinispan on 7.1.x the statistics are always on and not configurable, and need to be set to true on all cache-container and cache entries (the current default is false) -->
+                <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server" statistics="true">
                     <transport lock-timeout="60000"/>
-                    <replicated-cache name="default" mode="SYNC" batching="true">
+                    <replicated-cache name="default" mode="SYNC" batching="true" statistics="true">
                         <locking isolation="REPEATABLE_READ"/>
                     </replicated-cache>
                 </cache-container>
-                <cache-container name="web" aliases="standard-session-cache" default-cache="repl" module="org.wildfly.clustering.web.infinispan">
+                <cache-container name="web" aliases="standard-session-cache" default-cache="repl" module="org.wildfly.clustering.web.infinispan" statistics="true">
                     <transport lock-timeout="60000"/>
-                    <replicated-cache name="repl" mode="ASYNC" batching="true">
+                    <replicated-cache name="repl" mode="ASYNC" batching="true" statistics="true">
                         <file-store/>
                     </replicated-cache>
-                    <replicated-cache name="sso" mode="SYNC" batching="true"/>
-                    <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
+                    <replicated-cache name="sso" mode="SYNC" batching="true" statistics="true"/>
+                    <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" statistics="true">
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl" module="org.jboss.as.clustering.ejb3.infinispan">
+                <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl" module="org.jboss.as.clustering.ejb3.infinispan" statistics="true">
                     <transport lock-timeout="60000"/>
                     <replicated-cache name="repl" mode="ASYNC" batching="true">
                         <eviction strategy="LRU" max-entries="10000"/>
@@ -673,25 +674,25 @@
                       ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
                       ~                 the socketbinding referenced by the EJB remoting connector 
                       -->
-                    <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
-                    <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
+                    <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true" statistics="true"/>
+                    <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" statistics="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="hibernate" default-cache="local-query" module="org.hibernate">
+                <cache-container name="hibernate" default-cache="local-query" module="org.hibernate" statistics="true">
                     <transport lock-timeout="60000"/>
-                    <local-cache name="local-query">
+                    <local-cache name="local-query" statistics="true">
                         <transaction mode="NONE"/>
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
                     </local-cache>
-                    <invalidation-cache name="entity" mode="SYNC">
+                    <invalidation-cache name="entity" mode="SYNC" statistics="true">
                         <transaction mode="NON_XA"/>
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
                     </invalidation-cache>
-                    <replicated-cache name="timestamps" mode="ASYNC">
+                    <replicated-cache name="timestamps" mode="ASYNC" statistics="true">
                         <transaction mode="NONE"/>
                         <eviction strategy="NONE"/>
                     </replicated-cache>
@@ -988,7 +989,7 @@
                 <client-config name="Standard-Client-Config"/>
                  -->
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:weld:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:weld:2.0" require-bean-descriptor="true" non-portable-mode="true"/>
         </profile>    
         
         
@@ -1138,25 +1139,26 @@
                 <default-missing-method-permissions-deny-access value="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:2.0">
-                <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server">
+                <!-- In infinispan on 7.1.x the statistics are always on and not configurable, and need to be set to true on all cache-container and cache entries (the current default is false) -->
+                <cache-container name="server" aliases="singleton cluster" default-cache="default" module="org.wildfly.clustering.server" statistics="true">
                     <transport lock-timeout="60000"/>
-                    <replicated-cache name="default" mode="SYNC" batching="true">
+                    <replicated-cache name="default" mode="SYNC" batching="true" statistics="true">
                         <locking isolation="REPEATABLE_READ"/>
                     </replicated-cache>
                 </cache-container>
-                <cache-container name="web" aliases="standard-session-cache" default-cache="repl" module="org.wildfly.clustering.web.infinispan">
+                <cache-container name="web" aliases="standard-session-cache" default-cache="repl" module="org.wildfly.clustering.web.infinispan" statistics="true">
                     <transport lock-timeout="60000"/>
-                    <replicated-cache name="repl" mode="ASYNC" batching="true">
+                    <replicated-cache name="repl" mode="ASYNC" batching="true" statistics="true">
                         <file-store/>
                     </replicated-cache>
-                    <replicated-cache name="sso" mode="SYNC" batching="true"/>
-                    <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
+                    <replicated-cache name="sso" mode="SYNC" batching="true" statistics="true"/>
+                    <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" statistics="true">
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl" module="org.jboss.as.clustering.ejb3.infinispan">
+                <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl" module="org.jboss.as.clustering.ejb3.infinispan" statistics="true">
                     <transport lock-timeout="60000"/>
-                    <replicated-cache name="repl" mode="ASYNC" batching="true">
+                    <replicated-cache name="repl" mode="ASYNC" batching="true" statistics="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
                     </replicated-cache>
@@ -1164,25 +1166,25 @@
                       ~  Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
                       ~                 the socketbinding referenced by the EJB remoting connector 
                       -->
-                    <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
-                    <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
+                    <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true" statistics="true"/>
+                    <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" statistics="true">
                         <eviction strategy="LRU" max-entries="10000"/>
                         <file-store/>
                     </distributed-cache>
                 </cache-container>
-                <cache-container name="hibernate" default-cache="local-query" module="org.hibernate">
+                <cache-container name="hibernate" default-cache="local-query" module="org.hibernate" statistics="true">
                     <transport lock-timeout="60000"/>
-                    <local-cache name="local-query">
+                    <local-cache name="local-query" statistics="true">
                         <transaction mode="NONE"/>
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
                     </local-cache>
-                    <invalidation-cache name="entity" mode="SYNC">
+                    <invalidation-cache name="entity" mode="SYNC" statistics="true">
                         <transaction mode="NON_XA"/>
                         <eviction strategy="LRU" max-entries="10000"/>
                         <expiration max-idle="100000"/>
                     </invalidation-cache>
-                    <replicated-cache name="timestamps" mode="ASYNC">
+                    <replicated-cache name="timestamps" mode="ASYNC" statistics="true">
                         <transaction mode="NONE"/>
                         <eviction strategy="NONE"/>
                     </replicated-cache>
@@ -1456,7 +1458,7 @@
                 </endpoint-config>
                 <client-config name="Standard-Client-Config"/>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:weld:2.0"/>
+            <subsystem xmlns="urn:jboss:domain:weld:2.0" require-bean-descriptor="true" non-portable-mode="true"/>
         </profile>
         
     </profiles>

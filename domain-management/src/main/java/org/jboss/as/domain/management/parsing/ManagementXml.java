@@ -117,6 +117,7 @@ import org.jboss.as.domain.management.access.RoleMappingResourceDefinition;
 import org.jboss.as.domain.management.access.SensitivityClassificationTypeResourceDefinition;
 import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.domain.management.access.ServerGroupScopedRoleResourceDefinition;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionPropertyResourceDefinition;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition;
 import org.jboss.as.domain.management.security.AbstractPlugInAuthResourceDefinition;
 import org.jboss.as.domain.management.security.AdvancedUserSearchResourceDefintion;
@@ -395,8 +396,11 @@ public class ManagementXml {
                         case DOMAIN_1_3:
                             parseLdapConnection_1_0(reader, address, list);
                             break;
-                        default:
+                        case DOMAIN_1_4:
                             parseLdapConnection_1_4(reader, address, list);
+                            break;
+                        default:
+                            parseLdapConnection_2_0(reader, address, expectedNs, list);
                             break;
                     }
                     break;
@@ -514,6 +518,135 @@ public class ManagementXml {
         }
 
         requireNoContent(reader);
+    }
+
+    private static void parseLdapConnection_2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+            throws XMLStreamException {
+
+        final ModelNode add = new ModelNode();
+        add.get(OP).set(ADD);
+
+        list.add(add);
+
+        ModelNode connectionAddress = null;
+
+        Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.URL);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case NAME: {
+                        connectionAddress = address.clone().add(LDAP_CONNECTION, value);
+                        add.get(OP_ADDR).set(connectionAddress);
+                        break;
+                    }
+                    case URL: {
+                        LdapConnectionResourceDefinition.URL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case SEARCH_DN: {
+                        LdapConnectionResourceDefinition.SEARCH_DN.parseAndSetParameter(value,  add, reader);
+                        break;
+                    }
+                    case SEARCH_CREDENTIAL: {
+                        LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        LdapConnectionResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case INITIAL_CONTEXT_FACTORY: {
+                        LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (required.size() > 0) {
+            throw missingRequired(reader, required);
+        }
+
+        boolean propertiesFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTIES: {
+                    if (propertiesFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    propertiesFound = true;
+                    parseLdapConnectionProperties(reader, connectionAddress, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    private static void parseLdapConnectionProperties(final XMLExtendedStreamReader reader, final ModelNode address,
+            final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTY: {
+                    Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.VALUE);
+                    final ModelNode add = new ModelNode();
+                    add.get(OP).set(ADD);
+
+                    final int count = reader.getAttributeCount();
+                    for (int i = 0; i < count; i++) {
+                        final String value = reader.getAttributeValue(i);
+                        if (!isNoNamespaceAttribute(reader, i)) {
+                            throw unexpectedAttribute(reader, i);
+                        } else {
+                            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                            required.remove(attribute);
+                            switch (attribute) {
+                                case NAME: {
+                                    add.get(OP_ADDR).set(address.clone()).add(PROPERTY, value);
+                                    break;
+                                }
+                                case VALUE: {
+                                    LdapConnectionPropertyResourceDefinition.VALUE.parseAndSetParameter(value, add, reader);
+                                    break;
+                                }
+                                default: {
+                                    throw unexpectedAttribute(reader, i);
+                                }
+                            }
+                        }
+                    }
+
+                    if (required.size() > 0) {
+                        throw missingRequired(reader, required);
+                    }
+                    requireNoContent(reader);
+
+                    list.add(add);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     private static void parseSecurityRealms(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
@@ -647,7 +780,7 @@ public class ManagementXml {
                     switch (expectedNs) {
                         case DOMAIN_1_3:
                         case DOMAIN_1_4:
-                            parseAuthorization_1_3(reader, expectedNs, add, list);
+                            parseAuthorization_1_3(reader, expectedNs, realmAddress, list);
                             break;
                         default:
                             parseAuthorization_2_0(reader, expectedNs, add, list);
@@ -1571,8 +1704,7 @@ public class ManagementXml {
     }
 
     private static void parseAuthorization_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
-            final ModelNode realmAdd, final List<ModelNode> list) throws XMLStreamException {
-        ModelNode realmAddress = realmAdd.get(OP_ADDR);
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
 
         boolean authzFound = false;
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -2922,7 +3054,7 @@ public class ManagementXml {
             PropertiesAuthenticationResourceDefinition.PATH.marshallAsAttribute(properties, writer);
             PropertiesAuthenticationResourceDefinition.RELATIVE_TO.marshallAsAttribute(properties, writer);
             PropertiesAuthenticationResourceDefinition.PLAIN_TEXT.marshallAsAttribute(properties, writer);
-        } else if (authentication.hasDefined(USERS)) {
+        } else if (authentication.has(USERS)) {
             ModelNode userDomain = authentication.get(USERS);
             ModelNode users = userDomain.hasDefined(USER) ? userDomain.require(USER) : new ModelNode().setEmptyObject();
             writer.writeStartElement(Element.USERS.getLocalName());
@@ -3068,13 +3200,26 @@ public class ManagementXml {
 
         for (Property variable : management.get(LDAP_CONNECTION).asPropertyList()) {
             ModelNode connection = variable.getValue();
-            writer.writeEmptyElement(Element.LDAP.getLocalName());
+            writer.writeStartElement(Element.LDAP.getLocalName());
             writer.writeAttribute(Attribute.NAME.getLocalName(), variable.getName());
             LdapConnectionResourceDefinition.URL.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.SEARCH_DN.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.SECURITY_REALM.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.marshallAsAttribute(connection, writer);
+            if (connection.hasDefined(PROPERTY)) {
+                List<Property> propertyList = connection.get(PROPERTY).asPropertyList();
+                if (propertyList.size() > 0) {
+                    writer.writeStartElement(PROPERTIES);
+                    for (Property current : propertyList) {
+                        writer.writeEmptyElement(PROPERTY);
+                        writer.writeAttribute(Attribute.NAME.getLocalName(), current.getName());
+                        LdapConnectionPropertyResourceDefinition.VALUE.marshallAsAttribute(current.getValue(), writer);
+                    }
+                    writer.writeEndElement();
+                }
+            }
+            writer.writeEndElement();
         }
         writer.writeEndElement();
     }

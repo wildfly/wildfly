@@ -57,6 +57,7 @@ import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.security.AuthorizingCallbackHandler;
+import org.jboss.remoting3.security.InetAddressPrincipal;
 import org.jboss.remoting3.security.ServerAuthenticationProvider;
 import org.jboss.remoting3.security.SimpleUserInfo;
 import org.jboss.remoting3.security.UserInfo;
@@ -239,6 +240,9 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
                         allPrincipals.add(userPrincipal);
                         if (userPrincipal instanceof UserPrincipal) {
                             allPrincipals.add(new RealmUser(userPrincipal.getName()));
+                        } else if (userPrincipal instanceof InetAddressPrincipal) {
+                            allPrincipals.add(new org.jboss.as.controller.security.InetAddressPrincipal(
+                                    ((InetAddressPrincipal) userPrincipal).getInetAddress()));
                         }
                     }
 
@@ -341,6 +345,7 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
 
         public UserInfo createUserInfo(Collection<Principal> remotingPrincipals) throws IOException {
             Collection<Principal> converted = new ArrayList<Principal>(remotingPrincipals.size());
+            Principal inetAddressPrincipal = null;
             for (Principal current : remotingPrincipals) {
                 // Just convert the Remoting UserPrincipal to a RealmUser.
                 // The remaining principals will be added to the Subject later.
@@ -350,11 +355,17 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
                     } else {
                         converted.add(new RealmUser(current.getName()));
                     }
+                } else if (current instanceof InetAddressPrincipal) {
+                    inetAddressPrincipal = new org.jboss.as.controller.security.InetAddressPrincipal(
+                            ((InetAddressPrincipal) current).getInetAddress());
                 }
             }
             SubjectUserInfo sui = innerHandler.createSubjectUserInfo(converted);
             Subject subject = sui.getSubject();
             subject.getPrincipals().addAll(remotingPrincipals);
+            if (inetAddressPrincipal != null) {
+                subject.getPrincipals().add(inetAddressPrincipal);
+            }
 
             return new RealmSubjectUserInfo(sui);
         }

@@ -28,31 +28,28 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.xnio.OptionMap;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class HttpListenerAdd extends AbstractListenerAdd {
+public class HttpListenerAdd extends ListenerAdd {
 
     static final ServiceName REGISTRY_SERVICE_NAME = ServiceName.JBOSS.append("http", "listener", "registry");
 
-    HttpListenerAdd(AbstractListenerResourceDefinition definition) {
+    HttpListenerAdd(ListenerResourceDefinition definition) {
         super(definition);
     }
 
-    protected ServiceName constructServiceName(final String name) {
-        return UndertowService.LISTENER.append(name);
-    }
-
     @Override
-    AbstractListenerService<? extends AbstractListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, long maxUploadSize) throws OperationFailedException {
+    ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException {
         final boolean certificateForwarding = HttpListenerResourceDefinition.CERTIFICATE_FORWARDING.resolveModelAttribute(context, model).asBoolean();
 
-        return new HttpListenerService(name, serverName, maxUploadSize, certificateForwarding);
+        return new HttpListenerService(name, serverName, listenerOptions, certificateForwarding);
     }
 
     @Override
-    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
         serviceBuilder.addDependency(REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
     }
 }

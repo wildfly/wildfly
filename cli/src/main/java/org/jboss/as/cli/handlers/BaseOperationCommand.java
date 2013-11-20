@@ -36,6 +36,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.OperationCommand;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.accesscontrol.AccessRequirement;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.HeadersArgumentValueConverter;
 import org.jboss.as.cli.impl.RequestParameterArgument;
@@ -60,15 +61,22 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
     protected OperationRequestAddress requiredAddress;
 
     private boolean dependsOnProfile;
-    private Boolean addressAvailable;
+    private Boolean available;
     private String requiredType;
 
     protected final ArgumentWithValue headers;
+
+    protected AccessRequirement accessRequirement;
 
     public BaseOperationCommand(CommandContext ctx, String command, boolean connectionRequired) {
         super(command, connectionRequired);
         ctx.addEventListener(this);
         headers = new ArgumentWithValue(this, HeadersCompleter.INSTANCE, HeadersArgumentValueConverter.INSTANCE, "--headers");
+        accessRequirement = setupAccessRequirement(ctx);
+    }
+
+    protected AccessRequirement setupAccessRequirement(CommandContext ctx) {
+        return AccessRequirement.NONE;
     }
 
     /**
@@ -131,47 +139,31 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             return false;
         }
         if(requiredAddress == null) {
-            return true;
+            return ctx.getConfig().isAccessControl() ? accessRequirement.isSatisfied(ctx) : true;
         }
 
         if(dependsOnProfile && ctx.isDomainMode()) { // not checking address in all the profiles
-            return true;
+            return ctx.getConfig().isAccessControl() ? accessRequirement.isSatisfied(ctx) : true;
         }
 
-        if(addressAvailable != null) {
-            return addressAvailable.booleanValue();
+        if(available != null) {
+            return available.booleanValue();
         }
 
         final ModelControllerClient client = ctx.getModelControllerClient();
         if(client == null) {
             return false;
         }
-        final ModelNode request = new ModelNode();
-        final ModelNode address = request.get(Util.ADDRESS);
 
+        // caching the results of an address validation may cause a problem:
+        // the address may become valid/invalid during the session
+        // the change won't have an effect until the cache is cleared
+        // which happens on reconnect/disconnect
         if(requiredType == null) {
-            address.setEmptyList();
-            request.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
-            final ModelNode addressValue = request.get(Util.VALUE);
-            for(OperationRequestAddress.Node node : requiredAddress) {
-                addressValue.add(node.getType(), node.getName());
-            }
-            final ModelNode response;
-            try {
-                response = ctx.getModelControllerClient().execute(request);
-            } catch (IOException e) {
-                return false;
-            }
-            final ModelNode result = response.get(Util.RESULT);
-            if(!result.isDefined()) {
-                return false;
-            }
-            final ModelNode valid = result.get(Util.VALID);
-            if(!valid.isDefined()) {
-                return false;
-            }
-            addressAvailable = valid.asBoolean();
+            available = isAddressValid(ctx);
         } else {
+            final ModelNode request = new ModelNode();
+            final ModelNode address = request.get(Util.ADDRESS);
             for(OperationRequestAddress.Node node : requiredAddress) {
                 address.add(node.getType(), node.getName());
             }
@@ -182,15 +174,45 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
             } catch (IOException e) {
                 return false;
             }
-            addressAvailable = Util.listContains(result, requiredType);
+            available = Util.listContains(result, requiredType);
         }
-        return addressAvailable;
+
+        if(ctx.getConfig().isAccessControl()) {
+            available = available && accessRequirement.isSatisfied(ctx);
+        }
+        return available;
+    }
+
+    protected boolean isAddressValid(CommandContext ctx) {
+        final ModelNode request = new ModelNode();
+        final ModelNode address = request.get(Util.ADDRESS);
+        address.setEmptyList();
+        request.get(Util.OPERATION).set(Util.VALIDATE_ADDRESS);
+        final ModelNode addressValue = request.get(Util.VALUE);
+        for(OperationRequestAddress.Node node : requiredAddress) {
+            addressValue.add(node.getType(), node.getName());
+        }
+        final ModelNode response;
+        try {
+            response = ctx.getModelControllerClient().execute(request);
+        } catch (IOException e) {
+            return false;
+        }
+        final ModelNode result = response.get(Util.RESULT);
+        if(!result.isDefined()) {
+            return false;
+        }
+        final ModelNode valid = result.get(Util.VALID);
+        if(!valid.isDefined()) {
+            return false;
+        }
+        return valid.asBoolean();
     }
 
     @Override
     public void cliEvent(CliEvent event, CommandContext ctx) {
         if(event == CliEvent.DISCONNECTED) {
-            addressAvailable = null;
+            available = null;
         }
     }
 

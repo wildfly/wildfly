@@ -193,11 +193,6 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         }
 
         @Override
-        public Iterator<ClusterConfiguration> getClusterConfigurations() {
-            return Collections.EMPTY_SET.iterator();
-        }
-
-        @Override
         public ClusterConfiguration getClusterConfiguration(String nodeName) {
             return null;
         }

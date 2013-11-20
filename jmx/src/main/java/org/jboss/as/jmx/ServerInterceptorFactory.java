@@ -22,24 +22,18 @@
 package org.jboss.as.jmx;
 
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.Collection;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
+import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.remoting3.Channel;
-import org.jboss.remoting3.security.InetAddressPrincipal;
 import org.jboss.remoting3.security.UserInfo;
 import org.jboss.remotingjmx.ServerMessageInterceptor;
 import org.jboss.remotingjmx.ServerMessageInterceptorFactory;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * A {@link ServerMessageInterceptorFactory} responsible for supplying a {@link ServerMessageInterceptor} for associating the
@@ -65,56 +59,33 @@ class ServerInterceptorFactory implements ServerMessageInterceptorFactory {
         @Override
         public void handleEvent(final Event event) throws IOException {
             UserInfo userInfo = channel.getConnection().getUserInfo();
+            final Subject subject;
             if (userInfo instanceof SubjectUserInfo) {
-                final Subject subject = ((SubjectUserInfo) userInfo).getSubject();
-                Subject useSubject = subject;
-                //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
-                PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
-                    @Override
-                    public Subject run() {
-                        final Subject copySubject = new Subject();
-                        copySubject.getPrincipals().addAll(subject.getPrincipals());
-                        copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
-                        copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
-                        //Add the remote address and the access mechanism
-                        Collection<Principal> principals = channel.getConnection().getPrincipals();
-                        for (Principal principal : principals) {
-                            if (principal instanceof InetAddressPrincipal) {
-                                //TODO decide if we should use the remoting principal or not
-                                copySubject.getPrincipals().add(new org.jboss.as.controller.security.InetAddressPrincipal(((InetAddressPrincipal)principal).getInetAddress()));
-                                break;
-                            }
-                        }
-                        copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.JMX));
-                        copySubject.setReadOnly();
-                        return copySubject;                            }
-                };
-
-
-                useSubject = WildFlySecurityManager.isChecking() ? AccessController.doPrivileged(copyAction) : copyAction.run();
-
-                try {
-                    Subject.doAs(useSubject, new PrivilegedExceptionAction<Void>() {
-
-                        @Override
-                        public Void run() throws IOException {
-                            event.run();
-
-                            return null;
-                        }
-                    });
-                } catch (PrivilegedActionException e) {
-                    Exception cause = e.getException();
-                    if (cause instanceof IOException) {
-                        throw (IOException) cause;
-                    } else {
-                        throw new IOException(cause);
-                    }
-                }
-
+                subject = ((SubjectUserInfo) userInfo).getSubject();
             } else {
-                event.run();
+                subject = new Subject();
             }
+
+            try {
+                AccessAuditContext.doAs(subject, new PrivilegedExceptionAction<Void>() {
+
+                    @Override
+                    public Void run() throws IOException {
+                        SecurityActions.currentAccessAuditContext().setAccessMechanism(AccessMechanism.JMX);
+                        event.run();
+
+                        return null;
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                Exception cause = e.getException();
+                if (cause instanceof IOException) {
+                    throw (IOException) cause;
+                } else {
+                    throw new IOException(cause);
+                }
+            }
+
         }
 
     }

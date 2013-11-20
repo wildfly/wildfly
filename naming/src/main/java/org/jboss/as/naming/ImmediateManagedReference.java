@@ -21,13 +21,15 @@
  */
 package org.jboss.as.naming;
 
+import java.io.Serializable;
+
 /**
  * A simple immediately-available {@link ManagedReference}'s instance.
  *
  * @author Eduardo Martins
  *
  */
-public class ImmediateManagedReference implements ManagedReference {
+public class ImmediateManagedReference implements ManagedReference, Serializable {
 
     private final Object instance;
 

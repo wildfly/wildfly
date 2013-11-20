@@ -37,10 +37,12 @@ import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
 import javax.annotation.Resource;
 import javax.ejb.TimerService;
 import javax.ejb.spi.HandleDelegate;
+import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+
 import java.lang.reflect.Method;
 
 import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
@@ -124,33 +126,25 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
     @Override
     public ResourceReferenceFactory<Object> registerResourceInjectionPoint(final InjectionPoint injectionPoint) {
         final String result = getResourceName(injectionPoint);
-        if (isKnownNamespace(result)) {
-            return handleServiceLookup(result, injectionPoint);
-        } else {
-
-            return new ResourceReferenceFactory<Object>() {
-                @Override
-                public ResourceReference<Object> createResource() {
-                    return new SimpleResourceReference<Object>(resolveResource(injectionPoint));
-                }
-            };
+        if (isKnownNamespace(result) && injectionPoint.getAnnotated().isAnnotationPresent(Produces.class)) {
+            validateResourceInjectionPointType(getManagedReferenceFactory(getBindInfo(result)), injectionPoint);
         }
+        return new ResourceReferenceFactory<Object>() {
+            @Override
+            public ResourceReference<Object> createResource() {
+                return new SimpleResourceReference<Object>(resolveResource(result, null));
+            }
+        };
     }
 
     @Override
     public ResourceReferenceFactory<Object> registerResourceInjectionPoint(final String jndiName, final String mappedName) {
-        final String result = ResourceInjectionUtilities.getResourceName(jndiName, mappedName);
-        if (isKnownNamespace(result)) {
-            return handleServiceLookup(result, null);
-        } else {
-
-            return new ResourceReferenceFactory<Object>() {
-                @Override
-                public ResourceReference<Object> createResource() {
-                    return new SimpleResourceReference<Object>(resolveResource(jndiName, mappedName));
-                }
-            };
-        }
+        return new ResourceReferenceFactory<Object>() {
+            @Override
+            public ResourceReference<Object> createResource() {
+                return new SimpleResourceReference<Object>(resolveResource(jndiName, mappedName));
+            }
+        };
     }
 
     private boolean isKnownNamespace(String name) {

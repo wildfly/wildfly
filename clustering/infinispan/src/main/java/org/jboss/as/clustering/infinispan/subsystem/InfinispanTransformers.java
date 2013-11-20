@@ -51,6 +51,7 @@ public class InfinispanTransformers {
     static void registerTransformers(final SubsystemRegistration subsystem) {
         registerTransformers130(subsystem);
         registerTransformers140(subsystem);
+        registerTransformers141(subsystem);
     }
 
     /**
@@ -59,6 +60,7 @@ public class InfinispanTransformers {
      * - attribute VIRTUAL_NODES was deprecated in 1.4
      * - expression support was added to most attributes in 1.4, except for CLUSTER, DEFAULT_CACHE and MODE
      * for which it was already enabled in 1.3
+     * - attribute STATISTICS was added in 2.0
      *
      * Chaining of transformers is used in cases where two transformers are required for the same operation.
      *
@@ -72,6 +74,10 @@ public class InfinispanTransformers {
         final ResourceTransformationDescriptionBuilder cacheContainerBuilder = subsystemBuilder.addChildResource(CacheContainerResourceDefinition.CONTAINER_PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, InfinispanRejectedExpressions_1_3.REJECT_CONTAINER_ATTRIBUTES)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
                 .end();
 
         cacheContainerBuilder.addChildResource(TransportResourceDefinition.TRANSPORT_PATH)
@@ -84,15 +90,19 @@ public class InfinispanTransformers {
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING, ClusteredCacheResourceDefinition.BATCHING, ClusteredCacheResourceDefinition.INDEXING, ClusteredCacheResourceDefinition.JNDI_NAME, ClusteredCacheResourceDefinition.MODE,
-                        ClusteredCacheResourceDefinition.CACHE_MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL,  ClusteredCacheResourceDefinition.QUEUE_SIZE,
-                        ClusteredCacheResourceDefinition.REMOTE_TIMEOUT, ClusteredCacheResourceDefinition.START,
+                        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING, CacheResourceDefinition.BATCHING, CacheResourceDefinition.INDEXING, CacheResourceDefinition.JNDI_NAME, ClusteredCacheResourceDefinition.MODE,
+                        CacheResourceDefinition.MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL,  ClusteredCacheResourceDefinition.QUEUE_SIZE,
+                        ClusteredCacheResourceDefinition.REMOTE_TIMEOUT, CacheResourceDefinition.START,
                         DistributedCacheResourceDefinition.L1_LIFESPAN, DistributedCacheResourceDefinition.OWNERS, DistributedCacheResourceDefinition.VIRTUAL_NODES, DistributedCacheResourceDefinition.SEGMENTS)
                 //discard indexing-properties if undefined, and reject it if not set
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
                 //Convert segments to virtual-nodes if it is set
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, DistributedCacheResourceDefinition.SEGMENTS)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
                 .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
                         @Override
                         protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
@@ -110,12 +120,16 @@ public class InfinispanTransformers {
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING, ClusteredCacheResourceDefinition.BATCHING, ClusteredCacheResourceDefinition.INDEXING, ClusteredCacheResourceDefinition.JNDI_NAME, ClusteredCacheResourceDefinition.MODE,
-                        ClusteredCacheResourceDefinition.CACHE_MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL, ClusteredCacheResourceDefinition.QUEUE_SIZE, ClusteredCacheResourceDefinition.REMOTE_TIMEOUT,
-                        ClusteredCacheResourceDefinition.START)
+                        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING, CacheResourceDefinition.BATCHING, CacheResourceDefinition.INDEXING, CacheResourceDefinition.JNDI_NAME, ClusteredCacheResourceDefinition.MODE,
+                        CacheResourceDefinition.MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL, ClusteredCacheResourceDefinition.QUEUE_SIZE, ClusteredCacheResourceDefinition.REMOTE_TIMEOUT,
+                        CacheResourceDefinition.START)
                 //discard indexing-properties if undefined, and reject it if not set
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
                 .end();
         registerCacheResourceChildren(invalidationCacheBuilder, false);
 
@@ -123,11 +137,15 @@ public class InfinispanTransformers {
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        ClusteredCacheResourceDefinition.BATCHING, ClusteredCacheResourceDefinition.INDEXING, ClusteredCacheResourceDefinition.JNDI_NAME,
-                        ClusteredCacheResourceDefinition.CACHE_MODULE, ClusteredCacheResourceDefinition.START)
+                        CacheResourceDefinition.BATCHING, CacheResourceDefinition.INDEXING, CacheResourceDefinition.JNDI_NAME,
+                        CacheResourceDefinition.MODULE, CacheResourceDefinition.START)
                 //discard indexing-properties if undefined, and reject it if not set
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
                 .end();
         registerCacheResourceChildren(localCacheBuilder, false);
 
@@ -135,12 +153,16 @@ public class InfinispanTransformers {
                 .getAttributeBuilder()
                 .addRejectCheck(
                         RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING, ClusteredCacheResourceDefinition.BATCHING, ClusteredCacheResourceDefinition.INDEXING, ClusteredCacheResourceDefinition.JNDI_NAME, ClusteredCacheResourceDefinition.MODE,
-                        ClusteredCacheResourceDefinition.CACHE_MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL, ClusteredCacheResourceDefinition.QUEUE_SIZE, ClusteredCacheResourceDefinition.REMOTE_TIMEOUT,
-                        ClusteredCacheResourceDefinition.START)
+                        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING, CacheResourceDefinition.BATCHING, CacheResourceDefinition.INDEXING, CacheResourceDefinition.JNDI_NAME, ClusteredCacheResourceDefinition.MODE,
+                        CacheResourceDefinition.MODULE, ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL, ClusteredCacheResourceDefinition.QUEUE_SIZE, ClusteredCacheResourceDefinition.REMOTE_TIMEOUT,
+                        CacheResourceDefinition.START)
                 //discard indexing-properties if undefined, and reject it if not set
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, CacheResourceDefinition.INDEXING_PROPERTIES)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
                 .end();
         registerCacheResourceChildren(replicatedCacheBuilder, true);
 
@@ -149,17 +171,17 @@ public class InfinispanTransformers {
     }
 
     private static void registerCacheResourceChildren(final ResourceTransformationDescriptionBuilder parent, final boolean addStateTransfer) {
-        parent.addChildResource(LockingResource.LOCKING_PATH)
+        parent.addChildResource(LockingResourceDefinition.LOCKING_PATH)
             .getAttributeBuilder()
             .addRejectCheck(
                     RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                    LockingResource.ACQUIRE_TIMEOUT, LockingResource.CONCURRENCY_LEVEL, LockingResource.ISOLATION, LockingResource.STRIPING)
+                    LockingResourceDefinition.ACQUIRE_TIMEOUT, LockingResourceDefinition.CONCURRENCY_LEVEL, LockingResourceDefinition.ISOLATION, LockingResourceDefinition.STRIPING)
             .end();
         parent.addChildResource(EvictionResourceDefinition.EVICTION_PATH)
             .getAttributeBuilder()
             .addRejectCheck(
                     RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                    EvictionResourceDefinition.MAX_ENTRIES, EvictionResourceDefinition.EVICTION_STRATEGY)
+                    EvictionResourceDefinition.MAX_ENTRIES, EvictionResourceDefinition.STRATEGY)
             .end();
         parent.addChildResource(ExpirationResourceDefinition.EXPIRATION_PATH)
             .getAttributeBuilder()
@@ -186,10 +208,10 @@ public class InfinispanTransformers {
                 .end();
         registerStoreTransformerChildren(fileStoreBuilder);
         //store=STORE
-        ResourceTransformationDescriptionBuilder storeBuilder = parent.addChildResource(StoreResourceDefinition.STORE_PATH)
+        ResourceTransformationDescriptionBuilder storeBuilder = parent.addChildResource(CustomStoreResourceDefinition.STORE_PATH)
                 .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        StoreResourceDefinition.CLASS, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION, StoreResourceDefinition.PRELOAD,
+                        CustomStoreResourceDefinition.CLASS, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION, StoreResourceDefinition.PRELOAD,
                         StoreResourceDefinition.PURGE, StoreResourceDefinition.SHARED, StoreResourceDefinition.SINGLETON)
                 .end();
         registerStoreTransformerChildren(storeBuilder);
@@ -217,22 +239,22 @@ public class InfinispanTransformers {
         final RejectAttributeChecker nameTypeChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(new HashMap<String, RejectAttributeChecker>(){
             private static final long serialVersionUID = 1L;
             {
-                setMapValues(this, RejectAttributeChecker.SIMPLE_EXPRESSIONS, BaseJDBCStoreResourceDefinition.COLUMN_NAME, BaseJDBCStoreResourceDefinition.COLUMN_TYPE);
+                setMapValues(this, RejectAttributeChecker.SIMPLE_EXPRESSIONS, JDBCStoreResourceDefinition.COLUMN_NAME, JDBCStoreResourceDefinition.COLUMN_TYPE);
             }});
         final RejectAttributeChecker jdbcKeyedTableChecker = new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(new HashMap<String, RejectAttributeChecker>() {
             private static final long serialVersionUID = 1L;
             {
                 setMapValues(this, RejectAttributeChecker.SIMPLE_EXPRESSIONS,
-                        BaseJDBCStoreResourceDefinition.PREFIX, BaseJDBCStoreResourceDefinition.BATCH_SIZE, BaseJDBCStoreResourceDefinition.FETCH_SIZE);
-                setMapValues(this, nameTypeChecker, BaseJDBCStoreResourceDefinition.ID_COLUMN, BaseJDBCStoreResourceDefinition.DATA_COLUMN, BaseJDBCStoreResourceDefinition.TIMESTAMP_COLUMN);
+                        JDBCStoreResourceDefinition.PREFIX, JDBCStoreResourceDefinition.BATCH_SIZE, JDBCStoreResourceDefinition.FETCH_SIZE);
+                setMapValues(this, nameTypeChecker, JDBCStoreResourceDefinition.ID_COLUMN, JDBCStoreResourceDefinition.DATA_COLUMN, JDBCStoreResourceDefinition.TIMESTAMP_COLUMN);
             }});
-        AttributeDefinition[] jdbcStoreSimpleAttributes = {BaseJDBCStoreResourceDefinition.DATA_SOURCE, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION,
-                StoreResourceDefinition.PRELOAD, StoreResourceDefinition.PURGE, StoreResourceDefinition.SHARED, StoreResourceDefinition.SINGLETON};
+        AttributeDefinition[] jdbcStoreSimpleAttributes = { JDBCStoreResourceDefinition.DATA_SOURCE, StoreResourceDefinition.FETCH_STATE, StoreResourceDefinition.PASSIVATION,
+                StoreResourceDefinition.PRELOAD, StoreResourceDefinition.PURGE, StoreResourceDefinition.SHARED, StoreResourceDefinition.SINGLETON };
 
         //binaryKeyedJdbcStore
         ResourceTransformationDescriptionBuilder binaryKeyedJdbcStoreBuilder = parent.addChildResource(BinaryKeyedJDBCStoreResourceDefinition.BINARY_KEYED_JDBC_STORE_PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(jdbcKeyedTableChecker, BaseJDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
+                .addRejectCheck(jdbcKeyedTableChecker, JDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
                 .end();
         registerStoreTransformerChildren(binaryKeyedJdbcStoreBuilder);
@@ -240,7 +262,7 @@ public class InfinispanTransformers {
         //stringKeyedJdbcStore
         ResourceTransformationDescriptionBuilder stringKeyedJdbcStoreBuilder = parent.addChildResource(StringKeyedJDBCStoreResourceDefinition.STRING_KEYED_JDBC_STORE_PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(jdbcKeyedTableChecker, BaseJDBCStoreResourceDefinition.STRING_KEYED_TABLE)
+                .addRejectCheck(jdbcKeyedTableChecker, JDBCStoreResourceDefinition.STRING_KEYED_TABLE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
                 .end();
         registerStoreTransformerChildren(stringKeyedJdbcStoreBuilder);
@@ -248,7 +270,7 @@ public class InfinispanTransformers {
         //mixedKeyedJdbcStore
         ResourceTransformationDescriptionBuilder mixedKeyedJdbcStoreBuilder = parent.addChildResource(MixedKeyedJDBCStoreResourceDefinition.MIXED_KEYED_JDBC_STORE_PATH)
                 .getAttributeBuilder()
-                .addRejectCheck(jdbcKeyedTableChecker, BaseJDBCStoreResourceDefinition.STRING_KEYED_TABLE, BaseJDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
+                .addRejectCheck(jdbcKeyedTableChecker, JDBCStoreResourceDefinition.STRING_KEYED_TABLE, JDBCStoreResourceDefinition.BINARY_KEYED_TABLE)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, jdbcStoreSimpleAttributes)
                 .end();
         registerStoreTransformerChildren(mixedKeyedJdbcStoreBuilder);
@@ -269,17 +291,16 @@ public class InfinispanTransformers {
             .end();
     }
 
-    private static void setMapValues(Map<String, RejectAttributeChecker> map, RejectAttributeChecker checker, AttributeDefinition...defs) {
+    static void setMapValues(Map<String, RejectAttributeChecker> map, RejectAttributeChecker checker, AttributeDefinition...defs) {
         for (AttributeDefinition def : defs) {
             map.put(def.getName(), checker);
         }
     }
 
-
     /**
      * Register the transformers for transforming from current to 1.4.0 management api version, including:
-     * * use of the VIRTUAL_NODES attribute was again allowed in 1.4.1, with a value conversion applied
-     *
+     * - use of the VIRTUAL_NODES attribute was again allowed in 1.4.1, with a value conversion applied
+     * - attribute STATISTICS was added in 2.0
      * @param subsystem the subsystems registration
      */
     @SuppressWarnings("deprecation")
@@ -287,23 +308,91 @@ public class InfinispanTransformers {
         final ModelVersion version = ModelVersion.create(1, 4, 0);
 
         final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        subsystemBuilder.addChildResource(CacheContainerResourceDefinition.CONTAINER_PATH)
-                .addChildResource(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH)
-                    .getAttributeBuilder()
-                        //Convert virtual-nodes to segments if it is set
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, DistributedCacheResourceDefinition.VIRTUAL_NODES)
-                        .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
-                            @Override
-                            protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
-                                                            TransformationContext context) {
-                                if (attributeValue.isDefined()) {
-                                    attributeValue.set(SegmentsAndVirtualNodeConverter.virtualNodesToSegments(attributeValue));
-                                }
-                            }
-                        }, DistributedCacheResourceDefinition.VIRTUAL_NODES)
-                        .addRename(DistributedCacheResourceDefinition.VIRTUAL_NODES, DistributedCacheResourceDefinition.SEGMENTS.getName())
-                    .end();
+        ResourceTransformationDescriptionBuilder cacheContainerBuilder = subsystemBuilder.addChildResource(CacheContainerResourceDefinition.CONTAINER_PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
+        cacheContainerBuilder.addChildResource(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH).getAttributeBuilder()
+                //Convert virtual-nodes to segments if it is set
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, DistributedCacheResourceDefinition.VIRTUAL_NODES)
+                .setValueConverter(new AttributeConverter.DefaultAttributeConverter() {
+                    @Override
+                    protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                    TransformationContext context) {
+                        if (attributeValue.isDefined()) {
+                            attributeValue.set(SegmentsAndVirtualNodeConverter.virtualNodesToSegments(attributeValue));
+                        }
+                    }
+                }, DistributedCacheResourceDefinition.VIRTUAL_NODES)
+                .addRename(DistributedCacheResourceDefinition.VIRTUAL_NODES, DistributedCacheResourceDefinition.SEGMENTS.getName())
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
+        cacheContainerBuilder.addChildResource(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
+        cacheContainerBuilder.addChildResource(InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
+        cacheContainerBuilder.addChildResource(LocalCacheResourceDefinition.LOCAL_CACHE_PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
 
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
+    }
+
+    /**
+     * Register the transformers for transforming from current to 1.4.0 management api version, including:
+     * - attribute STATISTICS was added in 2.0
+     * @param subsystem the subsystems registration
+     */
+    private static void registerTransformers141(final SubsystemRegistration subsystem) {
+
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder containerBuilder = builder.addChildResource(CacheContainerResourceDefinition.CONTAINER_PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
+        containerBuilder.addChildResource(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
+        containerBuilder.addChildResource(ReplicatedCacheResourceDefinition.REPLICATED_CACHE_PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
+        containerBuilder.addChildResource(InvalidationCacheResourceDefinition.INVALIDATION_CACHE_PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
+        containerBuilder.addChildResource(LocalCacheResourceDefinition.LOCAL_CACHE_PATH).getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CacheResourceDefinition.STATISTICS)
+                .addRejectCheck(new RejectAttributeChecker.SimpleRejectAttributeChecker(new ModelNode(false)), CacheResourceDefinition.STATISTICS)
+                .end();
+
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 4, 1));
     }
 }

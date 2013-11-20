@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class HttpListenerResourceDefinition extends AbstractListenerResourceDefinition {
+public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
     protected static final HttpListenerResourceDefinition INSTANCE = new HttpListenerResourceDefinition();
 
 
@@ -53,7 +53,7 @@ public class HttpListenerResourceDefinition extends AbstractListenerResourceDefi
     }
 
     @Override
-    protected AbstractListenerAdd getAddHandler() {
+    protected ListenerAdd getAddHandler() {
         return new HttpListenerAdd(this);
     }
 

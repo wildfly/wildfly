@@ -1,9 +1,17 @@
 package org.jboss.as.weld.deployment;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.InjectionTarget;
+
 import org.jboss.as.ee.component.EEClassIntrospector;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.weld.injection.InjectionTargets;
 import org.jboss.as.weld.services.BeanManagerService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -12,12 +20,8 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.InjectionTarget;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import org.jboss.weld.bean.builtin.BeanManagerProxy;
+import org.jboss.weld.manager.BeanManagerImpl;
 
 /**
  * @author Stuart Douglas
@@ -53,17 +57,7 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
                 final Object instance = injectionTarget.produce(context);
                 injectionTarget.inject(instance, context);
                 injectionTarget.postConstruct(instance);
-                return new ManagedReference() {
-                    @Override
-                    public void release() {
-                        context.release();
-                    }
-
-                    @Override
-                    public Object getInstance() {
-                        return instance;
-                    }
-                };
+                return new WeldManagedReference(injectionTarget, context, instance);
             }
         };
     }
@@ -73,8 +67,8 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
         if (target != null) {
             return target;
         }
-        final BeanManager beanManager = this.beanManager.getValue();
-        InjectionTarget<?> newTarget = beanManager.createInjectionTarget(beanManager.createAnnotatedType(clazz));
+        final BeanManagerImpl beanManager = BeanManagerProxy.unwrap(this.beanManager.getValue());
+        InjectionTarget<?> newTarget = InjectionTargets.createInjectionTarget(clazz, null, beanManager, true);
         target = injectionTargets.putIfAbsent(clazz, newTarget);
         if (target == null) {
             return newTarget;
@@ -90,17 +84,7 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
         final CreationalContext context = beanManager.createCreationalContext(null);
         injectionTarget.inject(instance, context);
         injectionTarget.postConstruct(instance);
-        return new ManagedReference() {
-            @Override
-            public void release() {
-                context.release();
-            }
-
-            @Override
-            public Object getInstance() {
-                return instance;
-            }
-        };
+        return new WeldManagedReference(injectionTarget, context, instance);
     }
 
     public InjectedValue<BeanManager> getBeanManager() {
@@ -119,5 +103,32 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
     @Override
     public EEClassIntrospector getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    private static class WeldManagedReference implements ManagedReference {
+
+        private final InjectionTarget injectionTarget;
+        private final CreationalContext ctx;
+        private final Object instance;
+
+        public WeldManagedReference(InjectionTarget injectionTarget, CreationalContext ctx, Object instance) {
+            this.injectionTarget = injectionTarget;
+            this.ctx = ctx;
+            this.instance = instance;
+        }
+
+        @Override
+        public void release() {
+            try {
+                injectionTarget.preDestroy(instance);
+            } finally {
+                ctx.release();
+            }
+        }
+
+        @Override
+        public Object getInstance() {
+            return instance;
+        }
     }
 }

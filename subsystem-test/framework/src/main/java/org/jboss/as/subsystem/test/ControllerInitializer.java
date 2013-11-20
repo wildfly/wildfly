@@ -30,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -71,6 +72,7 @@ public class ControllerInitializer {
     public static final String INTERFACE_NAME = "test-interface";
     public static final String SOCKET_BINDING_GROUP_NAME = "test-socket-binding-group";
     protected volatile String bindAddress = "localhost";
+    protected volatile String portOffset;
     protected final Map<String, String> systemProperties = new HashMap<String, String>();
     protected final Map<String, Integer> socketBindings = new HashMap<String, Integer>();
     protected final Map<String, OutboundSocketBinding> outboundSocketBindings = new HashMap<String, OutboundSocketBinding>();
@@ -181,6 +183,15 @@ public class ControllerInitializer {
     }
 
     /**
+     * Adds the port offset to the model (optional).
+     *
+     * @param portOffset the port offset ({@code null} means no offset will be added)
+     */
+    public void setPortOffset(String portOffset) {
+        this.portOffset = portOffset;
+    }
+
+    /**
      * Called by framework to set up the model
      *
      * @param rootResource the root model resource
@@ -262,7 +273,13 @@ public class ControllerInitializer {
             return;
         }
         rootResource.getModel().get(PATH);
-        ManagementResourceRegistration paths = rootRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
+        PathResourceDefinition def = PathResourceDefinition.createSpecified(pathManager);
+        if (rootRegistration.getSubModel(PathAddress.pathAddress(def.getPathElement())) != null) {
+            //Older versions of core model tests seem to register this resource, while in newer it does not get registered,
+            //so let's remove it here if it exists already
+            rootRegistration.unregisterSubModel(def.getPathElement());
+        }
+        rootRegistration.registerSubModel(def);
     }
 
     /**
@@ -307,6 +324,9 @@ public class ControllerInitializer {
         op.get(OP).set(ADD);
         op.get(OP_ADDR).set(PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, SOCKET_BINDING_GROUP_NAME)).toModelNode());
         op.get(DEFAULT_INTERFACE).set(INTERFACE_NAME);
+        if (portOffset != null) {
+            op.get(PORT_OFFSET).set(portOffset);
+        }
         ops.add(op);
 
 

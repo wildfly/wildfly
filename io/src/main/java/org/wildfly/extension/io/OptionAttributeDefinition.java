@@ -31,6 +31,8 @@ import java.math.BigInteger;
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.DeprecationData;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
@@ -40,77 +42,102 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.xnio.Option;
+import org.xnio.OptionMap;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-class OptionAttributeDefinition extends SimpleAttributeDefinition {
-    private final Option<?> option;
+public class OptionAttributeDefinition extends SimpleAttributeDefinition {
+    private final Option option;
+    private final Class<?> optionType;
 
     private OptionAttributeDefinition(String name, String xmlName, ModelNode defaultValue, ModelType type, boolean allowNull, boolean allowExpression,
                                       MeasurementUnit measurementUnit, ParameterCorrector corrector, ParameterValidator validator, boolean validateNull,
                                       String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller, boolean resourceOnly,
-                                      DeprecationData deprecated, Option<?> option, AccessConstraintDefinition[] accessConstraints,
+                                      DeprecationData deprecated, Option<?> option, Class<?> optionType, AccessConstraintDefinition[] accessConstraints,
                                       Boolean nullSignificant, AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires,
                 attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
         this.option = option;
+        this.optionType = optionType;
+
     }
 
     public Option<?> getOption() {
         return option;
     }
 
+    public OptionMap.Builder resolveOption(final OperationContext context, final ModelNode model, OptionMap.Builder builder) throws OperationFailedException {
+        ModelNode value = resolveModelAttribute(context, model);
+        if (getType() == ModelType.INT) {
+            builder.set((Option<Integer>) option, value.asInt());
+        } else if (getType() == ModelType.LONG) {
+            builder.set(option, value.asLong());
+        } else if (getType() == ModelType.BOOLEAN) {
+            builder.set(option, value.asBoolean());
+        } else if (optionType.isEnum()) {
+            builder.set(option, option.parseValue(value.asString(),option.getClass().getClassLoader()));
+        } else if (getType() == ModelType.STRING) {
+            builder.set(option, value.asString());
+        } else {
+            throw new OperationFailedException("Dont know how to handle: " + option + " with value: " + value);
+        }
+        return builder;
+    }
+
+    public static Builder builder(String attributeName, Option<?> option) {
+        return new Builder(attributeName, option);
+    }
+
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, OptionAttributeDefinition> {
         private Option<?> option;
+        private Class<?> optionType;
 
         public Builder(String attributeName, Option<?> option) {
-            super(attributeName, getType(option), true);
-            this.option = option;
+            this(attributeName, option, null);
         }
 
+        public Builder(String attributeName, Option<?> option, ModelNode defaultValue) {
+            super(attributeName, ModelType.UNDEFINED, true);
+            this.option = option;
+            this.defaultValue = defaultValue;
+            setType();
+        }
 
         @Override
         public OptionAttributeDefinition build() {
             return new OptionAttributeDefinition(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
                     corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly,
-                    deprecated, option, accessConstraints, nullSignficant, flags);
+                    deprecated, option, optionType, accessConstraints, nullSignficant, flags);
         }
 
-        private static ModelType getType(Option<?> option) {
-
+        private void setType() {
             try {
                 Field typeField = option.getClass().getDeclaredField("type");
                 typeField.setAccessible(true);
-                Class<?> type = (Class<?>) typeField.get(option);
+                optionType = (Class<?>) typeField.get(option);
 
-
-                if (type.isAssignableFrom(Integer.class)) {
-                    return ModelType.INT;
-                } else if (type.isAssignableFrom(Long.class)) {
-                    return ModelType.LONG;
-
-                } else if (type.isAssignableFrom(BigInteger.class)) {
-                    return ModelType.BIG_INTEGER;
-                } else if (type.isAssignableFrom(Double.class)) {
-                    return ModelType.DOUBLE;
-                } else if (type.isAssignableFrom(BigDecimal.class)) {
-                    return ModelType.BIG_DECIMAL;
-
-                } else if (type.isAssignableFrom(String.class)) {
-                    return ModelType.STRING;
-
-                } else if (type.isAssignableFrom(Boolean.class)) {
-                    return ModelType.BOOLEAN;
-
+                if (optionType.isAssignableFrom(Integer.class)) {
+                    type = ModelType.INT;
+                } else if (optionType.isAssignableFrom(Long.class)) {
+                    type = ModelType.LONG;
+                } else if (optionType.isAssignableFrom(BigInteger.class)) {
+                    type = ModelType.BIG_INTEGER;
+                } else if (optionType.isAssignableFrom(Double.class)) {
+                    type = ModelType.DOUBLE;
+                } else if (optionType.isAssignableFrom(BigDecimal.class)) {
+                    type = ModelType.BIG_DECIMAL;
+                } else if (optionType.isEnum() || optionType.isAssignableFrom(String.class)) {
+                    type = ModelType.STRING;
+                } else if (optionType.isAssignableFrom(Boolean.class)) {
+                    type = ModelType.BOOLEAN;
                 } else {
-                    return ModelType.OBJECT;
+                    type = ModelType.UNDEFINED;
                 }
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            return ModelType.OBJECT;
         }
     }
 

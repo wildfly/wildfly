@@ -58,26 +58,6 @@ public interface UndertowLogger extends BasicLogger {
      */
     UndertowLogger ROOT_LOGGER = Logger.getMessageLogger(UndertowLogger.class, UndertowLogger.class.getPackage().getName());
 
-    ////////////////////////////////////////////////////////////
-    //18200-18226 are copied across from the old web subsystem
-
-
-    @LogMessage(level = WARN)
-    @Message(id = 18204, value = "Clustering not supported, falling back to non-clustered session manager")
-    void clusteringNotSupported();
-
-
-    @LogMessage(level = INFO)
-    @Message(id = 18210, value = "Register web context: %s")
-    void registerWebapp(String webappPath);
-
-    @LogMessage(level = INFO)
-    @Message(id = 18224, value = "Unregister web context: %s")
-    void unregisterWebapp(String webappPath);
-
-    @LogMessage(level = INFO)
-    @Message(id = 18226, value = "Skipped SCI for jar: %s.")
-    void skippedSCI(String jar, @Cause Exception e);
 
     /*
     UNDERTOW messages start
@@ -165,4 +145,21 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 17532, value = "Host %s stopping")
     void hostStopping(String version);
+
+    @LogMessage(level = WARN)
+    @Message(id = 17533, value = "Clustering not supported, falling back to non-clustered session manager")
+    void clusteringNotSupported();
+
+
+    @LogMessage(level = INFO)
+    @Message(id = 17534, value = "Register web context: %s")
+    void registerWebapp(String webappPath);
+
+    @LogMessage(level = INFO)
+    @Message(id = 17535, value = "Unregister web context: %s")
+    void unregisterWebapp(String webappPath);
+
+    @LogMessage(level = INFO)
+    @Message(id = 17536, value = "Skipped SCI for jar: %s.")
+    void skippedSCI(String jar, @Cause Exception e);
 }

@@ -34,7 +34,6 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
     public void configure(final DeploymentPhaseContext context, final ComponentDescription description, final ComponentConfiguration configuration) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
         final DeploymentReflectionIndex deploymentReflectionIndex = deploymentUnit.getAttachment(REFLECTION_INDEX);
-        final Object instanceKey = BasicComponentInstance.INSTANCE_KEY;
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
@@ -71,12 +70,12 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
         }
 
 
-        destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(instanceKey));
+        destructors.addLast(new ImmediateInterceptorFactory(new ManagedReferenceReleaseInterceptor(BasicComponentInstance.INSTANCE_KEY)));
 
         new ClassDescriptionTraversal(configuration.getComponentClass(), applicationClasses) {
             @Override
             public void handle(Class<?> clazz, EEModuleClassDescription classDescription) throws DeploymentUnitProcessingException {
-                mergeInjectionsForClass(clazz, configuration.getComponentClass(), classDescription, moduleDescription, deploymentReflectionIndex, description, configuration, context, injectors, instanceKey, uninjectors, metadataComplete);
+                mergeInjectionsForClass(clazz, configuration.getComponentClass(), classDescription, moduleDescription, deploymentReflectionIndex, description, configuration, context, injectors, BasicComponentInstance.INSTANCE_KEY, uninjectors, metadataComplete);
             }
         }.run();
 
@@ -105,7 +104,7 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
                 if (methodIdentifier != null) {
                     final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, clazz, methodIdentifier);
                     if (isNotOverriden(clazz, method, configuration.getComponentClass(), deploymentReflectionIndex)) {
-                        InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(instanceKey, method, changeMethod, lifecycleMethod);
+                        InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(new ManagedReferenceLifecycleMethodInterceptor(BasicComponentInstance.INSTANCE_KEY, method, changeMethod, lifecycleMethod));
                         interceptors.add(interceptorFactory);
                     }
                 }
@@ -165,7 +164,7 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
                 //now add the interceptor that initializes and the interceptor that actually invokes to the end of the interceptor chain
 
                 configuration.addComponentInterceptor(method, Interceptors.getInitialInterceptorFactory(), InterceptorOrder.Component.INITIAL_INTERCEPTOR);
-                configuration.addComponentInterceptor(method, new ManagedReferenceMethodInterceptorFactory(instanceKey, method), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
+                configuration.addComponentInterceptor(method, new ImmediateInterceptorFactory(new ManagedReferenceMethodInterceptor(BasicComponentInstance.INSTANCE_KEY, method)), InterceptorOrder.Component.TERMINAL_INTERCEPTOR);
 
                 final MethodIdentifier identifier = MethodIdentifier.getIdentifier(method.getReturnType(), method.getName(), method.getParameterTypes());
 

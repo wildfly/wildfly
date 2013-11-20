@@ -22,6 +22,7 @@
 package org.jboss.as.cli.parsing.operation;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.Util;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
@@ -48,6 +49,8 @@ public class NodeState extends DefaultParsingState {
                     throws CommandFormatException {
                 if(ctx.getCharacter() == '/') {
                     ctx.leaveState();
+                } else if(ctx.begins(Util.PROPERTY_START)) {
+                    ctx.replaceProperty(true);
                 } else {
                     getHandler(ctx.getCharacter()).handle(ctx);
                 }

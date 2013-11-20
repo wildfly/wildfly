@@ -30,7 +30,9 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ee.component.ComponentRegistry;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.security.deployment.AbstractSecurityDeployer;
 import org.jboss.as.security.plugins.SecurityDomainContext;
+import org.jboss.as.security.service.JaccService;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -68,6 +70,7 @@ import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
+import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
 
@@ -79,6 +82,8 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+
+import javax.security.jacc.PolicyConfiguration;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -124,7 +129,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-        //AbstractSecurityDeployer<?> deployer = new WarSecurityDeployer();
+        //AbstractSecurityDeployer<?> deployer = new WarJACCDeployer();
         //deployer.undeploy(context);
     }
 
@@ -183,7 +188,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         String securityDomain = metaDataSecurityDomain == null ? SecurityConstants.DEFAULT_APPLICATION_POLICY : SecurityUtil
                 .unprefixSecurityDomain(metaDataSecurityDomain);
 
-        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(hostName,pathName);
+        String serverInstanceName = metaData.getServerInstanceName() == null ? defaultServer : metaData.getServerInstanceName();
+        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName,pathName);
 
         final Set<ServiceName> additionalDependencies = new HashSet<>();
         for(final SetupAction setupAction : setupActions) {
@@ -192,7 +198,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 additionalDependencies.addAll(dependencies);
             }
         }
-        final ServiceName hostServiceName = UndertowService.virtualHostName(defaultServer, hostName);
+
+        final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
@@ -275,6 +282,25 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         deploymentUnit.addToAttachmentList(Attachments.DEPLOYMENT_COMPLETE_SERVICES, deploymentServiceName);
 
+
+        // adding JACC service
+        AbstractSecurityDeployer<WarMetaData> deployer = new WarJACCDeployer();
+        JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit);
+        if (jaccService != null) {
+            final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
+            ServiceBuilder<?> jaccBuilder = serviceTarget.addService(jaccServiceName, jaccService);
+            if (deploymentUnit.getParent() != null) {
+                // add dependency to parent policy
+                final DeploymentUnit parentDU = deploymentUnit.getParent();
+                jaccBuilder.addDependency(parentDU.getServiceName().append(JaccService.SERVICE_NAME), PolicyConfiguration.class,
+                        jaccService.getParentPolicyInjector());
+            }
+            // add dependency to web deployment service
+            jaccBuilder.addDependency(deploymentServiceName);
+            jaccBuilder.setInitialMode(Mode.PASSIVE).install();
+        }
+
+
         // OSGi web applications are activated in {@link WebContextActivationProcessor} according to bundle lifecycle changes
         if (isWebappBundle) {
             UndertowDeploymentService.ContextActivatorImpl activator = new UndertowDeploymentService.ContextActivatorImpl(builder.install());
@@ -288,6 +314,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final ModelNode node = deploymentUnit.getDeploymentSubsystemModel(UndertowExtension.SUBSYSTEM_NAME);
         node.get(DeploymentDefinition.CONTEXT_ROOT.getName()).set("".equals(pathName) ? "/" : pathName);
         node.get(DeploymentDefinition.VIRTUAL_HOST.getName()).set(hostName);
+        node.get(DeploymentDefinition.SERVER.getName()).set(serverInstanceName);
         processManagement(deploymentUnit, metaData);
     }
 

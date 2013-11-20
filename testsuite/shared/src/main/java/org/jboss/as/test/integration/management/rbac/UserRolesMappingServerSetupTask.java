@@ -29,6 +29,13 @@ import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_USER;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_USER;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.ADMINISTRATOR_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.AUDITOR_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.DEPLOYER_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.MAINTAINER_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.OPERATOR_ROLE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.SUPERUSER_ROLE;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleMapping;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.addRoleUser;
 import static org.jboss.as.test.integration.management.rbac.RbacUtil.removeRoleMapping;
@@ -97,13 +104,13 @@ public class UserRolesMappingServerSetupTask implements ServerSetupTask {
 
         static {
             Map<String, Set<String>> rolesToUsers = new HashMap<String, Set<String>>();
-            rolesToUsers.put(MONITOR_USER, Collections.singleton(MONITOR_USER));
-            rolesToUsers.put(OPERATOR_USER, Collections.singleton(OPERATOR_USER));
-            rolesToUsers.put(MAINTAINER_USER, Collections.singleton(MAINTAINER_USER));
-            rolesToUsers.put(DEPLOYER_USER, Collections.singleton(DEPLOYER_USER));
-            rolesToUsers.put(ADMINISTRATOR_USER, Collections.singleton(ADMINISTRATOR_USER));
-            rolesToUsers.put(AUDITOR_USER, Collections.singleton(AUDITOR_USER));
-            rolesToUsers.put(SUPERUSER_USER, Collections.singleton(SUPERUSER_USER));
+            rolesToUsers.put(MONITOR_ROLE, Collections.singleton(MONITOR_USER));
+            rolesToUsers.put(OPERATOR_ROLE, Collections.singleton(OPERATOR_USER));
+            rolesToUsers.put(MAINTAINER_ROLE, Collections.singleton(MAINTAINER_USER));
+            rolesToUsers.put(DEPLOYER_ROLE, Collections.singleton(DEPLOYER_USER));
+            rolesToUsers.put(ADMINISTRATOR_ROLE, Collections.singleton(ADMINISTRATOR_USER));
+            rolesToUsers.put(AUDITOR_ROLE, Collections.singleton(AUDITOR_USER));
+            rolesToUsers.put(SUPERUSER_ROLE, Collections.singleton(SUPERUSER_USER));
             STANDARD_USERS = rolesToUsers;
         }
 

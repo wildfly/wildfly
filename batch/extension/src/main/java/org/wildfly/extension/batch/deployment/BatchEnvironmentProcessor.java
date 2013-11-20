@@ -28,11 +28,8 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.transaction.UserTransaction;
 
 import org.jberet.spi.BatchEnvironment;
-import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -56,52 +53,68 @@ import org.wildfly.jberet.services.BatchEnvironmentService;
 public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
 
     @Override
-    public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
+    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        // Section 10.7 of JSR 352 discusses valid packaging types, of which it appears EAR should be one. It seems
-        // though that it's of no real use as 10.5 and 10.6 seem to indicate it must be in META-INF/batch-jobs of a JAR
-        // and WEB-INF/classes/META-INF/batch-jobs of a WAR.
-        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
-            return;
-        }
-        // Can't use batch without CDI
-        if (deploymentUnit.hasAttachment(Attachments.MODULE) && deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
-            if (WeldDeploymentMarker.isWeldDeployment(deploymentUnit)) {
-                // Get the class loader
-                final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-                final ClassLoader moduleClassLoader = module.getClassLoader();
+        if (deploymentUnit.hasAttachment(Attachments.MODULE)) {
+            BatchLogger.LOGGER.tracef("Processing deployment '%s' for batch.", deploymentUnit.getName());
+            // Get the class loader
+            final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+            final ClassLoader moduleClassLoader = module.getClassLoader();
 
-                final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
+            final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
 
-                final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-                final InjectedEENamespaceContextSelector namespaceContextSelector = moduleDescription.getNamespaceContextSelector();
-                final BatchEnvironmentService service = new BatchEnvironmentService(namespaceContextSelector);
+            final BatchEnvironmentService service = new BatchEnvironmentService();
 
-                final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
-                serviceBuilder.addDependency(BatchServiceNames.BATCH_PROPERTIES, Properties.class, service.getPropertiesInjector());
+            final ServiceBuilder<BatchEnvironment> serviceBuilder = serviceTarget.addService(BatchServiceNames.batchDeploymentServiceName(deploymentUnit), service);
+            serviceBuilder.addDependency(BatchServiceNames.BATCH_PROPERTIES, Properties.class, service.getPropertiesInjector());
+            serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
+
+            // Set the class loader
+            service.getClassLoaderInjector().setValue(new ImmediateValue<>(moduleClassLoader));
+
+            // Only add transactions and the BeanManager if this is a batch deployment
+            if (isBatchDeployment(deploymentUnit)) {
                 serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, service.getUserTransactionInjector());
-                serviceBuilder.addDependency(BatchServiceNames.BATCH_THREAD_POOL_NAME, ExecutorService.class, service.getExecutorServiceInjector());
-
-                // Set the class loader
-                service.getClassLoaderInjector().setValue(new ImmediateValue<ClassLoader>(moduleClassLoader));
 
                 // Add the bean manager
-                serviceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), new CastingInjector<BeanManager>(service.getBeanManagerInjector(), BeanManager.class));
-
-                serviceBuilder.install();
+                serviceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), new CastingInjector<>(service.getBeanManagerInjector(), BeanManager.class));
             } else {
-                final ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-                final VirtualFile jobXmlFile = root.getRoot().getChild("META-INF/batch.xml");
-                final VirtualFile batchJobsDir = root.getRoot().getChild("META-INF/batch-jobs");
-                if (jobXmlFile.exists() || (batchJobsDir.exists() && !batchJobsDir.getChildren().isEmpty())) {
-                    BatchLogger.LOGGER.cdiNotEnabled();
-                }
-
+                BatchLogger.LOGGER.tracef("Skipping UserTransaction and BeanManager service dependencies for deployment %s", deploymentUnit.getName());
             }
+
+            serviceBuilder.install();
         }
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
+    }
+
+    /**
+     * Batch deployments must have a {@code META-INF/batch.xml} and/or XML configuration files in {@code
+     * META-INF/batch-jobs}. They must be in an EJB JAR or a WAR.
+     *
+     * @param deploymentUnit the deployment unit to check
+     *
+     * @return {@code true} if a {@code META-INF/batch.xml} or a non-empty {@code META-INF/batch-jobs} directory was
+     *         found otherwise {@code false}
+     */
+    private boolean isBatchDeployment(final DeploymentUnit deploymentUnit) {
+        // Section 10.7 of JSR 352 discusses valid packaging types, of which it appears EAR should be one. It seems
+        // though that it's of no real use as 10.5 and 10.6 seem to indicate it must be in META-INF/batch-jobs of a JAR
+        // and WEB-INF/classes/META-INF/batch-jobs of a WAR.
+        if (DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit) || !deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
+            return false;
+        }
+        final ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
+        final VirtualFile metaInf;
+        if (DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+            metaInf = root.getRoot().getChild("WEB-INF/classes/META-INF");
+        } else {
+            metaInf = root.getRoot().getChild("META-INF");
+        }
+        final VirtualFile jobXmlFile = metaInf.getChild("batch.xml");
+        final VirtualFile batchJobsDir = metaInf.getChild("batch-jobs");
+        return (jobXmlFile.exists() || (batchJobsDir.exists() && !batchJobsDir.getChildren().isEmpty()));
     }
 }

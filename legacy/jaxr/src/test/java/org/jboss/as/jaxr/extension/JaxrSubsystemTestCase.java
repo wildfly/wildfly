@@ -72,7 +72,7 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
      */
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformers1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     /**
@@ -82,10 +82,10 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
      */
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformers1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
-    private void testTransformer1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testTransformers1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = "xsd1_1full.xml";   //This has no expressions not understood by 1.1.0
         ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
         //Use the non-runtime version of the extension which will happen on the HC
@@ -93,7 +93,7 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXmlResource(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-jaxr:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.jaxr.extension.JAXRSubsystemExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
@@ -120,7 +120,7 @@ public class JaxrSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // create builder for legacy subsystem version
         ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, version_1_1_0)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
                 .addMavenResourceURL("org.jboss.as:jboss-as-jaxr:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.jaxr.extension.JAXRSubsystemExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);

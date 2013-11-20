@@ -26,19 +26,12 @@ import io.undertow.security.idm.Account;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
 import javax.security.auth.Subject;
 
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
-import org.jboss.as.controller.security.InetAddressPrincipal;
-import org.jboss.as.core.security.AccessMechanism;
-import org.wildfly.security.manager.WildFlySecurityManager;
+import org.jboss.as.controller.AccessAuditContext;
 
 /**
  * HttpHandler to ensure the Subject for the current authenticated user is correctly associated for the request.
@@ -56,53 +49,33 @@ public class SubjectDoAsHandler implements HttpHandler {
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
         final SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
-        Subject useSubject = null;
+        final Subject useSubject;
         if (securityContext != null) {
             final Account account = securityContext.getAuthenticatedAccount();
             if (account instanceof SubjectAccount) {
-                //TODO find a better place for this https://issues.jboss.org/browse/WFLY-1852
-                PrivilegedAction<Subject> copyAction = new PrivilegedAction<Subject>() {
-                    @Override
-                    public Subject run() {
-                        final Subject subject = ((SubjectAccount) account).getSubject();
-                        final Subject copySubject = new Subject();
-                        copySubject.getPrincipals().addAll(subject.getPrincipals());
-                        copySubject.getPrivateCredentials().addAll(subject.getPrivateCredentials());
-                        copySubject.getPublicCredentials().addAll(subject.getPublicCredentials());
-                        //Add the remote address and the access mechanism
-                        SocketAddress address = exchange.getConnection().getPeerAddress();
-                        if (address instanceof InetSocketAddress) {
-                            //TODO decide if we should use the remoting principal or not
-                            copySubject.getPrincipals().add(new InetAddressPrincipal(((InetSocketAddress)address).getAddress()));
-                        }
-                        copySubject.getPrincipals().add(new AccessMechanismPrincipal(AccessMechanism.HTTP));
-                        copySubject.setReadOnly();
-                        return copySubject;                            }
-                };
-
-                useSubject = WildFlySecurityManager.isChecking() ? AccessController.doPrivileged(copyAction) : copyAction.run();
+                useSubject = ((SubjectAccount) account).getSubject();
+            } else {
+                useSubject = new Subject();
             }
+        } else {
+            useSubject = new Subject();
         }
         handleRequest(exchange, useSubject);
     }
 
     void handleRequest(final HttpServerExchange exchange, final Subject subject) throws Exception {
-        if (subject != null) {
-            try {
-                Subject.doAs(subject, new PrivilegedExceptionAction<Void>() {
+        try {
+            AccessAuditContext.doAs(subject, new PrivilegedExceptionAction<Void>() {
 
-                    @Override
-                    public Void run() throws Exception {
-                        wrapped.handleRequest(exchange);
-                        return null;
-                    }
+                @Override
+                public Void run() throws Exception {
+                    wrapped.handleRequest(exchange);
+                    return null;
+                }
 
-                });
-            } catch (PrivilegedActionException e) {
-                throw e.getException();
-            }
-        } else {
-            wrapped.handleRequest(exchange);
+            });
+        } catch (PrivilegedActionException e) {
+            throw e.getException();
         }
     }
 

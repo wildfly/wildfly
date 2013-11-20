@@ -27,6 +27,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.JarFile;
 
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
@@ -42,6 +43,9 @@ import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.ResourceLoader;
+import org.jboss.modules.ResourceLoaderSpec;
+import org.jboss.modules.ResourceLoaders;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -56,7 +60,6 @@ import org.jboss.vfs.VirtualFile;
 
 /**
  * Recognize Seam deployments and add org.jboss.seam.int module to it.
- *
  * @author <a href="mailto:ales.justin@jboss.org">Ales Justin</a>
  */
 public class Seam2Processor implements DeploymentUnitProcessor {
@@ -68,13 +71,8 @@ public class Seam2Processor implements DeploymentUnitProcessor {
     public static final String SEAM_COMPONENTS_META_INF = "META-INF/" + SEAM_COMPONENTS;
     public static final String SEAM_COMPONENTS_WEB_INF = "WEB-INF/" + SEAM_COMPONENTS;
 
-    public static final String[] SEAM_FILES = new String[]{
-            SEAM_PROPERTIES,
-            SEAM_PROPERTIES_META_INF,
-            SEAM_PROPERTIES_WEB_INF,
-            SEAM_COMPONENTS_META_INF,
-            SEAM_COMPONENTS_WEB_INF
-    };
+    public static final String[] SEAM_FILES = new String[] { SEAM_PROPERTIES, SEAM_PROPERTIES_META_INF,
+            SEAM_PROPERTIES_WEB_INF, SEAM_COMPONENTS_META_INF, SEAM_COMPONENTS_WEB_INF };
 
     public static final String SEAM_INT_JAR = "jboss-seam-int.jar";
     public static final ModuleIdentifier EXT_CONTENT_MODULE = ModuleIdentifier.create("org.jboss.integration.ext-content");
@@ -89,10 +87,8 @@ public class Seam2Processor implements DeploymentUnitProcessor {
 
     /**
      * Lookup Seam integration resource loader.
-     *
      * @return the Seam integration resource loader
-     * @throws DeploymentUnitProcessingException
-     *          for any error
+     * @throws DeploymentUnitProcessingException for any error
      */
     protected synchronized ResourceRoot getSeamIntResourceRoot() throws DeploymentUnitProcessingException {
         try {
@@ -118,7 +114,8 @@ public class Seam2Processor implements DeploymentUnitProcessor {
                         return mountHandle;
                     }
                 };
-                ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SEAM_INT_JAR), mountHandleService);
+                ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SEAM_INT_JAR),
+                        mountHandleService);
                 builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
                 serviceTarget = null; // our cleanup service install work is done
 
@@ -150,12 +147,21 @@ public class Seam2Processor implements DeploymentUnitProcessor {
             VirtualFile root = mainRoot.getRoot();
             for (String path : SEAM_FILES) {
                 if (root.getChild(path).exists()) {
-                    final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+                    final ModuleSpecification moduleSpecification = deploymentUnit
+                            .getAttachment(Attachments.MODULE_SPECIFICATION);
                     final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false, false)); // for VFS scanner
+                    moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, VFS_MODULE, false, false, false,
+                            false)); // for VFS scanner
+
+                    try {
+                        ResourceLoader resourceLoader = ResourceLoaders.createJarResourceLoader(SEAM_INT_JAR, new JarFile(
+                                getSeamIntResourceRoot().getRoot().getPathName()));
+                        moduleSpecification.addResourceLoader(ResourceLoaderSpec.createResourceLoaderSpec(resourceLoader));
+                    } catch (Exception e) {
+                        throw new DeploymentUnitProcessingException(e);
+                    }
 
                     unit.addToAttachmentList(Attachments.RESOURCE_ROOTS, getSeamIntResourceRoot());
-
                     return;
                 }
             }

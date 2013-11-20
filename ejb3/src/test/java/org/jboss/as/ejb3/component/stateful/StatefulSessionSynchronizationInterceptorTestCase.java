@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.component.stateful;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -90,8 +91,7 @@ public class StatefulSessionSynchronizationInterceptorTestCase {
                 return null;
             }
         }).when(transactionSynchronizationRegistry).registerInterposedSynchronization((Synchronization) any());
-        final StatefulSessionComponentInstance instance = mock(StatefulSessionComponentInstance.class);
-        when(instance.getComponent()).thenReturn(component);
+        final StatefulSessionComponentInstance instance = new StatefulSessionComponentInstance(component, org.jboss.invocation.Interceptors.getTerminalInterceptor(), Collections.EMPTY_MAP, Collections.emptyMap());
         context.putPrivateData(ComponentInstance.class, instance);
 
         interceptor.processInvocation(context);

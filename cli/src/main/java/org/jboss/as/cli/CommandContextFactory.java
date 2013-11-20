@@ -54,16 +54,37 @@ public abstract class CommandContextFactory {
 
     public abstract CommandContext newCommandContext(String username, char[] password) throws CliInitializationException;
 
-    public abstract CommandContext newCommandContext(String controllerProtocol, String controllerHost, int controllerPort,
+    public abstract CommandContext newCommandContext(String controller, String username, char[] password) throws CliInitializationException;
+
+    public abstract CommandContext newCommandContext(String controller, String username, char[] password, boolean initConsole,
+            final int connectionTimeout) throws CliInitializationException;
+
+    public abstract CommandContext newCommandContext(String controller, String username, char[] password, boolean disableLocalAuth,
+            boolean initConsole, final int connectionTimeout) throws CliInitializationException;
+
+    public abstract CommandContext newCommandContext(String controller, String username, char[] password, InputStream consoleInput,
+            OutputStream consoleOutput) throws CliInitializationException;
+
+    /**
+     * @deprecated Use {@link #newCommandContext(String, String, char[])} instead.
+     */
+    @Deprecated
+    public abstract CommandContext newCommandContext(String controllerHost, int controllerPort,
             String username, char[] password) throws CliInitializationException;
 
-    public abstract CommandContext newCommandContext(String controllerProtocol, String controllerHost, int controllerPort,
+    /**
+     * @deprecated Use {@link #newCommandContext(String, int, String, char[], boolean, int)} instead.
+     */
+    @Deprecated
+    public abstract CommandContext newCommandContext(String controllerHost, int controllerPort,
             String username, char[] password, boolean initConsole, final int connectionTimeout) throws CliInitializationException;
 
-    public abstract CommandContext newCommandContext(String controllerProtocol, String controllerHost, int controllerPort,
-            String username, char[] password, boolean disableLocalAuth, boolean initConsole, final int connectionTimeout) throws CliInitializationException;
-
+    /**
+     * @deprecated Use {@link #newCommandContext(String, int, String, char[], InputStream, OutputStream)} instead.
+     */
+    @Deprecated
     public abstract CommandContext newCommandContext(String controllerHost, int controllerPort,
             String username, char[] password,
             InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException;
+
 }

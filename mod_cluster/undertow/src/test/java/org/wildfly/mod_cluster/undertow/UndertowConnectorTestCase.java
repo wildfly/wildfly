@@ -36,20 +36,22 @@ import org.jboss.as.network.SocketBindingManager;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.msc.value.InjectedValue;
 import org.junit.Test;
-import org.wildfly.extension.undertow.AbstractListenerService;
+import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.AjpListenerService;
 import org.wildfly.extension.undertow.HttpListenerService;
 import org.wildfly.extension.undertow.HttpsListenerService;
+import org.xnio.OptionMap;
 
 public class UndertowConnectorTestCase {
-    private final AbstractListenerService<?> listener = mock(AbstractListenerService.class);
+    private final ListenerService<?> listener = mock(ListenerService.class);
     private final Connector connector = new UndertowConnector(this.listener);
 
     @Test
     public void getType() {
-        assertSame(Connector.Type.AJP, new UndertowConnector(new AjpListenerService("", "", 0)).getType());
-        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("", "", 0, false)).getType());
-        assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService("", "", 0)).getType());
+        OptionMap options = OptionMap.builder().getMap();
+        assertSame(Connector.Type.AJP, new UndertowConnector(new AjpListenerService("", "", options)).getType());
+        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("", "", options, false)).getType());
+        assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService("", "", options)).getType());
     }
 
     @Test

@@ -29,7 +29,10 @@ import java.lang.reflect.Type;
 import java.util.Set;
 
 import javax.ejb.EJB;
+import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.EEApplicationDescription;
@@ -39,12 +42,16 @@ import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ContextNames.BindInfo;
 import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.util.ResourceInjectionUtilities;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.ResourceReference;
 import org.jboss.weld.injection.spi.ResourceReferenceFactory;
+import org.jboss.weld.injection.spi.helpers.SimpleResourceReference;
+import org.jboss.weld.logging.BeanLogger;
+import org.jboss.weld.util.reflection.Reflections;
 
 /**
  * Implementation of EjbInjectionServices.
@@ -95,7 +102,18 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
             return handleServiceLookup(ejb.lookup(), injectionPoint);
         } else {
             final ViewDescription viewDescription = getViewDescription(ejb, injectionPoint);
-            return handleServiceLookup(viewDescription, injectionPoint);
+            if(viewDescription != null) {
+                return handleServiceLookup(viewDescription, injectionPoint);
+            } else {
+
+                final String proposedName = ResourceInjectionUtilities.getEjbBindLocation(injectionPoint);
+                return new ResourceReferenceFactory<Object>() {
+                    @Override
+                    public ResourceReference<Object> createResource() {
+                        return new SimpleResourceReference<Object>(doLookup(proposedName, null));
+                    }
+                };
+            }
         }
     }
 
@@ -104,9 +122,23 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
          * Try to obtain ComponentView eagerly and validate the resource type
          */
         final ComponentView view = getComponentView(viewDescription);
-        if (view != null) {
+        if (view != null && injectionPoint.getAnnotated().isAnnotationPresent(Produces.class)) {
             Class<?> clazz = view.getViewClass();
-            validateResourceInjectionPointType(clazz, injectionPoint);
+
+            Class<?> injectionPointRawType = Reflections.getRawType(injectionPoint.getType());
+            //we just compare names, as for remote views the actual classes may be loaded from different class loaders
+            Class<?> c = clazz;
+            boolean found = true;
+            while (c != null && c != Object.class) {
+                if (injectionPointRawType.getName().equals(c.getName())) {
+                    found = true;
+                    break;
+                }
+                c = c.getSuperclass();
+            }
+            if(!found) {
+                throw BeanLogger.LOG.invalidResourceProducerType(injectionPoint.getAnnotated(), clazz.getName());
+            }
             return new ComponentViewToResourceReferenceFactoryAdapter<Object>(view);
         } else {
             return createLazyResourceReferenceFactory(viewDescription);
@@ -133,10 +165,18 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
                 viewService = applicationDescription.getComponents(ejb.beanName(), getType(injectionPoint.getType()).getName(), deploymentRoot);
             }
         }
-        if (viewService.isEmpty()) {
-            throw WeldMessages.MESSAGES.ejbNotResolved(ejb, injectionPoint.getMember());
-        } else if (viewService.size() > 1) {
-            throw WeldMessages.MESSAGES.moreThanOneEjbResolved(ejb, injectionPoint.getMember(), viewService);
+        if(injectionPoint.getAnnotated().isAnnotationPresent(Produces.class)) {
+            if (viewService.isEmpty()) {
+                throw WeldMessages.MESSAGES.ejbNotResolved(ejb, injectionPoint.getMember());
+            } else if (viewService.size() > 1) {
+                throw WeldMessages.MESSAGES.moreThanOneEjbResolved(ejb, injectionPoint.getMember(), viewService);
+            }
+        } else {
+            if (viewService.isEmpty()) {
+                return null;
+            } else if (viewService.size() > 1) {
+                return null;
+            }
         }
         return viewService.iterator().next();
     }
@@ -186,5 +226,15 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
                 }
             }
         };
+    }
+
+
+    public Object doLookup(String jndiName, String mappedName) {
+        String name = ResourceInjectionUtilities.getResourceName(jndiName, mappedName);
+        try {
+            return new InitialContext().lookup(name);
+        } catch (NamingException e) {
+            throw WeldMessages.MESSAGES.coundNotFindResource(name, e);
+        }
     }
 }

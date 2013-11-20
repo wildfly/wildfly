@@ -393,8 +393,4 @@ class ParallelBootOperationContext extends AbstractOperationContext {
         return primaryContext.getModel();
     }
 
-    @Override
-    String getDomainUUID() {
-        return primaryContext.getDomainUUID();
-    }
 }

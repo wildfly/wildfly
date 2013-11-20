@@ -39,6 +39,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.undertow.filters.FilterRefDefinition;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -74,7 +75,12 @@ class HostDefinition extends PersistentResourceDefinition {
             .build();
     static final HostDefinition INSTANCE = new HostDefinition();
     private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE));
-    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(LocationDefinition.INSTANCE, AccessLogDefinition.INSTANCE));
+    private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
+            LocationDefinition.INSTANCE,
+            AccessLogDefinition.INSTANCE,
+            FilterRefDefinition.INSTANCE
+
+    ));
 
     private HostDefinition() {
         super(UndertowExtension.HOST_PATH, UndertowExtension.getResolver(Constants.HOST),

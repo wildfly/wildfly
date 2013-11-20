@@ -21,19 +21,22 @@
  */
 package org.jboss.as.weld;
 
-import static org.jboss.weld.util.reflection.Reflections.cast;
-
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.CDIProvider;
 
-import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.WeldDeployment;
+import org.jboss.as.weld.util.Reflections;
 import org.jboss.weld.Container;
+import org.jboss.weld.ContainerState;
 import org.jboss.weld.Weld;
+import org.jboss.weld.bean.builtin.BeanManagerProxy;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.logging.BeanManagerLogger;
 import org.jboss.weld.manager.BeanManagerImpl;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Service provider for {@link CDI}.
@@ -43,80 +46,62 @@ import org.jboss.weld.manager.BeanManagerImpl;
  */
 public class WeldProvider implements CDIProvider {
 
-    private final Weld weld = new EnhancedWeld();
+    private static final ConcurrentMap<Container, CdiImpl> containers = new ConcurrentHashMap<>();
+
+    static void containerInitialized(Container container, BeanManagerImpl rootBeanManager, WeldDeployment deployment) {
+        containers.put(container, new WeldProvider.CdiImpl(container, new BeanManagerProxy(rootBeanManager), deployment));
+    }
+
+    static void containerShutDown(Container container) {
+        containers.remove(container);
+    }
 
     @Override
     public CDI<Object> getCDI() {
-        return weld;
+        final Container container = Container.instance();
+        checkContainerState(container);
+        return containers.get(container);
     }
 
-    private static class EnhancedWeld extends Weld {
+    private static void checkContainerState(Container container) {
+        ContainerState state = container.getState();
+        if (state.equals(ContainerState.STOPPED) || state.equals(ContainerState.SHUTDOWN)) {
+            throw BeanManagerLogger.LOG.beanManagerNotAvailable();
+        }
+    }
 
-        /**
-         * <p>
-         * If the called of a {@link CDI} method is placed outside of BDA we have two options:
-         * </p>
-         *
-         * <ol>
-         * <li>The class is placed in an archive with no beans.xml but with a CDI extension. In that case there exists an
-         * additional BDA but {@link Weld#getBeanManager()} may not find it since the
-         * {@link BeanDeploymentArchive#getBeanClasses()} of this logical BDA only contains extension classes or classes added
-         * by an extension. Therefore, we are going to iterate over the additional BDAs and try to match them with the
-         * classloader of the caller class.</li>
-         *
-         * <li>The class comes from an archive that is not a BDA nor bundles an extension. In that case we return the root BDA
-         * which may be the BDA for WEB-INF/classes in war deployments or the root BDA of an ear.</li>
-         * </ol>
-         *
-         */
+    private static class CdiImpl extends Weld {
+
+        private final Container container;
+        private final BeanManagerProxy rootBeanManager;
+        private final WeldDeployment deployment;
+
+        public CdiImpl(Container container, BeanManagerProxy rootBeanManager, WeldDeployment deployment) {
+            this.container = container;
+            this.rootBeanManager = rootBeanManager;
+            this.deployment = deployment;
+        }
+
         @Override
-        protected BeanManagerImpl unsatisfiedBeanManager(String callerClassName) {
-            BeanDeploymentArchiveImpl rootBda = findRootBda();
-            if (rootBda == null) {
-                return super.unsatisfiedBeanManager(callerClassName);
-            }
+        public BeanManagerProxy getBeanManager() {
+            checkContainerState(container);
+            final String callerName = getCallingClassName();
 
-            Class<?> callingClass = null;
-            try {
-                callingClass = rootBda.getModule().getClassLoader().loadClass(callerClassName);
-            } catch (ClassNotFoundException e) {
-                // fallback to the root bda manager
-                return Container.instance().beanDeploymentArchives().get(rootBda);
-            }
-
-            BeanManagerImpl additionalBdaManager = findBeanManagerForAdditionalBdaWithMatchingClassloader(callingClass.getClassLoader());
-            if (additionalBdaManager != null) {
-                return additionalBdaManager;
-            }
-
-            // fallback to the root bda manager
-            return Container.instance().beanDeploymentArchives().get(rootBda);
-        }
-
-        private BeanDeploymentArchiveImpl findRootBda() {
-            for (Map.Entry<BeanDeploymentArchive, BeanManagerImpl> entry : Container.instance().beanDeploymentArchives().entrySet()) {
-                if (entry.getKey() instanceof BeanDeploymentArchiveImpl) {
-                    BeanDeploymentArchiveImpl bda = cast(entry.getKey());
-                    if (bda.isRoot()) {
-                        return bda;
-                    }
+            final ClassLoader tccl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            final Class<?> callerClass = Reflections.loadClass(callerName, tccl);
+            if (callerClass != null) {
+                final BeanDeploymentArchive bda = deployment.getBeanDeploymentArchive(callerClass);
+                if (bda != null) {
+                    return new BeanManagerProxy(container.beanDeploymentArchives().get(bda));
                 }
             }
-            return null;
+            // fallback for cases when we are unable to load the class or no BeanManager exists yet for the given BDA
+            return rootBeanManager;
         }
 
-        private BeanManagerImpl findBeanManagerForAdditionalBdaWithMatchingClassloader(ClassLoader classLoader) {
-            for (Map.Entry<BeanDeploymentArchive, BeanManagerImpl> entry : Container.instance().beanDeploymentArchives().entrySet()) {
-                if (entry.getKey() instanceof BeanDeploymentArchiveImpl) {
-                    BeanDeploymentArchiveImpl bda = cast(entry.getKey());
-                    if (bda.getId().endsWith(WeldDeployment.ADDITIONAL_CLASSES_BDA_SUFFIX)) {
-                        if (bda.getModule() != null && bda.getModule().getClassLoader() != null && bda.getModule().getClassLoader().equals(classLoader)) {
-                            return entry.getValue();
-                        }
-                    }
-                }
-            }
-            return null;
+        @Override
+        public String toString() {
+            return "Weld instance for deployment " + BeanManagerProxy.unwrap(rootBeanManager).getContextId();
         }
     }
 }

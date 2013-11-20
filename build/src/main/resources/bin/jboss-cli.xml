@@ -5,12 +5,24 @@
 -->
 <jboss-cli xmlns="urn:jboss:cli:2.0">
 
+    <default-protocol use-legacy-override="true">http-remoting</default-protocol>
+
     <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
     <default-controller>
         <protocol>http-remoting</protocol>
         <host>localhost</host>
         <port>9990</port>
     </default-controller>
+    
+    <!-- Example controller alias named 'Test'  
+    <controllers>
+        <controller name="Test">
+            <protocol>http-remoting</protocol>
+            <host>localhost</host>
+            <port>9990</port>
+        </controller>
+    </controllers>
+    -->    
 
     <validate-operation-requests>true</validate-operation-requests>
 
@@ -28,4 +40,7 @@
 
     <!-- Whether to write info and error messages to the terminal output -->
     <silent>false</silent>
+
+    <!-- Whether to filter out commands and attributes based on user's permissions -->
+    <access-control>false</access-control>
 </jboss-cli>

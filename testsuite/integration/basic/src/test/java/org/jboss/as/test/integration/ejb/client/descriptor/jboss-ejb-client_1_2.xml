@@ -26,8 +26,8 @@
             <remoting-ejb-receiver outbound-connection-ref="ejb-client-descriptor-test-remote-outbound-connection"
                     connect-timeout="7000">
                 <channel-creation-options>
-                    <property name="org.jboss.remoting3.MAX_OUTBOUND_MESSAGES" value="1234"/>
-                    <property name="org.jboss.remoting3.MAX_INBOUND_MESSAGES" value="343"/>
+                    <property name="org.jboss.remoting3.RemotingOptions.MAX_OUTBOUND_MESSAGES" value="1234"/>
+                    <property name="org.jboss.remoting3.RemotingOptions.MAX_INBOUND_MESSAGES" value="343"/>
                 </channel-creation-options>
             </remoting-ejb-receiver>
         </ejb-receivers>

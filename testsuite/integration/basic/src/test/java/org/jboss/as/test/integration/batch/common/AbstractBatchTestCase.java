@@ -60,7 +60,7 @@ public abstract class AbstractBatchTestCase {
                 .addPackage(AbstractBatchTestCase.class.getPackage())
                 .addClasses(TimeoutUtil.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
-                .addAsManifestResource(pkg, jobXml, "batch-jobs/" + jobXml)
+                .addAsWebInfResource(pkg, jobXml, "classes/META-INF/batch-jobs/" + jobXml)
                         // Needed for the DebugLoggingSetup
                 .setManifest(new Asset() {
                     public InputStream openStream() {

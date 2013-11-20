@@ -47,6 +47,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
+import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentModelUtils;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -213,7 +214,10 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
 
             // Create the service
-            ServiceBuilder builder = serviceTarget.addService(deployerServiceName, raDeploymentService)
+            ServiceBuilder builder =
+                    Services.addServerExecutorDependency(
+                        serviceTarget.addService(deployerServiceName, raDeploymentService),
+                        raDeploymentService.getExecutorServiceInjector(), false)
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, raDeploymentService.getMdrInjector())
                     .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class, raDeploymentService.getRaRepositoryInjector())
                     .addDependency(ConnectorServices.MANAGEMENT_REPOSITORY_SERVICE, ManagementRepository.class, raDeploymentService.getManagementRepositoryInjector())

@@ -35,7 +35,7 @@
     <artifactId>wildfly-mod_cluster-undertow</artifactId>
     <packaging>jar</packaging>
 
-    <name>WildFly: mod_cluster Undertow integration</name>
+    <name>WildFly: mod_cluster Undertow Integration</name>
 
     <dependencies>
         <dependency>

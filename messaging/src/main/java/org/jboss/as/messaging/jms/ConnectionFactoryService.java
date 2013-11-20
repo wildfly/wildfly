@@ -34,6 +34,7 @@ import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * {@code Service} responsible for creating and destroying a {@code javax.jms.ConnectionFactory}.
@@ -57,10 +58,8 @@ class ConnectionFactoryService implements Service<Void> {
 
     /** {@inheritDoc} */
     public synchronized void start(final StartContext context) throws StartException {
-        context.asynchronous();
         final JMSServerManager jmsManager = jmsServer.getValue();
-
-        executorInjector.getValue().execute(new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -70,16 +69,20 @@ class ConnectionFactoryService implements Service<Void> {
                     context.failed(MESSAGES.failedToCreate(e, "connection-factory"));
                 }
             }
-        });
+        };
+        try {
+            executorInjector.getValue().execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     /** {@inheritDoc} */
     public synchronized void stop(final StopContext context) {
-        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
-        context.asynchronous();
         final JMSServerManager jmsManager = jmsServer.getValue();
-
-        executorInjector.getValue().execute(new Runnable() {
+        final Runnable task = new Runnable() {
             @Override
             public void run() {
                 try {
@@ -89,7 +92,15 @@ class ConnectionFactoryService implements Service<Void> {
                 }
                 context.complete();
             }
-        });
+        };
+        // JMS Server Manager uses locking which waits on service completion, use async to prevent starvation
+        try {
+            executorInjector.getValue().execute(task);
+        } catch (RejectedExecutionException e) {
+            task.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     /** {@inheritDoc} */

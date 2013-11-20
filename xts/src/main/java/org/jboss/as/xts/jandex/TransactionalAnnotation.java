@@ -19,38 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.xts.jandex;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
-import org.jboss.jandex.AnnotationInstance;
 
 /**
- * @author paul.robinson@redhat.com, 2012-02-06
+ * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
+ * @author <a href="mailto:paul.robinson@redhat.com">Paul Robinson</a>
  */
 public class TransactionalAnnotation {
 
-    public static final String TRANSACTIONAL_ANNOTATION = "org.jboss.narayana.txframework.api.annotation.transaction.Transactional";
+    public static final String[] TRANSACTIONAL_ANNOTATIONS = {
+            "javax.ejb.TransactionAttribute",
+            "javax.transaction.Transactional",
+    };
 
-    private BridgeType bridgeType;
-
-    private TransactionalAnnotation(BridgeType bridgeType) {
-        this.bridgeType = bridgeType;
-    }
-
-    public BridgeType getBridgeType() {
-        return bridgeType;
+    private TransactionalAnnotation() {
     }
 
     public static TransactionalAnnotation build(DeploymentUnit unit, String endpoint) throws XTSException {
-
-        final AnnotationInstance annotationInstance = JandexHelper.getAnnotation(unit, endpoint, TRANSACTIONAL_ANNOTATION);
-        if (annotationInstance == null) {
-            return null;
+        for (final String annotation : TRANSACTIONAL_ANNOTATIONS) {
+            if (JandexHelper.getAnnotation(unit, endpoint, annotation) != null) {
+                return new TransactionalAnnotation();
+            }
         }
 
-        BridgeType bridgeType = BridgeType.build(annotationInstance);
-        return new TransactionalAnnotation(bridgeType);
+        return null;
     }
 }

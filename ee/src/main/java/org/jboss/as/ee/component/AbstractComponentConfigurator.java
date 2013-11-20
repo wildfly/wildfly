@@ -13,6 +13,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndexUtil;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
@@ -86,7 +87,7 @@ public class AbstractComponentConfigurator {
             final InjectedValue<ManagedReferenceFactory> managedReferenceFactoryValue = new InjectedValue<ManagedReferenceFactory>();
             configuration.getStartDependencies().add(new ComponentDescription.InjectedConfigurator(injectionConfiguration, configuration, context, managedReferenceFactoryValue));
             injectors.addFirst(injectionConfiguration.getTarget().createInjectionInterceptorFactory(instanceKey, valueContextKey, managedReferenceFactoryValue, context.getDeploymentUnit(), injectionConfiguration.isOptional()));
-            uninjectors.addLast(new ManagedReferenceReleaseInterceptorFactory(valueContextKey));
+            uninjectors.addLast(new ImmediateInterceptorFactory(new ManagedReferenceReleaseInterceptor(valueContextKey)));
         }
     }
 

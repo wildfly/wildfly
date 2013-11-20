@@ -490,7 +490,7 @@
         </module-def>
 
         <module-def name="javax.el.api">
-            <maven-resource group="org.jboss.spec.javax.el" artifact="jboss-el-api_2.2_spec"/>
+            <maven-resource group="org.jboss.spec.javax.el" artifact="jboss-el-api_3.0_spec"/>
         </module-def>
 
         <module-def name="javax.enterprise.api">
@@ -528,7 +528,7 @@
         </module-def>
 
         <module-def name="javax.mail.api">
-            <maven-resource group="javax.mail" artifact="mail"/>
+            <maven-resource group="com.sun.mail" artifact="javax.mail"/>
         </module-def>
 
         <module-def name="javax.persistence.api">
@@ -548,7 +548,7 @@
         </module-def>
 
         <module-def name="javax.security.jacc.api">
-            <maven-resource group="org.jboss.spec.javax.security.jacc" artifact="jboss-jacc-api_1.4_spec"/>
+            <maven-resource group="org.jboss.spec.javax.security.jacc" artifact="jboss-jacc-api_1.5_spec"/>
         </module-def>
 
         <module-def name="javax.servlet.api">
@@ -556,7 +556,7 @@
         </module-def>
 
         <module-def name="javax.servlet.jsp.api">
-            <maven-resource group="org.jboss.spec.javax.servlet.jsp" artifact="jboss-jsp-api_2.2_spec"/>
+            <maven-resource group="org.jboss.spec.javax.servlet.jsp" artifact="jboss-jsp-api_2.3_spec"/>
         </module-def>
 
         <module-def name="javax.servlet.jstl.api">
@@ -619,9 +619,9 @@
             <maven-resource group="commons-collections" artifact="commons-collections" />
         </module-def>
 
-      <module-def name="org.apache.commons.configuration">
-          <maven-resource group="commons-configuration" artifact="commons-configuration" />
-      </module-def>
+        <module-def name="org.apache.commons.configuration">
+            <maven-resource group="commons-configuration" artifact="commons-configuration" />
+        </module-def>
 
         <module-def name="org.apache.commons.io">
             <maven-resource group="commons-io" artifact="commons-io"/>
@@ -916,10 +916,7 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-singleton"/>
         </module-def>
 
-        <module-def name="org.jboss.as.clustering.web.infinispan">
-            <!-- Dummy module that just depends on org.wildfly.clustering.web.infinispan -->
-            <!-- For configuration backwards compatability reasons -->
-        </module-def>
+        <module-def name="org.jboss.as.clustering.web.infinispan"/>
 
         <module-def name="org.wildfly.clustering.web.infinispan">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-infinispan"/>
@@ -966,9 +963,6 @@
         <module-def name="org.wildfly.extension.io">
             <maven-resource group="org.wildfly" artifact="wildfly-io"/>
         </module-def>
-
-        <!-- Dummy module for backwards compatibility -->
-        <module-def name="org.jboss.as.modcluster"/>
 
         <module-def name="org.wildfly.extension.mod_cluster">
             <maven-resource group="org.wildfly" artifact="wildfly-mod_cluster-extension"/>
@@ -1045,6 +1039,8 @@
         <module-def name="org.wildfly.mod_cluster.undertow">
             <maven-resource group="org.wildfly" artifact="wildfly-mod_cluster-undertow"/>
         </module-def>
+
+        <module-def name="org.jboss.as.modcluster"/>
 
         <module-def name="org.jboss.as.pojo">
             <maven-resource group="org.wildfly" artifact="wildfly-pojo"/>
@@ -1186,10 +1182,6 @@
             <maven-resource group="io.netty" artifact="netty"/>
         </module-def>
 
-        <module-def name="org.jboss.osgi.metadata">
-            <maven-resource group="org.jboss.osgi.metadata" artifact="jbosgi-metadata"/>
-        </module-def>
-
         <module-def name="org.jboss.remote-naming">
             <maven-resource group="org.jboss" artifact="jboss-remote-naming"/>
         </module-def>
@@ -1220,6 +1212,10 @@
 
         <module-def name="org.jboss.resteasy.resteasy-jackson2-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-jackson2-provider" jandex="true"/>
+        </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-json-p-provider">
+            <maven-resource group="org.jboss.resteasy" artifact="resteasy-json-p-provider"/>
         </module-def>
 
         <module-def name="org.jboss.resteasy.resteasy-jaxb-provider">
@@ -1391,36 +1387,36 @@
         <module-def name="org.picketlink.common">
             <maven-resource group="org.picketlink" artifact="picketlink-common"/>
         </module-def>
-    	
+
         <module-def name="org.picketlink.config">
             <maven-resource group="org.picketlink" artifact="picketlink-config"/>
         </module-def>
 
-    	<module-def name="org.picketlink.core.api">
+        <module-def name="org.picketlink.core.api">
             <maven-resource group="org.picketlink" artifact="picketlink-api"/>
         </module-def>
 
-    	<module-def name="org.picketlink.core">
+        <module-def name="org.picketlink.core">
             <maven-resource group="org.picketlink" artifact="picketlink-impl"/>
         </module-def>
-    	
-    	<module-def name="org.picketlink.federation.bindings">
+
+        <module-def name="org.picketlink.federation.bindings">
             <maven-resource group="org.picketlink.distribution" artifact="picketlink-jbas7"/>
         </module-def>
 
-    	<module-def name="org.picketlink.federation">
+        <module-def name="org.picketlink.federation">
             <maven-resource group="org.picketlink" artifact="picketlink-federation"/>
         </module-def>
 
-    	<module-def name="org.picketlink.idm.api">
+        <module-def name="org.picketlink.idm.api">
             <maven-resource group="org.picketlink" artifact="picketlink-idm-api"/>
         </module-def>
 
-    	<module-def name="org.picketlink.idm">
+        <module-def name="org.picketlink.idm">
             <maven-resource group="org.picketlink" artifact="picketlink-idm-impl"/>
         </module-def>
 
-    	<module-def name="org.picketbox">
+        <module-def name="org.picketbox">
             <maven-resource group="org.picketbox" artifact="picketbox"/>
             <maven-resource group="org.picketbox" artifact="picketbox-infinispan"/>
             <maven-resource group="org.picketbox" artifact="picketbox-commons"/>
@@ -1476,11 +1472,11 @@
             <maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
         </module-def>
         <module-def name="io.undertow.websocket">
-           <maven-resource group="io.undertow" artifact="undertow-websockets-jsr"/>
-         </module-def>
+            <maven-resource group="io.undertow" artifact="undertow-websockets-jsr"/>
+        </module-def>
         <module-def name="javax.websocket.api">
-              <maven-resource group="org.jboss.spec.javax.websocket" artifact="jboss-websocket-api_1.0_spec"/>
-          </module-def>
+            <maven-resource group="org.jboss.spec.javax.websocket" artifact="jboss-websocket-api_1.0_spec"/>
+        </module-def>
 
         <module-def name="org.wildfly.extension.batch">
             <maven-resource group="org.wildfly" artifact="wildfly-batch"/>

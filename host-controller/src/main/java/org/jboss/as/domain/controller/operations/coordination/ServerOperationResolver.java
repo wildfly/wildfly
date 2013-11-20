@@ -770,9 +770,12 @@ public class ServerOperationResolver {
         if (address.size() > 1) {
             String type = address.getElement(1).getKey();
             if (PATH.equals(type) || INTERFACE.equals(type)) {
-                serverOp = operation.clone();
-                PathAddress serverAddress = address.subAddress(1);
-                serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
+                final String serverName = address.getElement(0).getValue();
+                if (serverProxies.containsKey(serverName)) {
+                    PathAddress serverAddress = address.subAddress(1);
+                    serverOp = operation.clone();
+                    serverOp.get(OP_ADDR).set(serverAddress.toModelNode());
+                }
             } else if(JVM.equals(type)) {
                 final String serverName = address.getElement(0).getValue();
                 // If the server is running require a restart
@@ -784,8 +787,10 @@ public class ServerOperationResolver {
             } else if (SYSTEM_PROPERTY.equals(type) && isServerAffectingSystemPropertyOperation(operation)) {
                 String propName = address.getLastElement().getValue();
                 String serverName = address.getElement(0).getValue();
-                ServerIdentity serverId = getServerIdentity(serverName, host);
-                serverOp = getServerSystemPropertyOperation(operation, propName, serverId, Level.SERVER, domain, host);
+                if (serverProxies.containsKey(serverName)) {
+                    ServerIdentity serverId = getServerIdentity(serverName, host);
+                    serverOp = getServerSystemPropertyOperation(operation, propName, serverId, Level.SERVER, domain, host);
+                }
             }
 
         } else if (address.size() == 1) {

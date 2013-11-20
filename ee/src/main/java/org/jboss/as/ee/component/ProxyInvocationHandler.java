@@ -38,19 +38,19 @@ import org.jboss.invocation.InterceptorContext;
 public final class ProxyInvocationHandler implements InvocationHandler {
 
     private final Map<Method, Interceptor> interceptors;
-    private final Component component;
     private final ComponentView componentView;
+    private final ComponentClientInstance instance;
 
     /**
      * Construct a new instance.
      *
      * @param interceptors the interceptors map to use
-     * @param component The component
+     * @param instance The view instane data
      * @param componentView The component view
      */
-    public ProxyInvocationHandler(final Map<Method, Interceptor> interceptors, Component component, ComponentView componentView) {
+    public ProxyInvocationHandler(final Map<Method, Interceptor> interceptors, ComponentClientInstance instance, ComponentView componentView) {
         this.interceptors = interceptors;
-        this.component = component;
+        this.instance = instance;
         this.componentView = componentView;
     }
 
@@ -63,12 +63,13 @@ public final class ProxyInvocationHandler implements InvocationHandler {
         final InterceptorContext context = new InterceptorContext();
         // special location for original proxy
         context.putPrivateData(Object.class, proxy);
-        context.putPrivateData(Component.class, component);
+        context.putPrivateData(Component.class, componentView.getComponent());
         context.putPrivateData(ComponentView.class, componentView);
+        instance.prepareInterceptorContext(context);
         context.setParameters(args);
         context.setMethod(method);
         // setup the public context data
-        context.setContextData(new HashMap());
+        context.setContextData(new HashMap<String, Object>());
         return interceptor.processInvocation(context);
     }
 }

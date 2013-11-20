@@ -33,6 +33,8 @@ import org.jboss.as.cli.operation.OperationRequestAddress.Node;
  */
 public class DefaultPrefixFormatter implements NodePathFormatter {
 
+    public static final NodePathFormatter INSTANCE = new DefaultPrefixFormatter();
+
     /* (non-Javadoc)
      * @see org.jboss.as.cli.PrefixFormatter#format(org.jboss.as.cli.Prefix)
      */

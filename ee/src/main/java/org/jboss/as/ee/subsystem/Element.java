@@ -40,6 +40,8 @@ enum Element {
 
     JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT(EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getXmlName()),
 
+    EJB_ANNOTATION_PROPERTY_REPLACEMENT(EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT.getXmlName()),
+
     CONCURRENT("concurrent"),
     CONTEXT_SERVICES("context-services"),
     CONTEXT_SERVICE("context-service"),

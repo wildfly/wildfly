@@ -113,6 +113,9 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.audit.AuditManager;
+import org.jboss.security.auth.login.JASPIAuthenticationInfo;
+import org.jboss.security.config.ApplicationPolicy;
+import org.jboss.security.config.SecurityConfiguration;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPConfig;
@@ -123,6 +126,8 @@ import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
+import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
+import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
 import javax.servlet.Servlet;
@@ -212,9 +217,15 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         try {
             Thread.currentThread().setContextClassLoader(module.getClassLoader());
             DeploymentInfo deploymentInfo = createServletConfig();
+
             handleDistributable(deploymentInfo);
             handleIdentityManager(deploymentInfo);
+            handleJASPIMechanism(deploymentInfo);
 
+            //TODO: make this configurable
+            //in most cases flush just hurts performance for no good reason
+            //TODO: we should also make this smarter, so a read results in a flush
+            deploymentInfo.setIgnoreFlush(false);
 
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             ServletSessionConfig config = null;
@@ -316,6 +327,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     @Override
     public synchronized void stop(final StopContext stopContext) {
+        IoUtils.safeClose(this.deploymentInfo.getResourceManager());
         this.deploymentInfo.setConfidentialPortManager(null);
         this.deploymentInfo = null;
     }
@@ -325,6 +337,20 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         return deploymentInfo;
     }
 
+    /**
+     * <p>Adds to the deployment the {@link JASPIAuthenticationMechanism}, if necessary. The handler will be added if the security domain
+     * is configured with JASPI authentication.</p>
+     *
+     * @param deploymentInfo
+     */
+    private void handleJASPIMechanism(final DeploymentInfo deploymentInfo) {
+        ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
+
+        if (JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
+            deploymentInfo.addAuthenticationMechanism(new JASPIAuthenticationMechanism(this.securityDomain));
+            deploymentInfo.setIgnoreStandardAuthenticationMechanism(true);
+        }
+    }
 
     private void handleIdentityManager(final DeploymentInfo deploymentInfo) {
 
@@ -427,7 +453,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             d.setDefaultServletConfig(new DefaultServletConfig(true, Collections.<String>emptySet()));
 
             //default JSP servlet
-            final ServletInfo jspServlet = jspConfig != null ? jspConfig.getJSPServletInfo() : null;
+            final ServletInfo jspServlet = jspConfig != null ? jspConfig.createJSPServletInfo() : null;
             if (jspServlet != null) { //this would be null if jsp support is disabled
                 HashMap<String, JspPropertyGroup> propertyGroups = createJspConfig(mergedMetaData);
                 JspServletBuilder.setupDeployment(d, propertyGroups, tldInfo, new UndertowJSPInstanceManager(new WebInjectionContainer(module.getClassLoader(), componentRegistryInjectedValue.getValue())));
@@ -755,12 +781,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private static String authMethod(String configuredMethod) {
         // TODO - Feels like a candidate for an enum but will hold off until configuration of custom methods and chaining is
         // defined.
-        if (configuredMethod.equals("CLIENT-CERT")) {
+        if (configuredMethod == null) {
+            return HttpServletRequest.BASIC_AUTH;
+        } else if ("CLIENT-CERT".equals(configuredMethod)) {
             return HttpServletRequest.CLIENT_CERT_AUTH;
+        } else {
+            return configuredMethod;
         }
-        return configuredMethod;
     }
-
 
     private static io.undertow.servlet.api.TransportGuaranteeType transportGuaranteeType(final TransportGuaranteeType type) {
         if (type == null) {

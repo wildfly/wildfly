@@ -28,31 +28,28 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
+import org.xnio.OptionMap;
 
 /**
  * Add handler for HTTPS listeners.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class HttpsListenerAdd extends AbstractListenerAdd {
+public class HttpsListenerAdd extends ListenerAdd {
 
     HttpsListenerAdd(HttpsListenerResourceDefinition def) {
         super(def);
     }
 
     @Override
-    protected ServiceName constructServiceName(String name) {
-        return UndertowService.LISTENER.append(name);
+    ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException {
+        OptionMap.Builder builder = OptionMap.builder().addAll(listenerOptions);
+        HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model,builder);
+        return new HttpsListenerService(name, serverName, builder.getMap());
     }
 
     @Override
-    AbstractListenerService<? extends AbstractListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, long maxUploadSize) throws OperationFailedException {
-        return new HttpsListenerService(name, serverName, maxUploadSize);
-    }
-
-    @Override
-    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
         serviceBuilder.addDependency(HttpListenerAdd.REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
         final String securityRealm = HttpsListenerResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model).asString();
 

@@ -247,6 +247,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     static void registerTransformers(SubsystemRegistration subsystemRegistration) {
         registerTransformers_1_1_0(subsystemRegistration);
         registerTransformers_1_2_0(subsystemRegistration);
+        registerTransformers_1_2_1(subsystemRegistration);
     }
 
     private static void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
@@ -289,8 +290,14 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     }
 
     private static void registerTransformers_1_2_0(SubsystemRegistration subsystemRegistration) {
+        registerTransformers1_2(subsystemRegistration, ModelVersion.create(1, 2, 0));
+    }
 
-        final ModelVersion subsystem120 = ModelVersion.create(1, 2);
+    private static void registerTransformers_1_2_1(SubsystemRegistration subsystemRegistration) {
+        registerTransformers1_2(subsystemRegistration, ModelVersion.create(1, 2, 1));
+    }
+
+    private static void registerTransformers1_2(SubsystemRegistration subsystemRegistration, ModelVersion subsystem12) {
         final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
         builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
@@ -301,9 +308,9 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         builder.getAttributeBuilder().setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EJB3SubsystemRootResourceDefinition.DISABLE_DEFAULT_EJB_PERMISSIONS);
 
         TimerServiceResourceDefinition.registerTransformers_1_2_0(builder);
-        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem120);
-    }
+        TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem12);
 
+    }
 
 
 

@@ -47,7 +47,6 @@ public class UndertowService implements Service<UndertowService> {
     /**
      * The base name for listener/handler/filter services.
      */
-    public static final ServiceName LISTENER = UNDERTOW.append(Constants.LISTENER);
     public static final ServiceName HANDLER = UNDERTOW.append(Constants.HANDLER);
     public static final ServiceName FILTER = UNDERTOW.append(Constants.FILTER);
     /**
@@ -68,12 +67,12 @@ public class UndertowService implements Service<UndertowService> {
         this.instanceId = instanceId;
     }
 
-    public static ServiceName deploymentServiceName(final String virtualHost, final String contextPath) {
-        return WEB_DEPLOYMENT_BASE.append(virtualHost).append("".equals(contextPath) ? "/" : contextPath);
+    public static ServiceName deploymentServiceName(final String serverName, final String virtualHost, final String contextPath) {
+        return WEB_DEPLOYMENT_BASE.append(serverName).append(virtualHost).append("".equals(contextPath) ? "/" : contextPath);
     }
 
     public static ServiceName virtualHostName(final String server, final String virtualHost) {
-        return SERVER.append(server).append(Constants.HOST).append(virtualHost);
+        return SERVER.append(server).append(virtualHost);
     }
 
     public static ServiceName locationServiceName(final String server, final String virtualHost, final String locationName) {
@@ -85,6 +84,10 @@ public class UndertowService implements Service<UndertowService> {
 
     public static ServiceName consoleRedirectServiceName(final String server, final String virtualHost) {
         return virtualHostName(server, virtualHost).append("console", "redirect");
+    }
+
+    public static ServiceName listenerName(String listenerName){
+        return UNDERTOW.append(Constants.LISTENER).append(listenerName);
     }
 
     @Override

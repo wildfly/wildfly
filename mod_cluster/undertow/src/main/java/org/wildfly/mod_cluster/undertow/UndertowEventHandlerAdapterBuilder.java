@@ -29,7 +29,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.mod_cluster.ContainerEventHandlerAdapterBuilder;
 import org.wildfly.extension.mod_cluster.ContainerEventHandlerService;
-import org.wildfly.extension.undertow.AbstractListenerService;
+import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.UndertowService;
 
 public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandlerAdapterBuilder {
@@ -40,11 +40,12 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
         InjectedValue<ContainerEventHandler> eventHandler = new InjectedValue<>();
         InjectedValue<UndertowService> undertowService = new InjectedValue<>();
         @SuppressWarnings("rawtypes")
-        InjectedValue<AbstractListenerService> listener = new InjectedValue<>();
+        InjectedValue<ListenerService> listener = new InjectedValue<>();
         return target.addService(SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener))
                 .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, eventHandler)
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowService)
-                .addDependency(UndertowService.LISTENER.append(connector), AbstractListenerService.class, listener)
+                //todo this is wrong, it should be replaced with injecting server instead of directly listener
+                .addDependency(UndertowService.listenerName(connector), ListenerService.class, listener)
         ;
     }
 }

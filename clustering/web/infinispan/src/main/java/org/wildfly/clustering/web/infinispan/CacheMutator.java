@@ -21,7 +21,18 @@
  */
 package org.wildfly.clustering.web.infinispan;
 
+import java.io.File;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.math.MathContext;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.net.URL;
+import java.nio.file.Path;
+import java.security.Permission;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.EnumSet;
 import java.util.List;
@@ -42,15 +53,38 @@ import org.wildfly.clustering.annotation.Immutable;
  */
 public class CacheMutator<K, V> implements Mutator {
 
+    private static List<Object> IMMUTABLE_VALUES = Arrays.asList(
+            null,
+            Collections.EMPTY_LIST,
+            Collections.EMPTY_MAP,
+            Collections.EMPTY_SET
+    );
+
     private static List<Class<?>> IMMUTABLE_TYPES = Arrays.<Class<?>>asList(
+            BigDecimal.class,
+            BigInteger.class,
             Boolean.class,
+            Byte.class,
             Character.class,
             Currency.class,
-            Enum.class,
+            Double.class,
+            Enum.class, // Strictly speaking, one could implement a mutable enum, but that would just be weird.
+            File.class,
+            Float.class,
+            InetAddress.class,
+            InetSocketAddress.class,
+            Integer.class,
             Locale.class,
-            Number.class,
+            Long.class,
+            MathContext.class,
+            Path.class,
+            Permission.class,
+            Short.class,
+            StackTraceElement.class,
             String.class,
-            TimeZone.class, // Strictly speaking, this class is mutable, although in practice it can be treated as immutable.
+            TimeZone.class, // Strictly speaking, this class is mutable, although in practice it is never mutated.
+            URI.class,
+            URL.class,
             UUID.class
     );
 
@@ -78,7 +112,9 @@ public class CacheMutator<K, V> implements Mutator {
     }
 
     public static boolean isMutable(Object object) {
-        if (object == null) return false;
+        for (Object value: IMMUTABLE_VALUES) {
+            if (object == value) return false;
+        }
         for (Class<?> immutableClass: IMMUTABLE_TYPES) {
             if (immutableClass.isInstance(object)) return false;
         }

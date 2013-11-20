@@ -22,15 +22,21 @@
 
 package org.wildfly.extension.undertow;
 
+import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
+
 import java.util.Collection;
 import java.util.LinkedList;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.io.OptionAttributeDefinition;
+import org.xnio.SslClientAuthMode;
 
 /**
  * An extension to the {@see HttpListenerResourceDefinition} to allow a security-realm to be associated to obtain a pre-defined
@@ -38,13 +44,20 @@ import org.jboss.dmr.ModelType;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class HttpsListenerResourceDefinition extends AbstractListenerResourceDefinition {
+public class HttpsListenerResourceDefinition extends ListenerResourceDefinition {
     protected static final HttpsListenerResourceDefinition INSTANCE = new HttpsListenerResourceDefinition();
 
     protected static final SimpleAttributeDefinition SECURITY_REALM = new SimpleAttributeDefinitionBuilder(Constants.SECURITY_REALM, ModelType.STRING)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
+            .build();
+    protected static final OptionAttributeDefinition VERIFY_CLIENT = OptionAttributeDefinition.builder("verify-client", SSL_CLIENT_AUTH_MODE)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .setValidator(new EnumValidator<SslClientAuthMode>(SslClientAuthMode.class, true, true))
+            .setDefaultValue(new ModelNode(SslClientAuthMode.NOT_REQUESTED.name()))
             .build();
 
 
@@ -56,11 +69,12 @@ public class HttpsListenerResourceDefinition extends AbstractListenerResourceDef
     public Collection<AttributeDefinition> getAttributes() {
         Collection<AttributeDefinition> res = new LinkedList<>(super.getAttributes());
         res.add(SECURITY_REALM);
+        res.add(VERIFY_CLIENT);
         return res;
     }
 
     @Override
-    protected AbstractListenerAdd getAddHandler() {
+    protected ListenerAdd getAddHandler() {
         return new HttpsListenerAdd(this);
     }
 }

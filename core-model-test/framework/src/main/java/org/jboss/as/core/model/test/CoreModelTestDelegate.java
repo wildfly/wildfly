@@ -131,6 +131,8 @@ public class CoreModelTestDelegate {
 
     private final Class<?> testClass;
     private final List<KernelServices> kernelServices = new ArrayList<KernelServices>();
+    //Gets set by TransformersTestParameterized for transformers tests. Non transformers tests do not set this
+    private volatile ClassloaderParameter currentTransformerClassloaderParameter;
 
     public CoreModelTestDelegate(Class<?> testClass) {
         this.testClass = testClass;
@@ -139,6 +141,19 @@ public class CoreModelTestDelegate {
     void initializeParser() throws Exception {
         //Initialize the parser
 
+    }
+
+    void setCurrentTransformerClassloaderParameter(ClassloaderParameter parameter) {
+        ClassloaderParameter current = currentTransformerClassloaderParameter;
+        if (current != null) {
+            if (current != parameter) {
+                //Clear the cached classloader
+                current.setClassLoader(null);
+                currentTransformerClassloaderParameter = parameter;
+            }
+        } else {
+            currentTransformerClassloaderParameter = parameter;
+        }
     }
 
     void cleanup() throws Exception {
@@ -558,7 +573,6 @@ public class CoreModelTestDelegate {
             return legacyKernelServicesInitializerImpl;
         }
 
-
         @Override
         public KernelServicesBuilder setDontValidateOperations() {
             validateOperations = true;
@@ -567,7 +581,7 @@ public class CoreModelTestDelegate {
     }
 
     private class LegacyKernelServicesInitializerImpl implements LegacyKernelServicesInitializer {
-        private final ChildFirstClassLoaderBuilder classLoaderBuilder = new ChildFirstClassLoaderBuilder();
+        private final ChildFirstClassLoaderBuilder classLoaderBuilder;
         private final ModelVersion modelVersion;
         private final List<LegacyModelInitializerEntry> modelInitializerEntries = new ArrayList<LegacyModelInitializerEntry>();
         private final ModelTestControllerVersion testControllerVersion;
@@ -578,6 +592,7 @@ public class CoreModelTestDelegate {
         private ModelTestOperationValidatorFilter.Builder operationValidationExcludeFilterBuilder;
 
         LegacyKernelServicesInitializerImpl(ModelVersion modelVersion, ModelTestControllerVersion version) {
+            this.classLoaderBuilder = new ChildFirstClassLoaderBuilder(version.isEap());
             this.modelVersion = modelVersion;
             this.testControllerVersion = version;
         }
@@ -591,19 +606,34 @@ public class CoreModelTestDelegate {
                 bootCurrentVersionWithLegacyBootOperations(bootOperations, modelInitializer, modelWriteSanitizer, contentRepositoryContents, mainServices);
             }
 
-            classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.core.model.bridge.shared.*");
+            final ClassLoader legacyCl;
+            if (currentTransformerClassloaderParameter != null && currentTransformerClassloaderParameter.getClassLoader() != null) {
+                legacyCl = currentTransformerClassloaderParameter.getClassLoader();
+            } else {
+                classLoaderBuilder.addParentFirstClassPattern("org.jboss.as.core.model.bridge.shared.*");
 
-            classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-core-model-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
-            classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                //These two is needed or the child first classloader never gets GC'ed which causes OOMEs for very big tests
+                //Here the Reference$ReaperThread hangs onto the classloader
+                classLoaderBuilder.addParentFirstClassPattern("org.jboss.modules.*");
+                //Here the NDC hangs onto the classloader
+                classLoaderBuilder.addParentFirstClassPattern("org.jboss.logmanager.*");
 
-            if (testControllerVersion != ModelTestControllerVersion.MASTER) {
-                String groupId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "org.jboss.as" : "org.wildfly";
-                String hostControllerArtifactId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "jboss-as-host-controller" : "wildfly-host-controller";
+                classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-core-model-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
-                classLoaderBuilder.addRecursiveMavenResourceURL(groupId + ":" + hostControllerArtifactId + ":" + testControllerVersion.getMavenGavVersion());
-                classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-core-model-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                if (testControllerVersion != ModelTestControllerVersion.MASTER) {
+                    String groupId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "org.jboss.as" : "org.wildfly";
+                    String hostControllerArtifactId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "jboss-as-host-controller" : "wildfly-host-controller";
+
+                    classLoaderBuilder.addRecursiveMavenResourceURL(groupId + ":" + hostControllerArtifactId + ":" + testControllerVersion.getMavenGavVersion());
+                    classLoaderBuilder.addMavenResourceURL("org.wildfly:wildfly-core-model-test-controller-" + testControllerVersion.getTestControllerVersion() + ":" + ModelTestControllerVersion.CurrentVersion.VERSION);
+                }
+                legacyCl = classLoaderBuilder.build();
+                if (currentTransformerClassloaderParameter != null) {
+                    //Cache the classloader for the other tests
+                    currentTransformerClassloaderParameter.setClassLoader(legacyCl);
+                }
             }
-            ClassLoader legacyCl = classLoaderBuilder.build();
 
 
             ScopedKernelServicesBootstrap scopedBootstrap = new ScopedKernelServicesBootstrap(legacyCl);

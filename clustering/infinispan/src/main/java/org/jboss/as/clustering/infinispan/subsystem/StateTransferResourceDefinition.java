@@ -46,34 +46,30 @@ public class StateTransferResourceDefinition extends SimpleResourceDefinition {
     public static final PathElement STATE_TRANSFER_PATH = PathElement.pathElement(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
 
     // attributes
-    static final SimpleAttributeDefinition CHUNK_SIZE =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.CHUNK_SIZE, ModelType.INT, true)
-                    .setXmlName(Attribute.CHUNK_SIZE.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(10000))
-                    .build();
+    static final SimpleAttributeDefinition CHUNK_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.CHUNK_SIZE, ModelType.INT, true)
+            .setXmlName(Attribute.CHUNK_SIZE.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(10000))
+            .build()
+    ;
+    static final SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinitionBuilder(ModelKeys.ENABLED, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.ENABLED.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(true))
+            .build()
+    ;
+    static final SimpleAttributeDefinition TIMEOUT = new SimpleAttributeDefinitionBuilder(ModelKeys.TIMEOUT, ModelType.LONG, true)
+            .setXmlName(Attribute.TIMEOUT.getLocalName())
+            .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setDefaultValue(new ModelNode().set(60000))
+            .build()
+    ;
 
-    // enabled (used in state transfer, rehashing)
-    static final SimpleAttributeDefinition ENABLED =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.ENABLED, ModelType.BOOLEAN, true)
-                    .setXmlName(Attribute.ENABLED.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(true))
-                    .build();
-
-    // timeout (used in state transfer, rehashing)
-    static final SimpleAttributeDefinition TIMEOUT =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.TIMEOUT, ModelType.LONG, true)
-                    .setXmlName(Attribute.TIMEOUT.getLocalName())
-                    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .setDefaultValue(new ModelNode().set(60000))
-                    .build();
-
-    static final AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = {ENABLED, TIMEOUT, CHUNK_SIZE};
+    static final AttributeDefinition[] STATE_TRANSFER_ATTRIBUTES = { ENABLED, TIMEOUT, CHUNK_SIZE };
 
     public StateTransferResourceDefinition() {
         super(STATE_TRANSFER_PATH,
@@ -84,17 +80,10 @@ public class StateTransferResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
         // check that we don't need a special handler here?
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(STATE_TRANSFER_ATTRIBUTES);
         for (AttributeDefinition attr : STATE_TRANSFER_ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
     }
 }

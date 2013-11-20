@@ -16,6 +16,9 @@
  */
 package org.jboss.as.weld.util;
 
+import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
+import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 
@@ -48,8 +51,12 @@ public class Utils {
     public static String getDeploymentUnitId(DeploymentUnit deploymentUnit) {
         String id = deploymentUnit.getName();
         if (deploymentUnit.getParent() != null) {
-            id = deploymentUnit.getParent().getName() + "." + id;
+            id = deploymentUnit.getParent().getName() + "/" + id;
         }
         return id;
+    }
+
+    public static boolean isComponentWithView(ComponentDescription component) {
+        return (component instanceof EJBComponentDescription) || (component instanceof ManagedBeanComponentDescription);
     }
 }

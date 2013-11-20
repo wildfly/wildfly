@@ -76,7 +76,10 @@ public class JSPConfig {
         }
     }
 
-    public ServletInfo getJSPServletInfo() {
-        return servletInfo;
+    public ServletInfo createJSPServletInfo() {
+        if(servletInfo == null) {
+            return null;
+        }
+        return servletInfo.clone();
     }
 }

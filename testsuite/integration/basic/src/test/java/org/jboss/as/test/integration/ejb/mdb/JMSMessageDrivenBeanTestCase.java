@@ -57,7 +57,7 @@ public class JMSMessageDrivenBeanTestCase {
     @Deployment
     public static Archive<?> deployment() {
         final Archive<?> deployment = ShrinkWrap.create(JavaArchive.class, "ejb3mdb.jar")
-                .addPackage(ReplyingMDB.class.getPackage())
+                .addClasses(ReplyingMDB.class,JMSMessagingUtil.class)
                 .addClass(CreateQueueSetupTask.class);
         return deployment;
     }

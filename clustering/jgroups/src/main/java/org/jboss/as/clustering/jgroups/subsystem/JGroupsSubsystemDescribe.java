@@ -22,19 +22,20 @@
 package org.jboss.as.clustering.jgroups.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 
 /**
@@ -56,8 +57,15 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ModelNode result = new ModelNode();
-        final PathAddress rootAddress = PathAddress.pathAddress(PathAddress.pathAddress(
-                operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement());
+        PathAddress opAddress = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+
+        AuthorizationResult authResult = context.authorize(operation, GenericSubsystemDescribeHandler.DESCRIBE_EFFECTS);
+        if (authResult.getDecision() != AuthorizationResult.Decision.PERMIT) {
+            throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
+                    opAddress, authResult.getExplanation());
+        }
+
+        final PathAddress rootAddress = PathAddress.pathAddress(opAddress.getLastElement());
         final ModelNode subModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         result.add(JGroupsSubsystemAdd.createOperation(rootAddress.toModelNode(), subModel));
@@ -138,10 +146,4 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
         }
         return operation;
     }
-
-    /*
-     * Description provider for the subsystem describe handler
-     */
-    static OperationDefinition DEFINITON = new SimpleOperationDefinitionBuilder(ModelDescriptionConstants.DESCRIBE, null)
-            .setPrivateEntry().setReplyType(ModelType.LIST).setReplyValueType(ModelType.OBJECT).build();
 }

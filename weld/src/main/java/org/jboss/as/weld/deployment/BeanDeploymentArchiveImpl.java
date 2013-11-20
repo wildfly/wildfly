@@ -24,20 +24,20 @@ package org.jboss.as.weld.deployment;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.jboss.as.weld.WeldModuleResourceLoader;
+import org.jboss.modules.DependencySpec;
 import org.jboss.modules.Module;
+import org.jboss.modules.ModuleDependencySpec;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
-import org.jboss.weld.util.reflection.Reflections;
 
 /**
  * Implementation of {@link BeanDeploymentArchive}.
@@ -165,6 +165,13 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return module;
     }
 
+    public ClassLoader getClassLoader() {
+        if (module != null) {
+            return module.getClassLoader();
+        }
+        return null;
+    }
+
     public boolean isRoot() {
         return root;
     }
@@ -181,26 +188,36 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         if (this == target) {
             return true;
         }
-        Iterator<String> beanClasses = target.getBeanClasses().iterator();
-        if (!beanClasses.hasNext()) {
-            // the target archive has no classes - thus it should not matter whether we see the BDA or not
-            return false;
+
+        BeanDeploymentArchiveImpl that = (BeanDeploymentArchiveImpl) target;
+
+        if (that.getModule() == null) {
+            /*
+             * The target BDA is the bootstrap BDA - it bundles classes loaded by the bootstrap classloader.
+             * Everyone can see the bootstrap classloader.
+             */
+            return true;
         }
         if (module == null) {
             /*
              * This BDA is the bootstrap BDA - it bundles classes loaded by the bootstrap classloader. We assume that a
              * bean whose class is loaded by the bootstrap classloader can only see other beans in the "bootstrap BDA".
              */
-            return target instanceof BeanDeploymentArchiveImpl && Reflections.<BeanDeploymentArchiveImpl>cast(target).getModule() == null;
+            return that.getModule() == null;
         }
 
-        String targetClass = beanClasses.next();
-        try {
-            module.getClassLoader().loadClass(targetClass);
+        if (module.equals(that.getModule())) {
             return true;
-        } catch (ClassNotFoundException e) {
-            return false;
         }
+        for (DependencySpec dependency : module.getDependencies()) {
+            if (dependency instanceof ModuleDependencySpec) {
+                ModuleDependencySpec moduleDependency = (ModuleDependencySpec) dependency;
+                if (moduleDependency.getIdentifier().equals(that.getModule().getIdentifier())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public BeanArchiveType getBeanArchiveType() {

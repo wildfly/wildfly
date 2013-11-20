@@ -26,33 +26,29 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
+import org.xnio.OptionMap;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-class AjpListenerAdd extends AbstractListenerAdd {
+class AjpListenerAdd extends ListenerAdd {
 
     AjpListenerAdd(AjpListenerResourceDefinition def) {
         super(def);
     }
 
-    protected ServiceName constructServiceName(final String name) {
-        return UndertowService.LISTENER.append(name);
-    }
-
     @Override
-    AbstractListenerService<? extends AbstractListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, long maxUploadSize) throws OperationFailedException {
+    ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException {
         ModelNode schemeNode = AjpListenerResourceDefinition.SCHEME.resolveModelAttribute(context, model);
         String scheme = null;
         if(schemeNode.isDefined()) {
             scheme = schemeNode.asString();
         }
-        return new AjpListenerService(name, scheme, maxUploadSize);
+        return new AjpListenerService(name, scheme, listenerOptions);
     }
 
     @Override
-    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends AbstractListenerService> serviceBuilder, ModelNode model, AbstractListenerService service) throws OperationFailedException {
+    void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
 
     }
 }

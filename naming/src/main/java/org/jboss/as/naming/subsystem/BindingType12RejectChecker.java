@@ -24,6 +24,8 @@
 
 package org.jboss.as.naming.subsystem;
 
+import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
+
 import java.util.Map;
 
 import org.jboss.as.controller.PathAddress;
@@ -32,19 +34,13 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.naming.NamingMessages;
 import org.jboss.dmr.ModelNode;
 
-import static org.jboss.as.naming.subsystem.NamingSubsystemModel.EXTERNAL_CONTEXT;
-
 /**
  * @author Stuart Douglas
  */
 class BindingType12RejectChecker extends RejectAttributeChecker.DefaultRejectAttributeChecker implements RejectAttributeChecker {
 
     @Override
-    public boolean rejectOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
-        return rejectCheck(attributeValue, operation);
-    }
-
-    private boolean rejectCheck(ModelNode attributeValue, ModelNode model) {
+    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
         final String type = attributeValue.asString();
         if (type.equals(EXTERNAL_CONTEXT)) {
             return true;
@@ -53,18 +49,7 @@ class BindingType12RejectChecker extends RejectAttributeChecker.DefaultRejectAtt
     }
 
     @Override
-    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-        return false;
-    }
-
-    @Override
-    public boolean rejectResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-        ModelNode model = context.readResource(address).getModel();
-        return rejectCheck(attributeValue, model);
-    }
-
-    @Override
     public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-        return NamingMessages.MESSAGES.failedToTransformSimpleURLNameBindingAddOperation("1.2.0");
+        return NamingMessages.MESSAGES.failedToTransformExternalContext("1.2.0");
     }
 }

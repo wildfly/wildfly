@@ -40,7 +40,7 @@ public class BeanParent {
 
     private static final int TIMER_TIMEOUT_TIME_MS = 100;
     // has to be greater than timeout time
-    private static final int TIMER_CALL_WAITING_MS = 2000;
+    private static final int TIMER_CALL_WAITING_MS = 30000;
     private static volatile boolean timerServiceCalled = false;
 
     @Resource

@@ -77,7 +77,7 @@ public class DefaultOperationRequestBuilder implements OperationRequestBuilder {
             }
         }
 
-        if(!request.hasDefined("operation")) {
+        if(!request.hasDefined(Util.OPERATION)) {
             throw new OperationFormatException("The operation name is missing or the format of the operation request is wrong.");
         }
 
@@ -86,7 +86,7 @@ public class DefaultOperationRequestBuilder implements OperationRequestBuilder {
 
     @Override
     public void setOperationName(String name) {
-        request.get("operation").set(name);
+        request.get(Util.OPERATION).set(name);
     }
 
     @Override

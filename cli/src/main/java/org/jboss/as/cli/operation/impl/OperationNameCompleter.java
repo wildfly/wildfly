@@ -48,6 +48,9 @@ public class OperationNameCompleter extends DefaultCompleter {
                     addrNode.add(node.getType(), node.getName());
                 }
                 req.get(Util.OPERATION).set(Util.READ_OPERATION_NAMES);
+                if(ctx.getConfig().isAccessControl()) {
+                    req.get(Util.ACCESS_CONTROL).set(true);
+                }
                 final ModelNode response;
                 try {
                     response = ctx.getModelControllerClient().execute(req);

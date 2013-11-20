@@ -21,12 +21,9 @@
  */
 package org.jboss.as.domain.management.connections.ldap;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_CREDENTIAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SEARCH_DN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 
-import java.util.Properties;
+import java.util.Hashtable;
 
 import javax.naming.Context;
 import javax.naming.directory.InitialDirContext;
@@ -34,7 +31,6 @@ import javax.net.ssl.SSLContext;
 
 import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.connections.ConnectionManager;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -55,18 +51,29 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
 
     private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
-    private volatile ModelNode resolvedConfiguration;
 
-    public LdapConnectionManagerService(final ModelNode resolvedConfiguration) {
-        setResolvedConfiguration(resolvedConfiguration);
+    private volatile Config configuration;
+    private volatile Hashtable<String, String> properties = new Hashtable<String, String>();
+
+    public LdapConnectionManagerService() {
     }
 
-    void setResolvedConfiguration(final ModelNode resolvedConfiguration) {
-        // Validate
-        resolvedConfiguration.require(LdapConnectionResourceDefinition.URL.getName());
-        resolvedConfiguration.require(LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.getName());
-        // Store
-        this.resolvedConfiguration = resolvedConfiguration;
+    Config setConfiguration(final String initialContextFactory, final String url, final String searchDn, final String searchCredential) {
+        Config configuration = new Config();
+        configuration.initialContextFactory = initialContextFactory;
+        configuration.url = url;
+        configuration.searchDn = searchDn;
+        configuration.searchCredential = searchCredential;
+
+        try {
+            return this.configuration;
+        } finally {
+            this.configuration = configuration;
+        }
+    }
+
+    void setConfiguration(final Config configuration) {
+        this.configuration = configuration;
     }
 
     /*
@@ -88,17 +95,37 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     }
 
     /*
+     * Property Manipulation Methods.
+     */
+
+    synchronized void setProperty(final String name, final String value) {
+        Hashtable<String, String> properties = new Hashtable<String, String>(this.properties);
+        properties.put(name, value);
+
+        this.properties = properties;
+    }
+
+    synchronized void removeProperty(final String name) {
+        Hashtable<String, String> properties = new Hashtable<String, String>(this.properties);
+        properties.remove(name);
+
+        this.properties = properties;
+    }
+
+    void setPropertyImmediate(final String name, final String value) {
+        properties.put(name, value);
+    }
+
+    /*
      *  Connection Manager Methods
      */
 
     public Object getConnection() throws Exception {
-        final ModelNode config = resolvedConfiguration;
-        return getConnection(getFullProperties(config), getSSLContext(false));
+        return getConnection(getFullProperties(configuration), getSSLContext(false));
     }
 
     public Object getConnection(String principal, String credential) throws Exception {
-        final ModelNode config = resolvedConfiguration;
-        Properties connectionProperties = getConnectionOnlyProperties(config);
+        Hashtable<String, String> connectionProperties = getConnectionOnlyProperties(configuration);
         connectionProperties.put(Context.SECURITY_PRINCIPAL, principal);
         connectionProperties.put(Context.SECURITY_CREDENTIALS, credential);
 
@@ -106,7 +133,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         return getConnection(connectionProperties, getSSLContext(true));
     }
 
-    private Object getConnection(final Properties properties, final SSLContext sslContext) throws Exception {
+    private Object getConnection(final Hashtable<String, String> properties, final SSLContext sslContext) throws Exception {
         ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             if (sslContext != null) {
@@ -114,6 +141,17 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ThreadLocalSSLSocketFactory.class);
                 properties.put("java.naming.ldap.factory.socket", ThreadLocalSSLSocketFactory.class.getName());
             }
+            if (SECURITY_LOGGER.isTraceEnabled()) {
+                Hashtable<String, String> logProperties;
+                if (properties.containsKey(Context.SECURITY_CREDENTIALS)) {
+                    logProperties = new Hashtable<String, String>(properties);
+                    logProperties.put(Context.SECURITY_CREDENTIALS, "***");
+                } else {
+                    logProperties = properties;
+                }
+                SECURITY_LOGGER.tracef("Connecting to LDAP with properties (%s)", logProperties.toString());
+            }
+
             return new InitialDirContext(properties);
         } finally {
             if (sslContext != null) {
@@ -132,24 +170,22 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         return null;
     }
 
-    private Properties getConnectionOnlyProperties(final ModelNode config) {
-        final Properties result = new Properties();
-        String initialContextFactory = config.require(INITIAL_CONTEXT_FACTORY).asString();
-        result.put(Context.INITIAL_CONTEXT_FACTORY,initialContextFactory);
-        String url = config.require(URL).asString();
-        result.put(Context.PROVIDER_URL,url);
+    private Hashtable<String, String> getConnectionOnlyProperties(final Config configuration) {
+        final Hashtable<String, String> result = new Hashtable<String, String>(properties);
+        result.put(Context.INITIAL_CONTEXT_FACTORY, configuration.initialContextFactory);
+        result.put(Context.PROVIDER_URL, configuration.url);
         return result;
     }
 
-    private Properties getFullProperties(final ModelNode config) {
-        final Properties result = getConnectionOnlyProperties(config);
+    private Hashtable<String, String> getFullProperties(final Config configuration) {
+        final Hashtable<String, String> result = getConnectionOnlyProperties(configuration);
         // These are no longer mandatory as the SSL identity of the server
         // could be used instead.
-        if (config.hasDefined(SEARCH_DN)) {
-            result.put(Context.SECURITY_PRINCIPAL, config.require(SEARCH_DN).asString());
+        if (configuration.searchDn != null) {
+            result.put(Context.SECURITY_PRINCIPAL, configuration.searchDn);
         }
-        if (config.hasDefined(SEARCH_CREDENTIAL)) {
-            result.put(Context.SECURITY_CREDENTIALS, config.require(SEARCH_CREDENTIAL).asString());
+        if (configuration.searchCredential != null) {
+            result.put(Context.SECURITY_CREDENTIALS, configuration.searchCredential);
         }
 
         return result;
@@ -171,6 +207,13 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
 
             return sb;
         }
+    }
+
+    static class Config {
+        private String initialContextFactory;
+        private String url;
+        private String searchDn;
+        private String searchCredential;
     }
 
 }

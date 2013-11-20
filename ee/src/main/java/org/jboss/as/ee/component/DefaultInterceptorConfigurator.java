@@ -83,7 +83,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
         // Primary instance
         final ComponentFactory instanceFactory = configuration.getInstanceFactory();
         if (instanceFactory != null) {
-            instantiator = new ComponentInstantiatorInterceptorFactory(instanceFactory, BasicComponentInstance.INSTANCE_KEY, true);
+            instantiator = new ImmediateInterceptorFactory(new ComponentInstantiatorInterceptor(instanceFactory, BasicComponentInstance.INSTANCE_KEY, true));
         } else {
             final ClassReflectionIndex<?> componentClassIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
             //use the default constructor if no instanceFactory has been set
@@ -91,7 +91,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             if (constructor == null) {
                 throw MESSAGES.defaultConstructorNotFound(configuration.getComponentClass());
             }
-            instantiator = new ComponentInstantiatorInterceptorFactory(new ConstructorComponentFactory(constructor), BasicComponentInstance.INSTANCE_KEY, true);
+            instantiator = new ImmediateInterceptorFactory(new ComponentInstantiatorInterceptor(new ConstructorComponentFactory(constructor), BasicComponentInstance.INSTANCE_KEY, true));
         }
 
         //all interceptors with lifecycle callbacks, in the correct order
@@ -130,8 +130,8 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                 throw MESSAGES.defaultConstructorNotFoundOnComponent(interceptorClassName, configuration.getComponentClass());
             }
 
-            instantiators.addFirst(new ComponentInstantiatorInterceptorFactory(new ConstructorComponentFactory(constructor), contextKey, false));
-            destructors.addLast(new ManagedReferenceReleaseInterceptorFactory(contextKey));
+            instantiators.addFirst(new ImmediateInterceptorFactory(new ComponentInstantiatorInterceptor(new ConstructorComponentFactory(constructor), contextKey, false)));
+            destructors.addLast(new ImmediateInterceptorFactory(new ManagedReferenceReleaseInterceptor(contextKey)));
 
             final boolean interceptorHasLifecycleCallbacks = interceptorWithLifecycleCallbacks.contains(interceptorDescription);
 
@@ -176,7 +176,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                     if (methodIdentifier != null) {
                         final Method method = ClassReflectionIndexUtil.findRequiredMethod(deploymentReflectionIndex, clazz, methodIdentifier);
                         if (isNotOverriden(clazz, method, interceptorClass.getModuleClass(), deploymentReflectionIndex)) {
-                            final InterceptorFactory interceptorFactory = new ManagedReferenceLifecycleMethodInterceptorFactory(contextKey, method, changeMethod, lifecycleMethod);
+                            final InterceptorFactory interceptorFactory = new ImmediateInterceptorFactory(new ManagedReferenceLifecycleMethodInterceptor(contextKey, method, changeMethod, lifecycleMethod));
                             List<InterceptorFactory> factories = classMap.get(interceptorClassName);
                             if (factories == null) {
                                 classMap.put(interceptorClassName, factories = new ArrayList<InterceptorFactory>());

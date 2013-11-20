@@ -59,7 +59,7 @@
         <suffix value="${test.file.suffix:.yyyy-MM-dd}"/>
     </periodic-rotating-file-handler>
 
-    <size-rotating-file-handler name="sizeLogger" autoflush="${test.autoflush:true}">
+    <size-rotating-file-handler name="sizeLogger" autoflush="${test.autoflush:true}" rotate-on-boot="${test.rotate-on-boot:false}">
         <level name="${test.file.level:INFO}"/>
         <encoding value="${test.encoding:UTF-8}"/>
         <formatter>

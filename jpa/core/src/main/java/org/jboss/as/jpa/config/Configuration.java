@@ -160,6 +160,12 @@ public class Configuration {
      * which uses two phases to start the persistence unit).
      */
     public static final String JPA_ALLOW_TWO_PHASE_BOOTSTRAP = "wildfly.jpa.twophasebootstrap";
+
+    /**
+     * set to false to ignore default data source (defaults to true)
+     */
+    private static final String JPA_ALLOW_DEFAULT_DATA_SOURCE_USE = "wildfly.jpa.allowdefaultdatasourceuse";
+
     /**
      * name of the persistence provider adapter class
      */
@@ -245,6 +251,20 @@ public class Configuration {
         boolean result = true;
         if (pu.getProperties().containsKey(Configuration.JPA_ALLOW_TWO_PHASE_BOOTSTRAP)) {
             result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_ALLOW_TWO_PHASE_BOOTSTRAP));
+        }
+        return result;
+    }
+
+    /**
+     * Determine if the default data-source should be used
+     *
+     * @param pu
+     * @return true if the default data-source should be used
+     */
+    public static boolean allowDefaultDataSourceUse(PersistenceUnitMetadata pu) {
+        boolean result = true;
+        if (pu.getProperties().containsKey(Configuration.JPA_ALLOW_DEFAULT_DATA_SOURCE_USE)) {
+            result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_ALLOW_DEFAULT_DATA_SOURCE_USE));
         }
         return result;
     }

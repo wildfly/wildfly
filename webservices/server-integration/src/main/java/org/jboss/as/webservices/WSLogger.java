@@ -28,10 +28,13 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.TRACE;
 import static org.jboss.logging.Logger.Level.WARN;
 
+import java.lang.reflect.Method;
+
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.vfs.VirtualFile;
@@ -273,5 +276,28 @@ public interface WSLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15602, value = "Invalid handler chain file: %s")
     void invalidHandlerChainFile(String fileName);
+
+    String WS_SPEC_REF_5_3_2_4_2 = ". See section 5.3.2.4.2 of \"Web Services for Java EE, Version 1.4\".";
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15610, value = "Web service method %s must not be static or final" + WS_SPEC_REF_5_3_2_4_2)
+    void webMethodMustNotBeStaticOrFinal(Method staticWebMethod);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15611, value = "Web service method %s must be public" + WS_SPEC_REF_5_3_2_4_2)
+    void webMethodMustBePublic(Method staticWebMethod);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15612, value = "Web service implementation class %s does not contain method %s")
+    void webServiceMethodNotFound(Class<?> endpointClass, Method potentialWebMethod);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15613, value = "Web service implementation class %s does not contain an accessible method %s")
+    void accessibleWebServiceMethodNotFound(Class<?> endpointClass, Method potentialWebMethod, @Cause SecurityException e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15614, value = "Web service implementation class %s may not declare a finalize() method"
+            + WS_SPEC_REF_5_3_2_4_2)
+    void finalizeMethodNotAllowed(Class<?> seiClass);
 
 }

@@ -6,6 +6,7 @@ import java.util.Collection;
 
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.Resource;
+import io.undertow.server.handlers.resource.ResourceChangeListener;
 import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.server.handlers.resource.URLResource;
 import org.jboss.vfs.VirtualFile;
@@ -47,4 +48,23 @@ public class ServletResourceManager implements ResourceManager {
         return null;
     }
 
+    @Override
+    public boolean isResourceChangeListenerSupported() {
+        return true;
+    }
+
+    @Override
+    public void registerResourceChangeListener(ResourceChangeListener listener) {
+        deploymentResourceManager.registerResourceChangeListener(listener);
+    }
+
+    @Override
+    public void removeResourceChangeListener(ResourceChangeListener listener) {
+        deploymentResourceManager.removeResourceChangeListener(listener);
+    }
+
+    @Override
+    public void close() throws IOException {
+        deploymentResourceManager.close();
+    }
 }

@@ -24,7 +24,9 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -76,12 +78,14 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
 
         final Collection<ComponentDescription> componentDescriptions = eeModuleDescription.getComponentDescriptions();
         final Map<String, EjbDeploymentInformation> deploymentInformationMap = new HashMap<String, EjbDeploymentInformation>();
+        final Set<ServiceName> componentStartServices = new HashSet<ServiceName>();
 
         final Map<ServiceName, InjectedValue<?>> injectedValues = new HashMap<ServiceName, InjectedValue<?>>();
 
         for (final ComponentDescription component : componentDescriptions) {
             if (component instanceof EJBComponentDescription) {
                 final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) component;
+                componentStartServices.add(component.getStartServiceName());
 
                 final InjectedValue<EJBComponent> componentInjectedValue = new InjectedValue<EJBComponent>();
                 injectedValues.put(component.getCreateServiceName(), componentInjectedValue);
@@ -114,14 +118,20 @@ public class DeploymentRepositoryProcessor implements DeploymentUnitProcessor {
         }
 
         final ModuleDeployment deployment = new ModuleDeployment(identifier, deploymentInformationMap);
-        final ServiceBuilder<ModuleDeployment> builder = phaseContext.getServiceTarget().addService(deploymentUnit.getServiceName().append(ModuleDeployment.SERVICE_NAME), deployment);
+        ServiceName moduleDeploymentService = deploymentUnit.getServiceName().append(ModuleDeployment.SERVICE_NAME);
+        final ServiceBuilder<ModuleDeployment> builder = phaseContext.getServiceTarget().addService(moduleDeploymentService, deployment);
         for (Map.Entry<ServiceName, InjectedValue<?>> entry : injectedValues.entrySet()) {
             builder.addDependency(entry.getKey(), (InjectedValue<Object>) entry.getValue());
         }
         builder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, deployment.getDeploymentRepository());
         builder.install();
 
-
+        final ModuleDeployment.ModuleDeploymentStartService deploymentStart = new ModuleDeployment.ModuleDeploymentStartService(identifier);
+        final ServiceBuilder<Void> startBuilder = phaseContext.getServiceTarget().addService(deploymentUnit.getServiceName().append(ModuleDeployment.START_SERVICE_NAME), deploymentStart);
+        startBuilder.addDependencies(componentStartServices);
+        startBuilder.addDependency(moduleDeploymentService);
+        startBuilder.addDependency(DeploymentRepository.SERVICE_NAME, DeploymentRepository.class, deploymentStart.getDeploymentRepository());
+        startBuilder.install();
     }
 
     @Override

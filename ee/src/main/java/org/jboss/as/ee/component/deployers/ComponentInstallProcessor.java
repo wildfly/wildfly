@@ -160,9 +160,8 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
         final ServiceName contextServiceName;
         //set up the naming context if necessary
         if (configuration.getComponentDescription().getNamingMode() == ComponentNamingMode.CREATE) {
-            final NamingStoreService contextService = new NamingStoreService();
-            contextServiceName = configuration.getComponentDescription().getContextServiceName();
-            serviceTarget.addService(contextServiceName, contextService).install();
+            final NamingStoreService contextService = new NamingStoreService(true);
+            serviceTarget.addService(configuration.getComponentDescription().getContextServiceName(), contextService).install();
         }
 
         final InjectionSource.ResolutionContext resolutionContext = new InjectionSource.ResolutionContext(

@@ -80,6 +80,7 @@ import javax.management.ReflectionException;
 import javax.management.loading.ClassLoaderRepository;
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.AuthorizationResult.Decision;
 import org.jboss.as.controller.access.Caller;
@@ -87,9 +88,7 @@ import org.jboss.as.controller.access.JmxAction;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.controller.security.InetAddressPrincipal;
-import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
@@ -1236,13 +1235,14 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
 
         static void doLog(ManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName, String[] methodSignature, Object...methodParams) {
-            Subject subject = SubjectUtils.getCurrent();
             if (auditLogger != null) {
+                Subject subject = SubjectUtils.getCurrent();
+                AccessAuditContext auditContext = SecurityActions.currentAccessAuditContext();
                 auditLogger.logJmxMethodAccess(
                         readOnly,
                         getCallerUserId(subject),
-                        null, //TODO domainUUID
-                        getSubjectAccessMechanism(subject),
+                        auditContext == null ? null : auditContext.getDomainUuid(),
+                        auditContext == null ? null : auditContext.getAccessMechanism(),
                         getSubjectInetAddress(subject),
                         methodName,
                         methodSignature,
@@ -1265,12 +1265,6 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             InetAddressPrincipal principal = getPrincipal(subject, InetAddressPrincipal.class);
             return principal != null ? principal.getInetAddress() : null;
         }
-
-        private static AccessMechanism getSubjectAccessMechanism(Subject subject) {
-            AccessMechanismPrincipal principal = getPrincipal(subject, AccessMechanismPrincipal.class);
-            return principal != null ? principal.getAccessMechanism() : null;
-        }
-
 
         private static <T extends Principal> T getPrincipal(Subject subject, Class<T> clazz) {
             if (subject == null) {

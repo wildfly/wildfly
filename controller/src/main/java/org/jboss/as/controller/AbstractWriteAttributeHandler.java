@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -103,7 +104,11 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                     final HandbackHolder<T> handback = new HandbackHolder<T>();
                     final boolean reloadRequired = applyUpdateToRuntime(context, operation, attributeName, resolvedValue, currentValue, handback);
                     if (reloadRequired) {
-                        context.reloadRequired();
+                        if (attributeDefinition != null && attributeDefinition.getFlags().contains(AttributeAccess.Flag.RESTART_JVM)){
+                            context.restartRequired();
+                        }else{
+                            context.reloadRequired();
+                        }
                     }
 
                     context.completeStep(new OperationContext.RollbackHandler() {
@@ -121,7 +126,12 @@ public abstract class AbstractWriteAttributeHandler<T> implements OperationStepH
                                         PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
                             }
                             if (reloadRequired) {
-                                context.revertReloadRequired();
+                                if (attributeDefinition != null && attributeDefinition.getFlags().contains(AttributeAccess.Flag.RESTART_JVM)) {
+                                    context.revertRestartRequired();
+                                } else {
+                                    context.revertReloadRequired();
+                                }
+
                             }
                         }
                     });

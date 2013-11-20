@@ -25,29 +25,35 @@ package org.jboss.as.domain.management.security.password;
 import java.util.regex.Pattern;
 
 /**
- * @author baranowb
  *
+ * @author baranowb
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RegexRestriction extends PasswordRestriction {
+public class RegexRestriction implements PasswordRestriction {
 
     private final String regex;
+    private final String requirementsMessage;
+    private final String failureMessage;
 
     /**
      * @param regex
      * @param message
      */
-    public RegexRestriction(String regex, String message) {
-        super(message);
+    public RegexRestriction(String regex, String requirementsMessage, String failureMessage) {
         this.regex = regex;
+        this.requirementsMessage = requirementsMessage;
+        this.failureMessage = failureMessage;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.jboss.as.domain.management.security.password.PasswordRestriction#pass(java.lang.String)
-     */
     @Override
-    public boolean pass(String password) {
-        return Pattern.matches(this.regex, password);
+    public String getRequirementMessage() {
+        return requirementsMessage;
+    }
+
+    @Override
+    public void validate(String userName, String password) throws PasswordValidationException {
+        if (Pattern.matches(this.regex, password) == false) {
+            throw new PasswordValidationException(failureMessage);
+        }
     }
 }

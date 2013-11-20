@@ -27,6 +27,7 @@ import static org.jboss.as.xts.XTSSubsystemDefinition.DEFAULT_CONTEXT_PROPAGATIO
 import static org.jboss.as.xts.XTSSubsystemDefinition.ENVIRONMENT_URL;
 import static org.jboss.as.xts.XTSSubsystemDefinition.HOST_NAME;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -64,11 +65,12 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
         list.add(subsystem);
 
         final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        final List<Element> expected = getExpectedElements(reader);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Element element = Element.forName(reader.getLocalName());
 
-            if (!encountered.add(element)) {
+            if (!expected.contains(element) || !encountered.add(element)) {
                 throw ParseUtils.unexpectedElement(reader);
             }
 
@@ -201,5 +203,20 @@ class XTSSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
 
         // Handle elements
         ParseUtils.requireNoContent(reader);
+    }
+
+    private List<Element> getExpectedElements(final XMLExtendedStreamReader reader) {
+        final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
+        final List<Element> elements = new ArrayList<>();
+
+        if (Namespace.XTS_1_0.equals(namespace)) {
+            elements.add(Element.XTS_ENVIRONMENT);
+        } else if (Namespace.XTS_2_0.equals(namespace)) {
+            elements.add(Element.XTS_ENVIRONMENT);
+            elements.add(Element.HOST);
+            elements.add(Element.DEFAULT_CONTEXT_PROPAGATION);
+        }
+
+        return elements;
     }
 }

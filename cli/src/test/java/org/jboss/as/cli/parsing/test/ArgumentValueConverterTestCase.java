@@ -42,7 +42,7 @@ import org.junit.Test;
 public class ArgumentValueConverterTestCase {
 
     private final CommandContext ctx = new MockCommandContext();
-    
+
     @Test
     public void testDefault_String() throws Exception {
         final ModelNode value = parseObject("text");

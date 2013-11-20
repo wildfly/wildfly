@@ -197,7 +197,6 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
 
         @Override
         public synchronized void stop(final StopContext context) {
-            context.asynchronous();
             Thread executorShutdown = new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -210,6 +209,7 @@ public class HostControllerService implements Service<AsyncFuture<ServiceContain
                 }
             }, "HostController ExecutorService Shutdown Thread");
             executorShutdown.start();
+            context.asynchronous();
         }
 
         @Override

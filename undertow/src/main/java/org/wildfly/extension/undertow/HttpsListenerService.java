@@ -22,15 +22,10 @@
 
 package org.wildfly.extension.undertow;
 
-import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
-import static org.xnio.SslClientAuthMode.REQUESTED;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import javax.net.ssl.SSLContext;
 
-import io.undertow.UndertowOptions;
-import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.value.InjectedValue;
 import org.xnio.ChannelListener;
@@ -41,8 +36,8 @@ import org.xnio.Options;
 import org.xnio.StreamConnection;
 import org.xnio.XnioWorker;
 import org.xnio.channels.AcceptingChannel;
-import org.xnio.channels.SslConnection;
 import org.xnio.ssl.JsseXnioSsl;
+import org.xnio.ssl.SslConnection;
 import org.xnio.ssl.XnioSsl;
 
 /**
@@ -55,24 +50,18 @@ public class HttpsListenerService extends HttpListenerService {
 
     private final InjectedValue<SecurityRealm> securityRealm = new InjectedValue<>();
     private volatile AcceptingChannel<SslConnection> sslServer;
-    private final long maxUploadSize;
     static final String PROTOCOL = "https";
 
-    public HttpsListenerService(final String name, String serverName, long maxUploadSize) {
-        super(name, serverName, maxUploadSize, false);
-        this.maxUploadSize = maxUploadSize;
+    public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions) {
+        super(name, serverName, listenerOptions, false);
     }
 
     @Override
     protected void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
 
         SSLContext sslContext = securityRealm.getValue().getSSLContext();
-        Builder builder = OptionMap.builder().addAll(SERVER_OPTIONS);
-        builder.set(UndertowOptions.MAX_ENTITY_SIZE, maxUploadSize);
-        if (securityRealm.getValue().getSupportedAuthenticationMechanisms().contains(AuthMechanism.CLIENT_CERT)) {
-            builder.set(SSL_CLIENT_AUTH_MODE, REQUESTED);
-        }
-        builder.set(Options.USE_DIRECT_BUFFERS,true);
+        Builder builder = OptionMap.builder().addAll(listenerOptions);
+        builder.set(Options.USE_DIRECT_BUFFERS, true);
         OptionMap combined = builder.getMap();
 
         XnioSsl xnioSsl = new JsseXnioSsl(worker.getXnio(), combined, sslContext);

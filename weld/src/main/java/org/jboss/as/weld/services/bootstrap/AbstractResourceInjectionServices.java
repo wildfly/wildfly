@@ -17,6 +17,9 @@
 package org.jboss.as.weld.services.bootstrap;
 
 import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.enterprise.inject.spi.InjectionPoint;
 
@@ -63,10 +66,7 @@ public abstract class AbstractResourceInjectionServices {
          * Try to obtain ManagedReferenceFactory and validate the resource type
          */
         final ManagedReferenceFactory factory = getManagedReferenceFactory(ejbBindInfo);
-        if (factory instanceof ContextListManagedReferenceFactory && injectionPoint != null) {
-            validateResourceInjectionPointType((ContextListManagedReferenceFactory) factory, injectionPoint);
-        }
-        // otherwise, the validation is skipped as we have no information about the resource type
+        validateResourceInjectionPointType(factory, injectionPoint);
 
         if (factory != null) {
             return new ManagedReferenceFactoryToResourceReferenceFactoryAdapter<Object>(factory);
@@ -75,7 +75,12 @@ public abstract class AbstractResourceInjectionServices {
         }
     }
 
-    protected static void validateResourceInjectionPointType(ContextListManagedReferenceFactory factory, InjectionPoint injectionPoint) {
+    protected static void validateResourceInjectionPointType(ManagedReferenceFactory fact, InjectionPoint injectionPoint) {
+        if (!(fact instanceof ContextListManagedReferenceFactory) || injectionPoint == null) {
+            return; // validation is skipped as we have no information about the resource type
+        }
+
+        final ContextListManagedReferenceFactory factory = (ContextListManagedReferenceFactory) fact;
         // the resource class may come from JBoss AS
         Class<?> resourceClass = org.jboss.as.weld.util.Reflections.loadClass(factory.getInstanceClassName(), factory.getClass().getClassLoader());
         // or it may come from deployment
@@ -89,6 +94,22 @@ public abstract class AbstractResourceInjectionServices {
         // otherwise, the validation is skipped as we have no information about the resource type
     }
 
+    private static final Map<Class<?>, Class<?>> BOXED_TYPES;
+
+    static {
+        Map<Class<?>, Class<?>> types = new HashMap<Class<?>, Class<?>>();
+        types.put(int.class, Integer.class);
+        types.put(byte.class, Byte.class);
+        types.put(short.class, Short.class);
+        types.put(long.class, Long.class);
+        types.put(char.class, Character.class);
+        types.put(float.class, Float.class);
+        types.put(double.class, Double.class);
+        types.put(boolean.class, Boolean.class);
+
+        BOXED_TYPES = Collections.unmodifiableMap(types);
+    }
+
     protected static void validateResourceInjectionPointType(Class<?> resourceType, InjectionPoint injectionPoint) {
         Class<?> injectionPointRawType = Reflections.getRawType(injectionPoint.getType());
         HierarchyDiscovery discovery = new HierarchyDiscovery(resourceType);
@@ -96,6 +117,12 @@ public abstract class AbstractResourceInjectionServices {
             if (Reflections.getRawType(type).equals(injectionPointRawType)) {
                 return;
             }
+        }
+        // type autoboxing
+        if (resourceType.isPrimitive() && BOXED_TYPES.get(resourceType).equals(injectionPointRawType)) {
+            return;
+        } else if (injectionPointRawType.isPrimitive() && BOXED_TYPES.get(injectionPointRawType).equals(resourceType)) {
+            return;
         }
         throw BeanLogger.LOG.invalidResourceProducerType(injectionPoint.getAnnotated(), resourceType.getName());
     }

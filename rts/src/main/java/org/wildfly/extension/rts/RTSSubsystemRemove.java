@@ -47,6 +47,7 @@ final class RTSSubsystemRemove extends AbstractRemoveStepHandler {
 
         context.removeService(RTSSubsystemExtension.COORDINATOR);
         context.removeService(RTSSubsystemExtension.PARTICIPANT);
+        context.removeService(RTSSubsystemExtension.VOLATILE_PARTICIPANT);
         context.removeService(RTSSubsystemExtension.INBOUND_BRIDGE);
     }
 

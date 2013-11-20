@@ -24,11 +24,14 @@ package org.jboss.as.domain.management.security.adduser;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+
+import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
 
 /**
  * A command line utility to add new users to the mgmt-users.properties files.
@@ -47,7 +50,7 @@ public class AddUser {
     public static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
     public static final String DOMAIN_CONFIG_USER_DIR = "jboss.domain.config.user.dir";
 
-    public static final String CONFIG_FILE = "jboss.adduser.config";
+    public static final String CONFIG_FILE = "add-user.properties";
 
     public static final String DEFAULT_MANAGEMENT_REALM = "ManagementRealm";
     public static final String DEFAULT_APPLICATION_REALM = "ApplicationRealm";
@@ -142,6 +145,9 @@ public class AddUser {
         RuntimeOptions options = new RuntimeOptions();
         options.setConsoleWrapper(new JavaConsole());
         options.setJBossHome(System.getenv(JBOSS_HOME_ENV));
+        File binFile = new File(options.getJBossHome(), "bin");
+        File configFile = new File(binFile, CONFIG_FILE);
+        options.setCheckUtil(PasswordCheckUtil.create(configFile));
 
         if (args.length >= 1) {
 
@@ -361,7 +367,7 @@ public class AddUser {
                 return MESSAGES.argRealm();
             }
         },
-        SILENT("-s", "--silent") {
+        SILENT("-s", "--silent", "--silent=true") {
             @Override
             public String instructions() {
                 return MESSAGES.argSilent();
@@ -384,13 +390,13 @@ public class AddUser {
         ENABLE("-e", "--enable") {
             @Override
             public String instructions() {
-                return MESSAGES.argSilent();
+                return MESSAGES.argEnable();
             }
         },
         DISABLE("-d", "--disable") {
             @Override
             public String instructions() {
-                return MESSAGES.argSilent();
+                return MESSAGES.argDisable();
             }
         },
         CONFIRM_WARNING("-cw", "--confirm-warning") {
@@ -407,8 +413,10 @@ public class AddUser {
         };
 
         private static String USAGE;
+
         private String shortArg;
         private String longArg;
+        private String additionalArg;
 
         private CommandLineArgument(String option) {
             this.shortArg = option;
@@ -419,12 +427,18 @@ public class AddUser {
             this.longArg = longArg;
         }
 
+        private CommandLineArgument(String shortArg, String longArg, String additionalArg) {
+            this.shortArg = shortArg;
+            this.longArg = longArg;
+            this.additionalArg = additionalArg;
+        }
+
         public String key() {
             return longArg != null ? longArg.substring(2) : shortArg.substring(1);
         }
 
         public boolean match(String option) {
-            return option.equals(shortArg) || option.equals(longArg);
+            return option.equals(shortArg) || option.equals(longArg) || option.equals(additionalArg);
         }
 
         public String getShortArg() {

@@ -7,8 +7,11 @@
     </subsystem>
     <supplement name="default">
         <replacement placeholder="CACHE-CONTAINERS">
-            <cache-container name="web" aliases="standard-session-cache" default-cache="local-web" module="org.wildfly.clustering.web.infinispan">
-                <local-cache name="local-web" batching="true">
+            <cache-container name="web" default-cache="passivation" module="org.wildfly.clustering.web.infinispan">
+                <local-cache name="passivation" batching="true">
+                    <file-store passivation="true" purge="false"/>
+                </local-cache>
+                <local-cache name="persistent" batching="true">
                     <file-store passivation="false" purge="false"/>
                 </local-cache>
             </cache-container>
@@ -38,29 +41,21 @@
                     <locking isolation="REPEATABLE_READ"/>
                 </replicated-cache>
             </cache-container>
-            <cache-container name="web" aliases="standard-session-cache" default-cache="repl" module="org.wildfly.clustering.web.infinispan">
+            <cache-container name="web" default-cache="dist" module="org.wildfly.clustering.web.infinispan">
                 <transport lock-timeout="60000"/>
-                <replicated-cache name="repl" mode="ASYNC" batching="true">
-                    <file-store/>
-                </replicated-cache>
-                <replicated-cache name="sso" mode="SYNC" batching="true"/>
-                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
+                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" owners="4">
                     <file-store/>
                 </distributed-cache>
             </cache-container>
-            <cache-container name="ejb" aliases="sfsb sfsb-cache" default-cache="repl" module="org.jboss.as.clustering.ejb3.infinispan">
+            <cache-container name="ejb" aliases="sfsb" default-cache="dist" module="org.jboss.as.clustering.ejb3.infinispan">
                 <transport lock-timeout="60000"/>
-                <replicated-cache name="repl" mode="ASYNC" batching="true">
-                    <eviction strategy="LRU" max-entries="10000"/>
-                    <file-store/>
-                </replicated-cache>
-                <!-- Clustered cache used internally by EJB subsytem for managing the client-mapping(s) of
-                the socketbinding referenced by the EJB remoting connector -->
-                <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
-                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0">
+                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" owners="4">
                     <eviction strategy="LRU" max-entries="10000"/>
                     <file-store/>
                 </distributed-cache>
+                <!-- Clustered cache used internally by EJB subsystem for managing the client-mapping(s) of
+                the socket binding referenced by the EJB remoting connector -->
+                <replicated-cache name="remote-connector-client-mappings" mode="SYNC" batching="true"/>
             </cache-container>
             <cache-container name="hibernate" default-cache="local-query" module="org.hibernate">
                 <transport lock-timeout="60000"/>

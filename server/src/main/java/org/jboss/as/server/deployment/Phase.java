@@ -194,6 +194,7 @@ public enum Phase {
     public static final int STRUCTURE_REMOUNT_EXPLODED                  = 0x0450;
     public static final int STRUCTURE_EE_SPEC_DESC_PROPERTY_REPLACEMENT = 0x0500;
     public static final int STRUCTURE_EE_JBOSS_DESC_PROPERTY_REPLACEMENT= 0x0550;
+    public static final int STRUCTURE_EE_EJB_ANNOTATION_PROPERTY_REPLACEMENT  =  0x0555;
     public static final int STRUCTURE_EE_DEPLOYMENT_PROPERTIES          = 0x0560;
     public static final int STRUCTURE_EE_DEPLOYMENT_PROPERTY_RESOLVER   = 0x0561;
     public static final int STRUCTURE_EE_VAULT_PROPERTY_RESOLVER        = 0x0562;
@@ -446,6 +447,7 @@ public enum Phase {
     public static final int POST_MODULE_MAIL_SESSION_REF                = 0x1701;
     public static final int POST_MODULE_WS_REF_DESCRIPTOR               = 0x1800;
     public static final int POST_MODULE_WS_REF_ANNOTATION               = 0x1801;
+    public static final int POST_MODULE_WS_VERIFICATION                 = 0x1880;
     public static final int POST_MODULE_JAXRS_SCANNING                  = 0x1A00;
     public static final int POST_MODULE_JAXRS_COMPONENT                 = 0x1B00;
     public static final int POST_MODULE_JAXRS_CDI_INTEGRATION           = 0x1C00;
@@ -483,6 +485,8 @@ public enum Phase {
     public static final int INSTALL_RESOLVER_MODULE                     = 0x0600;
     public static final int INSTALL_RA_NATIVE                           = 0x0800;
     public static final int INSTALL_RA_DEPLOYMENT                       = 0x0801;
+    public static final int INSTALL_CONNECTION_FACTORY_DEFINITION_ANNOTATION = 0x0802;
+    public static final int INSTALL_ADMIN_OBJECT_DEFINITION_ANNOTATION  = 0x0803;
     public static final int INSTALL_SERVICE_DEPLOYMENT                  = 0x0900;
     public static final int INSTALL_POJO_DEPLOYMENT                     = 0x0A00;
     public static final int INSTALL_RA_XML_DEPLOYMENT                   = 0x0B00;

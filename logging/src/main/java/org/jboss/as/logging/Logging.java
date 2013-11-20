@@ -48,16 +48,7 @@ public final class Logging {
      * @return {@code true} if a restart is required, otherwise {@code false}
      */
     public static boolean requiresRestart(final Set<Flag> flags) {
-        for (Flag flag : flags) {
-            switch (flag) {
-                case RESTART_ALL_SERVICES:
-                case RESTART_JVM:
-                case RESTART_RESOURCE_SERVICES: {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return flags.contains(Flag.RESTART_JVM);
     }
 
     /**
@@ -68,15 +59,7 @@ public final class Logging {
      * @return {@code true} if a reload is required, otherwise {@code false}
      */
     public static boolean requiresReload(final Set<Flag> flags) {
-        for (Flag flag : flags) {
-            switch (flag) {
-                case RESTART_ALL_SERVICES:
-                case RESTART_RESOURCE_SERVICES: {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return flags.contains(Flag.RESTART_ALL_SERVICES) || flags.contains(Flag.RESTART_RESOURCE_SERVICES);
     }
 
     /**

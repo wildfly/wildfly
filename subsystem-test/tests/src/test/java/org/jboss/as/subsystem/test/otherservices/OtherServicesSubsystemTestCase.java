@@ -114,6 +114,44 @@ public class OtherServicesSubsystemTestCase extends AbstractSubsystemTest {
         Assert.assertEquals("testing123", model.require(SYSTEM_PROPERTY).require("test123").require(VALUE).asString());
     }
 
+
+    /**
+     * Test that a port offset of 0 works correctly.
+     */
+    @Test
+    public void testPortOffsetZero() throws Exception {
+        ((OtherServicesSubsystemExtension)getMainExtension()).setAddHandler(SubsystemAddWithSocketBindingUserService.INSTANCE);
+
+        //Parse the subsystem xml and install into the controller
+        String subsystemXml =
+                "<subsystem xmlns=\"" + SimpleSubsystemExtension.NAMESPACE + "\">" +
+                "</subsystem>";
+        KernelServices services = createKernelServicesBuilder(new PortOffsetZeroInit())
+                .setSubsystemXml(subsystemXml)
+                .build();
+
+
+        //Read the whole model and make sure it looks as expected
+        ModelNode model = services.readWholeModel();
+        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(OtherServicesSubsystemExtension.SUBSYSTEM_NAME));
+
+        ModelNode group = model.require(SOCKET_BINDING_GROUP).require(ControllerInitializer.SOCKET_BINDING_GROUP_NAME);
+        Assert.assertEquals(8000, group.require(PORT_OFFSET).asInt());
+
+        ModelNode bindings = group.require(SOCKET_BINDING);
+        Assert.assertEquals(1, bindings.asList().size());
+        Assert.assertEquals(0, group.require(SOCKET_BINDING).require("test2").require(PORT).asInt());
+
+        ServiceController<?> controller = services.getContainer().getService(SocketBindingUserService.NAME);
+        Assert.assertNotNull(controller);
+        SocketBindingUserService service = (SocketBindingUserService)controller.getValue();
+        SocketBinding socketBinding = service.socketBindingValue.getValue();
+        Assert.assertEquals(8000, socketBinding.getSocketBindings().getPortOffset());
+        Assert.assertFalse("fixed port", socketBinding.isFixedPort());
+        Assert.assertEquals(0, socketBinding.getPort());
+        Assert.assertEquals(8000, socketBinding.getSocketAddress().getPort());
+    }
+
     /**
      * Test that socket binding got added properly
      */
@@ -202,6 +240,14 @@ public class OtherServicesSubsystemTestCase extends AbstractSubsystemTest {
         @Override
         protected void setupController(ControllerInitializer controllerInitializer) {
             controllerInitializer.addSystemProperty("test123", "testing123");
+        }
+    }
+
+    private static class PortOffsetZeroInit extends AdditionalInitialization {
+        @Override
+        protected void setupController(ControllerInitializer controllerInitializer) {
+            controllerInitializer.setPortOffset("8000");
+            controllerInitializer.addSocketBinding("test2", 0);
         }
     }
 

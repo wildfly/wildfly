@@ -42,7 +42,7 @@ public class AnnotationTimerServiceBean {
     private static volatile CountDownLatch latch = new CountDownLatch(1);
 
     private static volatile boolean timerServiceCalled = false;
-    private static final int TIMER_CALL_WAITING_S = 2;
+    private static final int TIMER_CALL_WAITING_S = 30;
 
     private static volatile String timerInfo;
     private static volatile boolean isPersistent;

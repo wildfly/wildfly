@@ -55,6 +55,7 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.service.SubjectFactoryService;
+import org.jboss.as.server.Services;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.common.CommonAdminObject;
@@ -397,8 +398,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
             activator.setBindInfo(bindInfo);
             activator.setCreateBinderService(createBinderService);
 
-            ServiceController<ResourceAdapterDeployment> controller = serviceTarget
-                    .addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator)
+            ServiceController<ResourceAdapterDeployment> controller =
+                    Services.addServerExecutorDependency(
+                        serviceTarget.addService(ConnectorServices.RESOURCE_ADAPTER_ACTIVATOR_SERVICE.append(name), activator),
+                            activator.getExecutorServiceInjector(), false)
                     .addDependency(HornetQActivationService.getHornetQActivationServiceName(getHornetQServiceName(hqServerName)))
                     .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class,
                             activator.getMdrInjector())
@@ -463,10 +466,12 @@ public class PooledConnectionFactoryService implements Service<Void> {
         boolean prefill = false;
         boolean useStrictMin = false;
         FlushStrategy flushStrategy = FlushStrategy.FAILING_CONNECTION_ONLY;
+        Boolean isXA = Boolean.FALSE;
         final CommonPool pool;
         if (transactionSupport == TransactionSupportEnum.XATransaction) {
             pool = new CommonXaPoolImpl(minSize, maxSize, prefill, useStrictMin, flushStrategy,
                     Defaults.IS_SAME_RM_OVERRIDE, Defaults.INTERLEAVING, Defaults.PAD_XID, Defaults.WRAP_XA_RESOURCE, Defaults.NO_TX_SEPARATE_POOL);
+            isXA = Boolean.TRUE;
         } else {
             pool = new CommonPoolImpl(minSize, maxSize, prefill, useStrictMin, flushStrategy);
         }
@@ -480,7 +485,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         // when its ResourceAdapter is started
         Recovery recovery = new Recovery(new CredentialImpl(null, null, null), null, Boolean.TRUE);
         CommonValidationImpl validation = new CommonValidationImpl(null, null, false);
-        return new CommonConnDefImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, pool, timeOut, validation, security, recovery);
+        return new CommonConnDefImpl(Collections.<String, String>emptyMap(), RAMANAGED_CONN_FACTORY, jndiName, HQ_CONN_DEF, true, true, true, pool, timeOut, validation, security, recovery, isXA);
     }
 
     private static Connector15Impl createConnector15(ResourceAdapter1516 ra) {

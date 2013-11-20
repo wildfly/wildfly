@@ -37,7 +37,7 @@ public class DeliveryActiveAnnotationInformationFactory extends ClassAnnotationI
     }
 
     @Override
-    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance) {
+    protected Boolean fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         return annotationInstance.value().asBoolean();
     }
 }

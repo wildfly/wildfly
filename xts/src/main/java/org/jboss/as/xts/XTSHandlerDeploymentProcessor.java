@@ -26,10 +26,9 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.xts.jandex.BridgeType;
 import org.jboss.as.xts.jandex.CompensatableAnnotation;
-import org.jboss.as.xts.jandex.OldCompensatableAnnotation;
 import org.jboss.as.xts.jandex.EndpointMetaData;
+import org.jboss.as.xts.jandex.OldCompensatableAnnotation;
 import org.jboss.as.xts.jandex.TransactionalAnnotation;
 import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.util.ASHelper;
@@ -51,45 +50,30 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
+/**
+ * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
+ * @author <a href="mailto:paul.robinson@redhat.com">Paul Robinson</a>
+ */
 public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static final String TX_BRIDGE_HANDLER = "org.jboss.jbossts.txbridge.inbound.JaxWSTxInboundBridgeHandler";
+    private static final String TX_BRIDGE_HANDLER = "org.jboss.jbossts.txbridge.inbound.OptionalJaxWSTxInboundBridgeHandler";
+
     private static final String TX_CONTEXT_HANDLER = "com.arjuna.mw.wst11.service.JaxWSHeaderContextProcessor";
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-
-        WebservicesMetaData webservicesMetaData = new WebservicesMetaData();
-
+        final WebservicesMetaData webservicesMetaData = new WebservicesMetaData();
         boolean modifiedWSMeta = false;
 
         for (String endpoint : getDeploymentClasses(unit)) {
             try {
+                final EndpointMetaData endpointMetaData = EndpointMetaData.build(unit, endpoint);
 
-                EndpointMetaData endpointMetaData = EndpointMetaData.build(unit, endpoint);
-
-                if (endpointMetaData.isTXFrameworkEnabled()) {
-
+                if (endpointMetaData.isXTSEnabled()) {
                     XTSDeploymentMarker.mark(unit);
-
-                    if (endpointMetaData.isWebservice()) {
-
-                        List<String> handlers = new ArrayList<String>();
-                        TransactionalAnnotation TransactionalAnnotation = endpointMetaData.getTransactionalAnnotation();
-                        if (shouldBridge(TransactionalAnnotation)) {
-                            handlers.add(TX_BRIDGE_HANDLER);
-                        }
-                        handlers.add(TX_CONTEXT_HANDLER);
-
-                        addHandlerToEndpoint(webservicesMetaData, endpointMetaData, endpoint, handlers);
-                        registerHandlersWithAS(unit, endpoint, handlers);
-                        modifiedWSMeta = true;
-                    }
-
+                    final boolean result = updateXTSEndpoint(endpoint, endpointMetaData, webservicesMetaData, unit);
+                    modifiedWSMeta = modifiedWSMeta || result;
                 }
-
             } catch (XTSException e) {
                 throw new DeploymentUnitProcessingException("Error processing endpoint '" + endpoint + "'", e);
             }
@@ -100,15 +84,26 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
         }
     }
 
-    private boolean shouldBridge(TransactionalAnnotation TransactionalAnnotation) {
-        if (TransactionalAnnotation == null) {
-            return false;
+    private boolean updateXTSEndpoint(final String endpoint, final EndpointMetaData endpointMetaData,
+            final WebservicesMetaData webservicesMetaData, final DeploymentUnit unit) {
+
+        if (endpointMetaData.isWebservice()) {
+            final List<String> handlers = new ArrayList<String>();
+
+            if (endpointMetaData.isBridgeEnabled()) {
+                handlers.add(TX_BRIDGE_HANDLER);
+            }
+            handlers.add(TX_CONTEXT_HANDLER);
+
+            if (!isAnyOfHandlersRegistered(unit, endpoint, handlers)) {
+                addHandlerToEndpoint(webservicesMetaData, endpointMetaData, endpoint, handlers);
+                registerHandlersWithAS(unit, endpoint, handlers);
+
+                return true;
+            }
         }
-        if (TransactionalAnnotation.getBridgeType() == null) {
-            return false;
-        }
-        BridgeType bridgeType = TransactionalAnnotation.getBridgeType();
-        return (bridgeType.equals(BridgeType.JTA) || bridgeType.equals(BridgeType.DEFAULT));
+
+        return false;
     }
 
     private void addHandlerToEndpoint(WebservicesMetaData wsWebservicesMetaData, EndpointMetaData endpointMetaData, String endpointClass, List<String> handlers) {
@@ -171,9 +166,6 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         for (String handler : handlersToAdd) {
-            if (existingHandlers.contains(handler)) {
-                return;
-            }
             existingHandlers.add(handler);
         }
         mapping.registerEndpointHandlers(endpointClass, existingHandlers);
@@ -185,11 +177,20 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
     }
 
     private Set<String> getDeploymentClasses(DeploymentUnit unit) {
-
         final Set<String> endpoints = new HashSet<String>();
-        addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(OldCompensatableAnnotation.COMPENSATABLE_ANNOTATION)));
-        addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(CompensatableAnnotation.COMPENSATABLE_ANNOTATION)));
-        addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(TransactionalAnnotation.TRANSACTIONAL_ANNOTATION)));
+
+        for (final String annotation : CompensatableAnnotation.COMPENSATABLE_ANNOTATIONS) {
+            addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(annotation)));
+        }
+
+        for (final String annotation : TransactionalAnnotation.TRANSACTIONAL_ANNOTATIONS) {
+            addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(annotation)));
+        }
+
+        for (final String annotation : OldCompensatableAnnotation.COMPENSATABLE_ANNOTATIONS) {
+            addEndpointsToList(endpoints, ASHelper.getAnnotations(unit, DotName.createSimple(annotation)));
+        }
+
         return endpoints;
     }
 
@@ -210,6 +211,30 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
                 endpoints.add(endpointClass);
             }
         }
+    }
+
+    private boolean isAnyOfHandlersRegistered(final DeploymentUnit unit, final String endpointClass,
+            final List<String> handlers) {
+
+        final WSEndpointHandlersMapping mapping = unit.getAttachment(WSAttachmentKeys.WS_ENDPOINT_HANDLERS_MAPPING_KEY);
+
+        if (mapping == null) {
+            return false;
+        }
+
+        final Set<String> existingHandlers = mapping.getHandlers(endpointClass);
+
+        if (existingHandlers == null) {
+            return false;
+        }
+
+        for (final String handler : handlers) {
+            if (existingHandlers.contains(handler)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void undeploy(final DeploymentUnit unit) {

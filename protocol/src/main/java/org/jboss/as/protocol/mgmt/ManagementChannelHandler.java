@@ -23,6 +23,7 @@
 package org.jboss.as.protocol.mgmt;
 
 import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.AsyncFuture;
 
@@ -48,6 +49,7 @@ public final class ManagementChannelHandler extends AbstractMessageHandler imple
     private final ManagementChannelReceiver receiver;
     // The management client strategy
     private final ManagementClientChannelStrategy strategy;
+    private final Attachments attachments = new Attachments();
 
     public ManagementChannelHandler(final Channel channel, final ExecutorService executorService) {
         this(ManagementClientChannelStrategy.create(channel), executorService);
@@ -167,6 +169,11 @@ public final class ManagementChannelHandler extends AbstractMessageHandler imple
      */
     public Channel.Receiver getReceiver() {
         return receiver;
+    }
+
+    @Override
+    public Attachments getAttachments() {
+        return attachments;
     }
 
     /**

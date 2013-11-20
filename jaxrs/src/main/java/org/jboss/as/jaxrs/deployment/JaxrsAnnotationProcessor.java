@@ -29,6 +29,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.weld.deployment.WeldAttachments;
+import org.jboss.as.weld.discovery.AnnotationType;
 
 /**
  * Looks for jaxrs annotations in war deployments
@@ -41,6 +43,13 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        if (deploymentUnit.getParent() == null) {
+            //register resource, provider and application as CDI annotation defining types
+            deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PROVIDER.getDotName(), false));
+            deploymentUnit.addToAttachmentList(WeldAttachments.INJECTION_TARGET_DEFINING_ANNOTATIONS, new AnnotationType(JaxrsAnnotations.PATH.getDotName(), false));
+        }
+
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         for (final JaxrsAnnotations annotation : JaxrsAnnotations.values()) {
             if (!index.getAnnotations(annotation.getDotName()).isEmpty()) {
@@ -49,6 +58,7 @@ public class JaxrsAnnotationProcessor implements DeploymentUnitProcessor {
                 return;
             }
         }
+
     }
 
     @Override

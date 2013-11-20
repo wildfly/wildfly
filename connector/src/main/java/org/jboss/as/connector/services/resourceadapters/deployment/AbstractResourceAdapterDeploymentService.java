@@ -31,6 +31,11 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadFactory;
+
 import javax.naming.Reference;
 import javax.resource.spi.ResourceAdapter;
 import javax.transaction.TransactionManager;
@@ -50,8 +55,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.wildfly.security.manager.ClearContextClassLoaderAction;
-import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 import org.jboss.jca.common.api.metadata.ra.ConfigProperty;
 import org.jboss.jca.common.api.metadata.ra.Connector;
@@ -74,8 +77,14 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
+import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.ClearContextClassLoaderAction;
+import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -100,6 +109,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<TransactionIntegration> txInt = new InjectedValue<TransactionIntegration>();
     protected final InjectedValue<SubjectFactory> subjectFactory = new InjectedValue<SubjectFactory>();
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
+    protected final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
 
     public ResourceAdapterDeployment getValue() {
         return ConnectorServices.notNull(value);
@@ -148,7 +158,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 }
             }
 
-            if (value.getDeployment() != null && value.getDeployment().getRecovery() != null && txInt.getValue() != null) {
+            if (value!= null && value.getDeployment() != null && value.getDeployment().getRecovery() != null && txInt !=null && txInt.getValue() != null) {
                 XAResourceRecoveryRegistry rr = txInt.getValue().getRecoveryRegistry();
 
                 if (rr != null) {
@@ -228,6 +238,24 @@ public abstract class AbstractResourceAdapterDeploymentService {
         return ccmValue;
     }
 
+    public Injector<ExecutorService> getExecutorServiceInjector() {
+        return executorServiceInjector;
+    }
+
+    protected final ExecutorService getLifecycleExecutorService() {
+        ExecutorService result = executorServiceInjector.getOptionalValue();
+        if (result == null) {
+            // We added injection of the server executor late in WF 8, so in case some
+            // add-on projects don't know to inject it....
+            final ThreadGroup threadGroup = new ThreadGroup("ResourceAdapterDeploymentService ThreadGroup");
+            final String namePattern = "ResourceAdapterDeploymentService Thread Pool -- %t";
+            final ThreadFactory threadFactory = new JBossThreadFactory(threadGroup, Boolean.FALSE, null, namePattern,
+                    null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
+            result = Executors.newSingleThreadExecutor(threadFactory);
+        }
+        return result;
+    }
+
     public ContextNames.BindInfo getBindInfo(String jndi) {
         return ContextNames.bindInfoFor(jndi);
     }
@@ -237,6 +265,52 @@ public abstract class AbstractResourceAdapterDeploymentService {
      */
     public boolean isCreateBinderService() {
         return true;
+    }
+
+    protected final void cleanupStartAsync(final StartContext context, final String deploymentName, final Throwable cause) {
+        ExecutorService executorService = getLifecycleExecutorService();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // TODO -- one of the 3 previous synchronous calls to this method don't had the TCCL set,
+                    // but the other two don't. I (BES 2013/10/21) intepret from that that setting the TCCL
+                    // was not necessary and in caller that had it set it was an artifact of
+                    unregisterAll(deploymentName);
+                } finally {
+                    context.failed(MESSAGES.failedToStartRaDeployment(cause, deploymentName));
+                }
+            }
+        };
+        try {
+            executorService.execute(r);
+        } catch (RejectedExecutionException e) {
+            r.run();
+        } finally {
+            context.asynchronous();
+        }
+    }
+
+    protected void stopAsync(final StopContext context, final String deploymentName, final ServiceName serviceName) {
+        ExecutorService executorService = getLifecycleExecutorService();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping service %s", serviceName);
+                    unregisterAll(deploymentName);
+                } finally {
+                    context.complete();
+                }
+            }
+        };
+        try {
+            executorService.execute(r);
+        } catch (RejectedExecutionException e) {
+            r.run();
+        } finally {
+            context.asynchronous();
+        }
     }
 
     protected abstract class AbstractAS7RaDeployer extends AbstractResourceAdapterDeployer {
@@ -294,7 +368,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
                     .append(bindInfo.getBinderServiceName());
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
-                    .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getDataSourceInjector())
+                    .addDependency(connectionFactoryServiceName, Object.class, referenceFactoryService.getConnectionFactoryInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
             if (isCreateBinderService()) {
@@ -351,40 +425,45 @@ public abstract class AbstractResourceAdapterDeploymentService {
             final ServiceName adminObjectServiceName = AdminObjectService.SERVICE_NAME_BASE.append(jndi);
             serviceTarget.addService(adminObjectServiceName, adminObjectService).setInitialMode(ServiceController.Mode.ACTIVE)
                     .install();
+            // use a BindInfo to build the referenceFactoryService's service name.
+            // if the CF is in a java:app/ or java:module/ namespace, we need the whole bindInfo's binder service name
+            // to distinguish CFs with same name in different application (or module).
+            final ContextNames.BindInfo bindInfo = getBindInfo(jndi);
 
             final AdminObjectReferenceFactoryService referenceFactoryService = new AdminObjectReferenceFactoryService();
-            final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(jndi);
+            final ServiceName referenceFactoryServiceName = AdminObjectReferenceFactoryService.SERVICE_NAME_BASE.append(bindInfo.getBinderServiceName());
             serviceTarget.addService(referenceFactoryServiceName, referenceFactoryService)
                     .addDependency(adminObjectServiceName, Object.class, referenceFactoryService.getAdminObjectInjector())
                     .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
-            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndi);
-            final BinderService binderService = new BinderService(bindInfo.getBindName());
-            final ServiceName binderServiceName = bindInfo.getBinderServiceName();
-            serviceTarget
-                    .addService(binderServiceName, binderService)
-                    .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
-                            binderService.getManagedObjectInjector())
-                    .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
-                            binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+            if (isCreateBinderService()) {
+                final BinderService binderService = new BinderService(bindInfo.getBindName());
+                final ServiceName binderServiceName = bindInfo.getBinderServiceName();
 
-                        public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
-                            switch (transition) {
-                                case STARTING_to_UP: {
-                                    DEPLOYMENT_CONNECTOR_LOGGER.boundJca("AdminObject", jndi);
-                                    break;
-                                }
-                                case STOPPING_to_DOWN: {
-                                    DEPLOYMENT_CONNECTOR_LOGGER.unboundJca("AdminObject", jndi);
-                                    break;
-                                }
-                                case REMOVING_to_REMOVED: {
-                                    DEPLOYMENT_CONNECTOR_LOGGER.debugf("Removed JCA AdminObject [%s]", jndi);
-                                }
+                serviceTarget
+                        .addService(binderServiceName, binderService)
+                        .addDependency(referenceFactoryServiceName, ManagedReferenceFactory.class,
+                                binderService.getManagedObjectInjector())
+                        .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class,
+                                binderService.getNamingStoreInjector()).addListener(new AbstractServiceListener<Object>() {
+
+                    public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
+                        switch (transition) {
+                            case STARTING_to_UP: {
+                                DEPLOYMENT_CONNECTOR_LOGGER.boundJca("AdminObject", jndi);
+                                break;
+                            }
+                            case STOPPING_to_DOWN: {
+                                DEPLOYMENT_CONNECTOR_LOGGER.unboundJca("AdminObject", jndi);
+                                break;
+                            }
+                            case REMOVING_to_REMOVED: {
+                                DEPLOYMENT_CONNECTOR_LOGGER.debugf("Removed JCA AdminObject [%s]", jndi);
                             }
                         }
-                    }).setInitialMode(ServiceController.Mode.ACTIVE).install();
-
+                    }
+                }).setInitialMode(ServiceController.Mode.ACTIVE).install();
+            }
             // AS7-2222: Just hack it
             if (ao instanceof javax.resource.Referenceable) {
                 ((javax.resource.Referenceable)ao).setReference(new Reference(jndi));

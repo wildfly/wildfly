@@ -69,15 +69,7 @@ public class SimpleApplicationClientTestCase {
 
         final JavaArchive lib = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         lib.addClasses(AppClientSingletonRemote.class, AppClientWrapper.class, CallbackHandler.class);
-
         ear.addAsLibrary(lib);
-
-        // WFLY-2151 ensure that jpa persistence unit is not deployed in ee client (will fail with 2lc service not found error)
-        // persistence unit in client jars can still be deployed
-        final JavaArchive LibWithpersistenceUnit = ShrinkWrap.create(JavaArchive.class, "pulib.jar");
-        LibWithpersistenceUnit.addAsManifestResource(SimpleApplicationClientTestCase.class.getPackage(), "persistence.xml", "persistence.xml");
-        ear.addAsLibraries(LibWithpersistenceUnit);
-
         final JavaArchive ejb = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejb.addClasses(SimpleApplicationClientTestCase.class, AppClientStateSingleton.class);
         ear.addAsModule(ejb);

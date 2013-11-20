@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.management.api.core;
 
+import java.io.IOException;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -34,9 +36,13 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.util.MgmtOperationException;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -49,6 +55,19 @@ public class PatchInfoUnitTestCase extends ContainerResourceMgmtTestBase {
 
     private static final PathAddress ROOT_RESOURCE = PathAddress.pathAddress(PathElement.pathElement(CORE_SERVICE, "patching"));
     private static final PathAddress BASE_LAYER = ROOT_RESOURCE.append(PathElement.pathElement("layer", "base"));
+
+    /**
+     * Skip this testcase if patching is not enabled.
+     */
+    @Before
+    public void assumePatchingIsEnabled() throws IOException, MgmtOperationException {
+        final ModelNode operation = new ModelNode();
+        operation.get(OP_ADDR).set(ROOT_RESOURCE.toModelNode());
+        operation.get(OP).set(READ_RESOURCE_OPERATION);
+        final ModelNode result = executeOperation(operation, false);
+        Assume.assumeTrue(result.get(ModelDescriptionConstants.OUTCOME).asString()
+                .equals(ModelDescriptionConstants.SUCCESS));
+    }
 
     @Test
     public void testRootInfo() throws Exception {

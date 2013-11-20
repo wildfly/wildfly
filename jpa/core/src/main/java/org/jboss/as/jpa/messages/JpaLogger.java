@@ -169,6 +169,15 @@ public interface JpaLogger extends BasicLogger {
     void stoppingPersistenceUnitService(int phase, String name);
 
     /**
+     * Logs warning about unexpected problem gathering statistics.
+     *
+     * @param cause is the cause of the warning
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11411, value = "Unexpected problem gathering statistics")
+    void unexpectedStatisticsProblem(@Cause IllegalStateException cause);
+
+    /**
      * Don't add any message ids higher than 11419 (will need a new chunk).
      */
 

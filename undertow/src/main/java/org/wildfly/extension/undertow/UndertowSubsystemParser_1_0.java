@@ -44,6 +44,7 @@ import org.wildfly.extension.undertow.filters.BasicAuthHandler;
 import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.filters.FilterRefDefinition;
+import org.wildfly.extension.undertow.filters.ResponseHeaderHandler;
 import org.wildfly.extension.undertow.handlers.FileHandler;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
 import org.wildfly.extension.undertow.handlers.ReverseProxyHandler;
@@ -69,11 +70,13 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                         .addAttributes(ServerDefinition.DEFAULT_HOST, ServerDefinition.SERVLET_CONTAINER)
                         .addChild(
                                 builder(AjpListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, AjpListenerResourceDefinition.MAX_POST_SIZE, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER)
+                                        .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER)
+                                        .addAttributes(ListenerResourceDefinition.OPTIONS)
                         )
                         .addChild(
                                 builder(HttpListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.MAX_POST_SIZE, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER)
+                                        .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER)
+                                        .addAttributes(ListenerResourceDefinition.OPTIONS)
                         ).addChild(
                                 builder(HttpsListenerResourceDefinition.INSTANCE)
                                         .addAttributes(HttpsListenerResourceDefinition.INSTANCE.getAttributes())
@@ -89,6 +92,8 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                         ).addChild(
                                         builder(AccessLogDefinition.INSTANCE)
                                                 .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
+                                        ).addChild(
+                                        builder(FilterRefDefinition.INSTANCE)
                                 )
 
                         )
@@ -182,6 +187,9 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 .addChild(
                                         builder(ConnectionLimitHandler.INSTANCE)
                                                 .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS)
+                                ).addChild(
+                                        builder(ResponseHeaderHandler.INSTANCE)
+                                                .addAttributes(ResponseHeaderHandler.INSTANCE.getAttributes())
                                 )
 
                 )

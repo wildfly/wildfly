@@ -23,12 +23,10 @@ package org.jboss.as.ejb3.component.session;
 
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.context.SessionContextImpl;
-import org.jboss.as.naming.ManagedReference;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 
@@ -45,8 +43,8 @@ public abstract class SessionBeanComponentInstance extends EjbComponentInstance 
      *
      * @param component the component
      */
-    protected SessionBeanComponentInstance(final BasicComponent component, final AtomicReference<ManagedReference> instanceReference, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
-        super(component, instanceReference, preDestroyInterceptor, methodInterceptors);
+    protected SessionBeanComponentInstance(final BasicComponent component, final Interceptor preDestroyInterceptor, final Map<Method, Interceptor> methodInterceptors) {
+        super(component, preDestroyInterceptor, methodInterceptors);
     }
 
     @Override

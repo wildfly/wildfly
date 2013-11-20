@@ -47,8 +47,47 @@ class SecurityActions {
         return createCallerActions().getCaller(currentCaller);
     }
 
+    static AccessAuditContext currentAccessAuditContext() {
+        return createAccessAuditContextActions().currentContext();
+    }
+
+    private static AccessAuditContextActions createAccessAuditContextActions() {
+        return WildFlySecurityManager.isChecking() ? AccessAuditContextActions.PRIVILEGED : AccessAuditContextActions.NON_PRIVILEGED;
+    }
+
     private static CreateCallerActions createCallerActions() {
         return WildFlySecurityManager.isChecking() ? CreateCallerActions.PRIVILEGED : CreateCallerActions.NON_PRIVILEGED;
+    }
+
+    private interface AccessAuditContextActions {
+
+        AccessAuditContext currentContext();
+
+        AccessAuditContextActions NON_PRIVILEGED = new AccessAuditContextActions() {
+
+            @Override
+            public AccessAuditContext currentContext() {
+                return AccessAuditContext.currentAccessAuditContext();
+            }
+        };
+
+        AccessAuditContextActions PRIVILEGED = new AccessAuditContextActions() {
+
+            private final PrivilegedAction<AccessAuditContext> PRIVILEGED_ACTION = new PrivilegedAction<AccessAuditContext>() {
+
+                @Override
+                public AccessAuditContext run() {
+                    return NON_PRIVILEGED.currentContext();
+                }
+
+            };
+
+            @Override
+            public AccessAuditContext currentContext() {
+                return doPrivileged(PRIVILEGED_ACTION);
+            }
+        };
+
     }
 
     private interface CreateCallerActions {

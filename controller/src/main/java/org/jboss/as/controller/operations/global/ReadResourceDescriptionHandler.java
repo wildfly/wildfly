@@ -23,6 +23,7 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
@@ -79,7 +80,6 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AliasStepHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -413,6 +413,9 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     result.get(ActionEffect.ADDRESS.toString()).set(false);
                 }
             } else {
+//                if (!defaultSetting) {
+//                    result.get(ADDRESS).set(operation.get(OP_ADDR));
+//                }
                 addResourceAuthorizationResults(result, authResp);
 
                 ModelNode attributes = new ModelNode();
@@ -423,8 +426,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                         for (Property attrProp : nodeDescription.require(ATTRIBUTES).asPropertyList()) {
                             ModelNode attributeResult = new ModelNode();
                             Storage storage = Storage.valueOf(attrProp.getValue().get(STORAGE).asString().toUpperCase());
-                            AccessType accessType = AccessType.forName(attrProp.getValue().get(ACCESS_TYPE).asString());
-                            addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME, accessType);
+                            addAttributeAuthorizationResults(attributeResult, attrProp.getName(), authResp, storage == Storage.RUNTIME);
                             if (attributeResult.isDefined()) {
                                 attributes.get(attrProp.getName()).set(attributeResult);
                             }
@@ -468,23 +470,13 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             result.get(actionEffect == ActionEffect.READ_CONFIG || actionEffect == ActionEffect.READ_RUNTIME ? READ : WRITE).set(authResult.getDecision() == Decision.PERMIT);
         }
 
-        private void addAttributeAuthorizationResults(ModelNode result, String attributeName, ResourceAuthorization authResp, boolean runtime, AccessType accessType) {
+        private void addAttributeAuthorizationResults(ModelNode result, String attributeName, ResourceAuthorization authResp, boolean runtime) {
             if (runtime) {
                 addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.READ_RUNTIME);
-                if (accessType.isWritable()) {
-                    addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.WRITE_RUNTIME);
-                } else {
-
-                }
+                addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.WRITE_RUNTIME);
             } else {
                 addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.READ_CONFIG);
-                if (accessType.isWritable()) {
-                    addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.WRITE_CONFIG);
-                }
-            }
-
-            if (!accessType.isWritable()) {
-                result.get(WRITE).set(false);
+                addAttributeAuthorizationResult(result, attributeName, authResp, ActionEffect.WRITE_CONFIG);
             }
         }
 
@@ -582,8 +574,12 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                             continue;
                         }
                         if (!entry.getValue().equals(defaultControl)) {
-                            //This has different values to the default due to vault expressions being used for attribute values
-                            exceptions.get(entry.getKey().toModelNode().asString()).set(entry.getValue());
+                            //This has different values to the default due to vault expressions being used for attribute values. We need to include the address
+                            //in the exception modelnode for the console to be easier able to parse it
+                            ModelNode exceptionAddr = entry.getKey().toModelNode();
+                            ModelNode exception = entry.getValue();
+                            exception.get(ADDRESS).set(exceptionAddr);
+                            exceptions.get(exceptionAddr.asString()).set(entry.getValue());
                         }
                     }
                 }

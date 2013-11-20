@@ -133,4 +133,12 @@ public interface DeploymentScanner {
      */
     void setDeploymentTimeout(long timeout);
 
+    /**
+     * Sets whether a runtime failure of a deployment causes a rollback of the deployment as well as all other (maybe
+     * unrelated) deployments as part of the scan operation.
+     *
+     * @param rollback true if runtime failures should trigger a rollback
+     */
+    void setRuntimeFailureCausesRollback(boolean rollback);
+
 }

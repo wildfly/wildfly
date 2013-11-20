@@ -41,7 +41,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.extension.undertow.AbstractListenerService;
+import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
@@ -56,14 +56,14 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
     private static final Logger log = Logger.getLogger(UndertowEventHandlerAdapter.class);
 
     @SuppressWarnings("rawtypes")
-    private final Value<AbstractListenerService> listener;
+    private final Value<ListenerService> listener;
     private final Value<UndertowService> service;
     private final Value<ContainerEventHandler> eventHandler;
     private volatile ScheduledExecutorService executor;
     private volatile Server server;
     private volatile Connector connector;
 
-    public UndertowEventHandlerAdapter(Value<ContainerEventHandler> eventHandler, Value<UndertowService> service, @SuppressWarnings("rawtypes") Value<AbstractListenerService> listener) {
+    public UndertowEventHandlerAdapter(Value<ContainerEventHandler> eventHandler, Value<UndertowService> service, @SuppressWarnings("rawtypes") Value<ListenerService> listener) {
         this.eventHandler = eventHandler;
         this.service = service;
         this.listener = listener;

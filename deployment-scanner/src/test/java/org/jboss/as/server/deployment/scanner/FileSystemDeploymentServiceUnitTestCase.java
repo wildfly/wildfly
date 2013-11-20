@@ -5,6 +5,7 @@ package org.jboss.as.server.deployment.scanner;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -16,9 +17,6 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -34,7 +32,6 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.threads.AsyncFuture;
-import org.jboss.threads.AsyncFutureTask;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -289,6 +286,54 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(dodeploy2.exists());
         assertFalse(deployed2.exists());
         assertTrue(failed2.exists());
+    }
+
+    @Test
+    // WFLY-364 Test a partial failure, where a runtime failure does not trigger a complete rollback
+    public void testPartialCompositeFailure() throws Exception {
+        File war1 = createFile("foo.war");
+        File dodeploy1 = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File war2 = createFile("bar.war");
+        File dodeploy2 = createFile("bar.war" + FileSystemDeploymentService.DO_DEPLOY);
+        TesteeSet ts = createTestee();
+
+        ts.controller.addPartialCompositeFailureResultResponse(2, 2);
+        ts.testee.scan();
+
+        String[] list = tmpDir.list(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".war");
+            }
+        });
+        assertEquals(2, list.length);
+
+        assertTrue(war1.exists());
+        assertFalse(dodeploy1.exists());
+        assertTrue(war2.exists());
+        assertFalse(dodeploy2.exists());
+
+        File deployed1 = new File(tmpDir, list[0] + FileSystemDeploymentService.DEPLOYED);
+        File failed1 = new File(tmpDir, list[0] + FileSystemDeploymentService.FAILED_DEPLOY);
+        File deployed2 = new File(tmpDir, list[1] + FileSystemDeploymentService.DEPLOYED);
+        File failed2 = new File(tmpDir, list[1] + FileSystemDeploymentService.FAILED_DEPLOY);
+
+        assertTrue(deployed1.getAbsolutePath(), deployed1.exists());
+        assertFalse(failed1.getAbsolutePath(), failed1.exists());
+        assertFalse(deployed2.exists());
+        assertTrue(failed2.exists());
+
+        dodeploy2 = createFile("bar.war" + FileSystemDeploymentService.DO_DEPLOY);
+
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+
+        deployed2 = new File(tmpDir, "bar.war" + FileSystemDeploymentService.DEPLOYED);
+        failed2 = new File(tmpDir, "bar.war" + FileSystemDeploymentService.FAILED_DEPLOY);
+
+        assertFalse(dodeploy2.exists());
+        assertTrue(deployed2.exists());
+        assertFalse(failed2.exists());
     }
 
     @Test
@@ -1738,6 +1783,33 @@ public class FileSystemDeploymentServiceUnitTestCase {
             }
             rsp.get(FAILURE_DESCRIPTION).set(new ModelNode().set("badness happened"));
             rsp.get(ROLLED_BACK).set(true);
+
+            responses.add(new Response(true, rsp));
+        }
+
+        public void addPartialCompositeFailureResultResponse(int count, int failureStep) {
+
+            if (count < failureStep) {
+                throw new IllegalArgumentException("failureStep must be > count");
+            }
+
+            ModelNode rsp = new ModelNode();
+            rsp.get(OUTCOME).set(SUCCESS);
+            ModelNode result = rsp.get(RESULT);
+            for (int i = 1; i <= count; i++) {
+                String step = "step-" + i;
+                if (i < failureStep) {
+                    result.get(step, OUTCOME).set(SUCCESS);
+                    result.get(step, RESULT);
+                }
+                else if (i == failureStep){
+                    result.get(step, OUTCOME).set(FAILED);
+                    result.get(step, FAILURE_DESCRIPTION).set(new ModelNode().set("badness happened"));
+                }
+                else {
+                    result.get(step, OUTCOME).set(CANCELLED);
+                }
+            }
 
             responses.add(new Response(true, rsp));
         }

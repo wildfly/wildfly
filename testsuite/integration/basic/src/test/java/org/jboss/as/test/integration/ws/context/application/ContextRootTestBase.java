@@ -15,19 +15,13 @@ import org.junit.Test;
  */
 public class ContextRootTestBase {
 
-    protected static final String WAR_DEPLOYMENT_NAME = "ws-notannotated";
-    protected static final String WAR_DEPLOYMENT_UNIT_NAME = WAR_DEPLOYMENT_NAME + "-XXX.war";
-    protected static final String EAR_DEPLOYMENT_NAME = "ws-notannotated";
-    protected static final String EAR_DEPLOYMENT_UNIT_NAME = EAR_DEPLOYMENT_NAME + "-XXX.ear";
-    protected static final String DEPLOYMENT_RESOURCES = "org/jboss/as/test/integration/ws/context/application/notannotated";
-
     protected static final String TEST_PATH = "/test1/";
 
     @ArquillianResource
     URL baseUrl;
 
-    protected static WebArchive createWAR(Class beanClass) {
-        final WebArchive war = ShrinkWrap.create(WebArchive.class, WAR_DEPLOYMENT_UNIT_NAME);
+    protected static WebArchive createWAR(final Class<?> beanClass, final String warDeploymentUnitName) {
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, warDeploymentUnitName);
 
         war.addClass(beanClass);
 

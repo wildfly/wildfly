@@ -366,20 +366,22 @@ public class FailedOperationTransformationConfig {
             ModelNode op = operation.clone();
             for (String attr : attributes) {
                 ModelNode value = op.get(attr);
-                if (value.isDefined()) {
-                    if (checkValue(attr, value, false)) {
-                        AttributesPathAddressConfig<?> complexChildConfig = complexAttributes.get(attr);
-                        if (complexChildConfig == null) {
-                            ModelNode resolved = correctValue(op.get(attr), false);
-                            op.get(attr).set(resolved);
-                        } else {
-                            op.get(attr).set(complexChildConfig.correctOperation(operation.get(attr)));
-                        }
-                        return op;
+                if (checkValue(attr, value, false)) {
+                    AttributesPathAddressConfig<?> complexChildConfig = complexAttributes.get(attr);
+                    if (complexChildConfig == null) {
+                        ModelNode resolved = correctValue(op.get(attr), false);
+                        op.get(attr).set(resolved);
+                    } else {
+                        op.get(attr).set(complexChildConfig.correctOperation(operation.get(attr)));
                     }
+                    return op;
                 }
             }
             return operation;
+        }
+
+        protected boolean correctUndefinedValue() {
+            return false;
         }
 
         @Override

@@ -22,16 +22,30 @@
 
 package org.jboss.as.test.integration.domain.rbac;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CONFIG_AS_XML_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.junit.Assert.assertEquals;
@@ -72,6 +86,7 @@ public abstract class AbstractRbacTestCase {
     protected static final String MASTER_A = "master-a";
     protected static final String SLAVE_B = "slave-b";
     protected static final String SMALL_JVM = "jvm=small";
+    protected static final String SCOPED_ROLE_SERVER = "server-config=scoped-role-server";
 
     private static final Map<String, String> SASL_OPTIONS = Collections.singletonMap("SASL_DISALLOWED_MECHANISMS", "JBOSS-LOCAL-USER");
     private static final String TEST = "test.war";
@@ -81,6 +96,7 @@ public abstract class AbstractRbacTestCase {
     private static final String MEMORY_MBEAN = "core-service=platform-mbean/type=memory";
     private static final String PROFILE_A = "profile=profile-a";
     private static final String EXAMPLE_DS = "subsystem=datasources/data-source=ExampleDS";
+    private static final String GENERIC_SERVER_CONFIG_ADDRESS = "host=master/server-config=*";
 
     private static final Map<String, ModelControllerClient> nonLocalAuthclients = new HashMap<String, ModelControllerClient>();
     private static final Map<String, ModelControllerClient> localAuthClients = new HashMap<String, ModelControllerClient>();
@@ -157,6 +173,53 @@ public abstract class AbstractRbacTestCase {
 
     protected abstract void configureRoles(ModelNode op, String[] roles);
 
+    boolean readOnly = false; // used by RbacSoakTest
+
+    /**
+     * @param expectedOutcome for standard and host-scoped roles tests, this is the expected outcome of all operations;
+     *                        for server-group-scoped roles tests, this is the expected outcome for the profile of the server group the user
+     *                        is member of, as for the other profiles and for read-config-as-xml, the outcome is well known
+     */
+    protected void readWholeConfig(ModelControllerClient client, Outcome expectedOutcome, String... roles) throws IOException {
+        Outcome expectedOutcomeForReadConfigAsXml = expectedOutcome;
+        if (this instanceof AbstractServerGroupScopedRolesTestCase) {
+            expectedOutcomeForReadConfigAsXml = Outcome.UNAUTHORIZED;
+        }
+
+        ModelNode op = createOpNode(null, READ_CONFIG_AS_XML_OPERATION);
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expectedOutcomeForReadConfigAsXml);
+
+        // the code below calls the non-published operation 'describe'; see WFLY-2379 for more info
+
+        ModelControllerClient domainClient = testSupport.getDomainMasterLifecycleUtil().getDomainClient();
+
+        op = createOpNode(null, READ_CHILDREN_NAMES_OPERATION);
+        op.get(CHILD_TYPE).set(PROFILE);
+        ModelNode profiles = RbacUtil.executeOperation(domainClient, op, Outcome.SUCCESS);
+        for (ModelNode profile : profiles.get(RESULT).asList()) {
+            Outcome expectedOutcomeForProfile = expectedOutcome;
+            if (this instanceof AbstractServerGroupScopedRolesTestCase) {
+                expectedOutcomeForProfile = "profile-a".equals(profile.asString()) ? expectedOutcome : Outcome.HIDDEN;
+            }
+
+            op = createOpNode("profile=" + profile.asString(), DESCRIBE);
+            configureRoles(op, roles);
+            ModelNode result = RbacUtil.executeOperation(client, op, expectedOutcomeForProfile);
+            assertEquals(expectedOutcomeForProfile == Outcome.SUCCESS, result.hasDefined(RESULT));
+
+            op = createOpNode("profile=" + profile.asString(), READ_CHILDREN_NAMES_OPERATION);
+            op.get(CHILD_TYPE).set(SUBSYSTEM);
+            ModelNode subsystems = RbacUtil.executeOperation(domainClient, op, Outcome.SUCCESS);
+            for (ModelNode subsystem : subsystems.get(RESULT).asList()) {
+                op = createOpNode("profile=" + profile.asString() + "/subsystem=" + subsystem.asString(), DESCRIBE);
+                configureRoles(op, roles);
+                result = RbacUtil.executeOperation(client, op, expectedOutcomeForProfile);
+                assertEquals(expectedOutcomeForProfile == Outcome.SUCCESS, result.hasDefined(RESULT));
+            }
+        }
+    }
+
     protected void checkStandardReads(ModelControllerClient client, String host, String server, String... roles) throws IOException {
         readResource(client, DEPLOYMENT_1, host, server, Outcome.SUCCESS, roles);
         readResource(client, HTTP_BINDING, host, server, Outcome.SUCCESS, roles);
@@ -226,6 +289,33 @@ public abstract class AbstractRbacTestCase {
         ModelNode op = createOpNode(fullAddress, ADD);
         configureRoles(op, roles);
         RbacUtil.executeOperation(client, op, expectedOutcome);
+    }
+
+    protected void addServerConfig(ModelControllerClient client, String host, String serverGroup,
+                          Outcome expectedOutcome, String... roles) throws IOException {
+        String fullAddress = getPrefixedAddress(HOST, host, SCOPED_ROLE_SERVER);
+        ModelNode op = createOpNode(fullAddress, ADD);
+        op.get(GROUP).set(serverGroup);
+        op.get(AUTO_START).set(false);
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expectedOutcome);
+    }
+
+    protected void restartServer(ModelControllerClient client, String host, String server,
+                                 Outcome expectedOutcome, String... roles) throws IOException {
+        String fullAddress = String.format("host=%s/server-config=%s", host, server);
+        ModelNode op = createOpNode(fullAddress, RESTART);
+        op.get(BLOCKING).set(true);
+        configureRoles(op, roles);
+        RbacUtil.executeOperation(client, op, expectedOutcome);
+    }
+
+    protected ModelNode getServerConfigAccessControl(ModelControllerClient client, String... roles) throws IOException {
+        ModelNode op = createOpNode(GENERIC_SERVER_CONFIG_ADDRESS, READ_RESOURCE_DESCRIPTION_OPERATION);
+        op.get(ACCESS_CONTROL).set("trim-descriptions");
+        op.get(OPERATIONS).set(true);
+        configureRoles(op, roles);
+        return RbacUtil.executeOperation(client, op, Outcome.SUCCESS).get(RESULT).get(0).get(RESULT, ACCESS_CONTROL);
     }
 
     protected void removeResource(String address) throws IOException {

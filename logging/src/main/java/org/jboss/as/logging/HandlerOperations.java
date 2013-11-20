@@ -33,9 +33,9 @@ import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.MODULE;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.PROPERTIES;
+import static org.jboss.as.logging.CommonAttributes.CLASS;
+import static org.jboss.as.logging.CommonAttributes.MODULE;
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.Logging.createOperationFailure;
 import static org.jboss.as.logging.PatternFormatterResourceDefinition.PATTERN;
 import static org.jboss.as.logging.PatternFormatterResourceDefinition.PATTERN_FORMATTER;
@@ -370,7 +370,7 @@ final class HandlerOperations {
                     for (AttributeDefinition attribute : getAttributes()) {
                         if (attribute.getName().equals(attributeName)) {
                             handleProperty(attribute, context, value, logContextConfiguration, configuration, false);
-                            restartRequired = Logging.requiresRestart(attribute.getFlags());
+                            restartRequired = Logging.requiresReload(attribute.getFlags());
                             break;
                         }
                     }

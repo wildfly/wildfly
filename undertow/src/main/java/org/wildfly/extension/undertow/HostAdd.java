@@ -41,10 +41,12 @@ import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.web.host.WebHost;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
+import org.wildfly.extension.undertow.filters.FilterService;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -60,14 +62,23 @@ class HostAdd extends AbstractAddStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final PathAddress parent = address.subAddress(0, address.size() - 1);
-        final String name = address.getLastElement().getValue();
-        List<String> aliases = HostDefinition.ALIAS.unwrap(context, model);
-        String defaultWebModule = HostDefinition.DEFAULT_WEB_MODULE.resolveModelAttribute(context, model).asString();
-        Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
-        Resource accessLog = resource.getChild(UndertowExtension.PATH_ACCESS_LOG);
+        final PathAddress serverAddress = address.subAddress(0, address.size() - 1);
+        final PathAddress subsystemAddress = serverAddress.subAddress(0, address.size() - 1);
+        final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(subsystemAddress));
+        final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
-        final String serverName = parent.getLastElement().getValue();
+
+        final String name = address.getLastElement().getValue();
+        final List<String> aliases = HostDefinition.ALIAS.unwrap(context, model);
+        final String defaultWebModule = HostDefinition.DEFAULT_WEB_MODULE.resolveModelAttribute(context, model).asString();
+        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        final Resource accessLog = resource.getChild(UndertowExtension.PATH_ACCESS_LOG);
+        final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, subsystemModel).asString();
+        final String serverName = serverAddress.getLastElement().getValue();
+
+        boolean installCommonHost = defaultServerName.equals(serverName);
+
+
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
         final ServiceName accessLogServiceName = UndertowService.accessLogServiceName(serverName, name);
         Host service = new Host(name, aliases == null ? new LinkedList<String>() : aliases, defaultWebModule);
@@ -79,8 +90,12 @@ class HostAdd extends AbstractAddStepHandler {
         builder.addListener(verificationHandler);
         builder.setInitialMode(Mode.ON_DEMAND);
 
+        configureFilterRef(fullModel, builder, service);
 
-        final ServiceController<WebHost> commonController = addCommonHost(context, verificationHandler, name, aliases, serverName, virtualHostServiceName);
+        final ServiceController<WebHost> commonController = null;
+        if (installCommonHost) {
+            addCommonHost(context, verificationHandler, name, aliases, serverName, virtualHostServiceName);
+        }
 
         final ServiceController<Host> serviceController = builder.install();
 
@@ -108,7 +123,9 @@ class HostAdd extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(serviceController);
             newControllers.add(consoleServiceServiceController);
-            newControllers.add(commonController);
+            if (installCommonHost) {
+                newControllers.add(commonController);
+            }
         }
     }
 
@@ -129,5 +146,14 @@ class HostAdd extends AbstractAddStepHandler {
         builder.addListener(verificationHandler);
         builder.setInitialMode(Mode.PASSIVE);
         return builder.install();
+    }
+
+    private static void configureFilterRef(final ModelNode model, ServiceBuilder<Host> builder, Host service) {
+        if (model.hasDefined(Constants.FILTER_REF)) {
+            for (Property property : model.get(Constants.FILTER_REF).asPropertyList()) {
+                String name = property.getName();
+                LocationAdd.addDep(builder, UndertowService.FILTER.append(name), FilterService.class, service.getInjectedFilters());
+            }
+        }
     }
 }

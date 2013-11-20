@@ -66,10 +66,7 @@ import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.security.AccessMechanismPrincipal;
 import org.jboss.as.controller.security.InetAddressPrincipal;
-import org.jboss.as.core.security.AccessMechanism;
-import org.jboss.as.core.security.RealmUser;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.wildfly.security.manager.SubjectUtils;
@@ -364,12 +361,14 @@ abstract class AbstractOperationContext implements OperationContext {
         if (!auditLogged) {
             try {
                 Subject subject = SubjectUtils.getCurrent();
+                AccessAuditContext accessContext = SecurityActions.currentAccessAuditContext();
+                Caller caller = getCaller();
                 auditLogger.log(
                         !isModelAffected(),
                         resultAction,
-                        getCallerUserId(subject),
-                        getDomainUUID(),
-                        getSubjectAccessMechanism(subject),
+                        caller == null ? null : caller.getName(),
+                        accessContext == null ? null : accessContext.getDomainUuid(),
+                        accessContext == null ? null : accessContext.getAccessMechanism(),
                         getSubjectInetAddress(subject),
                         getModel(),
                         controllerOperations);
@@ -380,25 +379,11 @@ abstract class AbstractOperationContext implements OperationContext {
         }
     }
 
-    private String getCallerUserId(Subject subject) {
-        String userId = null;
-        if (subject != null) {
-            Set<RealmUser> realmUsers = subject.getPrincipals(RealmUser.class);
-            RealmUser user = realmUsers.iterator().next();
-            userId = user.getName();
-        }
-        return userId;
-    }
-
     private InetAddress getSubjectInetAddress(Subject subject) {
         InetAddressPrincipal principal = getPrincipal(subject, InetAddressPrincipal.class);
         return principal != null ? principal.getInetAddress() : null;
     }
 
-    private AccessMechanism getSubjectAccessMechanism(Subject subject) {
-        AccessMechanismPrincipal principal = getPrincipal(subject, AccessMechanismPrincipal.class);
-        return principal != null ? principal.getAccessMechanism() : null;
-    }
 
     private <T extends Principal> T getPrincipal(Subject subject, Class<T> clazz) {
         if (subject == null) {
@@ -421,8 +406,6 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     abstract Resource getModel();
-
-    abstract String getDomainUUID();
 
     /**
      * Perform the work of completing a step.
@@ -991,8 +974,7 @@ abstract class AbstractOperationContext implements OperationContext {
                     }
                 } catch (Exception e) {
                     report(MessageSeverity.ERROR,
-                            MESSAGES.stepHandlerFailedRollback(handler, operation.get(OP).asString(), address,
-                                    e.getLocalizedMessage()));
+                            MESSAGES.stepHandlerFailedRollback(handler, operation.asString(), address, e));
                 } finally {
                     // Clear the result handler so we never try and finalize
                     // this step again

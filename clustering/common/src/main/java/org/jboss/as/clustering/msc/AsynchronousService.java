@@ -23,6 +23,7 @@
 package org.jboss.as.clustering.msc;
 
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.server.Services;
 import org.jboss.msc.service.Service;
@@ -40,13 +41,16 @@ import org.jboss.msc.value.Value;
  * @author Paul Ferraro
  */
 public final class AsynchronousService<T> implements Service<T> {
+    private static final boolean DEFAULT_ASYNC_START = true;
+    private static final boolean DEFAULT_ASYNC_STOP = true;
+
     final Service<T> service;
     private final Value<ExecutorService> executor;
     private final boolean startAsynchronously;
     private final boolean stopAsynchronously;
 
     public static <T> ServiceBuilder<T> addService(ServiceTarget target, ServiceName name, Service<T> service) {
-        return addService(target, name, service, true, false);
+        return addService(target, name, service, DEFAULT_ASYNC_START, DEFAULT_ASYNC_STOP);
     }
 
     public static <T> ServiceBuilder<T> addService(ServiceTarget target, ServiceName name, Service<T> service, boolean startAsynchronously, boolean stopAsynchronously) {
@@ -57,7 +61,7 @@ public final class AsynchronousService<T> implements Service<T> {
     }
 
     public AsynchronousService(Service<T> service, Value<ExecutorService> executor) {
-        this(service, executor, true, false);
+        this(service, executor, DEFAULT_ASYNC_START, DEFAULT_ASYNC_STOP);
     }
 
     public AsynchronousService(Service<T> service, Value<ExecutorService> executor, boolean startAsynchronously, boolean stopAsynchronously) {
@@ -88,8 +92,13 @@ public final class AsynchronousService<T> implements Service<T> {
                     }
                 }
             };
-            context.asynchronous();
-            this.executor.getValue().execute(task);
+            try {
+                this.executor.getValue().execute(task);
+            } catch (RejectedExecutionException e) {
+                task.run();
+            } finally {
+                context.asynchronous();
+            }
         } else {
             this.service.start(context);
         }
@@ -108,8 +117,13 @@ public final class AsynchronousService<T> implements Service<T> {
                     }
                 }
             };
-            context.asynchronous();
-            this.executor.getValue().execute(task);
+            try {
+                this.executor.getValue().execute(task);
+            } catch (RejectedExecutionException e) {
+                task.run();
+            } finally {
+                context.asynchronous();
+            }
         } else {
             this.service.stop(context);
         }

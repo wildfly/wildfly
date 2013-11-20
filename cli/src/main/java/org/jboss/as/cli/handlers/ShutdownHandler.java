@@ -24,12 +24,14 @@ package org.jboss.as.cli.handlers;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.accesscontrol.AccessRequirement;
+import org.jboss.as.cli.accesscontrol.AccessRequirementBuilder;
+import org.jboss.as.cli.accesscontrol.PerNodeOperationAccess;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.CLIModelControllerClient;
 import org.jboss.as.cli.impl.CommaSeparatedCompleter;
@@ -46,6 +48,7 @@ public class ShutdownHandler extends BaseOperationCommand {
 
     private final ArgumentWithValue restart;
     private final ArgumentWithValue host;
+    private PerNodeOperationAccess hostShutdownPermission;
 
     public ShutdownHandler(CommandContext ctx) {
         super(ctx, "shutdown", true);
@@ -55,25 +58,8 @@ public class ShutdownHandler extends BaseOperationCommand {
         host = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
             @Override
             protected Collection<String> getAllCandidates(CommandContext ctx) {
-                if(!ctx.isDomainMode()) {
-                    return Collections.emptyList();
-                }
-                final ModelControllerClient client = ctx.getModelControllerClient();
-                if(client == null) {
-                    return Collections.emptyList();
-                }
-                final ModelNode op = new ModelNode();
-                op.get(Util.ADDRESS).setEmptyList();
-                op.get(Util.OPERATION).set(Util.READ_CHILDREN_NAMES);
-                op.get(Util.CHILD_TYPE).set(Util.HOST);
-                try {
-                    ModelNode outcome = client.execute(op);
-                    if (Util.isSuccess(outcome)) {
-                        return Util.getList(outcome);
-                    }
-                } catch (Exception e) {
-                }
-                return Collections.emptyList();
+                return hostShutdownPermission.getAllowedOn(ctx);
+
             }} , "--host") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -83,6 +69,15 @@ public class ShutdownHandler extends BaseOperationCommand {
                 return super.canAppearNext(ctx);
             }
         };
+    }
+
+    @Override
+    protected AccessRequirement setupAccessRequirement(CommandContext ctx) {
+        hostShutdownPermission = new PerNodeOperationAccess(ctx, Util.HOST, null, Util.SHUTDOWN);
+        return AccessRequirementBuilder.Factory.create(ctx).any()
+                .operation(Util.SHUTDOWN)
+                .requirement(hostShutdownPermission)
+                .build();
     }
 
     /* (non-Javadoc)
@@ -150,7 +145,7 @@ public class ShutdownHandler extends BaseOperationCommand {
             }
             op.get(Util.ADDRESS).setEmptyList();
         }
-        op.get(Util.OPERATION).set("shutdown");
+        op.get(Util.OPERATION).set(Util.SHUTDOWN);
         setBooleanArgument(args, op, restart, "restart");
         return op;
     }

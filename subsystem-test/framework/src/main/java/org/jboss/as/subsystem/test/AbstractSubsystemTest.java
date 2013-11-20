@@ -1,10 +1,11 @@
 package org.jboss.as.subsystem.test;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
@@ -12,12 +13,14 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.model.test.EAPRepositoryReachableUtil;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestKernelServices;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 
 /**
@@ -349,5 +352,20 @@ public abstract class AbstractSubsystemTest {
      */
     protected void compareXml(String configId, final String original, final String marshalled, final boolean ignoreNamespace) throws Exception {
         ModelTestUtils.compareXml(original, marshalled, ignoreNamespace);
+    }
+
+    /**
+     * Uses {@link org.junit.Assume#assumeTrue(boolean)} to check that  -Djboss.test.transformers.eap is set AND the EAP repository is reachable. If those two conditions are not true,
+     * an {@linke org.junit.AssumptionViolatedException} is thrown causing the test to be conditionally ignored. The purpose of this method is to be called at the beginning of transformers
+     * tests against legacy EAP versions. If the internal EAP repository is not available to the caller, the test is conditionally @Ignored if running with the standard JUnit test runner.
+     * This means that no special setup is needed for being on the VPN or not. The {@code- Dboss.test.transformers.eap} is required to not add unnecessary time to every day builds.
+     *
+     * <p>
+     * Normally you should not have to call this method, tests involving EAP do something similar as part of calling
+     * {@link KernelServicesBuilder#createLegacyKernelServicesBuilder(AdditionalInitialization, org.jboss.as.model.test.ModelTestControllerVersion, ModelVersion)} if the
+     * passed in ModelTestControllerVesion is an EAP version.
+     */
+    protected void ignoreThisTestIfEAPRepositoryIsNotReachable() {
+        Assume.assumeTrue(EAPRepositoryReachableUtil.isReachable());
     }
 }

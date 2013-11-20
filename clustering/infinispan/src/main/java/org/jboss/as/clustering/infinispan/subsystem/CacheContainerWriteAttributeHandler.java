@@ -22,7 +22,6 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -54,10 +53,9 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
     }
 
     public CacheContainerWriteAttributeHandler(final AttributeDefinition... definitions) {
-        assert definitions != null : MESSAGES.nullVar("definitions").getLocalizedMessage();
-        attributeDefinitions = new HashMap<String, AttributeDefinition>();
+        this.attributeDefinitions = new HashMap<>();
         for (AttributeDefinition def : definitions) {
-            attributeDefinitions.put(def.getName(), def);
+            this.attributeDefinitions.put(def.getName(), def);
         }
     }
 
@@ -71,13 +69,13 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        nameValidator.validate(operation);
+        this.nameValidator.validate(operation);
         final String attributeName = operation.require(NAME).asString();
         // Don't require VALUE. Let the validator decide if it's bothered by an undefined value
         ModelNode newValue = operation.hasDefined(VALUE) ? operation.get(VALUE) : new ModelNode();
         final ModelNode submodel = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
 
-        final AttributeDefinition attributeDefinition = getAttributeDefinition(attributeName);
+        final AttributeDefinition attributeDefinition = this.attributeDefinitions.get(attributeName);
         if (attributeDefinition != null) {
             final ModelNode syntheticOp = new ModelNode();
             syntheticOp.get(attributeName).set(newValue);
@@ -90,7 +88,7 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
         if (requiresRuntime(context)) {
             context.addStep(new OperationStepHandler() {
                 @Override
-                public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                public void execute(OperationContext context, ModelNode operation) {
                     context.reloadRequired();
                     context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
                 }
@@ -111,9 +109,4 @@ public class CacheContainerWriteAttributeHandler implements OperationStepHandler
      protected boolean requiresRuntime(OperationContext context) {
          return context.getProcessType().isServer() && !context.isBooting();
      }
-
-     protected AttributeDefinition getAttributeDefinition(final String attributeName) {
-         return attributeDefinitions == null ? null : attributeDefinitions.get(attributeName);
-     }
-
 }

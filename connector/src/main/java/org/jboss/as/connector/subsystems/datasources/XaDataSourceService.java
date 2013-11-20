@@ -26,7 +26,6 @@ import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecovery;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecoveryRegistry;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
@@ -45,24 +44,24 @@ public class XaDataSourceService extends AbstractDataSourceService {
     public XaDataSourceService(final String jndiName) {
         this(jndiName, null);
     }
+
     @Override
-    public synchronized void stop(StopContext stopContext) {
-        if (deploymentMD != null) {
-            if (deploymentMD.getRecovery() != null &&
+    protected synchronized void stopService() {
+        if (deploymentMD != null &&
+                deploymentMD.getRecovery() != null &&
                 transactionIntegrationValue.getValue() != null &&
                 transactionIntegrationValue.getValue().getRecoveryRegistry() != null) {
 
-                XAResourceRecoveryRegistry rr = transactionIntegrationValue.getValue().getRecoveryRegistry();
+            XAResourceRecoveryRegistry rr = transactionIntegrationValue.getValue().getRecoveryRegistry();
 
-                for (XAResourceRecovery recovery : deploymentMD.getRecovery()) {
-                    if (recovery != null) {
-                        rr.removeXAResourceRecovery(recovery);
-                    }
+            for (XAResourceRecovery recovery : deploymentMD.getRecovery()) {
+                if (recovery != null) {
+                    rr.removeXAResourceRecovery(recovery);
                 }
             }
         }
 
-        super.stop(stopContext);
+        super.stopService();
     }
 
     @Override

@@ -24,10 +24,12 @@ package org.jboss.as.core.model.test;
 import java.io.IOException;
 
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.model.test.EAPRepositoryReachableUtil;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 
 /**
@@ -50,6 +52,10 @@ public abstract class AbstractCoreModelTest {
     @After
     public void cleanup() throws Exception {
         delegate.cleanup();
+    }
+
+    CoreModelTestDelegate getDelegate() {
+        return delegate;
     }
 
     protected KernelServicesBuilder createKernelServicesBuilder(TestModelType type) {
@@ -89,5 +95,15 @@ public abstract class AbstractCoreModelTest {
      */
     protected static ModelNode checkOutcome(ModelNode result) {
         return ModelTestUtils.checkOutcome(result);
+    }
+
+    /**
+     * Uses {@link org.junit.Assume#assumeTrue(boolean)} to check that the EAP repository is reachable. If it is not reachable an {@linke org.junit.AssumptionViolatedException}
+     * is thrown causing the test to be conditionally ignored. The purpose of this method is to be called at the beginning of transformers tests against legacy EAP versions. If the
+     * internal EAP repository is not available to the caller, the test is conditionally @Ignored if running with the standard JUnit test runner. This means that no special setup
+     * is needed for being on the VPN or not.
+     */
+    protected void ignoreThisTestIfEAPRepositoryIsNotReachable() {
+        Assume.assumeTrue(EAPRepositoryReachableUtil.isReachable());
     }
 }

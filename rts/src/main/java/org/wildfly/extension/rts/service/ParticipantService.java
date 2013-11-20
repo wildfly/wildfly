@@ -23,16 +23,13 @@ package org.wildfly.extension.rts.service;
 
 import io.undertow.servlet.api.DeploymentInfo;
 
-import java.net.Inet4Address;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.network.SocketBinding;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.narayana.rest.integration.ParticipantResource;
 import org.jboss.narayana.rest.integration.api.ParticipantsManagerFactory;
 import org.wildfly.extension.rts.logging.RTSLogger;
@@ -47,8 +44,6 @@ public final class ParticipantService extends AbstractRTSService implements Serv
     public static final String CONTEXT_PATH = ParticipantResource.BASE_PATH_SEGMENT;
 
     private static final String DEPLOYMENT_NAME = "REST-AT Participant";
-
-    private InjectedValue<SocketBinding> injectedSocketBinding = new InjectedValue<>();
 
     @Override
     public ParticipantService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -78,10 +73,6 @@ public final class ParticipantService extends AbstractRTSService implements Serv
         undeployServlet();
     }
 
-    public InjectedValue<SocketBinding> getInjectedSocketBinding() {
-        return injectedSocketBinding;
-    }
-
     private void deployParticipant() {
         undeployServlet();
 
@@ -91,17 +82,6 @@ public final class ParticipantService extends AbstractRTSService implements Serv
         final DeploymentInfo participantDeploymentInfo = getDeploymentInfo(DEPLOYMENT_NAME, CONTEXT_PATH, initialParameters);
 
         deployServlet(participantDeploymentInfo);
-    }
-
-    private String getBaseUrl() {
-        final String address = injectedSocketBinding.getValue().getAddress().getHostAddress();
-        final int port = injectedSocketBinding.getValue().getPort();
-
-        if (injectedSocketBinding.getValue().getAddress() instanceof Inet4Address) {
-            return "http://" + address + ":" + port;
-        } else {
-            return "http://[" + address + "]:" + port;
-        }
     }
 
 }

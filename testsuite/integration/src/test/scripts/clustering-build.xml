@@ -52,10 +52,6 @@
             <param name="cacheMode" value="SYNC"/>
             <param name="stack" value="tcp"/>
         </antcall>
-        <antcall target="change-url">
-            <param name="cacheMode" value="SYNC" />
-            <param name="stack" value="tcp" />
-        </antcall>
         <antcall target="add-cache">
             <param name="cacheMode" value="SYNC" />
             <param name="stack" value="tcp" />
@@ -100,11 +96,6 @@
         <ts.config-as.add-cache-container name="jbossas-clustering-${cacheMode}-${stack}-1" cacheLoader="${cacheLoader}" cacheType="${cacheType}" mode="${mode}" />
     </target>
 
-    <target name="change-url" unless="ds" description="Change database unless no database profile is activated.">
-        <ts.config-as.change-database name="jbossas-clustering-${cacheMode}-${stack}-0" ds.jdbc.url="jdbc:h2:file:test;FILE_LOCK=NO;DB_CLOSE_DELAY=-1" />
-        <ts.config-as.change-database name="jbossas-clustering-${cacheMode}-${stack}-1" ds.jdbc.url="jdbc:h2:file:test;FILE_LOCK=NO;DB_CLOSE_DELAY=-1" />
-    </target>
-
     <!-- x-site test deployment:
          4 nodes: ${node0}, ${node1}, ${node2}, ${node3}
          3 sites: LON (node0, node1), NYC (node2), SFO (node3)
@@ -135,9 +126,9 @@
                                       remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <!-- define cache to be backed up at Infinispan level -->
         <ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-0" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="NYC"/>
+                                       cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-0" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="SFO"/>
+                                       cache-type="distributed-cache" cache="dist" backup.site="SFO"/>
 
         <!-- site LON, node 1, mcast 0 -->
         <echo message="Building config clustering-xsite-LON-1"/>
@@ -155,9 +146,9 @@
                                       remote-site.site="SFO" remote-site.stack="tcp" remote-site.cluster="bridge"/>
         <!-- define cache to be backed up at Infinispan level -->
         <ts.config-as.add-xsite-backups name="wildfly-clustering-xsite-LON-1" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="NYC"/>
+                                       cache-type="distributed-cache" cache="dist" backup.site="NYC"/>
         <ts.config-as.add-xsite-backup name="wildfly-clustering-xsite-LON-1" container="web"
-                                       cache-type="replicated-cache" cache="repl" backup.site="SFO"/>
+                                       cache-type="distributed-cache" cache="dist" backup.site="SFO"/>
 
         <!-- site NYC, node 2, mcast 1 -->
         <echo message="Building config clustering-xsite-NYC-0"/>
@@ -206,9 +197,9 @@
 
         <!-- create a named backup cache based on repl for LON:web:dist and mark as backup-for -->
         <ts.config-as.copy-cache name="wildfly-clustering-xsite-SFO-0-backupFor" container.name="web"
-                                       cache-type="replicated-cache" cache.base="repl" cache.name="LONrepl"/>
+                                       cache-type="distributed-cache" cache.base="dist" cache.name="LON"/>
         <ts.config-as.add-xsite-backup-for name="wildfly-clustering-xsite-SFO-0-backupFor" container="web"
-                                       cache-type="replicated-cache" cache="LONrepl" remote-site="LON" remote-cache="repl"/>
+                                       cache-type="distributed-cache" cache="LON" remote-site="LON" remote-cache="dist"/>
 
     </target>
 

@@ -38,5 +38,6 @@ interface CommonAttributes {
     String SCANNER = "scanner";
     String SCAN_ENABLED = "scan-enabled";
     String SCAN_INTERVAL = "scan-interval";
+    String RUNTIME_FAILURE_CAUSES_ROLLBACK = "runtime-failure-causes-rollback";
 
 }

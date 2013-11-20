@@ -918,4 +918,6 @@ public interface EeMessages {
     @Message(id = 16713, value = "EE Concurrent Transaction Setup Provider service not installed.")
     IllegalStateException transactionSetupProviderServiceNotInstalled();
 
+    @Message(id = 16714, value = "Instance data can only be set during construction")
+    IllegalStateException instanceDataCanOnlyBeSetDuringConstruction();
 }

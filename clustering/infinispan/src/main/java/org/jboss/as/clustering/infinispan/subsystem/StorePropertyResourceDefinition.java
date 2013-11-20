@@ -44,12 +44,12 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
     public static final PathElement STORE_PROPERTY_PATH = PathElement.pathElement(ModelKeys.PROPERTY);
 
     // attributes
-    static final SimpleAttributeDefinition VALUE =
-            new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
-                    .setXmlName("value")
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static final SimpleAttributeDefinition VALUE = new SimpleAttributeDefinitionBuilder("value", ModelType.STRING, false)
+            .setXmlName("value")
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
 
     public StorePropertyResourceDefinition() {
         super(STORE_PROPERTY_PATH,
@@ -58,19 +58,12 @@ public class StorePropertyResourceDefinition extends SimpleResourceDefinition {
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
-    static final AttributeDefinition[] STORE_PROPERTY_ATTRIBUTES = {VALUE};
+    static final AttributeDefinition[] STORE_PROPERTY_ATTRIBUTES = { VALUE };
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
-
         // do we need a special handler here?
         final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(VALUE);
         resourceRegistration.registerReadWriteAttribute(VALUE, null, writeHandler);
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
     }
 }

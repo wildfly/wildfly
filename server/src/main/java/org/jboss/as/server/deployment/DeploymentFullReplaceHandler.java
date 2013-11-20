@@ -21,7 +21,6 @@ package org.jboss.as.server.deployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ARCHIVE;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_PATH;
@@ -45,7 +44,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.ServerMessages;
@@ -78,87 +76,87 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
+        // Validate op
         for (AttributeDefinition def : DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.values()) {
             def.validateOperation(operation);
         }
 
-        final String name = DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.get(NAME).resolveModelAttribute(context, operation).asString();
-        final PathAddress address = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(DEPLOYMENT, name));
-
-        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
-        boolean exists = root.hasChild(PathElement.pathElement(DEPLOYMENT, name));
-        if (! exists) {
-            throw ServerMessages.MESSAGES.noSuchDeployment(name);
-        }
-
-        final ModelNode replaceNode = context.readResourceForUpdate(address).getModel();
-        final String replacedRuntimeName = RUNTIME_NAME.resolveModelAttribute(context, replaceNode).asString();
+        // Pull data from the op
+        final String name = DeploymentAttributes.NAME.resolveModelAttribute(context, operation).asString();
+        final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
         final String runtimeName = operation.hasDefined(RUNTIME_NAME.getName()) ? operation.get(RUNTIME_NAME.getName()).asString() : name;
+        // clone the content param, so we can modify it to our own content
+        ModelNode content = operation.require(CONTENT).clone();
 
-        // clone it, so we can modify it to our own content
-        final ModelNode content = operation.require(CONTENT).clone();
+        // Throw a specific exception if the replaced deployment doesn't already exist
+        // BES 2013/10/30 -- this is pointless; the readResourceForUpdate call will throw
+        // an exception with an equally informative message if the deployment doesn't exist
+//        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
+//        boolean exists = root.hasChild(deploymentPath);
+//        if (!exists) {
+//            throw ServerMessages.MESSAGES.noSuchDeployment(name);
+//        }
+
+        final ModelNode deploymentModel = context.readResourceForUpdate(PathAddress.pathAddress(deploymentPath)).getModel();
+
+        // Keep track of runtime name of deployment we are replacing for use in Stage.RUNTIME
+        final String replacedRuntimeName = RUNTIME_NAME.resolveModelAttribute(context, deploymentModel).asString();
+
+        // Keep track of hash we are replacing so we can drop it from the content repo if all is well
+        ModelNode replacedContent = deploymentModel.get(CONTENT).get(0);
+        final byte[] replacedHash = replacedContent.hasDefined(CONTENT_HASH.getName())
+                ? CONTENT_HASH.resolveModelAttribute(context, replacedContent).asBytes() : null;
+
+        // Set up the new content attribute
+        final byte[] newHash;
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
         final DeploymentHandlerUtil.ContentItem contentItem;
         ModelNode contentItemNode = content.require(0);
-        final byte[] originalHash = replaceNode.get(CONTENT).get(0).hasDefined(CONTENT_HASH.getName()) ? CONTENT_HASH.resolveModelAttribute(context, replaceNode.get(CONTENT).get(0)).asBytes() : null;
         if (contentItemNode.hasDefined(CONTENT_HASH.getName())) {
-            byte[] hash = CONTENT_HASH.resolveModelAttribute(context, contentItemNode).asBytes();
+            newHash = CONTENT_HASH.resolveModelAttribute(context, contentItemNode).asBytes();
 
-            contentItem = addFromHash(hash);
+            contentItem = addFromHash(newHash);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
             contentItem = addFromContentAdditionParameter(context, contentItemNode);
+            newHash = contentItem.getHash();
+
+            // Replace the content data
             contentItemNode = new ModelNode();
-            contentItemNode.get(CONTENT_HASH.getName()).set(contentItem.getHash());
+            contentItemNode.get(CONTENT_HASH.getName()).set(newHash);
             content.clear();
             content.add(contentItemNode);
         } else {
             contentItem = addUnmanaged(context, contentItemNode);
+            newHash = null;
         }
 
-        final ModelNode deployNode = context.readResourceForUpdate(address).getModel();
-        // the content repo will already have these, note that content should not be empty
-        removeContentAdditions(deployNode.require(CONTENT));
+        // deploymentModel.get(NAME).set(name); // already there
+        deploymentModel.get(RUNTIME_NAME.getName()).set(runtimeName);
+        deploymentModel.get(CONTENT).set(content);
+        // ENABLED stays as is
 
-        deployNode.get(NAME).set(name);
-        deployNode.get(RUNTIME_NAME.getName()).set(runtimeName);
-        deployNode.get(CONTENT).set(content);
-        ENABLED.validateAndSet(deployNode, replaceNode);
-
-
-        if (ENABLED.resolveModelAttribute(context, replaceNode).asBoolean()) {
-            DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedRuntimeName, vaultReader, contentItem);
+        // Do the runtime part if the deployment is enabled
+        if (ENABLED.resolveModelAttribute(context, deploymentModel).asBoolean()) {
+            DeploymentHandlerUtil.replace(context, deploymentModel, runtimeName, name, replacedRuntimeName, vaultReader, contentItem);
         }
-
-        ModelNode contentNode = replaceNode.get(CONTENT).get(0);
-        final byte[] newHash = contentNode.hasDefined(CONTENT_HASH.getName()) ? CONTENT_HASH.resolveModelAttribute(context, contentNode).asBytes() : null;
 
         context.completeStep(new OperationContext.ResultHandler() {
             @Override
             public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
                 if (resultAction == ResultAction.KEEP) {
-                    if (originalHash != null  && newHash != null && !Arrays.equals(originalHash, newHash)) {
-                        contentRepository.removeContent(originalHash, name);
-                        if (contentRepository != null && newHash != null) {
-                            contentRepository.addContentReference(newHash, name);
-                        }
+                    if (replacedHash != null  && (newHash == null || !Arrays.equals(replacedHash, newHash))) {
+                        // The old content is no longer used; clean from repos
+                        contentRepository.removeContent(replacedHash, name);
                     }
-                } else if (newHash != null) {
+                    if (newHash != null) {
+                        contentRepository.addContentReference(newHash, name);
+                    }
+                } else if (newHash != null && (replacedHash == null || !Arrays.equals(replacedHash, newHash))) {
+                    // Due to rollback, the new content isn't used; clean from repos
                     contentRepository.removeContent(newHash, name);
                 }
             }
         });
-    }
-
-    private static void removeAttributes(final ModelNode node, final Iterable<String> attributeNames) {
-        for (final String attributeName : attributeNames) {
-            node.remove(attributeName);
-        }
-    }
-
-    private static void removeContentAdditions(final ModelNode content) {
-        for (final ModelNode contentItem : content.asList()) {
-            removeAttributes(contentItem, DeploymentAttributes.ALL_CONTENT_ATTRIBUTES.keySet());
-        }
     }
 
     DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash) throws OperationFailedException {

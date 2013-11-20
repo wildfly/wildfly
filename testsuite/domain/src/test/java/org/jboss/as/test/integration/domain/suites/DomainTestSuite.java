@@ -52,7 +52,6 @@ import org.junit.runners.Suite;
         ModuleLoadingManagementTestCase.class,
         OperationTransformationTestCase.class,
         ReadEnvironmentVariablesTestCase.class,
-        ServerManagementTestCase.class,
         ServerRestartRequiredTestCase.class,
         ValidateAddressOperationTestCase.class,
         ValidateOperationOperationTestCase.class

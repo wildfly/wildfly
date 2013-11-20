@@ -53,6 +53,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.security.auth.callback.CallbackHandler;
 
@@ -184,7 +185,11 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private final DelegatingResourceDefinition rootResourceDefinition;
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
 
-    private volatile ServerInventory serverInventory;
+    // @GuardedBy(this)
+    private Future<ServerInventory> inventoryFuture;
+    private final AtomicBoolean serverInventoryLock = new AtomicBoolean();
+    // @GuardedBy(serverInventoryLock)
+    private ServerInventory serverInventory;
 
     // TODO look into using the controller executor
     private volatile ExecutorService proxyExecutor;
@@ -444,6 +449,10 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             if (ok) {
 
+                // Now we know our management interface configuration. Install the server inventory
+                Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
+                            extensionRegistry, hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
+
                 // Now we know our discovery configuration.
                 List<DiscoveryOption> discoveryOptions = hostControllerInfo.getRemoteDomainControllerDiscoveryOptions();
                 if (hostControllerInfo.isMasterDomainController() && (discoveryOptions != null)) {
@@ -452,12 +461,13 @@ public class DomainModelControllerService extends AbstractControllerService impl
                             hostControllerInfo.getNativeManagementPort(), hostControllerInfo.isMasterDomainController());
                 }
 
-                // Now we know our management interface configuration. Install the server inventory
-                Future<ServerInventory> inventoryFuture = ServerInventoryService.install(serviceTarget, this, runningModeControl, environment,
-                        extensionRegistry, hostControllerInfo.getNativeManagementInterface(), hostControllerInfo.getNativeManagementPort());
+                // Run the initialization
+                runPerformControllerInitialization(context);
 
                 if (!hostControllerInfo.isMasterDomainController() && !environment.isUseCachedDc()) {
-                    serverInventory = getFuture(inventoryFuture);
+
+                    // Block for the ServerInventory
+                    establishServerInventory(inventoryFuture);
 
                     if ((discoveryOptions != null) && !discoveryOptions.isEmpty()) {
                         connectToDomainMaster(serviceTarget, currentRunningMode);
@@ -507,15 +517,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
                         ok = true;
                     }
 
-                    // Run the initialization
-                    runPerformControllerInitialization(context);
-
                     if (ok) {
                         InternalExecutor executor = new InternalExecutor();
                         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                                 new MasterDomainControllerOperationHandlerService(this, executor, executor, runtimeIgnoreTransformationRegistry),
                                 DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
-                        serverInventory = getFuture(inventoryFuture);
+
+                        // Block for the ServerInventory
+                        establishServerInventory(inventoryFuture);
                     }
                 }
             }
@@ -618,6 +627,17 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
     }
 
+    private void establishServerInventory(Future<ServerInventory> future) {
+        synchronized (serverInventoryLock) {
+            try {
+                serverInventory = getFuture(future);
+                serverInventoryLock.set(true);
+            } finally {
+                serverInventoryLock.notifyAll();
+            }
+        }
+    }
+
     private <T> T getFuture(Future<T> future) {
         try {
             return future.get();
@@ -640,7 +660,14 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     @Override
     public void stop(final StopContext context) {
-        serverInventory = null;
+        synchronized (serverInventoryLock) {
+            try {
+                serverInventory = null;
+                serverInventoryLock.set(false);
+            } finally {
+                serverInventoryLock.notifyAll();
+            }
+        }
         extensionRegistry.clear();
         super.stop(context);
     }
@@ -734,138 +761,172 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     private class DelegatingServerInventory implements ServerInventory {
+
+        /*
+         * WFLY-2370. Max period a caller to this class can wait for boot ops to complete
+         * in the ModelController and boot moves on to starting the ServerInventory.
+         * Generally this should be a very small window, as the boot ops install
+         * very few services other than the management interface that would
+         * let user requests hit this class in the first place.
+         */
+        private static final long SERVER_INVENTORY_TIMEOUT = 10000;
+
+        private synchronized ServerInventory getServerInventory() {
+            ServerInventory result = null;
+            synchronized (serverInventoryLock) {
+                if (serverInventoryLock.get()) {
+                    // Usual case
+                    result = serverInventory;
+                } else {
+                    try {
+                        serverInventoryLock.wait(SERVER_INVENTORY_TIMEOUT);
+                        if (serverInventoryLock.get()) {
+                            result = serverInventory;
+                        }
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+            }
+            if (result == null) {
+                // Odd case. TODO i18n message
+                throw new IllegalStateException();
+            }
+            return result;
+        }
+
         public ProxyController serverCommunicationRegistered(String serverProcessName, ManagementChannelHandler channelHandler) {
-            return serverInventory.serverCommunicationRegistered(serverProcessName, channelHandler);
+            return getServerInventory().serverCommunicationRegistered(serverProcessName, channelHandler);
         }
 
         public boolean serverReconnected(String serverProcessName, ManagementChannelHandler channelHandler) {
-            return serverInventory.serverReconnected(serverProcessName, channelHandler);
+            return getServerInventory().serverReconnected(serverProcessName, channelHandler);
         }
 
         public void serverProcessAdded(String serverProcessName) {
-            serverInventory.serverProcessAdded(serverProcessName);
+            getServerInventory().serverProcessAdded(serverProcessName);
         }
 
         public void serverStartFailed(String serverProcessName) {
-            serverInventory.serverStartFailed(serverProcessName);
+            getServerInventory().serverStartFailed(serverProcessName);
         }
 
         @Override
         public void serverStarted(String serverProcessName) {
-            serverInventory.serverStarted(serverProcessName);
+            getServerInventory().serverStarted(serverProcessName);
         }
 
         public void serverProcessStopped(String serverProcessName) {
-            serverInventory.serverProcessStopped(serverProcessName);
+            getServerInventory().serverProcessStopped(serverProcessName);
         }
 
         public String getServerProcessName(String serverName) {
-            return serverInventory.getServerProcessName(serverName);
+            return getServerInventory().getServerProcessName(serverName);
         }
 
         public String getProcessServerName(String processName) {
-            return serverInventory.getProcessServerName(processName);
+            return getServerInventory().getProcessServerName(processName);
         }
 
         @Override
         public ServerStatus reloadServer(String serverName, boolean blocking) {
-            return serverInventory.reloadServer(serverName, blocking);
+            return getServerInventory().reloadServer(serverName, blocking);
         }
 
         public void processInventory(Map<String, ProcessInfo> processInfos) {
-            serverInventory.processInventory(processInfos);
+            getServerInventory().processInventory(processInfos);
         }
 
         public Map<String, ProcessInfo> determineRunningProcesses() {
-            return serverInventory.determineRunningProcesses();
+            return getServerInventory().determineRunningProcesses();
         }
 
         public Map<String, ProcessInfo> determineRunningProcesses(boolean serversOnly) {
-            return serverInventory.determineRunningProcesses(serversOnly);
+            return getServerInventory().determineRunningProcesses(serversOnly);
         }
 
         public ServerStatus determineServerStatus(String serverName) {
-            return serverInventory.determineServerStatus(serverName);
+            return getServerInventory().determineServerStatus(serverName);
         }
 
         public ServerStatus startServer(String serverName, ModelNode domainModel) {
-            return serverInventory.startServer(serverName, domainModel);
+            return getServerInventory().startServer(serverName, domainModel);
         }
 
         @Override
         public ServerStatus startServer(String serverName, ModelNode domainModel, boolean blocking) {
-            return serverInventory.startServer(serverName, domainModel, blocking);
+            return getServerInventory().startServer(serverName, domainModel, blocking);
         }
 
         public void reconnectServer(String serverName, ModelNode domainModel, byte[] authKey, boolean running, boolean stopping) {
-            serverInventory.reconnectServer(serverName, domainModel, authKey, running, stopping);
+            getServerInventory().reconnectServer(serverName, domainModel, authKey, running, stopping);
         }
 
         public ServerStatus restartServer(String serverName, int gracefulTimeout, ModelNode domainModel) {
-            return serverInventory.restartServer(serverName, gracefulTimeout, domainModel);
+            return getServerInventory().restartServer(serverName, gracefulTimeout, domainModel);
         }
 
         @Override
         public ServerStatus restartServer(String serverName, int gracefulTimeout, ModelNode domainModel, boolean blocking) {
-            return serverInventory.restartServer(serverName, gracefulTimeout, domainModel, blocking);
+            return getServerInventory().restartServer(serverName, gracefulTimeout, domainModel, blocking);
         }
 
         public ServerStatus stopServer(String serverName, int gracefulTimeout) {
-            return serverInventory.stopServer(serverName, gracefulTimeout);
+            return getServerInventory().stopServer(serverName, gracefulTimeout);
         }
 
         @Override
         public ServerStatus stopServer(String serverName, int gracefulTimeout, boolean blocking) {
-            return serverInventory.stopServer(serverName, gracefulTimeout, blocking);
+            return getServerInventory().stopServer(serverName, gracefulTimeout, blocking);
         }
 
         public CallbackHandler getServerCallbackHandler() {
-            return serverInventory.getServerCallbackHandler();
+            return getServerInventory().getServerCallbackHandler();
         }
 
         @Override
         public void stopServers(int gracefulTimeout) {
-            serverInventory.stopServers(gracefulTimeout);
+            getServerInventory().stopServers(gracefulTimeout);
         }
 
         @Override
         public void stopServers(int gracefulTimeout, boolean blockUntilStopped) {
-            serverInventory.stopServers(gracefulTimeout, blockUntilStopped);
+            getServerInventory().stopServers(gracefulTimeout, blockUntilStopped);
         }
 
         @Override
         public void connectionFinished() {
-            serverInventory.connectionFinished();
+            getServerInventory().connectionFinished();
         }
 
         @Override
         public void serverProcessStarted(String processName) {
-            serverInventory.serverProcessStarted(processName);
+            getServerInventory().serverProcessStarted(processName);
         }
 
         @Override
         public void serverProcessRemoved(String processName) {
-            serverInventory.serverProcessRemoved(processName);
+            getServerInventory().serverProcessRemoved(processName);
         }
 
         @Override
         public void operationFailed(String processName, ProcessMessageHandler.OperationType type) {
-            serverInventory.operationFailed(processName, type);
+            getServerInventory().operationFailed(processName, type);
         }
 
         @Override
         public void destroyServer(String serverName) {
-            serverInventory.destroyServer(serverName);
+            getServerInventory().destroyServer(serverName);
         }
 
         @Override
         public void killServer(String serverName) {
-            serverInventory.killServer(serverName);
+            getServerInventory().killServer(serverName);
         }
 
         @Override
         public void awaitServersState(Collection<String> serverNames, boolean started) {
-            serverInventory.awaitServersState(serverNames, started);
+            getServerInventory().awaitServersState(serverNames, started);
         }
     }
 

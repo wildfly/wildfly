@@ -134,9 +134,9 @@ public class ProtocolConnectionUtils {
     private static OptionMap getOptions(final ProtocolConnectionConfiguration configuration) {
         final Map<String, String> saslOptions = configuration.getSaslOptions();
         final OptionMap.Builder builder = OptionMap.builder();
-        builder.addAll(configuration.getOptionMap());
         builder.set(SASL_POLICY_NOANONYMOUS, Boolean.FALSE);
         builder.set(SASL_POLICY_NOPLAINTEXT, Boolean.FALSE);
+        builder.addAll(configuration.getOptionMap());
         configureSaslMechnisms(saslOptions, isLocal(configuration.getUri()), builder);
         List<Property> tempProperties = new ArrayList<Property>(saslOptions != null ? saslOptions.size() : 1);
         tempProperties.add(Property.of("jboss.sasl.local-user.quiet-auth", "true"));

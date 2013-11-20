@@ -67,7 +67,9 @@
                     truststore-type="${prop.truststore-type:JKS}"
                     session-cache-size="${prop.session-cache-size:512}"
                     session-timeout="${prop.session-timeout:3000}"
+                    ssl-protocol="${prop.ssl-protocol:RFC4279}"
                   />
+                  <!--  ssl-protocol does not exist < 1.2.0 -->
             </connector>
             <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >
                 <virtual-server name="vs1" />
@@ -83,6 +85,8 @@
                <rewrite name="with-conditions" pattern="${prop.pattern:^/helloworld(.*)}" substitution="${prop.substitution:/helloworld/test.jsp}" flags="${prop.flags:L}" >
                   <condition name="https" pattern="${prop.pattern:off}" test="${prop.test:%{HTTPS}}" flags="${prop.flags:NC}"/>
                   <condition name="user" test="%{USER}" pattern="toto" flags="NC"/>
+                  <!--  This should break in <= 1.2.0 -->
+                  <condition name="no-flags" test="%{USER}" pattern="toto"/>
                </rewrite>
                <sso reauthenticate="${prop.reauthenticate:true}" domain="${prop.domain:myDomain}" cache-name="myCache" cache-container="cache-container"/>
             </virtual-server>

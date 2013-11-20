@@ -171,11 +171,9 @@ public class SecurityExtension implements Extension {
         registerModuleTransformer(securityDomain, PATH_MAPPING_CLASSIC, mappingModule);
         final ModulesToAttributeTransformer providerModule = new ModulesToAttributeTransformer(Constants.PROVIDER_MODULE, Constants.PROVIDER_MODULES);
         registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule);
-
-
         final ModulesToAttributeTransformer authModule = new ModulesToAttributeTransformer(Constants.AUTH_MODULE, Constants.AUTH_MODULES);
-
         ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);
+
         //todo check if there are cases when child is created before authentication=jaspi
         registerModuleTransformer(jaspiReg, PATH_LOGIN_MODULE_STACK, loginModule);
 
@@ -209,6 +207,12 @@ public class SecurityExtension implements Extension {
         registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule);
         AttributeToModulesTransformer authModule = new AttributeToModulesTransformer(Constants.AUTH_MODULES);
         ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);
+
+        // the module attribute is not recognized in the 1.2.0 version of the subsystem.
+        jaspiReg.addChildResource(PathElement.pathElement(Constants.AUTH_MODULE)).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE)
+                .end();
+
         registerModuleTransformer(jaspiReg, PATH_LOGIN_MODULE_STACK, loginModule);
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 2, 0));
@@ -219,7 +223,8 @@ public class SecurityExtension implements Extension {
         ResourceTransformationDescriptionBuilder child = parent.addChildResource(childPath)
                 .setCustomResourceTransformer(transformer)
                 .discardOperations(ADD);
-        child.addChildRedirection(PathElement.pathElement(transformer.getResourceName()), CURRENT_PATH_TRANSFORMER)
+        ResourceTransformationDescriptionBuilder childRedirectionBuilder = child.addChildRedirection(
+                    PathElement.pathElement(transformer.getResourceName()), CURRENT_PATH_TRANSFORMER)
                 .setCustomResourceTransformer(ResourceTransformer.DISCARD)
                 .addOperationTransformationOverride(ADD)
                 .setCustomOperationTransformer(transformer)
@@ -230,6 +235,11 @@ public class SecurityExtension implements Extension {
                 .addOperationTransformationOverride(REMOVE)
                 .setCustomOperationTransformer(transformer)
                 .inheritResourceAttributeDefinitions().end();
+
+        // the module attribute in auth-module elements is not recognized in the 1.1.0 version of the subsystem.
+        if (Constants.AUTH_MODULE.equals(transformer.getResourceName())) {
+            childRedirectionBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE);
+        }
         return child;
     }
 

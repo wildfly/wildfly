@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.domain.management.DomainManagementMessages;
-import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
 import org.jboss.as.domain.management.security.password.PasswordRestriction;
 import org.jboss.as.domain.management.security.password.RestrictionLevel;
 
@@ -59,15 +58,18 @@ public class PromptPasswordState implements State {
         if (stateValues.isSilentOrNonInteractive() == false) {
             if (rePrompt == false) {
                 // Password requirements.
-                if (!RestrictionLevel.RELAX.equals(PasswordCheckUtil.INSTANCE.getRestrictionLevel())) {
-                    final List<PasswordRestriction> passwordRestrictions = PasswordCheckUtil.INSTANCE.getPasswordRestrictions(stateValues.getUserName());
-                    theConsole.printf(DomainManagementMessages.MESSAGES.passwordRequirements());
-                    theConsole.printf(NEW_LINE);
-                    for (PasswordRestriction passwordRestriction : passwordRestrictions) {
-                        final String message = passwordRestriction.getMessage();
-                        if (message != null && !message.isEmpty()) {
-                            theConsole.printf(message);
-                            theConsole.printf(NEW_LINE);
+                if (!RestrictionLevel.RELAX.equals(stateValues.getOptions().getCheckUtil().getRestrictionLevel())) {
+                    final List<PasswordRestriction> passwordRestrictions = stateValues.getOptions().getCheckUtil().getPasswordRestrictions();
+                    if (passwordRestrictions.size() > 0) {
+                        theConsole.printf(DomainManagementMessages.MESSAGES.passwordRequirements());
+                        theConsole.printf(NEW_LINE);
+                        for (PasswordRestriction passwordRestriction : passwordRestrictions) {
+                            final String message = passwordRestriction.getRequirementMessage();
+                            if (message != null && !message.isEmpty()) {
+                                theConsole.printf(" - ");
+                                theConsole.printf(message);
+                                theConsole.printf(NEW_LINE);
+                            }
                         }
                     }
                 }

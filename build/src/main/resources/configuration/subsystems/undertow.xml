@@ -31,11 +31,10 @@
             <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
         </buffer-caches>
         <server name="default-server">
-            <http-listener name="default" socket-binding="http" max-post-size="10485760"/>
+            <http-listener name="default" socket-binding="http" />
             <?AJP?>
             <host name="default-host" alias="localhost">
-                <location name="/" handler="welcome-content">
-                </location>
+                <location name="/" handler="welcome-content" />
             </host>
         </server>
         <servlet-container name="default" default-buffer-cache="default" stack-trace-on-error="local-only" >
@@ -48,7 +47,7 @@
     </subsystem>
     <supplement name="ha">
         <replacement placeholder="AJP">
-            <ajp-listener name="ajp" socket-binding="ajp" max-post-size="10485760"/>
+            <ajp-listener name="ajp" socket-binding="ajp" />
         </replacement>
     </supplement>
     <socket-binding name="http" port="${jboss.http.port:8080}"/>

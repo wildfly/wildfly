@@ -25,7 +25,6 @@ package org.wildfly.extension.undertow;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 
-import io.undertow.UndertowOptions;
 import io.undertow.server.OpenListener;
 import io.undertow.server.protocol.ajp.AjpOpenListener;
 import org.jboss.msc.service.StartContext;
@@ -39,16 +38,14 @@ import org.xnio.channels.AcceptingChannel;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class AjpListenerService extends AbstractListenerService<AjpListenerService> {
+public class AjpListenerService extends ListenerService<AjpListenerService> {
 
     private volatile AcceptingChannel<StreamConnection> server;
     private final String scheme;
-    private final long maxUploadSize;
 
-    public AjpListenerService(String name, final String scheme, long maxUploadSize) {
-        super(name);
+    public AjpListenerService(String name, final String scheme, OptionMap listenerOptions) {
+        super(name,listenerOptions);
         this.scheme = scheme;
-        this.maxUploadSize = maxUploadSize;
     }
 
     @Override
@@ -60,7 +57,7 @@ public class AjpListenerService extends AbstractListenerService<AjpListenerServi
 
     @Override
     void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
-        server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(SERVER_OPTIONS).set(UndertowOptions.MAX_ENTITY_SIZE, maxUploadSize).getMap());
+        server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).getMap());
         server.resumeAccepts();
         UndertowLogger.ROOT_LOGGER.listenerStarted("AJP", getName(), binding.getValue().getSocketAddress());
     }

@@ -101,6 +101,7 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.ManagementAdaptor;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
+import org.jipijapa.plugin.spi.Platform;
 import org.jipijapa.plugin.spi.TwoPhaseBootstrapCapable;
 
 
@@ -123,10 +124,10 @@ public class PersistenceUnitServiceHandler {
     private static final String SCOPED_UNIT_NAME = "scoped-unit-name";
     private static final String FIRST_PHASE = "__FIRST_PHASE__";
 
-    public static void deploy(DeploymentPhaseContext phaseContext, boolean startEarly) throws DeploymentUnitProcessingException {
-        handleWarDeployment(phaseContext, startEarly);
-        handleEarDeployment(phaseContext, startEarly);
-        handleJarDeployment(phaseContext, startEarly);
+    public static void deploy(DeploymentPhaseContext phaseContext, boolean startEarly, Platform platform) throws DeploymentUnitProcessingException {
+        handleWarDeployment(phaseContext, startEarly, platform);
+        handleEarDeployment(phaseContext, startEarly, platform);
+        handleJarDeployment(phaseContext, startEarly, platform);
     }
 
     public static void undeploy(DeploymentUnit context) {
@@ -139,7 +140,7 @@ public class PersistenceUnitServiceHandler {
         }
     }
 
-    private static void handleJarDeployment(DeploymentPhaseContext phaseContext, boolean startEarly) throws DeploymentUnitProcessingException {
+    private static void handleJarDeployment(DeploymentPhaseContext phaseContext, boolean startEarly, Platform platform) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (!isEarDeployment(deploymentUnit) && !isWarDeployment(deploymentUnit) && JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -151,12 +152,12 @@ public class PersistenceUnitServiceHandler {
                 puList.add(holder);
                 JPA_LOGGER.tracef("install persistence unit definition for jar %s", deploymentRoot.getRootName());
                 // assemble and install the PU service
-                addPuService(phaseContext, puList, startEarly);
+                addPuService(phaseContext, puList, startEarly, platform);
             }
         }
     }
 
-    private static void handleWarDeployment(DeploymentPhaseContext phaseContext, boolean startEarly) throws DeploymentUnitProcessingException {
+    private static void handleWarDeployment(DeploymentPhaseContext phaseContext, boolean startEarly, Platform platform) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isWarDeployment(deploymentUnit) && JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -189,11 +190,11 @@ public class PersistenceUnitServiceHandler {
             }
 
             JPA_LOGGER.tracef("install persistence unit definitions for war %s", deploymentRoot.getRootName());
-            addPuService(phaseContext, puList, startEarly);
+            addPuService(phaseContext, puList, startEarly, platform);
         }
     }
 
-    private static void handleEarDeployment(DeploymentPhaseContext phaseContext, boolean startEarly) throws DeploymentUnitProcessingException {
+    private static void handleEarDeployment(DeploymentPhaseContext phaseContext, boolean startEarly, Platform platform) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         if (isEarDeployment(deploymentUnit) && JPADeploymentMarker.isJPADeployment(deploymentUnit)) {
             // handle META-INF/persistence.xml
@@ -211,7 +212,7 @@ public class PersistenceUnitServiceHandler {
                     }
 
                     JPA_LOGGER.tracef("install persistence unit definitions for ear %s", root.getRootName());
-                    addPuService(phaseContext, puList, startEarly);
+                    addPuService(phaseContext, puList, startEarly, platform);
                 }
             }
         }
@@ -224,11 +225,12 @@ public class PersistenceUnitServiceHandler {
      * @param phaseContext
      * @param puList
      * @param startEarly
+     * @param platform
      * @throws DeploymentUnitProcessingException
      *
      */
     private static void addPuService(final DeploymentPhaseContext phaseContext, final ArrayList<PersistenceUnitMetadataHolder> puList,
-                                     final boolean startEarly)
+                                     final boolean startEarly, final Platform platform)
         throws DeploymentUnitProcessingException {
 
         if (puList.size() > 0) {
@@ -256,7 +258,7 @@ public class PersistenceUnitServiceHandler {
 
                     if (deployPU) {
                         final PersistenceProvider provider = lookupProvider(pu, persistenceProviderDeploymentHolder, deploymentUnit);
-                        final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, deploymentUnit, provider);
+                        final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, deploymentUnit, provider, platform);
                         final boolean twoPhaseBootStrapCapable = (adaptor instanceof TwoPhaseBootstrapCapable) && Configuration.allowTwoPhaseBootstrap(pu);
 
                         if (startEarly) {
@@ -347,7 +349,7 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
             ServiceBuilder<PersistenceUnitService> builder = serviceTarget.addService(puServiceName, service);
-            boolean useDefaultDataSource = true;
+            boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
             final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
@@ -356,7 +358,7 @@ public class PersistenceUnitServiceHandler {
                     builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
                 }
             }
@@ -365,16 +367,26 @@ public class PersistenceUnitServiceHandler {
                     builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<>(service.getNonJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
                 }
             }
             // JPA 2.0 8.2.1.5, container provides default JTA datasource
             if (useDefaultDataSource) {
-                final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                // try the default datasource defined in the ee subsystem
+                String defaultJtaDataSource = null;
+                if (eeModuleDescription != null) {
+                    defaultJtaDataSource = eeModuleDescription.getDefaultResourceJndiNames().getDataSource();
+                }
+
+                if (defaultJtaDataSource == null ||
+                        defaultJtaDataSource.isEmpty()) {
+                    // try the datasource defined in the jpa subsystem
+                    defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                }
                 if (defaultJtaDataSource != null &&
-                    defaultJtaDataSource.length() > 0) {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
+                    !defaultJtaDataSource.isEmpty()) {
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     JPA_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }
@@ -474,7 +486,8 @@ public class PersistenceUnitServiceHandler {
             deploymentUnit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, puServiceName);
 
             ServiceBuilder<PhaseOnePersistenceUnitServiceImpl> builder = serviceTarget.addService(puServiceName, service);
-            boolean useDefaultDataSource = true;
+
+            boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
             final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
@@ -483,7 +496,7 @@ public class PersistenceUnitServiceHandler {
                     builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
                 }
             }
@@ -492,16 +505,26 @@ public class PersistenceUnitServiceHandler {
                     builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<>(service.getNonJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
                 }
             }
             // JPA 2.0 8.2.1.5, container provides default JTA datasource
             if (useDefaultDataSource) {
-                final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                // try the one defined in the jpa subsystem
+                String defaultJtaDataSource = null;
+                if (eeModuleDescription != null) {
+                    defaultJtaDataSource = eeModuleDescription.getDefaultResourceJndiNames().getDataSource();
+                }
+
+                if (defaultJtaDataSource == null ||
+                        defaultJtaDataSource.isEmpty()) {
+                    // try the datasource defined in the JPA subsystem
+                    defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                }
                 if (defaultJtaDataSource != null &&
-                    defaultJtaDataSource.length() > 0) {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
+                    !defaultJtaDataSource.isEmpty()) {
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     JPA_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }
@@ -586,7 +609,7 @@ public class PersistenceUnitServiceHandler {
             // add dependency on first phase
             builder.addDependency(puServiceName.append(FIRST_PHASE), new CastingInjector<>(service.getPhaseOnePersistenceUnitServiceImplInjector(), PhaseOnePersistenceUnitServiceImpl.class));
 
-            boolean useDefaultDataSource = true;
+            boolean useDefaultDataSource = Configuration.allowDefaultDataSourceUse(pu);
             final String jtaDataSource = adjustJndi(pu.getJtaDataSourceName());
             final String nonJtaDataSource = adjustJndi(pu.getNonJtaDataSourceName());
 
@@ -595,7 +618,7 @@ public class PersistenceUnitServiceHandler {
                     builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, jtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(jtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
                 }
             }
@@ -604,16 +627,26 @@ public class PersistenceUnitServiceHandler {
                     builder.addDependency(ContextNames.bindInfoForEnvEntry(eeModuleDescription.getApplicationName(), eeModuleDescription.getModuleName(), eeModuleDescription.getModuleName(), false, nonJtaDataSource).getBinderServiceName(), ManagedReferenceFactory.class, new ManagedReferenceFactoryInjector(service.getNonJtaDataSourceInjector()));
                     useDefaultDataSource = false;
                 } else {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<DataSource>(service.getNonJtaDataSourceInjector(), DataSource.class));
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(nonJtaDataSource), new CastingInjector<>(service.getNonJtaDataSourceInjector(), DataSource.class));
                     useDefaultDataSource = false;
                 }
             }
             // JPA 2.0 8.2.1.5, container provides default JTA datasource
             if (useDefaultDataSource) {
-                final String defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                // try the default datasource defined in the ee subsystem
+                String defaultJtaDataSource = null;
+                if (eeModuleDescription != null) {
+                    defaultJtaDataSource = eeModuleDescription.getDefaultResourceJndiNames().getDataSource();
+                }
+
+                if (defaultJtaDataSource == null ||
+                        defaultJtaDataSource.isEmpty()) {
+                    // try the datasource defined in the jpa subsystem
+                    defaultJtaDataSource = adjustJndi(JPAService.getDefaultDataSourceName());
+                }
                 if (defaultJtaDataSource != null &&
-                    defaultJtaDataSource.length() > 0) {
-                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<DataSource>(service.getJtaDataSourceInjector(), DataSource.class));
+                    !defaultJtaDataSource.isEmpty()) {
+                    builder.addDependency(AbstractDataSourceService.SERVICE_NAME_BASE.append(defaultJtaDataSource), new CastingInjector<>(service.getJtaDataSourceInjector(), DataSource.class));
                     JPA_LOGGER.tracef("%s is using the default data source '%s'", puServiceName, defaultJtaDataSource);
                 }
             }
@@ -780,6 +813,7 @@ public class PersistenceUnitServiceHandler {
      * @param persistenceProviderDeploymentHolder
      *
      * @param provider
+     * @param platform
      * @return
      * @throws DeploymentUnitProcessingException
      *
@@ -788,7 +822,8 @@ public class PersistenceUnitServiceHandler {
             final PersistenceUnitMetadata pu,
             final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder,
             final DeploymentUnit deploymentUnit,
-            PersistenceProvider provider) throws
+            final PersistenceProvider provider,
+            final Platform platform) throws
         DeploymentUnitProcessingException {
         String adaptorModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
         PersistenceProviderAdaptor adaptor = null;
@@ -803,10 +838,10 @@ public class PersistenceUnitServiceHandler {
                     // the noop adaptor is returned (can be used against any provider but the integration classes
                     // are handled externally via properties or code in the persistence provider).
                     if (adaptorModule != null) { // legacy way of loading adapter module
-                        adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule);
+                        adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule, platform);
                     }
                     else {
-                        adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider);
+                        adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider, platform);
                     }
                 } catch (ModuleLoadException e) {
                     throw new DeploymentUnitProcessingException("persistence provider adapter module load error "

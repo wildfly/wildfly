@@ -28,29 +28,29 @@ import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.TestModelType;
-import org.jboss.as.core.model.test.util.TransformersTestParameters;
+import org.jboss.as.core.model.test.TransformersTestParameterized;
+import org.jboss.as.core.model.test.TransformersTestParameterized.TransformersParameter;
+import org.jboss.as.core.model.test.util.TransformersTestParameter;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-@RunWith(Parameterized.class)
+@RunWith(TransformersTestParameterized.class)
 public class InterfacesTransformersTestCase extends AbstractCoreModelTest {
     private final ModelVersion modelVersion;
     private final ModelTestControllerVersion testControllerVersion;
 
-    @Parameters
-    public static List<Object[]> parameters(){
-        return TransformersTestParameters.setupVersions();
+    @TransformersParameter
+    public static List<TransformersTestParameter> parameters(){
+        return TransformersTestParameter.setupVersions();
     }
 
-    public InterfacesTransformersTestCase(TransformersTestParameters params) {
+    public InterfacesTransformersTestCase(TransformersTestParameter params) {
         this.modelVersion = params.getModelVersion();
         this.testControllerVersion = params.getTestControllerVersion();
     }

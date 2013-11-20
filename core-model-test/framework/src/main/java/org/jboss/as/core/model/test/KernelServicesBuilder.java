@@ -21,9 +21,10 @@
 */
 package org.jboss.as.core.model.test;
 
-import javax.xml.stream.XMLStreamException;
 import java.io.IOException;
 import java.util.List;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -98,6 +99,7 @@ public interface KernelServicesBuilder {
     KernelServicesBuilder setModelInitializer(ModelInitializer modelInitializer, ModelWriteSanitizer modelWriteSanitizer);
 
     KernelServicesBuilder createContentRepositoryContent(String hash);
+
     /**
      * Creates a new legacy kernel services initializer used to configure a new controller containing an older version of the subsystem being tested.
      * When {@link #build()} is called any legacy controllers will be created as well.

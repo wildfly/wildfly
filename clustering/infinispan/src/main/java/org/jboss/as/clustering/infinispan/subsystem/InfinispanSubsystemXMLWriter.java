@@ -22,13 +22,10 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import java.util.List;
-
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
@@ -58,90 +55,81 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
 
                 writer.writeStartElement(Element.CACHE_CONTAINER.getLocalName());
                 writer.writeAttribute(Attribute.NAME.getLocalName(), containerName);
-                // AS7-3488 make default-cache a non required attribute
-                // this.writeRequired(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
-                this.writeAliases(writer, Attribute.ALIASES, container, ModelKeys.ALIASES);
-                this.writeOptional(writer, Attribute.DEFAULT_CACHE, container, ModelKeys.DEFAULT_CACHE);
-                this.writeOptional(writer, Attribute.EVICTION_EXECUTOR, container, ModelKeys.EVICTION_EXECUTOR);
-                this.writeOptional(writer, Attribute.JNDI_NAME, container, ModelKeys.JNDI_NAME);
-                this.writeOptional(writer, Attribute.LISTENER_EXECUTOR, container, ModelKeys.LISTENER_EXECUTOR);
-                this.writeOptional(writer, Attribute.REPLICATION_QUEUE_EXECUTOR, container, ModelKeys.REPLICATION_QUEUE_EXECUTOR);
-                this.writeOptional(writer, Attribute.START, container, ModelKeys.START);
-                this.writeOptional(writer, Attribute.MODULE, container, ModelKeys.MODULE);
+
+                CacheContainerResourceDefinition.DEFAULT_CACHE.marshallAsAttribute(container, writer);
+                CacheContainerResourceDefinition.EVICTION_EXECUTOR.marshallAsAttribute(container, writer);
+                CacheContainerResourceDefinition.JNDI_NAME.marshallAsAttribute(container, writer);
+                CacheContainerResourceDefinition.LISTENER_EXECUTOR.marshallAsAttribute(container, writer);
+                CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.marshallAsAttribute(container, writer);
+                CacheContainerResourceDefinition.START.marshallAsAttribute(container, writer);
+                CacheContainerResourceDefinition.MODULE.marshallAsAttribute(container, writer);
+                CacheContainerResourceDefinition.STATISTICS.marshallAsAttribute(container, writer);
+
+                CacheContainerResourceDefinition.ALIASES.marshallAsElement(container, writer);
 
                 if (container.hasDefined(ModelKeys.TRANSPORT)) {
                     writer.writeStartElement(Element.TRANSPORT.getLocalName());
                     ModelNode transport = container.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
-                    this.writeOptional(writer, Attribute.STACK, transport, ModelKeys.STACK);
-                    this.writeOptional(writer, Attribute.CLUSTER, transport, ModelKeys.CLUSTER);
-                    this.writeOptional(writer, Attribute.EXECUTOR, transport, ModelKeys.EXECUTOR);
-                    this.writeOptional(writer, Attribute.LOCK_TIMEOUT, transport, ModelKeys.LOCK_TIMEOUT);
+                    TransportResourceDefinition.STACK.marshallAsAttribute(transport,false,  writer);
+                    TransportResourceDefinition.CLUSTER.marshallAsAttribute(transport,false,  writer);
+                    TransportResourceDefinition.EXECUTOR.marshallAsAttribute(transport,false,  writer);
+                    TransportResourceDefinition.LOCK_TIMEOUT.marshallAsAttribute(transport,false,  writer);
                     writer.writeEndElement();
                 }
 
                 // write any existent cache types
                 if (container.get(ModelKeys.LOCAL_CACHE).isDefined()) {
-                    for (Property localCacheEntry : container.get(ModelKeys.LOCAL_CACHE).asPropertyList()) {
-                        String localCacheName = localCacheEntry.getName();
-                        ModelNode localCache = localCacheEntry.getValue();
+                    for (Property property : container.get(ModelKeys.LOCAL_CACHE).asPropertyList()) {
+                        ModelNode cache = property.getValue();
 
                         writer.writeStartElement(Element.LOCAL_CACHE.getLocalName());
-                        // write identifier before other attributes
-                        writer.writeAttribute(Attribute.NAME.getLocalName(), localCacheName);
 
-                        processCommonCacheAttributesElements(writer, localCache);
+                        writeCacheAttributes(writer, property.getName(), cache);
+                        writeCacheElements(writer, cache);
 
                         writer.writeEndElement();
                     }
                 }
 
                 if (container.get(ModelKeys.INVALIDATION_CACHE).isDefined()) {
-                    for (Property invalidationCacheEntry : container.get(ModelKeys.INVALIDATION_CACHE).asPropertyList()) {
-                        String invalidationCacheName = invalidationCacheEntry.getName();
-                        ModelNode invalidationCache = invalidationCacheEntry.getValue();
+                    for (Property property : container.get(ModelKeys.INVALIDATION_CACHE).asPropertyList()) {
+                        ModelNode cache = property.getValue();
 
                         writer.writeStartElement(Element.INVALIDATION_CACHE.getLocalName());
-                        // write identifier before other attributes
-                        writer.writeAttribute(Attribute.NAME.getLocalName(), invalidationCacheName);
 
-                        processCommonClusteredCacheAttributes(writer, invalidationCache);
-                        processCommonCacheAttributesElements(writer, invalidationCache);
+                        writeClusteredCacheAttributes(writer, property.getName(), cache);
+                        writeCacheElements(writer, cache);
 
                         writer.writeEndElement();
                     }
                 }
 
                 if (container.get(ModelKeys.REPLICATED_CACHE).isDefined()) {
-                    for (Property replicatedCacheEntry : container.get(ModelKeys.REPLICATED_CACHE).asPropertyList()) {
-                        String replicatedCacheName = replicatedCacheEntry.getName();
-                        ModelNode replicatedCache = replicatedCacheEntry.getValue();
+                    for (Property property : container.get(ModelKeys.REPLICATED_CACHE).asPropertyList()) {
+                        ModelNode cache = property.getValue();
 
                         writer.writeStartElement(Element.REPLICATED_CACHE.getLocalName());
-                        // write identifier before other attributes
-                        writer.writeAttribute(Attribute.NAME.getLocalName(), replicatedCacheName);
 
-                        processCommonClusteredCacheAttributes(writer, replicatedCache);
-                        processCommonCacheAttributesElements(writer, replicatedCache);
+                        writeClusteredCacheAttributes(writer, property.getName(), cache);
+                        writeCacheElements(writer, cache);
 
                         writer.writeEndElement();
                     }
                 }
 
                 if (container.get(ModelKeys.DISTRIBUTED_CACHE).isDefined()) {
-                    for (Property distributedCacheEntry : container.get(ModelKeys.DISTRIBUTED_CACHE).asPropertyList()) {
-                        String distributedCacheName = distributedCacheEntry.getName();
-                        ModelNode distributedCache = distributedCacheEntry.getValue();
+                    for (Property property : container.get(ModelKeys.DISTRIBUTED_CACHE).asPropertyList()) {
+                        ModelNode cache = property.getValue();
 
                         writer.writeStartElement(Element.DISTRIBUTED_CACHE.getLocalName());
-                        // write identifier before other attributes
-                        writer.writeAttribute(Attribute.NAME.getLocalName(), distributedCacheName);
-                        // distributed cache attributes
-                        this.writeOptional(writer, Attribute.OWNERS, distributedCache, ModelKeys.OWNERS);
-                        this.writeOptional(writer, Attribute.SEGMENTS, distributedCache, ModelKeys.SEGMENTS);
-                        this.writeOptional(writer, Attribute.L1_LIFESPAN, distributedCache, ModelKeys.L1_LIFESPAN);
 
-                        processCommonClusteredCacheAttributes(writer, distributedCache);
-                        processCommonCacheAttributesElements(writer, distributedCache);
+                        writeClusteredCacheAttributes(writer, property.getName(), cache);
+
+                        DistributedCacheResourceDefinition.OWNERS.marshallAsAttribute(cache, writer);
+                        DistributedCacheResourceDefinition.SEGMENTS.marshallAsAttribute(cache, writer);
+                        DistributedCacheResourceDefinition.L1_LIFESPAN.marshallAsAttribute(cache, writer);
+
+                        writeCacheElements(writer, cache);
 
                         writer.writeEndElement();
                     }
@@ -152,136 +140,132 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writer.writeEndElement();
     }
 
-    private void processCommonClusteredCacheAttributes(XMLExtendedStreamWriter writer, ModelNode cache)
-            throws XMLStreamException {
+    private static void writeCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
+        writer.writeAttribute(Attribute.NAME.getLocalName(), name);
 
-        this.writeOptional(writer, Attribute.ASYNC_MARSHALLING, cache, ModelKeys.ASYNC_MARSHALLING);
-        this.writeRequired(writer, Attribute.MODE, cache, ModelKeys.MODE);
-        this.writeOptional(writer, Attribute.QUEUE_SIZE, cache, ModelKeys.QUEUE_SIZE);
-        this.writeOptional(writer, Attribute.QUEUE_FLUSH_INTERVAL, cache, ModelKeys.QUEUE_FLUSH_INTERVAL);
-        this.writeOptional(writer, Attribute.REMOTE_TIMEOUT, cache, ModelKeys.REMOTE_TIMEOUT);
+        CacheResourceDefinition.START.marshallAsAttribute(cache, writer);
+        CacheResourceDefinition.BATCHING.marshallAsAttribute(cache, writer);
+        CacheResourceDefinition.JNDI_NAME.marshallAsAttribute(cache, writer);
+        CacheResourceDefinition.MODULE.marshallAsAttribute(cache, writer);
+        CacheResourceDefinition.STATISTICS.marshallAsAttribute(cache, writer);
     }
 
-    private void processCommonCacheAttributesElements(XMLExtendedStreamWriter writer, ModelNode cache)
-            throws XMLStreamException {
+    private static void writeClusteredCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {
 
-        this.writeOptional(writer, Attribute.START, cache, ModelKeys.START);
-        this.writeOptional(writer, Attribute.BATCHING, cache, ModelKeys.BATCHING);
-        this.writeOptional(writer, Attribute.JNDI_NAME, cache, ModelKeys.JNDI_NAME);
-        this.writeOptional(writer, Attribute.MODULE, cache, ModelKeys.MODULE);
+        writeCacheAttributes(writer, name, cache);
+
+        ClusteredCacheResourceDefinition.ASYNC_MARSHALLING.marshallAsAttribute(cache, writer);
+        ClusteredCacheResourceDefinition.MODE.marshallAsAttribute(cache, writer);
+        ClusteredCacheResourceDefinition.QUEUE_SIZE.marshallAsAttribute(cache, writer);
+        ClusteredCacheResourceDefinition.QUEUE_FLUSH_INTERVAL.marshallAsAttribute(cache, writer);
+        ClusteredCacheResourceDefinition.REMOTE_TIMEOUT.marshallAsAttribute(cache, writer);
+    }
+
+    private static void writeCacheElements(XMLExtendedStreamWriter writer, ModelNode cache) throws XMLStreamException {
 
         if (cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
             writer.writeStartElement(Element.LOCKING.getLocalName());
             ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
-            this.writeOptional(writer, Attribute.ISOLATION, locking, ModelKeys.ISOLATION);
-            this.writeOptional(writer, Attribute.STRIPING, locking, ModelKeys.STRIPING);
-            this.writeOptional(writer, Attribute.ACQUIRE_TIMEOUT, locking, ModelKeys.ACQUIRE_TIMEOUT);
-            this.writeOptional(writer, Attribute.CONCURRENCY_LEVEL, locking, ModelKeys.CONCURRENCY_LEVEL);
+            LockingResourceDefinition.ISOLATION.marshallAsAttribute(locking, writer);
+            LockingResourceDefinition.STRIPING.marshallAsAttribute(locking, writer);
+            LockingResourceDefinition.ACQUIRE_TIMEOUT.marshallAsAttribute(locking, writer);
+            LockingResourceDefinition.CONCURRENCY_LEVEL.marshallAsAttribute(locking, writer);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
             writer.writeStartElement(Element.TRANSACTION.getLocalName());
             ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
-            this.writeOptional(writer, Attribute.STOP_TIMEOUT, transaction, ModelKeys.STOP_TIMEOUT);
-            this.writeOptional(writer, Attribute.MODE, transaction, ModelKeys.MODE);
-            this.writeOptional(writer, Attribute.LOCKING, transaction, ModelKeys.LOCKING);
+            TransactionResourceDefinition.STOP_TIMEOUT.marshallAsAttribute(transaction, writer);
+            TransactionResourceDefinition.MODE.marshallAsAttribute(transaction, writer);
+            TransactionResourceDefinition.LOCKING.marshallAsAttribute(transaction, writer);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME).isDefined()) {
             writer.writeStartElement(Element.EVICTION.getLocalName());
             ModelNode eviction = cache.get(ModelKeys.EVICTION, ModelKeys.EVICTION_NAME);
-            this.writeOptional(writer, Attribute.STRATEGY, eviction, ModelKeys.STRATEGY);
-            this.writeOptional(writer, Attribute.MAX_ENTRIES, eviction, ModelKeys.MAX_ENTRIES);
+            EvictionResourceDefinition.STRATEGY.marshallAsAttribute(eviction, writer);
+            EvictionResourceDefinition.MAX_ENTRIES.marshallAsAttribute(eviction, writer);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME).isDefined()) {
             writer.writeStartElement(Element.EXPIRATION.getLocalName());
             ModelNode expiration = cache.get(ModelKeys.EXPIRATION, ModelKeys.EXPIRATION_NAME);
-            this.writeOptional(writer, Attribute.MAX_IDLE, expiration, ModelKeys.MAX_IDLE);
-            this.writeOptional(writer, Attribute.LIFESPAN, expiration, ModelKeys.LIFESPAN);
-            this.writeOptional(writer, Attribute.INTERVAL, expiration, ModelKeys.INTERVAL);
+            ExpirationResourceDefinition.MAX_IDLE.marshallAsAttribute(expiration, writer);
+            ExpirationResourceDefinition.LIFESPAN.marshallAsAttribute(expiration, writer);
+            ExpirationResourceDefinition.INTERVAL.marshallAsAttribute(expiration, writer);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME).isDefined()) {
             ModelNode stateTransfer = cache.get(ModelKeys.STATE_TRANSFER, ModelKeys.STATE_TRANSFER_NAME);
             writer.writeStartElement(Element.STATE_TRANSFER.getLocalName());
-            this.writeOptional(writer, Attribute.ENABLED, stateTransfer, ModelKeys.ENABLED);
-            this.writeOptional(writer, Attribute.TIMEOUT, stateTransfer, ModelKeys.TIMEOUT);
-            this.writeOptional(writer, Attribute.CHUNK_SIZE, stateTransfer, ModelKeys.CHUNK_SIZE);
+            StateTransferResourceDefinition.ENABLED.marshallAsAttribute(stateTransfer, writer);
+            StateTransferResourceDefinition.TIMEOUT.marshallAsAttribute(stateTransfer, writer);
+            StateTransferResourceDefinition.CHUNK_SIZE.marshallAsAttribute(stateTransfer, writer);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.STORE, ModelKeys.STORE_NAME);
             writer.writeStartElement(Element.STORE.getLocalName());
-            this.writeRequired(writer, Attribute.CLASS, store, ModelKeys.CLASS);
-            this.writeStoreAttributes(writer, store);
-            this.writeStoreWriteBehind(writer, store);
-            this.writeStoreProperties(writer, store);
+            CustomStoreResourceDefinition.CLASS.marshallAsAttribute(store, writer);
+            writeStoreAttributes(writer, store);
+            writeStoreElements(writer, store);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.FILE_STORE, ModelKeys.FILE_STORE_NAME);
             writer.writeStartElement(Element.FILE_STORE.getLocalName());
-            this.writeOptional(writer, Attribute.RELATIVE_TO, store, ModelKeys.RELATIVE_TO);
-            this.writeOptional(writer, Attribute.PATH, store, ModelKeys.PATH);
-            this.writeStoreAttributes(writer, store);
-            this.writeStoreWriteBehind(writer, store);
-            this.writeStoreProperties(writer, store);
+            writeStoreAttributes(writer, store);
+            FileStoreResourceDefinition.RELATIVE_TO.marshallAsAttribute(store, writer);
+            FileStoreResourceDefinition.PATH.marshallAsAttribute(store, writer);
+            writeStoreElements(writer, store);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
             writer.writeStartElement(Element.STRING_KEYED_JDBC_STORE.getLocalName());
-            this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
-            this.writeStoreAttributes(writer, store);
-            this.writeStoreWriteBehind(writer, store);
-            this.writeStoreProperties(writer, store);
-            this.writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
+            writeJDBCStoreAttributes(writer, store);
+            writeStoreElements(writer, store);
+            writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
             writer.writeStartElement(Element.BINARY_KEYED_JDBC_STORE.getLocalName());
-            this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
-            this.writeStoreAttributes(writer, store);
-            this.writeStoreWriteBehind(writer, store);
-            this.writeStoreProperties(writer, store);
-            this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
+            writeJDBCStoreAttributes(writer, store);
+            writeStoreElements(writer, store);
+            writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
             writer.writeStartElement(Element.MIXED_KEYED_JDBC_STORE.getLocalName());
-            this.writeRequired(writer, Attribute.DATASOURCE, store, ModelKeys.DATASOURCE);
-            this.writeStoreAttributes(writer, store);
-            this.writeStoreWriteBehind(writer, store);
-            this.writeStoreProperties(writer, store);
-            this.writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
-            this.writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
+            writeJDBCStoreAttributes(writer, store);
+            writeStoreElements(writer, store);
+            writeJDBCStoreTable(writer, Element.STRING_KEYED_TABLE, store, ModelKeys.STRING_KEYED_TABLE);
+            writeJDBCStoreTable(writer, Element.BINARY_KEYED_TABLE, store, ModelKeys.BINARY_KEYED_TABLE);
             writer.writeEndElement();
         }
 
         if (cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME).isDefined()) {
             ModelNode store = cache.get(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
             writer.writeStartElement(Element.REMOTE_STORE.getLocalName());
-            this.writeOptional(writer, Attribute.CACHE, store, ModelKeys.CACHE);
-            this.writeOptional(writer, Attribute.SOCKET_TIMEOUT, store, ModelKeys.SOCKET_TIMEOUT);
-            this.writeOptional(writer, Attribute.TCP_NO_DELAY, store, ModelKeys.TCP_NO_DELAY);
-            this.writeStoreAttributes(writer, store);
-            this.writeStoreWriteBehind(writer, store);
-            this.writeStoreProperties(writer, store);
+            writeStoreAttributes(writer, store);
+            RemoteStoreResourceDefinition.CACHE.marshallAsAttribute(store, writer);
+            RemoteStoreResourceDefinition.SOCKET_TIMEOUT.marshallAsAttribute(store, writer);
+            RemoteStoreResourceDefinition.TCP_NO_DELAY.marshallAsAttribute(store, writer);
+            writeStoreElements(writer, store);
             for (ModelNode remoteServer: store.get(ModelKeys.REMOTE_SERVERS).asList()) {
                 writer.writeStartElement(Element.REMOTE_SERVER.getLocalName());
-                writer.writeAttribute(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName(), remoteServer.get(ModelKeys.OUTBOUND_SOCKET_BINDING).asString());
+                RemoteStoreResourceDefinition.OUTBOUND_SOCKET_BINDING.marshallAsAttribute(remoteServer, writer);
                 writer.writeEndElement();
             }
             writer.writeEndElement();
@@ -290,7 +274,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (cache.get(ModelKeys.INDEXING).isDefined()|| cache.get(ModelKeys.INDEXING_PROPERTIES).isDefined()){
             writer.writeStartElement(Element.INDEXING.getLocalName());
             CacheResourceDefinition.INDEXING.marshallAsAttribute(cache, writer);
-            CacheResourceDefinition.INDEXING_PROPERTIES.marshallAsElement(cache,writer);
+            CacheResourceDefinition.INDEXING_PROPERTIES.marshallAsElement(cache, writer);
             writer.writeEndElement();
         }
 
@@ -300,14 +284,14 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 writer.writeStartElement(Element.BACKUP.getLocalName());
                 writer.writeAttribute(Attribute.SITE.getLocalName(), property.getName());
                 ModelNode backup = property.getValue();
-                BackupSiteResource.FAILURE_POLICY.marshallAsAttribute(backup, writer);
-                BackupSiteResource.STRATEGY.marshallAsAttribute(backup, writer);
-                BackupSiteResource.REPLICATION_TIMEOUT.marshallAsAttribute(backup, writer);
-                BackupSiteResource.ENABLED.marshallAsAttribute(backup, writer);
+                BackupSiteResourceDefinition.FAILURE_POLICY.marshallAsAttribute(backup, writer);
+                BackupSiteResourceDefinition.STRATEGY.marshallAsAttribute(backup, writer);
+                BackupSiteResourceDefinition.REPLICATION_TIMEOUT.marshallAsAttribute(backup, writer);
+                BackupSiteResourceDefinition.ENABLED.marshallAsAttribute(backup, writer);
                 if (backup.hasDefined(ModelKeys.TAKE_BACKUP_OFFLINE_AFTER_FAILURES) || backup.hasDefined(ModelKeys.TAKE_BACKUP_OFFLINE_MIN_WAIT)) {
                     writer.writeStartElement(Element.TAKE_OFFLINE.getLocalName());
-                    BackupSiteResource.TAKE_OFFLINE_AFTER_FAILURES.marshallAsAttribute(backup, writer);
-                    BackupSiteResource.TAKE_OFFLINE_MIN_WAIT.marshallAsAttribute(backup, writer);
+                    BackupSiteResourceDefinition.TAKE_OFFLINE_AFTER_FAILURES.marshallAsAttribute(backup, writer);
+                    BackupSiteResourceDefinition.TAKE_OFFLINE_MIN_WAIT.marshallAsAttribute(backup, writer);
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -318,75 +302,61 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         if (cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME).isDefined()) {
             ModelNode backupFor = cache.get(ModelKeys.BACKUP_FOR, ModelKeys.BACKUP_FOR_NAME);
             writer.writeStartElement(Element.BACKUP_FOR.getLocalName());
-            this.writeOptional(writer, Attribute.REMOTE_CACHE, backupFor, ModelKeys.REMOTE_CACHE);
-            this.writeOptional(writer, Attribute.REMOTE_SITE, backupFor, ModelKeys.REMOTE_SITE);
+            BackupForResourceDefinition.REMOTE_CACHE.marshallAsAttribute(backupFor, writer);
+            BackupForResourceDefinition.REMOTE_SITE.marshallAsAttribute(backupFor, writer);
             writer.writeEndElement();
         }
     }
 
-    private void writeAliases(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode container, String key) throws XMLStreamException {
-        if (container.hasDefined(key)) {
-            StringBuffer result = new StringBuffer() ;
-            ModelNode aliases = container.get(key);
-            if (aliases.isDefined() && aliases.getType() == ModelType.LIST) {
-                List<ModelNode> aliasesList = aliases.asList();
-                for (int i = 0; i < aliasesList.size(); i++) {
-                    result.append(aliasesList.get(i).asString());
-                    if (i < aliasesList.size()-1) {
-                        result.append(" ");
-                    }
-                }
-                writer.writeAttribute(attribute.getLocalName(), result.toString());
-            }
-        }
-    }
-
-    private void writeJDBCStoreTable(XMLExtendedStreamWriter writer, Element element, ModelNode store, String key) throws XMLStreamException {
+    private static void writeJDBCStoreTable(XMLExtendedStreamWriter writer, Element element, ModelNode store, String key) throws XMLStreamException {
         if (store.hasDefined(key)) {
             ModelNode table = store.get(key);
             writer.writeStartElement(element.getLocalName());
-            this.writeOptional(writer, Attribute.PREFIX, table, ModelKeys.PREFIX);
-            this.writeOptional(writer, Attribute.BATCH_SIZE, table, ModelKeys.BATCH_SIZE);
-            this.writeOptional(writer, Attribute.FETCH_SIZE, table, ModelKeys.FETCH_SIZE);
-            this.writeJDBCStoreColumn(writer, Element.ID_COLUMN, table, ModelKeys.ID_COLUMN);
-            this.writeJDBCStoreColumn(writer, Element.DATA_COLUMN, table, ModelKeys.DATA_COLUMN);
-            this.writeJDBCStoreColumn(writer, Element.TIMESTAMP_COLUMN, table, ModelKeys.TIMESTAMP_COLUMN);
+            JDBCStoreResourceDefinition.PREFIX.marshallAsAttribute(table, writer);
+            JDBCStoreResourceDefinition.BATCH_SIZE.marshallAsAttribute(table, writer);
+            JDBCStoreResourceDefinition.FETCH_SIZE.marshallAsAttribute(table, writer);
+            writeJDBCStoreColumn(writer, Element.ID_COLUMN, table, ModelKeys.ID_COLUMN);
+            writeJDBCStoreColumn(writer, Element.DATA_COLUMN, table, ModelKeys.DATA_COLUMN);
+            writeJDBCStoreColumn(writer, Element.TIMESTAMP_COLUMN, table, ModelKeys.TIMESTAMP_COLUMN);
             writer.writeEndElement();
         }
     }
 
-    private void writeJDBCStoreColumn(XMLExtendedStreamWriter writer, Element element, ModelNode table, String key) throws XMLStreamException {
+    private static void writeJDBCStoreColumn(XMLExtendedStreamWriter writer, Element element, ModelNode table, String key) throws XMLStreamException {
         if (table.hasDefined(key)) {
             ModelNode column = table.get(key);
             writer.writeStartElement(element.getLocalName());
-            this.writeOptional(writer, Attribute.NAME, column, ModelKeys.NAME);
-            this.writeOptional(writer, Attribute.TYPE, column, ModelKeys.TYPE);
+            JDBCStoreResourceDefinition.COLUMN_NAME.marshallAsAttribute(column, writer);
+            JDBCStoreResourceDefinition.COLUMN_TYPE.marshallAsAttribute(column, writer);
             writer.writeEndElement();
         }
     }
 
-    private void writeStoreAttributes(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
-        this.writeOptional(writer, Attribute.SHARED, store, ModelKeys.SHARED);
-        this.writeOptional(writer, Attribute.PRELOAD, store, ModelKeys.PRELOAD);
-        this.writeOptional(writer, Attribute.PASSIVATION, store, ModelKeys.PASSIVATION);
-        this.writeOptional(writer, Attribute.FETCH_STATE, store, ModelKeys.FETCH_STATE);
-        this.writeOptional(writer, Attribute.PURGE, store, ModelKeys.PURGE);
-        this.writeOptional(writer, Attribute.SINGLETON, store, ModelKeys.SINGLETON);
+    private static void writeStoreAttributes(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
+        StoreResourceDefinition.SHARED.marshallAsAttribute(store, writer);
+        StoreResourceDefinition.PRELOAD.marshallAsAttribute(store, writer);
+        StoreResourceDefinition.PASSIVATION.marshallAsAttribute(store, writer);
+        StoreResourceDefinition.FETCH_STATE.marshallAsAttribute(store, writer);
+        StoreResourceDefinition.PURGE.marshallAsAttribute(store, writer);
+        StoreResourceDefinition.SINGLETON.marshallAsAttribute(store, writer);
     }
 
-    private void writeStoreWriteBehind(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
+    private static void writeJDBCStoreAttributes(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
+        writeStoreAttributes(writer, store);
+
+        JDBCStoreResourceDefinition.DATA_SOURCE.marshallAsAttribute(store, writer);
+    }
+
+    private static void writeStoreElements(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
         if (store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME).isDefined()) {
             ModelNode writeBehind = store.get(ModelKeys.WRITE_BEHIND, ModelKeys.WRITE_BEHIND_NAME);
             writer.writeStartElement(Element.WRITE_BEHIND.getLocalName());
-            this.writeOptional(writer, Attribute.FLUSH_LOCK_TIMEOUT, writeBehind, ModelKeys.FLUSH_LOCK_TIMEOUT);
-            this.writeOptional(writer, Attribute.MODIFICATION_QUEUE_SIZE, writeBehind, ModelKeys.MODIFICATION_QUEUE_SIZE);
-            this.writeOptional(writer, Attribute.SHUTDOWN_TIMEOUT, writeBehind, ModelKeys.SHUTDOWN_TIMEOUT);
-            this.writeOptional(writer, Attribute.THREAD_POOL_SIZE, writeBehind, ModelKeys.THREAD_POOL_SIZE);
+            StoreWriteBehindResourceDefinition.FLUSH_LOCK_TIMEOUT.marshallAsAttribute(writeBehind, writer);
+            StoreWriteBehindResourceDefinition.MODIFICATION_QUEUE_SIZE.marshallAsAttribute(writeBehind, writer);
+            StoreWriteBehindResourceDefinition.SHUTDOWN_TIMEOUT.marshallAsAttribute(writeBehind, writer);
+            StoreWriteBehindResourceDefinition.THREAD_POOL_SIZE.marshallAsAttribute(writeBehind, writer);
             writer.writeEndElement();
         }
-    }
-
-    private void writeStoreProperties(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
         if (store.hasDefined(ModelKeys.PROPERTY)) {
             // the format of the property elements
             //  "property" => {
@@ -400,15 +370,5 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 writer.writeEndElement();
             }
         }
-    }
-
-    private void writeOptional(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode model, String key) throws XMLStreamException {
-        if (model.hasDefined(key)) {
-            writer.writeAttribute(attribute.getLocalName(), model.get(key).asString());
-        }
-    }
-
-    private void writeRequired(XMLExtendedStreamWriter writer, Attribute attribute, ModelNode model, String key) throws XMLStreamException {
-        writer.writeAttribute(attribute.getLocalName(), model.require(key).asString());
     }
 }

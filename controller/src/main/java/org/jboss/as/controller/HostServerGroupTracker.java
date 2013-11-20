@@ -73,50 +73,61 @@ class HostServerGroupTracker {
         private final Set<String> serverGroupEffects;
         private final Set<String> hostEffects;
         private final boolean unassigned;
+        private final boolean groupAdd;
+        private final boolean groupRemove;
 
         private static HostServerGroupEffect forGlobal(PathAddress address) {
-            return new HostServerGroupEffect(address, (Set<String>) null, null, false);
+            return new HostServerGroupEffect(address, (Set<String>) null, null, false, false, false);
         }
 
         private static HostServerGroupEffect forDomain(PathAddress address,
                                                        Set<String> serverGroupEffects) {
             return new HostServerGroupEffect(address,
-                    serverGroupEffects == null ? EMPTY : serverGroupEffects, null, false);
+                    serverGroupEffects == null ? EMPTY : serverGroupEffects, null, false, false, false);
         }
 
         private static HostServerGroupEffect forUnassignedDomain(PathAddress address) {
-            return new HostServerGroupEffect(address, EMPTY, null, true);
+            return new HostServerGroupEffect(address, EMPTY, null, true, false, false);
         }
 
-        private static HostServerGroupEffect forServerGroup(PathAddress address, String serverGroup) {
-            return new HostServerGroupEffect(address, Collections.singleton(serverGroup), null, false);
+        private static HostServerGroupEffect forServerGroup(PathAddress address, String serverGroup,
+                                                            boolean groupAdd, boolean groupRemove) {
+            return new HostServerGroupEffect(address, Collections.singleton(serverGroup), null, false, groupAdd, groupRemove);
         }
 
         private static HostServerGroupEffect forHost(PathAddress address, Set<String> serverGroupEffects, String hostEffect) {
-            return new HostServerGroupEffect(address, serverGroupEffects, hostEffect, false);
+            return new HostServerGroupEffect(address, serverGroupEffects, hostEffect, false, false, false);
         }
 
         private static HostServerGroupEffect forNonLocalHost(PathAddress address, String hostEffect) {
-            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, false);
+            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, false, false, false);
         }
 
         private static HostServerGroupEffect forUnassignedHost(PathAddress address, String hostEffect) {
-            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, true);
+            return new HostServerGroupEffect(address, (Set<String>) null, hostEffect, true, false, false);
+        }
+
+        private static HostServerGroupEffect forWildCardServerConfig(PathAddress address, String hostEffect) {
+            return new HostServerGroupEffect(address, EMPTY, hostEffect, true, false, false);
         }
 
 
         static HostServerGroupEffect forServer(PathAddress address, String serverGroupEffect, String hostEffect) {
             assert serverGroupEffect != null : "serverGroupEffect is null";
-            return new HostServerGroupEffect(address, Collections.singleton(serverGroupEffect), hostEffect, false);
+            return new HostServerGroupEffect(address, Collections.singleton(serverGroupEffect), hostEffect, false, false, false);
         }
 
 
         private HostServerGroupEffect(PathAddress address,
-                                      Set<String> serverGroupEffects, String hostEffect, boolean unassigned) {
+                                      Set<String> serverGroupEffects,
+                                      String hostEffect, boolean unassigned,
+                                      boolean groupAdd, boolean groupRemove) {
             this.address = address;
             this.serverGroupEffects = serverGroupEffects;
             this.unassigned = unassigned;
             this.hostEffects = hostEffect == null ? null : Collections.singleton(hostEffect);
+            this.groupAdd = groupAdd;
+            this.groupRemove = groupRemove;
         }
 
         @Override
@@ -137,6 +148,16 @@ class HostServerGroupTracker {
         @Override
         public Set<String> getAffectedServerGroups() {
             return serverGroupEffects;
+        }
+
+        @Override
+        public boolean isServerGroupAdd() {
+            return groupAdd;
+        }
+
+        @Override
+        public boolean isServerGroupRemove() {
+            return groupRemove;
         }
 
         @Override
@@ -181,9 +202,13 @@ class HostServerGroupTracker {
                                     serverGroup = model.get(GROUP).asString();
                                 }
                             }
-                            if (serverGroup == null && address.size() == 2 && SERVER_CONFIG.equals(lvlone)
-                                    && ADD.equals(operation.require(OP).asString())) {
-                                serverGroup = operation.get(GROUP).asString();
+                            if (serverGroup == null && address.size() == 2 && SERVER_CONFIG.equals(lvlone)) {
+                                if (secondElement.isWildcard()) {
+                                    // https://issues.jboss.org/browse/WFLY-2299
+                                    return HostServerGroupEffect.forWildCardServerConfig(address, hostName);
+                                } else if (ADD.equals(operation.require(OP).asString())) {
+                                    serverGroup = operation.get(GROUP).asString();
+                                }
                             }
 
                             if (serverGroup != null) {
@@ -208,8 +233,11 @@ class HostServerGroupTracker {
                 // must exist (so no need for an :add) and can't be removed
                 String opName = operation.require(OP).asString();
                 if (addrSize > 1 || (!ADD.equals(opName) && !REMOVE.equals(opName))) {
-                    return HostServerGroupEffect.forServerGroup(address, firstElement.getValue());
-                } // else drop into  HostServerGroupEffect.forGlobal(address);
+                    return HostServerGroupEffect.forServerGroup(address, firstElement.getValue(), false, false);
+                } else {
+                    boolean add = ADD.equals(opName);
+                    return HostServerGroupEffect.forServerGroup(address, firstElement.getValue(), add, !add);
+                }
             } else if (DEPLOYMENT.equals(type)) {
                 return getDomainEffect(address, firstElement.getValue(), deploymentsToGroups, root);
             } else if (DEPLOYMENT_OVERLAY.equals(type)) {

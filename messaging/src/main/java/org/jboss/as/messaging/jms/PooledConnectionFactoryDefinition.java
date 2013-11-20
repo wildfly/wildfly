@@ -23,7 +23,6 @@
 package org.jboss.as.messaging.jms;
 
 import static java.lang.System.arraycopy;
-import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CALL_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.HA;
@@ -122,8 +121,7 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
     public static final AttributeDefinition[] ATTRIBUTES_ADDED_IN_1_2_0 = new AttributeDefinition[]{INITIAL_CONNECT_ATTEMPTS,
             INITIAL_MESSAGE_PACKET_SIZE,
             COMPRESS_LARGE_MESSAGES,
-            USE_AUTO_RECOVERY,
-            CALL_FAILOVER_TIMEOUT};
+            USE_AUTO_RECOVERY};
 
     // attributes with expression supported added *after* 1.1.0
     public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { ENTRIES, CALL_TIMEOUT,
@@ -169,7 +167,7 @@ public class PooledConnectionFactoryDefinition extends SimpleResourceDefinition 
             // deprecated attribute
             if (attr == Common.DISCOVERY_INITIAL_WAIT_TIMEOUT ||
                     attr == Common.FAILOVER_ON_SERVER_SHUTDOWN) {
-                registry.registerReadWriteAttribute(attr, null, new DeprecatedAttributeWriteHandler(attr.getName()));
+                registry.registerReadWriteAttribute(attr, null, DeprecatedAttributeWriteHandler.INSTANCE);
             } else {
                 if (registerRuntimeOnly || !attr.getFlags().contains(AttributeAccess.Flag.STORAGE_RUNTIME)) {
                     if (deployed) {

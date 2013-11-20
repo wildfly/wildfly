@@ -26,56 +26,41 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.xts.XTSException;
 
 /**
- * @author paul.robinson@redhat.com, 2012-02-06
+ * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
+ * @author <a href="mailto:paul.robinson@redhat.com">Paul Robinson</a>
  */
 public class EndpointMetaData {
 
-    private TransactionalAnnotation transactionalAnnotation;
-    private CompensatableAnnotation compensatableAnnotation;
-    private OldCompensatableAnnotation oldCompensatableAnnotation;
-    private WebServiceAnnotation webServiceAnnotation;
-    private StatelessAnnotation statelessAnnotation;
+    private final TransactionalAnnotation transactionalAnnotation;
+    private final CompensatableAnnotation compensatableAnnotation;
+    private final OldCompensatableAnnotation oldCompensatableAnnotation;
+    private final StatelessAnnotation statelessAnnotation;
+    private final WebServiceAnnotation webServiceAnnotation;
 
-    private boolean isTXFrameworkEnabled;
+    private EndpointMetaData(final StatelessAnnotation statelessAnnotation,
+            final TransactionalAnnotation transactionalAnnotation, final CompensatableAnnotation compensatableAnnotation,
+            final OldCompensatableAnnotation oldCompensatableAnnotation,
+            final WebServiceAnnotation webServiceAnnotation) {
 
-    private EndpointMetaData(StatelessAnnotation statelessAnnotation, TransactionalAnnotation transactionalAnnotation, OldCompensatableAnnotation oldCompensatableAnnotation, CompensatableAnnotation compensatableAnnotation, WebServiceAnnotation webServiceAnnotation, boolean isTXFrameworkEnabled) {
         this.statelessAnnotation = statelessAnnotation;
         this.transactionalAnnotation = transactionalAnnotation;
         this.compensatableAnnotation = compensatableAnnotation;
         this.oldCompensatableAnnotation = oldCompensatableAnnotation;
         this.webServiceAnnotation = webServiceAnnotation;
-        this.isTXFrameworkEnabled = isTXFrameworkEnabled;
     }
 
-    public static EndpointMetaData build(DeploymentUnit unit, String endpoint) throws XTSException {
-        final StatelessAnnotation statelessAnnotation = StatelessAnnotation.build(unit, endpoint);
+    public static EndpointMetaData build(final DeploymentUnit unit, final String endpoint) throws XTSException {
         final TransactionalAnnotation transactionalAnnotation = TransactionalAnnotation.build(unit, endpoint);
         final CompensatableAnnotation compensatableAnnotation = CompensatableAnnotation.build(unit, endpoint);
         final OldCompensatableAnnotation oldCompensatableAnnotation = OldCompensatableAnnotation.build(unit, endpoint);
+        final StatelessAnnotation statelessAnnotation = StatelessAnnotation.build(unit, endpoint);
         final WebServiceAnnotation webServiceAnnotation = WebServiceAnnotation.build(unit, endpoint);
-        final boolean isTXFrameworkEnabled = (transactionalAnnotation != null || oldCompensatableAnnotation != null || compensatableAnnotation != null);
 
-        return new EndpointMetaData(statelessAnnotation, transactionalAnnotation, oldCompensatableAnnotation, compensatableAnnotation, webServiceAnnotation, isTXFrameworkEnabled);
-    }
-
-    public TransactionalAnnotation getTransactionalAnnotation() {
-        return transactionalAnnotation;
-    }
-
-    public OldCompensatableAnnotation getOldCompensatableAnnotation() {
-        return oldCompensatableAnnotation;
-    }
-
-    public CompensatableAnnotation getCompensatableAnnotation() {
-        return compensatableAnnotation;
+        return new EndpointMetaData(statelessAnnotation, transactionalAnnotation, compensatableAnnotation, oldCompensatableAnnotation, webServiceAnnotation);
     }
 
     public WebServiceAnnotation getWebServiceAnnotation() {
         return webServiceAnnotation;
-    }
-
-    public boolean isTXFrameworkEnabled() {
-        return isTXFrameworkEnabled;
     }
 
     public boolean isWebservice() {
@@ -84,5 +69,14 @@ public class EndpointMetaData {
 
     public boolean isEJB() {
         return statelessAnnotation != null;
+    }
+
+    public boolean isBridgeEnabled() {
+        return transactionalAnnotation != null;
+    }
+
+    public boolean isXTSEnabled() {
+        return transactionalAnnotation != null || compensatableAnnotation != null
+                || oldCompensatableAnnotation != null;
     }
 }

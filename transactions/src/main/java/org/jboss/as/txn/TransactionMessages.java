@@ -22,10 +22,10 @@
 
 package org.jboss.as.txn;
 
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -103,5 +103,7 @@ public interface TransactionMessages {
     @Message(id = 10106, value = "MBean Server service not installed, this functionality is not available if the JMX subsystem has not been installed.")
     RuntimeException jmxSubsystemNotInstalled();
 
+    @Message(id = 10107, value = "'hornetq-store-enable-async-io' must be true.")
+    String transformHornetQStoreEnableAsyncIoMustBeTrue();
 
 }

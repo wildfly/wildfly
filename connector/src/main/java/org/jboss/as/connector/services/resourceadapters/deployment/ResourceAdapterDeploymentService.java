@@ -30,6 +30,8 @@ import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
@@ -112,8 +114,10 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
             raDeployment = raDeployer.doDeploy();
             deploymentName = raDeployment.getDeploymentName();
         } catch (Throwable t) {
-            unregisterAll(deploymentName);
-            throw MESSAGES.failedToStartRaDeployment(t, deploymentName);
+            // To clean up we need to invoke blocking behavior, so do that in another thread
+            // and let this MSC thread return
+            cleanupStartAsync(context, deploymentName, t, duServiceName, classLoader);
+            return;
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
             WritableServiceBasedNamingStore.popOwner();
@@ -138,17 +142,44 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         }
     }
 
+    // TODO this could be replaced by the superclass method if there is no need for the TCCL change and push/pop owner
+    // The stop() call doesn't do that so it's probably not needed
+    private void cleanupStartAsync(final StartContext context, final String deploymentName, final Throwable cause,
+            final ServiceName duServiceName, final ClassLoader toUse) {
+        ExecutorService executorService = getLifecycleExecutorService();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+                try {
+                    WritableServiceBasedNamingStore.pushOwner(duServiceName);
+                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(toUse);
+                    unregisterAll(deploymentName);
+                } finally {
+                    try {
+                        context.failed(MESSAGES.failedToStartRaDeployment(cause, deploymentName));
+                    } finally {
+                        WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
+                        WritableServiceBasedNamingStore.popOwner();
+                    }
+                }
+            }
+        };
+        try {
+            executorService.execute(r);
+        } catch (RejectedExecutionException e) {
+            r.run();
+        } finally {
+            context.asynchronous();
+        }
+    }
 
     /**
      * Stop
      */
     @Override
     public void stop(StopContext context) {
-        DEPLOYMENT_CONNECTOR_LOGGER.debugf("Stopping sevice %s",
-                deploymentServiceName);
-        unregisterAll(deploymentName);
-
-    }
+        stopAsync(context, deploymentName, deploymentServiceName);    }
 
     @Override
     public void unregisterAll(String deploymentName) {

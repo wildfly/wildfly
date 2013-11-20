@@ -68,8 +68,8 @@ public class JPAInterceptorProcessor implements DeploymentUnitProcessor {
                 public void configure(DeploymentPhaseContext context, ComponentDescription description, ComponentConfiguration configuration) throws
                     DeploymentUnitProcessingException {
                     configuration.addPostConstructInterceptor(SFSBPreCreateInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.JPA_SFSB_PRE_CREATE);
-                    configuration.addPostConstructInterceptor(new SFSBCreateInterceptor.Factory(), InterceptorOrder.ComponentPostConstruct.JPA_SFSB_CREATE);
-                    configuration.addPreDestroyInterceptor(new SFSBDestroyInterceptor.Factory(), InterceptorOrder.ComponentPreDestroy.JPA_SFSB_DESTROY);
+                    configuration.addPostConstructInterceptor(SFSBCreateInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.JPA_SFSB_CREATE);
+                    configuration.addPreDestroyInterceptor(SFSBDestroyInterceptor.FACTORY, InterceptorOrder.ComponentPreDestroy.JPA_SFSB_DESTROY);
                     configuration.addComponentInterceptor(SFSBInvocationInterceptor.FACTORY, InterceptorOrder.Component.JPA_SFSB_INTERCEPTOR, false);
 
                     //we need to serialized the entity manager state

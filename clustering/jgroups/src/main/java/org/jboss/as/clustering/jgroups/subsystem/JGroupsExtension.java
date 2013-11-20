@@ -21,9 +21,6 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
@@ -37,11 +34,13 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.TransformationDescription;
+import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jgroups.Global;
@@ -98,7 +97,7 @@ public class JGroupsExtension implements Extension {
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JGroupsSubsystemRootResourceDefinition());
-        subsystem.registerOperationHandler(JGroupsSubsystemDescribe.DEFINITON,JGroupsSubsystemDescribe.INSTANCE);
+        subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION,JGroupsSubsystemDescribe.INSTANCE);
 
         subsystem.registerSubModel(new StackResourceDefinition(registerRuntimeOnly));
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());
@@ -135,53 +134,56 @@ public class JGroupsExtension implements Extension {
         registerTransformers_1_2_0(subsystem);
     }
 
-    private static void registerTransformers_1_2_0(final SubsystemRegistration subsystem) {
-        final ModelVersion version = ModelVersion.create(1, 2, 0);
-
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version, ResourceTransformer.DEFAULT);
-        final TransformersSubRegistration stack = registration.registerSubResource(StackResourceDefinition.STACK_PATH);
-
-        registerRelayTransformers(stack);
-    }
-
+    /*
+     * Register transformer to transform from current model version to model version 1.1.0
+     */
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
-        // Transformations to the 1.1.0 Model
-        // - we need to reject expressions for transport (and similarly for protocol properties) for these operations
-        //   transport=TRANSPORT/property=<name>:add(value=<value>)
-        //   transport=TRANSPORT/property=<name>:write-attribute(name=value, value=<value>)
-        //   transport=TRANSPORT:add(...,properties=<list of properties>)
+        final ModelVersion version = ModelVersion.create(1,1,0);
 
-        final ModelVersion version = ModelVersion.create(1, 1, 0);
-        final RejectExpressionValuesTransformer transformer = new RejectExpressionValuesTransformer(PropertyResourceDefinition.VALUE,
-                TransportResourceDefinition.PROPERTIES, ProtocolResourceDefinition.PROPERTIES, TransportResourceDefinition.SHARED);
-        final ResourceTransformer resourceTransformer = transformer;
+        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder stackBuilder = subsystemBuilder.addChildResource(StackResourceDefinition.STACK_PATH);
 
-        final TransformersSubRegistration registration = subsystem.registerModelTransformers(version, ResourceTransformer.DEFAULT);
-        final TransformersSubRegistration stack = registration.registerSubResource(StackResourceDefinition.STACK_PATH);
+        // reject expressions in certain transport usages
+        final ResourceTransformationDescriptionBuilder transportBuilder = stackBuilder.addChildResource(TransportResourceDefinition.TRANSPORT_PATH);
+        transportBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransportResourceDefinition.SHARED)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransportResourceDefinition.PROPERTIES)
+                .end();
 
-        // reject expressions for transport properties, for the add and write-attribute op
-        final TransformersSubRegistration transport = stack.registerSubResource(TransportResourceDefinition.TRANSPORT_PATH, resourceTransformer);
-        transport.registerOperationTransformer(ADD, transformer);
-        transport.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, transformer.getWriteAttributeTransformer());
-        final TransformersSubRegistration transport_property = transport.registerSubResource(PropertyResourceDefinition.PROPERTY_PATH) ;
-        transport_property.registerOperationTransformer(ADD, transformer);
-        transport_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, transformer.getWriteAttributeTransformer());
+        final ResourceTransformationDescriptionBuilder transportPropertyBuilder = transportBuilder.addChildResource(PropertyResourceDefinition.PROPERTY_PATH);
+        transportPropertyBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PropertyResourceDefinition.VALUE)
+                .end();
 
-        // reject expressions for transport properties, for the add and write-attribute op
-        final TransformersSubRegistration protocol = stack.registerSubResource(ProtocolResourceDefinition.PROTOCOL_PATH, resourceTransformer);
-        protocol.registerOperationTransformer(ADD, transformer);
-        final TransformersSubRegistration protocol_property = protocol.registerSubResource(PropertyResourceDefinition.PROPERTY_PATH);
-        protocol_property.registerOperationTransformer(ADD, transformer);
-        protocol_property.registerOperationTransformer(WRITE_ATTRIBUTE_OPERATION, transformer.getWriteAttributeTransformer());
+        final ResourceTransformationDescriptionBuilder protocolBuilder = stackBuilder.addChildResource(ProtocolResourceDefinition.PROTOCOL_PATH);
+        protocolBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ProtocolResourceDefinition.PROPERTIES)
+                .end();
+        final ResourceTransformationDescriptionBuilder protocolPropertyBuilder = protocolBuilder.addChildResource(PropertyResourceDefinition.PROPERTY_PATH);
+        protocolPropertyBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, PropertyResourceDefinition.VALUE)
+                .end();
 
-        registerRelayTransformers(stack);
+        // reject relay
+        stackBuilder.rejectChildResource(RelayResource.PATH);
+
+        // now register the completed transform
+        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
     }
 
-    private static void registerRelayTransformers(final TransformersSubRegistration stack) {
-        final TransformersSubRegistration relay = stack.registerSubResource(RelayResource.PATH, true);
-        relay.discardOperations(ADD, WRITE_ATTRIBUTE_OPERATION);
+    /*
+     * Register transformer to transform from current model version to model version 1.2.0
+     */
+    private static void registerTransformers_1_2_0(final SubsystemRegistration subsystem) {
+        final ModelVersion version = ModelVersion.create(1,2,0);
 
-        final TransformersSubRegistration remoteSite = relay.registerSubResource(RemoteSiteResource.PATH, true);
-        remoteSite.discardOperations(ADD, WRITE_ATTRIBUTE_OPERATION);
+        final ResourceTransformationDescriptionBuilder subsystemBuilder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder stackBuilder = subsystemBuilder.addChildResource(StackResourceDefinition.STACK_PATH);
+
+        // reject relay
+        stackBuilder.rejectChildResource(RelayResource.PATH);
+
+        // now register the completed transform
+        TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, version);
     }
 }

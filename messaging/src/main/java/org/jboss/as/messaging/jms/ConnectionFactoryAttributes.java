@@ -209,7 +209,6 @@ public interface ConnectionFactoryAttributes {
                 .setAllowNull(true)
                 .setRestartAllServices()
                 .setDeprecated(VERSION_1_1_0)
-                .setAttributeMarshaller(NOOP_MARSHALLER)
                 .build();
 
         AttributeDefinition GROUP_ID = SimpleAttributeDefinitionBuilder.create("group-id", STRING)

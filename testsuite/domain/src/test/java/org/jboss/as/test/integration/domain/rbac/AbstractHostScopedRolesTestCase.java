@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE_DEPTH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.test.integration.management.rbac.RbacUtil.MONITOR_USER;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ import org.jboss.as.test.integration.management.rbac.Outcome;
 import org.jboss.as.test.integration.management.rbac.RbacUtil;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -51,7 +53,7 @@ import org.junit.Test;
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */
-public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCase {
+public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCase implements RbacDomainRolesTests {
 
     public static final String MONITOR_USER = "HostMasterMonitor";
     public static final String OPERATOR_USER = "HostMasterOperator";
@@ -61,7 +63,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     public static final String AUDITOR_USER = "HostMasterAuditor";
     public static final String SUPERUSER_USER = "HostMasterSuperUser";
 
-    private static final String[] USERS = { MONITOR_USER, OPERATOR_USER, MAINTAINER_USER, DEPLOYER_USER,
+    static final String[] USERS = { MONITOR_USER, OPERATOR_USER, MAINTAINER_USER, DEPLOYER_USER,
             ADMINISTRATOR_USER, AUDITOR_USER, SUPERUSER_USER };
     private static final String[] BASES = { RbacUtil.MONITOR_USER, RbacUtil.OPERATOR_USER, RbacUtil.MAINTAINER_USER,
             RbacUtil.DEPLOYER_USER, RbacUtil.ADMINISTRATOR_USER, RbacUtil.AUDITOR_USER,
@@ -89,7 +91,9 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     public void tearDown() throws IOException {
         AssertionError assertionError = null;
         String[] toRemove = {DEPLOYMENT_2, TEST_PATH, getPrefixedAddress(HOST, MASTER, SMALL_JVM),
-                getPrefixedAddress(HOST, SLAVE, SMALL_JVM)};
+                getPrefixedAddress(HOST, SLAVE, SMALL_JVM),
+                getPrefixedAddress(HOST, SLAVE, SCOPED_ROLE_SERVER),
+                getPrefixedAddress(HOST, MASTER, SCOPED_ROLE_SERVER)};
         for (String address : toRemove) {
             try {
                 removeResource(address);
@@ -113,6 +117,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
     @Test
     public void testMonitor() throws Exception {
         ModelControllerClient client = getClientForUser(MONITOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, MONITOR_USER);
         checkStandardReads(client, null, null, MONITOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, MONITOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MONITOR_USER);
@@ -126,6 +131,10 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
         checkSensitiveAttribute(client, null, null, false, MONITOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, MONITOR_USER);
+        testHostScopedRoleCanReadHostChildResources(client, MONITOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, MONITOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, MONITOR_USER);
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MONITOR_USER);
@@ -134,12 +143,14 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, MONITOR_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, MONITOR_USER);
 
-        testHostScopedRoleCanReadHostChildResources(client, MONITOR_USER);
+        testWLFY2299(client, Outcome.UNAUTHORIZED, MONITOR_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, MONITOR_USER);
     }
 
     @Test
     public void testOperator() throws Exception {
         ModelControllerClient client = getClientForUser(OPERATOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
         checkStandardReads(client, null, null, OPERATOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, OPERATOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
@@ -153,6 +164,10 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
         checkSensitiveAttribute(client, null, null, false, OPERATOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, OPERATOR_USER);
+        testHostScopedRoleCanReadHostChildResources(client, OPERATOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, OPERATOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, OPERATOR_USER);
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, OPERATOR_USER);
@@ -161,12 +176,14 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, OPERATOR_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, OPERATOR_USER);
 
-        testHostScopedRoleCanReadHostChildResources(client, OPERATOR_USER);
+        testWLFY2299(client, Outcome.UNAUTHORIZED, OPERATOR_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.SUCCESS, OPERATOR_USER);
     }
 
     @Test
     public void testMaintainer() throws Exception {
         ModelControllerClient client = getClientForUser(MAINTAINER_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, MAINTAINER_USER);
         checkStandardReads(client, null, null, MAINTAINER_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, MAINTAINER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
@@ -180,6 +197,10 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
         checkSensitiveAttribute(client, null, null, false, MAINTAINER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, MAINTAINER_USER);
+        testHostScopedRoleCanReadHostChildResources(client, MAINTAINER_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, MAINTAINER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, MAINTAINER_USER);
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, MAINTAINER_USER);
@@ -188,12 +209,13 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, MASTER, Outcome.SUCCESS, MAINTAINER_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, MAINTAINER_USER);
 
-        testHostScopedRoleCanReadHostChildResources(client, MAINTAINER_USER);
+        testWLFY2299(client, Outcome.SUCCESS, MAINTAINER_USER);
     }
 
     @Test
     public void testDeployer() throws Exception {
         ModelControllerClient client = getClientForUser(DEPLOYER_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         checkStandardReads(client, null, null, DEPLOYER_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, DEPLOYER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, DEPLOYER_USER);
@@ -207,6 +229,10 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
         checkSensitiveAttribute(client, null, null, false, DEPLOYER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, false, DEPLOYER_USER);
+        testHostScopedRoleCanReadHostChildResources(client, DEPLOYER_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, DEPLOYER_USER);
@@ -215,12 +241,14 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, DEPLOYER_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, DEPLOYER_USER);
 
-        testHostScopedRoleCanReadHostChildResources(client, DEPLOYER_USER);
+        testWLFY2299(client, Outcome.UNAUTHORIZED, DEPLOYER_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, DEPLOYER_USER);
     }
 
     @Test
     public void testAdministrator() throws Exception {
         ModelControllerClient client = getClientForUser(ADMINISTRATOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, ADMINISTRATOR_USER);
         checkStandardReads(client, null, null, ADMINISTRATOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
@@ -234,6 +262,10 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, null, null, false, ADMINISTRATOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, ADMINISTRATOR_USER);
+        testHostScopedRoleCanReadHostChildResources(client, ADMINISTRATOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, ADMINISTRATOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, ADMINISTRATOR_USER);
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, ADMINISTRATOR_USER);
@@ -242,12 +274,13 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, MASTER, Outcome.SUCCESS, ADMINISTRATOR_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, ADMINISTRATOR_USER);
 
-        testHostScopedRoleCanReadHostChildResources(client, ADMINISTRATOR_USER);
+        testWLFY2299(client, Outcome.SUCCESS, ADMINISTRATOR_USER);
     }
 
     @Test
     public void testAuditor() throws Exception {
         ModelControllerClient client = getClientForUser(AUDITOR_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
         checkStandardReads(client, null, null, AUDITOR_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, AUDITOR_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, AUDITOR_USER);
@@ -261,6 +294,10 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
         checkSensitiveAttribute(client, null, null, false, AUDITOR_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, AUDITOR_USER);
+        testHostScopedRoleCanReadHostChildResources(client, AUDITOR_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.UNAUTHORIZED, AUDITOR_USER);
         runGC(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, AUDITOR_USER);
@@ -269,12 +306,14 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, MASTER, Outcome.UNAUTHORIZED, AUDITOR_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, AUDITOR_USER);
 
-        testHostScopedRoleCanReadHostChildResources(client, AUDITOR_USER);
+        testWLFY2299(client, Outcome.UNAUTHORIZED, AUDITOR_USER);
+        restartServer(client, MASTER, MASTER_A, Outcome.UNAUTHORIZED, AUDITOR_USER);
     }
 
     @Test
     public void testSuperUser() throws Exception {
         ModelControllerClient client = getClientForUser(SUPERUSER_USER, isAllowLocalAuth(), masterClientConfig);
+        readWholeConfig(client, Outcome.UNAUTHORIZED, SUPERUSER_USER);
         checkStandardReads(client, null, null, SUPERUSER_USER);
         checkRootRead(client, null, null, Outcome.SUCCESS, SUPERUSER_USER);
         checkRootRead(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
@@ -288,6 +327,10 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         checkSecurityDomainRead(client, SLAVE, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
         checkSensitiveAttribute(client, null, null, false, SUPERUSER_USER);
         checkSensitiveAttribute(client, MASTER, MASTER_A, true, SUPERUSER_USER);
+        testHostScopedRoleCanReadHostChildResources(client, SUPERUSER_USER);
+
+        if (readOnly) return;
+
         runGC(client, MASTER, null, Outcome.SUCCESS, SUPERUSER_USER);
         runGC(client, MASTER, MASTER_A, Outcome.SUCCESS, SUPERUSER_USER);
         runGC(client, SLAVE, SLAVE_B, Outcome.HIDDEN, SUPERUSER_USER);
@@ -296,7 +339,7 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         addJvm(client, HOST, MASTER, Outcome.SUCCESS, SUPERUSER_USER);
         addJvm(client, HOST, SLAVE, Outcome.HIDDEN, SUPERUSER_USER);
 
-        testHostScopedRoleCanReadHostChildResources(client, SUPERUSER_USER);
+        testWLFY2299(client, Outcome.SUCCESS, SUPERUSER_USER);
     }
 
     private void testHostScopedRoleCanReadHostChildResources(ModelControllerClient client, String... roles) throws Exception {
@@ -316,5 +359,20 @@ public abstract class AbstractHostScopedRolesTestCase extends AbstractRbacTestCa
         //System.out.println(RbacUtil.executeOperation(client, op, Outcome.SUCCESS));
         RbacUtil.executeOperation(client, op, Outcome.SUCCESS);
 
+    }
+
+    private void testWLFY2299(ModelControllerClient client, Outcome expected, String... roles) throws IOException {
+
+        addServerConfig(client, SLAVE, SERVER_GROUP_A, Outcome.HIDDEN, roles);
+        addServerConfig(client, MASTER, SERVER_GROUP_A, expected, roles);
+
+        ModelNode metadata = getServerConfigAccessControl(client, roles);
+        ModelNode add = metadata.get("default", "operations", "add", "execute");
+        Assert.assertTrue(add.isDefined());
+        Assert.assertEquals(expected == Outcome.SUCCESS, add.asBoolean());
+
+        ModelNode writeConfig = metadata.get("default", "write");
+        Assert.assertTrue(writeConfig.isDefined());
+        Assert.assertEquals(expected == Outcome.SUCCESS, writeConfig.asBoolean());
     }
 }

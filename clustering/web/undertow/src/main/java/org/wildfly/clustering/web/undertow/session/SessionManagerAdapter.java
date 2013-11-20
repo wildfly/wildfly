@@ -119,14 +119,16 @@ public class SessionManagerAdapter implements UndertowSessionManager {
         if (id == null) return null;
 
         Batch batch = this.manager.getBatcher().startBatch();
-        Session<LocalSessionContext> session = null;
         try {
-            session = this.manager.findSession(id);
-            return (session != null) ? this.getSession(session, exchange, config, batch) : null;
-        } finally {
+            Session<LocalSessionContext> session = this.manager.findSession(id);
             if (session == null) {
-                batch.discard();
+                batch.close();
+                return null;
             }
+            return this.getSession(session, exchange, config, batch);
+        } catch (RuntimeException | Error e) {
+            batch.discard();
+            throw e;
         }
     }
 

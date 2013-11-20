@@ -315,4 +315,60 @@ public interface RejectAttributeChecker {
             return attributeValue.isDefined();
         }
     };
+
+
+    RejectAttributeChecker UNDEFINED = new DefaultRejectAttributeChecker() {
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ControllerMessages.MESSAGES.attributesMustBeDefined(attributes.keySet());
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                          TransformationContext context) {
+            return !attributeValue.isDefined();
+        }
+    };
+
+    /**
+     * Rejects the attribute if the value is equal to the specified value.
+     */
+    public static class SimpleRejectAttributeChecker extends DefaultRejectAttributeChecker {
+        private final ModelNode value;
+
+        public SimpleRejectAttributeChecker(ModelNode value) {
+            this.value = value;
+        }
+
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ControllerMessages.MESSAGES.attributesMustNotBeDefinedAs(this.value, attributes.keySet());
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return this.value.equals(attributeValue);
+        }
+    }
+
+    /**
+     * Rejects an attribute if the value is anything other than the specified value..
+     */
+    public static class SimpleAcceptAttributeChecker extends DefaultRejectAttributeChecker {
+        private final ModelNode value;
+
+        public SimpleAcceptAttributeChecker(ModelNode value) {
+            this.value = value;
+        }
+
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ControllerMessages.MESSAGES.attributesMustBeDefinedAs(this.value, attributes.keySet());
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            return !this.value.equals(attributeValue);
+        }
+    }
 }

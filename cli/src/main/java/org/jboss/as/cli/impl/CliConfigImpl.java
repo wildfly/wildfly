@@ -26,6 +26,9 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -36,8 +39,10 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.cli.CliConfig;
 import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.ControllerAddress;
 import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
@@ -54,7 +59,11 @@ class CliConfigImpl implements CliConfig {
     private static final String CURRENT_WORKING_DIRECTORY = "user.dir";
     private static final String JBOSS_CLI_FILE = "jboss-cli.xml";
 
+    private static final String ACCESS_CONTROL = "access-control";
+    private static final String CONTROLLER = "controller";
+    private static final String CONTROLLERS = "controllers";
     private static final String DEFAULT_CONTROLLER = "default-controller";
+    private static final String DEFAULT_PROTOCOL = "default-protocol";
     private static final String ENABLED = "enabled";
     private static final String FILE_DIR = "file-dir";
     private static final String FILE_NAME = "file-name";
@@ -62,12 +71,16 @@ class CliConfigImpl implements CliConfig {
     private static final String HISTORY = "history";
     private static final String HOST = "host";
     private static final String MAX_SIZE = "max-size";
+    private static final String NAME = "name";
     private static final String PORT = "port";
     private static final String PROTOCOL = "protocol";
     private static final String CONNECTION_TIMEOUT = "connection-timeout";
     private static final String RESOLVE_PARAMETER_VALUES = "resolve-parameter-values";
     private static final String SILENT = "silent";
+    private static final String USE_LEGACY_OVERRIDE = "use-legacy-override";
     private static final String VALIDATE_OPERATION_REQUESTS = "validate-operation-requests";
+
+    private static final Logger log = Logger.getLogger(CliConfig.class);
 
     static CliConfig load(final CommandContext ctx) throws CliInitializationException {
         File jbossCliFile = findCLIFileFromSystemProperty();
@@ -169,8 +182,6 @@ class CliConfigImpl implements CliConfig {
 
     private CliConfigImpl() {
         defaultControllerProtocol = "http-remoting";
-        defaultControllerHost = "localhost";
-        defaultControllerPort = 9990;
 
         historyEnabled = true;
         historyFileName = ".jboss-cli-history";
@@ -181,8 +192,9 @@ class CliConfigImpl implements CliConfig {
     }
 
     private String defaultControllerProtocol;
-    private String defaultControllerHost;
-    private int defaultControllerPort;
+    private boolean useLegacyOverride = true;
+    private ControllerAddress defaultController = new ControllerAddress(null, "localhost", -1);
+    private Map<String, ControllerAddress> controllerAliases = Collections.emptyMap();
 
     private boolean historyEnabled;
     private String historyFileName;
@@ -198,19 +210,39 @@ class CliConfigImpl implements CliConfig {
 
     private boolean silent;
 
+    private boolean accessControl = true;
+
+
     @Override
     public String getDefaultControllerProtocol() {
         return defaultControllerProtocol;
     }
 
     @Override
-    public String getDefaultControllerHost() {
-        return defaultControllerHost;
+    public boolean isUseLegacyOverride() {
+        return useLegacyOverride;
     }
 
     @Override
+    @Deprecated
+    public String getDefaultControllerHost() {
+        return getDefaultControllerAddress().getHost();
+    }
+
+    @Override
+    @Deprecated
     public int getDefaultControllerPort() {
-        return defaultControllerPort;
+        return getDefaultControllerAddress().getPort();
+    }
+
+    @Override
+    public ControllerAddress getDefaultControllerAddress() {
+        return defaultController;
+    }
+
+    @Override
+    public ControllerAddress getAliasedControllerAddress(String alias) {
+        return controllerAliases.get(alias);
     }
 
     @Override
@@ -256,6 +288,11 @@ class CliConfigImpl implements CliConfig {
     @Override
     public boolean isSilent() {
         return silent;
+    }
+
+    @Override
+    public boolean isAccessControl() {
+        return accessControl;
     }
 
     static class SslConfig implements SSLConfig {
@@ -336,12 +373,21 @@ class CliConfigImpl implements CliConfig {
             Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
             for (Namespace current : Namespace.cliValues()) {
                 if (readerNS.equals(current)) {
-                    // Convert to a switch statement if the top level element changes - for now all supported
-                    // namespaces are equal at this point.
-                    readCLIElement_1_0(reader, readerNS, config);
+                    switch (readerNS) {
+                        case CLI_1_0:
+                            readCLIElement_1_0(reader, readerNS, config);
+                            break;
+                        case CLI_1_1:
+                            readCLIElement_1_1(reader, readerNS, config);
+                            break;
+                        case CLI_1_2:
+                            readCLIElement_1_2(reader, readerNS, config);
+                            break;
+                        default:
+                            readCLIElement_2_0(reader, readerNS, config);
+                    }
                     return;
                 }
-
             }
             throw new XMLStreamException("Unexpected element: " + localName);
         }
@@ -353,30 +399,68 @@ class CliConfigImpl implements CliConfig {
                 assertExpectedNamespace(reader, expectedNs);
                 if(tag == XMLStreamConstants.START_ELEMENT) {
                     final String localName = reader.getLocalName();
-                    if(localName.equals(DEFAULT_CONTROLLER)) {
-                        switch (expectedNs) {
-                            case CLI_1_0:
-                            case CLI_1_1:
-                            case CLI_1_2:
-                                readDefaultController_1_0(reader, expectedNs, config);
-                                break;
-                            default:
-                                readDefaultController_2_0(reader, expectedNs, config);
-                        }
+                    if (localName.equals(DEFAULT_CONTROLLER)) {
+                        readDefaultController_1_0(reader, expectedNs, config);
+                    } else if (localName.equals(HISTORY)) {
+                        readHistory(reader, expectedNs, config);
+                    } else if (localName.equals("ssl")) {
+                        SslConfig sslConfig = new SslConfig();
+                        readSSLElement_1_0(reader, expectedNs, sslConfig);
+                        config.sslConfig = sslConfig;
+                    } else {
+                        throw new XMLStreamException("Unexpected element: " + localName);
+                    }
+                } else if(tag == XMLStreamConstants.END_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(JBOSS_CLI)) {
+                        jbossCliEnded = true;
+                    }
+                }
+            }
+        }
+
+        public void readCLIElement_1_1(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            boolean jbossCliEnded = false;
+            while (reader.hasNext() && jbossCliEnded == false) {
+                int tag = reader.nextTag();
+                assertExpectedNamespace(reader, expectedNs);
+                if(tag == XMLStreamConstants.START_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(DEFAULT_CONTROLLER)) {
+                        readDefaultController_1_0(reader, expectedNs, config);
+                    } else if(localName.equals(VALIDATE_OPERATION_REQUESTS)) {
+                        config.validateOperationRequests = resolveBoolean(reader.getElementText());
                     } else if(localName.equals(HISTORY)) {
                         readHistory(reader, expectedNs, config);
                     } else if (localName.equals("ssl")) {
                         SslConfig sslConfig = new SslConfig();
-                        switch (expectedNs) {
-                            case CLI_1_0:
-                                readSSLElement_1_0(reader, expectedNs, sslConfig);
-                                break;
-                            default:
-                                readSSLElement_1_1(reader, expectedNs, sslConfig);
-                        }
+                        readSSLElement_1_0(reader, expectedNs, sslConfig);
                         config.sslConfig = sslConfig;
+                    } else {
+                        throw new XMLStreamException("Unexpected element: " + localName);
+                    }
+                } else if(tag == XMLStreamConstants.END_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(JBOSS_CLI)) {
+                        jbossCliEnded = true;
+                    }
+                }
+            }
+        }
+
+        public void readCLIElement_1_2(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            boolean jbossCliEnded = false;
+            while (reader.hasNext() && jbossCliEnded == false) {
+                int tag = reader.nextTag();
+                assertExpectedNamespace(reader, expectedNs);
+                if(tag == XMLStreamConstants.START_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(DEFAULT_CONTROLLER)) {
+                        readDefaultController_1_0(reader, expectedNs, config);
                     } else if(localName.equals(VALIDATE_OPERATION_REQUESTS)) {
                         config.validateOperationRequests = resolveBoolean(reader.getElementText());
+                    } else if(localName.equals(HISTORY)) {
+                        readHistory(reader, expectedNs, config);
                     } else if(localName.equals(RESOLVE_PARAMETER_VALUES)) {
                         config.resolveParameterValues = resolveBoolean(reader.getElementText());
                     } else if (CONNECTION_TIMEOUT.equals(localName)) {
@@ -386,6 +470,10 @@ class CliConfigImpl implements CliConfig {
                         } catch(NumberFormatException e) {
                             throw new XMLStreamException("Failed to parse " + JBOSS_CLI + " " + CONNECTION_TIMEOUT + " value '" + text + "'", e);
                         }
+                    } else if (localName.equals("ssl")) {
+                        SslConfig sslConfig = new SslConfig();
+                        readSSLElement_1_1(reader, expectedNs, sslConfig);
+                        config.sslConfig = sslConfig;
                     } else if(localName.equals(SILENT)) {
                         config.silent = resolveBoolean(reader.getElementText());
                     } else {
@@ -400,44 +488,152 @@ class CliConfigImpl implements CliConfig {
             }
         }
 
-        private void readDefaultController_1_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
-            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+        public void readCLIElement_2_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            boolean jbossCliEnded = false;
+            while (reader.hasNext() && jbossCliEnded == false) {
+                int tag = reader.nextTag();
                 assertExpectedNamespace(reader, expectedNs);
-                final String localName = reader.getLocalName();
-                final String resolved = resolveString(reader.getElementText());
-                if (HOST.equals(localName)) {
-                    config.defaultControllerHost = resolved;
-                } else if (PORT.equals(localName)) {
-                    try {
-                        config.defaultControllerPort = Integer.parseInt(resolved);
-                    } catch(NumberFormatException e) {
-                        throw new XMLStreamException("Failed to parse " + DEFAULT_CONTROLLER + " " + PORT + " value '" + resolved + "'", e);
+                if(tag == XMLStreamConstants.START_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(DEFAULT_PROTOCOL)) {
+                        readDefaultProtocol_2_0(reader, expectedNs, config);
+                    } else if (localName.equals(DEFAULT_CONTROLLER)) {
+                        readDefaultController_2_0(reader, expectedNs, config);
+                    } else if (localName.equals(CONTROLLERS)) {
+                        readControllers_2_0(reader, expectedNs, config);
+                    } else if (localName.equals(VALIDATE_OPERATION_REQUESTS)) {
+                        config.validateOperationRequests = resolveBoolean(reader.getElementText());
+                    } else if(localName.equals(HISTORY)) {
+                        readHistory(reader, expectedNs, config);
+                    } else if(localName.equals(RESOLVE_PARAMETER_VALUES)) {
+                        config.resolveParameterValues = resolveBoolean(reader.getElementText());
+                    } else if (CONNECTION_TIMEOUT.equals(localName)) {
+                        final String text = reader.getElementText();
+                        try {
+                            config.connectionTimeout = Integer.parseInt(text);
+                        } catch(NumberFormatException e) {
+                            throw new XMLStreamException("Failed to parse " + JBOSS_CLI + " " + CONNECTION_TIMEOUT + " value '" + text + "'", e);
+                        }
+                    } else if (localName.equals("ssl")) {
+                        SslConfig sslConfig = new SslConfig();
+                        readSSLElement_1_1(reader, expectedNs, sslConfig);
+                        config.sslConfig = sslConfig;
+                    } else if(localName.equals(SILENT)) {
+                        config.silent = resolveBoolean(reader.getElementText());
+                    } else if(localName.equals(ACCESS_CONTROL)) {
+                        config.accessControl = resolveBoolean(reader.getElementText());
+                        if(log.isTraceEnabled()) {
+                            log.trace(ACCESS_CONTROL + " is " + config.accessControl);
+                        }
+                    } else {
+                        throw new XMLStreamException("Unexpected element: " + localName);
                     }
-                } else {
-                    throw new XMLStreamException("Unexpected child of " + DEFAULT_CONTROLLER + ": " + localName);
+                } else if(tag == XMLStreamConstants.END_ELEMENT) {
+                    final String localName = reader.getLocalName();
+                    if (localName.equals(JBOSS_CLI)) {
+                        jbossCliEnded = true;
+                    }
                 }
             }
         }
 
+        private void readDefaultProtocol_2_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config)
+                throws XMLStreamException {
+            final int attributes = reader.getAttributeCount();
+            for (int i = 0; i < attributes; i++) {
+                String namespace = reader.getAttributeNamespace(i);
+                String localName = reader.getAttributeLocalName(i);
+                String value = reader.getAttributeValue(i);
+
+                if (namespace != null && !namespace.equals("")) {
+                    throw new XMLStreamException("Unexpected attribute '" + namespace + ":" + localName + "'",
+                            reader.getLocation());
+                } else if (localName.equals(USE_LEGACY_OVERRIDE)) {
+                    config.useLegacyOverride = Boolean.parseBoolean(value);
+                } else {
+                    throw new XMLStreamException("Unexpected attribute '" + localName + "'", reader.getLocation());
+                }
+            }
+
+            final String resolved = resolveString(reader.getElementText());
+            if (resolved != null && resolved.length() > 0) {
+                config.defaultControllerProtocol = resolved;
+            }
+        }
+
+        private void readDefaultController_1_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            config.defaultController = readController(false, reader, expectedNs);
+        }
+
         private void readDefaultController_2_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            config.defaultController = readController(true, reader, expectedNs);
+        }
+
+        private ControllerAddress readController(boolean allowProtocol, XMLExtendedStreamReader reader, Namespace expectedNs) throws XMLStreamException {
+            String protocol = null;
+            String host = null;
+            int port = -1;
+
             while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
                 assertExpectedNamespace(reader, expectedNs);
                 final String localName = reader.getLocalName();
                 final String resolved = resolveString(reader.getElementText());
-                if (HOST.equals(localName)) {
-                    config.defaultControllerHost = resolved;
-                } else if (PROTOCOL.equals(localName)) {
-                    config.defaultControllerProtocol = resolved;
-                } else if (PORT.equals(localName)) {
+                if (HOST.equals(localName) && host == null) {
+                    host = resolved;
+                } else if (PROTOCOL.equals(localName) && protocol == null && allowProtocol) {
+                    protocol = resolved;
+                } else if (PORT.equals(localName) && port < 0) {
                     try {
-                        config.defaultControllerPort = Integer.parseInt(resolved);
-                    } catch(NumberFormatException e) {
-                        throw new XMLStreamException("Failed to parse " + DEFAULT_CONTROLLER + " " + PORT + " value '" + resolved + "'", e);
+                        port = Integer.parseInt(resolved);
+                        if (port < 0) {
+                            throw new XMLStreamException("Invalid negative port \"" + resolved + "\"");
+                        }
+                    } catch (NumberFormatException e) {
+                        throw new XMLStreamException("Failed to parse " + DEFAULT_CONTROLLER + " " + PORT + " value '"
+                                + resolved + "'", e);
                     }
                 } else {
                     throw new XMLStreamException("Unexpected child of " + DEFAULT_CONTROLLER + ": " + localName);
                 }
             }
+
+            return new ControllerAddress(protocol, host == null ? "localhost" : host, port);
+        }
+
+        private void readControllers_2_0(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
+            Map<String, ControllerAddress> aliasedAddresses = new HashMap<String, ControllerAddress>();
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                assertExpectedNamespace(reader, expectedNs);
+                final String localName = reader.getLocalName();
+
+                if (CONTROLLER.equals(localName)) {
+                    String name = null;
+                    final int attributes = reader.getAttributeCount();
+                    for (int i = 0; i < attributes; i++) {
+                        String namespace = reader.getAttributeNamespace(i);
+                        String attrLocalName = reader.getAttributeLocalName(i);
+                        String value = reader.getAttributeValue(i);
+
+                        if (namespace != null && !namespace.equals("")) {
+                            throw new XMLStreamException("Unexpected attribute '" + namespace + ":" + attrLocalName + "'",
+                                    reader.getLocation());
+                        } else if (attrLocalName.equals(NAME) && name == null) {
+                            name = value;
+                        } else {
+                            throw new XMLStreamException("Unexpected attribute '" + attrLocalName + "'", reader.getLocation());
+                        }
+                    }
+
+                    if (name == null) {
+                        throw new XMLStreamException("Missing required attribute 'name'", reader.getLocation());
+                    }
+                    aliasedAddresses.put(name, readController(true, reader, expectedNs));
+                } else {
+                    throw new XMLStreamException("Unexpected child of " + CONTROLLER + ": " + localName);
+                }
+            }
+
+            config.controllerAliases = Collections.unmodifiableMap(aliasedAddresses);
         }
 
         private void readHistory(XMLExtendedStreamReader reader, Namespace expectedNs, CliConfigImpl config) throws XMLStreamException {
@@ -518,5 +714,4 @@ class CliConfigImpl implements CliConfig {
             }
         }
     }
-
 }

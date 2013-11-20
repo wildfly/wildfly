@@ -36,13 +36,13 @@ public class WebServiceAnnotation {
 
     private static final String WEBSERVICE_ANNOTATION = "javax.jws.WebService";
 
-    private String portName;
+    private final String portName;
 
-    private String serviceName;
+    private final String serviceName;
 
-    private String name;
+    private final String name;
 
-    private String targetNamespace;
+    private final String targetNamespace;
 
     private WebServiceAnnotation(String portName, String serviceName, String name, String targetNamespace) {
         this.portName = portName;
@@ -58,20 +58,57 @@ public class WebServiceAnnotation {
             return null;
         }
 
-        final String portName = getStringVaue(annotationInstance, "portName");
-        final String serviceName = getStringVaue(annotationInstance, "serviceName");
-        final String name = getStringVaue(annotationInstance, "name");
-        final String targetNamespace = getStringVaue(annotationInstance, "targetNamespace");
+        final String portName = getStringValue(annotationInstance, "portName");
+        final String serviceName = getStringValue(annotationInstance, "serviceName");
+        final String name = getStringValue(annotationInstance, "name");
+        final String targetNamespace = getStringValue(annotationInstance, "targetNamespace");
 
         return new WebServiceAnnotation(portName, serviceName, name, targetNamespace);
     }
 
-    private static String getStringVaue(AnnotationInstance annotationInstance, String key) {
-        AnnotationValue value = annotationInstance.value(key);
-        if (value == null) {
-            return null;
+    private static String getStringValue(AnnotationInstance annotationInstance, String key) {
+        final AnnotationValue value = annotationInstance.value(key);
+
+        if (value != null) {
+            return value.asString();
+        } else if ("portName".equals(key)) {
+            return getTargetClassName(annotationInstance) + "Port";
+        } else if ("serviceName".equals(key)) {
+            return getTargetClassName(annotationInstance) + "Service";
+        } else if ("name".equals(key)) {
+            return getTargetClassName(annotationInstance);
+        } else if ("targetNamespace".equals(key)) {
+            return getTargetNamespace(annotationInstance);
+        } else {
+            return "";
         }
-        return value.asString();
+    }
+
+    private static String getTargetClassName(final AnnotationInstance annotationInstance) {
+        final String fullName = annotationInstance.target().toString();
+        final int lastDotIndex = fullName.lastIndexOf(".");
+
+        if (lastDotIndex == -1) {
+            return fullName;
+        } else {
+            return fullName.substring(lastDotIndex + 1);
+        }
+    }
+
+    private static String getTargetNamespace(final AnnotationInstance annotationInstance) {
+        final String[] parts = annotationInstance.target().toString().split("\\.");
+
+        if (parts.length < 2) {
+            return "";
+        }
+
+        String targetNamespace = "http://";
+
+        for (int i = parts.length - 2; i >= 0; i--) {
+            targetNamespace += parts[i] + ".";
+        }
+
+        return targetNamespace.substring(0, targetNamespace.length() - 1) + "/";
     }
 
     public QName buildPortQName() {
@@ -93,4 +130,5 @@ public class WebServiceAnnotation {
     public String getTargetNamespace() {
         return targetNamespace;
     }
+
 }

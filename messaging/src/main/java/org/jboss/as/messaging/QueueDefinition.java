@@ -83,7 +83,6 @@ public class QueueDefinition extends SimpleResourceDefinition {
     static final AttributeDefinition[] METRICS = { CommonAttributes.MESSAGE_COUNT, CommonAttributes.DELIVERING_COUNT, CommonAttributes.MESSAGES_ADDED,
             CommonAttributes.SCHEDULED_COUNT, CommonAttributes.CONSUMER_COUNT
             };
-    public static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0 = { ADDRESS, CommonAttributes.FILTER, CommonAttributes.DURABLE };
 
     public static QueueDefinition newRuntimeQueueDefinition(final boolean registerRuntimeOnly) {
         return new QueueDefinition(registerRuntimeOnly, true, RUNTIME_QUEUE, null, null);
@@ -168,6 +167,12 @@ public class QueueDefinition extends SimpleResourceDefinition {
      */
     static boolean forwardToRuntimeQueue(OperationContext context, ModelNode operation, OperationStepHandler handler) {
         PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
+
+        // do not forward if the current operation is for a runtime-queue already:
+        if (RUNTIME_QUEUE.equals(address.getLastElement().getKey())) {
+            return false;
+        }
+
         String queueName = address.getLastElement().getValue();
 
         PathAddress hornetQPathAddress = MessagingServices.getHornetQServerPathAddress(address);

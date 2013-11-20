@@ -78,45 +78,31 @@ class SizeRotatingHandlerResourceDefinition extends AbstractFileHandlerDefinitio
                 (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
     }
 
-    /**
-     * Add the transformers for the size rotating file handler.
-     *
-     * @param subsystemBuilder      the default subsystem builder
-     * @param loggingProfileBuilder the logging profile builder
-     *
-     * @return the builder created for the resource
-     */
-    static ResourceTransformationDescriptionBuilder addTransformers(final ResourceTransformationDescriptionBuilder subsystemBuilder,
-                                                                    final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
-        // Register the logger resource
-        final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(SIZE_ROTATING_HANDLER_PATH)
-                .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), ROTATE_ON_BOOT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ROTATE_ON_BOOT)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, AUTOFLUSH, APPEND, FILE, MAX_BACKUP_INDEX, ROTATE_SIZE)
-                .end();
+    @Override
+    protected void registerResourceTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder resourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+        switch (modelVersion) {
+            case VERSION_1_1_0: {
+                resourceBuilder
+                        .getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, AUTOFLUSH, APPEND, FILE, MAX_BACKUP_INDEX, ROTATE_SIZE)
+                        .end();
+            }
+            case VERSION_1_2_0: {
+                resourceBuilder
+                        .getAttributeBuilder()
+                        .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), ROTATE_ON_BOOT)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, ROTATE_ON_BOOT)
+                        .end();
+                if (loggingProfileBuilder != null) {
+                    loggingProfileBuilder
+                            .getAttributeBuilder()
+                            .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), ROTATE_ON_BOOT)
+                            .addRejectCheck(RejectAttributeChecker.DEFINED, ROTATE_ON_BOOT)
+                            .end();
+                }
+            }
+        }
 
-        // Reject logging profile resources
-        loggingProfileBuilder.rejectChildResource(SIZE_ROTATING_HANDLER_PATH);
-
-        return registerTransformers(child);
-    }
-
-    /**
-     * Add the transformers for the size rotating file handler.
-     *
-     * @param subsystemBuilder      the default subsystem builder
-     *
-     * @return the builder created for the resource
-     */
-    static ResourceTransformationDescriptionBuilder addTransformers_1_2(final ResourceTransformationDescriptionBuilder subsystemBuilder) {
-        // Register the logger resource
-        final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(SIZE_ROTATING_HANDLER_PATH)
-                .getAttributeBuilder()
-                .setDiscard(new DiscardAttributeValueChecker(new ModelNode(false)), ROTATE_ON_BOOT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ROTATE_ON_BOOT)
-                .end();
-        return child;
     }
 
 }

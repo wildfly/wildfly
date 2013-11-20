@@ -22,21 +22,19 @@
 
 package org.jboss.as.jsf;
 
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.logging.Logger.Level.ERROR;
-import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 05.11.2011
- *
- *
- * 12600-12649
+ * <p/>
+ * <p/>
+ * 12600-12610
  *
  * @author Stuart Douglas
  */
@@ -47,22 +45,6 @@ public interface JSFLogger extends BasicLogger {
      * A logger with a category of the package name.
      */
     JSFLogger ROOT_LOGGER = Logger.getMessageLogger(JSFLogger.class, "org.jboss.as.jsf");
-
-    @LogMessage(level = ERROR)
-    @Message(id = 12600, value = "Could not load JSF managed bean class: %s")
-    void managedBeanLoadFail(String managedBean);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 12601, value = "JSF managed bean class %s has no default constructor")
-    void managedBeanNoDefaultConstructor(String managedBean);
-
-    @LogMessage(level = ERROR)
-    @Message(id = 12602, value = "Failed to parse %s, managed beans defined in this file will not be available")
-    void managedBeansConfigParseFailed(VirtualFile facesConfig);
-
-    @LogMessage(level = WARN)
-    @Message(id = 12603, value = "Unknown JSF version %s %s will be used instead")
-    void unknownJSFVersion(String version, String referenceVersion);
 
     @LogMessage(level = WARN)
     @Message(id = 12604, value = "WildFlyConversationAwareViewHandler was improperly initialized. Expected ViewHandler parent.")

@@ -40,6 +40,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.security.service.SubjectFactoryService;
+import org.jboss.as.server.Services;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
@@ -66,8 +67,10 @@ public class RaServicesFactory {
         if (raxml.getBootstrapContext() != null && !raxml.getBootstrapContext().equals("undefined")) {
             bootStrapCtxName = raxml.getBootstrapContext();
         }
-        ServiceBuilder builder = serviceTarget
-                .addService(serviceName, service)
+        ServiceBuilder builder =
+                Services.addServerExecutorDependency(
+                        serviceTarget.addService(serviceName, service),
+                        service.getExecutorServiceInjector(), false)
                 .addDependency(ConnectorServices.IRONJACAMAR_MDR, AS7MetadataRepository.class, service.getMdrInjector())
                 .addDependency(ConnectorServices.RA_REPOSITORY_SERVICE, ResourceAdapterRepository.class,
                         service.getRaRepositoryInjector())

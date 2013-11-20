@@ -122,6 +122,11 @@
                 <xs:documentation>Defines the module whose class loader should be used when building this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="statistics" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>Determines whether or not the cache container should collect statistics.  Keep disabled for optimal performance.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="transport">
@@ -265,6 +270,11 @@
                 <xs:documentation>
                     Defines the module whose class loader should be used when building this cache, if different from the enclosing cache container.
                 </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="statistics" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>Determines whether or not the cache should collect statistics.  Keep disabled for optimal performance.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>

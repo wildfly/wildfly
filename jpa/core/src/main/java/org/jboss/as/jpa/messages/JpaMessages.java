@@ -598,4 +598,12 @@ public interface JpaMessages {
      * Don't add any message ids higher than 11499 (will need a new chunk).
      */
 
+    /**
+     * Likely cause is that the application deployment did not complete successfully
+     *
+     * @param scopedPuName
+     * @return
+     */
+    @Message(id = 11477, value = "Persistence unit '%s' is not available")
+    IllegalStateException PersistenceUnitNotAvailable(String scopedPuName);
 }

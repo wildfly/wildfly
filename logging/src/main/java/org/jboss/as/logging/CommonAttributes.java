@@ -36,8 +36,10 @@ import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleMapAttributeDefinition;
 import org.jboss.as.controller.operations.validation.ObjectTypeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.logging.correctors.FileCorrector;
 import org.jboss.as.logging.resolvers.FileResolver;
 import org.jboss.as.logging.resolvers.LevelResolver;
@@ -65,6 +67,11 @@ public interface CommonAttributes {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode(true))
             .setPropertyName("autoFlush")
+            .build();
+
+    SimpleAttributeDefinition CLASS = SimpleAttributeDefinitionBuilder.create("class", ModelType.STRING)
+            .setAllowExpression(false)
+            .setFlags(Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
     PropertyAttributeDefinition ENABLED = PropertyAttributeDefinition.Builder.of("enabled", ModelType.BOOLEAN, true)
@@ -129,9 +136,33 @@ public interface CommonAttributes {
 
     String LOGGING_PROFILES = "logging-profiles";
 
+    SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create("module", ModelType.STRING)
+            .setAllowExpression(false)
+            .setFlags(Flag.RESTART_RESOURCE_SERVICES)
+            .build();
+
     SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, true)
             .setAllowExpression(false)
             .setDeprecated(ModelVersion.create(1, 2, 0))
+            .build();
+
+    SimpleMapAttributeDefinition PROPERTIES = new SimpleMapAttributeDefinition.Builder("properties", true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(new DefaultAttributeMarshaller() {
+                @Override
+                public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {
+                    resourceModel = resourceModel.get(attribute.getName());
+                    if (resourceModel.isDefined()) {
+                        writer.writeStartElement(attribute.getName());
+                        for (ModelNode property : resourceModel.asList()) {
+                            writer.writeEmptyElement(Element.PROPERTY.getLocalName());
+                            writer.writeAttribute("name", property.asProperty().getName());
+                            writer.writeAttribute("value", property.asProperty().getValue().asString());
+                        }
+                        writer.writeEndElement();
+                    }
+                }
+            })
             .build();
 
     /**

@@ -24,12 +24,17 @@ package org.jboss.as.domain.controller.plan;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+
+import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
+import java.security.PrivilegedAction;
 import java.util.List;
+
+import javax.security.auth.Subject;
 
 /**
  * Task responsible for updating a single server-group.
@@ -43,18 +48,28 @@ abstract class AbstractServerGroupRolloutTask implements Runnable {
     protected final ServerUpdatePolicy updatePolicy;
     protected final ServerTaskExecutor executor;
     protected final ServerUpdateTask.ServerUpdateResultHandler resultHandler;
+    protected final Subject subject;
 
-    public AbstractServerGroupRolloutTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy, ServerTaskExecutor executor, final ServerUpdateTask.ServerUpdateResultHandler resultHandler) {
+    public AbstractServerGroupRolloutTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy, ServerTaskExecutor executor, final ServerUpdateTask.ServerUpdateResultHandler resultHandler, Subject subject) {
         this.tasks = tasks;
         this.updatePolicy = updatePolicy;
         this.executor = executor;
         this.resultHandler = resultHandler;
+        this.subject = subject;
     }
 
     @Override
     public void run() {
         try {
-            execute();
+            AccessAuditContext.doAs(subject, new PrivilegedAction<Void>() {
+
+                @Override
+                public Void run() {
+                    execute();
+                    return null;
+                }
+
+            });
         } catch (Throwable t) {
             DomainControllerLogger.ROOT_LOGGER.debugf(t, "failed to process task %s", tasks.iterator().next().getOperation());
         }

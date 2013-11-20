@@ -49,7 +49,7 @@ public class JASPIMappingModuleDefinition extends MappingModuleDefinition {
 
 
 
-    private static final AttributeDefinition[] ATTRIBUTES = {CODE, FLAG, LOGIN_MODULE_STACK_REF, MODULE_OPTIONS};
+    private static final AttributeDefinition[] ATTRIBUTES = {CODE, FLAG, LOGIN_MODULE_STACK_REF, MODULE_OPTIONS, LoginModuleResourceDefinition.MODULE};
 
     JASPIMappingModuleDefinition() {
         super(Constants.AUTH_MODULE);

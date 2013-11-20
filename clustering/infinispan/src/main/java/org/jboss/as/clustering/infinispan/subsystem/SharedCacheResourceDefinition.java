@@ -46,7 +46,7 @@ public class SharedCacheResourceDefinition extends ClusteredCacheResourceDefinit
         super.registerChildren(registration);
 
         registration.registerSubModel(new StateTransferResourceDefinition());
-        registration.registerSubModel(new BackupSiteResource(isRuntimeRegistration()));
+        registration.registerSubModel(new BackupSiteResourceDefinition(this.runtimeRegistration));
         registration.registerSubModel(new BackupForResourceDefinition());
     }
 }

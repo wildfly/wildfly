@@ -22,15 +22,8 @@
 
 package org.jboss.as.naming.service;
 
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
-
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ServiceBasedNamingStore;
-import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -38,6 +31,10 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
 /**
  * Service responsible for binding and unbinding a entry into a naming context.  This service can be used as a dependency for
@@ -52,18 +49,17 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     private final String name;
     private final InjectedValue<ManagedReferenceFactory> managedReferenceFactory = new InjectedValue<ManagedReferenceFactory>();
     private final Object source;
-    private final AtomicInteger refcnt = new AtomicInteger(0);
-    private ServiceController<?> controller;
-    private final ServiceName deploymentServiceName;
+    private final AtomicInteger refcnt;
+    private volatile ServiceController<?> controller;
 
     /**
      * Construct new instance.
      *
      * @param name The JNDI name to use for binding. May be either an absolute or relative name
      * @param source
-     * @param deploymentServiceName the service name for the related deployment unit
+     * @param shared indicates if the bind may be shared among multiple deployments, if true the service tracks references indicated through acquire(), and automatically stops once all deployments unreference it through release()
      */
-    public BinderService(final String name, Object source, ServiceName deploymentServiceName) {
+    public BinderService(final String name, Object source, boolean shared) {
         if (name.startsWith("java:")) {
             //this is an absolute reference
             this.name = name.substring(name.indexOf('/') + 1);
@@ -71,7 +67,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
             this.name = name;
         }
         this.source = source;
-        this.deploymentServiceName = deploymentServiceName;
+        refcnt = shared ? new AtomicInteger(0) : null;
     }
 
     /**
@@ -80,11 +76,11 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      * @param name The JNDI name to use for binding. May be either an absolute or relative name
      */
     public BinderService(final String name, Object source) {
-        this(name,source,null);
+        this(name, source, false);
     }
 
     public BinderService(final String name) {
-        this(name, null, null);
+        this(name, null, false);
     }
 
     public Object getSource() {
@@ -92,12 +88,20 @@ public class BinderService implements Service<ManagedReferenceFactory> {
     }
 
     public void acquire() {
-        refcnt.incrementAndGet();
+        if (refcnt != null) {
+            refcnt.incrementAndGet();
+        }
     }
 
     public void release() {
-        if (refcnt.decrementAndGet() <= 0)
+        if (refcnt != null && refcnt.decrementAndGet() <= 0 && controller != null) {
             controller.setMode(ServiceController.Mode.REMOVE);
+        }
+    }
+
+    public ServiceName getServiceName() {
+        final ServiceController<?> serviceController = this.controller;
+        return serviceController != null ? serviceController.getName() : null;
     }
 
     /**
@@ -106,17 +110,11 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      * @param context The start context
      * @throws StartException If the entity can not be bound
      */
-    public synchronized void start(StartContext context) throws StartException {
+    public void start(StartContext context) throws StartException {
         final ServiceBasedNamingStore namingStore = namingStoreValue.getValue();
-        ServiceController<?> controller = context.getController();
-        this.controller = controller;
+        controller = context.getController();
         namingStore.add(controller.getName());
         ROOT_LOGGER.tracef("Bound resource %s into naming store %s (service name %s)", name, namingStore, controller.getName());
-        if(deploymentServiceName != null) {
-            // add this controller service name to the related deployment runtime bindings management service, which if stop will release this service too, thus removing the bind
-            final Set<ServiceName> duBindingReferences = (Set<ServiceName>) controller.getServiceContainer().getService(JndiNamingDependencyProcessor.serviceName(deploymentServiceName)).getValue();
-            duBindingReferences.add(controller.getName());
-        }
     }
 
     /**
@@ -124,17 +122,10 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      *
      * @param context The stop context
      */
-    public synchronized void stop(StopContext context) {
+    public void stop(StopContext context) {
         final ServiceBasedNamingStore namingStore = namingStoreValue.getValue();
-        namingStore.remove(context.getController().getName());
-        if(deploymentServiceName != null) {
-            // remove the service name from the related deployment runtime bindings management service,
-            final Set<ServiceName> duBindingReferences = (Set<ServiceName>) controller.getServiceContainer().getService(JndiNamingDependencyProcessor.serviceName(deploymentServiceName)).getValue();
-            if(duBindingReferences != null) {
-                // the set is null if the binder service was stopped by the deployment unit undeploy
-                duBindingReferences.remove(controller.getName());
-            }
-        }
+        namingStore.remove(controller.getName());
+        ROOT_LOGGER.tracef("Unbound resource %s into naming store %s (service name %s)", name, namingStore, context.getController().getName());
     }
 
     /**
@@ -143,7 +134,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      * @return The value of the named entry
      * @throws IllegalStateException
      */
-    public synchronized ManagedReferenceFactory getValue() throws IllegalStateException {
+    public ManagedReferenceFactory getValue() throws IllegalStateException {
         return managedReferenceFactory.getValue();
     }
 
@@ -152,7 +143,7 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      *
      * @return the injector
      */
-    public Injector<ManagedReferenceFactory> getManagedObjectInjector() {
+    public InjectedValue<ManagedReferenceFactory> getManagedObjectInjector() {
         return managedReferenceFactory;
     }
 
@@ -161,12 +152,13 @@ public class BinderService implements Service<ManagedReferenceFactory> {
      *
      * @return the injector
      */
-    public Injector<ServiceBasedNamingStore> getNamingStoreInjector() {
+    public InjectedValue<ServiceBasedNamingStore> getNamingStoreInjector() {
         return namingStoreValue;
     }
 
     @Override
     public String toString() {
-        return "BinderService[name=" + name + ",source=" + source + ",deployment=" + deploymentServiceName +"]";
+        return "BinderService[name=" + name + ", source=" + source + ", refcnt=" + (refcnt != null ? refcnt.get() : "n/a") +"]";
     }
+
 }

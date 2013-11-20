@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.domain.suites;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTO_START;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -32,6 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEF
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
@@ -808,6 +810,57 @@ public class CoreResourceManagementTestCase {
         write.get(VALUE).set(original);
         validateResponse(masterClient.execute(write));
     }
+
+    @Test
+    public void testCannotRemoveUsedServerGroup() throws Exception {
+
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set(REMOVE);
+        operation.get(OP_ADDR).add(SERVER_GROUP, "main-server-group");
+
+        validateFailedResponse(masterClient.execute(operation));
+    }
+
+    @Test
+    public void testAddRemoveServerConfig() throws Exception {
+
+        final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode serverAddress = new ModelNode();
+        serverAddress.add(HOST, "slave");
+        serverAddress.add(SERVER_CONFIG, "test-server");
+
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+
+        final ModelNode steps = composite.get(STEPS).setEmptyList();
+
+        final ModelNode step1 = steps.add();
+        step1.get(OP).set(ADD);
+        step1.get(OP_ADDR).set(serverAddress);
+        step1.get(GROUP).set("main-server-group");
+        step1.get(AUTO_START).set(false);
+
+        final ModelNode step2 = steps.add();
+        step2.get(OP).set(ADD);
+        step2.get(OP_ADDR).set(serverAddress).add(SYSTEM_PROPERTY, "test-prop");
+        step2.get(VALUE).set("test");
+
+        try {
+            final ModelNode response = masterClient.execute(composite);
+            validateResponse(response);
+        } finally {
+            final ModelNode remove = new ModelNode();
+            remove.get(OP).set(REMOVE);
+            remove.get(OP_ADDR).set(serverAddress);
+            masterClient.execute(remove);
+        }
+
+    }
+
 
     private void testCannotInvokeManagedServerOperationsComposite(ModelNode stepAddress) throws Exception {
         final DomainClient masterClient = domainMasterLifecycleUtil.getDomainClient();

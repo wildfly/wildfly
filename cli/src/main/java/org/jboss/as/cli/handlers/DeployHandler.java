@@ -40,6 +40,9 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
 import org.jboss.as.cli.Util;
+import org.jboss.as.cli.accesscontrol.AccessRequirement;
+import org.jboss.as.cli.accesscontrol.AccessRequirementBuilder;
+import org.jboss.as.cli.accesscontrol.PerNodeOperationAccess;
 import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.CommaSeparatedCompleter;
@@ -73,6 +76,12 @@ public class DeployHandler extends DeploymentHandler {
     private final ArgumentWithoutValue unmanaged;
     private final ArgumentWithValue script;
 
+    private AccessRequirement listPermission;
+    private AccessRequirement fullReplacePermission;
+    private AccessRequirement mainAddPermission;
+    private AccessRequirement deployPermission;
+    private PerNodeOperationAccess serverGroupAddPermission;
+
     public DeployHandler(CommandContext ctx) {
         super(ctx, "deploy", true);
 
@@ -82,17 +91,27 @@ public class DeployHandler extends DeploymentHandler {
 
         l = new ArgumentWithoutValue(this, "-l");
         l.setExclusive(true);
+        l.setAccessRequirement(listPermission);
+
+        final AccessRequirement addOrReplacePermission = AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .requirement(mainAddPermission)
+                .requirement(fullReplacePermission)
+                .build();
 
         final FilenameTabCompleter pathCompleter = Util.isWindows() ? new WindowsFilenameTabCompleter(ctx) : new DefaultFilenameTabCompleter(ctx);
         path = new FileSystemPathArgument(this, pathCompleter, 0, "--path");
         path.addCantAppearAfter(l);
+        path.setAccessRequirement(addOrReplacePermission);
 
         url = new ArgumentWithValue(this, "--url");
         url.addCantAppearAfter(path);
         path.addCantAppearAfter(url);
+        url.setAccessRequirement(addOrReplacePermission);
 
         force = new ArgumentWithoutValue(this, "--force", "-f");
         force.addRequiredPreceding(path);
+        force.setAccessRequirement(fullReplacePermission);
 
         name = new ArgumentWithValue(this, new CommandLineCompleter() {
             @Override
@@ -141,9 +160,11 @@ public class DeployHandler extends DeploymentHandler {
         name.addCantAppearAfter(l);
         path.addCantAppearAfter(name);
         url.addCantAppearAfter(name);
+        name.setAccessRequirement(deployPermission);
 
         rtName = new ArgumentWithValue(this, "--runtime-name");
         rtName.addRequiredPreceding(path);
+        rtName.setAccessRequirement(addOrReplacePermission);
 
         allServerGroups = new ArgumentWithoutValue(this, "--all-server-groups")  {
             @Override
@@ -159,11 +180,12 @@ public class DeployHandler extends DeploymentHandler {
         allServerGroups.addRequiredPreceding(name);
         allServerGroups.addCantAppearAfter(force);
         force.addCantAppearAfter(allServerGroups);
+        allServerGroups.setAccessRequirement(deployPermission);
 
         serverGroups = new ArgumentWithValue(this, new CommaSeparatedCompleter() {
             @Override
             protected Collection<String> getAllCandidates(CommandContext ctx) {
-                return Util.getServerGroups(ctx.getModelControllerClient());
+                return serverGroupAddPermission.getAllowedOn(ctx);
             }}, "--server-groups") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
@@ -177,6 +199,7 @@ public class DeployHandler extends DeploymentHandler {
         serverGroups.addRequiredPreceding(name);
         serverGroups.addCantAppearAfter(force);
         force.addCantAppearAfter(serverGroups);
+        serverGroups.setAccessRequirement(deployPermission);
 
         serverGroups.addCantAppearAfter(allServerGroups);
         allServerGroups.addCantAppearAfter(serverGroups);
@@ -187,12 +210,43 @@ public class DeployHandler extends DeploymentHandler {
         disabled.addCantAppearAfter(allServerGroups);
         disabled.addCantAppearAfter(force);
         force.addCantAppearAfter(disabled);
+        disabled.setAccessRequirement(mainAddPermission);
 
         unmanaged = new ArgumentWithoutValue(this, "--unmanaged");
         unmanaged.addRequiredPreceding(path);
+        unmanaged.setAccessRequirement(mainAddPermission);
 
         script = new ArgumentWithValue(this, "--script");
         script.addRequiredPreceding(path);
+    }
+
+    @Override
+    protected AccessRequirement setupAccessRequirement(CommandContext ctx) {
+
+        listPermission = AccessRequirementBuilder.Factory.create(ctx)
+                .all()
+                .operation(Util.READ_CHILDREN_NAMES)
+                .operation("deployment=?", Util.READ_RESOURCE)
+                .build();
+        fullReplacePermission = AccessRequirementBuilder.Factory.create(ctx).any().operation(Util.FULL_REPLACE_DEPLOYMENT).build();
+        mainAddPermission = AccessRequirementBuilder.Factory.create(ctx).any().operation("deployment=?", Util.ADD).build();
+        serverGroupAddPermission = new PerNodeOperationAccess(ctx, Util.SERVER_GROUP, "deployment=?", Util.ADD);
+        deployPermission = AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .operation("deployment=?", Util.DEPLOY)
+                .all()
+                .requirement(serverGroupAddPermission)
+                .serverGroupOperation("deployment=?", Util.DEPLOY)
+                .parent()
+                .build();
+
+        return AccessRequirementBuilder.Factory.create(ctx)
+                .any()
+                .requirement(listPermission)
+                .requirement(fullReplacePermission)
+                .requirement(mainAddPermission)
+                .requirement(deployPermission)
+                .build();
     }
 
     @Override

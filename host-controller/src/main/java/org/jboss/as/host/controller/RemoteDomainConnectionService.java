@@ -485,8 +485,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     /** {@inheritDoc} */
     @Override
     public synchronized void stop(final StopContext context) {
-
-        context.asynchronous();
         Thread executorShutdown = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -502,8 +500,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 }
             }
         }, RemoteDomainConnectionService.class.getSimpleName() + " ExecutorService Shutdown Thread");
-
         executorShutdown.start();
+        context.asynchronous();
     }
 
     /** {@inheritDoc} */

@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.smoke.managedbean;
 
-import org.jboss.logging.Logger;
-
 import javax.annotation.ManagedBean;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -31,6 +29,8 @@ import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptors;
 import javax.interceptor.InvocationContext;
+
+import org.jboss.logging.Logger;
 
 /**
  *
@@ -75,6 +75,7 @@ public class BeanWithSimpleInjected extends BeanParent {
     }
 
     @Interceptors(OtherInterceptorBean.class)
+    @CDIBinding
     public String echo(String msg) {
         return msg + bean.getValue() + bean2.getValue();
     }

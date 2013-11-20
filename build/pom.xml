@@ -427,8 +427,8 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>javax.mail</groupId>
-                    <artifactId>mail</artifactId>
+                    <groupId>com.sun.mail</groupId>
+                    <artifactId>javax.mail</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1549,6 +1549,11 @@
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-json-p-provider</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-jaxb-provider</artifactId>
                 </dependency>
 
@@ -1654,7 +1659,7 @@
 
                 <dependency>
                     <groupId>org.jboss.spec.javax.el</groupId>
-                    <artifactId>jboss-el-api_2.2_spec</artifactId>
+                    <artifactId>jboss-el-api_3.0_spec</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1699,7 +1704,7 @@
 
                 <dependency>
                     <groupId>org.jboss.spec.javax.security.jacc</groupId>
-                    <artifactId>jboss-jacc-api_1.4_spec</artifactId>
+                    <artifactId>jboss-jacc-api_1.5_spec</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1709,7 +1714,7 @@
 
                 <dependency>
                     <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
-                    <artifactId>jboss-jsp-api_2.2_spec</artifactId>
+                    <artifactId>jboss-jsp-api_2.3_spec</artifactId>
                 </dependency>
 
                 <dependency>

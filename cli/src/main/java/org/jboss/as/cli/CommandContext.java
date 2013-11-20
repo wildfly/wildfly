@@ -118,31 +118,48 @@ public interface CommandContext {
     ModelControllerClient getModelControllerClient();
 
     /**
+     * Connects the controller client using the default controller definition.
+     *
+     * The default controller will be identified as the default specified on starting the CLI will be used, if no controller was
+     * specified on start up then the default defined in the CLI configuration will be used, if no default is defined then a
+     * connection to http-remoting://localhost:9990 will be used instead.
+     *
+     * @throws CommandLineException in case the attempt to connect failed
+     */
+    void connectController() throws CommandLineException;
+
+    /**
+     * Connects to the controller specified.
+     *
+     * If the controller is null then the default specified on starting the CLI will be used, if no controller was specified on
+     * start up then the default defined in the CLI configuration will be used, if no default is defined then a connection to
+     * http-remoting://localhost:9990 will be used instead.
+     *
+     * @param controller the controller to connect to
+     * @throws CommandLineException in case the attempt to connect failed
+     */
+    void connectController(String controller) throws CommandLineException;
+
+    /**
      * Connects the controller client using the host and the port.
      * If the host is null, the default controller host will be used,
      * which is localhost.
      * If the port is less than zero, the default controller port will be used,
      * which is 9999.
      *
-     * @param protocol the protocol to connect with, either remote, http or https
+     * @deprecated Use {@link #connectController(String)} instead.
+     *
      * @param host the host to connect with
      * @param port the port to connect on
      * @throws CommandLineException  in case the attempt to connect failed
      */
-    void connectController(String protocol, String host, int port) throws CommandLineException;
+    @Deprecated
+    void connectController(String host, int port) throws CommandLineException;
 
     /**
      * Bind the controller to an existing, connected client.
      */
     void bindClient(ModelControllerClient newClient);
-
-    /**
-     * Connects the controller client using the default host and the port.
-     * It simply calls connectController(null, -1).
-     *
-     * @throws CommandLineException  in case the attempt to connect failed
-     */
-    void connectController() throws CommandLineException;
 
     /**
      * Closes the previously established connection with the controller client.
@@ -151,22 +168,31 @@ public interface CommandContext {
     void disconnectController();
 
     /**
-     * Returns the default host the controller client will be connected to
-     * in case the host argument isn't specified.
+     * Returns the default host the controller client will be connected to.
      *
-     * @return  the default host the controller client will be connected to
-     * in case the host argument isn't specified.
+     * @deprecated Use {@link CommandContext#getDefaultControllerAddress()} instead.
+     *
+     * @return  the default host the controller client will be connected to.
      */
+    @Deprecated
     String getDefaultControllerHost();
 
     /**
-     * Returns the default port the controller client will be connected to
-     * in case the port argument isn't specified.
+     * Returns the default port the controller client will be connected to.
      *
-     * @return  the default port the controller client will be connected to
-     * in case the port argument isn't specified.
+     * @deprecated Use {@link CommandContext#getDefaultControllerAddress()} instead.
+     *
+     * @return  the default port the controller client will be connected to.
      */
+    @Deprecated
     int getDefaultControllerPort();
+
+    /**
+     * The default address of the default controller to connect to.
+     *
+     * @return The default address.
+     */
+    ControllerAddress getDefaultControllerAddress();
 
     /**
      * Returns the host the controller client is connected to or

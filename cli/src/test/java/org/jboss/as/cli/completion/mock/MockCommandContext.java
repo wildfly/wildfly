@@ -31,6 +31,7 @@ import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandHistory;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.ControllerAddress;
 import org.jboss.as.cli.batch.BatchManager;
 import org.jboss.as.cli.batch.BatchedCommand;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
@@ -57,7 +58,6 @@ public class MockCommandContext implements CommandContext {
     private ModelControllerClient mcc;
     //private CommandLineParser operationParser;
     private OperationRequestAddress prefix;
-    private NodePathFormatter prefixFormatter;
     private OperationCandidatesProvider operationCandidatesProvider;
 
     private DefaultCallbackHandler parsedCmd = new DefaultCallbackHandler();
@@ -165,10 +165,7 @@ public class MockCommandContext implements CommandContext {
      */
     @Override
     public NodePathFormatter getNodePathFormatter() {
-        if(prefixFormatter == null) {
-            prefixFormatter = new DefaultPrefixFormatter();
-        }
-        return prefixFormatter;
+        return DefaultPrefixFormatter.INSTANCE;
     }
 
     /* (non-Javadoc)
@@ -187,7 +184,13 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
-    public void connectController(String protocol, String host, int port) {
+    public void connectController(String controller) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @Deprecated
+    public void connectController(String host, int port) throws CommandLineException {
         throw new UnsupportedOperationException();
     }
 
@@ -203,6 +206,24 @@ public class MockCommandContext implements CommandContext {
     }
 
     @Override
+    @Deprecated
+    public String getDefaultControllerHost() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    @Deprecated
+    public int getDefaultControllerPort() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ControllerAddress getDefaultControllerAddress() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
     public String getControllerHost() {
         return null;
     }
@@ -215,16 +236,6 @@ public class MockCommandContext implements CommandContext {
     @Override
     public CommandHistory getHistory() {
         throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getDefaultControllerHost() {
-        return null;
-    }
-
-    @Override
-    public int getDefaultControllerPort() {
-        return -1;
     }
 
     @Override
@@ -329,7 +340,7 @@ public class MockCommandContext implements CommandContext {
 
     @Override
     public void connectController() {
-        connectController(null, null, -1);
+        connectController(null);
     }
 
     @Override

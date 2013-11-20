@@ -121,7 +121,6 @@ final class OperationContextImpl extends AbstractOperationContext {
     private final EnumSet<ContextFlag> contextFlags;
     private final OperationMessageHandler messageHandler;
     private final ServiceTarget serviceTarget;
-    private final String domainUUID;
     private final Map<ServiceName, ServiceController<?>> realRemovingControllers = new HashMap<ServiceName, ServiceController<?>>();
     // protected by "realRemovingControllers"
     private final Map<ServiceName, Step> removalSteps = new HashMap<ServiceName, Step>();
@@ -167,8 +166,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
-                            final Integer operationId, final String domainUUID,
-                            final HostServerGroupTracker hostServerGroupTracker) {
+                            final Integer operationId, final HostServerGroupTracker hostServerGroupTracker) {
         super(processType, runningMode, transactionControl, processState, booting, auditLogger);
         this.model = model;
         this.originalModel = model;
@@ -179,7 +177,6 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.contextFlags = contextFlags;
         this.serviceTarget = new ContextServiceTarget(modelController);
         this.operationId = operationId;
-        this.domainUUID = domainUUID;
         this.hostServerGroupTracker = hostServerGroupTracker;
     }
 
@@ -933,12 +930,6 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     Resource getModel() {
         return model;
-    }
-
-
-    @Override
-    String getDomainUUID() {
-        return domainUUID;
     }
 
     private TargetAttribute createTargetAttribute(AuthorizationResponseImpl authResp, String attributeName, boolean isDefaultResponse) {
