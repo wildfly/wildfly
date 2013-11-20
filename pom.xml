@@ -1862,7 +1862,7 @@
             <dependency>
                 <groupId>org.codehaus.groovy</groupId>
                 <artifactId>groovy-all</artifactId>
-                <version>${version.groovy-all}}</version>
+                <version>${version.groovy-all}</version>
                 <scope>test</scope>
             </dependency>
 
