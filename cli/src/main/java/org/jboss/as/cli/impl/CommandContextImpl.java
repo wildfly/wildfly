@@ -614,13 +614,17 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         exitCode = 0;
         try {
             handle(line);
-        } catch (CommandLineException e) {
+        } catch (Throwable t) {
             final StringBuilder buf = new StringBuilder();
-            buf.append(e.getLocalizedMessage());
-            Throwable t = e.getCause();
-            while(t != null) {
-                buf.append(": ").append(t.getLocalizedMessage());
-                t = t.getCause();
+            buf.append(t.getLocalizedMessage());
+            Throwable t1 = t.getCause();
+            while(t1 != null) {
+                if(t1.getLocalizedMessage() != null) {
+                    buf.append(": ").append(t1.getLocalizedMessage());
+                } else {
+                    t1.printStackTrace();
+                }
+                t1 = t1.getCause();
             }
             error(buf.toString());
         }
