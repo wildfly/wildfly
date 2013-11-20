@@ -78,8 +78,11 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()));
 
         final String stackTracesString = ServletContainerDefinition.STACK_TRACE_ON_ERROR.resolveModelAttribute(context, model).asString();
+        final ModelNode defaultEncodingValue = ServletContainerDefinition.DEFAULT_ENCODING.resolveModelAttribute(context, model);
+        final String defaultEncoding = defaultEncodingValue.isDefined()? defaultEncodingValue.asString() : null;
+        final boolean useListenerEncoding = ServletContainerDefinition.USE_LISTENER_ENCODING.resolveModelAttribute(context, model).asBoolean();
 
-        final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers, ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')), config, jspConfig);
+        final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers, ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')), config, jspConfig, defaultEncoding, useListenerEncoding);
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
         if(bufferCache != null) {
