@@ -24,7 +24,6 @@ package org.wildfly.extension.undertow;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -86,6 +85,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .addOption(UndertowOptions.ALLOW_ENCODED_SLASH, "allow-encoded-slash", new ModelNode(false))
             .addOption(UndertowOptions.DECODE_URL, "decode-url", new ModelNode(true))
             .addOption(UndertowOptions.URL_CHARSET, "url-charset", new ModelNode("UTF-8"))
+            .addOption(UndertowOptions.ALWAYS_SET_KEEP_ALIVE, "always-set-keep-alive", new ModelNode(true))
             .build();
 
     protected static final Collection ATTRIBUTES;

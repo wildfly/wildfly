@@ -80,6 +80,7 @@
         <xs:attribute name="allow-encoded-slash" type="xs:boolean" default="false"/>
         <xs:attribute name="decode-url" type="xs:boolean" default="true"/>
         <xs:attribute name="url-charset" type="xs:string" default="UTF-8"/>
+        <xs:attribute name="always-set-keep-alive" type="xs:boolean" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="http-listener-type">
@@ -126,6 +127,8 @@
         <xs:attribute name="allow-non-standard-wrappers" use="optional" type="xs:boolean" default="false"/>
         <xs:attribute name="default-buffer-cache" use="optional" type="xs:string"/>
         <xs:attribute name="stack-trace-on-error" use="optional" default="disabled"/>
+        <xs:attribute name="default-encoding" type="xs:string" use="optional" />
+        <xs:attribute name="use-listener-encoding" type="xs:boolean" use="optional" default="false"/>
     </xs:complexType>
     <xs:complexType name="hostType">
         <xs:sequence>

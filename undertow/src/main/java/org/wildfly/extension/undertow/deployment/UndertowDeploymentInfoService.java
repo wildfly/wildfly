@@ -161,8 +161,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     public static final ServiceName SERVICE_NAME = ServiceName.of("UndertowDeploymentInfoService");
 
     private static final String TEMP_DIR = "jboss.server.temp.dir";
-    private static final String HOME_DIR = "jboss.home.dir";
-    public static final String JAVAX_FACES_PROJECT_STAGE = "javax.faces.PROJECT_STAGE";
 
     private DeploymentInfo deploymentInfo;
 
@@ -761,6 +759,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         }
                     }
                 });
+            }
+
+            if (mergedMetaData.getDefaultEncoding()!=null){
+                deploymentInfo.setDefaultEncoding(mergedMetaData.getDefaultEncoding());
+            }else if (servletContainer.getDefaultEncoding()!=null){
+                deploymentInfo.setDefaultEncoding(servletContainer.getDefaultEncoding());
             }
 
             return d;

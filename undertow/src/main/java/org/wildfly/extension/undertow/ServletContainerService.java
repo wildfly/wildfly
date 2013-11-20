@@ -52,12 +52,16 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
     private final InjectedValue<SessionPersistenceManager> sessionPersistenceManagerInjectedValue = new InjectedValue<>();
+    private final String defaultEncoding;
+    private final boolean useListenerEncoding;
 
-    public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig) {
+    public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig, String defaultEncoding, boolean useListenerEncoding) {
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.stackTraces = stackTraces;
         this.sessionCookieConfig = sessionCookieConfig;
         this.jspConfig = jspConfig;
+        this.defaultEncoding = defaultEncoding;
+        this.useListenerEncoding = useListenerEncoding;
     }
 
     public void start(StartContext context) throws StartException {
@@ -139,4 +143,11 @@ public class ServletContainerService implements Service<ServletContainerService>
         return sessionPersistenceManagerInjectedValue.getOptionalValue();
     }
 
+    public String getDefaultEncoding() {
+        return defaultEncoding;
+    }
+
+    public boolean isUseListenerEncoding() {
+        return useListenerEncoding;
+    }
 }

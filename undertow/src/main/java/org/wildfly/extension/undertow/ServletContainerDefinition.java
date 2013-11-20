@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -51,7 +52,6 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
-
     protected static final SimpleAttributeDefinition DEFAULT_BUFFER_CACHE =
             new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_BUFFER_CACHE, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
@@ -66,8 +66,26 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setAllowExpression(true)
                     .build();
 
+    protected static final SimpleAttributeDefinition DEFAULT_ENCODING =
+            new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_ENCODING, ModelType.STRING, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .build();
+
+    protected static final AttributeDefinition USE_LISTENER_ENCODING =
+            new SimpleAttributeDefinitionBuilder(Constants.USE_LISTENER_ENCODING, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(false))
+                    .build();
 
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
+    private static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
+            ALLOW_NON_STANDARD_WRAPPERS,
+            DEFAULT_BUFFER_CACHE,
+            STACK_TRACE_ON_ERROR,
+            DEFAULT_ENCODING,
+            USE_LISTENER_ENCODING);
 
     static {
         List<PersistentResourceDefinition>  children = new ArrayList<>();
@@ -86,11 +104,7 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        final List<AttributeDefinition> attributes = new ArrayList<>();
-        attributes.add(ALLOW_NON_STANDARD_WRAPPERS);
-        attributes.add(DEFAULT_BUFFER_CACHE);
-        attributes.add(STACK_TRACE_ON_ERROR);
-        return attributes;
+        return ATTRIBUTES;
     }
 
     @Override
