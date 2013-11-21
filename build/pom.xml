@@ -472,6 +472,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.cxf</groupId>
                     <artifactId>cxf-api</artifactId>
                 </dependency>
@@ -657,6 +662,19 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-analyzers</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-core</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-facet</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.neethi</groupId>
                     <artifactId>neethi</artifactId>
                 </dependency>
@@ -793,8 +811,26 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-engine</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-infinispan</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.hibernate.javax.persistence</groupId>
                     <artifactId>hibernate-jpa-2.1-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hibernate.hql</groupId>
+                    <artifactId>hibernate-hql-lucene</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.hibernate.hql</groupId>
+                    <artifactId>hibernate-hql-parser</artifactId>
                 </dependency>
 
                 <dependency>
@@ -857,37 +893,42 @@
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-cachestore-jdbc</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-cachestore-remote</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-client-hotrod</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-commons</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-core</artifactId>
                 </dependency>
-
+                <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-lucene-directory</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-lucene-v3</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-query</artifactId>
+                </dependency>
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-query-dsl</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-remote-query-client</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan.protostream</groupId>
                     <artifactId>protostream</artifactId>
@@ -1933,41 +1974,41 @@
                     <artifactId>org.osgi.core</artifactId>
                 </dependency>
 
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-api</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-impl</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-federation</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-common</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-config</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-idm-api</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-idm-impl</artifactId>
-				</dependency>
-	
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-api</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-impl</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-federation</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-common</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-config</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-idm-api</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-idm-impl</artifactId>
+                </dependency>
+    
                 <dependency>
                     <groupId>org.picketlink.distribution</groupId>
                     <artifactId>picketlink-jbas7</artifactId>

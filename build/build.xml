@@ -611,6 +611,10 @@
             <maven-resource group="net.jcip" artifact="jcip-annotations"/>
         </module-def>
 
+        <module-def name="org.apache.avro">
+            <maven-resource group="org.apache.avro" artifact="avro"/>
+        </module-def>
+
         <module-def name="org.apache.commons.beanutils">
             <maven-resource group="commons-beanutils" artifact="commons-beanutils"/>
         </module-def>
@@ -690,6 +694,12 @@
 
         <module-def name="org.apache.james.mime4j">
             <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
+        </module-def>
+
+        <module-def name="org.apache.lucene">
+            <maven-resource group="org.apache.lucene" artifact="lucene-analyzers"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-core"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-facet"/>
         </module-def>
 
         <module-def name="org.apache.neethi">
@@ -785,8 +795,18 @@
             <maven-resource group="org.hibernate.common" artifact="hibernate-commons-annotations"/>
         </module-def>
 
+        <module-def name="org.hibernate.hql">
+            <maven-resource group="org.hibernate.hql" artifact="hibernate-hql-lucene"/>
+            <maven-resource group="org.hibernate.hql" artifact="hibernate-hql-parser"/>
+        </module-def>
+
         <!-- envers is 1-1 with hibernate orm, so move into hibernate but leave empty module for apps that might depend on it -->
         <module-def name="org.hibernate.envers">
+        </module-def>
+
+        <module-def name="org.hibernate.search">
+            <maven-resource group="org.hibernate" artifact="hibernate-search-engine"/>
+            <maven-resource group="org.hibernate" artifact="hibernate-search-infinispan"/>
         </module-def>
 
         <!-- create empty slot for Hibernate 3.x jars -->
@@ -861,9 +881,23 @@
 
         <module-def name="org.infinispan.client.hotrod">
             <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod"/>
-            <maven-resource group="org.infinispan" artifact="infinispan-query-dsl"/>
             <maven-resource group="org.infinispan" artifact="infinispan-remote-query-client"/>
             <maven-resource group="org.infinispan.protostream" artifact="protostream"/>
+        </module-def>
+
+        <module-def name="org.infinispan.lucene">
+            <maven-resource group="org.infinispan" artifact="infinispan-lucene-v3"/>
+        </module-def>
+        <module-def name="org.infinispan.lucene.directory">
+            <maven-resource group="org.infinispan" artifact="infinispan-lucene-directory"/>
+        </module-def>
+
+        <module-def name="org.infinispan.query">
+            <maven-resource group="org.infinispan" artifact="infinispan-query"/>
+        </module-def>
+
+        <module-def name="org.infinispan.query.dsl">
+            <maven-resource group="org.infinispan" artifact="infinispan-query-dsl"/>
         </module-def>
 
         <module-def name="org.jacorb">
