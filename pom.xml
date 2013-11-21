@@ -123,6 +123,7 @@
         <version.log4j>1.2.16</version.log4j>
         <version.net.jcip>1.0</version.net.jcip>
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
+        <version.org.apache.avro>1.7.5</version.org.apache.avro>
         <version.org.apache.cxf>2.7.7</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.6.1</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
@@ -130,6 +131,7 @@
         <version.org.apache.httpcomponents.httpcore>4.2.1</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
         <version.org.apache.maven>3.1.1</version.org.apache.maven>
+        <version.org.apache.lucene>3.6.2</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.2</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.4</version.org.apache.qpid.proton>
@@ -155,9 +157,11 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
+        <version.org.hibernate.hql>1.0.0.Alpha5</version.org.hibernate.hql>
+        <version.org.hibernate.search>4.4.0.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.0.Beta3</version.org.hornetq>
-        <version.org.infinispan>6.0.0.CR1</version.org.infinispan>
-        <version.org.infinispan.protostream>1.0.0.Alpha7</version.org.infinispan.protostream>
+        <version.org.infinispan>6.0.0.Final</version.org.infinispan>
+        <version.org.infinispan.protostream>1.0.0.CR1</version.org.infinispan.protostream>
         <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
         <version.org.jberet>1.0.0.CR1</version.org.jberet>
@@ -1967,6 +1971,26 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${version.org.apache.avro}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.thoughtworks.paranamer</groupId>
+                        <artifactId>paranamer</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.xerial.snappy</groupId>
+                        <artifactId>snappy-java</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-compress</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.apache.cxf</groupId>
                 <artifactId>cxf-api</artifactId>
                 <version>${version.org.apache.cxf}</version>
@@ -3251,8 +3275,6 @@
                 </exclusions>
             </dependency>
 
-
-
             <dependency>
                 <groupId>org.apache.james</groupId>
                 <artifactId>apache-mime4j</artifactId>
@@ -3263,6 +3285,22 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-facet</artifactId>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
 
             <dependency>
@@ -3649,7 +3687,7 @@
                         <groupId>org.jboss.logging</groupId>
                         <artifactId>jboss-logging-annotations</artifactId>
                     </exclusion>
-               </exclusions>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3713,9 +3751,58 @@
             </dependency>
 
             <dependency>
+                <groupId>org.hibernate.hql</groupId>
+                <artifactId>hibernate-hql-lucene</artifactId>
+                <version>${version.org.hibernate.hql}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-engine</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate.javax.persistence</groupId>
+                        <artifactId>hibernate-jpa-2.0-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.hql</groupId>
+                <artifactId>hibernate-hql-parser</artifactId>
+                <version>${version.org.hibernate.hql}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr-runtime</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
                 <artifactId>hibernate-jpa-2.1-api</artifactId>
                 <version>${version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-analyzers</artifactId>
+                <version>${version.org.hibernate.search}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-engine</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-analyzers</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-infinispan</artifactId>
+                <version>${version.org.hibernate.search}</version>
             </dependency>
 
             <dependency>
@@ -3858,6 +3945,45 @@
                     <exclusion>
                         <groupId>commons-pool</groupId>
                         <artifactId>commons-pool</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-lucene-directory</artifactId>
+                <version>${version.org.infinispan}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-lucene-v3</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.lucene</groupId>
+                        <artifactId>lucene-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-query</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate.hql</groupId>
+                        <artifactId>hibernate-hql-lucene</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate.hql</groupId>
+                        <artifactId>hibernate-hql-parser</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-engine</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-infinispan</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>

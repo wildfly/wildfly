@@ -33,7 +33,7 @@ import org.infinispan.configuration.global.GlobalJmxStatisticsConfigurationBuild
 import org.infinispan.configuration.global.ShutdownHookBehavior;
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.marshall.core.Ids;
-import org.jboss.as.clustering.infinispan.ChannelProvider;
+import org.jboss.as.clustering.infinispan.ChannelTransport;
 import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.MBeanServerProvider;
 import org.jboss.as.clustering.infinispan.ManagedExecutorFactory;
@@ -141,7 +141,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
         TransportConfigurationBuilder transportBuilder = builder.transport();
 
         if (transport != null) {
-            ChannelProvider.init(transportBuilder, ChannelService.getServiceName(this.name));
+            transportBuilder.transport(new ChannelTransport(context.getController().getServiceContainer(), ChannelService.getServiceName(this.name)));
             Long timeout = transport.getLockTimeout();
             if (timeout != null) {
                 transportBuilder.distributedSyncTimeout(timeout.longValue());
