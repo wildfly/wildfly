@@ -37,7 +37,7 @@ public enum EJB3SubsystemXMLAttribute {
     CACHE_CONTAINER("cache-container"),
     CACHE_REF("cache-ref"),
     @Deprecated CLIENT_MAPPINGS_CACHE("client-mappings-cache"),
-    CLUSTERED_CACHE_REF("clustered-cache-ref"),
+    @Deprecated CLUSTERED_CACHE_REF("clustered-cache-ref"),
     CONNECTOR_REF("connector-ref"),
     CORE_THREADS("core-threads"),
 

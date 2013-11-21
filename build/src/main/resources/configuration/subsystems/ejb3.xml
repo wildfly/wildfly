@@ -59,7 +59,7 @@
    </supplement>
    <supplement name="ha">
       <replacement placeholder="STATEFUL-BEAN">
-         <stateful default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
+         <stateful default-access-timeout="5000" cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
       </replacement>
    </supplement>
    <supplement name="full-ha" includes="full ha"/>

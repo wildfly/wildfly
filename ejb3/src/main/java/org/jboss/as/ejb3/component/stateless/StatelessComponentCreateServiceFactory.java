@@ -28,6 +28,7 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
+import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.RegistryInstallerService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -47,10 +48,9 @@ public class StatelessComponentCreateServiceFactory extends EJBComponentCreateSe
         configuration.getCreateDependencies().add(new DependencyConfigurator<StatelessSessionComponentCreateService>() {
             @Override
             public void configureDependency(ServiceBuilder<?> builder, StatelessSessionComponentCreateService service) {
-                if (service.getClustering() != null) {
-                    builder.addDependency(RegistryInstallerService.SERVICE_NAME);
-                    builder.addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "group", "ejb", "default"), Group.class, service.getGroupInjector());
-                }
+                builder.addDependency(RegistryInstallerService.SERVICE_NAME);
+                builder.addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "group", "ejb", "default"), Group.class, service.getGroupInjector());
+                builder.addDependency(DependencyType.OPTIONAL, EJBRemoteConnectorService.SERVICE_NAME);
             }
         });
         return new StatelessSessionComponentCreateService(configuration, this.ejbJarConfiguration);

@@ -29,15 +29,12 @@ import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 /**
  * test bean that uses the same extended persistence context as StatefulBean and therefor should always be able to
  * retrieve the same entities that are only in the extended persistence context (purposely not persisted to the database).
  *
  * @author Scott Marlow
  */
-@Clustered
 @javax.ejb.Stateful
 public class SecondBean {
     @PersistenceContext(unitName = "mypc", type = PersistenceContextType.EXTENDED)

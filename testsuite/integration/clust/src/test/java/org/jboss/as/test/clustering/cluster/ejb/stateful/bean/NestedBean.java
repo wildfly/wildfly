@@ -27,13 +27,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.ejb.Stateful;
 import javax.inject.Inject;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 /**
  * @author Paul Ferraro
  */
 @Stateful
-@Clustered
 public class NestedBean implements Nested {
 
     private final AtomicInteger count = new AtomicInteger(0);

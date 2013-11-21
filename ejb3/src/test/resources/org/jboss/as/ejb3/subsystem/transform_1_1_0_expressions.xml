@@ -27,7 +27,7 @@
         <stateless>
             <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
         </stateless>
-        <stateful default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="clustered" clustered-cache-ref="clustered" passivation-disabled-cache-ref="simple"/>
+        <stateful default-access-timeout="${prop.default-access-timeout:5000}" cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
         <singleton default-access-timeout="${prop.default-access-timeout:5000}"/>
     </session-bean>
     <entity-bean>
@@ -44,7 +44,7 @@
     </pools>
     <caches>
         <cache name="simple"/>
-        <cache name="clustered" passivation-store-ref="infinispan"/>
+        <cache name="distributable" passivation-store-ref="infinispan"/>
     </caches>
     <passivation-stores>
         <passivation-store name="infinispan" cache-container="ejb" bean-cache="default" max-size="10"/>

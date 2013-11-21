@@ -27,10 +27,7 @@ import javax.annotation.PreDestroy;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 @Stateful
-@Clustered
 @Remote(Incrementor.class)
 public class SlowToDestroyStatefulIncrementorBean extends IncrementorBean {
     @PreDestroy

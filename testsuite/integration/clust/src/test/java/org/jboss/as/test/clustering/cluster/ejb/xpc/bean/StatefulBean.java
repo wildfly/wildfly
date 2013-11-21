@@ -32,7 +32,6 @@ import javax.persistence.PersistenceContextType;
 
 import org.hibernate.Session;
 import org.hibernate.stat.SecondLevelCacheStatistics;
-import org.jboss.ejb3.annotation.Clustered;
 import org.jboss.logging.Logger;
 
 import java.util.HashMap;
@@ -42,9 +41,7 @@ import java.util.Map;
  * @author Paul Ferraro
  * @author Scott Marlow
  */
-@Clustered
 @javax.ejb.Stateful(name = "StatefulBean")
-
 public class StatefulBean implements Stateful {
 
     private static final Logger log = Logger.getLogger(StatefulBean.class);

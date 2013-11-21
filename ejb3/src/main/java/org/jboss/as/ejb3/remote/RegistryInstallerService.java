@@ -26,7 +26,7 @@ public class RegistryInstallerService implements Service<Void> {
     }
 
     @Override
-    public Void getValue() throws IllegalStateException, IllegalArgumentException {
+    public Void getValue() {
         return null;
     }
 

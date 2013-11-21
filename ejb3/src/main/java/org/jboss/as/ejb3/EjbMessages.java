@@ -2307,6 +2307,7 @@ public interface EjbMessages {
      * @param componentClassName The MDB component class name
      * @return
      */
+    @Deprecated
     @Message(id = 14547, value = "@Clustered annotation cannot be used with message driven beans. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForMDB(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
@@ -2319,6 +2320,7 @@ public interface EjbMessages {
      * @param componentClassName The entity bean component class name
      * @return
      */
+    @Deprecated
     @Message(id = 14548, value = "@Clustered annotation cannot be used with entity beans. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForEntityBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
@@ -2331,6 +2333,7 @@ public interface EjbMessages {
      * @param componentClassName The singleton bean component class name
      * @return
      */
+    @Deprecated
     @Message(id = 14549, value = "@Clustered annotation is currently not supported for singleton EJB. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationNotYetImplementedForSingletonBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
@@ -2343,6 +2346,7 @@ public interface EjbMessages {
      * @param componentClassName The component class name
      * @return
      */
+    @Deprecated
     @Message(id = 14550, value = "%s failed since @Clustered annotation cannot be used for %s bean on class %s")
     DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 

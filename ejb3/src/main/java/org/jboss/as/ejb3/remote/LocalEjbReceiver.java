@@ -52,7 +52,6 @@ import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.DeploymentRepositoryListener;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
-import org.jboss.as.ejb3.util.ServiceLookupValue;
 import org.jboss.as.network.ClientMapping;
 import org.jboss.ejb.client.AttachmentKeys;
 import org.jboss.ejb.client.ClusterContext;
@@ -109,16 +108,14 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
     private final InjectedValue<RegistryCollector> clusterRegistryCollector = new InjectedValue<RegistryCollector>();
     private final Listener deploymentListener = new Listener();
     private final boolean allowPassByReference;
-    private final ServiceLookupValue<Endpoint> endpointValue;
-    private final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue;
+    private final InjectedValue<Endpoint> endpointValue = new InjectedValue<>();
+    private final InjectedValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue = new InjectedValue<>();
     private final Set<ClusterTopologyUpdateListener> clusterTopologyUpdateListeners = Collections.synchronizedSet(new HashSet<ClusterTopologyUpdateListener>());
 
 
-    public LocalEjbReceiver(final String nodeName, final boolean allowPassByReference, final ServiceLookupValue<Endpoint> endpointValue, final ServiceLookupValue<EJBRemoteConnectorService> ejbRemoteConnectorServiceValue) {
+    public LocalEjbReceiver(final String nodeName, final boolean allowPassByReference) {
         super(nodeName);
         this.allowPassByReference = allowPassByReference;
-        this.endpointValue = endpointValue;
-        this.ejbRemoteConnectorServiceValue = ejbRemoteConnectorServiceValue;
     }
 
     @Override
@@ -392,8 +389,16 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
         return this;
     }
 
-    public InjectedValue<DeploymentRepository> getDeploymentRepository() {
+    public Injector<DeploymentRepository> getDeploymentRepository() {
         return deploymentRepository;
+    }
+
+    public Injector<Endpoint> getEndpointInjector() {
+        return this.endpointValue;
+    }
+
+    public Injector<EJBRemoteConnectorService> getRemoteConnectorServiceInjector() {
+        return this.ejbRemoteConnectorServiceValue;
     }
 
     @Override

@@ -9,12 +9,10 @@ import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
-import org.jboss.ejb3.annotation.Clustered;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
 
 @Stateless
-@Clustered
 @Remote(ServiceProviderRetriever.class)
 public class ServiceProviderRetrieverBean implements ServiceProviderRetriever {
 

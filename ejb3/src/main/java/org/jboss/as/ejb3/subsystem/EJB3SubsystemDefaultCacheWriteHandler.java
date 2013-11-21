@@ -45,27 +45,18 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
 
     public static final EJB3SubsystemDefaultCacheWriteHandler SFSB_CACHE =
             new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderService.DEFAULT_CACHE_SERVICE_NAME,
-                    null,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE);
 
     public static final EJB3SubsystemDefaultCacheWriteHandler SFSB_PASSIVATION_DISABLED_CACHE =
             new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderService.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME,
-                    null,
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE);
 
-    public static final EJB3SubsystemDefaultCacheWriteHandler CLUSTERED_SFSB_CACHE =
-            new EJB3SubsystemDefaultCacheWriteHandler(CacheFactoryBuilderService.DEFAULT_CLUSTERED_CACHE_SERVICE_NAME,
-                    CacheFactoryBuilderService.DEFAULT_CACHE_SERVICE_NAME,
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE);
-
     private final ServiceName serviceName;
-    private final ServiceName defaultServiceName;
     private final AttributeDefinition attribute;
 
-    public EJB3SubsystemDefaultCacheWriteHandler(ServiceName serviceName, ServiceName defaultServiceName, AttributeDefinition attribute) {
+    public EJB3SubsystemDefaultCacheWriteHandler(ServiceName serviceName, AttributeDefinition attribute) {
         super(attribute);
         this.serviceName = serviceName;
-        this.defaultServiceName = defaultServiceName;
         this.attribute = attribute;
     }
 
@@ -94,9 +85,8 @@ public class EJB3SubsystemDefaultCacheWriteHandler extends AbstractWriteAttribut
         if (registry.getService(this.serviceName) != null) {
             context.removeService(this.serviceName);
         }
-        ServiceName dependency = cacheName.isDefined() ? CacheFactoryBuilderService.getServiceName(cacheName.asString()) : this.defaultServiceName;
-        if (dependency != null) {
-            ServiceController<?> controller = this.installValueService(context, this.serviceName, CacheFactoryBuilder.class, dependency);
+        if (cacheName.isDefined()) {
+            ServiceController<?> controller = this.installValueService(context, this.serviceName, CacheFactoryBuilder.class, CacheFactoryBuilderService.getServiceName(cacheName.asString()));
             if (newControllers != null) {
                 newControllers.add(controller);
             }

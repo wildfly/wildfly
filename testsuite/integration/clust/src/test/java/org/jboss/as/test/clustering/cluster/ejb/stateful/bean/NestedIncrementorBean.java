@@ -26,13 +26,10 @@ import javax.ejb.EJB;
 import javax.ejb.Stateful;
 import javax.interceptor.Interceptors;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 /**
  * @author Paul Ferraro
  */
 @Stateful
-@Clustered
 @Interceptors(IncrementorInterceptor.class)
 @Intercepted
 public class NestedIncrementorBean implements Incrementor {

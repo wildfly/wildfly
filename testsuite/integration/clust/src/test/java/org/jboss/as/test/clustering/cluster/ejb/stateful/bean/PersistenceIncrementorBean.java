@@ -33,10 +33,7 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 import javax.transaction.UserTransaction;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 @Stateful
-@Clustered
 @TransactionManagement(TransactionManagementType.BEAN)
 public class PersistenceIncrementorBean implements Incrementor {
 

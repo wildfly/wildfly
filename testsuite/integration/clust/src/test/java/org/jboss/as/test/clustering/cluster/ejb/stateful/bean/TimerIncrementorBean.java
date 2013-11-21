@@ -27,10 +27,7 @@ import javax.annotation.Resource;
 import javax.ejb.Stateful;
 import javax.ejb.TimerService;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 @Stateful
-@Clustered
 public class TimerIncrementorBean implements Incrementor {
 
     @Resource

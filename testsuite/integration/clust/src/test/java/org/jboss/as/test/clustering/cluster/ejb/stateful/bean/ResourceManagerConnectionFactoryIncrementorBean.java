@@ -29,10 +29,7 @@ import javax.jms.QueueConnectionFactory;
 import javax.jms.TopicConnectionFactory;
 import javax.sql.DataSource;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 @Stateful
-@Clustered
 public class ResourceManagerConnectionFactoryIncrementorBean implements Incrementor {
 
     @Resource

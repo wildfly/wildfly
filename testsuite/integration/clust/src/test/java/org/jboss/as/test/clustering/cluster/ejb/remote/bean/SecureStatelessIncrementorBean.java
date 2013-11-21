@@ -25,12 +25,10 @@ import javax.annotation.security.RolesAllowed;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
-import org.jboss.ejb3.annotation.Clustered;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 @Stateless
 @SecurityDomain("other")
-@Clustered
 @Remote(Incrementor.class)
 public class SecureStatelessIncrementorBean extends IncrementorBean {
 
