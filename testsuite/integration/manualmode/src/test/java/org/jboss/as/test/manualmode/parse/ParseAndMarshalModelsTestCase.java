@@ -441,6 +441,38 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-2-0-xts.xml"));
     }
 
+    @Test
+    public void testEAP620StandaloneFullHaXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-full-ha.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP620StandaloneFullXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-full.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP620StandaloneHornetQCollocatedXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-hornetq-colocated.xml"));
+    }
+
+    @Test
+    public void testEAP620StandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-jts.xml"));
+    }
+
+    @Test
+    public void testEAP620StandaloneMinimalisticXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-minimalistic.xml"));
+    }
+
+    @Test
+    public void testEAP620StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-xts.xml"));
+    }
+
     private ModelNode standaloneXmlTest(File original) throws Exception {
 
         File file = new File("target/standalone-copy.xml");
@@ -485,6 +517,11 @@ public class ParseAndMarshalModelsTestCase {
     @Test
     public void test720HostXml() throws Exception {
         hostXmlTest(getLegacyConfigFile("host", "7-2-0.xml"));
+    }
+
+    @Test
+    public void testEAP620HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "eap-6-2-0.xml"));
     }
 
     private void hostXmlTest(final File original) throws Exception {
@@ -536,6 +573,13 @@ public class ParseAndMarshalModelsTestCase {
     @TargetsContainer("class-jbossas")
     public void test720DomainXml() throws Exception {
         ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "7-2-0.xml"));
+        validateJsfProfiles(model);
+    }
+
+    @Test
+    @TargetsContainer("class-jbossas")
+    public void testEAP620DomainXml() throws Exception {
+        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-2-0.xml"));
         validateJsfProfiles(model);
     }
 
