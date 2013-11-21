@@ -132,7 +132,7 @@ export LAUNCH_JBOSS_IN_BACKGROUND
 
 # Helper function to check status of wildfly service
 check_status() {
-	pidofproc -p $JBOSS_PIDFILE >/dev/null 2>&1
+	pidofproc -p $JBOSS_PIDFILE $JAVA_HOME/bin/java >/dev/null 2>&1
 }
 
 case "$1" in
