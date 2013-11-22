@@ -390,6 +390,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 }
                 case WEB_1_4:
+                case WEB_1_5:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
@@ -744,6 +745,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 }
                 case WEB_1_4:
+                case WEB_1_5:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
@@ -843,6 +845,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_2:
                 case WEB_1_3:
                 case WEB_1_4:
+                case WEB_1_5:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
@@ -929,6 +932,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_2:
                 case WEB_1_3:
                 case WEB_1_4:
+                case WEB_1_5:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
@@ -1019,6 +1023,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_2:
                 case WEB_1_3:
                 case WEB_1_4:
+                case WEB_1_5:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
