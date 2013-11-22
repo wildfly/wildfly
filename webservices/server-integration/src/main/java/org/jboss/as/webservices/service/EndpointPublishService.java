@@ -28,7 +28,7 @@ import java.util.Map;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.host.WebHost;
-import org.jboss.as.webservices.publish.EndpointPublisherImpl;
+import org.jboss.as.webservices.publish.EndpointPublisherHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.Service;
@@ -82,8 +82,7 @@ public final class EndpointPublishService implements Service<Context> {
     public void start(final StartContext ctx) throws StartException {
         ROOT_LOGGER.starting(name);
         try {
-            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue(), true);
-            wsctx = publisher.doPublish(ctx.getChildTarget(), deploymentUnit);
+            wsctx = EndpointPublisherHelper.doPublishStep(hostInjector.getValue(), ctx.getChildTarget(), deploymentUnit);
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -97,8 +96,7 @@ public final class EndpointPublishService implements Service<Context> {
             return;
         }
         try {
-            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue(), true);
-            publisher.stopWebApp(eps.get(0).getService().getDeployment());
+            EndpointPublisherHelper.undoPublishStep(hostInjector.getValue(), wsctx);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
