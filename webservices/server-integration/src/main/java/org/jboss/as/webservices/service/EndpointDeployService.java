@@ -51,7 +51,7 @@ import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 public final class EndpointDeployService implements Service<DeploymentUnit> {
 
     private final ServiceName name;
-    private volatile DeploymentUnit unit;
+    private final DeploymentUnit unit;
 
     private EndpointDeployService(final String context, final DeploymentUnit unit) {
         this.name = WSServices.ENDPOINT_DEPLOY_SERVICE.append(context);
