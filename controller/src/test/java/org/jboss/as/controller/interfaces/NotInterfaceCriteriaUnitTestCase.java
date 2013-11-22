@@ -57,7 +57,10 @@ public class NotInterfaceCriteriaUnitTestCase {
 
         Map<NetworkInterface, Set<InetAddress>> correct = new LinkedHashMap<NetworkInterface, Set<InetAddress>>();
         for (NetworkInterface ni : nonLoopBackInterfaces) {
-            correct.put(ni, getRightTypeAddresses(allCandidates.get(ni)));
+            // WFLY-786 NotInterfaceCriteria doesn't prune based on IPv6/v4 preference
+            // so we shouldn't test that it does. Pruning is done by OverallInterfaceCriteria
+            //correct.put(ni, getRightTypeAddresses(allCandidates.get(ni)));
+            correct.put(ni, allCandidates.get(ni));
         }
 
         Set<InterfaceCriteria> criterias = new HashSet<InterfaceCriteria>();
