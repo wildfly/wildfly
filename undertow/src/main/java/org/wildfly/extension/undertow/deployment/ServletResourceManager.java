@@ -50,7 +50,7 @@ public class ServletResourceManager implements ResourceManager {
 
     @Override
     public boolean isResourceChangeListenerSupported() {
-        return true;
+        return false;
     }
 
     @Override
