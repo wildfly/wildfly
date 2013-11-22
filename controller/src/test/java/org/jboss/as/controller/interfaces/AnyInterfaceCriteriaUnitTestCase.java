@@ -55,11 +55,17 @@ public class AnyInterfaceCriteriaUnitTestCase {
 
         Map<NetworkInterface, Set<InetAddress>> correct = new HashMap<NetworkInterface, Set<InetAddress>>();
         for (NetworkInterface ni : loopbackInterfaces) {
-            correct.put(ni, getRightTypeAddresses(allCandidates.get(ni)));
+            // WFLY-786 AnyInterfaceCriteria doesn't prune based on IPv6/v4 preference
+            // so we shouldn't test that it does. Pruning is done by OverallInterfaceCriteria
+            //correct.put(ni, getRightTypeAddresses(allCandidates.get(ni)));
+            correct.put(ni, allCandidates.get(ni));
         }
         String target = null;
         for (NetworkInterface ni : nonLoopBackInterfaces) {
-            Set<InetAddress> addresses = getRightTypeAddresses(allCandidates.get(ni));
+            // WFLY-786 AnyInterfaceCriteria doesn't prune based on IPv6/v4 preference
+            // so we shouldn't test that it does. Pruning is done by OverallInterfaceCriteria
+            //Set<InetAddress> addresses = getRightTypeAddresses(allCandidates.get(ni));
+            Set<InetAddress> addresses = allCandidates.get(ni);
             if (addresses.size() > 0) {
                 correct.put(ni, addresses);
                 target = ni.getName();
