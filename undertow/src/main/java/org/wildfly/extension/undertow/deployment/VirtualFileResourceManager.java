@@ -75,12 +75,7 @@ public class VirtualFileResourceManager implements ResourceManager {
 
     @Override
     public boolean isResourceChangeListenerSupported() {
-        try {
-            base.getPhysicalFile();
-            return true;
-        } catch (IOException e) {
-            return false;
-        }
+        return false;
     }
 
     @Override
