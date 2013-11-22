@@ -29,19 +29,18 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.directory.api.i18n.I18n;
-import org.apache.directory.api.ldap.model.exception.LdapInvalidDnException;
-import org.apache.directory.api.ldap.model.exception.LdapURLEncodingException;
-import org.apache.directory.api.ldap.model.exception.LdapUriException;
-import org.apache.directory.api.ldap.model.exception.UrlDecoderException;
-import org.apache.directory.api.ldap.model.filter.FilterParser;
-import org.apache.directory.api.ldap.model.message.SearchScope;
-import org.apache.directory.api.ldap.model.name.Dn;
-import org.apache.directory.api.util.Chars;
-import org.apache.directory.api.util.StringConstants;
-import org.apache.directory.api.util.Strings;
-import org.apache.directory.api.util.Unicode;
-
+import org.apache.directory.shared.i18n.I18n;
+import org.apache.directory.shared.ldap.model.exception.LdapInvalidDnException;
+import org.apache.directory.shared.ldap.model.exception.LdapURLEncodingException;
+import org.apache.directory.shared.ldap.model.exception.LdapUriException;
+import org.apache.directory.shared.ldap.model.exception.UrlDecoderException;
+import org.apache.directory.shared.ldap.model.filter.FilterParser;
+import org.apache.directory.shared.ldap.model.message.SearchScope;
+import org.apache.directory.shared.ldap.model.name.Dn;
+import org.apache.directory.shared.util.Chars;
+import org.apache.directory.shared.util.StringConstants;
+import org.apache.directory.shared.util.Strings;
+import org.apache.directory.shared.util.Unicode;
 
 /**
  * Hotfix for ApacheDS IPv6 issue <a href="https://issues.apache.org/jira/browse/DIRAPI-125">DIRAPI-125</a>.
@@ -115,7 +114,7 @@ public class LdapUrl {
      * Parse a LdapUrl.
      *
      * @param chars The chars containing the URL
-     * @throws org.apache.directory.api.ldap.model.exception.LdapURLEncodingException If the URL is invalid
+     * @throws org.apache.directory.shared.ldap.model.exception.LdapURLEncodingException If the URL is invalid
      */
     private void parse(char[] chars) throws LdapURLEncodingException {
         scheme = LDAP_SCHEME;
@@ -474,7 +473,7 @@ public class LdapUrl {
      *
      * @param data the string to be encoded
      * @return The string as a byte array.
-     * @throws org.apache.directory.api.ldap.model.exception.UrlDecoderException if encoding is not supported
+     * @throws org.apache.directory.shared.ldap.model.exception.UrlDecoderException if encoding is not supported
      */
     private static byte[] getAsciiBytes(final String data) throws UrlDecoderException {
 

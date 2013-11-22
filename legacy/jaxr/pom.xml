@@ -35,6 +35,24 @@
 
     <name>WildFly: JAXR Client</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>org/jboss/as/jaxr/**/*TestCase.java</include>
+                    </includes>
+                    <systemPropertyVariables>
+                        <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+                        <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
 
         <dependency>

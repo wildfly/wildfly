@@ -88,6 +88,7 @@ public class OperationSequencesTestCase extends OperationTestCaseBase {
             targetLocation="AT ENTRY",
             action="$1.setRollbackOnly()")
     public void testCacheContainerRemoveRollback() throws Exception {
+
         // Parse and install the XML into the controller
         String subsystemXml = getSubsystemXml() ;
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();

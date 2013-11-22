@@ -38,6 +38,25 @@
 
     <name>WildFly: JSR-77 Subsystem</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*TestCase.java</include>
+                    </includes>
+                    <enableAssertions>false</enableAssertions>
+                    <systemPropertyVariables>
+                        <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+                        <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                        <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <dependency>
@@ -45,8 +64,8 @@
             <artifactId>jboss-common-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.jboss</groupId>
-            <artifactId>jboss-ejb-client</artifactId>
+		      <groupId>org.jboss</groupId>
+		      <artifactId>jboss-ejb-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.jboss.msc</groupId>
@@ -71,7 +90,7 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
-            <type>pom</type>
+						<type>pom</type>
             <scope>test</scope>
         </dependency>
         <dependency>

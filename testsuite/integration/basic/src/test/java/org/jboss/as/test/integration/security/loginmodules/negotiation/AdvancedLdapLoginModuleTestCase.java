@@ -44,12 +44,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.apache.directory.api.ldap.model.constants.SupportedSaslMechanisms;
-import org.apache.directory.api.ldap.model.entry.DefaultEntry;
-import org.apache.directory.api.ldap.model.ldif.LdifEntry;
-import org.apache.directory.api.ldap.model.ldif.LdifReader;
-import org.apache.directory.api.ldap.model.schema.SchemaManager;
-import org.apache.directory.server.annotations.CreateKdcServer;
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.annotations.SaslMechanism;
@@ -64,11 +58,16 @@ import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
 import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
 import org.apache.directory.server.ldap.LdapServer;
-import org.apache.directory.server.ldap.handlers.sasl.cramMD5.CramMd5MechanismHandler;
-import org.apache.directory.server.ldap.handlers.sasl.digestMD5.DigestMd5MechanismHandler;
-import org.apache.directory.server.ldap.handlers.sasl.gssapi.GssapiMechanismHandler;
-import org.apache.directory.server.ldap.handlers.sasl.ntlm.NtlmMechanismHandler;
-import org.apache.directory.server.ldap.handlers.sasl.plain.PlainMechanismHandler;
+import org.apache.directory.server.ldap.handlers.bind.cramMD5.CramMd5MechanismHandler;
+import org.apache.directory.server.ldap.handlers.bind.digestMD5.DigestMd5MechanismHandler;
+import org.apache.directory.server.ldap.handlers.bind.gssapi.GssapiMechanismHandler;
+import org.apache.directory.server.ldap.handlers.bind.ntlm.NtlmMechanismHandler;
+import org.apache.directory.server.ldap.handlers.bind.plain.PlainMechanismHandler;
+import org.apache.directory.shared.ldap.model.constants.SupportedSaslMechanisms;
+import org.apache.directory.shared.ldap.model.entry.DefaultEntry;
+import org.apache.directory.shared.ldap.model.ldif.LdifEntry;
+import org.apache.directory.shared.ldap.model.ldif.LdifReader;
+import org.apache.directory.shared.ldap.model.schema.SchemaManager;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -84,6 +83,8 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
+import org.jboss.as.test.integration.security.common.ExtCreateKdcServer;
+import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcessor;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -354,14 +355,14 @@ public class AdvancedLdapLoginModuleTestCase {
             saslPrincipal="ldap/localhost@JBOSS.ORG",
             saslMechanisms =
             {
-                @SaslMechanism( name= SupportedSaslMechanisms.PLAIN, implClass=PlainMechanismHandler.class ),
+                @SaslMechanism( name=SupportedSaslMechanisms.PLAIN, implClass=PlainMechanismHandler.class ),
                 @SaslMechanism( name=SupportedSaslMechanisms.CRAM_MD5, implClass=CramMd5MechanismHandler.class),
                 @SaslMechanism( name= SupportedSaslMechanisms.DIGEST_MD5, implClass=DigestMd5MechanismHandler.class),
                 @SaslMechanism( name=SupportedSaslMechanisms.GSSAPI, implClass=GssapiMechanismHandler.class),
                 @SaslMechanism( name=SupportedSaslMechanisms.NTLM, implClass=NtlmMechanismHandler.class),
                 @SaslMechanism( name=SupportedSaslMechanisms.GSS_SPNEGO, implClass=NtlmMechanismHandler.class)
             })
-    @CreateKdcServer(primaryRealm = "JBOSS.ORG",
+    @ExtCreateKdcServer(primaryRealm = "JBOSS.ORG",
         kdcPrincipal = "krbtgt/JBOSS.ORG@JBOSS.ORG",
         searchBaseDn = "dc=jboss,dc=org",
         transports =
@@ -405,7 +406,7 @@ public class AdvancedLdapLoginModuleTestCase {
                 e.printStackTrace();
                 throw e;
             }
-            kdcServer = ServerAnnotationProcessor.getKdcServer(directoryService, 1024);
+            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024, hostname);
             final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer(
                     (CreateLdapServer) AnnotationUtils.getInstance(CreateLdapServer.class));
             createLdapServer.setSaslHost(secondaryTestAddress);

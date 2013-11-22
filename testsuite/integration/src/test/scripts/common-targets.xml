@@ -52,6 +52,59 @@
     </macrodef>
 
 
+    <macrodef name="ts.config-as.enable.osgi" description="Enable Eager OSGi">
+        <attribute name="name" default="jbossas"/>
+        <attribute name="output.dir"      default="${project.build.directory}"/>
+        <attribute name="config.dir.name" default="standalone/configuration"/>
+
+        <sequential>
+            <echo message="    ===  Enable Eager OSGi Mode ===  "/>
+            <property name="cur-as.config.dir" value="@{output.dir}/@{name}/@{config.dir.name}"/>
+
+            <!-- Process *.xml to *.xml.mod. -->
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/enableOSGi.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <!-- Can't get this to work. -->
+                <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-osgi.xml"/>
+                </fileset>
+            </xslt>
+
+            <!-- Move processed files back. -->
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                   <include name="**/standalone-osgi.xml.mod"/>
+               </fileset>
+               <mapper type="glob" from="*.mod" to="*"/>
+             </move>
+            <!-- Process *.xml to *.xml.mod. -->
+            <xslt destdir="@{output.dir}/@{name}/@{config.dir.name}"
+                  style="${jbossas.ts.integ.dir}/src/test/xslt/configAdminPopulate.xsl"
+                  extension=".xml.mod"
+                  useImplicitFileset="false">
+                <!-- Can't get this to work. -->
+                <!-- classpath path="${net.sf.saxon:saxon:jar}"/ -->
+                <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                    <include name="**/standalone-osgi.xml"/>
+                </fileset>
+            </xslt>
+
+            <!-- Move processed files back. -->
+            <move todir="@{output.dir}/@{name}/@{config.dir.name}">
+               <fileset dir="@{output.dir}/@{name}/@{config.dir.name}">
+                   <include name="**/standalone-osgi.xml.mod"/>
+               </fileset>
+               <mapper type="glob" from="*.mod" to="*"/>
+             </move>
+
+            <!-- Make osgi config the default -->
+            <copy overwrite="true" tofile="@{output.dir}/@{name}/@{config.dir.name}/standalone.xml" file="@{output.dir}/@{name}/@{config.dir.name}/standalone-osgi.xml"/>
+        </sequential>
+    </macrodef>
+
     <!--
         Change IP adresses, including multicast.
         It's the same as above, only adds the udpMcastAddress param.

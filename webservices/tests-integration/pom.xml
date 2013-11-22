@@ -39,6 +39,19 @@
 
     <name>WildFly: Web Services Tests Integration Subsystem</name>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <fork>true</fork>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.ws</groupId>

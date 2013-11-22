@@ -128,6 +128,7 @@
                                     <directory>${jboss.home}</directory>
                                     <excludes>
                                         <exclude>modules/</exclude>
+                                        <exclude>bundles/</exclude>
                                     </excludes>
                                 </resource>
                             </resources>
@@ -151,6 +152,10 @@
                         <property>
                           <name>module.path</name>
                           <value>${jboss.home}/modules</value>
+                        </property>
+                        <property>
+                          <name>bundle.path</name>
+                          <value>${jboss.home}/bundles</value>
                         </property>
                     </systemProperties>
                     <redirectTestOutputToFile>true</redirectTestOutputToFile>

@@ -40,9 +40,23 @@
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
-              <version>${version.surefire.plugin}</version>
+              <executions>
+                 <execution>
+                    <id>default-test</id>
+                    <configuration>
+                       <argLine>${maven.test.jvmargs}</argLine>
+                       <forkMode>always</forkMode>
+                    </configuration>
+                 </execution>
+              </executions>
               <configuration>
-                  <reuseForks>false</reuseForks>
+                  <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                  <enableAssertions>true</enableAssertions>
+                  <systemPropertyVariables>
+                      <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+                      <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                      <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
+                  </systemPropertyVariables>
               </configuration>
           </plugin>
        </plugins>
@@ -55,7 +69,7 @@
         </dependency>
         <dependency>
            <groupId>org.wildfly</groupId>
-           <artifactId>wildfly-core-model-test-controller-optional</artifactId>
+	        <artifactId>wildfly-core-model-test-controller-optional</artifactId>
            <scope>provided</scope>
            <optional>true</optional>
         </dependency>
