@@ -23,6 +23,7 @@ package org.jboss.as.webservices.service;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.management.JMException;
@@ -37,6 +38,7 @@ import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.security.EJBMethodSecurityAttributesAdaptor;
 import org.jboss.as.webservices.security.SecurityDomainContextAdaptor;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.inject.Injector;
@@ -57,6 +59,7 @@ import org.jboss.ws.api.monitoring.RecordProcessor;
 import org.jboss.ws.common.ObjectNameFactory;
 import org.jboss.ws.common.management.ManagedEndpoint;
 import org.jboss.ws.common.monitoring.ManagedRecordProcessor;
+import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.EndpointType;
 import org.jboss.wsf.spi.security.EJBMethodSecurityAttributeProvider;
@@ -245,6 +248,21 @@ public final class EndpointService implements Service<Endpoint> {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the name of the endpoint services that are to be installed for a given deployment unit
+     *
+     * @param unit
+     * @return
+     */
+    public static List<ServiceName> getServiceNamesFromDeploymentUnit(final DeploymentUnit unit) {
+        final List<ServiceName> endpointServiceNames = new ArrayList<ServiceName>();
+        Deployment deployment = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
+        for (Endpoint ep : deployment.getService().getEndpoints()) {
+            endpointServiceNames.add(EndpointService.getServiceName(unit, ep.getShortName()));
+        }
+        return endpointServiceNames;
     }
 
 }
