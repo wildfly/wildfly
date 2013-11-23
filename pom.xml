@@ -161,8 +161,8 @@
         <version.org.jberet>1.0.0.Beta1</version.org.jberet>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.8</version.org.jboss.aesh>
-        <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
-        <version.org.jboss.arquillian.osgi>2.0.0.CR3</version.org.jboss.arquillian.osgi>
+        <version.org.jboss.arquillian.core>1.1.1.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.osgi>2.1.0.CR2</version.org.jboss.arquillian.osgi>
         <version.org.jboss.hal.release-stream>2.0.6.Final</version.org.jboss.hal.release-stream>
         <version.org.jboss.byteman>2.1.2</version.org.jboss.byteman>
         <version.org.jboss.classfilewriter>1.0.4.Final</version.org.jboss.classfilewriter>
@@ -3943,6 +3943,12 @@
               <groupId>org.jboss.arquillian.container</groupId>
               <artifactId>arquillian-container-osgi</artifactId>
               <version>${version.org.jboss.arquillian.osgi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                        <artifactId>shrinkwrap-resolver-depchain</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3988,18 +3994,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.arquillian.junit</groupId>
-                <artifactId>arquillian-junit-core</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.arquillian.testng</groupId>
-                <artifactId>arquillian-testng-core</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-
-            <dependency>
               <groupId>org.jboss.arquillian.junit</groupId>
               <artifactId>arquillian-junit-container</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
@@ -4012,19 +4006,9 @@
             </dependency>
 
             <dependency>
-              <groupId>org.jboss.arquillian.testng</groupId>
-              <artifactId>arquillian-testng-container</artifactId>
-              <version>${version.org.jboss.arquillian.core}</version>
-              <exclusions>
-                <exclusion>
-                  <groupId>commons-logging</groupId>
-                  <artifactId>commons-logging</artifactId>
-                </exclusion>
-                  <exclusion>
-                      <groupId>org.jboss.logging</groupId>
-                      <artifactId>jboss-logging-tools</artifactId>
-                  </exclusion>
-              </exclusions>
+                <groupId>org.jboss.arquillian.junit</groupId>
+                <artifactId>arquillian-junit-core</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
@@ -4079,6 +4063,28 @@
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-resource</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testng</groupId>
+                <artifactId>arquillian-testng-core</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.jboss.arquillian.testng</groupId>
+              <artifactId>arquillian-testng-container</artifactId>
+              <version>${version.org.jboss.arquillian.core}</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>commons-logging</groupId>
+                  <artifactId>commons-logging</artifactId>
+                </exclusion>
+                  <exclusion>
+                      <groupId>org.jboss.logging</groupId>
+                      <artifactId>jboss-logging-tools</artifactId>
+                  </exclusion>
+              </exclusions>
             </dependency>
 
             <dependency>
