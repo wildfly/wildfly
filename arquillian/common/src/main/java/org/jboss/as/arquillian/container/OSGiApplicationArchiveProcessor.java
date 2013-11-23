@@ -24,38 +24,42 @@ package org.jboss.as.arquillian.container;
 import java.util.jar.Manifest;
 
 import org.jboss.arquillian.container.osgi.AbstractOSGiApplicationArchiveProcessor;
+import org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor;
 import org.jboss.arquillian.test.spi.TestClass;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.shrinkwrap.api.Archive;
 
 
 /**
- * An OSGi {@link org.jboss.arquillian.container.test.spi.client.deployment.ApplicationArchiveProcessor} that does not generate the manifest on demand.
+ * An OSGi {@link ApplicationArchiveProcessor} that does not generate the manifest on demand.
  * AS7 test archives must be explicit about their manifest metadata.
  *
  * @author Thomas.Diesler@jboss.com
  */
-public class OSGiApplicationArchiveProcessor extends AbstractOSGiApplicationArchiveProcessor
+public class OSGiApplicationArchiveProcessor implements ApplicationArchiveProcessor
 {
     @Override
     public void process(Archive<?> appArchive, TestClass testClass) {
-        if(isValidOSGiBundle(appArchive)) {
-            super.process(appArchive, testClass);
+        if(isValidOSGiBundleArchive(appArchive)) {
+            ApplicationArchiveProcessor processor = new AbstractOSGiApplicationArchiveProcessor() {
+                @Override
+                protected Manifest createBundleManifest(String symbolicName) {
+                    return null;
+                }
+            };
+            processor.process(appArchive, testClass);
         }
     }
 
-    @Override
-    protected Manifest createBundleManifest(String symbolicName) {
-        return null;
-    }
-
-    private boolean isValidOSGiBundle(Archive<?> appArchive) {
+    public static boolean isValidOSGiBundleArchive(Archive<?> appArchive) {
+        // org.jboss.arquillian.container:arquillian-container-osgi must be be provided
+        ClassLoader classLoader = OSGiApplicationArchiveProcessor.class.getClassLoader();
+        try {
+            classLoader.loadClass("org.jboss.arquillian.container.osgi.AbstractOSGiApplicationArchiveProcessor");
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
         Manifest manifest = ManifestUtils.getManifest(appArchive);
-        if(manifest != null) {
-            if(OSGiManifestBuilder.isValidBundleManifest(manifest)) {
-                return true;
-            }
-        }
-        return false;
+        return OSGiManifestBuilder.isValidBundleManifest(manifest);
     }
 }

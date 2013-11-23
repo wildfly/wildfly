@@ -4,7 +4,7 @@
   Set these VM properties in your IDE debugger 
 
   -Djava.util.logging.manager=org.jboss.logmanager.LogManager
-  -Djboss.home=${workspace_loc:jboss-as-build}/target/jboss-as-8.0.0.Beta2-SNAPSHOT 
+  -Djboss.home=${workspace_loc:wildfly-build}/target/wildfly-8.0.0.Beta2-SNAPSHOT 
   -DallowConnectingToRunningServer=true
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
