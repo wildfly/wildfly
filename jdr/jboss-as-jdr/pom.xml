@@ -35,23 +35,6 @@
     <artifactId>wildfly-jdr</artifactId>
     <name>WildFly: JDR</name>
 
-    <build>
-       <plugins>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <configuration>
-                  <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                  <enableAssertions>true</enableAssertions>
-                  <systemPropertyVariables>
-                      <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
-                      <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
-                      <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
-                  </systemPropertyVariables>
-              </configuration>
-          </plugin>
-       </plugins>
-    </build>
 
     <dependencies>
         <dependency>
@@ -86,7 +69,7 @@
        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-subsystem-test</artifactId>
-						<type>pom</type>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
         <dependency>

@@ -64,7 +64,7 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.1.0</maven.min.version>
-        <version.surefire.plugin>2.11</version.surefire.plugin>
+        <version.surefire.plugin>2.16</version.surefire.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
 
@@ -79,11 +79,11 @@
         <version.ant.junit>1.8.3</version.ant.junit>
         <version.antlr>2.7.7</version.antlr>
         <version.asm>3.3.1</version.asm>
-        <version.ch.qos.cal10n>0.7.3</version.ch.qos.cal10n>
-        <version.com.fasterxml.classmate>0.8.0</version.com.fasterxml.classmate>
+        <version.ch.qos.cal10n>0.8.1</version.ch.qos.cal10n>
+        <version.com.fasterxml.classmate>1.0.0</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.2.3</version.com.fasterxml.jackson>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
-        <version.com.google.guava>13.0.1</version.com.google.guava>
+        <version.com.google.guava>15.0</version.com.google.guava>
         <version.com.google.protobuf>2.5.0</version.com.google.protobuf>
         <version.com.h2database>1.3.173</version.com.h2database>
         <version.com.sun.codemodel>2.6</version.com.sun.codemodel>
@@ -123,11 +123,11 @@
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
         <version.org.apache.cxf>2.7.7</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.6.1</version.org.apache.cxf.xjcplugins>
-        <version.org.apache.ds>2.0.0-M7</version.org.apache.ds>
+        <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpclient>4.2.1</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.2.1</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
-        <version.org.apache.maven>3.1.0</version.org.apache.maven>
+        <version.org.apache.maven>3.1.1</version.org.apache.maven>
         <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.2</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.4</version.org.apache.qpid.proton>
@@ -140,7 +140,7 @@
         <version.org.bouncycastle>1.46</version.org.bouncycastle>
         <version.org.codehaus.jackson>1.9.12</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
-        <version.org.codehaus.plexus.plexus-utils>3.0.12</version.org.codehaus.plexus.plexus-utils>
+        <version.org.codehaus.plexus.plexus-utils>3.0.15</version.org.codehaus.plexus.plexus-utils>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.2.0</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.eclipse.jdt.core.compiler>4.2.2</version.org.eclipse.jdt.core.compiler>
@@ -161,10 +161,10 @@
         <version.org.jberet>1.0.0.Beta1</version.org.jberet>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.8</version.org.jboss.aesh>
-        <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.1.1.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>2.0.0.CR3</version.org.jboss.arquillian.osgi>
         <version.org.jboss.hal.release-stream>2.0.6.Final</version.org.jboss.hal.release-stream>
-        <version.org.jboss.byteman>2.1.2</version.org.jboss.byteman>
+        <version.org.jboss.byteman>2.1.3</version.org.jboss.byteman>
         <version.org.jboss.classfilewriter>1.0.4.Final</version.org.jboss.classfilewriter>
         <version.org.jboss.common.jboss-common-beans>1.1.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.jboss-common-core>2.2.22.GA</version.org.jboss.jboss-common-core>
@@ -254,7 +254,9 @@
         <version.org.powermock>1.5</version.org.powermock>
         <version.org.scannotation>1.0.3</version.org.scannotation>
         <version.org.slf4j>1.7.2.jbossorg-1</version.org.slf4j>
+        <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.eclipse.aether>0.9.0.M3</version.org.eclipse.aether>
+        <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.security.manager>1.0.0.Beta3</version.org.wildfly.security.manager>
         <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
@@ -267,11 +269,10 @@
         <version.xom>1.2.5</version.xom>
 
         <!-- Non-default maven plugin versions and configuration -->
-        <version.org.zanata.plugin>1.5.0</version.org.zanata.plugin>
+        <version.org.zanata.plugin>3.1.1</version.org.zanata.plugin>
         <version.help.plugin>2.2</version.help.plugin>
-        <version.shade.plugin>1.5</version.shade.plugin>
-        <version.jacoco.plugin>0.5.6.201201232323</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
-        <version.properties.plugin>1.5.3</version.properties.plugin>
+        <version.jacoco.plugin>0.6.3.201306030806</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
+        <version.properties.plugin>2.0.1</version.properties.plugin>
         <version.xml.plugin>1.0</version.xml.plugin>
 
 
@@ -282,8 +283,6 @@
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
-        <!-- tools.jar location, this needs to be overriden on OSX -->
-        <com.sun.tools.path>${java.home}/../lib/tools.jar</com.sun.tools.path>
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir>
         <wildfly.core.build.output.dir>build/target/${server.output.dir.prefix}-core-${jboss.as.release.version}</wildfly.core.build.output.dir>
@@ -346,6 +345,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -363,7 +366,43 @@
                         </archive>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.surefire.plugin}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit47</artifactId>
+                            <version>${version.surefire.plugin}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <enableAssertions>true</enableAssertions>
+                        <systemPropertyVariables>
+                            <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+                            <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                            <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
+                        </systemPropertyVariables>
+                        <systemProperties>
+                              <property>
+                                  <name>java.util.logging.manager</name>
+                                  <value>org.jboss.logmanager.LogManager</value>
+                              </property>
+                              <property>
+                                  <name>jboss.remoting.leakdebugging</name>
+                                  <value>false</value>
+                              </property>
+                              <property>
+                                  <name>test.level</name>
+                                  <value>${test.level}</value>
+                              </property>
+                          </systemProperties>
+                          <argLine>-Duser.region=US -Duser.language=en</argLine>
+                    </configuration>
 
+                </plugin>
                 <!-- Checkstyle -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -486,16 +525,6 @@
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>${version.shade.plugin}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.jboss.maven.surefire.modular</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                   <version>1.0.0.Alpha3</version>
                 </plugin>
                 <plugin>
                     <!--TODO TEXT. This plugin's configuration is used in m2e only.-->
@@ -691,7 +720,7 @@
                                             properties-maven-plugin
                                         </artifactId>
                                         <versionRange>
-                                            [1.5.3,)
+                                            [2.0.1,)
                                         </versionRange>
                                         <goals>
                                             <goal>
@@ -725,11 +754,15 @@
                         <dependency>
                             <groupId>org.kuali.common</groupId>
                             <artifactId>kuali-util</artifactId>
-                            <version>3.0.11</version>
+                            <version>4.1.0</version>
                             <exclusions>
                                 <exclusion>
                                     <groupId>org.springframework</groupId>
                                     <artifactId>spring-context</artifactId>
+                                </exclusion>
+                                <exclusion>
+                                    <groupId>org.springframework</groupId>
+                                    <artifactId>spring-core</artifactId>
                                 </exclusion>
                                 <exclusion>
                                     <groupId>org.springframework</groupId>
@@ -1459,14 +1492,6 @@
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${version.com.h2database}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun</groupId>
-                <artifactId>tools</artifactId>
-                <scope>system</scope>
-                <version>${maven.compiler.source}</version>
-                <systemPath>${com.sun.tools.path}</systemPath>
             </dependency>
 
             <dependency>
@@ -3362,6 +3387,13 @@
                </exclusions>
            </dependency>
 
+            <!-- this could probably be removed when new version of maven-aether-provider comes with it-->
+            <dependency>
+                <groupId>org.eclipse.sisu</groupId>
+                <artifactId>org.eclipse.sisu.plexus</artifactId>
+                <version>${version.org.eclipse.sisu.plexus}</version>
+            </dependency>
+
             <dependency>
                 <groupId>org.apache.ws.xmlschema</groupId>
                 <artifactId>xmlschema-core</artifactId>
@@ -4629,24 +4661,6 @@
              </dependency>
 
             <dependency>
-                <groupId>org.jboss.jsfunit</groupId>
-                <artifactId>jsfunit-arquillian</artifactId>
-                <version>${version.org.jboss.jsfunit}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.jsfunit</groupId>
-                <artifactId>jboss-jsfunit-core</artifactId>
-                <version>${version.org.jboss.jsfunit}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
                 <version>${version.org.jboss.logging.jboss-logging}</version>
@@ -5474,12 +5488,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jbossweb-native</artifactId>
-                <version>${version.org.jboss.as.jbossweb-native}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.spec.javax.websocket</groupId>
                 <artifactId>jboss-websocket-api_1.0_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.websockets}</version>
@@ -6169,6 +6177,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.syslog4j</groupId>
+                <artifactId>syslog4j</artifactId>
+                <version>${version.org.syslog4j}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>jcl-over-slf4j</artifactId>
                 <version>${version.org.slf4j}</version>
@@ -6402,16 +6416,6 @@
                 <module>testsuite/shared</module>
                 <module>testsuite</module>
             </modules>
-        </profile>
-
-        <profile>
-            <id>os-x</id>
-            <activation>
-                <file><exists>${java.home}/bundle/Classes/classes.jar</exists></file>
-            </activation>
-            <properties>
-                <com.sun.tools.path>${java.home}/bundle/Classes/classes.jar</com.sun.tools.path>
-            </properties>
         </profile>
 
         <profile>

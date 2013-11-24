@@ -47,5 +47,4 @@
             <artifactId>wildfly-undertow</artifactId>
         </dependency>
     </dependencies>
-
 </project>
