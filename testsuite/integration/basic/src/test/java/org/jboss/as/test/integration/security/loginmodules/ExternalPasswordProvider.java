@@ -31,35 +31,35 @@ import java.io.IOException;
 /**
  * A test class for the command starts with {EXT}/{EXTC[:TIMEOUT]} to obtain password for login modules
  * Prints first argument as a password to stream. Number of calls is saved in external file.
- * 
+ *
  * @author Filip Bogyai
  */
 public class ExternalPasswordProvider
 {
    private static File counterFile = new File(System.getProperty("java.io.tmpdir"), "tmp.password");
-	
+
    public static void main(String[] args)
    {
       String password = null;
-      if (args != null && args.length == 1) {      
-    	 //increase counter in external file 
-    	 increaseFileCounter();    	 
+      if (args != null && args.length == 1) {
+    	 //increase counter in external file
+    	 increaseFileCounter();
          password = args[0];
       }
       else {
-         //original value as default    	 
-         password = "secret";       
-         
+         //original value as default
+         password = "secret";
+
       }
-      
+
       System.out.println(password);
       System.out.flush();
-      
+
    }
-   
+
    /**
     * Read and increase the number in File that counts how many times was this class called
-    *  
+    *
     * @return new increased number
     */
    public static int increaseFileCounter(){
@@ -68,22 +68,22 @@ public class ExternalPasswordProvider
 		   FileReader reader = new FileReader(counterFile);
 		   callsCounter = reader.read();
 		   reader.close();
-		   
+
 		   callsCounter++;
-		   
+
 		   FileWriter writer = new FileWriter(counterFile);
 		   writer.write(callsCounter);
 		   writer.close();
 	   }catch(IOException ex){
 		   throw new RuntimeException("File for counting IO exception", ex);
 	   }
-	   
+
 	   return callsCounter;
    }
-   
+
    /**
     * Set number in File to 0
-    *  
+    *
     */
    public void resetFileCounter(){
 	   try{
@@ -93,17 +93,17 @@ public class ExternalPasswordProvider
 	   }catch(IOException ex){
 		   throw new RuntimeException("File for counting IO exception", ex);
 	   }
-	   
-	   
+
+
    }
-   
+
    /**
     * Read number in File that counts how many times was this class called
-    *  
+    *
     */
    public int readFileCounter(){
 	   int callsCounter = -1 ;
-	   
+
 	   try{
 		   FileReader reader = new FileReader(counterFile);
 		   callsCounter = reader.read();
@@ -111,10 +111,14 @@ public class ExternalPasswordProvider
 	   }catch(IOException ex){
 		   throw new RuntimeException("File for counting IO exception", ex);
 	   }
-	   
+
 	   return callsCounter;
-	   
+
    }
-   
-  
+
+    static void cleanup(){
+        if (counterFile.exists()){
+            counterFile.delete();
+        }
+    }
 }

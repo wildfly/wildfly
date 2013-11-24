@@ -36,6 +36,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.directory.api.ldap.model.entry.DefaultEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifReader;
+import org.apache.directory.api.ldap.model.schema.SchemaManager;
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.AnnotationUtils;
@@ -48,11 +52,6 @@ import org.apache.directory.server.core.factory.DSAnnotationProcessor;
 import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
 import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.ldap.LdapServer;
-import org.apache.directory.server.ldap.handlers.ssl.LdapsInitializer;
-import org.apache.directory.shared.ldap.model.entry.DefaultEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifReader;
-import org.apache.directory.shared.ldap.model.schema.SchemaManager;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -90,7 +89,7 @@ import org.junit.runner.RunWith;
 
 /**
  * A testcase which tests a SecurityRealm used as a SSL configuration source for LDAPs.<br/>
- * This test uses a simple re-implementation of ApacheDS {@link LdapsInitializer} class, which enables to set our own
+ * This test uses a simple re-implementation of ApacheDS {@link org.apache.directory.server.ldap.handlers.ssl.LdapsInitializer} class, which enables to set our own
  * TrustManager and ask for client authentication.<br/>
  * Test scenario:
  * <ol>
@@ -379,6 +378,7 @@ public class OutboundLdapConnectionTestCase {
             createLdapServer.setKeyStore(KEYSTORE_FILE_LDAPS.getAbsolutePath());
             fixTransportAddress(createLdapServer, StringUtils.strip(TestSuiteEnvironment.getSecondaryTestAddress(false)));
             ldapServer = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService);
+            assertEquals(ldapServer.getCertificatePassword(),KEYSTORE_PASSWORD);
             ldapServer.start();
         }
 

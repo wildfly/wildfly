@@ -84,7 +84,6 @@
                                     <directory>${jboss.home}</directory>
                                     <excludes>
                                         <exclude>modules/</exclude>
-                                        <exclude>bundles/</exclude>
                                     </excludes>
                                 </resource>
                             </resources>

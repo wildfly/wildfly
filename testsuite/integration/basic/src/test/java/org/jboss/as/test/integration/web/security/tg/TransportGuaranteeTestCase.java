@@ -52,6 +52,8 @@ import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -142,6 +144,13 @@ public class TransportGuaranteeTestCase {
         // set test URL
         httpsTestURL = "https://" + deploymentUrl.getHost() + ":" + Integer.toString(httpsPort);
         httpTestURL = "http://" + deploymentUrl.getHost() + ":" + deploymentUrl.getPort();
+    }
+
+    @AfterClass
+    public static void after()throws IOException{
+        if (keyStoreFile.exists()){
+            keyStoreFile.delete();
+        }
     }
 
     /**
