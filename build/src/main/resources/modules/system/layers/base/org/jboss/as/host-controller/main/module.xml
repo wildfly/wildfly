@@ -35,7 +35,6 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="org.apache.xalan" services="import"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.codehaus.woodstox" services="import"/>
         <module name="org.jboss.staxmapper"/>
@@ -56,7 +55,6 @@
         <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.security" optional="true" services="import"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.version"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager" services="import"/>

@@ -1811,12 +1811,6 @@
                 <dependency>
                     <groupId>org.jboss.weld</groupId>
                     <artifactId>weld-core-impl</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.jboss.spec.javax.interceptor</groupId>
-                            <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
-                        </exclusion>
-                    </exclusions>
                 </dependency>
 
                 <dependency>
@@ -2077,6 +2071,44 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>build-core</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="build-core.xml" inheritRefs="true">
+                                            <target name="${ant.target}"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jboss</groupId>
+                                <artifactId>jandex</artifactId>
+                                <version>${version.org.jboss.jandex}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.ant</groupId>
+                                <artifactId>ant-apache-bsf</artifactId>
+                                <version>${version.org.apache.ant}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>rhino</groupId>
+                                <artifactId>js</artifactId>
+                                <version>${version.rhino.js}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -2168,8 +2200,6 @@
                 </plugins>
             </build>
         </profile>
-
-
     </profiles>
 
 </project>
