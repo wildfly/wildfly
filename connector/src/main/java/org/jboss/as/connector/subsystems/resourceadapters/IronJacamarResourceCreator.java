@@ -278,27 +278,34 @@ public class IronJacamarResourceCreator {
             if (ij11.getWorkManager() != null && ij11.getWorkManager().getSecurity() != null) {
                 WorkManagerSecurity security = ij11.getWorkManager().getSecurity();
                 model.get(Constants.WM_SECURITY.getName()).set(true);
-                for (String group : security.getDefaultGroups()) {
-                    model.get(Constants.WM_SECURITY_DEFAULT_GROUPS.getName()).add(group);
+                if (security.getDefaultGroups() != null) {
+                    for (String group : security.getDefaultGroups()) {
+                        model.get(Constants.WM_SECURITY_DEFAULT_GROUPS.getName()).add(group);
+                    }
                 }
-                model.get(Constants.WM_SECURITY_DEFAULT_PRINCIPAL.getName()).set(security.getDefaultPrincipal());
+                if (security.getDefaultPrincipal() != null)
+                    model.get(Constants.WM_SECURITY_DEFAULT_PRINCIPAL.getName()).set(security.getDefaultPrincipal());
                 model.get(Constants.WM_SECURITY_MAPPING_REQUIRED.getName()).set(security.isMappingRequired());
                 model.get(Constants.WM_SECURITY_DOMAIN.getName()).set(security.getDomain());
-                for (Map.Entry<String, String> entry : security.getGroupMappings().entrySet()) {
-                    final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
-                    final ModelNode subModel = mapping.getModel();
-                    subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
-                    subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
-                    final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_GROUPS.getName(), WM_SECURITY_MAPPING_GROUP.getName());
-                    ijResourceAdapter.registerChild(element, mapping);
+                if (security.getGroupMappings() != null) {
+                    for (Map.Entry<String, String> entry : security.getGroupMappings().entrySet()) {
+                        final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
+                        final ModelNode subModel = mapping.getModel();
+                        subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
+                        subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
+                        final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_GROUPS.getName(), WM_SECURITY_MAPPING_GROUP.getName());
+                        ijResourceAdapter.registerChild(element, mapping);
+                    }
                 }
-                for (Map.Entry<String, String> entry : security.getUserMappings().entrySet()) {
-                    final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
-                    final ModelNode subModel = mapping.getModel();
-                    subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
-                    subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
-                    final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_USERS.getName(), WM_SECURITY_MAPPING_USER.getName());
-                    ijResourceAdapter.registerChild(element, mapping);
+                if (security.getUserMappings() != null) {
+                    for (Map.Entry<String, String> entry : security.getUserMappings().entrySet()) {
+                        final Resource mapping = new IronJacamarResource.IronJacamarRuntimeResource();
+                        final ModelNode subModel = mapping.getModel();
+                        subModel.get(Constants.WM_SECURITY_MAPPING_FROM.getName()).set(entry.getKey());
+                        subModel.get(Constants.WM_SECURITY_MAPPING_TO.getName()).set(entry.getKey());
+                        final PathElement element = PathElement.pathElement(Constants.WM_SECURITY_MAPPING_USERS.getName(), WM_SECURITY_MAPPING_USER.getName());
+                        ijResourceAdapter.registerChild(element, mapping);
+                    }
                 }
             }
         }
