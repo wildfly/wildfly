@@ -97,6 +97,11 @@ public class UndertowContext implements Context {
     }
 
     @Override
+    public String toString() {
+        return this.getPath();
+    }
+
+    @Override
     public boolean equals(Object object) {
         if (!(object instanceof UndertowContext)) return false;
 
