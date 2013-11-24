@@ -74,6 +74,7 @@ import org.jboss.as.weld.services.bootstrap.WeldResourceInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldSecurityServices;
 import org.jboss.as.weld.services.bootstrap.WeldTransactionServices;
 import org.jboss.as.weld.util.Utils;
+import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
@@ -252,8 +253,17 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         // make sure JNDI bindings are up
         startService.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
-        for (DeploymentUnit sub : subDeployments) {
-            startService.addDependency(JndiNamingDependencyProcessor.serviceName(sub));
+        final EarMetaData earConfig = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
+        if (earConfig != null && earConfig.getInitializeInOrder())  {
+            // dependencies are set directly to each binding service, to avoid deadlocks in service dependencies due to in-order install of sub-deployments
+            // FIXME this may miss bindings if added at INSTALL phase
+            for (DeploymentUnit sub : subDeployments) {
+                startService.addDependencies(sub.getAttachmentList(Attachments.JNDI_DEPENDENCIES));
+            }
+        } else {
+            for (DeploymentUnit sub : subDeployments) {
+                startService.addDependency(JndiNamingDependencyProcessor.serviceName(sub));
+            }
         }
 
         startService.install();
