@@ -286,6 +286,7 @@
         <com.sun.tools.path>${java.home}/../lib/tools.jar</com.sun.tools.path>
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir>
+        <wildfly.core.build.output.dir>build/target/${server.output.dir.prefix}-core-${jboss.as.release.version}</wildfly.core.build.output.dir>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
