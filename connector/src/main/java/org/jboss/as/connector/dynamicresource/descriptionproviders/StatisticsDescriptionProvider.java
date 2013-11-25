@@ -38,6 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.jboss.as.connector.subsystems.common.pool.Constants;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -91,7 +92,7 @@ public class StatisticsDescriptionProvider implements DescriptionProvider {
         subsystem.get(DESCRIPTION).set(bundle.getString(resourceDescriptionKey));
 
         ModelNode attrs = subsystem.get(ATTRIBUTES);
-        final Map<String, ModelNode> attributeDescriptions = getAttributeOverrideDescriptions(locale);
+        final Map<String, ModelNode> attributeDescriptions = getAttributeOverrideDescriptions(locale, bundle);
         for (Map.Entry<String, ModelNode> entry : attributeDescriptions.entrySet()) {
             attrs.get(entry.getKey()).set(entry.getValue());
         }
@@ -103,7 +104,7 @@ public class StatisticsDescriptionProvider implements DescriptionProvider {
         return subsystem;
     }
 
-    public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale) {
+    public Map<String, ModelNode> getAttributeOverrideDescriptions(Locale locale, ResourceBundle bundle) {
         Map<String, ModelNode> attributes = new HashMap<String, ModelNode>();
         for (StatisticsPlugin plugin : plugins) {
             for (String name : plugin.getNames()) {
@@ -122,6 +123,14 @@ public class StatisticsDescriptionProvider implements DescriptionProvider {
                 attributes.put(name, node);
             }
         }
+
+        ModelNode node = new ModelNode();
+        node.get(DESCRIPTION).set(bundle.getString(Constants.ENABLED_STATS_NAME));
+        node.get(TYPE).set(ModelType.BOOLEAN);
+        node.get(REQUIRED).set(false);
+        node.get(ACCESS_TYPE, READ_ONLY).set(true);
+        attributes.put(Constants.ENABLED_STATS_NAME, node);
+
         return attributes;
     }
 

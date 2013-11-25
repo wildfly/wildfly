@@ -78,6 +78,8 @@ public class Constants {
 
     private static final String CAPACITY_DECREMENTER_PROPERTIES_NAME = "capacity-decrementer-properties";
 
+    public static final String ENABLED_STATS_NAME = "enabled-statistics";
+
 
     public static final SimpleAttributeDefinition BLOCKING_TIMEOUT_WAIT_MILLIS = new SimpleAttributeDefinition(BLOCKING_TIMEOUT_WAIT_MILLIS_NAME, TimeOut.Tag.BLOCKING_TIMEOUT_MILLIS.getLocalName(),  new ModelNode(), ModelType.LONG, true , true, MeasurementUnit.MILLISECONDS);
 
@@ -153,6 +155,14 @@ public class Constants {
             .setAllowExpression(true)
             .setValidator(new EnumValidator<FlushStrategy>(FlushStrategy.class, true, true))
             .build();
+
+    public static final SimpleAttributeDefinition ENABLED_STATS = new SimpleAttributeDefinitionBuilder(ENABLED_STATS_NAME, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(true))
+            .setAllowNull(true)
+            .setAllowExpression(false)
+            .setStorageRuntime()
+            .build();
+
 
 
     public static final SimpleAttributeDefinition[] POOL_ATTRIBUTES_1 = {BLOCKING_TIMEOUT_WAIT_MILLIS, IDLETIMEOUTMINUTES, BACKGROUNDVALIDATIONMILLIS,

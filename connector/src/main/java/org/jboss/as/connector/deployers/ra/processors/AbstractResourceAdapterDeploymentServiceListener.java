@@ -25,7 +25,9 @@ package org.jboss.as.connector.deployers.ra.processors;
 import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsDescriptionProvider;
 import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
 import org.jboss.as.connector.dynamicresource.operations.ClearWorkManagerStatisticsHandler;
-import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
+import org.jboss.as.connector.dynamicresource.operations.DisableStatisticsHandler;
+import org.jboss.as.connector.dynamicresource.operations.EnableStatisticsHandler;
+import org.jboss.as.connector.subsystems.common.pool.ParametrizedPoolMetricsHandler;
 import org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
@@ -179,7 +181,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                     if (deploymentMD.getConnector() != null && deploymentMD.getConnector().getResourceAdapter() != null && deploymentMD.getConnector().getResourceAdapter().getStatistics() != null) {
                                         StatisticsPlugin raStats = deploymentMD.getConnector().getResourceAdapter().getStatistics();
                                         for (String statName : raStats.getNames()) {
-                                            raRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(raStats));
+                                            raRegistration.registerMetric(statName, new ParametrizedPoolMetricsHandler(raStats));
                                         }
                                     }
                                     if (poolStats.getNames().size() != 0 && raRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
@@ -190,9 +192,11 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                             raResource.registerChild(peCD, cdResource);
 
                                         for (String statName : poolStats.getNames()) {
-                                            cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                            cdSubRegistration.registerMetric(statName, new ParametrizedPoolMetricsHandler(poolStats));
                                         }
                                         cdSubRegistration.registerOperationHandler(ClearStatisticsHandler.DEFINITION, new ClearStatisticsHandler(poolStats));
+                                        cdSubRegistration.registerOperationHandler(EnableStatisticsHandler.DEFINITION, new EnableStatisticsHandler(poolStats));
+                                        cdSubRegistration.registerOperationHandler(DisableStatisticsHandler.DEFINITION, new DisableStatisticsHandler(poolStats));
                                     }
 
                                     if (wm.getStatistics() != null) {
