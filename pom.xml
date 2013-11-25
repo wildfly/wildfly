@@ -161,7 +161,7 @@
         <version.org.jberet>1.0.0.Beta1</version.org.jberet>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.8</version.org.jboss.aesh>
-        <version.org.jboss.arquillian.core>1.1.1.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.core>1.1.2.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>2.1.0.CR2</version.org.jboss.arquillian.osgi>
         <version.org.jboss.hal.release-stream>2.0.6.Final</version.org.jboss.hal.release-stream>
         <version.org.jboss.byteman>2.1.3</version.org.jboss.byteman>
