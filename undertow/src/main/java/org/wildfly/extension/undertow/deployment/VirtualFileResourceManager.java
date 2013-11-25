@@ -94,7 +94,7 @@ public class VirtualFileResourceManager implements ResourceManager {
                             for (FileChangeEvent change : changes) {
                                 if (change.getFile().getAbsolutePath().startsWith(basePath)) {
                                     String path = change.getFile().getAbsolutePath().substring(basePath.length());
-                                    events.add(new ResourceChangeEvent(getResource(path), ResourceChangeEvent.Type.valueOf(change.getType().name())));
+                                    events.add(new ResourceChangeEvent(path, ResourceChangeEvent.Type.valueOf(change.getType().name())));
                                 }
                             }
                             for (ResourceChangeListener listener : listeners) {
