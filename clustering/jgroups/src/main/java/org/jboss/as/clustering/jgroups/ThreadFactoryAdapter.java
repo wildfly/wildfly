@@ -66,6 +66,7 @@ public class ThreadFactoryAdapter implements org.jgroups.util.ThreadFactory {
     /**
      * @see org.jgroups.util.ThreadFactory#newThread(java.lang.ThreadGroup, java.lang.Runnable, java.lang.String)
      */
+    @Deprecated
     @Override
     public Thread newThread(ThreadGroup group, Runnable r, String name) {
         return this.newThread(r, name);

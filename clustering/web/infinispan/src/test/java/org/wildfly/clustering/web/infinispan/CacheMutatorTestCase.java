@@ -48,7 +48,7 @@ import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.infinispan.invoker.SimpleCacheInvoker;
 import org.junit.Test;
-import org.wildfly.clustering.annotation.Immutable;
+import org.wildfly.clustering.web.annotation.Immutable;
 import org.wildfly.clustering.web.infinispan.session.CacheMutator;
 import org.wildfly.clustering.web.sso.AuthenticationType;
 

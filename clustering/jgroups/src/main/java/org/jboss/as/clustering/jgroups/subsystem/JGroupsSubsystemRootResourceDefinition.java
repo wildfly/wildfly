@@ -37,35 +37,20 @@ import org.jboss.dmr.ModelType;
 public class JGroupsSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
     // attributes
-    static SimpleAttributeDefinition DEFAULT_STACK =
-            new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_STACK, ModelType.STRING, false)
-                    .setXmlName(Attribute.DEFAULT_STACK.getLocalName())
-                    .setAllowExpression(true)
-                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-                    .build();
+    static SimpleAttributeDefinition DEFAULT_STACK = new SimpleAttributeDefinitionBuilder(ModelKeys.DEFAULT_STACK, ModelType.STRING, false)
+            .setXmlName(Attribute.DEFAULT_STACK.getLocalName())
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
 
     // registration
     JGroupsSubsystemRootResourceDefinition() {
-        super(JGroupsExtension.SUBSYSTEM_PATH,
-                JGroupsExtension.getResourceDescriptionResolver(),
-                JGroupsSubsystemAdd.INSTANCE,
-                JGroupsSubsystemRemove.INSTANCE);
-    }
-
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
+        super(JGroupsExtension.SUBSYSTEM_PATH, JGroupsExtension.getResourceDescriptionResolver(), JGroupsSubsystemAdd.INSTANCE, JGroupsSubsystemRemove.INSTANCE);
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        super.registerAttributes(resourceRegistration);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_STACK, null, new ReloadRequiredWriteAttributeHandler(DEFAULT_STACK));
     }
-
-    @Override
-    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-        super.registerChildren(resourceRegistration);
-    }
-
 }

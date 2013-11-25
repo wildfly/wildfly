@@ -68,7 +68,7 @@ public class SingletonTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "singleton.war");
         war.addPackage(MyService.class.getPackage());
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.singleton, org.jboss.as.server\n"));
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.as.server\n"));
         war.addAsServiceProvider(org.jboss.msc.service.ServiceActivator.class, MyServiceActivator.class);
         return war;
     }
