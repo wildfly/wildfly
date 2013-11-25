@@ -77,7 +77,7 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
 
     @Override
     public boolean isSecure() {
-        return false;
+        return scheme != null && scheme.equals("https");
     }
 
     @Override
