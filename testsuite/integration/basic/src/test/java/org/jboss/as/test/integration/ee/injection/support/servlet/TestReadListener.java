@@ -21,20 +21,18 @@
  */
 package org.jboss.as.test.integration.ee.injection.support.servlet;
 
-import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
 import javax.servlet.ReadListener;
+import javax.servlet.ServletInputStream;
 
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptor;
 import org.jboss.as.test.integration.ee.injection.support.ComponentInterceptor.Interception;
 
 public class TestReadListener implements ReadListener {
-
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private final TestHttpUpgradeHandler handler;
 
@@ -47,16 +45,32 @@ public class TestReadListener implements ReadListener {
 
     @Override
     public void onDataAvailable() throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(handler.getWebConnection().getInputStream()));
-        while ((reader.readLine()) != null) {
-            // read the input stream
+        Logger.log("OnDataAvailable START");
+
+        ServletInputStream input = handler.getWebConnection().getInputStream();
+
+        int len = -1;
+        byte b[] = new byte[1024];
+
+        if (input.isReady()) {
+            // Expected data is "dummy request#"
+            len = input.read(b);
+            if (len > 0) {
+                String data = new String(b, 0, len);
+                Logger.log("--> " + data);
+                if (data.endsWith("#")) {
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(handler.getWebConnection().getOutputStream()));
+                    writeLine(writer, "isPostConstructCallbackInvoked: " + handler.isPostConstructCallbackInvoked());
+                    writeLine(writer, "isInjectionOk: " + handler.isInjectionOk());
+                    writeLine(writer, "isInterceptorInvoked: " + isInterceptorInvoked());
+                    writeLine(writer, "END");
+                    writer.flush();
+                }
+            } else {
+                Logger.log("Data length: " + len);
+            }
         }
-        OutputStream out = handler.getWebConnection().getOutputStream();
-        write(out, "isPostConstructCallbackInvoked: " + handler.isPostConstructCallbackInvoked() + LINE_SEPARATOR);
-        write(out, "isInjectionOk: " + handler.isInjectionOk() + LINE_SEPARATOR);
-        write(out, "isInterceptorInvoked: " + isInterceptorInvoked() + LINE_SEPARATOR);
-        write(out, "END" + LINE_SEPARATOR);
-        out.flush();
+        Logger.log("OnDataAvailable END");
     }
 
     private boolean isInterceptorInvoked() {
@@ -64,17 +78,21 @@ public class TestReadListener implements ReadListener {
         return interceptions != null && (interceptions.size() == 1) && interceptions.get(0).getMethodName().equals("init");
     }
 
-    private void write(OutputStream out, String text) throws IOException {
-        out.write(text.getBytes());
+    private void writeLine(BufferedWriter writer, String text) throws IOException {
+        writer.write(text);
+        writer.newLine();
+        Logger.log(text);
     }
 
     @Override
     public void onAllDataRead() throws IOException {
+        Logger.log("OnAllDataRead");
     }
 
     @Override
     public void onError(Throwable t) {
         t.printStackTrace();
     }
+
 
 }

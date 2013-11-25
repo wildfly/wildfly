@@ -64,7 +64,7 @@ public class TestHttpUpgradeHandler implements HttpUpgradeHandler {
     @ComponentInterceptorBinding
     @Override
     public void init(WebConnection wc) {
-        System.out.println("Init upgrade handler");
+        Logger.log("Init upgrade handler");
         try {
             injectionOk = (alpha != null && charlie != null && alpha.getId().equals(charlie.getAlphaId()));
         } catch (Exception e) {
@@ -81,7 +81,7 @@ public class TestHttpUpgradeHandler implements HttpUpgradeHandler {
 
     @Override
     public void destroy() {
-        System.out.println("Upgrade handler disconnected");
+        Logger.log("Upgrade handler disconnected");
     }
 
     WebConnection getWebConnection() {
@@ -95,5 +95,6 @@ public class TestHttpUpgradeHandler implements HttpUpgradeHandler {
     boolean isInjectionOk() {
         return injectionOk;
     }
+
 
 }
