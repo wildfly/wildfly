@@ -24,7 +24,10 @@
 
 package org.jboss.as.mail.extension;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 
 import java.io.IOException;
@@ -51,21 +54,26 @@ import org.junit.Test;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
+public class MailSubsystem20TestCase extends AbstractSubsystemBaseTest {
     private static final PathAddress SUBSYSTEM_PATH = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, MailExtension.SUBSYSTEM_NAME));
 
-    public MailSubsystem11TestCase() {
+    public MailSubsystem20TestCase() {
         super(MailExtension.SUBSYSTEM_NAME, new MailExtension());
     }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_1.xml");
+        return readResource("subsystem_2_0.xml");
     }
 
     @Test
     public void testExpressions() throws Exception {
-        standardSubsystemTest("subsystem_1_1_expressions.xml");
+        standardSubsystemTest("subsystem_1_1_expressions.xml", false);
+    }
+
+    @Test
+    public void test11() throws Exception {
+        standardSubsystemTest("subsystem_1_1.xml", false);
     }
 
     @Test
@@ -108,7 +116,7 @@ public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
         if (!mainServices.isSuccessfulBoot()) {
             Assert.fail(mainServices.getBootError().toString());
         }
-        ServiceController javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("java:/Mail"));
+        ServiceController javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("defaultMail"));
         javaMailService.setMode(ServiceController.Mode.ACTIVE);
         Session session = (Session) javaMailService.getValue();
         Assert.assertNotNull("session should not be null", session);
@@ -117,12 +125,12 @@ public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull("pop3 host should be set", properties.getProperty("mail.pop3.host"));
         Assert.assertNotNull("imap host should be set", properties.getProperty("mail.imap.host"));
 
-        ServiceController defaultMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("java:jboss/mail/Default"));
+        ServiceController defaultMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("default2"));
         session = (Session) defaultMailService.getValue();
         Assert.assertEquals("Debug should be true", true, session.getDebug());
 
 
-        ServiceController<Session> customMailService = (ServiceController<Session>) mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("java:jboss/mail/Custom"));
+        ServiceController<Session> customMailService = (ServiceController<Session>) mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("custom"));
         session = customMailService.getValue();
         properties = session.getProperties();
         String host = properties.getProperty("mail.smtp.host");
@@ -135,13 +143,13 @@ public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
 
         MailSessionService service = (MailSessionService) customMailService.getService();
         Credentials credentials = service.getConfig().getCustomServers()[0].getCredentials();
-        Assert.assertEquals(credentials.getUsername(),"username");
-        Assert.assertEquals(credentials.getPassword(),"password");
+        Assert.assertEquals(credentials.getUsername(), "username");
+        Assert.assertEquals(credentials.getPassword(), "password");
 
 
     }
 
-    //not done yet
+    @Test
     public void testOperations() throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(new MailSubsystem10TestCase.Initializer())
                 .setSubsystemXml(getSubsystemXml());
@@ -149,16 +157,47 @@ public class MailSubsystem11TestCase extends AbstractSubsystemBaseTest {
         if (!mainServices.isSuccessfulBoot()) {
             Assert.fail(mainServices.getBootError().toString());
         }
-        final ModelNode writeOp = Util.getWriteAttributeOperation(
-                PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH, PathElement.pathElement(MailExtension.MAIL_SESSION_PATH.getKey(), "java:/Mail")),
-                "debug", false);
 
-        ModelNode result = mainServices.executeOperation(writeOp);
+        PathAddress sessionAddress = PathAddress.pathAddress(MailExtension.SUBSYSTEM_PATH, PathElement.pathElement(MailExtension.MAIL_SESSION_PATH.getKey(), "defaultMail"));
+        ModelNode result;
+
+
+        ModelNode removeServerOp = Util.createRemoveOperation(sessionAddress.append("server", "imap"));
+        removeServerOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        result = mainServices.executeOperation(removeServerOp);
+        checkResult(result);
+
+
+        ModelNode addServerOp = Util.createAddOperation(sessionAddress.append("server", "imap"));
+        addServerOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        addServerOp.get("outbound-socket-binding-ref").set("mail-imap");
+        addServerOp.get("username").set("user");
+        addServerOp.get("password").set("pswd");
+
+        result = mainServices.executeOperation(addServerOp);
+        checkResult(result);
+
+        ModelNode writeOp = Util.createEmptyOperation(WRITE_ATTRIBUTE_OPERATION, sessionAddress);
+        writeOp.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+        writeOp.get("name").set("debug");
+        writeOp.get("value").set(false);
+        result = mainServices.executeOperation(writeOp);
+        checkResult(result);
+
+
+        ServiceController javaMailService = mainServices.getContainer().getService(MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append("defaultMail"));
+        javaMailService.setMode(ServiceController.Mode.ACTIVE);
+        Session session = (Session) javaMailService.getValue();
+        Assert.assertNotNull("session should not be null", session);
+        Properties properties = session.getProperties();
+        Assert.assertNotNull("smtp host should be set", properties.getProperty("mail.smtp.host"));
+        Assert.assertNotNull("imap host should be set", properties.getProperty("mail.imap.host"));
+    }
+
+    private void checkResult(ModelNode result) {
         Assert.assertEquals(result.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).asString(), "success", result.get(ModelDescriptionConstants.OUTCOME).asString());
-
-        ModelNode responseHeaders = result.get(ModelDescriptionConstants.RESPONSE_HEADERS);
-        if (responseHeaders.isDefined()) {
-            boolean reload = responseHeaders.get(ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD).asBoolean(false);
+        if (result.hasDefined(ModelDescriptionConstants.RESPONSE_HEADERS)) {
+            boolean reload = result.get(ModelDescriptionConstants.RESPONSE_HEADERS, ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD).asBoolean(false);
             Assert.assertFalse("Operation should not return requires reload", reload);
         }
     }

@@ -94,7 +94,6 @@ public class EjbSecurityDomainSetup extends AbstractSecurityDomainSetup {
             loginModule.get(FLAG).set("required");
             loginModule.get(Constants.MODULE_OPTIONS).add("password-stacking", "useFirstPass");
             loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-            loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
             steps.add(loginModule);
         }
 

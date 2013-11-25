@@ -22,26 +22,38 @@
 
 package org.jboss.as.mail.extension;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
-import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.RestartParentResourceRemoveHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Tomaz Cerar
  * @since 7.1.0
  */
-class MailServerDefinition extends SimpleResourceDefinition {
+class MailServerDefinition extends PersistentResourceDefinition {
 
     static final SensitivityClassification MAIL_SERVER_SECURITY =
             new SensitivityClassification(MailExtension.SUBSYSTEM_NAME, "mail-server-security", false, false, true);
@@ -79,7 +91,7 @@ class MailServerDefinition extends SimpleResourceDefinition {
     protected static final SimpleAttributeDefinition USERNAME =
             new SimpleAttributeDefinitionBuilder(MailSubsystemModel.USER_NAME, ModelType.STRING, true)
                     .setAllowExpression(true)
-                    .setXmlName(MailSubsystemModel.LOGIN_USERNAME)
+                    .setXmlName("username")
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
                     .addAccessConstraint(MAIL_SERVER_SECURITY_DEF)
@@ -109,22 +121,53 @@ class MailServerDefinition extends SimpleResourceDefinition {
     public static final MailServerDefinition INSTANCE_POP3 = new MailServerDefinition(MailSubsystemModel.POP3_SERVER_PATH, ATTRIBUTES);
     public static final MailServerDefinition INSTANCE_CUSTOM = new MailServerDefinition(MailSubsystemModel.CUSTOM_SERVER_PATH, ATTRIBUTES_CUSTOM);
 
-    private final AttributeDefinition[] attributes;
+    private final List<AttributeDefinition> attributes;
 
     private MailServerDefinition(final PathElement path, AttributeDefinition[] attributes) {
         super(path,
                 MailExtension.getResourceDescriptionResolver(MailSubsystemModel.MAIL_SESSION, MailSubsystemModel.SERVER_TYPE),
                 new MailServerAdd(attributes),
-                ReloadRequiredRemoveStepHandler.INSTANCE);
-        this.attributes = attributes;
+                new MailServerRemove());
+        this.attributes = Arrays.asList(attributes);
     }
 
 
     @Override
+    public Collection<AttributeDefinition> getAttributes() {
+        return attributes;
+    }
+
+    @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        for (AttributeDefinition attr : this.attributes) {
-            resourceRegistration.registerReadWriteAttribute(attr, null, MailServerWriteAttributeHandler.INSTANCE);
+        MailServerWriteAttributeHandler handler = new MailServerWriteAttributeHandler(getAttributes());
+        for (AttributeDefinition attr : getAttributes()) {
+            resourceRegistration.registerReadWriteAttribute(attr, null, handler);
         }
     }
 
+    private static final class MailServerRemove extends RestartParentResourceRemoveHandler {
+        private MailServerRemove() {
+            super(MailSubsystemModel.MAIL_SESSION);
+        }
+
+        @Override
+        protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+            MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel, verificationHandler, new ArrayList<ServiceController<?>>());
+        }
+
+        @Override
+        protected ServiceName getParentServiceName(PathAddress parentAddress) {
+            return MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append(parentAddress.getLastElement().getValue());
+        }
+
+        @Override
+        protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel) throws OperationFailedException {
+            super.removeServices(context, parentService, parentModel);
+            String jndiName = MailSessionAdd.getJndiName(parentModel, context);
+            final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+            context.removeService(bindInfo.getBinderServiceName());
+        }
+
+
+    }
 }

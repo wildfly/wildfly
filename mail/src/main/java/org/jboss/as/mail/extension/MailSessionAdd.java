@@ -22,9 +22,9 @@
 
 package org.jboss.as.mail.extension;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.mail.extension.MailSubsystemModel.CUSTOM;
 import static org.jboss.as.mail.extension.MailSubsystemModel.IMAP;
-import static org.jboss.as.mail.extension.MailSubsystemModel.JNDI_NAME;
 import static org.jboss.as.mail.extension.MailSubsystemModel.POP3;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SERVER_TYPE;
 import static org.jboss.as.mail.extension.MailSubsystemModel.SMTP;
@@ -97,19 +97,28 @@ class MailSessionAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
-        final String jndiName = getJndiName(operation);
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        ModelNode fullTree = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        installRuntimeServices(context, address, fullTree, verificationHandler, controllers);
+    }
+
+
+    static void installRuntimeServices(OperationContext context, PathAddress address, ModelNode fullModel, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> controllers) throws OperationFailedException {
+        String name = address.getLastElement().getValue();
+
+        final String jndiName = getJndiName(fullModel, context);
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
-        ModelNode fullTree = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        final MailSessionConfig config = from(context, fullTree);
+
+        final MailSessionConfig config = from(context, fullModel);
         final MailSessionService service = new MailSessionService(config);
-        final ServiceName serviceName = MAIL_SESSION_SERVICE_NAME.append(jndiName);
+        final ServiceName serviceName = MAIL_SESSION_SERVICE_NAME.append(name);
         final ServiceBuilder<?> mailSessionBuilder = serviceTarget.addService(serviceName, service);
         addOutboundSocketDependency(service, mailSessionBuilder, config.getImapServer());
         addOutboundSocketDependency(service, mailSessionBuilder, config.getPop3Server());
         addOutboundSocketDependency(service, mailSessionBuilder, config.getSmtpServer());
-        for (CustomServerConfig server:config.getCustomServers()){
-            if (server.getOutgoingSocketBinding()!=null){
+        for (CustomServerConfig server : config.getCustomServers()) {
+            if (server.getOutgoingSocketBinding() != null) {
                 addOutboundSocketDependency(service, mailSessionBuilder, server);
             }
         }
@@ -145,6 +154,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
                 .addListener(verificationHandler);
         controllers.add(mailSessionBuilder.install());
         controllers.add(binderBuilder.install());
+
     }
 
     /**
@@ -154,8 +164,8 @@ class MailSessionAdd extends AbstractAddStepHandler {
      * @param modelNode the model node; either an operation or the model behind a mail session resource
      * @return the compliant jndi name
      */
-    private static String getJndiName(final ModelNode modelNode) {
-        final String rawJndiName = modelNode.require(JNDI_NAME).asString();
+    static String getJndiName(final ModelNode modelNode, OperationContext context) throws OperationFailedException {
+        final String rawJndiName = MailSessionDefinition.JNDI_NAME.resolveModelAttribute(context, modelNode).asString();
         return getJndiName(rawJndiName);
     }
 
@@ -170,7 +180,7 @@ class MailSessionAdd extends AbstractAddStepHandler {
     }
 
 
-    private void addOutboundSocketDependency(MailSessionService service, ServiceBuilder<?> mailSessionBuilder, ServerConfig server) {
+    private static void addOutboundSocketDependency(MailSessionService service, ServiceBuilder<?> mailSessionBuilder, ServerConfig server) {
         if (server != null) {
             final String ref = server.getOutgoingSocketBinding();
             mailSessionBuilder.addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(ref),
