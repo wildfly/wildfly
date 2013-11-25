@@ -48,6 +48,10 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-web-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-clustering-web-spi</artifactId>
         </dependency>
         <dependency>

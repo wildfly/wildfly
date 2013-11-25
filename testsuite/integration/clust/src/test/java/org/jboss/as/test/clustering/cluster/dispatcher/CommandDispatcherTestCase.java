@@ -21,7 +21,6 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -52,7 +51,6 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(ClusterTopologyRetriever.class.getPackage());
-        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.api\n"));
         log.info(ejbJar.toString(true));
         return ejbJar;
     }

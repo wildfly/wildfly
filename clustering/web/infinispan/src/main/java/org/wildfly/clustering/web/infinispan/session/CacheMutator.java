@@ -46,7 +46,7 @@ import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.Mutator;
-import org.wildfly.clustering.annotation.Immutable;
+import org.wildfly.clustering.web.annotation.Immutable;
 
 /**
  * Ensures that an object that exists in the distributed cache replicates.

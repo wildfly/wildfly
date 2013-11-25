@@ -77,11 +77,11 @@ public class JGroupsExtension implements Extension {
     }
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
-           StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
-           for (String kp : keyPrefix) {
-               prefix.append('.').append(kp);
-           }
-           return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JGroupsExtension.class.getClassLoader(), true, false);
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        for (String kp : keyPrefix) {
+           prefix.append('.').append(kp);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JGroupsExtension.class.getClassLoader(), true, false);
     }
 
     /**
@@ -92,12 +92,11 @@ public class JGroupsExtension implements Extension {
     public void initialize(ExtensionContext context) {
 
         // IMPORTANT: Management API version != xsd version! Not all Management API changes result in XSD changes
-        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
-                MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
+        SubsystemRegistration registration = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION, MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
 
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final ManagementResourceRegistration subsystem = registration.registerSubsystemModel(new JGroupsSubsystemRootResourceDefinition());
-        subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION,JGroupsSubsystemDescribe.INSTANCE);
+        subsystem.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, JGroupsSubsystemDescribe.INSTANCE);
 
         subsystem.registerSubModel(new StackResourceDefinition(registerRuntimeOnly));
         registration.registerXMLElementWriter(new JGroupsSubsystemXMLWriter());

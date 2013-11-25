@@ -923,14 +923,15 @@
 
         <module-def name="org.jboss.as.clustering.web.infinispan"/>
 
+        <module-def name="org.wildfly.clustering.web.api">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-api"/>
+        </module-def>
         <module-def name="org.wildfly.clustering.web.infinispan">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-infinispan"/>
         </module-def>
-
         <module-def name="org.wildfly.clustering.web.spi">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-spi"/>
         </module-def>
-
         <module-def name="org.wildfly.clustering.web.undertow">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-undertow"/>
         </module-def>

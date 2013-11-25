@@ -22,7 +22,6 @@ import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -52,7 +51,6 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(RegistryRetriever.class.getPackage());
-        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.wildfly.clustering.api\n"));
         log.info(jar.toString(true));
         return jar;
     }
