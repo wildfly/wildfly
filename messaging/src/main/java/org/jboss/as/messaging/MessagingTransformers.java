@@ -50,6 +50,7 @@ import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_3_0;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_1_4_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS;
@@ -89,6 +90,7 @@ public class MessagingTransformers {
         registerTransformers_1_2_0(subsystem);
         registerTransformers_1_2_1(subsystem);
         registerTransformers_1_3_0(subsystem);
+        registerTransformers_1_4_0(subsystem);
     }
 
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
@@ -279,6 +281,22 @@ public class MessagingTransformers {
 
         return subsystemRoot.build();
     }
+
+    private static void registerTransformers_1_4_0(final SubsystemRegistration subsystem) {
+        TransformationDescription.Tools.register(get1_2_1_1_3_0Description(), subsystem, VERSION_1_4_0);
+
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
+
+        ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE);
+        discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
+
+        ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
+    }
+
 
     /**
      * Reject the attributes if they are defined or discard them if they are undefined.

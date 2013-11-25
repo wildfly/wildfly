@@ -460,9 +460,17 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                 modelNodes,
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH),
+                                createChainedConfig(new AttributeDefinition[]{},
+                                        new AttributeDefinition[]{MAX_SAVED_REPLICATED_JOURNAL_SIZE}))
+                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, BridgeDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE}))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
+                                createChainedConfig(new AttributeDefinition[] {},
+                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
