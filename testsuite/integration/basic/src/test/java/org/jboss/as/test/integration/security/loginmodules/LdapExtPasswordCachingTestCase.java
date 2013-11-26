@@ -50,6 +50,7 @@ import org.jboss.as.test.integration.security.loginmodules.common.servlets.Princ
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -74,7 +75,7 @@ public class LdapExtPasswordCachingTestCase {
     public static final String SECURITY_DOMAIN_NAME_PREFIX = "test-";
 
     private static Logger LOGGER = Logger.getLogger(LdapExtPasswordCachingTestCase.class);
-    private ExternalPasswordProvider passwordProvider = new ExternalPasswordProvider();
+    private static final ExternalPasswordProvider passwordProvider = new ExternalPasswordProvider(System.getProperty("java.io.tmpdir") + File.separator + "tmp.password");
 
     private static final String DEP1 = "DEP1";
     private static final String DEP2 = "DEP2";
@@ -309,7 +310,7 @@ public class LdapExtPasswordCachingTestCase {
                jre = javaExe.getAbsolutePath();
             // Build the command to run this jre
             String cmd = jre + " -cp "+ ExternalPasswordProvider.class.getProtectionDomain().getCodeSource().getLocation().getPath()
-            				 + " org.jboss.as.test.integration.security.loginmodules.ExternalPasswordProvider ";
+            				 + " org.jboss.as.test.integration.security.loginmodules.ExternalPasswordProvider "+passwordProvider.getCounterFile() + " ";
 
             return "{" + extOption +"}"+cmd;
          }
@@ -317,7 +318,8 @@ public class LdapExtPasswordCachingTestCase {
 
     @AfterClass
     public static void cleanup(){
-        ExternalPasswordProvider.cleanup();
+        System.out.println("doing cleanup");
+        passwordProvider.cleanup();
     }
 
 }

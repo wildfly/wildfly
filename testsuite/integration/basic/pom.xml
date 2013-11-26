@@ -136,7 +136,6 @@
                                 </goals>
                                 <phase>none</phase>
                             </execution>
-
                             <execution>
                                 <id>basic-integration-default-full.surefire</id>
                                 <phase>test</phase>
@@ -215,8 +214,8 @@
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/resourceref/*TestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/enventry/EnvEntryTestCase.java</exclude>
                                         <exclude>org/jboss/as/test/integration/ee/injection/resource/basic/*TestCase.java</exclude>
-                                        <exclude>org/jboss/as/test/integration/ee/naming/defaultbindings/jmsconnectionfactory/*TestCase.java</exclude>
-
+                                        <exclude>org/jboss/as/test/integration/ee/naming/defaultbindings/**/*TestCase.java</exclude>
+                                        <exclude>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</exclude>
                                     </excludes>
 
                                     <environmentVariables>
@@ -232,8 +231,6 @@
                                     <additionalClasspathElements>
                                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                                     </additionalClasspathElements>
-
-                                    <!--<reportNameSuffix>tests-basic-integration-default</reportNameSuffix>-->
                                 </configuration>
                             </execution>
 
@@ -267,6 +264,7 @@
                                 <configuration>
                                     <includes>
                                         <include>org/jboss/as/test/integration/security/loginmodules/Ldap*TestCase.java</include>
+                                        <include>org/jboss/as/test/integration/jca/moduledeployment/**/*TestCase*.java</include>
                                     </includes>
 
                                     <systemPropertyVariables combine.children="append">
