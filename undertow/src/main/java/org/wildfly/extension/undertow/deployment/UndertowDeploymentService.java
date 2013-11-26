@@ -195,11 +195,10 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
             return;
         }
         File[] files = file.listFiles();
-        if (files == null){
-            return;
-        }
-        for(File f : files) {
-            recursiveDelete(f);
+        if (files != null){
+            for(File f : files) {
+                recursiveDelete(f);
+            }
         }
         if(!file.delete()) {
             UndertowLogger.ROOT_LOGGER.couldNotDeleteTempFile(file);
