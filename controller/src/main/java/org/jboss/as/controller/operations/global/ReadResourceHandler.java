@@ -115,7 +115,6 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
         }
     };
 
-    private final FilteredData filteredData;
     private final OperationStepHandler overrideHandler;
 
     public ReadResourceHandler() {
@@ -123,6 +122,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
     }
 
     ReadResourceHandler(final FilteredData filteredData, OperationStepHandler overrideHandler) {
+        super(filteredData);
         //todo use AD for validation
         validator.registerValidator(ModelDescriptionConstants.RECURSIVE, new ModelTypeValidator(ModelType.BOOLEAN, true));
         validator.registerValidator(ModelDescriptionConstants.RECURSIVE_DEPTH, new ModelTypeValidator(ModelType.INT, true));
@@ -130,14 +130,14 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
         validator.registerValidator(ModelDescriptionConstants.PROXIES, new ModelTypeValidator(ModelType.BOOLEAN, true));
         validator.registerValidator(ModelDescriptionConstants.INCLUDE_DEFAULTS, new ModelTypeValidator(ModelType.BOOLEAN, true));
         validator.registerValidator(ModelDescriptionConstants.ATTRIBUTES_ONLY, new ModelTypeValidator(ModelType.BOOLEAN, true));
-        this.filteredData = filteredData;
         this.overrideHandler = overrideHandler;
     }
 
 
 
     @Override
-    void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException {
+    void doExecute(OperationContext context, ModelNode operation, FilteredData filteredData) throws OperationFailedException {
+
         if (filteredData == null) {
             doExecuteInternal(context, operation);
         } else {
@@ -191,7 +191,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
         // Child resources recursively read
         final Map<PathElement, ModelNode> childResources = recursive ? new LinkedHashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
-        final FilteredData localFilteredData = filteredData == null ? new FilteredData(address) : filteredData;
+        final FilteredData localFilteredData = getFilteredData() == null ? new FilteredData(address) : getFilteredData();
 
         // We're going to add a bunch of steps that should immediately follow this one. We are going to add them
         // in reverse order of how they should execute, as that is the way adding a Stage.IMMEDIATE step works
