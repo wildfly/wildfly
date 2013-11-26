@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,33 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing.command;
 
+package org.jboss.as.cli.parsing;
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.parsing.CharacterHandler;
-import org.jboss.as.cli.parsing.ExpressionBaseState;
-import org.jboss.as.cli.parsing.ParsingContext;
-import org.jboss.as.cli.parsing.WordCharacterHandler;
 
 
 /**
- *
  * @author Alexey Loubyansky
+ *
  */
-public class CommandNameState extends ExpressionBaseState {
+public class UnresolvedExpressionException extends CommandFormatException {
 
-    public static final CommandNameState INSTANCE = new CommandNameState();
-    public static final String ID = "OP_NAME";
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-    CommandNameState() {
-        super(ID);
-        setLeaveOnWhitespace(true);
-        setEnterHandler(new CharacterHandler(){
-            @Override
-            public void handle(ParsingContext ctx) throws CommandFormatException {
-                WordCharacterHandler.IGNORE_LB_ESCAPE_ON.handle(ctx);
-            }});
-        setDefaultHandler(WordCharacterHandler.LB_LEAVE_ESCAPE_ON);
+    private final String expr;
+
+    public UnresolvedExpressionException(String variable) {
+        super("Unrecognized variable " + variable);
+        this.expr = variable;
+    }
+
+    public String getExpression() {
+        return expr;
     }
 }

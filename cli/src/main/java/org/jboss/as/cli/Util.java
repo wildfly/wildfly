@@ -109,7 +109,6 @@ public class Util {
     public static final String PRODUCT_NAME = "product-name";
     public static final String PRODUCT_VERSION = "product-version";
     public static final String PROFILE = "profile";
-    public static final String PROPERTY_START = "${";
     public static final String READ = "read";
     public static final String READ_ATTRIBUTE = "read-attribute";
     public static final String READ_CHILDREN_NAMES = "read-children-names";

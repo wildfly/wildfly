@@ -81,16 +81,6 @@ public interface ParsingContext {
     char getCharacter();
 
     /**
-     * Whether the passed in character sequence starts at the current location
-     * and is present entirely in the content being parsed.
-     *
-     * @param sequence  the sequence to check
-     * @return  true if the given sequence starts at the current location and
-     *          is present entirely in the content being parsed
-     */
-    boolean begins(String sequence);
-
-    /**
      * The current location in the input string.
      *
      * @return  the current location in the input string
@@ -143,15 +133,16 @@ public interface ParsingContext {
     void setError(CommandFormatException e);
 
     /**
-     * Replaces property at the current location specified with ${xxx} format.
-     * After the property has been replaced, the parsing continues from the same
-     * location but with the property value resolved.
+     * Replaces system property specified with ${xxx} fomrat or a local variable
+     * whose name is prefixed with '$'.
+     * After the property or the variable has been replaced with its actual value,
+     * the parsing continues from the same location but with the value resolved.
      *
      * @param exceptionIfNotResolved  whether an exception should be thrown
-     *                                in case the property couldn't be resolved
-     *                                or should it continue unnoticed
+     *                                in case the property or the variable couldn't
+     *                                be resolved or should it continue unnoticed
      *
      * @throws CommandFormatException
      */
-    void replaceProperty(boolean exceptionIfNotResolved) throws CommandFormatException;
+    void resolveExpression(boolean systemProperty, boolean exceptionIfNotResolved) throws UnresolvedExpressionException;
 }

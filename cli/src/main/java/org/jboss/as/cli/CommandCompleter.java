@@ -29,6 +29,7 @@ import org.jboss.as.cli.impl.CommandCandidatesProvider;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
+import org.jboss.as.cli.parsing.UnresolvedExpressionException;
 import org.jboss.as.cli.parsing.command.CommandFormat;
 import org.jboss.as.cli.parsing.operation.OperationFormat;
 
@@ -78,7 +79,21 @@ public class CommandCompleter implements CommandLineCompleter {
 
         final DefaultCallbackHandler parsedCmd = (DefaultCallbackHandler) ctx.getParsedCommandLine();
         try {
-            parsedCmd.parse(ctx.getCurrentNodePath(), buffer, false);
+            parsedCmd.parse(ctx.getCurrentNodePath(), buffer, false, ctx);
+        } catch(UnresolvedExpressionException e) {
+            final String variable = e.getExpression();
+            if(buffer.endsWith(variable)) {
+                for(String var : ctx.getVariables()) {
+                    if(var.startsWith(variable)) {
+                        candidates.add(var);
+                    }
+                }
+                Collections.sort(candidates);
+                return buffer.length() - variable.length();
+            } else {
+                // failed to resolve a variable in the middle of the line
+            }
+            return -1;
         } catch(CommandFormatException e) {
             if(!parsedCmd.endsOnAddressOperationNameSeparator() || !parsedCmd.endsOnSeparator()) {
                 return -1;
@@ -92,7 +107,13 @@ public class CommandCompleter implements CommandLineCompleter {
             candidatesProvider = ctx.getOperationCandidatesProvider();
         }
 
-        int result = OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);
+        final int result = OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);
+        // if there is nothing else to suggest, check whether it could be a start of a variable
+        if(candidates.isEmpty() && buffer.charAt(buffer.length() - 1) == '$' && !ctx.getVariables().isEmpty()) {
+            candidates.addAll(ctx.getVariables());
+            Collections.sort(candidates);
+            return buffer.length();
+        }
         if(result <= 0) {
             return result;
         }

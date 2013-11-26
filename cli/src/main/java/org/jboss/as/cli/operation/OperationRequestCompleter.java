@@ -346,16 +346,20 @@ public class OperationRequestCompleter implements CommandLineCompleter {
         }
 
         if(candidates.size() == 1) {
+            final String candidate = candidates.get(0);
             if(address.endsOnType()) {
-                if(chunk != null && chunk.equals(candidates.get(0))) {
+                if(chunk != null && chunk.equals(candidate)) {
                     candidates.set(0, parsedCmd.getFormat().getAddressOperationSeparator());
                     candidates.add(parsedCmd.getFormat().getNodeSeparator());
                     return buffer.length();
-                } else {
-                    candidates.set(0, Util.escapeString(candidates.get(0), ESCAPE_SELECTOR));
                 }
+                candidates.set(0, Util.escapeString(candidate, ESCAPE_SELECTOR));
             } else {
-                candidates.set(0, Util.escapeString(candidates.get(0), ESCAPE_SELECTOR) + '=');
+                if(chunk != null && chunk.equals(candidate)) {
+                    candidates.set(0, "=");
+                    return buffer.length();
+                }
+                candidates.set(0, Util.escapeString(candidate, ESCAPE_SELECTOR) + '=');
             }
         } else {
             Util.sortAndEscape(candidates, ESCAPE_SELECTOR);

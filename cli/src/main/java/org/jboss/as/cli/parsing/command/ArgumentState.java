@@ -23,7 +23,6 @@ package org.jboss.as.cli.parsing.command;
 
 
 import org.jboss.as.cli.CommandFormatException;
-import org.jboss.as.cli.Util;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.EnterStateCharacterHandler;
@@ -55,11 +54,8 @@ public class ArgumentState extends DefaultParsingState {
         setDefaultHandler(new CharacterHandler(){
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {
-                if(ctx.begins(Util.PROPERTY_START)) {
-                    ctx.replaceProperty(true);
-                } else {
-                    WordCharacterHandler.IGNORE_LB_ESCAPE_ON.handle(ctx);
-                }
+                ctx.resolveExpression(true, true);
+                WordCharacterHandler.IGNORE_LB_ESCAPE_ON.handle(ctx);
             }});
         setWhitespaceHandler(new EnterStateCharacterHandler(new WhitespaceState()));
         setReturnHandler(new CharacterHandler(){

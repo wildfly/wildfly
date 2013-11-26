@@ -24,6 +24,7 @@ package org.jboss.as.cli.parsing;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 
@@ -48,9 +49,14 @@ public class StateParser {
     }
 
     public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState, boolean strict) throws CommandFormatException {
+        parse(str, callbackHandler, initialState, strict, null);
+    }
+
+    public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
+            boolean strict, CommandContext ctx) throws CommandFormatException {
 
         try {
-            doParse(str, callbackHandler, initialState, strict);
+            doParse(str, callbackHandler, initialState, strict, ctx);
         } catch(CommandFormatException e) {
             throw e;
         } catch(Throwable t) {
@@ -60,6 +66,12 @@ public class StateParser {
 
     protected static void doParse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
             boolean strict) throws CommandFormatException {
+        doParse(str, callbackHandler, initialState, strict, null);
+    }
+
+    protected static void doParse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
+            boolean strict, CommandContext cmdCtx) throws CommandFormatException {
+
         if (str == null || str.isEmpty()) {
             return;
         }
@@ -69,21 +81,9 @@ public class StateParser {
         ctx.callbackHandler = callbackHandler;
         ctx.input = str;
         ctx.strict = strict;
-
-        ctx.ch = str.charAt(0);
-        ctx.location = 0;
-        initialState.getEnterHandler().handle(ctx);
+        ctx.cmdCtx = cmdCtx;
 
         ctx.parse();
-
-        ParsingState state = ctx.getState();
-        while(state != ctx.initialState) {
-            state.getEndContentHandler().handle(ctx);
-            ctx.leaveState();
-            state = ctx.getState();
-        }
-        initialState.getEndContentHandler().handle(ctx);
-        initialState.getLeaveHandler().handle(ctx);
     }
 
     static class ParsingContextImpl implements ParsingContext {
@@ -91,58 +91,103 @@ public class StateParser {
         private final Deque<ParsingState> stack = new ArrayDeque<ParsingState>();
 
         String input;
+        int variableCorrection;
+        String originalInput;
         int location;
         char ch;
         ParsingStateCallbackHandler callbackHandler;
         ParsingState initialState;
         boolean strict;
         CommandFormatException error;
+        CommandContext cmdCtx;
 
         void parse() throws CommandFormatException {
+
+            ch = input.charAt(0);
+            originalInput = input;
+            location = 0;
+            variableCorrection = 0;
+
+            initialState.getEnterHandler().handle(this);
+
             while (location < input.length()) {
                 ch = input.charAt(location);
                 final CharacterHandler handler = getState().getHandler(ch);
                 handler.handle(this);
                 ++location;
             }
-        }
 
-        @Override
-        public boolean begins(String seq) {
-            if(location + seq.length() < input.length()) {
-                int i = 0;
-                while(i < seq.length()) {
-                    if(input.charAt(location + i) != seq.charAt(i++)) {
-                        return false;
-                    }
-                }
-                return true;
+            ParsingState state = getState();
+            while(state != initialState) {
+                state.getEndContentHandler().handle(this);
+                leaveState();
+                state = getState();
             }
-            return false;
+            initialState.getEndContentHandler().handle(this);
+            initialState.getLeaveHandler().handle(this);
+
         }
 
         @Override
-        public void replaceProperty(boolean exceptionIfNotResolved) throws CommandFormatException {
-            if(input.charAt(location) == '$' &&
-                    input.length() > location + 3 && // there must be opening {, closing } and something in the middle
-                    input.charAt(location + 1) == '{') {
-                final int end = input.indexOf('}', location + 2);
-                if(end == -1) {
+        public void resolveExpression(boolean systemProperty, boolean exceptionIfNotResolved)
+            throws UnresolvedExpressionException {
+            if(input.charAt(location) != '$') {
+                return;
+            }
+
+            final int inputLength = input.length();
+            if(inputLength - 1 > location && input.charAt(location + 1) == '{') {
+                if(!systemProperty) {
                     return;
                 }
-                final String prop = input.substring(location, end + 1);
+                final int endBrace = input.indexOf('}', location + 1);
+                if(endBrace - location - 2 <= 0) {
+                    return;
+                }
+                final String prop = input.substring(location, endBrace + 1);
                 final String resolved = Util.resolveProperties(prop);
                 if (!resolved.equals(prop)) {
                     StringBuilder buf = new StringBuilder(input.length() - prop.length() + resolved.length());
                     buf.append(input.substring(0, location)).append(resolved);
-                    if (end < input.length() - 1) {
-                        buf.append(input.substring(end + 1));
+                    if (endBrace < input.length() - 1) {
+                        buf.append(input.substring(endBrace + 1));
                     }
+                    variableCorrection += resolved.length() - prop.length();
                     input = buf.toString();
-                    --location;
+                    ch = input.charAt(location);
+                    return;
                 } else if(exceptionIfNotResolved) {
-                    throw new CommandFormatException("Couldn't resolve property " + prop + " in '" + input + "'");
+                    throw new UnresolvedExpressionException(prop);
                 }
+            }
+
+            // TODO resolve variables
+            int endIndex = location + 1;
+            if(endIndex >= input.length() || !Character.isJavaIdentifierStart(input.charAt(endIndex))) {
+                // simply '$'
+                return;
+            }
+            while(++endIndex < input.length()) {
+                if(!Character.isJavaIdentifierPart(input.charAt(endIndex))) {
+                    break;
+                }
+            }
+
+            final String name = input.substring(location+1, endIndex);
+            final String value = cmdCtx == null ? null : cmdCtx.getVariable(name);
+            if(value == null) {
+                if (exceptionIfNotResolved) {
+                    throw new UnresolvedExpressionException(name);
+                }
+            } else {
+                StringBuilder buf = new StringBuilder(input.length() - name.length() + value.length());
+                buf.append(input.substring(0, location)).append(value);
+                if (endIndex < input.length()) {
+                    buf.append(input.substring(endIndex));
+                }
+                variableCorrection += value.length() - name.length() - 1;
+                input = buf.toString();
+                ch = input.charAt(location);
             }
         }
 
@@ -188,7 +233,7 @@ public class StateParser {
 
         @Override
         public int getLocation() {
-            return location;
+            return location - variableCorrection;
         }
 
         @Override
@@ -207,7 +252,7 @@ public class StateParser {
 
         @Override
         public String getInput() {
-            return input;
+            return originalInput;
         }
 
         @Override
