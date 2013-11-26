@@ -149,7 +149,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
                     // Only class level interceptors are processed for postconstruct/predestroy methods.
                     // Method level interceptors aren't supposed to be processed for postconstruct/predestroy lifecycle
                     // methods, as per interceptors spec
-                    if (interceptorHasLifecycleCallbacks) {
+                    if (interceptorHasLifecycleCallbacks && !description.isIgnoreLifecycleInterceptors()) {
                         final MethodIdentifier postConstructMethodIdentifier = interceptorConfig.getPostConstruct();
                         handleInterceptorClass(clazz, postConstructMethodIdentifier, userPostConstructByInterceptorClass, true, true);
                         final MethodIdentifier preDestroyMethodIdentifier = interceptorConfig.getPreDestroy();

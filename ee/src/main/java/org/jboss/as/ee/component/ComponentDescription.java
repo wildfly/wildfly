@@ -76,6 +76,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
     private final Set<MethodIdentifier> methodExcludeClassInterceptors = new HashSet<MethodIdentifier>();
     private Set<InterceptorDescription> allInterceptors;
     private boolean excludeDefaultInterceptors = false;
+    private boolean ignoreLifecycleInterceptors = false;
 
     private final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = new HashMap<ServiceName, ServiceBuilder.DependencyType>();
 
@@ -238,7 +239,6 @@ public class ComponentDescription implements ResourceInjectionTarget {
         this.allInterceptors = null;
     }
 
-
     /**
      * @return the components default interceptors
      */
@@ -280,6 +280,19 @@ public class ComponentDescription implements ResourceInjectionTarget {
     public void setExcludeDefaultInterceptors(boolean excludeDefaultInterceptors) {
         allInterceptors = null;
         this.excludeDefaultInterceptors = excludeDefaultInterceptors;
+    }
+
+    public boolean isIgnoreLifecycleInterceptors() {
+        return ignoreLifecycleInterceptors;
+    }
+
+    /**
+     * If this component should ignore lifecycle interceptors. This should generally only be set when they are going
+     * to be handled by an external framework such as Weld.
+     *
+     */
+    public void setIgnoreLifecycleInterceptors(boolean ignoreLifecycleInterceptors) {
+        this.ignoreLifecycleInterceptors = ignoreLifecycleInterceptors;
     }
 
     /**
