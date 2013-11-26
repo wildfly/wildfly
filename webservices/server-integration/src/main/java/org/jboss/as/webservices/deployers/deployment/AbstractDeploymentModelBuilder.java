@@ -75,8 +75,9 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
      */
     protected AbstractDeploymentModelBuilder(final DeploymentType deploymentType, final EndpointType endpointType) {
         // deployment factory
-        final SPIProvider spiProvider = SPIProviderResolver.getInstance().getProvider();
-        this.deploymentModelFactory = spiProvider.getSPI(DeploymentModelFactory.class);
+        final ClassLoader cl = AbstractDeploymentModelBuilder.class.getClassLoader();
+        final SPIProvider spiProvider = SPIProviderResolver.getInstance(cl).getProvider();
+        this.deploymentModelFactory = spiProvider.getSPI(DeploymentModelFactory.class, cl);
         this.deploymentType = deploymentType;
         this.endpointType = endpointType;
     }
