@@ -113,7 +113,7 @@ public class DetailedOperationsTestCase extends AbstractRbacTestBase {
         StandardRole role = StandardRole.MONITOR;
 
         permitted(READ_CONFIG_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_OPERATION, ACCESS_AUDIT_ADDR, role);
 
@@ -133,12 +133,12 @@ public class DetailedOperationsTestCase extends AbstractRbacTestBase {
         denied(WRITE_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
         permitted(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_READ_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
         denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
@@ -178,7 +178,7 @@ public class DetailedOperationsTestCase extends AbstractRbacTestBase {
         StandardRole role = StandardRole.OPERATOR;
 
         permitted(READ_CONFIG_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_OPERATION, ACCESS_AUDIT_ADDR, role);
 
@@ -198,12 +198,12 @@ public class DetailedOperationsTestCase extends AbstractRbacTestBase {
         denied(WRITE_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
         permitted(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_READ_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
         permitted(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
@@ -243,7 +243,7 @@ public class DetailedOperationsTestCase extends AbstractRbacTestBase {
         StandardRole role = StandardRole.MAINTAINER;
 
         permitted(READ_CONFIG_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_OPERATION, ACCESS_AUDIT_ADDR, role);
 
@@ -263,12 +263,12 @@ public class DetailedOperationsTestCase extends AbstractRbacTestBase {
         denied(WRITE_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
         permitted(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_READ_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
         permitted(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
@@ -308,7 +308,7 @@ public class DetailedOperationsTestCase extends AbstractRbacTestBase {
         StandardRole role = StandardRole.DEPLOYER;
 
         permitted(READ_CONFIG_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_OPERATION, ACCESS_AUDIT_ADDR, role);
 
@@ -328,12 +328,12 @@ public class DetailedOperationsTestCase extends AbstractRbacTestBase {
         denied(WRITE_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
         permitted(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_READ_RUNTIME_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_READ_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
         denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO), role);
-        denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
+        noAddress(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(SENSITIVE_CONSTRAINED_RESOURCE, FOO), role);
         permitted(READ_CONFIG_WRITE_RUNTIME_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, FOO), role);
         denied(READ_CONFIG_WRITE_RUNTIME_OPERATION, ACCESS_AUDIT_ADDR, role);
 
