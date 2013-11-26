@@ -199,7 +199,9 @@ public class AppClientWrapper implements Runnable {
         if( asInst == null ) throw new Exception("'jboss.inst' property is not set. Perhaps this test is in a multi-node tests group but runs outside container?");
         if( ! new File(asInst).exists() ) throw new Exception("AS dir from 'jboss.inst' doesn't exist: " + asInst + " user.dir: " + System.getProperty("user.dir"));
 
-        appClientCommand = "java" +
+        String java = System.getProperty("java.home") + File.separator + "bin" + File.separator + "java";
+
+        appClientCommand = java +
                 " -Djboss.modules.dir="+ asDist + "/modules" +
                 " -Djline.WindowsTerminal.directConsole=false" +
                 TestSuiteEnvironment.getIpv6Args() +
