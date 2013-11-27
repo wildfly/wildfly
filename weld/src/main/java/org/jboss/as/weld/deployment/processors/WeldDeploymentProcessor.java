@@ -254,13 +254,8 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         // make sure JNDI bindings are up
         startService.addDependency(JndiNamingDependencyProcessor.serviceName(deploymentUnit));
         final EarMetaData earConfig = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EAR_METADATA);
-        if (earConfig != null && earConfig.getInitializeInOrder())  {
-            // dependencies are set directly to each binding service, to avoid deadlocks in service dependencies due to in-order install of sub-deployments
-            // FIXME this may miss bindings if added at INSTALL phase
-            for (DeploymentUnit sub : subDeployments) {
-                startService.addDependencies(sub.getAttachmentList(Attachments.JNDI_DEPENDENCIES));
-            }
-        } else {
+        if (earConfig == null || !earConfig.getInitializeInOrder())  {
+            // in-order install of sub-deployments may result in service dependencies deadlocks if the jndi dependency services of subdeployments are added as dependencies
             for (DeploymentUnit sub : subDeployments) {
                 startService.addDependency(JndiNamingDependencyProcessor.serviceName(sub));
             }
