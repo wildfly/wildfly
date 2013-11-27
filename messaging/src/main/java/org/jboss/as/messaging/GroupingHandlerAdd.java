@@ -23,6 +23,8 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS;
+import static org.jboss.as.messaging.GroupingHandlerDefinition.GROUP_TIMEOUT;
+import static org.jboss.as.messaging.GroupingHandlerDefinition.REAPER_PERIOD;
 import static org.jboss.as.messaging.GroupingHandlerDefinition.TIMEOUT;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -101,10 +103,14 @@ public class GroupingHandlerAdd extends AbstractAddStepHandler {
             final GroupingHandlerConfiguration.TYPE type = GroupingHandlerConfiguration.TYPE.valueOf(GroupingHandlerDefinition.TYPE.resolveModelAttribute(context, node).asString());
             final String address = GROUPING_HANDLER_ADDRESS.resolveModelAttribute(context, node).asString();
             final int timeout = TIMEOUT.resolveModelAttribute(context, node).asInt();
+            final long groupTimeout = GROUP_TIMEOUT.resolveModelAttribute(context, node).asLong();
+            final long reaperPeriod = REAPER_PERIOD.resolveModelAttribute(context, node).asLong();
             final GroupingHandlerConfiguration conf = new GroupingHandlerConfiguration(SimpleString.toSimpleString(name),
                     type,
                     SimpleString.toSimpleString(address),
-                    timeout);
+                    timeout,
+                    groupTimeout,
+                    reaperPeriod);
             configuration.setGroupingHandlerConfiguration(conf);
         }
     }

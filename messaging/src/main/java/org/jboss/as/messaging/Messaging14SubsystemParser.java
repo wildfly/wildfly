@@ -27,42 +27,45 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
+
 /**
- * Messaging subsystem 2.0 XML parser.
+ * Messaging subsystem 1.4 XML parser.
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a>
  *
  */
-public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
+public class Messaging14SubsystemParser extends Messaging13SubsystemParser {
 
-    private static final Messaging20SubsystemParser INSTANCE = new Messaging20SubsystemParser();
+    private static final Messaging14SubsystemParser INSTANCE = new Messaging14SubsystemParser();
 
     public static MessagingSubsystemParser getInstance() {
         return INSTANCE;
     }
 
-    private Messaging20SubsystemParser() {
+    protected Messaging14SubsystemParser() {
     }
 
     @Override
-    protected void handleUnknownBridgeAttribute(XMLExtendedStreamReader reader, Element element, ModelNode bridgeAdd) throws XMLStreamException {
+    protected void handleUnknownConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
         switch (element) {
-            case RECONNECT_ATTEMPTS_ON_SAME_NODE:
-                handleElementText(reader, element, bridgeAdd);
+            case MAX_SAVED_REPLICATED_JOURNAL_SIZE:
+                handleElementText(reader, element, operation);
                 break;
-            default:
-                super.handleUnknownBridgeAttribute(reader, element, bridgeAdd);
+            default: {
+                super.handleUnknownConfigurationAttribute(reader, element, operation);
+            }
         }
     }
 
     @Override
-    protected void handleUnknownAddressSetting(XMLExtendedStreamReader reader, Element element, ModelNode addressSettingsAdd) throws XMLStreamException {
-        switch (element) {
-            case EXPIRY_DELAY:
-                handleElementText(reader, element, addressSettingsAdd);
+    protected void handleUnknownGroupingHandlerAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
+        switch(element) {
+            case GROUP_TIMEOUT:
+            case REAPER_PERIOD:
+                handleElementText(reader, element, operation);
                 break;
             default:
-                super.handleUnknownAddressSetting(reader, element, addressSettingsAdd);
+                super.handleUnknownGroupingHandlerAttribute(reader, element, operation);
         }
     }
 }

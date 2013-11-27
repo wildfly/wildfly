@@ -23,11 +23,11 @@
   -->
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           xmlns="urn:jboss:domain:messaging:2.0"
-           targetNamespace="urn:jboss:domain:messaging:2.0"
+           xmlns="urn:jboss:domain:messaging:1.4"
+           targetNamespace="urn:jboss:domain:messaging:1.4"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified"
-           version="2.0">
+           version="1.4">
 
     <!-- The messaging subsystem root element -->
     <xs:element name="subsystem">
@@ -135,13 +135,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="journal-compact-percentage" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="journal-compact-min-files" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="journal-max-io" type="xs:int" />
-          <xs:element maxOccurs="1" minOccurs="0" name="max-saved-replicated-journal-size" type="xs:int">
-              <xs:annotation>
-                  <xs:documentation>
-                      The maximum number of backup journals to keep after failback occurs.
-                  </xs:documentation>
-              </xs:annotation>
-          </xs:element>
+          <xs:element maxOccurs="1" minOccurs="0" name="max-saved-replicated-journal-size" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="perf-blast-pages" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="run-sync-speed-test" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xs:long" />
@@ -529,7 +523,6 @@
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xs:double" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-retry-interval" type="xs:long"  />
           <xs:element maxOccurs="1" minOccurs="0" name="reconnect-attempts" type="xs:int" />
-          <xs:element maxOccurs="1" minOccurs="0" name="reconnect-attempts-on-same-node" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="failover-on-server-shutdown" type="xs:boolean">
              <xs:annotation>
                 <xs:documentation>
@@ -617,7 +610,7 @@
           <xs:element maxOccurs="1" minOccurs="1" name="type" type="groupingHandlerTypeType"/>
           <xs:element maxOccurs="1" minOccurs="1" name="address" type="xs:string"/>
           <xs:element maxOccurs="1" minOccurs="0" name="timeout" type="xs:int"/>
-          <xs:element maxOccurs="1" minOccurs="0" name="group-timeout" type="xs:long" >
+           <xs:element maxOccurs="1" minOccurs="0" name="group-timeout" type="xs:long" >
                <xs:annotation>
                    <xs:documentation>
                        How long a group binding will be used, -1 means for ever. Bindings are removed after this wait elapses (only valid for LOCAL handlers).
@@ -678,7 +671,6 @@
        <xs:all>
           <xs:element maxOccurs="1" minOccurs="0" name="dead-letter-address" type="xs:string" />
           <xs:element maxOccurs="1" minOccurs="0" name="expiry-address" type="xs:string" />
-          <xs:element maxOccurs="1" minOccurs="0" name="expiry-delay" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="redelivery-delay" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-delivery-attempts" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-size-bytes" type="xs:long" />

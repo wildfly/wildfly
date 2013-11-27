@@ -1,5 +1,5 @@
 
-    <subsystem xmlns="urn:jboss:domain:messaging:2.0">
+    <subsystem xmlns="urn:jboss:domain:messaging:1.4">
         <hornetq-server>
             <clustered>true</clustered>
             <!-- disable messaging persistence -->
@@ -232,9 +232,7 @@
                 <address>handler-address</address>
                 <timeout>5000</timeout>
                 <group-timeout>-1</group-timeout>
-                <!--
                 <reaper-period>30000</reaper-period>
-                -->
             </grouping-handler>
             <security-settings>
                <security-setting match="#">

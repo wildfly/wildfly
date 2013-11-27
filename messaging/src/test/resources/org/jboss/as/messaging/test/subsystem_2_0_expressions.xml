@@ -60,6 +60,7 @@
         <journal-compact-percentage>${journal.compact.percentage:83}</journal-compact-percentage>
         <journal-compact-min-files>${journal.compact.min.files:2}</journal-compact-min-files>
         <journal-max-io>${journal.max.io:50}</journal-max-io>
+        <max-saved-replicated-journal-size>${max.saved.replicated.journal.size:42}</max-saved-replicated-journal-size>
         <perf-blast-pages>${perf.blast.pages:70}</perf-blast-pages>
         <run-sync-speed-test>${run.sync.speed.test:false}</run-sync-speed-test>
         <server-dump-interval>${server.dump.interval:8642}</server-dump-interval>
@@ -77,10 +78,6 @@
             <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                 <param key="batch-delay" value="${batch.delay:50}"/>
             </netty-connector>
-            <servlet-connector name="servlet" host="default-host" socket-binding="http" />
-            <servlet-connector name="servlet2" host="default-host2" socket-binding="http">
-                <param key="batch-delay" value="${batch.delay:50}"/>
-            </servlet-connector>
             <in-vm-connector name="in-vm" server-id="${my.server-id:0}">
                 <param key="batch-delay" value="${batch.delay:50}"/>
             </in-vm-connector>
@@ -252,6 +249,8 @@
             <type>${grouping.type:LOCAL}</type>
             <address>${address:handler-address}</address>
             <timeout>${timeout:5000}</timeout>
+            <group-timeout>${group-timeout:1234}</group-timeout>
+            <reaper-period>${reaper-period:5678}</reaper-period>
         </grouping-handler>
         <security-settings>
             <security-setting match="#">

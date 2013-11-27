@@ -26,6 +26,7 @@ import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.as.controller.client.helpers.MeasurementUnit.MILLISECONDS;
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 import static org.jboss.dmr.ModelType.INT;
+import static org.jboss.dmr.ModelType.LONG;
 import static org.jboss.dmr.ModelType.STRING;
 
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
@@ -62,13 +63,30 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition GROUP_TIMEOUT = create("group-timeout", LONG)
+            // FIXME GroupingHanderConfiguration.DEFAULT_GROUP_TIMEOUT is a int (instead of a long). Cast to a long until HornetQ conf is fixed
+            .setDefaultValue(new ModelNode(1L * GroupingHandlerConfiguration.DEFAULT_GROUP_TIMEOUT))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
+    public static final SimpleAttributeDefinition REAPER_PERIOD = create("reaper-period", LONG)
+            .setDefaultValue(new ModelNode(GroupingHandlerConfiguration.DEFAULT_REAPER_PERIOD))
+            .setMeasurementUnit(MILLISECONDS)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition TYPE = create("type", STRING)
             .setAllowExpression(true)
             .setValidator(new EnumValidator<GroupingHandlerConfiguration.TYPE>(GroupingHandlerConfiguration.TYPE.class, false, true))
             .setRestartAllServices()
             .build();
 
-    public static final AttributeDefinition[] ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT };
+    public static final AttributeDefinition[] ATTRIBUTES = { TYPE, GROUPING_HANDLER_ADDRESS, TIMEOUT, GROUP_TIMEOUT, REAPER_PERIOD };
 
     private final boolean registerRuntimeOnly;
 
