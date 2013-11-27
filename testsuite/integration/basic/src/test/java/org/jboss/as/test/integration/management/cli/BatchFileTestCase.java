@@ -35,6 +35,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.junit.AfterClass;
@@ -53,7 +54,7 @@ public class BatchFileTestCase {
     private static final String FILE_NAME = "jboss-cli-batch-file-test.cli";
     private static final File TMP_FILE;
     static {
-        TMP_FILE = new File(new File(System.getProperty("java.io.tmpdir")), FILE_NAME);
+        TMP_FILE = new File(new File(TestSuiteEnvironment.getTmpDir()), FILE_NAME);
     }
 
     @AfterClass

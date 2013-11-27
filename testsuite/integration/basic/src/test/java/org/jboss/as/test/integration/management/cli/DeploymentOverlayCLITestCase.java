@@ -41,6 +41,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -95,7 +96,7 @@ public class DeploymentOverlayCLITestCase {
 
     @BeforeClass
     public static void before() throws Exception {
-        String tempDir = System.getProperty("java.io.tmpdir");
+        String tempDir = TestSuiteEnvironment.getTmpDir();
 
         WebArchive war;
 

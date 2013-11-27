@@ -25,6 +25,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,7 +43,7 @@ public class MultipleLinesCommandsTestCase {
 
     @BeforeClass
     public static void init() {
-        final String lineSep = System.getProperty("line.separator");
+        final String lineSep = TestSuiteEnvironment.getSystemProperty("line.separator");
 
         operation = new String[]{
                 ":\\" + lineSep,

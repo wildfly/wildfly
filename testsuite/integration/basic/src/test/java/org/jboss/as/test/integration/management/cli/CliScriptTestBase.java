@@ -75,11 +75,11 @@ public class CliScriptTestBase {
 
     protected int execute(String host, int port, boolean connect, String cmd, boolean logFailure) {
         cliOutput = null;
-        final String jbossDist = System.getProperty("jboss.dist");
+        final String jbossDist = TestSuiteEnvironment.getSystemProperty("jboss.dist");
         if (jbossDist == null) {
             fail("jboss.dist system property is not set");
         }
-        final String modulePath = System.getProperty("module.path");
+        final String modulePath = TestSuiteEnvironment.getSystemProperty("module.path");
         if (modulePath == null) {
             fail("module.path system property is not set");
         }
@@ -87,7 +87,7 @@ public class CliScriptTestBase {
         final ProcessBuilder builder = new ProcessBuilder();
         builder.redirectErrorStream(true);
         final List<String> command = new ArrayList<String>();
-        command.add("java");
+        command.add(TestSuiteEnvironment.getJavaPath());
         TestSuiteEnvironment.getIpv6Args(command);
         command.add("-Djboss.cli.config=" + jbossDist + File.separator + "bin" + File.separator + "jboss-cli.xml");
         command.add("-jar");

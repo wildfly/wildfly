@@ -30,6 +30,29 @@ public class TestSuiteEnvironment {
         }
     }
 
+    public static String getJavaPath() {
+        String home = System.getenv("JAVA_HOME");
+        if(home == null) {
+            home = getSystemProperty("java.home");
+        }
+        if(home != null) {
+            return home + java.io.File.separator + "bin" + java.io.File.separator + "java";
+        }
+        return "java";
+    }
+
+    public static String getSystemProperty(String name, String def) {
+        return System.getProperty(name, def);
+    }
+
+    public static String getSystemProperty(String name) {
+        return System.getProperty(name);
+    }
+
+    public static String getTmpDir() {
+        return getSystemProperty("java.io.tmpdir");
+    }
+
     /**
      * @return The server port for node0
      */
