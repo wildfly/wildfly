@@ -87,6 +87,9 @@ public class RunAsRoleMapper implements RoleMapper {
             if (headers.hasDefined(ModelDescriptionConstants.ROLES)) {
                 ModelNode rolesNode = headers.get(ModelDescriptionConstants.ROLES);
                 if (rolesNode.getType() == ModelType.STRING) {
+                    rolesNode = parseRolesString(rolesNode.asString());
+                }
+                if (rolesNode.getType() == ModelType.STRING) {
                     result = Collections.singleton(getRoleFromText(rolesNode.asString()));
                 } else {
                     result = new HashSet<String>();
@@ -98,6 +101,29 @@ public class RunAsRoleMapper implements RoleMapper {
             }
         }
         return result;
+    }
+
+    private static ModelNode parseRolesString(String raw) {
+        String trimmed = raw.trim();
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+            try {
+                return ModelNode.fromString(trimmed);
+            } catch (Exception ignored) {
+                // fall through and try comma splitting
+            }
+            // Strip the []
+            trimmed = trimmed.substring(1, trimmed.length() - 1);
+        }
+        if (trimmed.contains(",")) {
+            ModelNode result = new ModelNode().setEmptyList();
+            String[] split = trimmed.split(",");
+            for (String item : split) {
+                result.add(item.trim());
+            }
+            return result;
+        } else {
+            return new ModelNode(trimmed);
+        }
     }
 
     private Set<String> mapRoles(Caller caller, Set<String> currentRoles, Set<String> runAsRoles, boolean sanitized) {
