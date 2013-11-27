@@ -1088,11 +1088,11 @@
             <maven-resource group="org.wildfly" artifact="wildfly-messaging"/>
         </module-def>
 
+        <module-def name="org.jboss.as.modcluster"/>
+
         <module-def name="org.wildfly.mod_cluster.undertow">
             <maven-resource group="org.wildfly" artifact="wildfly-mod_cluster-undertow"/>
         </module-def>
-
-        <module-def name="org.jboss.as.modcluster"/>
 
         <module-def name="org.jboss.as.pojo">
             <maven-resource group="org.wildfly" artifact="wildfly-pojo"/>

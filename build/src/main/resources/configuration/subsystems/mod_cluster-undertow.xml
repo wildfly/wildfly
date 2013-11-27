@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<config>
+    <extension-module>org.wildfly.mod_cluster.undertow</extension-module>
+    <subsystem xmlns="urn:jboss:domain:modcluster-undertow:1.0" listener="ajp"/>
+</config>

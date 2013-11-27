@@ -35,7 +35,7 @@
     <artifactId>wildfly-mod_cluster-undertow</artifactId>
     <packaging>jar</packaging>
 
-    <name>WildFly: mod_cluster Undertow Integration</name>
+    <name>WildFly: mod_cluster Undertow Integration Subsystem</name>
 
     <dependencies>
         <dependency>
@@ -47,6 +47,16 @@
             <artifactId>wildfly-undertow</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
@@ -54,6 +64,12 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-all</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
+            <type>pom</type>
             <scope>test</scope>
         </dependency>
     </dependencies>
