@@ -55,6 +55,7 @@ class KnownVersions {
         addSubsystemVersion(map, "configadmin", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "cmp", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "datasources", "1.1.0", CORE_MODEL_7_1_2);
+        addSubsystemVersion(map, "datasources", "1.1.1", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "ee", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "jacorb", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "ejb3", "1.1.0", CORE_MODEL_7_1_2);

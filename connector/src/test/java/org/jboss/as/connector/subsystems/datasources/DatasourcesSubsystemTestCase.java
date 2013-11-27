@@ -21,6 +21,9 @@
 */
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -30,6 +33,7 @@ import java.util.List;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -76,12 +80,27 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformer("datasources-full110.xml", ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0));
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformer("datasources-full110.xml", ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 0));
+    }
+
+    @Test
+    public void testTransformerAS720() throws Exception {
+        testTransformer("datasources-full110.xml", ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 1, 1));
+    }
+
+    @Test
+    public void testTransformerExpressionAS720() throws Exception {
+        testTransformer("datasources-full-expression.xml", ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 1, 1));
+    }
+
+    @Test
+    public void testTransformerRejectingAS720() throws Exception {
+        testRejectTransformers1_1_1("wildfly-datasources_2_0.xml", ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
     @Test
@@ -102,12 +121,11 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
 
     /**
-     * Tests transformation of model from 1.1.1 version into 1.1.0 version.
+     * Tests transformation of model from latest version into one passed into modelVersion parameter.
      *
      * @throws Exception
      */
-    private void testTransformer1_1_0(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
-        ModelVersion modelVersion = ModelVersion.create(1, 1, 0); //The old model version
+    private void testTransformer(String subsystemXml, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(subsystemXml);
@@ -127,19 +145,21 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer() {
 
-                        @Override
-                        public ModelNode fixModel(ModelNode modelNode) {
-                            Assert.assertTrue( modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").get(Constants.JTA.getName()).asBoolean());
-                            //Replace the value used in the xml
-                            modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
+            @Override
+            public ModelNode fixModel(ModelNode modelNode) {
+                Assert.assertTrue(modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").get(Constants.JTA.getName()).asBoolean());
+                //Replace the value used in the xml
+                modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
+                //if (modelVersion.equals(ModelVersion.create(1, 1, 0))) {
 
-                            modelNode.get(Constants.DATA_SOURCE).get("complexDs_Pool").remove(Constants.ENABLED.getName());
+                    modelNode.get(Constants.DATA_SOURCE).get("complexDs_Pool").remove(Constants.ENABLED.getName());
 
-                            modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.ENABLED.getName());
+                    modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.ENABLED.getName());
+                //}
+                return modelNode;
 
-                            return modelNode;
-                        }
-                    });
+            }
+        });
     }
 
 
@@ -177,4 +197,59 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         );
     }
 
+    public void testRejectTransformers1_1_1(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
+            ModelVersion modelVersion = ModelVersion.create(1, 1, 1); //The old model version
+            //Use the non-runtime version of the extension which will happen on the HC
+            KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+            // Add legacy subsystems
+            builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                    .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                    .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
+                    .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+
+            KernelServices mainServices = builder.build();
+            assertTrue(mainServices.isSuccessfulBoot());
+            KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+            assertNotNull(legacyServices);
+            assertTrue(legacyServices.isSuccessfulBoot());
+
+            List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+        PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),FAILED_TRANSFORMER)
+                .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), FAILED_TRANSFORMER)
+        );
+    }
+
+
+
+private static FailedOperationTransformationConfig.AttributesPathAddressConfig FAILED_TRANSFORMER = new FailedOperationTransformationConfig.AttributesPathAddressConfig(org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE.getName(),
+                                URL_DELIMITER.getName(), CONNECTION_LISTENER_CLASS.getName(), CONNECTION_LISTENER_PROPERTIES.getName(),
+                                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS.getName(), org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS.getName(),
+                                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES.getName(),
+                                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName()
+                                ) {
+
+                            @Override
+                            protected boolean isAttributeWritable(String attributeName) {
+                                return false;
+                            }
+
+                            @Override
+                            protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+                                if (attribute.isDefined()) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            }
+
+                            @Override
+                            protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+                                return new ModelNode();
+                            }
+
+
+                        };
 }

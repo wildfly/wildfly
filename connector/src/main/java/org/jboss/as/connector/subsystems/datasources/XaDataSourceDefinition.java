@@ -30,6 +30,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRACEFULLY_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
@@ -45,6 +46,7 @@ import java.util.List;
 
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -53,11 +55,14 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Stefano Maestri
@@ -155,7 +160,53 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES)
                 .setDiscard(DiscardAttributeChecker.ALWAYS, ENABLED)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
-                //.setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(false)), JTA)
+                        //.setValueConverter(AttributeConverter.Factory.createHardCoded(new ModelNode(false)), JTA)
+                .end();
+    }
+
+    static void registerTransformers111(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+        builder.getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
+                        CONNECTION_LISTENER_CLASS, CONNECTION_LISTENER_PROPERTIES, URL_PROPERTY,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES)
+                .setDiscard(new DiscardAttributeChecker() {
+
+                    @Override
+                    public boolean isDiscardExpressions() {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isDiscardUndefined() {
+                        return true;
+                    }
+
+                    @Override
+                    public boolean isOperationParameterDiscardable(PathAddress address, String attributeName,
+                                                                   ModelNode attributeValue, ModelNode operation, TransformationContext context) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean isResourceAttributeDiscardable(PathAddress address, String attributeName,
+                                                                  ModelNode attributeValue, TransformationContext context) {
+                        return true;
+                    }
+                }, ENABLED)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
+                        CONNECTION_LISTENER_CLASS, CONNECTION_LISTENER_PROPERTIES, URL_PROPERTY,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES)
+                .end();
+        builder.addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)
+                .inheritResourceAttributeDefinitions()
+                .setCustomOperationTransformer(ENABLE_TRANSFORMER)
+                .end()
+                .addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)
+                .inheritResourceAttributeDefinitions()
+                .setCustomOperationTransformer(ENABLE_TRANSFORMER)
                 .end();
     }
 
