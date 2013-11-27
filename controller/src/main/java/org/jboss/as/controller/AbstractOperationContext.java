@@ -72,6 +72,7 @@ import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
+
 /**
  * Base class for operation context implementations.
  *
@@ -368,16 +369,9 @@ abstract class AbstractOperationContext implements OperationContext {
     void logAuditRecord() {
         if (!auditLogged) {
             try {
-                PrivilegedAction<Subject> getCurrentAction = new PrivilegedAction<Subject>() {
-                    @Override
-                    public Subject run() {
-                        return Subject.getSubject(AccessController.getContext());
-                    }
-                };
-                Subject subject = System.getSecurityManager() == null ?
-                        getCurrentAction.run() : AccessController.doPrivileged(getCurrentAction);
                 AccessAuditContext accessContext = SecurityActions.currentAccessAuditContext();
                 Caller caller = getCaller();
+                Subject subject = SecurityActions.getSubject(caller);
                 auditLogger.log(
                         !isModelAffected(),
                         resultAction,

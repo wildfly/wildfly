@@ -129,7 +129,12 @@ class SecurityActions {
     }
 
     static Caller getCaller(final Caller currentCaller) {
-        return createCallerActions().getCaller(currentCaller);
+        AccessControlContext acc = AccessController.getContext();
+        return createCallerActions().getCaller(acc, currentCaller);
+    }
+
+    static Subject getSubject(final Caller caller) {
+        return createCallerActions().getSubject(caller);
     }
 
     static AccessAuditContext currentAccessAuditContext() {
@@ -140,8 +145,8 @@ class SecurityActions {
         return System.getSecurityManager() != null ? AccessAuditContextActions.PRIVILEGED : AccessAuditContextActions.NON_PRIVILEGED;
     }
 
-    private static CreateCallerActions createCallerActions() {
-        return System.getSecurityManager() != null ? CreateCallerActions.PRIVILEGED : CreateCallerActions.NON_PRIVILEGED;
+    private static CallerActions createCallerActions() {
+        return System.getSecurityManager() != null ? CallerActions.PRIVILEGED : CallerActions.NON_PRIVILEGED;
     }
 
     private interface AccessAuditContextActions {
@@ -175,15 +180,16 @@ class SecurityActions {
 
     }
 
-    private interface CreateCallerActions {
+    private interface CallerActions {
 
-        Caller getCaller(Caller currentCaller);
+        Caller getCaller(AccessControlContext acc, Caller currentCaller);
 
-        CreateCallerActions NON_PRIVILEGED = new CreateCallerActions() {
+        Subject getSubject(Caller caller);
+
+        CallerActions NON_PRIVILEGED = new CallerActions() {
 
             @Override
-            public Caller getCaller(Caller currentCaller) {
-                AccessControlContext acc = AccessController.getContext();
+            public Caller getCaller(AccessControlContext acc, Caller currentCaller) {
                 Subject subject = Subject.getSubject(acc);
                 // This is deliberately checking the Subject is the exact same instance.
                 if (currentCaller == null || subject != currentCaller.getSubject()) {
@@ -195,17 +201,33 @@ class SecurityActions {
 
                 return currentCaller;
             }
-        };
-
-        CreateCallerActions PRIVILEGED = new CreateCallerActions() {
 
             @Override
-            public Caller getCaller(final Caller currentCaller) {
+            public Subject getSubject(Caller caller) {
+                return caller.getSubject();
+            }
+        };
+
+        CallerActions PRIVILEGED = new CallerActions() {
+
+            @Override
+            public Caller getCaller(final AccessControlContext acc, final Caller currentCaller) {
                 return doPrivileged(new PrivilegedAction<Caller>() {
 
                     @Override
                     public Caller run() {
-                        return NON_PRIVILEGED.getCaller(currentCaller);
+                        return NON_PRIVILEGED.getCaller(acc, currentCaller);
+                    }
+                });
+            }
+
+            @Override
+            public Subject getSubject(final Caller caller) {
+                return doPrivileged(new PrivilegedAction<Subject>() {
+
+                    @Override
+                    public Subject run() {
+                        return NON_PRIVILEGED.getSubject(caller);
                     }
                 });
             }

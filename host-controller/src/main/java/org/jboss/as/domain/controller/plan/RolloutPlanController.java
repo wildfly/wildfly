@@ -94,7 +94,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
 
         if (rolloutPlan.hasDefined(IN_SERIES)) {
             ConcurrentGroupServerUpdatePolicy predecessor = null;
-            Subject subject = Subject.getSubject(AccessController.getContext());
+            Subject subject = SecurityActions.getCurrentSubject();
             for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
 
                 final List<Runnable> seriesTasks = new ArrayList<Runnable>();

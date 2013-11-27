@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,65 +19,57 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.domain.controller.plan;
 
-package org.jboss.as.controller.remote;
+import static java.security.AccessController.doPrivileged;
+import static java.security.AccessController.getContext;
 
 import java.security.AccessControlContext;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
 
 /**
- * Security actions for the 'org.jboss.as.controller.remote' package.
+ * Security actions for the 'org.jboss.as.domain.controller.plan' package.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class SecurityActions {
 
-    static String getSystemProperty(final String key, final String defaultValue) {
-        if (System.getSecurityManager() == null) {
-            return System.getProperty(key, defaultValue);
-        }
+    private SecurityActions() {
+    }
 
-        return AccessController.doPrivileged(new PrivilegedAction<String>() {
+    static Subject getCurrentSubject() {
+        AccessControlContext acc = getContext();
+
+        return subjectActions().getCurrentSubject(acc);
+    }
+
+    static SubjectActions subjectActions() {
+        return System.getSecurityManager() != null ? SubjectActions.PRIVILEGED : SubjectActions.NON_PRIVILEGED;
+    }
+
+    private interface SubjectActions {
+
+        Subject getCurrentSubject(AccessControlContext acc);
+
+        SubjectActions NON_PRIVILEGED = new SubjectActions() {
 
             @Override
-            public String run() {
-                return System.getProperty(key, defaultValue);
-            }
-        });
-    }
-
-    static Subject getSubject() {
-        AccessControlContext acc = AccessController.getContext();
-        return getSubjectAction().getSubject(acc);
-    }
-
-    private static GetSubjectAction getSubjectAction() {
-        return System.getSecurityManager() != null ? GetSubjectAction.PRIVILEGED : GetSubjectAction.NON_PRIVILEGED;
-    }
-
-    private interface GetSubjectAction {
-        Subject getSubject(AccessControlContext acc);
-
-        GetSubjectAction NON_PRIVILEGED = new GetSubjectAction() {
-
-            @Override
-            public Subject getSubject(AccessControlContext acc) {
+            public Subject getCurrentSubject(AccessControlContext acc) {
                 return Subject.getSubject(acc);
             }
         };
 
-        GetSubjectAction PRIVILEGED = new GetSubjectAction() {
+        SubjectActions PRIVILEGED = new SubjectActions() {
 
             @Override
-            public Subject getSubject(final AccessControlContext acc) {
-                return AccessController.doPrivileged(new PrivilegedAction<Subject>() {
+            public Subject getCurrentSubject(final AccessControlContext acc) {
+                return doPrivileged(new PrivilegedAction<Subject>() {
 
                     @Override
                     public Subject run() {
-                        return NON_PRIVILEGED.getSubject(acc);
+                        return NON_PRIVILEGED.getCurrentSubject(acc);
                     }
                 });
             }

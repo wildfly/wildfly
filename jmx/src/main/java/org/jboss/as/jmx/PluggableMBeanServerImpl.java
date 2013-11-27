@@ -43,9 +43,11 @@ import static org.jboss.as.jmx.MBeanServerSignature.REMOVE_NOTIFICATION_LISTENER
 import static org.jboss.as.jmx.MBeanServerSignature.SET_ATTRIBUTE;
 import static org.jboss.as.jmx.MBeanServerSignature.SET_ATTRIBUTES;
 import static org.jboss.as.jmx.MBeanServerSignature.UNREGISTER_MBEAN;
+import static org.jboss.as.jmx.SecurityActions.createCaller;
 
 import java.io.ObjectInputStream;
 import java.net.InetAddress;
+import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
@@ -83,7 +85,6 @@ import javax.security.auth.Subject;
 import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.AuthorizationResult.Decision;
-import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.JmxAction;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
 import org.jboss.as.controller.audit.AuditLogger;
@@ -1149,10 +1150,11 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     }
 
     void log(boolean readOnly, Throwable error, String methodName, String[] methodSignature, Object...methodParams) {
+        AccessControlContext acc = AccessController.getContext();
         if (System.getSecurityManager() != null) {
-            AccessController.doPrivileged(new LogAction(auditLogger, readOnly, error, methodName, methodSignature, methodParams));
+            AccessController.doPrivileged(new LogAction(acc, auditLogger, readOnly, error, methodName, methodSignature, methodParams));
         } else {
-            LogAction.doLog(auditLogger, readOnly, error, methodName, methodSignature, methodParams);
+            LogAction.doLog(acc, auditLogger, readOnly, error, methodName, methodSignature, methodParams);
         }
     }
 
@@ -1160,7 +1162,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         if (authorizer != null) {
             final JmxAction target = new JmxAction(methodName, readOnly ? JmxAction.Impact.READ_ONLY : JmxAction.Impact.WRITE);
             //TODO populate the 'environment' variable
-            AuthorizationResult authorizationResult = authorizer.authorizeJmxOperation(getCaller(), null, target);
+            AuthorizationResult authorizationResult = authorizer.authorizeJmxOperation(createCaller(), null, target);
             if (authorizationResult.getDecision() != Decision.PERMIT) {
                 if (exception) {
                     throw JmxMessages.MESSAGES.unauthorized();
@@ -1175,22 +1177,13 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     boolean authorizeSuperUserOrAdministrator(String methodName) throws MBeanException {
         if (authorizer != null) {
             //TODO populate the 'environment' variable
-            AuthorizationResult authorizationResult = authorizer.authorizeJmxOperation(getCaller(), null, new JmxAction(methodName, JmxAction.Impact.EXTRA_SENSITIVE));
+            AuthorizationResult authorizationResult = authorizer.authorizeJmxOperation(createCaller(), null, new JmxAction(methodName, JmxAction.Impact.EXTRA_SENSITIVE));
             if (authorizationResult.getDecision() != Decision.PERMIT) {
                 throw JmxMessages.MESSAGES.unauthorized();
             }
         }
         return true;
     }
-
-    private Caller getCaller() {
-        if (System.getSecurityManager() != null) {
-            return AccessController.doPrivileged(GET_CALLER_ACTION);
-        } else {
-            return GET_CALLER_ACTION.run();
-        }
-    }
-
 
     private String[] nullAsEmpty(String[] array) {
         if (array == null) {
@@ -1207,6 +1200,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     }
 
     static final class LogAction implements PrivilegedAction<Void> {
+        final AccessControlContext acc;
         final ManagedAuditLogger auditLogger;
         final boolean readOnly;
         final Throwable error;
@@ -1214,8 +1208,9 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         final String[] methodSignature;
         final Object[] methodParams;
 
-        public LogAction(ManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName,
+        public LogAction(AccessControlContext acc, ManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName,
                 String[] methodSignature, Object[] methodParams) {
+            this.acc = acc;
             this.auditLogger = auditLogger;
             this.readOnly = readOnly;
             this.error = error;
@@ -1224,17 +1219,15 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             this.methodParams = methodParams;
         }
 
-
         @Override
         public Void run() {
-            doLog(auditLogger, readOnly, error, methodName, methodSignature, methodParams);
+            doLog(acc, auditLogger, readOnly, error, methodName, methodSignature, methodParams);
             return null;
         }
 
-
-        static void doLog(ManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName, String[] methodSignature, Object...methodParams) {
+        static void doLog(AccessControlContext acc, ManagedAuditLogger auditLogger, boolean readOnly, Throwable error, String methodName, String[] methodSignature, Object...methodParams) {
             if (auditLogger != null) {
-                Subject subject = Subject.getSubject(AccessController.getContext());
+                Subject subject = Subject.getSubject(acc);
                 AccessAuditContext auditContext = SecurityActions.currentAccessAuditContext();
                 auditLogger.logJmxMethodAccess(
                         readOnly,
@@ -1276,15 +1269,6 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             return principals.iterator().next();
         }
     };
-
-    private static final PrivilegedAction<Caller> GET_CALLER_ACTION = new PrivilegedAction<Caller>() {
-        @Override
-        public Caller run() {
-            Subject subject = Subject.getSubject(AccessController.getContext());
-            return Caller.createCaller(subject);
-        }
-    };
-
 
     private class TcclMBeanServer implements MBeanServerPlugin {
 
