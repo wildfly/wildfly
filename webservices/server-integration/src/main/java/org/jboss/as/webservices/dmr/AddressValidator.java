@@ -44,6 +44,9 @@ public class AddressValidator extends ModelTypeValidator {
         super.validateParameter(parameterName, value);
         if (value.isDefined() && value.getType() != ModelType.EXPRESSION) {
             String address = value.asString();
+            if (address.startsWith("[") && address.endsWith("]")) {
+                address = address.substring(1, address.length() - 1);
+            }
             if (!AddressUtils.isValidAddress(address)) {
                 throw new OperationFailedException(Messages.MESSAGES.invalidAddressProvided(address));
             }
