@@ -19,11 +19,12 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.domain.controller.plan;
 
-package org.jboss.as.controller.remote;
+import static java.security.AccessController.doPrivileged;
+import static java.security.AccessController.getContext;
 
 import java.security.AccessControlContext;
-import java.security.AccessController;
 import java.security.PrivilegedAction;
 
 import javax.security.auth.Subject;
@@ -31,41 +32,46 @@ import javax.security.auth.Subject;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Security actions for the 'org.jboss.as.controller.remote' package.
+ * Security actions for the 'org.jboss.as.domain.controller.plan' package.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 class SecurityActions {
 
-    static Subject getSubject() {
-        AccessControlContext acc = AccessController.getContext();
-        return getSubjectAction().getSubject(acc);
+    private SecurityActions() {
     }
 
-    private static GetSubjectAction getSubjectAction() {
-        return WildFlySecurityManager.isChecking() ? GetSubjectAction.PRIVILEGED : GetSubjectAction.NON_PRIVILEGED;
+    static Subject getCurrentSubject() {
+        AccessControlContext acc = getContext();
+
+        return subjectActions().getCurrentSubject(acc);
     }
 
-    private interface GetSubjectAction {
-        Subject getSubject(AccessControlContext acc);
+    static SubjectActions subjectActions() {
+        return WildFlySecurityManager.isChecking() ? SubjectActions.PRIVILEGED : SubjectActions.NON_PRIVILEGED;
+    }
 
-        GetSubjectAction NON_PRIVILEGED = new GetSubjectAction() {
+    private interface SubjectActions {
+
+        Subject getCurrentSubject(AccessControlContext acc);
+
+        SubjectActions NON_PRIVILEGED = new SubjectActions() {
 
             @Override
-            public Subject getSubject(AccessControlContext acc) {
+            public Subject getCurrentSubject(AccessControlContext acc) {
                 return Subject.getSubject(acc);
             }
         };
 
-        GetSubjectAction PRIVILEGED = new GetSubjectAction() {
+        SubjectActions PRIVILEGED = new SubjectActions() {
 
             @Override
-            public Subject getSubject(final AccessControlContext acc) {
-                return AccessController.doPrivileged(new PrivilegedAction<Subject>() {
+            public Subject getCurrentSubject(final AccessControlContext acc) {
+                return doPrivileged(new PrivilegedAction<Subject>() {
 
                     @Override
                     public Subject run() {
-                        return NON_PRIVILEGED.getSubject(acc);
+                        return NON_PRIVILEGED.getCurrentSubject(acc);
                     }
                 });
             }
