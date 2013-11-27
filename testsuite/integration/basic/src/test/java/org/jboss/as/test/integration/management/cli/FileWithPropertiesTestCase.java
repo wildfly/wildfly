@@ -68,15 +68,15 @@ public class FileWithPropertiesTestCase {
     private static final File PROPS_FILE;
     private static final File TMP_JBOSS_CLI_FILE;
     static {
-        SCRIPT_FILE = new File(new File(System.getProperty("java.io.tmpdir")), SCRIPT_NAME);
-        PROPS_FILE = new File(new File(System.getProperty("java.io.tmpdir")), PROPS_NAME);
-        TMP_JBOSS_CLI_FILE = new File(new File(System.getProperty("java.io.tmpdir")), "tmp-jboss-cli.xml");
+        SCRIPT_FILE = new File(new File(TestSuiteEnvironment.getTmpDir()), SCRIPT_NAME);
+        PROPS_FILE = new File(new File(TestSuiteEnvironment.getTmpDir()), PROPS_NAME);
+        TMP_JBOSS_CLI_FILE = new File(new File(TestSuiteEnvironment.getTmpDir()), "tmp-jboss-cli.xml");
     }
 
     @BeforeClass
     public static void setup() {
         ensureRemoved(TMP_JBOSS_CLI_FILE);
-        jbossDist = System.getProperty("jboss.dist");
+        jbossDist = TestSuiteEnvironment.getSystemProperty("jboss.dist");
         if(jbossDist == null) {
             fail("jboss.dist system property is not set");
         }
@@ -221,7 +221,7 @@ public class FileWithPropertiesTestCase {
         if(jbossDist == null) {
             fail("jboss.dist system property is not set");
         }
-        final String modulePath = System.getProperty("module.path");
+        final String modulePath = TestSuiteEnvironment.getSystemProperty("module.path");
         if(modulePath == null) {
             fail("module.path system property is not set");
         }
@@ -229,7 +229,7 @@ public class FileWithPropertiesTestCase {
         final ProcessBuilder builder = new ProcessBuilder();
         builder.redirectErrorStream(true);
         final List<String> command = new ArrayList<String>();
-        command.add("java");
+        command.add(TestSuiteEnvironment.getJavaPath());
         TestSuiteEnvironment.getIpv6Args(command);
         if(resolveProps) {
             command.add("-Djboss.cli.config=" + TMP_JBOSS_CLI_FILE.getAbsolutePath());

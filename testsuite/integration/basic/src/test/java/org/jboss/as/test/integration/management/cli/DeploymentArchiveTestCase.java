@@ -36,6 +36,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.GenericArchive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -157,16 +158,16 @@ public class DeploymentArchiveTestCase extends AbstractCliTestBase {
 
         System.out.println(cliArchive.toString(true));
 
-        final String tempDir = System.getProperty("java.io.tmpdir");
+        final String tempDir = TestSuiteEnvironment.getTmpDir();
         final File file = new File(tempDir, "deploymentarchive.cli");
         cliArchive.as(ZipExporter.class).exportTo(file, true);
         return file;
     }
 
     private File getModulePath() {
-        String modulePath = System.getProperty("module.path", null);
+        String modulePath = TestSuiteEnvironment.getSystemProperty("module.path", null);
         if (modulePath == null) {
-            String jbossHome = System.getProperty("jboss.home", null);
+            String jbossHome = TestSuiteEnvironment.getSystemProperty("jboss.home", null);
             if (jbossHome == null) {
                 throw new IllegalStateException(
                         "Neither -Dmodule.path nor -Djboss.home were set");
