@@ -258,25 +258,25 @@ public class WSAttributesChangesTestCase {
         op.get("operation").set(operation);
         return op;
     }
-    
-	private static ModelNode applyUpdate(final ModelControllerClient client, final ModelNode update, final boolean expectReloadRequired) throws Exception {
-		final ModelNode result = client.execute(new OperationBuilder(update).build());
-		if (result.hasDefined(OUTCOME) && SUCCESS.equals(result.get(OUTCOME).asString())) {
-			if (expectReloadRequired) {
-	            Assert.assertTrue(result.hasDefined(RESPONSE_HEADERS));
-	            ModelNode responseHeaders = result.get(RESPONSE_HEADERS);
-    			Assert.assertTrue(responseHeaders.hasDefined(OPERATION_REQUIRES_RELOAD));
-    			Assert.assertEquals("true", responseHeaders.get(OPERATION_REQUIRES_RELOAD).asString());
-			} else {
-			    Assert.assertFalse(result.hasDefined(RESPONSE_HEADERS));
-			}
-			return result;
+
+    private static ModelNode applyUpdate(final ModelControllerClient client, final ModelNode update, final boolean expectReloadRequired) throws Exception {
+        final ModelNode result = client.execute(new OperationBuilder(update).build());
+        if (result.hasDefined(OUTCOME) && SUCCESS.equals(result.get(OUTCOME).asString())) {
+            if (expectReloadRequired) {
+                Assert.assertTrue(result.hasDefined(RESPONSE_HEADERS));
+                ModelNode responseHeaders = result.get(RESPONSE_HEADERS);
+                Assert.assertTrue(responseHeaders.hasDefined(OPERATION_REQUIRES_RELOAD));
+                Assert.assertEquals("true", responseHeaders.get(OPERATION_REQUIRES_RELOAD).asString());
+            } else {
+                Assert.assertFalse(result.hasDefined(RESPONSE_HEADERS));
+            }
+            return result;
         } else if (result.hasDefined(FAILURE_DESCRIPTION)) {
             throw new Exception(result.get(FAILURE_DESCRIPTION).toString());
         } else {
             throw new Exception("Operation not successful; outcome = " + result.get(OUTCOME));
         }
-	}
+    }
 
     private void checkWsdl(URL wsdlURL, String hostOrPort) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) wsdlURL.openConnection();
@@ -284,18 +284,18 @@ public class WSAttributesChangesTestCase {
             connection.connect();
             Assert.assertEquals(200, connection.getResponseCode());
             connection.getInputStream();
-            
-			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String line;
-			while ((line = in.readLine()) != null) {
-				if (line.contains("address location")) {
-					Assert.assertTrue(line.contains(hostOrPort));
-					return;
-				}
-			}
-			fail("Could not check soap:address!");
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.contains("address location")) {
+                    Assert.assertTrue(line.contains(hostOrPort));
+                    return;
+                }
+            }
+            fail("Could not check soap:address!");
         } finally {
-        	connection.disconnect();
+            connection.disconnect();
         }
     }
 }
