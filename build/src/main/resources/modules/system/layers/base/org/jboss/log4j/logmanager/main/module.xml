@@ -29,6 +29,8 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="javax.mail.api" optional="true"/>
+        <module name="javax.jms.api" optional="true"/>
         <module name="org.dom4j" optional="true"/>
         <module name="org.jboss.logmanager"/>
         <module name="org.jboss.modules"/>
