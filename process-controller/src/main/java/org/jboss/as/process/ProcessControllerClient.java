@@ -53,6 +53,8 @@ import org.jboss.as.process.protocol.StreamUtils;
  */
 public final class ProcessControllerClient implements Closeable {
 
+    public static final String HOST_CONTROLLER_PROCESS_NAME = Main.HOST_CONTROLLER_PROCESS_NAME;
+
     private final Connection connection;
 
     ProcessControllerClient(final Connection connection) {

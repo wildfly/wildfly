@@ -46,6 +46,7 @@ import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.model.jvm.JvmElement;
 import org.jboss.as.host.controller.model.jvm.JvmOptionsBuilderFactory;
 import org.jboss.as.process.DefaultJvmUtils;
+import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -59,6 +60,8 @@ import org.jboss.dmr.Property;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
+
+    private static final String HOST_CONTROLLER_PROCESS_NAME_PROP = "[" + ProcessControllerClient.HOST_CONTROLLER_PROCESS_NAME + "]";
 
     private static final ModelNode EMPTY = new ModelNode();
     static {
@@ -197,11 +200,15 @@ class ManagedServerBootCmdFactory implements ManagedServerBootConfiguration {
         }
         for (Entry<String, String> entry : bootTimeProperties.entrySet()) {
             String property = entry.getKey();
-            if (!"org.jboss.boot.log.file".equals(property) && !"logging.configuration".equals(property)) {
+            String value = entry.getValue();
+            if (!"org.jboss.boot.log.file".equals(property) && !"logging.configuration".equals(property)
+                    && !HOST_CONTROLLER_PROCESS_NAME_PROP.equals(property)) {
                 final StringBuilder sb = new StringBuilder("-D");
                 sb.append(property);
-                sb.append('=');
-                sb.append(entry.getValue() == null ? "true" : entry.getValue());
+                if (value != null) {
+                    sb.append('=');
+                    sb.append(value);
+                }
                 command.add(sb.toString());
             }
         }
