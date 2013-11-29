@@ -23,33 +23,40 @@
 package org.wildfly.mod_cluster.undertow.metric;
 
 import io.undertow.server.ConduitWrapper;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.util.ConduitFactory;
-import org.xnio.conduits.StreamSourceConduit;
+import org.xnio.conduits.StreamSinkConduit;
 
 /**
- * {@link ThreadSetupAction} implementation that counts number of bytes received via
- * {@link BytesReceivedStreamSourceConduit} wrapping.
+ * {@link HttpHandler} implementation that counts number of bytes sent via {@link BytesSentStreamSinkConduit}
+ * wrapping.
  *
  * @author Radoslav Husar
  * @version Aug 2013
  * @since 8.0
  */
-public class BytesReceivedThreadSetupAction implements ThreadSetupAction {
+public class BytesSentHttpHandler implements HttpHandler {
+
+    private final HttpHandler wrappedHandler;
+
+    public BytesSentHttpHandler(final HttpHandler handler) {
+        this.wrappedHandler = handler;
+    }
 
     @Override
-    public Handle setup(HttpServerExchange exchange) {
+    public void handleRequest(HttpServerExchange exchange) throws Exception {
 
-        if (exchange == null) return null;
+        if (exchange == null) return;
 
-        exchange.addRequestWrapper(new ConduitWrapper<StreamSourceConduit>() {
+        exchange.addResponseWrapper(new ConduitWrapper<StreamSinkConduit>() {
             @Override
-            public StreamSourceConduit wrap(ConduitFactory<StreamSourceConduit> factory, HttpServerExchange exchange) {
-                return new BytesReceivedStreamSourceConduit(factory.create());
+            public StreamSinkConduit wrap(ConduitFactory<StreamSinkConduit> factory, HttpServerExchange exchange) {
+                return new BytesSentStreamSinkConduit(factory.create());
             }
         });
 
-        return null;
+        wrappedHandler.handleRequest(exchange);
+
     }
 }

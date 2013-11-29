@@ -475,6 +475,7 @@ public enum Phase {
     public static final int POST_MODULE_EE_CONCURRENT_CONTEXT           = 0x3000;
     public static final int POST_MODULE_BATCH_ENVIRONMENT               = 0x3100;
     public static final int POST_MODULE_WS_SERVICES_DEPS                = 0x3200;
+    public static final int POST_MODULE_UNDERTOW_MODCLUSTER             = 0x3300;
 
     // INSTALL
     public static final int INSTALL_JACC_POLICY                         = 0x0350;

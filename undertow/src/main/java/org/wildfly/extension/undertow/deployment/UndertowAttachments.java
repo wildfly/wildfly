@@ -19,37 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.wildfly.extension.undertow.deployment;
 
-package org.wildfly.mod_cluster.undertow.metric;
+import java.util.List;
 
-import io.undertow.server.ConduitWrapper;
-import io.undertow.server.HttpServerExchange;
+import io.undertow.server.HandlerWrapper;
 import io.undertow.servlet.api.ThreadSetupAction;
-import io.undertow.util.ConduitFactory;
-import org.xnio.conduits.StreamSinkConduit;
+import org.jboss.as.server.deployment.AttachmentKey;
 
 /**
- * {@link ThreadSetupAction} implementation that counts number of bytes sent via {@link BytesSentStreamSinkConduit}
- * wrapping.
+ * Class defining {@link AttachmentKey}s for Undertow-specific attachments.
  *
  * @author Radoslav Husar
- * @version Aug 2013
+ * @version Oct 2013
  * @since 8.0
  */
-public class BytesSentThreadSetupAction implements ThreadSetupAction {
+public final class UndertowAttachments {
 
-    @Override
-    public Handle setup(HttpServerExchange exchange) {
+    public static final AttachmentKey<List<HandlerWrapper>> UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS = AttachmentKey.create(List.class);
 
-        if (exchange == null ) return null;
+    public static final AttachmentKey<List<HandlerWrapper>> UNDERTOW_INNER_HANDLER_CHAIN_WRAPPERS = AttachmentKey.create(List.class);
 
-        exchange.addResponseWrapper(new ConduitWrapper<StreamSinkConduit>() {
-            @Override
-            public StreamSinkConduit wrap(ConduitFactory<StreamSinkConduit> factory, HttpServerExchange exchange) {
-                return new BytesSentStreamSinkConduit(factory.create());
-            }
-        });
+    public static final AttachmentKey<List<HandlerWrapper>> UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS = AttachmentKey.create(List.class);
 
-        return null;
+    public static final AttachmentKey<List<ThreadSetupAction>> UNDERTOW_THREAD_SETUP_ACTIONS = AttachmentKey.create(List.class);
+
+    private UndertowAttachments() {
     }
+
 }
