@@ -200,9 +200,11 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                     .install());
         }
 
+        XTSHandlersService.install(target, isDefaultContextPropagation);
+
         // add an XTS service which depends on all the WS endpoints
 
-        final XTSManagerService xtsService = new XTSManagerService(coordinatorURL, isDefaultContextPropagation);
+        final XTSManagerService xtsService = new XTSManagerService(coordinatorURL);
 
         // this service needs to depend on the transaction recovery service
         // because it can only initialise XTS recovery once the transaction recovery
