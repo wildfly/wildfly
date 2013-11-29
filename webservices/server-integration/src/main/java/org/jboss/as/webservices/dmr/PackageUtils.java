@@ -24,9 +24,15 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONFIG;
 import static org.jboss.as.webservices.dmr.Constants.HANDLER;
-import static org.jboss.as.webservices.dmr.Constants.HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
 
+import java.util.LinkedList;
+import java.util.List;
+
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.ServiceName;
 
@@ -52,12 +58,8 @@ final class PackageUtils {
         return (ENDPOINT_CONFIG.equals(configType) ? getEndpointConfigServiceName(configName) : getClientConfigServiceName(configName));
     }
 
-    static ServiceName getHandlerChainServiceName(final String configType, final String configName, final String handlerChainId) {
-        return getHandlerChainServiceName(getConfigServiceName(configType, configName), handlerChainId);
-    }
-
-    static ServiceName getHandlerChainServiceName(final ServiceName configServiceName, final String handlerChainId) {
-        return configServiceName.append(HANDLER_CHAIN).append(handlerChainId);
+    static ServiceName getHandlerChainServiceName(final ServiceName configServiceName, final String handlerChainType, final String handlerChainId) {
+        return configServiceName.append(handlerChainType).append(handlerChainId);
     }
 
     static ServiceName getHandlerServiceName(final ServiceName handlerChainServiceName, final String handlerName) {
@@ -68,4 +70,13 @@ final class PackageUtils {
         return configServiceName.append(PROPERTY).append(propertyName);
     }
 
+    static List<ServiceName> getServiceNameDependencies(final OperationContext context, final ServiceName baseServiceName, final PathAddress address, final String childType) {
+        final List<ServiceName> childrenServiceNames = new LinkedList<ServiceName>();
+        final Resource resource = context.readResourceFromRoot(address);
+        final ServiceName sn = baseServiceName.append(childType);
+        for (ResourceEntry re : resource.getChildren(childType)) {
+            childrenServiceNames.add(sn.append(re.getName()));
+        }
+        return childrenServiceNames;
+    }
 }
