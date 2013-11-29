@@ -40,13 +40,11 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class XTSManagerService extends AbstractService<XTSService> {
     private final String coordinatorURL;
-    private final boolean isDefaultContextPropagation;
     private volatile org.jboss.jbossts.XTSService xtsService;
     private InjectedValue<ServerConfig> wsServerConfig = new InjectedValue<ServerConfig>();
 
-    public XTSManagerService(String coordinatorURL, boolean isDefaultContextPropagation) {
+    public XTSManagerService(String coordinatorURL) {
         this.coordinatorURL = coordinatorURL;
-        this.isDefaultContextPropagation = isDefaultContextPropagation;
         this.xtsService = null;
     }
 
@@ -86,9 +84,6 @@ public class XTSManagerService extends AbstractService<XTSService> {
             }
 
             xtsService = service;
-
-            XTSHandlersManager xtsHandlerManager = new XTSHandlersManager(serverConfigValue);
-            xtsHandlerManager.registerClientHandlers(isDefaultContextPropagation);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged((ClassLoader) null);
         }
