@@ -159,9 +159,17 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
         K id = bean.getId();
         Entry<V> entry = this.entries.get(id);
         if ((entry != null) && entry.done()) {
-            if ((this.timeout != null) && (this.timeout.getValue() > 0)) {
-                Future<?> future = this.executor.schedule(new RemoveTask(id), this.timeout.getValue(), this.timeout.getTimeUnit());
-                this.expirationFutures.put(id, future);
+            if (this.timeout != null) {
+                if (this.timeout.getValue() > 0) {
+                    final RemoveTask task = new RemoveTask(id);
+                    Future<?> future = this.executor.schedule(task, this.timeout.getValue(), this.timeout.getTimeUnit());
+                    this.expirationFutures.put(id, future);
+                    if(task.isDone()) {
+                        this.expirationFutures.remove(id);
+                    }
+                } else if (this.timeout.getValue() == 0) {
+                    remove(id);
+                }
             }
         }
     }
@@ -183,6 +191,7 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
 
     class RemoveTask implements Runnable {
         private final K key;
+        private volatile boolean done;
 
         RemoveTask(K key) {
             this.key = key;
@@ -193,7 +202,12 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
             if (!Thread.currentThread().isInterrupted()) {
                 SimpleCache.this.remove(this.key);
             }
+            done = true;
             SimpleCache.this.expirationFutures.remove(this.key);
+        }
+
+        boolean isDone() {
+            return done;
         }
     }
 
