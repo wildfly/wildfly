@@ -23,6 +23,7 @@ package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.webservices.WSMessages.MESSAGES;
+import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.PROTOCOL_BINDINGS;
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
 import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceName;
@@ -37,11 +38,12 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.HandlerChainService;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
@@ -80,11 +82,14 @@ final class HandlerChainAdd extends AbstractAddStepHandler {
                 throw MESSAGES.missingConfig(configName);
             }
 
-            final ServiceName handlerChainServiceName = getHandlerChainServiceName(configServiceName, handlerChainId);
-            final HandlerChainService<AbstractCommonConfig> service = new HandlerChainService<AbstractCommonConfig>(handlerChainType, handlerChainId, protocolBindings);
+            final ServiceName handlerChainServiceName = getHandlerChainServiceName(configServiceName, handlerChainType, handlerChainId);
+            final HandlerChainService service = new HandlerChainService(handlerChainType, handlerChainId, protocolBindings);
             final ServiceTarget target = context.getServiceTarget();
             final ServiceBuilder<?> handlerChainServiceBuilder = target.addService(handlerChainServiceName, service);
-            handlerChainServiceBuilder.addDependency(configServiceName, AbstractCommonConfig.class, service.getAbstractCommonConfig());
+            final Injector<UnifiedHandlerMetaData> injector = service.getHandlersInjector();
+            for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, handlerChainServiceName, address, HANDLER)) {
+                handlerChainServiceBuilder.addDependency(sn, UnifiedHandlerMetaData.class, injector);
+            }
             ServiceController<?> controller = handlerChainServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
             if (newControllers != null) {
                 newControllers.add(controller);
