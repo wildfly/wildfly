@@ -24,61 +24,42 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
 
-import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
-import org.jboss.jca.common.api.metadata.resourceadapter.v11.ResourceAdapter;
-import org.jboss.msc.inject.Injector;
+import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
 
 /**
- * A ResourceAdaptersService.
+ * A ResourceAdaptersSubsystem Service.
+ *
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano
  *         Maestri</a>
  */
-final class ResourceAdapterService implements Service<ResourceAdapter> {
-
-    private final ResourceAdapter value;
-    private final String name;
-    private final InjectedValue<ResourceAdaptersService.ModifiableResourceAdaptors> resourceAdapters = new InjectedValue<ResourceAdaptersService.ModifiableResourceAdaptors>();
-    private final InjectedValue<CopyOnWriteArrayListMultiMap> resourceAdaptersMap = new InjectedValue<CopyOnWriteArrayListMultiMap>();
+public final class ResourceAdaptersSubsystemService implements Service<CopyOnWriteArrayListMultiMap<String, ServiceName>> {
 
 
-    /** create an instance **/
-    public ResourceAdapterService(ModifiableResourceAdapter value, String name) {
-        this.value = value;
-        this.name = name;
-    }
+    public static final AttachmentKey<CopyOnWriteArrayListMultiMap> ATTACHMENT_KEY = AttachmentKey
+            .create(CopyOnWriteArrayListMultiMap.class);
+
+    private final CopyOnWriteArrayListMultiMap<String, ServiceName> value = new CopyOnWriteArrayListMultiMap<>();
 
     @Override
-    public ResourceAdapter getValue() throws IllegalStateException {
+    public CopyOnWriteArrayListMultiMap<String, ServiceName> getValue() throws IllegalStateException {
         return value;
     }
 
+
     @Override
     public void start(StartContext context) throws StartException {
-        resourceAdapters.getValue().addResourceAdapter(value);
-        resourceAdaptersMap.getValue().putIfAbsent(value.getArchive(), ServiceName.of(ConnectorServices.RA_SERVICE, name));
-        SUBSYSTEM_RA_LOGGER.debugf("Starting ResourceAdapter Service");
+        SUBSYSTEM_RA_LOGGER.debugf("Starting ResourceAdaptersSubsystem Service");
     }
 
     @Override
     public void stop(StopContext context) {
-        resourceAdapters.getValue().removeResourceAdapter(value);
-        resourceAdaptersMap.getValue().remove(value.getArchive(), ServiceName.of(ConnectorServices.RA_SERVICE, name));
-        SUBSYSTEM_RA_LOGGER.debugf("Stopping ResourceAdapter Service");
+        SUBSYSTEM_RA_LOGGER.debugf("Stopping ResourceAdaptersSubsystem Service");
     }
-
-    public Injector<ResourceAdaptersService.ModifiableResourceAdaptors> getResourceAdaptersInjector() {
-        return resourceAdapters;
-    }
-
-    public Injector<CopyOnWriteArrayListMultiMap> getResourceAdaptersMapInjector() {
-            return resourceAdaptersMap;
-        }
 
 }
