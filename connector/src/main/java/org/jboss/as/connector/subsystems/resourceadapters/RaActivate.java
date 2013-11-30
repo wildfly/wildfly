@@ -62,7 +62,7 @@ public class RaActivate implements OperationStepHandler {
                         @Override
                         public void handleRollback(OperationContext context, ModelNode operation) {
                             try {
-                                RaOperationUtil.removeIfActive(context, raName);
+                                RaOperationUtil.removeIfActive(context, raName, idName);
                             } catch (OperationFailedException e) {
 
                             }

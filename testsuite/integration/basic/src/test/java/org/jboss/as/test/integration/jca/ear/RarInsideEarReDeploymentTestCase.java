@@ -103,7 +103,7 @@ public class RarInsideEarReDeploymentTestCase extends
 
 	/**
 	 * Define the deployment
-	 * 
+	 *
 	 * @return The deployment archive
 	 */
 	@Deployment(name = deploymentName, managed = false)
@@ -139,7 +139,7 @@ public class RarInsideEarReDeploymentTestCase extends
 
 	/**
 	 * Test configuration
-	 * 
+	 *
 	 * @throws Throwable
 	 *             Thrown if case of an error
 	 */
@@ -154,13 +154,9 @@ public class RarInsideEarReDeploymentTestCase extends
 					.lookup("redeployed/Name3");
 			assertNotNull("AO1 not found", adminObject1);
 		} finally {
-
-			try {
-				remove(address);
-			} finally {
-				deployer.undeploy(deploymentName);
-			}
-		}
-	}
+            deployer.undeploy(deploymentName);
+            remove(address);
+        }
+    }
 
 }
