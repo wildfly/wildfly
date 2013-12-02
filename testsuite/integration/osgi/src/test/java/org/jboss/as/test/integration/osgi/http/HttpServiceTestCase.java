@@ -39,6 +39,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.common.HttpRequest;
+import org.jboss.as.test.integration.security.common.SecurityManagerUtil;
 import org.jboss.as.test.osgi.FrameworkUtils;
 import org.jboss.osgi.metadata.OSGiManifestBuilder;
 import org.jboss.osgi.resolver.XBundle;
@@ -48,6 +49,7 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
@@ -77,7 +79,7 @@ public class HttpServiceTestCase {
     @Deployment
     public static Archive<?> getDeployment() {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, "http-service-example");
-        archive.addClasses(HttpRequest.class, FrameworkUtils.class);
+        archive.addClasses(HttpRequest.class, FrameworkUtils.class, SecurityManagerUtil.class);
         archive.addAsResource(STRING_ASSET, "res/message.txt");
         archive.setManifest(new Asset() {
             @Override
@@ -97,6 +99,9 @@ public class HttpServiceTestCase {
 
     @Test
     public void testServletAccess() throws Exception {
+        // bz-1036228 HttpService doesn't work with Security manager enabled
+        Assume.assumeFalse(SecurityManagerUtil.isSecurityManagerUsed());
+
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
@@ -122,6 +127,9 @@ public class HttpServiceTestCase {
 
     @Test
     public void testResourceAccess() throws Exception {
+        // bz-1036228 HttpService doesn't work with Security manager enabled
+        Assume.assumeFalse(SecurityManagerUtil.isSecurityManagerUsed());
+
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
@@ -146,6 +154,9 @@ public class HttpServiceTestCase {
 
     @Test
     public void testServletInitProps() throws Exception {
+        // bz-1036228 HttpService doesn't work with Security manager enabled
+        Assume.assumeFalse(SecurityManagerUtil.isSecurityManagerUsed());
+
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
@@ -168,6 +179,9 @@ public class HttpServiceTestCase {
 
     @Test
     public void testServletInstance() throws Exception {
+        // bz-1036228 HttpService doesn't work with Security manager enabled
+        Assume.assumeFalse(SecurityManagerUtil.isSecurityManagerUsed());
+
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
@@ -187,6 +201,9 @@ public class HttpServiceTestCase {
 
     @Test
     public void testServletContext() throws Exception {
+        // bz-1036228 HttpService doesn't work with Security manager enabled
+        Assume.assumeFalse(SecurityManagerUtil.isSecurityManagerUsed());
+
         BundleContext context = bundle.getBundleContext();
         ServiceReference sref = FrameworkUtils.waitForServiceReference(context, HttpService.class);
         HttpService httpService = (HttpService) context.getService(sref);
@@ -239,6 +256,7 @@ public class HttpServiceTestCase {
             this.bundle = (XBundle) bundle;
         }
 
+        @Override
         protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
             PrintWriter out = res.getWriter();
             String type = req.getParameter("test");
