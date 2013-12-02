@@ -89,7 +89,7 @@ public interface LegacyKernelServicesInitializer {
      * @throws IllegalArgumentException if the resolved {@code artifactGav} does not exist
      * @throws IllegalArgumentException if the resolved {@code artifactGav} does not contain a version
      */
-    LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws ClassNotFoundException, IOException;
+    LegacyKernelServicesInitializer addMavenResourceURL(String...artifactGav) throws ClassNotFoundException, IOException;
 
     /**
      * Add a class name pattern that should be loaded from the parent classloader

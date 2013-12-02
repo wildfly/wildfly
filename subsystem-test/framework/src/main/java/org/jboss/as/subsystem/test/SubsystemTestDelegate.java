@@ -701,8 +701,10 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws IOException, ClassNotFoundException {
-            classLoaderBuilder.addMavenResourceURL(artifactGav);
+        public LegacyKernelServicesInitializer addMavenResourceURL(String...artifactGavs) throws IOException, ClassNotFoundException {
+            for (String artifactGav : artifactGavs) {
+                classLoaderBuilder.addMavenResourceURL(artifactGav);
+            }
             return this;
         }
 
