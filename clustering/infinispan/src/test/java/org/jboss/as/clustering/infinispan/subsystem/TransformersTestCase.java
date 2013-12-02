@@ -54,7 +54,6 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
-import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -164,16 +163,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
         builder.setSubsystemXml(getSubsystemXml());
 
         // initialise the legacy services
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(null, controllerVersion, version130);
-        // add required legacy jars
-        for (String mavenResourceURL : mavenResourceURLs) {
-            legacyInitializer.addMavenResourceURL(mavenResourceURL);
-        }
-        legacyInitializer.configureReverseControllerCheck(null, new FixReverseControllerModel130());
-        //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-        //which is strange since it should be loading it all from the current jboss modules
-        //Also this works in several other tests
-        legacyInitializer.dontPersistXml();
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version130)
+                // add legacy jars
+                .addMavenResourceURL(mavenResourceURLs)
+                .configureReverseControllerCheck(null, new FixReverseControllerModel130())
+                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                //which is strange since it should be loading it all from the current jboss modules
+                //Also this works in several other tests
+                .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
@@ -210,11 +207,9 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 .setSubsystemXml(getSubsystemXml());
 
         // initialise the legacy services
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(null,controllerVersion, version140);
-        for (String mavenResourceURL : mavenResourceURLs) {
-            legacyInitializer.addMavenResourceURL(mavenResourceURL);
-        }
-        legacyInitializer.configureReverseControllerCheck(null, new FixReverseControllerModel140());
+        builder.createLegacyKernelServicesBuilder(null,controllerVersion, version140)
+                .addMavenResourceURL(mavenResourceURLs)
+                .configureReverseControllerCheck(null, new FixReverseControllerModel140());
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version140);
@@ -274,11 +269,9 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 .setSubsystemXml(getSubsystemXml());
 
         // initialise the legacy services
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(null,controllerVersion, version141);
-        for (String mavenResourceURL : mavenResourceURLs) {
-            legacyInitializer.addMavenResourceURL(mavenResourceURL);
-        }
-        legacyInitializer.configureReverseControllerCheck(null, new FixReverseControllerModel141());
+        builder.createLegacyKernelServicesBuilder(null,controllerVersion, version141)
+                .addMavenResourceURL(mavenResourceURLs)
+                .configureReverseControllerCheck(null, new FixReverseControllerModel141());
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version141);
@@ -401,14 +394,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         KernelServicesBuilder builderA = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialise the legacy services
-        LegacyKernelServicesInitializer legacyInitializerA = builderA.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_3_0);
-        for (String mavenResourceURL : mavenResourceURLs) {
-            legacyInitializerA.addMavenResourceURL(mavenResourceURL);
-        }
-        //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-        //which is strange since it should be loading it all from the current jboss modules
-        //Also this works in several other tests
-        legacyInitializerA.dontPersistXml();
+        builderA.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_3_0)
+                .addMavenResourceURL(mavenResourceURLs)
+                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                //which is strange since it should be loading it all from the current jboss modules
+                //Also this works in several other tests
+                .dontPersistXml();
 
         KernelServices mainServicesA = builderA.build();
         KernelServices legacyServicesA = mainServicesA.getLegacyServices(version_1_3_0);
@@ -425,14 +416,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         KernelServicesBuilder builderB = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialize the legacy services
-        LegacyKernelServicesInitializer legacyInitializerB = builderB.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_3_0);
-        for (String mavenResourceURL : mavenResourceURLs) {
-            legacyInitializerB.addMavenResourceURL(mavenResourceURL);
-        }
-        //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-        //which is strange since it should be loading it all from the current jboss modules
-        //Also this works in several other tests
-        legacyInitializerB.dontPersistXml();
+        builderB.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_3_0)
+                .addMavenResourceURL(mavenResourceURLs)
+                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                //which is strange since it should be loading it all from the current jboss modules
+                //Also this works in several other tests
+                .dontPersistXml();
 
         KernelServices mainServicesB = builderB.build();
         KernelServices legacyServicesB = mainServicesB.getLegacyServices(version_1_3_0);
@@ -460,14 +449,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialize the legacy services
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_4_0);
-        for (String mavenResourceURL : mavenResourceURLs) {
-            legacyInitializer.addMavenResourceURL(mavenResourceURL);
-        }
-        //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-        //which is strange since it should be loading it all from the current jboss modules
-        //Also this works in several other tests
-        legacyInitializer.dontPersistXml();
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_4_0)
+                .addMavenResourceURL(mavenResourceURLs)
+                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                //which is strange since it should be loading it all from the current jboss modules
+                //Also this works in several other tests
+                .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_4_0);
@@ -493,14 +480,12 @@ public class TransformersTestCase extends OperationTestCaseBase {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
         // initialise the legacy services
-        LegacyKernelServicesInitializer legacyInitializer = builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_4_1);
-        for (String mavenResourceURL : mavenResourceURLs) {
-            legacyInitializer.addMavenResourceURL(mavenResourceURL);
-        }
-        //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-        //which is strange since it should be loading it all from the current jboss modules
-        //Also this works in several other tests
-        legacyInitializer.dontPersistXml();
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_4_1)
+                .addMavenResourceURL(mavenResourceURLs)
+                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                //which is strange since it should be loading it all from the current jboss modules
+                //Also this works in several other tests
+                .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version_1_4_1);
