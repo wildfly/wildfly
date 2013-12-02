@@ -25,7 +25,7 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ex="http://www.w3.org/2001/XMLSchema"
             targetNamespace="urn:jboss:deployment-structure:1.2"
             xmlns="urn:jboss:deployment-structure:1.2"
-            elementFormDefault="unqualified"
+            elementFormDefault="qualified"
             attributeFormDefault="unqualified"
             version="1.2">
 
