@@ -94,10 +94,12 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
             try {
                 // Unregister the log context
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
-                final LogContext logContext = LogContext.getLogContext();
+                LogContext logContext = context.removeAttachment(LOG_CONTEXT_KEY);
+                if (logContext == null) {
+                    logContext = LogContext.getLogContext();
+                }
                 LoggingExtension.CONTEXT_SELECTOR.unregisterLogContext(module.getClassLoader(), logContext);
                 LoggingLogger.ROOT_LOGGER.tracef("Removing LogContext '%s' from '%s'", logContext, module);
-                context.removeAttachment(LOG_CONTEXT_KEY);
             } finally {
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
             }
