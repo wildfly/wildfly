@@ -21,7 +21,8 @@
  */
 package org.jboss.as.test.integration.security.loginmodules;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -55,7 +56,6 @@ import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -204,7 +204,6 @@ public class LdapExtLoginModuleTestCase {
      */
     @Test
     @OperateOnDeployment(DEP4)
-    @Ignore("WFLY-1317 slash in role name cause troubles in rolesSearch")
     public void test4(@ArquillianResource URL webAppURL) throws Exception {
         testDeployment(webAppURL, "Java Duke", "RG/2", "R1", "R2", "R3", "R5");
     }
@@ -216,7 +215,6 @@ public class LdapExtLoginModuleTestCase {
      */
     @Test
     @OperateOnDeployment(DEP4_DIRECT)
-    @Ignore("WFLY-1317 slash in role name cause troubles in rolesSearch")
     public void test4_direct(@ArquillianResource URL webAppURL) throws Exception {
         testDeployment(webAppURL, "jduke", "jduke", "RG/2");
     }
