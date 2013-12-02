@@ -762,9 +762,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
 
             if (mergedMetaData.getDefaultEncoding()!=null){
-                deploymentInfo.setDefaultEncoding(mergedMetaData.getDefaultEncoding());
+                d.setDefaultEncoding(mergedMetaData.getDefaultEncoding());
             }else if (servletContainer.getDefaultEncoding()!=null){
-                deploymentInfo.setDefaultEncoding(servletContainer.getDefaultEncoding());
+                d.setDefaultEncoding(servletContainer.getDefaultEncoding());
             }
 
             return d;
