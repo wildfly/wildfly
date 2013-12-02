@@ -45,6 +45,7 @@
             <fileset dir="${generated.configs}">
                 <include name="domain/**"/>
                 <include name="docs/**"/>
+                <include name="version*.properties"/>
             </fileset>
         </copy>
         <!-- Convert .bat files to DOS line endings -->

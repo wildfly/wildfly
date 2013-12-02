@@ -45,8 +45,10 @@
         <generated.configs.domain>${generated.configs}/domain/configuration</generated.configs.domain>
         <generated.configs.examples>${generated.configs}/docs/examples/configs</generated.configs.examples>
         <generated.configs.src.dir>${basedir}/src/main/resources</generated.configs.src.dir>
+        
+        <maven.build.timestamp_>${maven.build.timestamp}</maven.build.timestamp_> <!-- Workaround for MRESOURCES-99. -->
     </properties>
-
+    
     <build>
         <plugins>
             <plugin>
@@ -2149,6 +2151,32 @@
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>create_version.properties</id>
+            <activation><property><name>!noVersion.properties</name></property></activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <executions><execution>
+                                <id>resources.version.txt</id>
+                                <phase>generate-resources</phase>
+                                <goals><goal>copy-resources</goal></goals>
+                                <configuration>
+                                    <outputDirectory>${generated.configs}</outputDirectory>
+                                    <resources><resource>
+                                            <directory>src/main/resources</directory>
+                                            <includes><include>version-base.properties</include></includes>
+                                            <filtering>true</filtering>
+                                    </resource></resources>
+                                </configuration>
+                        </execution></executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        
         <profile>
             <id>javadocDist</id>
             <properties>
