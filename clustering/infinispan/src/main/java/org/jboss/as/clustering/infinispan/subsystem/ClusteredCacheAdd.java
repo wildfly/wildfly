@@ -63,11 +63,10 @@ public abstract class ClusteredCacheAdd extends CacheAdd {
      * @return initialised Configuration object
      */
     @Override
-    void processModelNode(OperationContext context, String containerName, ModelNode cache, ConfigurationBuilder builder, List<Dependency<?>> dependencies)
-            throws OperationFailedException{
+    void processModelNode(OperationContext context, String containerName, ModelNode cache, ConfigurationBuilder builder, CacheConfigurationDependencies cacheConfigurationDependencies, CacheDependencies cacheDependencies, List<Dependency<?>> dependencies) throws OperationFailedException {
 
         // process cache attributes and elements
-        super.processModelNode(context, containerName, cache, builder, dependencies);
+        super.processModelNode(context, containerName, cache, builder, cacheConfigurationDependencies, cacheDependencies, dependencies);
 
         // required attribute MODE (ASYNC/SYNC)
         final Mode mode = Mode.valueOf(ClusteredCacheResourceDefinition.MODE.resolveModelAttribute(context, cache).asString()) ;

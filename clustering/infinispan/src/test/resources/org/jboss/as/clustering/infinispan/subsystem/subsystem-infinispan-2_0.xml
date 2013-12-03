@@ -108,7 +108,7 @@
             <transaction mode="NON_XA" locking="PESSIMISTIC"/>
             <eviction strategy="NONE"/>
         </replicated-cache>
-        <distributed-cache name="default" mode="ASYNC" >
+        <distributed-cache name="default" mode="ASYNC">
             <transaction mode="NON_XA"/>
             <eviction strategy="NONE"/>
             <file-store preload="true" purge="false"/>
