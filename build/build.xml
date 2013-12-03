@@ -842,6 +842,7 @@
             <maven-resource group="org.hornetq" artifact="hornetq-core-client"/>
             <maven-resource group="org.hornetq" artifact="hornetq-server"/>
             <maven-resource group="org.hornetq" artifact="hornetq-commons"/>
+            <maven-resource group="org.hornetq" artifact="hornetq-tools"/>
             <maven-resource group="org.hornetq" artifact="hornetq-journal"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-client"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-server"/>

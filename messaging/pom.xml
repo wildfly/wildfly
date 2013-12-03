@@ -71,6 +71,11 @@
 
         <dependency>
             <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-tools</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hornetq</groupId>
             <artifactId>hornetq-journal</artifactId>
         </dependency>
 
