@@ -253,7 +253,7 @@
                     <!-- Forked process timeout -->
                     <forkedProcessTimeoutInSeconds>${surefire.forked.process.timeout}</forkedProcessTimeoutInSeconds>
                     <!-- System properties to forked surefire JVM which runs clients. -->
-                    <argLine>${jvm.args.ip.client} ${jvm.args.timeouts}</argLine>
+                    <argLine>${jvm.args.ip.client} ${jvm.args.timeouts} -XX:MaxPermSize=128m</argLine>
 
                     <!-- System properties passed to test cases -->
                     <systemPropertyVariables combine.children="append">
