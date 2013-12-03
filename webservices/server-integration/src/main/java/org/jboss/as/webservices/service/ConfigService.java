@@ -22,8 +22,9 @@
 package org.jboss.as.webservices.service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Map;
 
 import org.jboss.as.webservices.dmr.ListInjector;
 import org.jboss.msc.inject.Injector;
@@ -50,6 +51,7 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
     private final boolean client;
     private final List<UnifiedHandlerChainMetaData> preHandlerChains = new ArrayList<UnifiedHandlerChainMetaData>(1);
     private final List<UnifiedHandlerChainMetaData> postHandlerChains = new ArrayList<UnifiedHandlerChainMetaData>(1);
+    private final List<PropertyService> properties = new ArrayList<PropertyService>(1);
     private volatile AbstractCommonConfig config;
 
     public ConfigService(ServerConfig serverConfig, String configName, boolean client) {
@@ -65,18 +67,19 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
 
     @Override
     public void start(final StartContext context) throws StartException {
+        Map<String, String> props = null;
+        if (!properties.isEmpty()) {
+            props = new HashMap<String, String>(properties.size(), 1);
+            for (PropertyService ps : properties) {
+                props.put(ps.getPropName(), ps.getPropValue());
+            }
+        }
         if (client) {
-            ClientConfig clientConfig = new ClientConfig();
-            clientConfig.setConfigName(configName);
-            clientConfig.setPreHandlerChains(new CopyOnWriteArrayList<UnifiedHandlerChainMetaData>(preHandlerChains));
-            clientConfig.setPostHandlerChains(new CopyOnWriteArrayList<UnifiedHandlerChainMetaData>(postHandlerChains));
+            ClientConfig clientConfig = new ClientConfig(configName, preHandlerChains, postHandlerChains, props, null);
             serverConfig.addClientConfig(clientConfig);
             config = clientConfig;
         } else {
-            EndpointConfig endpointConfig = new EndpointConfig();
-            endpointConfig.setConfigName(configName);
-            endpointConfig.setPreHandlerChains(new CopyOnWriteArrayList<UnifiedHandlerChainMetaData>(preHandlerChains));
-            endpointConfig.setPostHandlerChains(new CopyOnWriteArrayList<UnifiedHandlerChainMetaData>(postHandlerChains));
+            EndpointConfig endpointConfig = new EndpointConfig(configName, preHandlerChains, postHandlerChains, props, null);
             serverConfig.addEndpointConfig(endpointConfig);
             config = endpointConfig;
         }
@@ -97,6 +100,10 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
 
     public Injector<UnifiedHandlerChainMetaData> getPostHandlerChainsInjector() {
         return new ListInjector<UnifiedHandlerChainMetaData>(postHandlerChains);
+    }
+
+    public Injector<PropertyService> getPropertiesInjector() {
+        return new ListInjector<PropertyService>(properties);
     }
 
 }
