@@ -29,11 +29,6 @@ import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_WSDL;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CLASS;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_CONTEXT;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_TYPE;
-import static org.jboss.as.webservices.dmr.Constants.ENDPOINT_NAME;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.AttributeDefinition;
