@@ -41,7 +41,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.wsf.spi.metadata.config.AbstractCommonConfig;
 
 /**
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
@@ -74,7 +73,7 @@ final class PropertyAdd extends AbstractAddStepHandler {
             final String configName = confElem.getValue();
             final String propertyValue = operation.has(VALUE) ? Attributes.VALUE.resolveModelAttribute(context,operation).asString() : null;
 
-            final PropertyService<AbstractCommonConfig> service = new PropertyService<AbstractCommonConfig>(propertyName, propertyValue);
+            final PropertyService service = new PropertyService(propertyName, propertyValue);
             final ServiceTarget target = context.getServiceTarget();
             final ServiceName configServiceName = getConfigServiceName(configType, configName);
             if (context.getServiceRegistry(false).getService(configServiceName) == null) {
@@ -83,7 +82,6 @@ final class PropertyAdd extends AbstractAddStepHandler {
 
             final ServiceName propertyServiceName = getPropertyServiceName(configServiceName, propertyName);
             final ServiceBuilder<?> propertyServiceBuilder = target.addService(propertyServiceName, service);
-            propertyServiceBuilder.addDependency(configServiceName, AbstractCommonConfig.class, service.getAbstractCommonConfig());
             ServiceController<?> controller = propertyServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
             if (newControllers != null) {
                 newControllers.add(controller);
