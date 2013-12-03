@@ -902,7 +902,9 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
     }
 
     public boolean isScheduled(final String tid){
-        return this.scheduledTimerFutures.containsKey(tid);
+        synchronized (this.scheduledTimerFutures) {
+            return this.scheduledTimerFutures.containsKey(tid);
+        }
     }
 
     /**
