@@ -32,6 +32,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.ConfigService;
+import org.jboss.as.webservices.service.PropertyService;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
@@ -80,9 +81,11 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
          final ConfigService clientConfigService = new ConfigService(serverConfig, name, true);
          final ServiceTarget target = context.getServiceTarget();
          final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName, clientConfigService);
-         setDependency(context, clientServiceBuilder, clientConfigService.getPreHandlerChainsInjector(), serviceName, address, Constants.PRE_HANDLER_CHAIN);
+         setDependency(context, clientServiceBuilder, clientConfigService.getPropertiesInjector(), PropertyService.class, serviceName, address, Constants.PROPERTY);
+         setDependency(context, clientServiceBuilder, clientConfigService.getPreHandlerChainsInjector(), UnifiedHandlerChainMetaData.class, serviceName, address, Constants.PRE_HANDLER_CHAIN);
          final Injector<UnifiedHandlerChainMetaData> postInjector = clientConfigService.getPostHandlerChainsInjector();
-         setDependency(context, clientServiceBuilder, postInjector, serviceName, address, Constants.POST_HANDLER_CHAIN);
+         setDependency(context, clientServiceBuilder, postInjector, UnifiedHandlerChainMetaData.class, serviceName, address, Constants.POST_HANDLER_CHAIN);
+         //add XTS handlers dependencies if the XTS subsystem is available
          clientServiceBuilder.addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("xts").append("handlers"), UnifiedHandlerChainMetaData.class, postInjector);
          ServiceController<?> controller = clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
          if (newControllers != null) {
@@ -93,10 +96,10 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
       }
     }
 
-    private void setDependency(final OperationContext context, final ServiceBuilder<?> builder, final Injector<UnifiedHandlerChainMetaData> injector,
-            final ServiceName serviceName, final PathAddress address, final String handlerChainType) {
+    private <T> void setDependency(final OperationContext context, final ServiceBuilder<?> builder, final Injector<T> injector,
+            final Class<T> injectedClass, final ServiceName serviceName, final PathAddress address, final String handlerChainType) {
         for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, handlerChainType)) {
-            builder.addDependency(sn, UnifiedHandlerChainMetaData.class, injector);
+            builder.addDependency(sn, injectedClass, injector);
         }
     }
 }
