@@ -17,7 +17,9 @@ public final class ListInjector<T> extends RetainingInjector<T> implements Injec
     /** {@inheritDoc} */
     public void inject(final T value) throws InjectionException {
         synchronized (list) {
-            list.add(value);
+            if (value != null) {
+                list.add(value);
+            }
             super.inject(value);
         }
     }
