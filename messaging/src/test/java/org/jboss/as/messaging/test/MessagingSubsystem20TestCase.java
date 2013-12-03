@@ -482,10 +482,10 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(xmlFileName);
         // create builder for legacy subsystem version
-        HornetQDependencies.addDependencies(controllerVersion,
-                builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                        .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
-                        .configureReverseControllerCheck(null, fixer));
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(null, fixer)
+                .addMavenResourceURL(HornetQDependencies.getDependencies(controllerVersion));
         return builder;
     }
 
@@ -493,10 +493,10 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem_2_0.xml");
-        HornetQDependencies.addDependencies(controllerVersion,
-                builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                        .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
-                        .configureReverseControllerCheck(null, fixer));
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(null, fixer)
+                .addMavenResourceURL(HornetQDependencies.getDependencies(controllerVersion));
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());
