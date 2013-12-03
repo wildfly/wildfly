@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
 
+import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.Resource;
 import io.undertow.server.handlers.resource.ResourceChangeListener;
 import io.undertow.server.handlers.resource.ResourceManager;
@@ -17,11 +18,11 @@ import org.jboss.vfs.VirtualFile;
  */
 public class ServletResourceManager implements ResourceManager {
 
-    private final VirtualFileResourceManager deploymentResourceManager;
+    private final FileResourceManager deploymentResourceManager;
     private final Collection<VirtualFile> overlays;
 
     public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays) throws IOException {
-        deploymentResourceManager = new VirtualFileResourceManager(resourcesRoot, 1024 * 1024);
+        deploymentResourceManager = new FileResourceManager(resourcesRoot.getPhysicalFile(), 1024 * 1024);
         this.overlays = overlays;
     }
 
