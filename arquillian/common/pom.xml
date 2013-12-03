@@ -39,10 +39,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.jboss.arquillian.container</groupId>
-            <artifactId>arquillian-container-osgi</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
             <artifactId>arquillian-testenricher-cdi</artifactId>
         </dependency>
@@ -93,6 +89,12 @@
         <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
+        </dependency>
+        <!-- Provided Dependencies -->
+        <dependency>
+            <groupId>org.jboss.arquillian.container</groupId>
+            <artifactId>arquillian-container-osgi</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
