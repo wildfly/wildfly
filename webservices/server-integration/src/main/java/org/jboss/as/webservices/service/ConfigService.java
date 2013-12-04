@@ -76,11 +76,11 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
         }
         if (client) {
             ClientConfig clientConfig = new ClientConfig(configName, preHandlerChains, postHandlerChains, props, null);
-            serverConfig.addClientConfig(clientConfig);
+            serverConfig.registerClientConfig(clientConfig);
             config = clientConfig;
         } else {
             EndpointConfig endpointConfig = new EndpointConfig(configName, preHandlerChains, postHandlerChains, props, null);
-            serverConfig.addEndpointConfig(endpointConfig);
+            serverConfig.registerEndpointConfig(endpointConfig);
             config = endpointConfig;
         }
     }
@@ -88,9 +88,9 @@ public final class ConfigService implements Service<AbstractCommonConfig> {
     @Override
     public void stop(final StopContext context) {
         if (client) {
-            serverConfig.getClientConfigs().remove(config);
+            serverConfig.unregisterClientConfig((ClientConfig)config);
         } else {
-            serverConfig.getEndpointConfigs().remove(config);
+            serverConfig.unregisterEndpointConfig((EndpointConfig)config);
         }
     }
 
