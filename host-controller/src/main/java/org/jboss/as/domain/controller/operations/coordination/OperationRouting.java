@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -47,19 +48,89 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class OperationRouting {
+class OperationRouting {
 
-    public static OperationRouting determineRouting(final ModelNode operation, final LocalHostControllerInfo localHostControllerInfo,
-                                                    final ImmutableManagementResourceRegistration registry)
+    static OperationRouting determineRouting(OperationContext context, ModelNode operation,
+                                             final LocalHostControllerInfo localHostControllerInfo) throws OperationFailedException {
+        final ImmutableManagementResourceRegistration rootRegistration = context.getRootResourceRegistration();
+        return determineRouting(operation, localHostControllerInfo, rootRegistration);
+    }
+
+    private static OperationRouting determineRouting(final ModelNode operation, final LocalHostControllerInfo localHostControllerInfo,
+                                                     final ImmutableManagementResourceRegistration rootRegistration) throws OperationFailedException {
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String operationName = operation.require(OP).asString();
+        final Set<OperationEntry.Flag> operationFlags = resolveOperationFlags(address, operationName, rootRegistration);
+        return determineRouting(operation, address, operationName, operationFlags, localHostControllerInfo, rootRegistration);
+    }
+
+    private static Set<OperationEntry.Flag> resolveOperationFlags(final PathAddress address, final String operationName,
+                                                         final ImmutableManagementResourceRegistration rootRegistration) throws OperationFailedException {
+        Set<OperationEntry.Flag> result = null;
+        boolean validAddress = false;
+        ImmutableManagementResourceRegistration targetReg = rootRegistration.getSubModel(address);
+        if (targetReg != null) {
+            validAddress = true;
+            OperationEntry opE = targetReg.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
+            result = opE == null ? null : opE.getFlags();
+        }
+
+        if (result == null && address.size() > 0) {
+            // For wildcard elements, check specific registrations where the same OSH is used
+            // for all such registrations
+            PathElement pe = address.getLastElement();
+            if (pe.isWildcard()) {
+                String type = pe.getKey();
+                PathAddress parent = address.subAddress(0, address.size() - 1);
+                Set<PathElement> children = rootRegistration.getChildAddresses(parent);
+                if (children != null) {
+                    Set<OperationEntry.Flag> found = null;
+                    for (PathElement child : children) {
+                        if (type.equals(child.getKey())) {
+                            validAddress = true;
+                            OperationEntry oe = rootRegistration.getOperationEntry(parent.append(child), operationName);
+                            Set<OperationEntry.Flag> flags = oe == null ? null : oe.getFlags();
+                            if (flags == null || (found != null && !found.equals(flags))) {
+                                // Not all children have the same flags; give up
+                                found = null;
+                                validAddress = false; // treat this as the address not being valid
+                                break;
+                            }
+                            // We have a candidate flag set
+                            found = flags;
+                        }
+                    }
+                    result = found;
+                }
+            }
+        }
+
+        if (result == null) {
+            // Throw appropriate exception
+            if (validAddress) {
+                // Bad operation name exception
+                throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noHandlerForOperation( operationName,
+                        address)));
+            } else {
+                // Bad address exception
+                throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noSuchResourceType(address)));
+            }
+        }
+
+        return result;
+    }
+
+    private static OperationRouting determineRouting(final ModelNode operation,
+                                                     final PathAddress address,
+                                                     final String operationName,
+                                                     final Set<OperationEntry.Flag> operationFlags,
+                                                     final LocalHostControllerInfo localHostControllerInfo,
+                                                     final ImmutableManagementResourceRegistration rootRegistration)
                                                         throws OperationFailedException {
-
-        checkNullRegistration(operation, registry);
 
         OperationRouting routing = null;
 
         String targetHost = null;
-        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        final String operationName = operation.get(OP).asString();
         boolean compositeOp = false;
         if (address.size() > 0) {
             PathElement first = address.getElement(0);
@@ -71,9 +142,7 @@ public class OperationRouting {
         }
 
         if (targetHost != null) {
-            Set<OperationEntry.Flag> flags = registry.getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName);
-            checkNullFlags(operation, flags);
-            if(flags.contains(OperationEntry.Flag.READ_ONLY) && !flags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
+            if(operationFlags.contains(OperationEntry.Flag.READ_ONLY) && !operationFlags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
                 routing =  new OperationRouting(targetHost, false);
             }
             // Check if the target is an actual server
@@ -84,7 +153,7 @@ public class OperationRouting {
                 }
             }
             if (routing == null) {
-                if(flags.contains(OperationEntry.Flag.HOST_CONTROLLER_ONLY)) {
+                if(operationFlags.contains(OperationEntry.Flag.HOST_CONTROLLER_ONLY)) {
                     routing = new OperationRouting(targetHost, false);
                 } else {
                     routing = new OperationRouting(targetHost, true);
@@ -96,8 +165,7 @@ public class OperationRouting {
                 Set<String> allHosts = new HashSet<String>();
                 boolean fwdToAllHosts = false;
                 for (ModelNode step : operation.get(STEPS).asList()) {
-                    ImmutableManagementResourceRegistration stepRegistry = registry.getSubModel(PathAddress.pathAddress(step.get(OP_ADDR)));
-                    OperationRouting stepRouting = determineRouting(step, localHostControllerInfo, stepRegistry);
+                    OperationRouting stepRouting = determineRouting(step, localHostControllerInfo, rootRegistration);
                     if (stepRouting.isTwoStep()) {
                         // Make sure we don't loose the information that we have to execute the operation on all hosts
                         fwdToAllHosts = fwdToAllHosts || stepRouting.getHosts().isEmpty();
@@ -117,15 +185,13 @@ public class OperationRouting {
             }
         } else {
             // Domain level operation
-            Set<OperationEntry.Flag> flags = registry.getOperationFlags(PathAddress.EMPTY_ADDRESS, operationName);
-            checkNullFlags(operation, flags);
-            if (flags.contains(OperationEntry.Flag.READ_ONLY) && !flags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
+            if (operationFlags.contains(OperationEntry.Flag.READ_ONLY) && !operationFlags.contains(OperationEntry.Flag.DOMAIN_PUSH_TO_SERVERS)) {
                 // Direct read of domain model
                 routing = new OperationRouting(localHostControllerInfo.getLocalHostName(), false);
             } else if (!localHostControllerInfo.isMasterDomainController()) {
                 // Route to master
                 routing = new OperationRouting();
-            } else if (flags.contains(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY)) {
+            } else if (operationFlags.contains(OperationEntry.Flag.MASTER_HOST_CONTROLLER_ONLY)) {
                 // Deployment ops should be executed on the master DC only
                 routing = new OperationRouting(localHostControllerInfo.getLocalHostName(), false);
             }
@@ -137,19 +203,6 @@ public class OperationRouting {
         }
         return routing;
 
-    }
-
-    private static void checkNullRegistration(final ModelNode operation, final ImmutableManagementResourceRegistration toCheck) throws OperationFailedException {
-        if (toCheck == null) {
-            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noSuchResourceType(PathAddress.pathAddress(operation.get(OP_ADDR)))));
-        }
-    }
-
-    private static void checkNullFlags(final ModelNode operation, final Set<OperationEntry.Flag> toCheck) throws OperationFailedException {
-        if (toCheck == null) {
-            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noHandlerForOperation( operation.require(OP).asString(),
-                    PathAddress.pathAddress(operation.get(OP_ADDR)))));
-        }
     }
 
     private final String singleHost;
