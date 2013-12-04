@@ -175,6 +175,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         }
 
         final String opName = operation.require(OP).asString();
+        PathAddress opAddr = PathAddress.pathAddress(operation.get(OP_ADDR));
         final int recursiveDepth = RECURSIVE_DEPTH.resolveModelAttribute(context, operation).asInt();
         final boolean recursive = recursiveDepth > 0 || RECURSIVE.resolveModelAttribute(context, operation).asBoolean();
         final boolean proxies = PROXIES.resolveModelAttribute(context, operation).asBoolean();
@@ -184,7 +185,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final AccessControl accessControl = AccessControl.forName(ACCESS_CONTROL.resolveModelAttribute(context, operation).asString());
 
 
-        final ImmutableManagementResourceRegistration registry = getResourceRegistrationCheckForAlias(context, accessControlContext.opAddress, accessControlContext);
+        final ImmutableManagementResourceRegistration registry = getResourceRegistrationCheckForAlias(context, opAddr, accessControlContext);
 
         final DescriptionProvider descriptionProvider = registry.getModelDescription(PathAddress.EMPTY_ADDRESS);
         final Locale locale = GlobalOperationHandlers.getLocale(context, operation);
@@ -194,7 +195,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
         final Map<PathElement, ModelNode> childResources = recursive ? new HashMap<PathElement, ModelNode>() : Collections.<PathElement, ModelNode>emptyMap();
 
         if (accessControl != AccessControl.NONE) {
-            accessControlContext.initLocalResourceAddresses(context, operation);
+            accessControlContext.initLocalResourceAddresses(context, opAddr);
         }
 
 
@@ -269,7 +270,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     final ModelNode rrOp = operation.clone();
                     final PathAddress address;
                     try {
-                        address = PathAddress.pathAddress(accessControlContext.opAddress, element);
+                        address = PathAddress.pathAddress(opAddr, element);
                     } catch (Exception e) {
                         continue;
                     }
@@ -304,7 +305,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
 
     private OperationStepHandler getRecursiveStepHandler(ImmutableManagementResourceRegistration childReg, String opName, ReadResourceDescriptionAccessControlContext accessControlContext, PathAddress address) {
         OperationStepHandler overrideHandler = childReg.getOperationHandler(PathAddress.EMPTY_ADDRESS, opName);
-        if (overrideHandler != null && overrideHandler.getClass() == ReadResourceDescriptionHandler.class || overrideHandler.getClass() == AliasStepHandler.class) {
+        if (overrideHandler != null && (overrideHandler.getClass() == ReadResourceDescriptionHandler.class || overrideHandler.getClass() == AliasStepHandler.class)) {
             // not an override
             overrideHandler = null;
         }
@@ -621,31 +622,30 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             this.parentAddresses = parent != null ? parent.parentAddresses : null;
         }
 
-        private void initLocalResourceAddresses(OperationContext context, ModelNode operation){
-            localResourceAddresses = getLocalResourceAddresses(context, operation);
+        private void initLocalResourceAddresses(OperationContext context, PathAddress opAddress){
+            localResourceAddresses = getLocalResourceAddresses(context, opAddress);
         }
 
-        private List<PathAddress> getLocalResourceAddresses(OperationContext context, ModelNode operation){
+        private List<PathAddress> getLocalResourceAddresses(OperationContext context, PathAddress opAddr){
             List<PathAddress> localResourceAddresses = null;
-            PathAddress opAddr = PathAddress.pathAddress(operation.require(OP_ADDR));
             if (parentAddresses == null) {
                 if (opAddr.size() == 0) {
                     return Collections.singletonList(PathAddress.EMPTY_ADDRESS);
                 } else {
                     localResourceAddresses = new ArrayList<>();
-                    getAllActualResourceAddresses(context, operation, localResourceAddresses, PathAddress.EMPTY_ADDRESS, opAddr);
+                    getAllActualResourceAddresses(context, localResourceAddresses, PathAddress.EMPTY_ADDRESS, opAddr);
                 }
             } else {
                 localResourceAddresses = new ArrayList<>();
                 for (PathAddress pathAddress : parentAddresses) {
-                    getAllActualResourceAddresses(context, operation, localResourceAddresses, pathAddress, opAddr);
+                    getAllActualResourceAddresses(context, localResourceAddresses, pathAddress, opAddr);
                 }
             }
             return localResourceAddresses;
 
         }
 
-        private void getAllActualResourceAddresses(OperationContext context, ModelNode operation, List<PathAddress> addresses, PathAddress currentAddress, PathAddress opAddress) {
+        private void getAllActualResourceAddresses(OperationContext context, List<PathAddress> addresses, PathAddress currentAddress, PathAddress opAddress) {
             if (opAddress.size() == 0) {
                 return;
             }
@@ -687,7 +687,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                             if (address.size() == opAddress.size()) {
                                 addresses.add(address);
                             } else {
-                                getAllActualResourceAddresses(context, operation, addresses, address, opAddress);
+                                getAllActualResourceAddresses(context, addresses, address, opAddress);
                             }
                         }
                     }
@@ -698,7 +698,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     if (address.size() == opAddress.size()) {
                         addresses.add(address);
                     } else {
-                        getAllActualResourceAddresses(context, operation, addresses, address, opAddress);
+                        getAllActualResourceAddresses(context, addresses, address, opAddress);
                     }
                 }
             }
