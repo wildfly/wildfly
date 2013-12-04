@@ -48,10 +48,9 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.logging.logmanager.WildFlyLogContextSelector;
 import org.jboss.as.logging.stdio.LogContextStdioContextSelector;
-import org.jboss.logmanager.ClassLoaderLogContextSelector;
 import org.jboss.logmanager.LogContext;
-import org.jboss.logmanager.ThreadLocalLogContextSelector;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -69,9 +68,7 @@ public class LoggingExtension implements Extension {
 
     static final PathElement LOGGING_PROFILE_PATH = PathElement.pathElement(CommonAttributes.LOGGING_PROFILE);
 
-    static final ClassLoaderLogContextSelector CONTEXT_SELECTOR = new ClassLoaderLogContextSelector();
-
-    static final ThreadLocalLogContextSelector THREAD_LOCAL_CONTEXT_SELECTOR = new ThreadLocalLogContextSelector(CONTEXT_SELECTOR);
+    static final WildFlyLogContextSelector CONTEXT_SELECTOR = WildFlyLogContextSelector.Factory.create();
 
     static final GenericSubsystemDescribeHandler DESCRIBE_HANDLER = GenericSubsystemDescribeHandler.create(LoggingChildResourceComparator.INSTANCE);
 
@@ -105,7 +102,7 @@ public class LoggingExtension implements Extension {
         if (!java.util.logging.LogManager.getLogManager().getClass().getName().equals(org.jboss.logmanager.LogManager.class.getName())) {
             throw LoggingMessages.MESSAGES.extensionNotInitialized();
         }
-        LogContext.setLogContextSelector(THREAD_LOCAL_CONTEXT_SELECTOR);
+        LogContext.setLogContextSelector(CONTEXT_SELECTOR);
         // Install STDIO context selector
         StdioContext.setStdioContextSelector(new LogContextStdioContextSelector(StdioContext.getStdioContext()));
 

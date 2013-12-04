@@ -30,7 +30,7 @@ import org.jboss.util.collection.ConcurrentSkipListMap;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-final class LoggingProfileContextSelector {
+public final class LoggingProfileContextSelector {
     private static final LoggingProfileContextSelector INSTANCE = new LoggingProfileContextSelector();
 
     private final ConcurrentMap<String, LogContext> profileContexts = new ConcurrentSkipListMap<String, LogContext>();
@@ -50,7 +50,7 @@ final class LoggingProfileContextSelector {
      *
      * @return the log context that was found or a new log context
      */
-    public LogContext getOrCreate(final String loggingProfile) {
+    protected LogContext getOrCreate(final String loggingProfile) {
         LogContext result = profileContexts.get(loggingProfile);
         if (result == null) {
             result = LogContext.create();
