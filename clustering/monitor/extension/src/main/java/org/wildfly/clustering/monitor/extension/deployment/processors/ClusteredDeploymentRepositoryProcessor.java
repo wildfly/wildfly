@@ -6,7 +6,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.clustering.ejb3.cache.backing.infinispan.InfinispanBackingCacheEntryStore;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
@@ -18,11 +17,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ejb3.cache.Cache;
-import org.jboss.as.ejb3.cache.impl.GroupAwareCache;
-import org.jboss.as.ejb3.cache.impl.backing.GroupAwareBackingCacheImpl;
-import org.jboss.as.ejb3.cache.impl.backing.SerializationGroupMemberContainer;
-import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
-import org.jboss.as.ejb3.cache.spi.GroupAwareBackingCache;
+import org.jboss.as.ejb3.cache.distributable.DistributableCache;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
@@ -48,6 +43,8 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.ejb.BeanManager;
+import org.wildfly.clustering.ejb.infinispan.InfinispanBeanManager;
 import org.wildfly.clustering.monitor.extension.deployment.ClusteredDeploymentRepository;
 import org.wildfly.clustering.monitor.extension.deployment.ClusteredEjbDeploymentInformation;
 import org.wildfly.clustering.monitor.extension.deployment.ClusteredModuleDeployment;
@@ -201,7 +198,7 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
                         ServiceName postProcessorServiceName = postProcessor.getServiceName(deploymentName, beanName);
 
                         // service name of the dependency we need to be up
-                        ServiceName ejbComponentCreateServiceName = getJarDeploymentUnitCREATEServiceName(deploymentUnit, beanName);
+                        ServiceName ejbComponentCreateServiceName = getJarDeploymentUnitSTARTServiceName(deploymentUnit, beanName);
 
                         ServiceTarget target = phaseContext.getServiceTarget();
                         ServiceController<?> postProcessorService = target.addService(postProcessorServiceName, postProcessor)
@@ -228,7 +225,7 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
      *
      * We also need to re-instate the suffixes of the deployment names as they are removed in EE processing.
      */
-    private ServiceName getJarDeploymentUnitCREATEServiceName(DeploymentUnit deploymentUnit, String beanName) {
+    private ServiceName getJarDeploymentUnitSTARTServiceName(DeploymentUnit deploymentUnit, String beanName) {
         ServiceName deploymentUnitServiceName = null;
 
         DeploymentModuleIdentifier identifier = getDeploymentModuleIdentifier(deploymentUnit);
@@ -239,7 +236,7 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
             // we are not in a sub-deployment
             deploymentUnitServiceName = Services.deploymentUnitName(identifier.getModuleName() + ".jar");
         }
-        ServiceName ejbComponentCreateServiceName = BasicComponent.serviceNameOf(deploymentUnitServiceName, beanName).append("CREATE");
+        ServiceName ejbComponentCreateServiceName = BasicComponent.serviceNameOf(deploymentUnitServiceName, beanName).append("START");
         return ejbComponentCreateServiceName ;
     }
 
@@ -347,21 +344,16 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
         @Override
         public void start(StartContext context) {
             StatefulSessionComponent component = componentService.getValue();
-
             Cache<SessionID, StatefulSessionComponentInstance> cache = component.getCache();
             // follow the chain back to the session cache for this component
-            if (cache instanceof GroupAwareCache) {
-                GroupAwareBackingCache backingCache = getGroupAwareBackingCache((GroupAwareCache)cache);
-                if (backingCache instanceof GroupAwareBackingCacheImpl) {
-                    SerializationGroupMemberContainer container = getSerializationGroupMemberContainer(backingCache);
-                    BackingCacheEntryStore store = getBackingCacheEntryStore(container);
-                    if (store instanceof InfinispanBackingCacheEntryStore) {
-                        org.infinispan.Cache sessionCache = ((InfinispanBackingCacheEntryStore) store).getCache();
-                        String cacheContainer = sessionCache.getCacheManager().getClusterName();
-                        String beanCache = sessionCache.getName();
+            if (cache instanceof DistributableCache) {
+                BeanManager beanManager = getBeanManager((DistributableCache) cache);
+                if (beanManager instanceof InfinispanBeanManager) {
+                    org.infinispan.Cache groupCache = getGroupCache((InfinispanBeanManager) beanManager);
+                        String cacheContainer = groupCache.getCacheManager().getClusterName();
+                        String beanCache = groupCache.getName();
                         info.setSessionCacheContainer(cacheContainer);
                         info.setSessionCache(beanCache);
-                    }
                 }
             }
         }
@@ -381,34 +373,23 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
     }
 
     /*
-     * Given a GroupAwareCache, use reflection to get its GroupAwareBackingCache.
+     * Given a DistributableCache, use reflection to get its BeanManager member object.
      */
-    private GroupAwareBackingCache getGroupAwareBackingCache(GroupAwareCache groupAwareCache) {
+    private BeanManager getBeanManager(DistributableCache distributableCache) {
         // use reflection to get this private field
-        GroupAwareBackingCache backingCache = null;
-        backingCache = getMemberObjectField(groupAwareCache, "groupedCache");
-        return backingCache;
+        BeanManager beanManager = null;
+        beanManager = getMemberObjectField(distributableCache, "manager");
+        return beanManager;
     }
 
     /*
      * Given a GroupAwareBackingCache, use reflection to get its SerializationGroupMemberContainer.
      */
-    private SerializationGroupMemberContainer getSerializationGroupMemberContainer(GroupAwareBackingCache groupAwareBackingCache) {
+    private org.infinispan.Cache getGroupCache(InfinispanBeanManager infinispanBeanManager) {
         // use reflection to get this private field
-        SerializationGroupMemberContainer container = null;
-        container = getMemberObjectField(groupAwareBackingCache, "memberContainer");
-        return container;
-    }
-
-
-    /*
-     * Given a SerializationGroupMemberContainer, use reflection to get its BackingCacheEntryStore.
-     */
-    private BackingCacheEntryStore getBackingCacheEntryStore(SerializationGroupMemberContainer container) {
-        // use reflection to get this private field
-        BackingCacheEntryStore store = null;
-        store = getMemberObjectField(container, "store");
-        return store;
+        org.infinispan.Cache groupCache = null;
+        groupCache = getMemberObjectField(infinispanBeanManager, "groupCache");
+        return groupCache;
     }
 
     /**

@@ -55,7 +55,7 @@
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
+            <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>
