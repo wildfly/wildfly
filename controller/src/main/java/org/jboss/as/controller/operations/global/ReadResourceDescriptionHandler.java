@@ -143,10 +143,10 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
     @Override
     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
-        ReadResourceDescriptionAccessControlContext accessControlContext = getAccessControlContext() == null ? new ReadResourceDescriptionAccessControlContext(address, null) : getAccessControlContext();
         if (getAccessControlContext() == null && address.isMultiTarget()) {
-            executeMultiTarget(context, operation, accessControlContext);
+            executeMultiTarget(context, operation);
         } else {
+            ReadResourceDescriptionAccessControlContext accessControlContext = getAccessControlContext() == null ? new ReadResourceDescriptionAccessControlContext(address, null) : getAccessControlContext();
             doExecute(context, operation, accessControlContext);
         }
     }
@@ -333,7 +333,7 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
     }
 
 
-    private void executeMultiTarget(final OperationContext context, final ModelNode operation, final ReadResourceDescriptionAccessControlContext accessControlContext) {
+    private void executeMultiTarget(final OperationContext context, final ModelNode operation) {
         // Format wildcard queries as list
         final ModelNode result = context.getResult().setEmptyList();
         context.addStep(new ModelNode(), GlobalOperationHandlers.AbstractMultiTargetHandler.FAKE_OPERATION.clone(),
@@ -341,6 +341,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                 new OperationStepHandler() {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+                        ReadResourceDescriptionAccessControlContext accessControlContext = getAccessControlContext() == null ? new ReadResourceDescriptionAccessControlContext(address, null) : getAccessControlContext();
                         // step handler bypassing further wildcard resolution
                         doExecute(context, operation, accessControlContext);
                     }
@@ -407,8 +409,8 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
             ModelNode result = new ModelNode();
             boolean customDefaultCheck = operation.get(OP).asString().equals(GlobalOperationHandlers.CHECK_DEFAULT_RESOURCE_ACCESS);
             ResourceAuthorization authResp = context.authorizeResource(true, customDefaultCheck);
-            if (authResp.getResourceResult(ActionEffect.ADDRESS).getDecision() == Decision.DENY) {
-                if (!defaultSetting) {
+            if (authResp == null || authResp.getResourceResult(ActionEffect.ADDRESS).getDecision() == Decision.DENY) {
+                if (!defaultSetting || authResp == null) {
                     //We are not allowed to see the resource, so we don't set the accessControlResult, meaning that the ReadResourceAssemblyHandler will ignore it for this address
                 } else {
                     result.get(ActionEffect.ADDRESS.toString()).set(false);
