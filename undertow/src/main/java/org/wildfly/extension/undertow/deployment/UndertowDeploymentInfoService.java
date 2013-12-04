@@ -116,7 +116,10 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.auth.login.JASPIAuthenticationInfo;
+import org.jboss.security.authorization.config.AuthorizationModuleEntry;
+import org.jboss.security.authorization.modules.JACCAuthorizationModule;
 import org.jboss.security.config.ApplicationPolicy;
+import org.jboss.security.config.AuthorizationInfo;
 import org.jboss.security.config.SecurityConfiguration;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.undertow.Host;
@@ -128,6 +131,8 @@ import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
+import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
+import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
 import org.xnio.IoUtils;
 
@@ -172,7 +177,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Module module;
     private final ScisMetaData scisMetaData;
     private final VirtualFile deploymentRoot;
-    private final String securityContextId;
+    private final String jaccContextId;
     private final String securityDomain;
     private final List<ServletContextAttribute> attributes;
     private final String contextPath;
@@ -191,7 +196,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, boolean explodedDeployment) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, boolean explodedDeployment) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -199,7 +204,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.module = module;
         this.scisMetaData = scisMetaData;
         this.deploymentRoot = deploymentRoot;
-        this.securityContextId = securityContextId;
+        this.jaccContextId = jaccContextId;
         this.securityDomain = securityDomain;
         this.attributes = attributes;
         this.contextPath = contextPath;
@@ -220,6 +225,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleDistributable(deploymentInfo);
             handleIdentityManager(deploymentInfo);
             handleJASPIMechanism(deploymentInfo);
+            handleJACCAuthorization(deploymentInfo);
 
             //TODO: make this configurable
             //in most cases flush just hurts performance for no good reason
@@ -347,6 +353,30 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         if (JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
             deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(this.securityDomain));
+        }
+    }
+
+    /**
+     * <p>
+     * Sets the {@link JACCAuthorizationManager} in the specified {@link DeploymentInfo} if the webapp security domain
+     * has defined a JACC authorization module.
+     * </p>
+     *
+     * @param deploymentInfo the {@link DeploymentInfo} instance.
+     */
+    private void handleJACCAuthorization(final DeploymentInfo deploymentInfo) {
+
+        // TODO make the authorization manager implementation configurable in Undertow or jboss-web.xml
+        ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
+        AuthorizationInfo authzInfo = applicationPolicy.getAuthorizationInfo();
+
+        if (authzInfo != null) {
+            for (AuthorizationModuleEntry entry : authzInfo.getModuleEntries()) {
+                if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
+                    deploymentInfo.setAuthorizationManager(new JACCAuthorizationManager());
+                    break;
+                }
+            }
         }
     }
 
@@ -731,7 +761,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             Map<String, Set<String>> principalVersusRolesMap = mergedMetaData.getPrincipalVersusRolesMap();
             d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContextValue.getValue(), principalVersusRolesMap));
-            d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getRunAsIdentity(), securityContextId));
+            d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getRunAsIdentity()));
+            d.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
 
             if (principalVersusRolesMap != null) {
                 for (Map.Entry<String, Set<String>> entry : principalVersusRolesMap.entrySet()) {
@@ -1161,7 +1192,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private Module module;
         private ScisMetaData scisMetaData;
         private VirtualFile deploymentRoot;
-        private String securityContextId;
+        private String jaccContextId;
         private List<ServletContextAttribute> attributes;
         private String contextPath;
         private String securityDomain;
@@ -1206,8 +1237,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
-        public Builder setSecurityContextId(final String securityContextId) {
-            this.securityContextId = securityContextId;
+        public Builder setJaccContextId(final String jaccContextId) {
+            this.jaccContextId = jaccContextId;
             return this;
         }
 
@@ -1252,7 +1283,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         }
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, explodedDeployment);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, explodedDeployment);
         }
     }
 }

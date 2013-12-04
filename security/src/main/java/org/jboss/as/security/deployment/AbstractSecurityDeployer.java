@@ -35,17 +35,22 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 public abstract class AbstractSecurityDeployer<T> {
 
     public JaccService<T> deploy(DeploymentUnit deploymentUnit) {
-        T metaData = deploymentUnit.getAttachment(getMetaDataType());
+        // build the jacc context id.
         String contextId = deploymentUnit.getName();
+        if (deploymentUnit.getParent() != null) {
+            contextId = deploymentUnit.getParent().getName() + "!" + contextId;
+        }
+        return deploy(deploymentUnit, contextId);
+    }
+
+    public JaccService<T> deploy(DeploymentUnit deploymentUnit, String jaccContextId) {
+        T metaData = deploymentUnit.getAttachment(getMetaDataType());
         Boolean standalone = Boolean.FALSE;
         // check if it is top level
         if (deploymentUnit.getParent() == null) {
             standalone = Boolean.TRUE;
         }
-        else {
-            contextId = deploymentUnit.getParent().getName() + "!" + contextId;
-        }
-        return createService(contextId, metaData, standalone);
+        return createService(jaccContextId, metaData, standalone);
     }
 
     public void undeploy(DeploymentUnit deploymentUnit) {
