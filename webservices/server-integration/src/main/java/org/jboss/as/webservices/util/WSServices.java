@@ -41,6 +41,7 @@ public final class WSServices {
     public static final ServiceName ENDPOINT_SERVICE = WS_SERVICE.append("endpoint");
     public static final ServiceName ENDPOINT_DEPLOY_SERVICE = WS_SERVICE.append("endpoint-deploy");
     public static final ServiceName ENDPOINT_PUBLISH_SERVICE = WS_SERVICE.append("endpoint-publish");
+    public static final ServiceName XTS_CLIENT_INTEGRATION_SERVICE = WS_SERVICE.append("xts-integration");
 
     private WSServices() {
         // forbidden inheritance

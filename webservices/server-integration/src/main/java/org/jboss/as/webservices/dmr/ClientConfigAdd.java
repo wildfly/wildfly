@@ -41,7 +41,6 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.wsf.spi.management.ServerConfig;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 
@@ -85,8 +84,6 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
          setDependency(context, clientServiceBuilder, clientConfigService.getPreHandlerChainsInjector(), UnifiedHandlerChainMetaData.class, serviceName, address, Constants.PRE_HANDLER_CHAIN);
          final Injector<UnifiedHandlerChainMetaData> postInjector = clientConfigService.getPostHandlerChainsInjector();
          setDependency(context, clientServiceBuilder, postInjector, UnifiedHandlerChainMetaData.class, serviceName, address, Constants.POST_HANDLER_CHAIN);
-         //add XTS handlers dependencies if the XTS subsystem is available
-         clientServiceBuilder.addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("xts").append("handlers"), UnifiedHandlerChainMetaData.class, postInjector);
          ServiceController<?> controller = clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
          if (newControllers != null) {
              newControllers.add(controller);

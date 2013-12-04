@@ -32,6 +32,7 @@ import org.jboss.as.webservices.WSMessages;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.ws.common.management.AbstractServerConfigMBean;
+import org.jboss.wsf.spi.metadata.config.ClientConfig;
 
 /**
  * WFLY specific ServerConfig, extending AbstractServerConfig with management
