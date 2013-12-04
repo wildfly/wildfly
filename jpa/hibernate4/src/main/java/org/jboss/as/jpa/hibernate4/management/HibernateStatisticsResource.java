@@ -329,16 +329,7 @@ public class HibernateStatisticsResource extends PlaceholderResource.Placeholder
     }
 
     private boolean hasQuery(PathElement element) {
-        boolean result = false;
-        final PersistenceUnitService puService = persistenceUnitRegistry.getPersistenceUnitService(puName);
-        final Statistics stats = getStatistics();
-        if (stats != null && puService != null) {
-            final String scopedPUName = puService.getScopedPersistenceUnitName();
-            final String unqualifiedQueryName = element.getValue();
-            final String queryName = scopedPUName + "." + unqualifiedQueryName;
-            result = stats.getQueryStatistics(queryName) != null;
-        }
-        return result;
+        return getQueryNames().contains(element.getValue());
     }
 
 
