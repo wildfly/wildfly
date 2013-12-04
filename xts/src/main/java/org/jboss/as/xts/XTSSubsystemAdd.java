@@ -215,8 +215,8 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .addDependency(TxnServices.JBOSS_TXN_ARJUNA_TRANSACTION_MANAGER);
 
         // this service needs to depend on JBossWS Config Service to be notified of the JBoss WS config (bind address, port etc)
-        xtsServiceBuilder.addDependency(WSServices.CLIENT_CONFIG_SERVICE.append("Standard-Client-Config"));
         xtsServiceBuilder.addDependency(WSServices.CONFIG_SERVICE, ServerConfig.class, xtsService.getWSServerConfig());
+        xtsServiceBuilder.addDependency(WSServices.XTS_CLIENT_INTEGRATION_SERVICE);
 
         // the service also needs to depend on the endpoint services
         for (ServiceController<Context> controller : controllers) {
