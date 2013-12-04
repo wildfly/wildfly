@@ -32,8 +32,9 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 
 /**
- * XTSHandlersService
+ * A service providing metadata for the ws handlers contributed by XTS subsystem
  *
+ * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 public class XTSHandlersService extends AbstractService<UnifiedHandlerChainMetaData> {
     private final boolean isDefaultContextPropagation;

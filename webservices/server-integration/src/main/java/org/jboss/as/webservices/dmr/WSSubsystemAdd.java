@@ -44,6 +44,7 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.web.host.CommonWebServer;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.service.ServerConfigService;
+import org.jboss.as.webservices.service.XTSClientIntegrationService;
 import org.jboss.as.webservices.util.ModuleClassLoaderProvider;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -87,6 +88,7 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServerConfigImpl serverConfig = createServerConfig(model, false, context);
             newControllers.add(ServerConfigService.install(serviceTarget, serverConfig, verificationHandler, getServerConfigDependencies(context, appclient)));
         }
+        newControllers.add(XTSClientIntegrationService.install(serviceTarget, verificationHandler));
     }
 
     private static ServerConfigImpl createServerConfig(ModelNode configuration, boolean appclient, OperationContext context) throws OperationFailedException {
