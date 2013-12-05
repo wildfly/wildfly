@@ -707,6 +707,7 @@
                                         <goals>
                                             <goal>clean</goal>
                                             <goal>genkey</goal>
+                                            <goal>generateKeyPair</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
