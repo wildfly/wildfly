@@ -26,7 +26,7 @@ import org.jboss.wsf.spi.management.WebServerInfo;
 
 public class WebServerInfoImpl implements WebServerInfo {
 
-    private CommonWebServer webServer;
+    private final CommonWebServer webServer;
 
     public WebServerInfoImpl(CommonWebServer webServer) {
         this.webServer = webServer;
