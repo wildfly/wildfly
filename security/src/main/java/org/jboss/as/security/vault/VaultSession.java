@@ -183,7 +183,9 @@ public final class VaultSession {
         if (vaultAlias == null) {
             throw VaultMessages.MESSAGES.vaultAliasNotSpecified();
         }
-        this.keystoreMaskedPassword = computeMaskedPassword();
+        this.keystoreMaskedPassword = (org.jboss.security.Util.isPasswordCommand(keystorePassword))
+                ? keystorePassword
+                : computeMaskedPassword();
         this.vaultAlias = vaultAlias;
         initSecurityVault();
     }
