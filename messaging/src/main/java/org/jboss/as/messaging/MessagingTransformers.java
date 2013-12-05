@@ -132,6 +132,9 @@ public class MessagingTransformers {
             rejectAttributesWithExpression(transportParam, TransportParamDefinition.VALUE);
         }
 
+        hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
+        hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
+
         ResourceTransformationDescriptionBuilder broadcastGroup = hornetqServer.addChildResource(BroadcastGroupDefinition.PATH);
         rejectAttributesWithExpression(broadcastGroup, BroadcastGroupDefinition.BROADCAST_PERIOD);
         rejectDefinedAttribute(broadcastGroup, CommonAttributes.JGROUPS_CHANNEL, CommonAttributes.JGROUPS_STACK);
@@ -238,6 +241,9 @@ public class MessagingTransformers {
                 .end();
         rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE);
 
+        hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
+        hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
+
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
 
@@ -268,6 +274,9 @@ public class MessagingTransformers {
 
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
         rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE);
+
+        hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
+        hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE);

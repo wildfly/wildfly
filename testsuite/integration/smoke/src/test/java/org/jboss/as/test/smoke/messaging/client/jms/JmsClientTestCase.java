@@ -100,10 +100,19 @@ public class JmsClientTestCase {
     }
 
     @Test
-    public void testSendAndReceive() throws  Exception {
+    public void testSendAndReceiveUsingMessagingPort() throws Exception {
+        doSendAndReceive("jms/RemoteConnectionFactory");
+    }
+
+    @Test
+    public void testSendAndReceiveUsingHTTPPort() throws Exception {
+        doSendAndReceive("jms/HTTPConnectionFactory");
+    }
+
+    private void doSendAndReceive(String connectionFactoryLookup) throws  Exception {
         Connection conn = null;
         try {
-            ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
+            ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup(connectionFactoryLookup);
             assertNotNull(cf);
             Destination destination = (Destination) remoteContext.lookup(QUEUE_NAME);
             assertNotNull(destination);

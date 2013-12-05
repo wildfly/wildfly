@@ -774,6 +774,7 @@ public interface CommonAttributes {
     String CONNECTOR_REF_STRING = "connector-ref";
     String CONNECTOR_SERVICE = "connector-service";
     String CONNECTOR_SERVICES = "connector-services";
+    String CORE = "core";
     String CORE_ADDRESS = "core-address";
     String CORE_QUEUE = "core-queue";
     String CORE_QUEUES = "core-queues";
@@ -790,6 +791,10 @@ public interface CommonAttributes {
     String FILE_DEPLOYMENT_ENABLED = "file-deployment-enabled";
     String GROUPING_HANDLER = "grouping-handler";
     String HOST = "host";
+    String HTTP = "http";
+    String HTTP_ACCEPTOR = "http-acceptor";
+    String HTTP_CONNECTOR = "http-connector";
+    String HTTP_LISTENER = "http-listener";
     String ID = "id";
     String IN_VM_ACCEPTOR = "in-vm-acceptor";
     String IN_VM_CONNECTOR = "in-vm-connector";
@@ -869,5 +874,4 @@ public interface CommonAttributes {
 
     AttributeDefinition[] SIMPLE_ROOT_RESOURCE_WRITE_ATTRIBUTES = { FAILOVER_ON_SHUTDOWN, MESSAGE_COUNTER_ENABLED,
             MESSAGE_COUNTER_MAX_DAY_HISTORY, MESSAGE_COUNTER_SAMPLE_PERIOD };
-
 }

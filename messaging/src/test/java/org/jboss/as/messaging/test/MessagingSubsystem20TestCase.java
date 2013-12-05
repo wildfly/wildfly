@@ -83,6 +83,7 @@ import org.jboss.as.messaging.ConnectorServiceParamDefinition;
 import org.jboss.as.messaging.DiscoveryGroupDefinition;
 import org.jboss.as.messaging.DivertDefinition;
 import org.jboss.as.messaging.GroupingHandlerDefinition;
+import org.jboss.as.messaging.HTTPAcceptorDefinition;
 import org.jboss.as.messaging.HornetQServerResourceDefinition;
 import org.jboss.as.messaging.InVMTransportDefinition;
 import org.jboss.as.messaging.MessagingExtension;
@@ -117,12 +118,9 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_2_0.xml");
-    }
-
-    @Test
-    public void testExpressions() throws Exception {
-        standardSubsystemTest("subsystem_2_0_expressions.xml");
+        // subsystem_2_0_expressions.xml contains new http-connector resource
+        // introduces in 2.0 management version
+        return readResource("subsystem_2_0_expressions.xml");
     }
 
     @Test
@@ -307,6 +305,12 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.REMOTE_CONNECTOR), TransportParamDefinition.PATH),
                                 new RejectExpressionsConfig(TransportParamDefinition.VALUE))
                         .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_ACCEPTOR)),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.ACCEPTOR)),
                                 new RejectExpressionsConfigWithAddOnlyParam(PARAM))
                         .addFailedAttribute(
@@ -424,6 +428,12 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE}))
                         .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, HTTPAcceptorDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[] {},
                                         new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
@@ -467,6 +477,12 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, BridgeDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE}))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.HTTP_CONNECTOR)),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, HTTPAcceptorDefinition.PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[] {},

@@ -1378,6 +1378,10 @@
             <maven-resource group="org.jboss.ws" artifact="jbossws-common-tools"/>
         </module-def>
 
+        <module-def name="org.jboss.xnio.netty.netty-xnio-transport">
+            <maven-resource group="org.jboss.xnio.netty" artifact="netty-xnio-transport"/>
+        </module-def>
+
         <module-def name="org.opensaml">
             <maven-resource group="org.opensaml" artifact="opensaml"/>
             <maven-resource group="org.opensaml" artifact="openws"/>

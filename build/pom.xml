@@ -1530,6 +1530,21 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.jboss.xnio.netty</groupId>
+                    <artifactId>netty-xnio-transport</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>io.netty</groupId>
+                            <artifactId>netty-transport</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>io.netty</groupId>
+                            <artifactId>netty-buffer</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
+
+                <dependency>
                     <groupId>io.undertow</groupId>
                     <artifactId>undertow-core</artifactId>
                 </dependency>

@@ -159,6 +159,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="connectors">
               <xs:complexType>
                   <xs:sequence>
+                      <xs:element maxOccurs="unbounded" minOccurs="0" name="http-connector" type="http-connectorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="netty-connector" type="netty-connectorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="in-vm-connector" type="inVM-connectorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="connector" type="connectorType" />
@@ -168,6 +169,7 @@
           <xs:element maxOccurs="1" minOccurs="0" name="acceptors">
               <xs:complexType>
                   <xs:sequence>
+                      <xs:element maxOccurs="unbounded" minOccurs="0" name="http-acceptor" type="http-acceptorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="netty-acceptor" type="netty-acceptorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="in-vm-acceptor" type="inVM-acceptorType" />
                       <xs:element maxOccurs="unbounded" minOccurs="0" name="acceptor" type="acceptorType" />
@@ -399,6 +401,29 @@
        <xs:attribute name="value" type="xs:string" use="required"/>
     </xs:complexType>
 
+    <xs:complexType name="http-connectorType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+              The HTTP connector type. Messaging clients that uses this connector initiates a HTTP request that is upgraded to HornetQ protocol.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-connectorType">
+                <xs:attribute name="socket-binding" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                This attribute references the socket-binding used by the web server. Its host and port will be used to configure the connector.
+                            ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
     <xs:complexType name="netty-connectorType">
        <xs:annotation>
           <xs:documentation>
@@ -453,6 +478,29 @@
           <xs:element maxOccurs="unbounded" minOccurs="0" name="param" type="paramType" />
        </xs:sequence>
        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="http-acceptorType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+              The HTTP acceptor type. HornetQ server will accepts HTTP connections on this acceptor to upgrade to HornetQ protocol.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="base-connectorType">
+                <xs:attribute name="http-listener" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                This attribute references the undertow's http-listener that will handle the initial HTTP request.
+                            ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="netty-acceptorType">

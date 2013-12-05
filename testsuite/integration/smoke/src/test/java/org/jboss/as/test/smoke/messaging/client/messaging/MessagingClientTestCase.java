@@ -66,11 +66,20 @@ public class MessagingClientTestCase {
     private ManagementClient managementClient;
 
     @Test
-    public void testMessagingClient() throws Exception {
+    public void testMessagingClientUsingMessagingPort() throws Exception {
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getWebUri().getHost(), 5445, false);
+        doMessagingClient(sf);
+    }
 
+    @Test
+    public void testMessagingClientUsingHTTPPort() throws Exception {
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getWebUri().getHost(), managementClient.getWebUri().getPort(), true);
+        doMessagingClient(sf);
+    }
+
+    private void doMessagingClient(ClientSessionFactory sf) throws Exception {
         final String queueName = "queue.standalone";
 
-        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
         final ModelControllerClient client = managementClient.getControllerClient();
 
         // Check that the queue does not exists
@@ -149,10 +158,11 @@ public class MessagingClientTestCase {
         }
     }
 
-    static ClientSessionFactory createClientSessionFactory(String host, int port) throws Exception {
+    static ClientSessionFactory createClientSessionFactory(String host, int port, boolean httpUpgradeEnabled) throws Exception {
         final Map<String, Object> properties = new HashMap<String, Object>();
         properties.put(TransportConstants.HOST_PROP_NAME, host);
         properties.put(TransportConstants.PORT_PROP_NAME, port);
+        properties.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, httpUpgradeEnabled);
         final TransportConfiguration configuration = new TransportConfiguration(NettyConnectorFactory.class.getName(), properties);
         return HornetQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
     }
