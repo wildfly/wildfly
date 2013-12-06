@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,28 +20,26 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.logging;
+package org.jboss.as.logging.deployments;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-import java.util.jar.Manifest;
 
 import org.apache.log4j.xml.DOMConfigurator;
-import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.logging.LoggingLogger;
+import org.jboss.as.logging.LoggingMessages;
+import org.jboss.as.logging.logmanager.WildFlyLogContextSelector;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
-import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.PropertyConfigurator;
@@ -51,19 +49,13 @@ import org.jboss.vfs.VirtualFileFilter;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A processor to search for logging configuration files for the deployment.
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
-    static final LoggingDeploymentUnitProcessor INSTANCE = new LoggingDeploymentUnitProcessor();
+public class LoggingConfigDeploymentProcessor extends AbstractLoggingDeploymentProcessor implements DeploymentUnitProcessor {
 
     public static final String PER_DEPLOYMENT_LOGGING = "org.jboss.as.logging.per-deployment";
 
-    public static final AttachmentKey<LogContext> LOG_CONTEXT_KEY = AttachmentKey.create(LogContext.class);
-
     private static final String ENCODING = "utf-8";
-    private static final String LOGGING_PROFILE = "Logging-Profile";
     private static final String LOG4J_PROPERTIES = "log4j.properties";
     private static final String LOG4J_XML = "log4j.xml";
     private static final String JBOSS_LOG4J_XML = "jboss-log4j.xml";
@@ -71,98 +63,19 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
     private static final String JBOSS_PROPERTIES = "jboss-logging.properties";
     private static final Object CONTEXT_LOCK = new Object();
 
-    @Override
-    public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (deploymentUnit.hasAttachment(Attachments.MODULE) && deploymentUnit.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
-            // don't process sub-deployments
-            final ResourceRoot root = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
-            if (SubDeploymentMarker.isSubDeployment(root)) return;
-            if (!processDeploymentLogging(deploymentUnit, root)) {
-                processLoggingProfiles(deploymentUnit, root);
-            }
-        }
+    public LoggingConfigDeploymentProcessor(final WildFlyLogContextSelector logContextSelector) {
+        super(logContextSelector);
     }
 
     @Override
-    public void undeploy(final DeploymentUnit context) {
-        // OSGi bundles deployments may not have a module attached
-        if (context.hasAttachment(Attachments.MODULE)) {
-            // Remove any log context selector references
-            final Module module = context.getAttachment(Attachments.MODULE);
-            final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-            try {
-                // Unregister the log context
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
-                final LogContext logContext = LogContext.getLogContext();
-                LoggingExtension.CONTEXT_SELECTOR.unregisterLogContext(module.getClassLoader(), logContext);
-                LoggingLogger.ROOT_LOGGER.tracef("Removing LogContext '%s' from '%s'", logContext, module);
-                context.removeAttachment(LOG_CONTEXT_KEY);
-            } finally {
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
-            }
-        }
-    }
-
-    private boolean processLoggingProfiles(final DeploymentUnit deploymentUnit, final ResourceRoot root) throws DeploymentUnitProcessingException {
-        boolean result = false;
-        final List<DeploymentUnit> subDeployments = getSubDeployments(deploymentUnit);
-        final String loggingProfile = findLoggingProfile(root);
-        if (loggingProfile != null) {
-            result = true;
-            // Get the profile logging context
-            final LoggingProfileContextSelector loggingProfileContext = LoggingProfileContextSelector.getInstance();
-            if (loggingProfileContext.exists(loggingProfile)) {
-                // Get the module
-                final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
-                final LogContext logContext = loggingProfileContext.get(loggingProfile);
-                LoggingExtension.CONTEXT_SELECTOR.registerLogContext(module.getClassLoader(), logContext);
-                LoggingLogger.ROOT_LOGGER.tracef("Registering log context '%s' on '%s' for profile '%s'", logContext, root, loggingProfile);
-                // Process sub-deployments
-                for (DeploymentUnit subDeployment : subDeployments) {
-                    // A sub-deployment must have a module to process
-                    if (subDeployment.hasAttachment(Attachments.MODULE)) {
-                        // Set the result to true if a logging profile was found
-                        if (subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT) && processLoggingProfiles(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT))) {
-                            result = true;
-                        } else {
-                            final Module subDeploymentModule = subDeployment.getAttachment(Attachments.MODULE);
-                            LoggingExtension.CONTEXT_SELECTOR.registerLogContext(subDeploymentModule.getClassLoader(), logContext);
-                            LoggingLogger.ROOT_LOGGER.tracef("Registering log context '%s' on '%s' for profile '%s'", logContext, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT), loggingProfile);
-                        }
-                    }
-                }
-            } else {
-                LoggingLogger.ROOT_LOGGER.loggingProfileNotFound(loggingProfile, root);
-            }
-        } else {
-            // Process sub-deployments
-            for (DeploymentUnit subDeployment : subDeployments) {
-                // A sub-deployment must have a root resource and a module to process
-                if (subDeployment.hasAttachment(Attachments.MODULE) && subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
-                    // Set the result to true if a logging profile was found
-                    if (processLoggingProfiles(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT)))
-                        result = true;
-                }
-            }
-        }
-        return result;
-    }
-
-    private boolean processDeploymentLogging(final DeploymentUnit deploymentUnit, final ResourceRoot root) throws DeploymentUnitProcessingException {
-        boolean result = false;
+    protected void processDeployment(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit, final ResourceRoot root) throws DeploymentUnitProcessingException {
+        // Check that per-deployment logging is not turned off
         if (Boolean.valueOf(WildFlySecurityManager.getPropertyPrivileged(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
-            // check if we already setup LogContext
-            if (deploymentUnit.hasAttachment(LOG_CONTEXT_KEY)) {
-                return true;
-            }
-
             LoggingLogger.ROOT_LOGGER.trace("Scanning for logging configuration files.");
             final List<DeploymentUnit> subDeployments = getSubDeployments(deploymentUnit);
             // Check for a config file
             final VirtualFile configFile = findConfigFile(root);
             if (configFile != null) {
-                result = true;
                 // Get the module
                 final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
                 // Create the log context and load into the selector for the module and keep a strong reference
@@ -173,49 +86,35 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                     logContext = LogContext.create();
                 }
                 // Configure the deployments logging based on the top-level configuration file
-                configure(configFile, module.getClassLoader(), logContext);
+                if (configure(configFile, module.getClassLoader(), logContext)) {
+                    registerLogContext(deploymentUnit, module, logContext);
+                } else {
+                    // Exit processing if the configuration was not successful, failures should already be logged
+                    return;
+                }
 
                 // Process the sub-deployments
                 for (DeploymentUnit subDeployment : subDeployments) {
-                    if (subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT) && processDeploymentLogging(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT))) {
-                        result = true;
-                    } else {
-                        // No configuration file found, use the top-level configuration
+                    if (subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
+                        processDeployment(phaseContext, subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT));
+                    }
+                    // No configuration file found, use the top-level configuration
+                    if (subDeployment.hasAttachment(Attachments.MODULE) && !hasRegisteredLogContext(subDeployment)) {
                         final Module subDeploymentModule = subDeployment.getAttachment(Attachments.MODULE);
                         if (subDeploymentModule != null) {
-                            LoggingExtension.CONTEXT_SELECTOR.registerLogContext(subDeploymentModule.getClassLoader(), logContext);
+                            registerLogContext(subDeployment, subDeploymentModule, logContext);
                         }
                     }
                 }
             } else {
-                // No configuration was found, process sub-deployments
+                // No configuration was found, process sub-deployments for configuration files
                 for (DeploymentUnit subDeployment : subDeployments) {
-                    final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
-                    // Process the sub-deployment
-                    if (processDeploymentLogging(subDeployment, subDeploymentRoot)) result = true;
+                    if (subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
+                        processDeployment(phaseContext, subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT));
+                    }
                 }
             }
         }
-        return result;
-    }
-
-    /**
-     * Find the logging profile attached to any resource.
-     *
-     * @param resourceRoot the root resource
-     *
-     * @return the logging profile name or {@code null} if one was not found
-     */
-    private String findLoggingProfile(final ResourceRoot resourceRoot) {
-        final Manifest manifest = resourceRoot.getAttachment(Attachments.MANIFEST);
-        if (manifest != null) {
-            final String loggingProfile = manifest.getMainAttributes().getValue(LOGGING_PROFILE);
-            if (loggingProfile != null) {
-                LoggingLogger.ROOT_LOGGER.debugf("Logging profile '%s' found in '%s'.", loggingProfile, resourceRoot);
-                return loggingProfile;
-            }
-        }
-        return null;
     }
 
     /**
@@ -227,8 +126,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
      *
      * @return the configuration file if found, otherwise {@code null}.
      *
-     * @throws DeploymentUnitProcessingException
-     *          if an error occurs.
+     * @throws DeploymentUnitProcessingException if an error occurs.
      */
     private VirtualFile findConfigFile(ResourceRoot resourceRoot) throws DeploymentUnitProcessingException {
         final VirtualFile root = resourceRoot.getRoot();
@@ -251,8 +149,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
      *
      * @return the configuration file if found, otherwise {@code null}
      *
-     * @throws DeploymentUnitProcessingException
-     *          if an error occurs.
+     * @throws DeploymentUnitProcessingException if an error occurs.
      */
     private VirtualFile findConfigFile(final VirtualFile file) throws DeploymentUnitProcessingException {
         VirtualFile result = null;
@@ -275,7 +172,19 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
         return result;
     }
 
-    private void configure(final VirtualFile configFile, final ClassLoader classLoader, final LogContext logContext) throws DeploymentUnitProcessingException {
+    /**
+     * Configures the log context.
+     *
+     * @param configFile  the configuration file
+     * @param classLoader the class loader to use for the configuration
+     * @param logContext  the log context to configure
+     *
+     * @return {@code true} if the log context was successfully configured, otherwise {@code false}
+     *
+     * @throws DeploymentUnitProcessingException if the configuration fails
+     */
+    private boolean configure(final VirtualFile configFile, final ClassLoader classLoader, final LogContext logContext) throws DeploymentUnitProcessingException {
+        boolean result = false;
         InputStream configStream = null;
         try {
             LoggingLogger.ROOT_LOGGER.debugf("Found logging configuration file: %s", configFile);
@@ -287,7 +196,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
             // Check the type of the configuration file
             if (isLog4jConfiguration(fileName)) {
                 final ClassLoader current = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-                final LogContext old = LoggingExtension.THREAD_LOCAL_CONTEXT_SELECTOR.getAndSet(CONTEXT_LOCK, logContext);
+                final LogContext old = logContextSelector.getAndSet(CONTEXT_LOCK, logContext);
                 try {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
                     if (LOG4J_XML.equals(fileName) || JBOSS_LOG4J_XML.equals(fileName)) {
@@ -298,10 +207,11 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                         new org.apache.log4j.PropertyConfigurator().doConfigure(properties, org.apache.log4j.JBossLogManagerFacade.getLoggerRepository(logContext));
                     }
                 } finally {
-                    LoggingExtension.THREAD_LOCAL_CONTEXT_SELECTOR.getAndSet(CONTEXT_LOCK, old);
+                    logContextSelector.getAndSet(CONTEXT_LOCK, old);
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(current);
                 }
-                LoggingExtension.CONTEXT_SELECTOR.registerLogContext(classLoader, logContext);
+                // Successfully configured
+                result = true;
             } else {
                 // Create a properties file
                 final Properties properties = new Properties();
@@ -313,7 +223,8 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                     // Load non-log4j types
                     final PropertyConfigurator propertyConfigurator = new PropertyConfigurator(logContext);
                     propertyConfigurator.configure(properties);
-                    LoggingExtension.CONTEXT_SELECTOR.registerLogContext(classLoader, logContext);
+                    // Successfully configured
+                    result = true;
                 }
             }
         } catch (Exception e) {
@@ -321,22 +232,7 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
         } finally {
             safeClose(configStream);
         }
-    }
-
-    private static List<DeploymentUnit> getSubDeployments(final DeploymentUnit deploymentUnit) {
-        final List<DeploymentUnit> result = new ArrayList<DeploymentUnit>();
-        if (deploymentUnit.hasAttachment(Attachments.SUB_DEPLOYMENTS)) {
-            result.addAll(deploymentUnit.getAttachmentList(Attachments.SUB_DEPLOYMENTS));
-        }
         return result;
-    }
-
-    private static void safeClose(final Closeable closable) {
-        if (closable != null) try {
-            closable.close();
-        } catch (Exception e) {
-            // no-op
-        }
     }
 
     private static boolean isLog4jConfiguration(final String fileName) {

@@ -37,6 +37,7 @@ import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Transform;
 import org.jboss.logging.annotations.Transform.TransformType;
 import org.jboss.logmanager.Configurator;
+import org.jboss.logmanager.LogContext;
 
 /**
  * This module is using message IDs in the range 11500-11599.
@@ -163,4 +164,15 @@ public interface LoggingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11512, value = "A configurator class, '%s', is not a known configurator and will be replaced.")
     void replacingConfigurator(@Transform(TransformType.GET_CLASS) Configurator c);
+
+    /**
+     * Logs an error message indicating the {@link org.jboss.logmanager.LogContext log context} associated with the
+     * deployment could not be removed from the {@link org.jboss.logmanager.LogContextSelector log context selector}.
+     *
+     * @param logContext     the log context that could not be removed
+     * @param deploymentName the name of the deployment
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11513, value = "The log context (%s) could not be removed for deployment %s")
+    void logContextNotRemoved(LogContext logContext, String deploymentName);
 }

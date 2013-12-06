@@ -33,6 +33,8 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.logging.deployments.LoggingConfigDeploymentProcessor;
+import org.jboss.as.logging.deployments.LoggingProfileDeploymentProcessor;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -62,7 +64,8 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(final DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_LOGGING_CONFIG, LoggingDeploymentUnitProcessor.INSTANCE);
+                processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_LOGGING_CONFIG, new LoggingConfigDeploymentProcessor(LoggingExtension.CONTEXT_SELECTOR));
+                processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_LOGGING_PROFILE, new LoggingProfileDeploymentProcessor(LoggingExtension.CONTEXT_SELECTOR));
             }
         }, Stage.RUNTIME);
 
