@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.LOCALE;
 import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.NAME;
 
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
@@ -38,6 +39,7 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -67,7 +69,7 @@ public class ReadOperationDescriptionHandler implements OperationStepHandler {
 
 
     static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(READ_OPERATION_DESCRIPTION_OPERATION, ControllerResolver.getResolver("global"))
-            .setParameters(NAME, LOCALE)
+            .setParameters(NAME, LOCALE, ACCESS_CONTROL)
             .setReplyType(ModelType.OBJECT)
             .setReadOnly()
             .setRuntimeOnly()
@@ -81,14 +83,13 @@ public class ReadOperationDescriptionHandler implements OperationStepHandler {
         String operationName = NAME.resolveModelAttribute(context, operation).asString();
         boolean accessControl = ACCESS_CONTROL.resolveModelAttribute(context, operation).asBoolean();
 
-        final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
-        OperationEntry operationEntry = registry.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
-        if (operationEntry == null || (context.getProcessType() == ProcessType.DOMAIN_SERVER && !operationEntry.getFlags().contains(OperationEntry.Flag.RUNTIME_ONLY))) {
+        final DescribedOp describedOp = getDescribedOp(context, operationName, operation, !accessControl);
+        if (describedOp == null || (context.getProcessType() == ProcessType.DOMAIN_SERVER && !describedOp.flags.contains(OperationEntry.Flag.RUNTIME_ONLY))) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.operationNotRegistered(operationName,
                     PathAddress.pathAddress(operation.require(OP_ADDR)))));
         } else {
-            final ModelNode result = operationEntry.getDescriptionProvider().getModelDescription(GlobalOperationHandlers.getLocale(context, operation));
-            Set<OperationEntry.Flag> flags = operationEntry.getFlags();
+            final ModelNode result = describedOp.description;
+            Set<OperationEntry.Flag> flags = describedOp.flags;
             boolean readOnly = flags.contains(OperationEntry.Flag.READ_ONLY);
             result.get(READ_ONLY).set(readOnly);
             if (!readOnly) {
@@ -113,5 +114,78 @@ public class ReadOperationDescriptionHandler implements OperationStepHandler {
             context.getResult().set(result);
         }
         context.stepCompleted();
+    }
+
+    private static DescribedOp getDescribedOp(OperationContext context, String operationName, ModelNode operation, boolean lenient) throws OperationFailedException {
+        DescribedOp result = null;
+        ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
+        if (registry != null) {
+            OperationEntry operationEntry = registry.getOperationEntry(PathAddress.EMPTY_ADDRESS, operationName);
+            if (operationEntry != null) {
+                Locale locale = GlobalOperationHandlers.getLocale(context, operation);
+                result = new DescribedOp(operationEntry, locale);
+            }
+        } else if (lenient) {
+            PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+            if (address.size() > 0) {
+                // For wildcard elements, check specific registrations where the same OSH is used
+                // for all such registrations
+                PathElement pe = address.getLastElement();
+                if (pe.isWildcard()) {
+                    ImmutableManagementResourceRegistration rootRegistration = context.getRootResourceRegistration();
+                    String type = pe.getKey();
+                    PathAddress parent = address.subAddress(0, address.size() - 1);
+                    Set<PathElement> children = rootRegistration.getChildAddresses(parent);
+                    if (children != null) {
+                        Locale locale = GlobalOperationHandlers.getLocale(context, operation);
+                        DescribedOp found = null;
+                        for (PathElement child : children) {
+                            if (type.equals(child.getKey())) {
+                                OperationEntry oe = rootRegistration.getOperationEntry(parent.append(child), operationName);
+                                DescribedOp describedOp = oe == null ? null : new DescribedOp(oe, locale);
+                                if (describedOp == null || (found != null && !found.equals(describedOp))) {
+                                    // Not all children have the same handler; give up
+                                    found = null;
+                                    break;
+                                }
+                                // We have a candidate OSH
+                                found = describedOp;
+                            }
+                        }
+                        result = found;
+                    }
+                }
+
+            }
+        }
+        return result;
+    }
+
+    private static class DescribedOp {
+        private final ModelNode description;
+        private final Set<OperationEntry.Flag> flags;
+
+        private DescribedOp(OperationEntry operationEntry, Locale locale) {
+            this.description = operationEntry.getDescriptionProvider().getModelDescription(locale);
+            this.flags = operationEntry.getFlags();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            DescribedOp that = (DescribedOp) o;
+
+            return description.equals(that.description) && flags.equals(that.flags);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = description.hashCode();
+            result = 31 * result + flags.hashCode();
+            return result;
+        }
     }
 }
