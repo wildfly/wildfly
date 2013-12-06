@@ -132,4 +132,8 @@ public interface WeldLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.DEBUG)
     @Message(value = "Discovered %s", id = Message.NONE)
     void beanArchiveDiscovered(BeanDeploymentArchive bda);
+
+    @LogMessage(level = Logger.Level.DEBUG)
+    @Message(value = "Unable to load annotation %s", id = Message.NONE)
+    void unableToLoadAnnotation(String annotationClassName);
 }

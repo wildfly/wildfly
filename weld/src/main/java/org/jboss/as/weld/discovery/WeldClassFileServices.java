@@ -21,8 +21,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.weld.WeldLogger;
 import org.jboss.as.weld.WeldMessages;
-import org.jboss.as.weld.util.Reflections;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.weld.resources.spi.ClassFileInfo;
@@ -66,9 +66,13 @@ public class WeldClassFileServices implements ClassFileServices {
                     builder.add(annotationName.toString());
                 }
             } else {
-                Class<?> annotationClass = Reflections.loadClass(name.toString(), moduleClassLoader);
-                for (Annotation annotation : annotationClass.getDeclaredAnnotations()) {
-                    builder.add(annotation.annotationType().getName());
+                try {
+                     Class<?> annotationClass = moduleClassLoader.loadClass(name.toString());
+                     for (Annotation annotation : annotationClass.getDeclaredAnnotations()) {
+                         builder.add(annotation.annotationType().getName());
+                     }
+                } catch (ClassNotFoundException e) {
+                    WeldLogger.DEPLOYMENT_LOGGER.unableToLoadAnnotation(name.toString());
                 }
             }
             return builder.build();
