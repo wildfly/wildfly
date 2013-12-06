@@ -27,10 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.ejb.Stateful;
 import javax.ejb.StatefulTimeout;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 @Stateful
-@Clustered
 @StatefulTimeout(value = 1, unit = TimeUnit.SECONDS)
 public class TimeoutIncrementorBean implements Incrementor {
     private final AtomicInteger count = new AtomicInteger(0);

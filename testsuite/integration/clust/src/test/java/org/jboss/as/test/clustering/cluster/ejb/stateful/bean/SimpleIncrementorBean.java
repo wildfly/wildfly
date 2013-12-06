@@ -29,10 +29,7 @@ import javax.ejb.PrePassivate;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 @Stateful
-@Clustered
 public class SimpleIncrementorBean implements Incrementor {
     @Resource
     private SessionContext context;

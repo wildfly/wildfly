@@ -24,10 +24,7 @@ package org.jboss.as.test.clustering.cluster.ejb.remote.bean;
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 @Stateful
-@Clustered
 @Remote(Incrementor.class)
 public class StatefulIncrementorBean extends IncrementorBean {
 }

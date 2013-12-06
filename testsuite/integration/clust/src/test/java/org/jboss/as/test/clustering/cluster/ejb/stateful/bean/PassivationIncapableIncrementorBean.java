@@ -27,10 +27,7 @@ import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
 import javax.ejb.Stateful;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 @Stateful(passivationCapable = false)
-@Clustered
 public class PassivationIncapableIncrementorBean implements Incrementor {
 
     private final AtomicInteger count = new AtomicInteger(0);

@@ -43,7 +43,7 @@ public class RegistryCollectorService<K, V> extends AbstractService<RegistryColl
     private final Set<Listener<K, V>> listeners = new CopyOnWriteArraySet<>();
 
     @Override
-    public RegistryCollector<K, V> getValue() throws IllegalStateException, IllegalArgumentException {
+    public RegistryCollector<K, V> getValue() {
         return this;
     }
 

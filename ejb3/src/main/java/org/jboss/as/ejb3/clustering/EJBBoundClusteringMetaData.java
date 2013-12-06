@@ -28,13 +28,5 @@ import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaData;
  * @author Jaikiran Pai
  */
 public class EJBBoundClusteringMetaData extends AbstractEJBBoundMetaData {
-    private boolean clustered;
-
-    public boolean isClustered() {
-        return this.clustered;
-    }
-
-    public void setClustered(final boolean clustered) {
-        this.clustered = clustered;
-    }
+    private static final long serialVersionUID = 509813132897569188L;
 }

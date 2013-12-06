@@ -22,44 +22,41 @@
 
 package org.jboss.as.test.clustering.extended.ejb2.stateful.remote.failover;
 
-import java.rmi.RemoteException;
-
 import javax.ejb.EJBException;
 import javax.ejb.RemoteHome;
 import javax.ejb.SessionBean;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 
-import org.jboss.ejb3.annotation.Clustered;
 import org.jboss.logging.Logger;
 
 /**
  * @author Ondrej Chaloupka
  */
 @Stateful
-@Clustered
 @RemoteHome(CounterRemoteHome.class)
 public class CounterBean extends CounterBaseBean implements SessionBean {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CounterBean.class);
 
-    public void ejbRemove() throws EJBException, RemoteException {
+    @Override
+    public void ejbRemove() throws EJBException {
         log.info("ejbRemove called...");
         CounterSingleton.destroyCounter.incrementAndGet();
     }
 
     @Override
-    public void ejbActivate() throws EJBException, RemoteException {
+    public void ejbActivate() throws EJBException {
 
     }
 
     @Override
-    public void ejbPassivate() throws EJBException, RemoteException {
+    public void ejbPassivate() throws EJBException {
 
     }
 
     @Override
-    public void setSessionContext(SessionContext arg0) throws EJBException, RemoteException {
+    public void setSessionContext(SessionContext arg0) throws EJBException {
 
     }
 }

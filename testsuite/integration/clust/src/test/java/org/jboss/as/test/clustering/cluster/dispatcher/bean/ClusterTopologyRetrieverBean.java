@@ -9,7 +9,6 @@ import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
-import org.jboss.ejb3.annotation.Clustered;
 import org.wildfly.clustering.dispatcher.Command;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
@@ -17,7 +16,6 @@ import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
 
 @Stateless
-@Clustered
 @Remote(ClusterTopologyRetriever.class)
 public class ClusterTopologyRetrieverBean implements ClusterTopologyRetriever {
     @EJB

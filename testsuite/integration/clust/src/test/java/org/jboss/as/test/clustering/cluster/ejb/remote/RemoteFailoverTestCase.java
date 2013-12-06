@@ -46,7 +46,6 @@ import org.jboss.as.test.clustering.cluster.ejb.remote.bean.Result;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.SecureStatelessIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.SlowToDestroyStatefulIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatefulIncrementorBean;
-import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessDDIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.remote.bean.StatelessIncrementorBean;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
 import org.jboss.as.test.clustering.ejb.RemoteEJBDirectory;
@@ -62,7 +61,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Validates @Stateful vs @Stateless failover behavior of a remotely accessed @Clustered session beans.
+ * Validates @Stateful vs @Stateless failover behavior of a remotely accessed clustered session beans.
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
@@ -93,7 +92,6 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         jar.addPackage(Incrementor.class.getPackage());
         jar.addPackage(EJBDirectory.class.getPackage());
-        jar.addAsManifestResource(Incrementor.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         log.info(jar.toString(true));
         return jar;
     }
@@ -101,11 +99,6 @@ public class RemoteFailoverTestCase extends ClusterAbstractTestCase {
     @Test
     public void testStatelessFailover() throws Exception {
         this.testStatelessFailover(CLIENT_PROPERTIES, StatelessIncrementorBean.class);
-    }
-
-    @Test
-    public void testStatelessDDFailover() throws Exception {
-        this.testStatelessFailover(CLIENT_PROPERTIES, StatelessDDIncrementorBean.class);
     }
 
     @Test

@@ -360,7 +360,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
             modelNode.get("strict-max-bean-instance-pool", "slsb-strict-max-pool").remove("name");
             modelNode.get("strict-max-bean-instance-pool", "mdb-strict-max-pool").remove("name");
             modelNode.get("cache", "simple").remove("name");
-            modelNode.get("cache", "clustered").remove("name");
+            modelNode.get("cache", "distributable").remove("name");
             return modelNode;
         }
     };

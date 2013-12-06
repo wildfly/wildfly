@@ -22,8 +22,6 @@
 
 package org.jboss.as.test.manualmode.ejb.client.cluster;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 import javax.ejb.Remote;
 import javax.ejb.Stateful;
 
@@ -31,7 +29,6 @@ import javax.ejb.Stateful;
  * @author Jaikiran Pai
  */
 @Stateful
-@Clustered
 @Remote(NodeNameEcho.class)
 public class ClusteredStatefulNodeNameEcho implements NodeNameEcho {
     @Override

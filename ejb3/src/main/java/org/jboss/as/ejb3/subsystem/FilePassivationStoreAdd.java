@@ -45,6 +45,6 @@ public class FilePassivationStoreAdd extends PassivationStoreAdd {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> serviceControllers) throws IllegalArgumentException, OperationFailedException {
         int initialMaxSize = FilePassivationStoreResourceDefinition.MAX_SIZE.resolveModelAttribute(context, model).asInt();
         String containerName = PassivationStoreResourceDefinition.CACHE_CONTAINER.getDefaultValue().asString();
-        this.install(context, operation, initialMaxSize, containerName, null, verificationHandler, serviceControllers);
+        this.install(context, operation, initialMaxSize, containerName, "passivation", verificationHandler, serviceControllers);
     }
 }

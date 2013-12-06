@@ -31,13 +31,14 @@ import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
-import org.jboss.as.ejb3.component.session.ClusteringInfo;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import org.jboss.as.ejb3.cache.CacheFactory;
+import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.RegistryInstallerService;
 import org.jboss.msc.value.InjectedValue;
 
@@ -61,9 +62,8 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
         configuration.getCreateDependencies().add(new DependencyConfigurator<StatefulSessionComponentCreateService>() {
             @Override
             public void configureDependency(ServiceBuilder<?> builder, StatefulSessionComponentCreateService service) {
-                if (service.getClustering() != null) {
-                    builder.addDependency(RegistryInstallerService.SERVICE_NAME);
-                }
+                builder.addDependency(RegistryInstallerService.SERVICE_NAME);
+                builder.addDependency(DependencyType.OPTIONAL, EJBRemoteConnectorService.SERVICE_NAME);
             }
         });
         configuration.getCreateDependencies().add(new DependencyConfigurator<StatefulSessionComponentCreateService>() {
@@ -77,11 +77,7 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
                     return CacheFactoryBuilderService.DEFAULT_PASSIVATION_DISABLED_CACHE_SERVICE_NAME;
                 }
                 CacheInfo cache = service.getCache();
-                if (cache != null) {
-                    return CacheFactoryBuilderService.getServiceName(cache.getName());
-                }
-                ClusteringInfo clustering = service.getClustering();
-                return (clustering != null) ? CacheFactoryBuilderService.DEFAULT_CLUSTERED_CACHE_SERVICE_NAME : CacheFactoryBuilderService.DEFAULT_CACHE_SERVICE_NAME;
+                return (cache != null) ? CacheFactoryBuilderService.getServiceName(cache.getName()) : CacheFactoryBuilderService.DEFAULT_CACHE_SERVICE_NAME;
             }
         });
         @SuppressWarnings("rawtypes")

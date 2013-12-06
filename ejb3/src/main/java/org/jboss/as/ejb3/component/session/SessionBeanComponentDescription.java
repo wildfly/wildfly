@@ -110,8 +110,6 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
      */
     private String mappedName;
 
-    private ClusteringInfo clusteringInfo;
-
     public enum SessionBeanType {
         STATELESS,
         STATEFUL,
@@ -431,13 +429,5 @@ public abstract class SessionBeanComponentDescription extends EJBComponentDescri
     @Override
     public SessionBeanMetaData getDescriptorData() {
         return (SessionBeanMetaData) super.getDescriptorData();
-    }
-
-    public ClusteringInfo getClustering() {
-        return this.clusteringInfo;
-    }
-
-    public void setClustering(ClusteringInfo info) {
-        this.clusteringInfo = info;
     }
 }
