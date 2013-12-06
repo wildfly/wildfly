@@ -38,6 +38,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.jberet.BatchEnvironmentFactory;
 import org.wildfly.jberet.WildFlyArtifactFactory;
+import org.wildfly.jberet._private.WildFlyBatchLogger;
 import org.wildfly.jberet._private.WildFlyBatchMessages;
 import org.wildfly.jberet.services.ContextHandle.ChainedContextHandle;
 import org.wildfly.jberet.services.ContextHandle.Handle;
@@ -48,38 +49,41 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
-    private final InjectedValue<ClassLoader> classLoaderInjector = new InjectedValue<>();
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<>();
-    private final InjectedValue<Properties> propertiesInjector = new InjectedValue<>();
     private final InjectedValue<UserTransaction> userTransactionInjector = new InjectedValue<>();
 
-    private volatile BatchEnvironment batchEnvironment = null;
+    private BatchEnvironment batchEnvironment = null;
+    private Properties properties = null;
+    private ClassLoader classLoader = null;
 
     @Override
-    public void start(final StartContext context) throws StartException {
-        final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(classLoaderInjector.getValue(),
+    public synchronized void start(final StartContext context) throws StartException {
+        WildFlyBatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
+        final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(classLoader,
                 beanManagerInjector.getOptionalValue(), executorServiceInjector.getValue(),
-                userTransactionInjector.getOptionalValue(), propertiesInjector.getValue());
+                userTransactionInjector.getOptionalValue(), properties);
         // Add the service to the factory
-        BatchEnvironmentFactory.getInstance().add(classLoaderInjector.getValue(), batchEnvironment);
+        BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
     }
 
     @Override
-    public void stop(final StopContext context) {
-        if (batchEnvironment != null)
-            BatchEnvironmentFactory.getInstance().remove(batchEnvironment.getClassLoader());
+    public synchronized void stop(final StopContext context) {
+        WildFlyBatchLogger.LOGGER.debugf("Removing batch environment; %s", classLoader);
+        BatchEnvironmentFactory.getInstance().remove(classLoader);
+        properties = null;
+        classLoader = null;
         batchEnvironment = null;
     }
 
     @Override
-    public BatchEnvironment getValue() throws IllegalStateException, IllegalArgumentException {
+    public synchronized BatchEnvironment getValue() throws IllegalStateException, IllegalArgumentException {
         return batchEnvironment;
     }
 
-    public InjectedValue<ClassLoader> getClassLoaderInjector() {
-        return classLoaderInjector;
+    public synchronized void setClassLoader(final ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     public InjectedValue<BeanManager> getBeanManagerInjector() {
@@ -90,8 +94,8 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         return executorServiceInjector;
     }
 
-    public InjectedValue<Properties> getPropertiesInjector() {
-        return propertiesInjector;
+    public synchronized void setProperties(final Properties properties) {
+        this.properties = properties;
     }
 
     public InjectedValue<UserTransaction> getUserTransactionInjector() {

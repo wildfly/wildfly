@@ -160,7 +160,7 @@
         <version.org.infinispan.protostream>1.0.0.Alpha7</version.org.infinispan.protostream>
         <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
-        <version.org.jberet>1.0.0.Beta1</version.org.jberet>
+        <version.org.jberet>1.0.0.CR1</version.org.jberet>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.8</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.1.2.Final</version.org.jboss.arquillian.core>

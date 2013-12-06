@@ -20,29 +20,39 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.wildfly.extension.batch.extension;
+package org.wildfly.extension.batch;
 
 import java.io.IOException;
 
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.wildfly.extension.batch.BatchSubsystemDefinition;
-import org.wildfly.extension.batch.BatchSubsystemExtension;
+import org.junit.Test;
 
 /**
- * This is the barebone test example that tests subsystem
- * It does same things that {@link SubsystemParsingTestCase} does but most of internals are already done in AbstractSubsystemBaseTest
- * If you need more control over what happens in tests look at  {@link SubsystemParsingTestCase}
+ * Basic subsystem test. Tests parsing various batch configurations
  */
-public class SubsystemBaseParsingTestCase extends AbstractSubsystemBaseTest {
+public class SubsystemParsingTestCase extends AbstractBatchTestCase {
 
-    public SubsystemBaseParsingTestCase() {
+    public SubsystemParsingTestCase() {
         super(BatchSubsystemDefinition.NAME, new BatchSubsystemExtension());
     }
-
 
     @Override
     protected String getSubsystemXml() throws IOException {
         return readResource("/default-subsystem.xml");
     }
 
+    @Test
+    public void testMinimalSubsystem() throws Exception {
+        standardSubsystemTest("/minimal-subsystem.xml");
+    }
+
+    @Test
+    public void testMultiThreadFactory() throws Exception {
+        standardSubsystemTest("/multi-thread-factory-subsystem.xml");
+    }
+
+    @Test
+    public void testJdbcSubsystem() throws Exception {
+        standardSubsystemTest("/jdbc-default-subsystem.xml");
+        standardSubsystemTest("/jdbc-subsystem.xml");
+    }
 }

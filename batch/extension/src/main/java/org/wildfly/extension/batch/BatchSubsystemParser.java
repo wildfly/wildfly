@@ -22,7 +22,9 @@
 
 package org.wildfly.extension.batch;
 
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -32,10 +34,12 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.threads.ThreadsParser;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.wildfly.jberet.BatchConfiguration.JobRepositoryType;
 
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
@@ -54,7 +58,13 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
     public void readElement(final XMLExtendedStreamReader reader, final List<ModelNode> list) throws XMLStreamException {
         final PathAddress subsystemAddress = PathAddress.pathAddress(BatchSubsystemDefinition.SUBSYSTEM_PATH);
         // Add the subsytem
-        list.add(Util.createAddOperation(subsystemAddress));
+        final ModelNode subsystemAddOp = Util.createAddOperation(subsystemAddress);
+        list.add(subsystemAddOp);
+        // Add the job-repository=jdbc resource
+        final ModelNode jdbcAddOp = Util.createAddOperation(subsystemAddress.append(JobRepositoryDefinition.JDBC.getPathElement()));
+        list.add(jdbcAddOp);
+
+        final Set<Element> requiredElements = EnumSet.of(Element.JOB_REPOSITORY, Element.THREAD_POOL);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final Namespace namespace = Namespace.forUri(reader.getNamespaceURI());
@@ -62,8 +72,10 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
                 final String localName = reader.getLocalName();
                 final Element element = Element.forName(localName);
                 if (element == Element.JOB_REPOSITORY) {
-                    parseJobRepository(reader, subsystemAddress, list);
+                    requiredElements.remove(Element.JOB_REPOSITORY);
+                    parseJobRepository(reader, subsystemAddOp, jdbcAddOp);
                 } else if (element == Element.THREAD_POOL) {
+                    requiredElements.remove(Element.THREAD_POOL);
                     threadsParser.parseUnboundedQueueThreadPool(reader, namespace.getUriString(),
                             org.jboss.as.threads.Namespace.THREADS_1_1, subsystemAddress.toModelNode(), list,
                             BatchConstants.THREAD_POOL, BatchConstants.THREAD_POOL_NAME);
@@ -78,31 +90,32 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
                 throw ParseUtils.unexpectedElement(reader);
             }
         }
+        if (!requiredElements.isEmpty()) {
+            throw ParseUtils.missingRequired(reader, requiredElements);
+        }
         ParseUtils.requireNoContent(reader);
     }
 
-    private void parseJobRepository(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> list) throws XMLStreamException {
+    private void parseJobRepository(final XMLExtendedStreamReader reader, final ModelNode subsystemAddOp, final ModelNode jdbcAddOp) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             final String localName = reader.getLocalName();
             final Element element = Element.forName(localName);
+            final JobRepositoryType jobRepositoryType;
             if (element == Element.IN_MEMORY) {
-                list.add(Util.createAddOperation(PathAddress.pathAddress(address, JobRepositoryDefinition.IN_MEMORY.getPathElement())));
+                jobRepositoryType = JobRepositoryType.IN_MEMORY;
+                ParseUtils.requireNoContent(reader);
             } else if (element == Element.JDBC) {
-                if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                jobRepositoryType = JobRepositoryType.JDBC;
+                if (reader.getAttributeCount() > 0) {
                     final String value = ParseUtils.readStringAttributeElement(reader, Attribute.JNDI_NAME.getLocalName());
-                    final ModelNode op = Util.createAddOperation(PathAddress.pathAddress(address, JobRepositoryDefinition.JDBC.getPathElement()));
-                    JobRepositoryDefinition.JNDI_NAME.parseAndSetParameter(value, op, reader);
-                    list.add(op);
+                    JobRepositoryDefinition.JNDI_NAME.parseAndSetParameter(value, jdbcAddOp, reader);
                 } else {
-                    throw ParseUtils.unexpectedElement(reader);
+                    ParseUtils.requireNoContent(reader);
                 }
             } else {
                 throw ParseUtils.unexpectedElement(reader);
             }
-        }
-        // Expect end tag for job-repository
-        if (!(reader.hasNext() && reader.nextTag() == END_ELEMENT)) {
-            throw ParseUtils.unexpectedElement(reader);
+            BatchSubsystemDefinition.JOB_REPOSITORY_TYPE.parseAndSetParameter(jobRepositoryType.toString(), subsystemAddOp, reader);
         }
     }
 
@@ -110,37 +123,22 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context) throws XMLStreamException {
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
         final ModelNode model = context.getModelNode();
-        if (model.hasDefined(JobRepositoryDefinition.NAME)) {
-            // Write the job-repository
-            writer.writeStartElement(JobRepositoryDefinition.NAME);
-            // The value is the job repository type
-            final String value = model.get(JobRepositoryDefinition.NAME).asProperty().getName();
-            // TODO (jrp) find a cleaner way to do this
-            if (JobRepositoryDefinition.JDBC.getPathElement().getValue().equals(value)) {
-                writer.writeStartElement(Element.JDBC.getLocalName());
-                JobRepositoryDefinition.JNDI_NAME.marshallAsAttribute(model.get(JobRepositoryDefinition.NAME), writer);
-                writer.writeEndElement();
-            } else {
-                // Write in-memory by default
-                writer.writeStartElement(Element.IN_MEMORY.getLocalName());
-                writer.writeEndElement();
-            }
-            // End job-repository
-            writer.writeEndElement();
+        BatchSubsystemDefinition.JOB_REPOSITORY_TYPE.marshallAsElement(model, writer);
 
-            // Write the thread pool
-            threadsParser.writeUnboundedQueueThreadPool(writer, model.get(BatchConstants.THREAD_POOL).asProperty(), Element.THREAD_POOL.getLocalName(), false);
-
-            // Write out the thread factory
-            if (model.hasDefined(BatchConstants.THREAD_FACTORY)) {
-                threadsParser.writeThreadFactory(writer, model.get(BatchConstants.THREAD_FACTORY).asProperty());
+        // Write the thread pool
+        if (model.hasDefined(BatchConstants.THREAD_POOL)) {
+            final List<Property> threadPools = model.get(BatchConstants.THREAD_POOL).asPropertyList();
+            for (Property threadPool : threadPools) {
+                threadsParser.writeUnboundedQueueThreadPool(writer, threadPool, Element.THREAD_POOL.getLocalName(), false);
             }
-        } else {
-            // Should always be defined, but write in-memory by default
-            writer.writeStartElement(JobRepositoryDefinition.NAME);
-            writer.writeStartElement(Element.IN_MEMORY.getLocalName());
-            writer.writeEndElement();
-            writer.writeEndElement();
+        }
+
+        // Write out the thread factory
+        if (model.hasDefined(BatchConstants.THREAD_FACTORY)) {
+            final List<Property> threadFactories = model.get(BatchConstants.THREAD_FACTORY).asPropertyList();
+            for (Property threadFactory : threadFactories) {
+                threadsParser.writeThreadFactory(writer, threadFactory);
+            }
         }
 
         writer.writeEndElement();

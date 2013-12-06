@@ -1,4 +1,4 @@
-package org.wildfly.extension.batch.services;
+package org.wildfly.extension.batch;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.threads.ThreadsServices;
@@ -10,11 +10,6 @@ import org.jboss.msc.service.ServiceName;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class BatchServiceNames {
-
-    /**
-     * The default service name batch properties
-     */
-    public static final ServiceName BATCH_PROPERTIES = ServiceName.JBOSS.append("batch").append("properties");
 
     /**
      * The default service name fo the thread-pool
