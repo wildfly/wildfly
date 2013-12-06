@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.ejb3.EjbMessages;
@@ -91,7 +92,7 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
             this.executor.shutdownNow();
         } else {
             for (Future<?> future: this.expirationFutures.values()) {
-                future.cancel(false);
+                future.cancel(true);
             }
         }
         this.expirationFutures.clear();
@@ -160,14 +161,17 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
         Entry<V> entry = this.entries.get(id);
         if ((entry != null) && entry.done()) {
             if (this.timeout != null) {
-                if (this.timeout.getValue() > 0) {
-                    final RemoveTask task = new RemoveTask(id);
-                    Future<?> future = this.executor.schedule(task, this.timeout.getValue(), this.timeout.getTimeUnit());
-                    this.expirationFutures.put(id, future);
-                    if(task.isDone()) {
-                        this.expirationFutures.remove(id);
+                long value = this.timeout.getValue();
+                if (value > 0) {
+                    TimeUnit unit = this.timeout.getTimeUnit();
+                    RemoveTask task = new RemoveTask(id);
+                    // Make sure the expiration future map insertion happens before map removal (during task execution).
+                    synchronized (task) {
+                        this.expirationFutures.put(id, this.executor.schedule(task, value, unit));
                     }
-                } else if (this.timeout.getValue() == 0) {
+                } else if (value == 0) {
+                    // The EJB specification allows a 0 timeout, which means the bean is immediately eligible for removal.
+                    // However, removing it directly is faster than scheduling it for immediate removal.
                     remove(id);
                 }
             }
@@ -191,23 +195,17 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
 
     class RemoveTask implements Runnable {
         private final K key;
-        private volatile boolean done;
 
         RemoveTask(K key) {
             this.key = key;
         }
 
         @Override
-        public void run() {
+        public synchronized void run() {
             if (!Thread.currentThread().isInterrupted()) {
                 SimpleCache.this.remove(this.key);
             }
-            done = true;
             SimpleCache.this.expirationFutures.remove(this.key);
-        }
-
-        boolean isDone() {
-            return done;
         }
     }
 
