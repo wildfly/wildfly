@@ -5,8 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -23,8 +21,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,7 +30,6 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(RegistryTestCase.class);
     private static final String MODULE_NAME = "registry";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
-    private static EJBDirectory context;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -55,22 +50,12 @@ public class RegistryTestCase extends ClusterAbstractTestCase {
         return jar;
     }
 
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        context = new RemoteEJBDirectory(MODULE_NAME);
-    }
-
-    @AfterClass
-    public static void destroy() throws NamingException {
-        context.close();
-    }
-
     @Test
     public void test() throws Exception {
 
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
-        try {
+        try (EJBDirectory context = new RemoteEJBDirectory(MODULE_NAME)) {
             RegistryRetriever bean = context.lookupStateless(RegistryRetrieverBean.class, RegistryRetriever.class);
             Collection<String> names = bean.getNodes();
             assertEquals(2, names.size());
