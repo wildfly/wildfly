@@ -26,14 +26,11 @@ import static org.jboss.as.patching.runner.TestUtils.createModule0;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.jar.JarInputStream;
-import java.util.jar.Manifest;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -186,14 +183,6 @@ public class PatchModuleInvalidationTestCase extends AbstractPatchingTest {
     }
 
     static void assertLoadable(final File jar) throws Exception {
-        final JarInputStream is = new JarInputStream(new FileInputStream(jar));
-        try {
-            final Manifest manifest = is.getManifest();
-            Assert.assertNotNull(manifest);
-        } finally {
-            IoUtils.safeClose(is);
-        }
-
         final URL[] urls = new URL[] { jar.toURL() };
         final URLClassLoader cl = new URLClassLoader(urls);
         try {
