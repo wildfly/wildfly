@@ -21,9 +21,7 @@
  */
 package org.jboss.as.ejb3.timer.schedule;
 
-import javax.ejb.ScheduleExpression;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -31,10 +29,11 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
 
+import javax.ejb.ScheduleExpression;
+
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.logging.Logger;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -49,7 +48,6 @@ import org.junit.runners.Parameterized.Parameters;
  * @author "<a href=\"mailto:wfink@redhat.com\">Wolf-Dieter Fink</a>"
  * @version $Revision: $
  */
-@Ignore
 @RunWith(Parameterized.class)
 public class CalendarBasedTimeoutTestCase {
 
@@ -77,17 +75,18 @@ public class CalendarBasedTimeoutTestCase {
      */
     @Parameters
     public static Collection<Object[]> getTimezones() {
-        String[] allTimezoneIDs = TimeZone.getAvailableIDs();
-        Object[][] timezones = new Object[allTimezoneIDs.length][];
-        int i = 0;
-        for (String timezoneID : allTimezoneIDs) {
-            timezones[i++] = new Object[]
-                    {TimeZone.getTimeZone(timezoneID)};
+        List<Object[]> timeZones = new ArrayList<Object[]>();
+        TimeZone currentTimeZone = null;
+        for (String timezoneID : TimeZone.getAvailableIDs()) {
+            TimeZone timeZone = TimeZone.getTimeZone(timezoneID);
+            if (currentTimeZone == null || !currentTimeZone.hasSameRules(timeZone)) {
+                currentTimeZone = timeZone;
+                timeZones.add(new Object[] { timeZone });
+            }
         }
-
-        return Arrays.asList(timezones);
+        return timeZones;
     }
-
+    
     @Test
     public void testEverySecondTimeout() {
         ScheduleExpression everySecondExpression = this.getTimezoneSpecificScheduleExpression();
@@ -304,7 +303,7 @@ public class CalendarBasedTimeoutTestCase {
         Assert.assertEquals("Unexpected day of month in first timeout ", 31, dayOfMonth);
 
         Calendar previousTimeout = firstTimeout;
-        for (int i = 1; i <= 180; i++) {
+        for (int i = 1; i <= 18; i++) {
             Calendar nextTimeout = calendarTimeout.getNextTimeout(previousTimeout);
 
             Assert.assertNotNull("Next timeout is null", nextTimeout);
@@ -538,7 +537,7 @@ public class CalendarBasedTimeoutTestCase {
         if(firstTimeout.get(Calendar.DAY_OF_MONTH) != 1 ||
                 firstTimeout.get(Calendar.HOUR_OF_DAY) != 0 ||
                 firstTimeout.get(Calendar.MINUTE) != 0) {
-            Assert.fail("Unexpected first schedule if start date is in the past, must be at 00:00 but is "
+            Assert.fail("Unexpected first schedule if start date is in the future, must be at 1st of month 00:00 but is "
                 + firstTimeout.get(Calendar.DAY_OF_MONTH)+". "+firstTimeout.get(Calendar.HOUR_OF_DAY)+":"+firstTimeout.get(Calendar.MINUTE)+"      "+firstTimeout);
         }
     }
