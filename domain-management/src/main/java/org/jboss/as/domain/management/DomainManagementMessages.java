@@ -866,8 +866,9 @@ public interface DomainManagementMessages {
     PasswordValidationException passwordUsernameMatchError();
 
     /*
-     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
-     * this range commencing 15200.
+     * Logging IDs 15200-15299 and 21000-21099 are reserved for domain management
+     *
+     * The file DomainManagementLogger also contains messages in this range 15200-15220.
      */
 
     /**
