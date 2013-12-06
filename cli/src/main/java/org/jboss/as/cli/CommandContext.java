@@ -414,4 +414,38 @@ public interface CommandContext {
      *          -1 otherwise
      */
     int getTerminalHeight();
+
+    /**
+     * Initializes a variable with the given name with the given value.
+     * The name of the variable must follow the rules for Java identifiers
+     * but not contain '$' character.
+     * If the variable already exists, its value will be silently overridden.
+     * Passing in null as the value will remove the variable altogether.
+     * If the variable with the given name has not been defined and the value
+     * passed in is null, the method will return silently.
+     *
+     * @param name  name of the variable
+     * @param value  value for the variable
+     * @throws CommandLineException  in case the name contains illegal characters
+     */
+    void setVariable(String name, String value) throws CommandLineException;
+
+    /**
+     * Returns the value for the variable. If the variable has not been defined
+     * the method will return null.
+     *
+     * @param name  name of the variable
+     * @return  the value of the variable or null if the variable has not been
+     *          defined
+     */
+    String getVariable(String name);
+
+    /**
+     * Returns a collection of all the defined variable names.
+     * If there no variables defined, an empty collection will be returned.
+     *
+     * @return  collection of all the defined variable names or
+     *          an empty collection if no variables has been defined
+     */
+    Collection<String> getVariables();
 }
