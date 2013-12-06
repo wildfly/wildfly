@@ -5,8 +5,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Collection;
 
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -23,8 +21,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,7 +30,6 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
     private static final Logger log = Logger.getLogger(ServiceProviderRegistrationTestCase.class);
     private static final String MODULE_NAME = "service-provider-registration";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
-    private static EJBDirectory context;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -55,16 +50,6 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
         return ejbJar;
     }
 
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        context = new RemoteEJBDirectory(MODULE_NAME);
-    }
-
-    @AfterClass
-    public static void destroy() throws NamingException {
-        context.close();
-    }
-
     @Test
     public void test() throws Exception {
 
@@ -75,8 +60,8 @@ public class ServiceProviderRegistrationTestCase extends ClusterAbstractTestCase
 
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
-        try {
-            ServiceProviderRetriever bean = context.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+            ServiceProviderRetriever bean = directory.lookupStateless(ServiceProviderRetrieverBean.class, ServiceProviderRetriever.class);
             Collection<String> names = bean.getProviders();
             assertEquals(2, names.size());
             assertTrue(names.toString(), names.contains(nodeName1));

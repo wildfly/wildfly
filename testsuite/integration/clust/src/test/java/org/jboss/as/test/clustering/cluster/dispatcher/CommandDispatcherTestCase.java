@@ -2,8 +2,6 @@ package org.jboss.as.test.clustering.cluster.dispatcher;
 
 import static org.junit.Assert.*;
 
-import javax.naming.NamingException;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -22,8 +20,6 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,7 +30,6 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
     private static final Logger log = Logger.getLogger(CommandDispatcherTestCase.class);
     private static final String MODULE_NAME = "command-dispatcher";
     private static final String CLIENT_PROPERTIES = "cluster/ejb3/stateless/jboss-ejb-client.properties";
-    private static EJBDirectory context;
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
@@ -55,19 +50,8 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
         return ejbJar;
     }
 
-    @BeforeClass
-    public static void beforeClass() throws NamingException {
-        context = new RemoteEJBDirectory(MODULE_NAME);
-    }
-
-    @AfterClass
-    public static void destroy() throws NamingException {
-        context.close();
-    }
-
     @Test
     public void test() throws Exception {
-
         String cluster = "server";
         String nodeNameFormat = "%s/%s";
         String nodeName1 = String.format(nodeNameFormat, NODE_1, cluster);
@@ -75,8 +59,8 @@ public class CommandDispatcherTestCase extends ClusterAbstractTestCase {
 
         ContextSelector<EJBClientContext> selector = EJBClientContextSelector.setup(CLIENT_PROPERTIES);
 
-        try {
-            ClusterTopologyRetriever bean = context.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
+        try (EJBDirectory directory = new RemoteEJBDirectory(MODULE_NAME)) {
+            ClusterTopologyRetriever bean = directory.lookupStateless(ClusterTopologyRetrieverBean.class, ClusterTopologyRetriever.class);
             ClusterTopology topology = bean.getClusterTopology();
             assertEquals(2, topology.getNodes().size());
             assertTrue(topology.getNodes().toString(), topology.getNodes().contains(nodeName1));
