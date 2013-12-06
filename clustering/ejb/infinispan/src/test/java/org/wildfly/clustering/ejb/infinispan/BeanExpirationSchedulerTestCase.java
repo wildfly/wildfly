@@ -49,7 +49,8 @@ public class BeanExpirationSchedulerTestCase {
         when(bean.getId()).thenReturn(beanId);
         when(bean.isExpired()).thenReturn(false);
 
-        when(config.getTimeout()).thenReturn(new Time(0, TimeUnit.SECONDS));
+        // Fun fact: the EJB specification allows a timeout value of 0, so only negative timeouts are treated as immortal
+        when(config.getTimeout()).thenReturn(new Time(-1, TimeUnit.SECONDS));
         when(config.getRemoveListener()).thenReturn(listener);
 
         try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanExpirationScheduler<>(batcher, remover, config)) {

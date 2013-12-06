@@ -79,11 +79,15 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>
     public void schedule(Bean<G, I, T> bean) {
         Time timeout = this.expiration.getTimeout();
         long value = timeout.getValue();
-        if (value > 0) {
-            TimeUnit unit = timeout.getUnit();
+        if (value >= 0) {
             I id = bean.getId();
+            TimeUnit unit = timeout.getUnit();
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Scheduling stateful session bean %s to expire in %d %s", id, value, unit);
-            this.expirationFutures.put(id, this.executor.schedule(new ExpirationTask(id), value, unit));
+            ExpirationTask task = new ExpirationTask(id);
+            // Make sure the expiration future map insertion happens before map removal (during task execution).
+            synchronized (task) {
+                this.expirationFutures.put(id, this.executor.schedule(task, value, unit));
+            }
         }
     }
 
@@ -109,7 +113,9 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>
 
         @Override
         public void run() {
-            BeanExpirationScheduler.this.expirationFutures.remove(this.id);
+            synchronized (this) {
+                BeanExpirationScheduler.this.expirationFutures.remove(this.id);
+            }
             InfinispanEjbLogger.ROOT_LOGGER.tracef("Expiring stateful session bean %s", this.id);
             Batch batch = BeanExpirationScheduler.this.batcher.startBatch();
             boolean success = false;
