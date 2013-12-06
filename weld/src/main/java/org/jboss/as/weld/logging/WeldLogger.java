@@ -235,4 +235,8 @@ public interface WeldLogger extends BasicLogger {
 
     @Message(id = 50, value = "%s was not found in composite index")
     IllegalStateException nameNotFoundInIndex(String name);
+
+    @LogMessage(level = Logger.Level.DEBUG)
+    @Message(id = Message.NONE, value = "Unable to load annotation %s")
+    void unableToLoadAnnotation(String annotationClassName);
 }
