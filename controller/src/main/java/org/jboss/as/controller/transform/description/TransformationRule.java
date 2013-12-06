@@ -111,10 +111,6 @@ abstract class TransformationRule {
             super(context);
         }
 
-        protected TransformationContext getContext() {
-            return super.getContext();
-        }
-
         abstract void invokeNext(Resource resource) throws OperationFailedException;
 
     }
@@ -123,6 +119,7 @@ abstract class TransformationRule {
 
         private final TransformationContext delegate;
         private volatile boolean immutable;
+
         private TransformationContextWrapper(TransformationContext delegate) {
             this.delegate = delegate;
         }
@@ -156,7 +153,7 @@ abstract class TransformationRule {
         public Resource readResource(PathAddress address) {
             Resource resource = delegate.readResource(address);
             if (resource != null) {
-                return immutable ? new ProtectedModelResource(resource) : resource;
+                return immutable ? new ProtectedModelResource<Resource>(resource) : resource;
             }
             return null;
         }
@@ -165,7 +162,7 @@ abstract class TransformationRule {
         public Resource readResourceFromRoot(PathAddress address) {
             Resource resource = delegate.readResourceFromRoot(address);
             if (resource != null) {
-                return immutable ? new ProtectedModelResource(resource) : resource;
+                return immutable ? new ProtectedModelResource<Resource>(resource) : resource;
             }
             return null;
         }
@@ -253,11 +250,11 @@ abstract class TransformationRule {
    /**
     *  Implementation of resource that returns an unmodifiable model
     */
-   private static class ProtectedModelResource implements Resource {
+   private static class ProtectedModelResource<T extends Resource> implements Resource {
 
-       private Resource delegate;
+       protected T delegate;
 
-       ProtectedModelResource(Resource delegate){
+       ProtectedModelResource(T delegate){
            this.delegate = delegate;
        }
 
@@ -285,7 +282,7 @@ abstract class TransformationRule {
        public Resource getChild(PathElement element) {
            Resource resource = delegate.getChild(element);
            if (resource != null) {
-               return new ProtectedModelResource(resource);
+               return new ProtectedModelResource<Resource>(resource);
            }
            return null;
        }
@@ -294,7 +291,7 @@ abstract class TransformationRule {
        public Resource requireChild(PathElement element) {
            Resource resource = delegate.requireChild(element);
            if (resource != null) {
-               return new ProtectedModelResource(resource);
+               return new ProtectedModelResource<Resource>(resource);
            }
            return null;
        }
@@ -308,7 +305,7 @@ abstract class TransformationRule {
        public Resource navigate(PathAddress address) {
            Resource resource = delegate.navigate(address);
            if (resource != null) {
-               return new ProtectedModelResource(resource);
+               return new ProtectedModelResource<Resource>(resource);
            }
            return null;
        }
@@ -331,6 +328,7 @@ abstract class TransformationRule {
                for (ResourceEntry entry : children) {
                    protectedChildren.add(new ProtectedModelResourceEntry(entry));
                }
+               return protectedChildren;
            }
            return null;
        }
@@ -356,13 +354,12 @@ abstract class TransformationRule {
        }
 
        public Resource clone() {
-           return new ProtectedModelResource(delegate.clone());
+           return new ProtectedModelResource<Resource>(delegate.clone());
        }
    }
 
 
-    private static class ProtectedModelResourceEntry extends ProtectedModelResource implements ResourceEntry {
-        ResourceEntry delegate;
+    private static class ProtectedModelResourceEntry extends ProtectedModelResource<ResourceEntry> implements ResourceEntry {
 
         ProtectedModelResourceEntry(ResourceEntry delegate){
             super(delegate);

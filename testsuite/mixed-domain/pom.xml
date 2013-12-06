@@ -53,6 +53,11 @@
     -->
 
     <dependencies>
+       <dependency>
+         <groupId>org.wildfly</groupId>
+         <artifactId>wildfly-model-test</artifactId>
+         <scope>test</scope>
+       </dependency>
     </dependencies>
     <build>
         <plugins>

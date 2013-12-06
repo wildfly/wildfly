@@ -23,11 +23,11 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:security:1.2">
-	<security-domains>
-		<security-domain name="other" cache-type="default">
+   <security-domains>
+      <security-domain name="other" cache-type="default">
              <authentication>
-                <login-module code="Remoting" flag="optional">
-                  <module-option name="password-stacking" value="useFirstPass"/>
+                <login-module code="Remoting" flag="${test.prop:optional}" module="test-authentication">
+                  <module-option name="password-stacking" value="${test.prop:useFirstPass}"/>
                 </login-module>
                  <login-module code="Duplicate" flag="optional" />
                  <login-module name="duplicate-module" code="Duplicate" flag="optional" />
@@ -39,38 +39,67 @@
                   <module-option name="password-stacking" value="useFirstPass"/>
                 </login-module>
               </authentication>
-			<authorization>
-			   <policy-module code="DenyAll" flag="required">
-                 <module-option name="a" value="c"/>
+         <authorization>
+            <policy-module code="DenyAll" flag="${test.prop:required}" module="test-auth">
+                 <module-option name="a" value="${test.prop:c}"/>
                </policy-module>
-			</authorization>
-			<mapping>
-			  <mapping-module code="SimpleRoles" type="role">
-                 <module-option name="d" value="e"/>
-              </mapping-module>
-            </mapping>
-            <audit>
+         </authorization>
+         <acl>
+            <acl-module name="acl" code="AclThingy" flag="${test.prop:required}" module="test">
+                 <module-option name="d" value="${test.prop:r}"/>
+            </acl-module>
+         </acl>
+         <mapping>
+           <mapping-module name="test" code="SimpleRoles" type="${test.prop:role}" module="test-mapping">
+                 <module-option name="d" value="${test.prop:e}"/>
+           </mapping-module>
+         </mapping>
+         <audit>
                  <provider-module code="customModule">
-                   <module-option name="d" value="r"/>
+                   <module-option name="d" value="${test.prop:r}"/>
                  </provider-module>
-            </audit> 
-			<jsse truststore-url="keystore.jks"
-                  truststore-password="rmi+ssl"
-                  keystore-url="clientcert.jks"
-                  keystore-password="changeit">
+         </audit>
+         <identity-trust>
+             <trust-module code="IdentityThingy" flag="${test.prop:required}" module="test-identity">
+                 <module-option name="d" value="${test.prop:r}"/>
+             </trust-module>
+         </identity-trust>
+         <jsse truststore-url="${test.prop:keystore.jks}"
+                  truststore-password="${test.prop:rmi+ssl}"
+                  truststore-type="${test.prop:jks}"
+                  truststore-provider="${test.prop:truststore.jks}"
+                  truststore-provider-argument="${test.prop:trust-arg}"
+                  trust-manager-factory-algorithm="${test.prop:JKS}"
+                  trust-manager-factory-provider="${test.prop:JKS-provider}"
+                  keystore-url="${test.prop:clientcert.jks}"
+                  keystore-password="${test.prop:changeit}"
+                  keystore-type="${test.prop:jks2}"
+                  keystore-provider="${test.prop:keystore.jks}"
+                  keystore-provider-argument="${test.prop:key-arg}"
+                  key-manager-factory-algorithm="${test.prop:JKS}"
+                  key-manager-factory-provider="${test.prop:JKS-provider}"
+                  client-alias="${test.prop:client-alias"
+                  server-alias="${test.prop:server-alias"
+                  service-auth-token="${test.prop:server-auth-token"
+                  client-auth="${test.prop:true}"
+                  cipher-suites="${test.prop:aaa,bbb,ccc}"
+                  protocols="${test.prop:one,two,three}">
                 <property name="name" value="${some.prop:default}"/>
-            </jsse>
-		</security-domain>
+         </jsse>
+      </security-domain>
         <security-domain name="jaspi-test" cache-type="default">
             <authentication-jaspi>
                 <login-module-stack name="lm-stack">
-                    <login-module code="UsersRoles" flag="required">
+                    <login-module name="lm" code="UsersRoles" flag="required" module="test-jaspi">
                         <module-option name="usersProperties" value="${jboss.server.config.dir:}/application-users.properties"/>
                         <module-option name="rolesProperties" value="${jboss.server.config.dir:}/application-roles.properties"/>
                     </login-module>
                 </login-module-stack>
                 <auth-module code="org.jboss.as.web.security.jaspi.modules.HTTPBasicServerAuthModule" login-module-stack-ref="lm-stack"
-                             flag="optional"/>
+                             flag="${test.prop:optional}" module="test-jaspi">
+                   <module-option name="x" value="${test.prop:y}"/>
+                   <module-option name="p" value="${test.prop:r}"/>
+                </auth-module>
             </authentication-jaspi>
         </security-domain>
         <security-domain name="ordering" cache-type="default">
@@ -104,8 +133,8 @@
             <jsse server-alias="silent.planet" />
         </security-domain>
     </security-domains>
-	<vault code="somevault">
-	  <vault-option name="xyz" value="zxc"/>
-	  <vault-option name="abc" value="def"/>
+   <vault code="somevault">
+     <vault-option name="xyz" value="zxc"/>
+     <vault-option name="abc" value="def"/>
     </vault>
 </subsystem>

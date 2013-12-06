@@ -25,7 +25,10 @@ import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 
@@ -53,7 +56,20 @@ public class ACLResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
-        resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.LOGIN_MODULE));
+        ManagementResourceRegistration moduleReg = resourceRegistration.registerSubModel(new LoginModuleResourceDefinition(Constants.ACL_MODULE));
+
+        //https://issues.jboss.org/browse/WFLY-2474 acl-module was wrongly called login-module in 7.2.0
+        resourceRegistration.registerAlias(
+                PathElement.pathElement(Constants.LOGIN_MODULE),
+                new AliasEntry(moduleReg) {
+                    @Override
+                    public PathAddress convertToTargetAddress(PathAddress address) {
+                        PathElement element = address.getLastElement();
+                        element = PathElement.pathElement(Constants.ACL_MODULE, element.getValue());
+                        return address.subAddress(0, address.size() -1).append(element);
+                    }
+                });
+
     }
 
     static class ACLResourceDefinitionAdd extends SecurityDomainReloadAddHandler {

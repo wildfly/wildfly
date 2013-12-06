@@ -386,7 +386,6 @@ public class OperationTransformationTestCase {
         public boolean isSkipRuntimeIgnoreCheck() {
             return false;
         }
-
     }
 
 }
