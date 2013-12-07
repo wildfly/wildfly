@@ -97,7 +97,6 @@ public final class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<
     private void parseContainer(XMLExtendedStreamReader reader, ModelNode subsystemAddress, List<ModelNode> operations) throws XMLStreamException {
 
         ModelNode container = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        container.get(CacheContainerResourceDefinition.STATISTICS.getName()).set(true);
         String name = null;
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -284,7 +283,6 @@ public final class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        cache.get(CacheResourceDefinition.STATISTICS.getName()).set(true);
         List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         // set the cache mode to local
@@ -321,7 +319,6 @@ public final class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        cache.get(CacheResourceDefinition.STATISTICS.getName()).set(true);
         List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -383,7 +380,6 @@ public final class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        cache.get(CacheResourceDefinition.STATISTICS.getName()).set(true);
         List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -426,7 +422,6 @@ public final class InfinispanSubsystemXMLReader_1_1 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        cache.get(CacheResourceDefinition.STATISTICS.getName()).set(true);
         List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
