@@ -393,6 +393,8 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             auditPrincipal = unauthenticatedIdentity.asPrincipal();
             subject.getPrincipals().add(auditPrincipal);
             authenticated = true;
+        } else {
+            subject.getPrincipals().add(principal);
         }
 
         if (authenticated == false) {
