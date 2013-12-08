@@ -139,25 +139,29 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
                         WM_SECURITY_MAPPING_GROUPS, WM_SECURITY_MAPPING_USERS, WM_SECURITY_DEFAULT_GROUP,
                         WM_SECURITY_DEFAULT_GROUPS, WM_SECURITY_DEFAULT_PRINCIPAL, WM_SECURITY_MAPPING_REQUIRED,
                         WM_SECURITY_DOMAIN)
-                //If these have some implied value in the old model, we should check those and discard rather than just if undefined ?????
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.MODULE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE)
                 //These used to be non-nillable so reject if undefined
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.BEANVALIDATION_GROUPS, Constants.ARCHIVE)
+                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.BEANVALIDATIONGROUP, Constants.ARCHIVE)
                 //Expressions not allowed
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.BEANVALIDATION_GROUPS, Constants.ARCHIVE)
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.BEANVALIDATIONGROUP, Constants.ARCHIVE)
                 .end()
-            .addChildResource(ConnectionDefinitionResourceDefinition.PATH).getAttributeBuilder()
-                //If these have some implied value in the old model, we should check those rather than just discarding undefined ?????
-                .setDiscard(DiscardAttributeChecker.UNDEFINED, ENLISTMENT, SHARABLE, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_CLASS,
-                        INITIAL_POOL_SIZE, CAPACITY_DECREMENTER_PROPERTIES, CAPACITY_INCREMENTER_PROPERTIES)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, ENLISTMENT, SHARABLE, CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_CLASS,
-                        INITIAL_POOL_SIZE, CAPACITY_DECREMENTER_PROPERTIES, CAPACITY_INCREMENTER_PROPERTIES)
-                 //Did not use to be nillable
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.RECOVERLUGIN_PROPERTIES)
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.RECOVERLUGIN_PROPERTIES)
-                .end();
+                .addChildResource(ConnectionDefinitionResourceDefinition.PATH).getAttributeBuilder()
+                        .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.SECURITY_DOMAIN, Constants.SECURITY_DOMAIN_AND_APPLICATION, Constants.APPLICATION,
+                                CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_CLASS,
+                                INITIAL_POOL_SIZE, CAPACITY_DECREMENTER_PROPERTIES, CAPACITY_INCREMENTER_PROPERTIES)
+                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)), ENLISTMENT, SHARABLE)
+                                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SECURITY_DOMAIN, Constants.SECURITY_DOMAIN_AND_APPLICATION, Constants.APPLICATION,
+                                        CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_CLASS,
+                                        INITIAL_POOL_SIZE, CAPACITY_DECREMENTER_PROPERTIES, CAPACITY_INCREMENTER_PROPERTIES)
+                                .addRejectCheck(RejectAttributeChecker.UNDEFINED, ENLISTMENT, SHARABLE)
+                                .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(new ModelNode(true)), ENLISTMENT, SHARABLE)
+                                        //Did not use to be nillable
+                                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.RECOVERLUGIN_PROPERTIES)
+                                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.RECOVERLUGIN_PROPERTIES)
+                                .end();
 
-        ConnectionDefinitionResourceDefinition.registerTransformer110(builder);
     }
+
+
 }

@@ -2,7 +2,7 @@
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
-    <resource-adapter>
+    <resource-adapter id="myRA">
       <!--Optional:-->
         <archive>archive</archive>
       <!--Optional:-->
@@ -18,7 +18,7 @@
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->
-        <connection-definition use-ccm="${test.expr:true}" class-name="${test.expr:token}" jndi-name="${test.expr:java:jboss/cf/PoolName}" enabled="${test.expr:true}" use-java-context="${test.expr:true}" pool-name="poolName">
+          <connection-definition use-ccm="true" class-name="token" sharable="false" enlistment="false" jndi-name="java:jboss/cf/PoolName" enabled="true" use-java-context="true" pool-name="poolName">
           <!--Zero or more repetitions:-->
           <config-property name="config2">${test.expr:value}</config-property>
           <!--You have a CHOICE of the next 2 items at this level-->
@@ -46,11 +46,7 @@
                 <wrap-xa-resource>${test.expr:false}</wrap-xa-resource>
             </xa-pool>
           <!--Optional:-->
-          <security>
-            <!--You have a CHOICE of the next 3 items at this level-->
-            <!--Optional:-->
-            <application/>
-          </security>
+
           <!--Optional:-->
           <timeout>
             <!--Optional:-->
@@ -81,8 +77,7 @@
               <user-name>${test.expr:userName}</user-name>
               <!--Optional:-->
               <password>${test.expr:pwd}</password>
-              <!--Optional:-->
-              <security-domain>${test.expr:token}</security-domain>
+
             </recover-credential>
             <!--Optional:-->
             <recover-plugin class-name="${test.expr:aClass}">

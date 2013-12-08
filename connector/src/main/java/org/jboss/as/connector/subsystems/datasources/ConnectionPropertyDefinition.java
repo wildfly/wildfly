@@ -65,7 +65,7 @@ public class ConnectionPropertyDefinition extends SimpleResourceDefinition {
 
     }
 
-    static void registerTransformers111(ResourceTransformationDescriptionBuilder parentBuilder) {
+    static void registerTransformers11x(ResourceTransformationDescriptionBuilder parentBuilder) {
             parentBuilder.addChildResource(PATH_CONNECTION_PROPERTY)
              .getAttributeBuilder()
                     .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.CONNECTION_PROPERTY_VALUE)
