@@ -48,7 +48,7 @@ public class StatelessComponentCreateServiceFactory extends EJBComponentCreateSe
         configuration.getCreateDependencies().add(new DependencyConfigurator<StatelessSessionComponentCreateService>() {
             @Override
             public void configureDependency(ServiceBuilder<?> builder, StatelessSessionComponentCreateService service) {
-                builder.addDependency(RegistryInstallerService.SERVICE_NAME);
+                builder.addDependency(DependencyType.OPTIONAL, RegistryInstallerService.SERVICE_NAME);
                 builder.addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "group", "ejb", "default"), Group.class, service.getGroupInjector());
                 builder.addDependency(DependencyType.OPTIONAL, EJBRemoteConnectorService.SERVICE_NAME);
             }

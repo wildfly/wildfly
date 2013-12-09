@@ -62,7 +62,7 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
         configuration.getCreateDependencies().add(new DependencyConfigurator<StatefulSessionComponentCreateService>() {
             @Override
             public void configureDependency(ServiceBuilder<?> builder, StatefulSessionComponentCreateService service) {
-                builder.addDependency(RegistryInstallerService.SERVICE_NAME);
+                builder.addDependency(DependencyType.OPTIONAL, RegistryInstallerService.SERVICE_NAME);
                 builder.addDependency(DependencyType.OPTIONAL, EJBRemoteConnectorService.SERVICE_NAME);
             }
         });
