@@ -88,6 +88,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .build();
 
     public static final SimpleAttributeDefinition PROCESS_ID_UUID = new SimpleAttributeDefinitionBuilder("process-id-uuid", ModelType.BOOLEAN, false)
+            .setDefaultValue(new ModelNode().set(false))
             .setAlternatives("process-id-socket-binding")
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();

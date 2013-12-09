@@ -175,11 +175,14 @@ public class TransactionExtension implements Extension {
         TransformationDescription.Tools.register(subsystemRoot130.build(), subsystem, version130);
 
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder subsystemRoot120 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
 
         //Versions < 1.3.0 assume 'true' for the hornetq-store-enable-async-io attribute (in which case it will look for the native libs
         //and enable async io if found. The default value if not defined is 'false' though. This should only be rejected if use-hornetq-store is not false.
-        subsystemRoot.getAttributeBuilder()
+        subsystemRoot120.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)),
+                        TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO);
@@ -187,10 +190,13 @@ public class TransactionExtension implements Extension {
         subsystemRoot.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
 
         final ModelVersion version120 = ModelVersion.create(1, 2, 0);
-        final TransformationDescription description120 = subsystemRoot.build();
+        final TransformationDescription description120 = subsystemRoot120.build();
         TransformationDescription.Tools.register(description120, subsystem, version120);
 
         subsystemRoot.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
+                        TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
+                .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 .setDiscard(UnneededJDBCStoreChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.attributes_1_2)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, TransactionSubsystemRootResourceDefinition.attributes_1_2)
                 .setValueConverter(new AttributeConverter() {
