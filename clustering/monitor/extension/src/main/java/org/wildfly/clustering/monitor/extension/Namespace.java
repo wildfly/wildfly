@@ -37,7 +37,7 @@ public enum Namespace {
     // must be first
     UNKNOWN(0, 0, null),
 
-    CLUSTERING_MONITOR_1_0(1, 0, new ClusterSubsystemXMLReader_1_0())
+    CLUSTERING_MONITOR_1_0(1, 0, new ClusteringMonitorSubsystemXMLReader_1_0())
     ;
 
     private static final String BASE_URN = "urn:jboss:domain:clustering-monitor:";

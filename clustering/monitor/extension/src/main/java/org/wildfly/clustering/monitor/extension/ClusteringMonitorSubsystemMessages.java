@@ -29,16 +29,16 @@ import org.jboss.logging.annotations.MessageBundle;
 /**
  * ClusterSubsystemMessages
  *
- * logging id range: 20710 - 20719
+ * logging id range: 20750 - 20799
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 @MessageBundle(projectCode = "JBAS")
-public interface ClusterSubsystemMessages {
+public interface ClusteringMonitorSubsystemMessages {
     /**
      * The messages.
      */
-    ClusterSubsystemMessages MESSAGES = Messages.getBundle(ClusterSubsystemMessages.class);
+    ClusteringMonitorSubsystemMessages MESSAGES = Messages.getBundle(ClusteringMonitorSubsystemMessages.class);
 
     /**
      * Creates a message indicating that an unknown metric was passed to an attribute handler..
@@ -47,7 +47,7 @@ public interface ClusterSubsystemMessages {
      *
      * @return a {@link String} for the error.
      */
-    @Message(id = 20710, value = "Unknown metric %s")
+    @Message(id = 20750, value = "Unknown metric %s")
     String unknownMetric(String metricName);
 
     /**
@@ -57,7 +57,7 @@ public interface ClusterSubsystemMessages {
      *
      * @return a {@link String} for the error.
      */
-    @Message(id = 20711, value = "RPC service not started for channel %s")
+    @Message(id = 20751, value = "RPC service not started for channel %s")
     String rpcServiceNotStarted(String channelName);
 
     /**
@@ -67,7 +67,7 @@ public interface ClusterSubsystemMessages {
      *
      * @return a {@link String} for the error.
      */
-    @Message(id = 20712, value = "RPC service call interrupted for channel %s")
+    @Message(id = 20752, value = "RPC service call interrupted for channel %s")
     String interrupted(String channelName);
 
 
@@ -76,6 +76,6 @@ public interface ClusterSubsystemMessages {
      *
      * @return a {@link String} for the error.
      */
-    @Message(id = 20713, value = "ClusteredDeploymentRepository is not available - no cache information available")
+    @Message(id = 20753, value = "ClusteredDeploymentRepository is not available - no cache information available")
     String clusteredDeploymentRepositoryNotAvailable();
 }

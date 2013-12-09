@@ -25,59 +25,74 @@ public abstract class CacheBasedMetricsHandler extends AbstractRuntimeOnlyHandle
      * on A and C to refer to B. We use rsp.isInView() for this.
      */
     protected ModelNode createCacheView(Map<Node, CacheState> states) {
-        ModelNode result = new ModelNode();
+        ModelNode result = new ModelNode().setEmptyList();
         for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
             Node node = entry.getKey();
             CacheState state = entry.getValue();
-            result.add(node.getName(), state.getView());
+            // create a NODE_RESULT object
+            ModelNode object = result.addEmptyObject();
+            object.get(ModelKeys.NODE_NAME).set(node.getName());
+            object.get(ModelKeys.NODE_VALUE).set(state.getView());
         }
         return result;
     }
 
     protected ModelNode createDistribution(Map<Node, CacheState> states) {
-        ModelNode result = new ModelNode();
+        ModelNode result = new ModelNode().setEmptyList();
         for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
             Node node = entry.getKey();
             CacheState state = entry.getValue();
             String JSONString = String.format(DISTRIBUTION_STATS, state.getEntries());
             ModelNode stats = ModelNode.fromJSONString(JSONString);
-            result.add(node.getName(), stats.toJSONString(true));
+            // create a NODE_RESULT object
+            ModelNode object = result.addEmptyObject();
+            object.get(ModelKeys.NODE_NAME).set(node.getName());
+            object.get(ModelKeys.NODE_VALUE).set(stats);
         }
         return result;
     }
 
     protected ModelNode createOperationStats(Map<Node, CacheState> states) {
-        ModelNode result = new ModelNode();
+        ModelNode result = new ModelNode().setEmptyList();
         for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
             Node node = entry.getKey();
             CacheState state = entry.getValue();
             String JSONString = String.format(OPERATION_STATS, state.getHits(), state.getMisses(), state.getStores(), state.getRemoveHits(), state.getRemoveMisses());
             ModelNode stats = ModelNode.fromJSONString(JSONString);
-            result.add(node.getName(), stats.toJSONString(true));
+            // create a NODE_RESULT object
+            ModelNode object = result.addEmptyObject();
+            object.get(ModelKeys.NODE_NAME).set(node.getName());
+            object.get(ModelKeys.NODE_VALUE).set(stats);
         }
         return result;
     }
 
     protected ModelNode createRpcStats(Map<Node, CacheState> states) {
-        ModelNode result = new ModelNode();
+        ModelNode result = new ModelNode().setEmptyList();
         for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
             Node node = entry.getKey();
             CacheState state = entry.getValue();
             String JSONString = String.format(RPC_STATS, state.getRpcCount(), state.getRpcFailures());
             ModelNode stats = ModelNode.fromJSONString(JSONString);
-            result.add(node.getName(), stats.toJSONString(true));
+            // create a NODE_RESULT object
+            ModelNode object = result.addEmptyObject();
+            object.get(ModelKeys.NODE_NAME).set(node.getName());
+            object.get(ModelKeys.NODE_VALUE).set(stats);
         }
         return result;
     }
 
     protected ModelNode createTxnStats(Map<Node, CacheState> states) {
-        ModelNode result = new ModelNode();
+        ModelNode result = new ModelNode().setEmptyList();
         for (Map.Entry<Node, CacheState> entry: states.entrySet()) {
             Node node = entry.getKey();
             CacheState state = entry.getValue();
             String JSONString = String.format(TXN_STATS, state.getPrepares(), state.getCommits(), state.getRollbacks());
             ModelNode stats = ModelNode.fromJSONString(JSONString);
-            result.add(node.getName(), stats.toJSONString(true));
+            // create a NODE_RESULT object
+            ModelNode object = result.addEmptyObject();
+            object.get(ModelKeys.NODE_NAME).set(node.getName());
+            object.get(ModelKeys.NODE_VALUE).set(stats);
         }
         return result;
     }

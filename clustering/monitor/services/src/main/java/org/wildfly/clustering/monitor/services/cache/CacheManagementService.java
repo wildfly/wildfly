@@ -26,6 +26,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -37,12 +38,15 @@ import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.dispatcher.CommandResponse;
 import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.monitor.services.ClusteringMonitorServicesLogger;
 
 public class CacheManagementService implements Service<CacheManagement>, CacheManagement {
 
     public static ServiceName getServiceName(String containerName) {
         return EmbeddedCacheManagerService.getServiceName(containerName).append("management");
     }
+
+    private static final Logger log = Logger.getLogger(CacheManagementService.class.getPackage().getName());
 
     private final ServiceName name;
     private final Value<CommandDispatcherFactory> dispatcherFactory;
@@ -62,16 +66,25 @@ public class CacheManagementService implements Service<CacheManagement>, CacheMa
 
     @Override
     public void start(StartContext context) throws StartException {
+        // trace logging
+        ClusteringMonitorServicesLogger.ROOT_LOGGER.startingCacheManagementControllerService(containerName);
+
         this.dispatcher = this.dispatcherFactory.getValue().createCommandDispatcher(this.name, this.containerName);
     }
 
     @Override
     public void stop(StopContext context) {
+        // trace logging
+        ClusteringMonitorServicesLogger.ROOT_LOGGER.stoppingCacheManagementControllerService(containerName);
+
         this.dispatcher.close();
     }
 
     @Override
     public Map<Node, CacheState> getCacheState(String cacheName) throws InterruptedException {
+        // trace logging
+        ClusteringMonitorServicesLogger.ROOT_LOGGER.gettingCacheState(cacheName);
+
         Command<CacheState, String> command = new CacheStateCommand(cacheName);
         Map<Node, CommandResponse<CacheState>> responses = this.dispatcher.executeOnCluster(command);
         Map<Node, CacheState> result = new TreeMap<Node, CacheState>();
@@ -82,9 +95,13 @@ public class CacheManagementService implements Service<CacheManagement>, CacheMa
                     result.put(entry.getKey(), response);
                 }
             } catch (ExecutionException e) {
-                // Log
+                // Log warning
+                ClusteringMonitorServicesLogger.ROOT_LOGGER.exceptionProcessingCacheState(e);
             }
         }
+        // trace logging
+        ClusteringMonitorServicesLogger.ROOT_LOGGER.gotCacheState(cacheName);
+
         return result;
     }
 }

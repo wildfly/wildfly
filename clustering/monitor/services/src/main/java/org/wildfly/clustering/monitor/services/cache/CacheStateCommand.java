@@ -34,13 +34,17 @@ import org.infinispan.statetransfer.StateTransferManager;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.monitor.services.ClusteringMonitorServicesLogger;
 
 public class CacheStateCommand implements Command<CacheState, String> {
 
     private static final long serialVersionUID = 8293200010304591386L;
+
+    private static final Logger log = Logger.getLogger(CacheStateCommand.class.getPackage().getName());
 
     private final String cacheName;
 
@@ -50,6 +54,9 @@ public class CacheStateCommand implements Command<CacheState, String> {
 
     @Override
     public CacheState execute(String containerName) throws Exception {
+        // trace logging
+        ClusteringMonitorServicesLogger.ROOT_LOGGER.executingCacheStateCommand(cacheName);
+
         ServiceRegistry registry = ServiceContainerHelper.getCurrentServiceContainer();
 
         Cache<?, ?> cache = null;
@@ -97,6 +104,10 @@ public class CacheStateCommand implements Command<CacheState, String> {
         if (txInterceptor != null) {
             response.setTxStatistics(txInterceptor);
         }
+
+         // trace logging
+        ClusteringMonitorServicesLogger.ROOT_LOGGER.executedCacheStateCommand(cacheName);
+
         return response;
     }
 

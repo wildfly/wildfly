@@ -50,7 +50,7 @@ public class DeploymentInstanceResourceDefinition extends SimpleResourceDefiniti
     public DeploymentInstanceResourceDefinition(boolean runtimeRegistration) {
 
         super(DEPLOYMENT_PATH,
-                ClusterExtension.getResourceDescriptionResolver(ModelKeys.CLUSTER + "." + ModelKeys.DEPLOYMENT),
+                ClusteringMonitorExtension.getResourceDescriptionResolver(ModelKeys.CLUSTER + "." + ModelKeys.DEPLOYMENT),
                 null,
                 null);
         this.runtimeRegistration = runtimeRegistration;

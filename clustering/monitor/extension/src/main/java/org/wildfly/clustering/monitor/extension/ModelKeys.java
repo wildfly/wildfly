@@ -13,7 +13,9 @@ public class ModelKeys {
     static final String DEPLOYMENT = "deployment";
     static final String DISTRIBUTION = "distribution";
     static final String MODULE_IDENTIFIER = "module-identifier";
+    static final String NODE_NAME = "node-name";
     static final String NODE_RESULT = "node-result";
+    static final String NODE_VALUE = "node-value";
     static final String OPERATION_STATS = "operation-stats";
     static final String RPC_STATS = "rpc-stats";
     static final String TXN_STATS = "txn-stats";

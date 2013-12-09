@@ -26,11 +26,11 @@ import org.wildfly.clustering.monitor.extension.deployment.processors.ClusteredD
  *
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
-class ClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
+class ClusteringMonitorSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
-    static final ClusterSubsystemAdd INSTANCE = new ClusterSubsystemAdd();
+    static final ClusteringMonitorSubsystemAdd INSTANCE = new ClusteringMonitorSubsystemAdd();
 
-    private ClusterSubsystemAdd() {
+    private ClusteringMonitorSubsystemAdd() {
     }
 
     /*
@@ -41,7 +41,7 @@ class ClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // debugging
         assert context.getServiceRegistry(false) != null;
         // create a custom resource
-        ClusterSubsystemRootResource resource = new ClusterSubsystemRootResource();
+        ClusteringMonitorSubsystemRootResource resource = new ClusteringMonitorSubsystemRootResource();
         resource.setRegistry(context.getServiceRegistry(false));
         context.addResource(PathAddress.EMPTY_ADDRESS, resource);
         return resource;
@@ -64,7 +64,7 @@ class ClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
             throws OperationFailedException {
 
         // this subsystem gets started before jgroups and infinispan! Need to have it started after these two.
-        ClusterSubsystemLogger.ROOT_LOGGER.activatingSubsystem();
+        ClusteringMonitorSubsystemLogger.ROOT_LOGGER.activatingSubsystem();
 
         // add in deployment processors
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
@@ -76,7 +76,7 @@ class ClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // DUPs which also apply to application clients
                 if (!appclient) {
                     // DUPs which apply only to
-                    processorTarget.addDeploymentProcessor(ClusterExtension.SUBSYSTEM_NAME,
+                    processorTarget.addDeploymentProcessor(ClusteringMonitorExtension.SUBSYSTEM_NAME,
                             Phase.INSTALL,
                             Phase.INSTALL_CLUSTERED_DEPLOYMENT_REPOSITORY,
                             new ClusteredDeploymentRepositoryProcessor());
@@ -87,6 +87,6 @@ class ClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         newControllers.add(context.getServiceTarget().addService(ClusteredDeploymentRepository.SERVICE_NAME, new ClusteredDeploymentRepository()).install());
 
-        newControllers.add(context.getServiceTarget().addService(ClusterExtension.CLUSTER_EXTENSION_SERVICE_NAME, new ValueService<Void>(new ImmediateValue<Void>(null))).install());
+        newControllers.add(context.getServiceTarget().addService(ClusteringMonitorExtension.CLUSTER_EXTENSION_SERVICE_NAME, new ValueService<Void>(new ImmediateValue<Void>(null))).install());
     }
 }

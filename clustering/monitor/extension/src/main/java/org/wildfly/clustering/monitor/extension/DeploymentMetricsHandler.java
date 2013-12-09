@@ -74,35 +74,32 @@ public class DeploymentMetricsHandler extends AbstractRuntimeOnlyHandler {
         ServiceName serviceName = ChannelManagementService.getServiceName(channelName);
         ServiceController<ChannelManagement> controller = ServiceContainerHelper.findService(context.getServiceRegistry(false), serviceName);
 
+        // trace logging
+        ClusteringMonitorSubsystemLogger.ROOT_LOGGER.processingDeploymentMetricsRequest(channelName, deploymentName, attrName);
+
         // check that the service has been installed and started
         boolean started = controller != null && controller.getState().in(ServiceController.State.UP);
-        if (!started && controller != null) {
-            try {
-                // start the RPC service
-                ClusterSubsystemHelper.startService(controller);
-                started = true;
-            } catch (Exception e) {
-                // this will be handled below
-            }
-        }
         ModelNode result = new ModelNode();
 
         if (metric == null) {
-            context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.unknownMetric(attrName));
+            context.getFailureDescription().set(ClusteringMonitorSubsystemMessages.MESSAGES.unknownMetric(attrName));
         } else if (!started) {
-            context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.rpcServiceNotStarted(channelName));
+            context.getFailureDescription().set(ClusteringMonitorSubsystemMessages.MESSAGES.rpcServiceNotStarted(channelName));
         } else {
             // we don't actually use this at the moment - this may change
             ChannelManagement management = controller.getValue();
 
             switch (metric) {
                 case MODULE_IDENTIFIER:
-                    DeploymentModuleIdentifier id = ClusterSubsystemHelper.getDeploymentModuleIdentifier(context.getServiceRegistry(false), deploymentName);
+                    DeploymentModuleIdentifier id = ClusteringMonitorSubsystemHelper.getDeploymentModuleIdentifier(context.getServiceRegistry(false), deploymentName);
                     String JSONString = String.format(MODULE_IDENTIFIER_STATS, id.getApplicationName(), id.getModuleName(), id.getDistinctName());
                     ModelNode stats = ModelNode.fromJSONString(JSONString);
                     result.set(stats.toJSONString(true));
                     break;
             }
+
+            // trace logging
+            ClusteringMonitorSubsystemLogger.ROOT_LOGGER.processedRequestResult(result.toString());
 
             context.getResult().set(result);
         }

@@ -141,7 +141,7 @@ public class ClusterInstanceResource implements Resource {
     public Set<ResourceEntry> getChildren(String childType) {
         if (ModelKeys.DEPLOYMENT.equals(childType)) {
             Set<ResourceEntry> result = new HashSet<ResourceEntry>();
-            for (String name : ClusterSubsystemHelper.getDeploymentNames(this.registry, this.name)) {
+            for (String name : ClusteringMonitorSubsystemHelper.getDeploymentNames(this.registry, this.name)) {
                 result.add(new DeploymentInstanceResource.DeploymentInstanceResourceEntry(ModelKeys.DEPLOYMENT, name));
             }
             return result;
@@ -152,7 +152,7 @@ public class ClusterInstanceResource implements Resource {
     @Override
     public Set<String> getChildrenNames(String childType) {
         if (ModelKeys.DEPLOYMENT.equals(childType)) {
-            return ClusterSubsystemHelper.getDeploymentNames(this.registry, this.name);
+            return ClusteringMonitorSubsystemHelper.getDeploymentNames(this.registry, this.name);
         } else {
             return Collections.emptySet();
         }
@@ -194,7 +194,7 @@ public class ClusterInstanceResource implements Resource {
      */
     private boolean hasDeployment(PathElement element) {
         String deploymentName = element.getValue();
-        return ClusterSubsystemHelper.getDeploymentNames(this.registry, this.name).contains(deploymentName);
+        return ClusteringMonitorSubsystemHelper.getDeploymentNames(this.registry, this.name).contains(deploymentName);
     }
 
     /*

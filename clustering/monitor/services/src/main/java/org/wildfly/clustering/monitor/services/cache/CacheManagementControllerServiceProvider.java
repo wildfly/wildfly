@@ -19,40 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.monitor.services.channel;
+package org.wildfly.clustering.monitor.services.cache;
 
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactoryProvider;
 
-public class ChannelManagementServiceProvider implements ChannelServiceProvider {
+public class CacheManagementControllerServiceProvider implements ChannelServiceProvider {
 
     @Override
-    public Collection<ServiceName> getServiceNames(String cluster) {
-        return Collections.singleton(ChannelManagementService.getServiceName(cluster));
+    public Collection<ServiceName> getServiceNames(String containerName) {
+        return Collections.singleton(CacheManagementControllerService.getServiceName(containerName));
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String cluster, ModuleIdentifier moduleId) {
-        ServiceName name = ChannelManagementService.getServiceName(cluster);
-        InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<CommandDispatcherFactory>();
-        Service<ChannelManagement> service = new ChannelManagementService(name, dispatcherFactory, cluster);
-        // start asynchronously to be safe
-        ServiceController<ChannelManagement> controller = AsynchronousService.addService(target, name, service)
-                // we use this injected reference
-               .addDependency(CommandDispatcherFactoryProvider.getServiceName(cluster), CommandDispatcherFactory.class, dispatcherFactory)
-               .setInitialMode(ServiceController.Mode.ON_DEMAND)
-               .install();
+    public Collection<ServiceController<?>> install(ServiceTarget target, String containerName, ModuleIdentifier moduleId) {
+        ServiceName name = CacheManagementControllerService.getServiceName(containerName);
+        Service<CacheManagementControllerService> service = new CacheManagementControllerService(name, containerName);
+        ServiceController<CacheManagementControllerService> controller = target.addService(name, service)
+                // we use this to trigger start
+               .addDependency(ChannelService.getServiceName(containerName))
+               .setInitialMode(ServiceController.Mode.PASSIVE)
+               .install()
+        ;
         return Collections.<ServiceController<?>>singleton(controller);
     }
 }

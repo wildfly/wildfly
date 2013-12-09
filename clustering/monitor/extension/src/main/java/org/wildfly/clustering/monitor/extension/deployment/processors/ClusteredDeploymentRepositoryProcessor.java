@@ -1,6 +1,28 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
 package org.wildfly.clustering.monitor.extension.deployment.processors;
 
-import static org.wildfly.clustering.monitor.extension.ClusterSubsystemLogger.ROOT_LOGGER;
+import static org.wildfly.clustering.monitor.extension.ClusteringMonitorSubsystemLogger.ROOT_LOGGER;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -53,7 +75,7 @@ import org.wildfly.clustering.monitor.extension.deployment.ClusteredWarDeploymen
 /**
  * A deployment unit processor which extracts information concerning clustered applications
  * and stores that information in the ClusteredDeploymentRepository.
- *
+ * <p/>
  * In order to obtain deployment information from deployment unit services which have not started yet,
  * this deployment processor installs services which PASSIVEly depend on those deployment unit services,
  * and populate the ClusteredDeploymentRepository once they have started.
@@ -171,49 +193,34 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
         final String deploymentName = deploymentUnit.getName();
         final DeploymentModuleIdentifier identifier = getDeploymentModuleIdentifier(deploymentUnit);
 
-        boolean hasClusteredBeans = false;
-        Map<String, ClusteredEjbDeploymentInformation> ejbs = new HashMap<String, ClusteredEjbDeploymentInformation>();
-
         final EEModuleConfiguration moduleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_CONFIGURATION);
-        for (final ComponentConfiguration configuration: moduleDescription.getComponentConfigurations()) {
+        for (final ComponentConfiguration configuration : moduleDescription.getComponentConfigurations()) {
             final ComponentDescription componentDescription = configuration.getComponentDescription();
-            // EJB compoinents
+            // EJB components
             if (componentDescription instanceof EJBComponentDescription) {
                 if (componentDescription instanceof StatefulComponentDescription) {
                     StatefulComponentDescription statefulSessionBean = (StatefulComponentDescription) componentDescription;
-                    // marked by ClusteredMergingProcessor
-                    if (statefulSessionBean.getClustering() != null) {
-                        // process a @Clustered SFSB
-                        hasClusteredBeans = true;
-                        String beanName = statefulSessionBean.getComponentName();
+                    String beanName = statefulSessionBean.getComponentName();
 
-                        // we need to get the bean session cache container and cache, but the service is not up yet, and will not be up
-                        // until deployment processing is complete. Therefore, we add the entry to the registry and also install
-                        // a service which will complete the updating of that entry once the service is up
-                        ClusteredEjbDeploymentInformation info = new ClusteredEjbDeploymentInformation(identifier, beanName);
-                        ejbs.put(beanName, info);
+                    // process a potentially @Clustered SFSB:
+                    // we need to get the bean session cache container and cache, but the service is not up yet, and will not be up
+                    // until deployment processing is complete. Therefore, we install a service which will complete the registration
+                    // process once the service is up
 
-                        // install service to get rest of info once the component's CREATE service has started
-                        CacheInfoPostProcessor postProcessor = new CacheInfoPostProcessor(info);
-                        ServiceName postProcessorServiceName = postProcessor.getServiceName(deploymentName, beanName);
+                    // install service to register the component once the component's CREATE service has started
+                    CacheInfoPostProcessor postProcessor = new CacheInfoPostProcessor(repository, deploymentName, identifier, beanName);
+                    ServiceName postProcessorServiceName = postProcessor.getServiceName(deploymentName, beanName);
 
-                        // service name of the dependency we need to be up
-                        ServiceName ejbComponentCreateServiceName = getJarDeploymentUnitSTARTServiceName(deploymentUnit, beanName);
+                    // service name of the dependency we need to be up
+                    ServiceName ejbComponentCreateServiceName = getJarDeploymentUnitSTARTServiceName(deploymentUnit, beanName);
+                    ServiceTarget target = phaseContext.getServiceTarget();
 
-                        ServiceTarget target = phaseContext.getServiceTarget();
-                        ServiceController<?> postProcessorService = target.addService(postProcessorServiceName, postProcessor)
-                                .addDependency(ejbComponentCreateServiceName, StatefulSessionComponent.class, postProcessor.getStatefulSessionComponentInjector())
-                                .setInitialMode(ServiceController.Mode.PASSIVE)
-                                .install();
-                    }
+                    ServiceController<?> postProcessorService = target.addService(postProcessorServiceName, postProcessor)
+                            .addDependency(ejbComponentCreateServiceName, StatefulSessionComponent.class, postProcessor.getStatefulSessionComponentInjector())
+                            .setInitialMode(ServiceController.Mode.PASSIVE)
+                            .install();
                 }
             }
-        }
-        // processing completed
-        if (hasClusteredBeans) {
-            ClusteredModuleDeployment deployment = new ClusteredModuleDeployment(identifier, null, ejbs);
-            repository.add(deploymentName, deployment);
-            ROOT_LOGGER.addDeploymentToClusteredDeploymentRepository("ejb", deploymentName);
         }
     }
 
@@ -237,7 +244,7 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
             deploymentUnitServiceName = Services.deploymentUnitName(identifier.getModuleName() + ".jar");
         }
         ServiceName ejbComponentCreateServiceName = BasicComponent.serviceNameOf(deploymentUnitServiceName, beanName).append("START");
-        return ejbComponentCreateServiceName ;
+        return ejbComponentCreateServiceName;
     }
 
     /*
@@ -324,7 +331,7 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
 
     /*
      * Service which, when started, looks up cache deployment information for an EJB SFSB and
-     * stores it in the ClusteredDeploymentRepository.
+     * stores it in the ClusteredDeploymentRepository if the bean is clustered.
      */
     private class CacheInfoPostProcessor implements Service<CacheInfoPostProcessor> {
         private final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("clustering").append("monitor").append("post-processor");
@@ -333,27 +340,60 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
             return SERVICE_NAME.append(deploymentName).append(componentName);
         }
 
-        private final ClusteredEjbDeploymentInformation info;
+        private final ClusteredDeploymentRepository repository;
+        private final String deploymentName;
+        private final DeploymentModuleIdentifier identifier;
+        private final String beanName;
         private volatile InjectedValue<StatefulSessionComponent> componentService = new InjectedValue<StatefulSessionComponent>();
 
 
-        public CacheInfoPostProcessor(ClusteredEjbDeploymentInformation info) {
-            this.info = info;
+        public CacheInfoPostProcessor(ClusteredDeploymentRepository repository, String deploymentName, DeploymentModuleIdentifier identifier, String beanName) {
+            this.repository = repository;
+            this.deploymentName = deploymentName;
+            this.identifier = identifier;
+            this.beanName = beanName;
         }
 
         @Override
         public void start(StartContext context) {
             StatefulSessionComponent component = componentService.getValue();
             Cache<SessionID, StatefulSessionComponentInstance> cache = component.getCache();
-            // follow the chain back to the session cache for this component
+            boolean clustered = false;
+
+            // follow the chain back to the session cache for this component to check if it is clustered
             if (cache instanceof DistributableCache) {
                 BeanManager beanManager = getBeanManager((DistributableCache) cache);
                 if (beanManager instanceof InfinispanBeanManager) {
                     org.infinispan.Cache groupCache = getGroupCache((InfinispanBeanManager) beanManager);
+
+                    // check if the cache is clustered
+                    clustered = groupCache.getCacheManager().getCacheManagerConfiguration().isClustered();
+                    if (clustered) {
+                        // we need to add the cache info for the bean to the repository
                         String cacheContainer = groupCache.getCacheManager().getClusterName();
                         String beanCache = groupCache.getName();
+
+                        Map<String, ClusteredModuleDeployment> modules = repository.getModules();
+                        Map<String, ClusteredEjbDeploymentInformation> ejbs = null;
+                        ClusteredModuleDeployment deployment = null;
+
+                        // check if we need to initialise the repository entry for this deployment
+                        if (!modules.keySet().contains(deploymentName)) {
+                            addRepositoryEntryForDeployment();
+                        }
+
+                        // get the clustered EJB map
+                        // need to call get modules again as the unmodifiable map has now changed!
+                        modules = repository.getModules();
+                        deployment = modules.get(deploymentName);
+                        ejbs = deployment.getEjbs();
+
+                        // now add the entry for the clustered bean
+                        ClusteredEjbDeploymentInformation info = new ClusteredEjbDeploymentInformation(identifier, beanName);
                         info.setSessionCacheContainer(cacheContainer);
                         info.setSessionCache(beanCache);
+                        ejbs.put(beanName, info);
+                    }
                 }
             }
         }
@@ -370,6 +410,17 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
         public Injector<StatefulSessionComponent> getStatefulSessionComponentInjector() {
             return componentService;
         }
+
+        /*
+         * Add an entry for this deployment to the ClusteredDeploymentRepository
+         */
+        private void addRepositoryEntryForDeployment() {
+            Map<String, ClusteredEjbDeploymentInformation> ejbs = new HashMap<String, ClusteredEjbDeploymentInformation>();
+            ClusteredModuleDeployment deployment = new ClusteredModuleDeployment(identifier, null, ejbs);
+            repository.add(deploymentName, deployment);
+            ROOT_LOGGER.addDeploymentToClusteredDeploymentRepository("ejb", deploymentName);
+        }
+
     }
 
     /*
@@ -395,24 +446,24 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
     /**
      * This method returns a member object field of a class instance, via reflection.
      *
-     * @param i instance of object holding the member field
+     * @param i         instance of object holding the member field
      * @param fieldName name of the member field
-     * @param <I> type of the object holding the member field
-     * @param <O> type of the member field
+     * @param <I>       type of the object holding the member field
+     * @param <O>       type of the member field
      * @return the member field
      */
-    static <I,O> O getMemberObjectField(I i, String fieldName) {
+    static <I, O> O getMemberObjectField(I i, String fieldName) {
         O o = null;
         try {
             Field f = i.getClass().getDeclaredField(fieldName);
             f.setAccessible(true);
             o = (O) f.get(i);
 
-        } catch(NoSuchFieldException nsfe) {
+        } catch (NoSuchFieldException nsfe) {
             ROOT_LOGGER.noSuchFieldExceptionHandled(fieldName, i.getClass().getSimpleName());
-        } catch(IllegalAccessException iae) {
+        } catch (IllegalAccessException iae) {
             ROOT_LOGGER.illegalAccessExceptionHandled(fieldName, i.getClass().getSimpleName());
         }
-        return o ;
+        return o;
     }
 }

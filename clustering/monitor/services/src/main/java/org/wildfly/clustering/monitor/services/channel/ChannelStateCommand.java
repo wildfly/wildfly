@@ -33,17 +33,23 @@ import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jgroups.Channel;
 import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.protocols.pbcast.GMS;
 import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.monitor.services.ClusteringMonitorServicesLogger;
 
 public class ChannelStateCommand implements Command<ChannelState, String> {
     private static final long serialVersionUID = -3174301922347674114L;
+
+    private static final Logger log = Logger.getLogger(ChannelStateCommand.class.getPackage().getName());
+
     private static final Map<ChannelState.RpcType, Field> rpcTypeFields = new EnumMap<>(ChannelState.RpcType.class);
-    {
+
+    static {
         rpcTypeFields.put(ChannelState.RpcType.ASYNC_ANYCAST, findMessageDispatcherField("async_anycasts"));
         rpcTypeFields.put(ChannelState.RpcType.ASYNC_UNICAST, findMessageDispatcherField("async_unicasts"));
         rpcTypeFields.put(ChannelState.RpcType.ASYNC_MULTICAST, findMessageDispatcherField("async_multicasts"));
@@ -89,15 +95,20 @@ public class ChannelStateCommand implements Command<ChannelState, String> {
 
     @Override
     public ChannelState execute(String cluster) throws Exception {
+
+        // trace logging
+        ClusteringMonitorServicesLogger.ROOT_LOGGER.executingChannelStateCommand(cluster);
+
         ServiceRegistry registry = ServiceContainerHelper.getCurrentServiceContainer();
         ServiceController<Channel> channelService = ServiceContainerHelper.getService(registry, ChannelService.getServiceName(cluster));
-
-        if (!channelService.getState().in(ServiceController.State.UP)) return null;
-
+        if (!channelService.getState().in(ServiceController.State.UP)) {
+            return null;
+        }
         Channel channel = channelService.getValue();
         GMS gms = (GMS) channel.getProtocolStack().findProtocol(GMS.class);
-        if (gms == null) return null;
-
+        if (gms == null) {
+            return null;
+        }
         ChannelState response = new ChannelStateResponse(channel.getClusterName(), gms.getView(), gms.printPreviousViews());
 
         ServiceController<EmbeddedCacheManager> containerService = ServiceContainerHelper.getService(registry, EmbeddedCacheManagerService.getServiceName(cluster));
@@ -110,6 +121,8 @@ public class ChannelStateCommand implements Command<ChannelState, String> {
                 response.getRpcStatistics().put(type, this.getRpcStatistic(dispatcher, type));
             }
         }
+        // trace logging
+        ClusteringMonitorServicesLogger.ROOT_LOGGER.executedChannelStateCommand(cluster);
 
         return response;
     }

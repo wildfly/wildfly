@@ -81,11 +81,14 @@ public class BeanMetricsHandler extends CacheBasedMetricsHandler {
         String attrName = operation.require(NAME).asString();
         BeanMetrics metric = BeanMetrics.getStat(attrName);
 
+        // trace logging
+        ClusteringMonitorSubsystemLogger.ROOT_LOGGER.processingBeanMetricsRequest(channelName, deploymentName, beanName, attrName);
+
         // lookup the cache info for this web deployment
         String cacheName = null;
-        DeploymentCacheInfo info = ClusterSubsystemHelper.getBeanDeploymentCacheInfo(context.getServiceRegistry(false), channelName, deploymentName, beanName);
+        DeploymentCacheInfo info = ClusteringMonitorSubsystemHelper.getBeanDeploymentCacheInfo(context.getServiceRegistry(false), channelName, deploymentName, beanName);
         if (info == null) {
-            context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.clusteredDeploymentRepositoryNotAvailable());
+            context.getFailureDescription().set(ClusteringMonitorSubsystemMessages.MESSAGES.clusteredDeploymentRepositoryNotAvailable());
             context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
             return;
         }
@@ -97,21 +100,12 @@ public class BeanMetricsHandler extends CacheBasedMetricsHandler {
 
         // check that the service has been installed and started
         boolean started = controller != null && controller.getState().in(ServiceController.State.UP);
-        if (!started && controller != null) {
-            try {
-              // start the RPC service
-              ClusterSubsystemHelper.startService(controller);
-              started = true;
-            } catch (Exception e) {
-                // this will be handled below
-           }
-        }
         ModelNode result = new ModelNode();
 
         if (metric == null) {
-            context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.unknownMetric(attrName));
+            context.getFailureDescription().set(ClusteringMonitorSubsystemMessages.MESSAGES.unknownMetric(attrName));
         } else if (!started) {
-            context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.rpcServiceNotStarted(channelName));
+            context.getFailureDescription().set(ClusteringMonitorSubsystemMessages.MESSAGES.rpcServiceNotStarted(channelName));
         } else {
             CacheManagement management = controller.getValue();
 
@@ -137,10 +131,15 @@ public class BeanMetricsHandler extends CacheBasedMetricsHandler {
                         break;
                 }
 
+                // trace logging
+                ClusteringMonitorSubsystemLogger.ROOT_LOGGER.processedRequestResult(result.toString());
+
                 context.getResult().set(result);
 
             } catch(InterruptedException ie) {
-                context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.interrupted(channelName));
+                context.getFailureDescription().set(ClusteringMonitorSubsystemMessages.MESSAGES.interrupted(channelName));
+                // re-interrupt to reset the interrupted flag so that outer code can handle shutdown
+                Thread.currentThread().interrupt();
             }
         }
         context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);

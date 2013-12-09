@@ -39,16 +39,16 @@ import org.jboss.msc.service.ServiceRegistry;
  *
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
-public class ClusterSubsystemRootResource implements Resource {
+public class ClusteringMonitorSubsystemRootResource implements Resource {
 
     private final Resource delegate;
     private volatile ServiceRegistry registry;
 
-    public ClusterSubsystemRootResource() {
+    public ClusteringMonitorSubsystemRootResource() {
         this(Factory.create());
     }
 
-    public ClusterSubsystemRootResource(final Resource delegate) {
+    public ClusteringMonitorSubsystemRootResource(final Resource delegate) {
         this.delegate = delegate;
     }
 
@@ -160,7 +160,7 @@ public class ClusterSubsystemRootResource implements Resource {
     @Override
     public Set<String> getChildrenNames(String childType) {
         if (ModelKeys.CLUSTER.equals(childType)) {
-            return ClusterSubsystemHelper.getChannelNames(this.registry);
+            return ClusteringMonitorSubsystemHelper.getChannelNames(this.registry);
         } else {
             return delegate.getChildrenNames(childType);
         }
@@ -170,9 +170,9 @@ public class ClusterSubsystemRootResource implements Resource {
     public Set<ResourceEntry> getChildren(String childType) {
         if (ModelKeys.CLUSTER.equals(childType)) {
             Set<ResourceEntry> result = new HashSet<ResourceEntry>();
-            for (ServiceName serviceName : ClusterSubsystemHelper.getChannelServiceNames(this.registry)) {
+            for (ServiceName serviceName : ClusteringMonitorSubsystemHelper.getChannelServiceNames(this.registry)) {
                 // build up a set of ResourceEntry descriptions
-                String channel = ClusterSubsystemHelper.getChannelNameFromChannelServiceName(serviceName);
+                String channel = ClusteringMonitorSubsystemHelper.getChannelNameFromChannelServiceName(serviceName);
 
                 ClusterInstanceResource.ClusterInstanceResourceEntry entry =
                         new ClusterInstanceResource.ClusterInstanceResourceEntry(childType, channel);
@@ -221,7 +221,7 @@ public class ClusterSubsystemRootResource implements Resource {
 
     @Override
     public Resource clone() {
-        ClusterSubsystemRootResource clone = new ClusterSubsystemRootResource(delegate.clone());
+        ClusteringMonitorSubsystemRootResource clone = new ClusteringMonitorSubsystemRootResource(delegate.clone());
         // set the pointer to the ServiceRegistry
         clone.setRegistry(this.getRegistry());
         return clone;
@@ -233,9 +233,9 @@ public class ClusterSubsystemRootResource implements Resource {
     private boolean hasChannel(PathElement element) {
         if (registry == null) return false;
         assert element.getKey().equals(ModelKeys.CLUSTER);
-        ServiceName channelName = ClusterSubsystemHelper.CHANNEL_PARENT.append(element.getValue());
+        ServiceName channelName = ClusteringMonitorSubsystemHelper.CHANNEL_PARENT.append(element.getValue());
         ServiceController<?> controller = registry.getService(channelName);
-        return (controller != null) && ClusterSubsystemHelper.serviceIsUp(this.registry, channelName);
+        return (controller != null) && ClusteringMonitorSubsystemHelper.serviceIsUp(this.registry, channelName);
     }
 
 }

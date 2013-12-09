@@ -22,7 +22,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  *
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
-public class ClusterSubsystemXMLReader_1_0  implements XMLElementReader<List<ModelNode>> {
+public class ClusteringMonitorSubsystemXMLReader_1_0  implements XMLElementReader<List<ModelNode>> {
 
     /**
      * {@inheritDoc}
@@ -31,7 +31,7 @@ public class ClusterSubsystemXMLReader_1_0  implements XMLElementReader<List<Mod
     public void readElement(XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
 
         ModelNode subsystemAddress = new ModelNode();
-        subsystemAddress.add(SUBSYSTEM, ClusterExtension.SUBSYSTEM_NAME);
+        subsystemAddress.add(SUBSYSTEM, ClusteringMonitorExtension.SUBSYSTEM_NAME);
         subsystemAddress.protect();
         ModelNode subsystem = Util.getEmptyOperation(ADD, subsystemAddress);
 

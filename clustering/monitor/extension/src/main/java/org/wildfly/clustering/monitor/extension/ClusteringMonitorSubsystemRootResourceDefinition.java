@@ -10,15 +10,15 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  *
  * @author  Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
-public class ClusterSubsystemRootResourceDefinition extends SimpleResourceDefinition {
+public class ClusteringMonitorSubsystemRootResourceDefinition extends SimpleResourceDefinition {
 
     private final boolean runtimeRegistration ;
 
-    public ClusterSubsystemRootResourceDefinition(final boolean runtimeRegistration) {
-        super(ClusterExtension.SUBSYSTEM_PATH,
-                ClusterExtension.getResourceDescriptionResolver(null),
-                ClusterSubsystemAdd.INSTANCE,
-                ClusterSubsystemRemove.INSTANCE);
+    public ClusteringMonitorSubsystemRootResourceDefinition(final boolean runtimeRegistration) {
+        super(ClusteringMonitorExtension.SUBSYSTEM_PATH,
+                ClusteringMonitorExtension.getResourceDescriptionResolver(null),
+                ClusteringMonitorSubsystemAdd.INSTANCE,
+                ClusteringMonitorSubsystemRemove.INSTANCE);
         this.runtimeRegistration = runtimeRegistration;
     }
 

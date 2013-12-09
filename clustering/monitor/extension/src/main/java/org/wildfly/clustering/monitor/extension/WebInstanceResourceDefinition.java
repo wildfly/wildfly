@@ -22,9 +22,10 @@
 package org.wildfly.clustering.monitor.extension;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectListAttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.SimpleListAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
@@ -41,38 +42,40 @@ public class WebInstanceResourceDefinition extends SimpleResourceDefinition {
     private final boolean runtimeRegistration;
 
     // metrics
-    static final AttributeDefinition NODE_RESULT = new SimpleAttributeDefinitionBuilder(ModelKeys.NODE_RESULT, ModelType.PROPERTY, true)
+    static final AttributeDefinition NODE_NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.NODE_NAME, ModelType.STRING)
+                     .setAllowNull(false)
+                     .build();
+    static final AttributeDefinition NODE_VALUE = new SimpleAttributeDefinitionBuilder(ModelKeys.NODE_VALUE, ModelType.STRING)
                      .setAllowNull(false)
                      .build();
 
-    static final SimpleListAttributeDefinition CACHE_VIEW =
-            SimpleListAttributeDefinition.Builder.of(ModelKeys.CACHE_VIEW, NODE_RESULT)
+    static final ObjectTypeAttributeDefinition NODE_RESULT = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.NODE_RESULT, NODE_NAME, NODE_VALUE)
+                     .setAllowNull(false)
+                     .setSuffix("node-result")
+                     .build();
+
+    static final ObjectListAttributeDefinition CACHE_VIEW = ObjectListAttributeDefinition.Builder.of(ModelKeys.CACHE_VIEW, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
     // not yet implemented in ISPN
-    static final SimpleListAttributeDefinition CACHE_VIEW_HISTORY =
-            SimpleListAttributeDefinition.Builder.of(ModelKeys.CACHE_VIEW_HISTORY, NODE_RESULT)
+    static final ObjectListAttributeDefinition CACHE_VIEW_HISTORY = ObjectListAttributeDefinition.Builder.of(ModelKeys.CACHE_VIEW_HISTORY, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleListAttributeDefinition DISTRIBUTION =
-            SimpleListAttributeDefinition.Builder.of(ModelKeys.DISTRIBUTION, NODE_RESULT)
+    static final ObjectListAttributeDefinition DISTRIBUTION = ObjectListAttributeDefinition.Builder.of(ModelKeys.DISTRIBUTION, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleListAttributeDefinition OPERATION_STATS =
-            SimpleListAttributeDefinition.Builder.of(ModelKeys.OPERATION_STATS, NODE_RESULT)
+    static final ObjectListAttributeDefinition OPERATION_STATS = ObjectListAttributeDefinition.Builder.of(ModelKeys.OPERATION_STATS, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleListAttributeDefinition RPC_STATS =
-            SimpleListAttributeDefinition.Builder.of(ModelKeys.RPC_STATS, NODE_RESULT)
+    static final ObjectListAttributeDefinition RPC_STATS = ObjectListAttributeDefinition.Builder.of(ModelKeys.RPC_STATS, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
-    static final SimpleListAttributeDefinition TXN_STATS =
-            SimpleListAttributeDefinition.Builder.of(ModelKeys.TXN_STATS, NODE_RESULT)
+    static final ObjectListAttributeDefinition TXN_STATS = ObjectListAttributeDefinition.Builder.of(ModelKeys.TXN_STATS, NODE_RESULT)
                     .setStorageRuntime()
                     .build();
 
@@ -81,7 +84,7 @@ public class WebInstanceResourceDefinition extends SimpleResourceDefinition {
     public WebInstanceResourceDefinition(boolean runtimeRegistration) {
 
         super(WEB_PATH,
-                ClusterExtension.getResourceDescriptionResolver(ModelKeys.CLUSTER + "." + ModelKeys.DEPLOYMENT + "." + ModelKeys.WEB),
+                ClusteringMonitorExtension.getResourceDescriptionResolver(ModelKeys.CLUSTER + "." + ModelKeys.DEPLOYMENT + "." + ModelKeys.WEB),
                 null,
                 null);
         this.runtimeRegistration = runtimeRegistration;

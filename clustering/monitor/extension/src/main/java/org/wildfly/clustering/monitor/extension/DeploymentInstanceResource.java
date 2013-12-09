@@ -166,14 +166,14 @@ public class DeploymentInstanceResource implements Resource {
         if (ModelKeys.WEB.equals(childType)) {
             Set<ResourceEntry> result = new HashSet<ResourceEntry>();
             // we have a child resource web=WEB if this deployment is in the set of web deployments for the cluster
-            if (ClusterSubsystemHelper.getWebDeploymentNames(this.registry, this.channel).contains(name)) {
+            if (ClusteringMonitorSubsystemHelper.getWebDeploymentNames(this.registry, this.channel).contains(name)) {
                 result.add(new PlaceholderResource.PlaceholderResourceEntry(ModelKeys.WEB, ModelKeys.WEB_NAME));
             }
             return result;
         }
         if (ModelKeys.BEAN.equals(childType)) {
             Set<ResourceEntry> result = new HashSet<ResourceEntry>();
-            for (String beanName : ClusterSubsystemHelper.getBeanNamesForDeployment(this.registry, this.channel, this.name)) {
+            for (String beanName : ClusteringMonitorSubsystemHelper.getBeanNamesForDeployment(this.registry, this.channel, this.name)) {
                 result.add(new PlaceholderResource.PlaceholderResourceEntry(ModelKeys.BEAN, beanName));
             }
             return result;
@@ -184,14 +184,14 @@ public class DeploymentInstanceResource implements Resource {
     @Override
     public Set<String> getChildrenNames(String childType) {
         if (ModelKeys.WEB.equals(childType)) {
-            if (ClusterSubsystemHelper.getWebDeploymentNames(this.registry, this.channel).contains(name)) {
+            if (ClusteringMonitorSubsystemHelper.getWebDeploymentNames(this.registry, this.channel).contains(name)) {
                 HashSet<String> names = new HashSet<String>();
                 names.add(ModelKeys.WEB_NAME);
                 return names;
             }
         }
         if (ModelKeys.BEAN.equals(childType)) {
-            return ClusterSubsystemHelper.getBeanNamesForDeployment(this.registry, this.channel, this.name);
+            return ClusteringMonitorSubsystemHelper.getBeanNamesForDeployment(this.registry, this.channel, this.name);
         }
         return Collections.emptySet();
     }
@@ -237,12 +237,12 @@ public class DeploymentInstanceResource implements Resource {
     private boolean hasWebDeployment(PathElement element) {
         // this should be WEB
         String deploymentName = element.getValue();
-        return ClusterSubsystemHelper.getWebDeploymentNames(this.registry, this.channel).contains(this.name);
+        return ClusteringMonitorSubsystemHelper.getWebDeploymentNames(this.registry, this.channel).contains(this.name);
     }
 
     private boolean hasBeanDeployment(PathElement element) {
         String beanName = element.getValue();
-        return ClusterSubsystemHelper.getBeanNamesForDeployment(this.registry, this.channel, this.name).contains(beanName);
+        return ClusteringMonitorSubsystemHelper.getBeanNamesForDeployment(this.registry, this.channel, this.name).contains(beanName);
     }
 
     /*

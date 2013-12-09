@@ -47,8 +47,8 @@ public class CacheManagementServiceProvider implements ChannelServiceProvider {
         InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<CommandDispatcherFactory>();
         Service<CacheManagement> service = new CacheManagementService(name, dispatcherFactory, containerName);
         ServiceController<CacheManagement> controller = target.addService(name, service)
+                // we use this injected reference
                 .addDependency(CommandDispatcherFactoryProvider.getServiceName(containerName), CommandDispatcherFactory.class, dispatcherFactory)
-                //.addDependency(ClusterExtension.CLUSTER_EXTENSION_SERVICE_NAME)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;

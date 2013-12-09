@@ -66,9 +66,12 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         // get the channel name and channel attribute
         PathAddress pathAddress = PathAddress.pathAddress(operation.require(OP_ADDR));
-        String channelName = pathAddress.getElement(pathAddress.size()-1).getValue();
+        String channelName = pathAddress.getLastElement().getValue();
         String attrName = operation.require(NAME).asString();
         ClusterMetrics metric = ClusterMetrics.getStat(attrName);
+
+        // trace logging
+        ClusteringMonitorSubsystemLogger.ROOT_LOGGER.processingClusterMetricsRequest(channelName, attrName);
 
         // lookup the channel RPC support for this channel
         ServiceName serviceName = ChannelManagementService.getServiceName(channelName);
@@ -76,21 +79,12 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
 
         // check that the service has been installed and started
         boolean started = controller != null && controller.getState().in(ServiceController.State.UP);
-        if (!started && controller != null) {
-            try {
-              // start the RPC service
-              ClusterSubsystemHelper.startService(controller);
-              started = true;
-            } catch (Exception e) {
-                // this will be handled below
-           }
-        }
         ModelNode result = new ModelNode();
 
         if (metric == null) {
-            context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.unknownMetric(attrName));
+            context.getFailureDescription().set(ClusteringMonitorSubsystemMessages.MESSAGES.unknownMetric(attrName));
         } else if (!started) {
-            context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.rpcServiceNotStarted(channelName));
+            context.getFailureDescription().set(ClusteringMonitorSubsystemMessages.MESSAGES.rpcServiceNotStarted(channelName));
         } else {
             ChannelManagement management = controller.getValue();
 
@@ -109,10 +103,13 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
                         break;
                 }
 
+                // trace logging
+                ClusteringMonitorSubsystemLogger.ROOT_LOGGER.processedRequestResult(result.toString());
+
                 context.getResult().set(result);
 
             } catch (InterruptedException ie) {
-                context.getFailureDescription().set(ClusterSubsystemMessages.MESSAGES.interrupted(channelName));
+                context.getFailureDescription().set(ClusteringMonitorSubsystemMessages.MESSAGES.interrupted(channelName));
                 // don't swallow the interrupt
                 Thread.currentThread().interrupt();
             }
@@ -121,7 +118,7 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
     }
 
     private ModelNode createClusterRPCStats(Map<Node, ChannelState> states) {
-        ModelNode result = new ModelNode();
+        ModelNode result = new ModelNode().setEmptyList();
         for (Map.Entry<Node, ChannelState> entry: states.entrySet()) {
             Node node = entry.getKey();
             ChannelState state = entry.getValue();
@@ -132,24 +129,29 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
 
             String JSONString = String.format(RPC_STATS, unicasts, multicasts, anycasts);
             ModelNode stats = ModelNode.fromJSONString(JSONString);
-            result.add(node.getName(), stats.toJSONString(true));
+            // create a NODE_RESULT
+            ModelNode object = result.addEmptyObject();
+            object.get(ModelKeys.NODE_NAME).set(node.getName());
+            object.get(ModelKeys.NODE_VALUE).set(stats);
         }
         return result;
     }
 
     private ModelNode createClusterView(Map<Node, ChannelState> states) {
-        ModelNode result = new ModelNode();
+        ModelNode result = new ModelNode().setEmptyList();
         for (Map.Entry<Node, ChannelState> entry: states.entrySet()) {
             Node node = entry.getKey();
             ChannelState state = entry.getValue();
-            // create a LIST of PROPERTY
-            result.add(node.getName(), state.getView());
+            // create a NODE_RESULT
+            ModelNode object = result.addEmptyObject();
+            object.get(ModelKeys.NODE_NAME).set(node.getName());
+            object.get(ModelKeys.NODE_VALUE).set(state.getView());
         }
         return result;
     }
 
     private ModelNode createClusterViewHistory(Map<Node, ChannelState> states) {
-        ModelNode result = new ModelNode();
+        ModelNode result = new ModelNode().setEmptyList();
         for (Map.Entry<Node, ChannelState> entry: states.entrySet()) {
             Node node = entry.getKey();
             ChannelState state = entry.getValue();
@@ -161,9 +163,13 @@ public class ClusterMetricsHandler extends AbstractRuntimeOnlyHandler {
                 for (String viewHistoryElement : viewHistoryElements) {
                     parts.add(new ModelNode(viewHistoryElement));
                 }
-                result.add(node.getName(), parts);
+                ModelNode object = result.addEmptyObject();
+                object.get(ModelKeys.NODE_NAME).set(node.getName());
+                object.get(ModelKeys.NODE_VALUE).set(parts);
             } else {
-                result.add(node.getName(), new ModelNode());
+                ModelNode object = result.addEmptyObject();
+                object.get(ModelKeys.NODE_NAME).set(node.getName());
+                object.get(ModelKeys.NODE_VALUE).set(new ModelNode());
             }
         }
         return result;

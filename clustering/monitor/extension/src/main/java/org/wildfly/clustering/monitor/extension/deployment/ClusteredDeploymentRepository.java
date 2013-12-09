@@ -11,7 +11,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.wildfly.clustering.monitor.extension.ClusterSubsystemLogger;
+import org.wildfly.clustering.monitor.extension.ClusteringMonitorSubsystemLogger;
 
 /**
  * Repository of deployment information for clustered deployments.
@@ -51,7 +51,7 @@ public class ClusteredDeploymentRepository implements Service<ClusteredDeploymen
             try {
                 listener.deploymentAvailable(identifier, deployment);
             } catch (Throwable t) {
-                ClusterSubsystemLogger.ROOT_LOGGER.deploymentAddListenerException(t);
+                ClusteringMonitorSubsystemLogger.ROOT_LOGGER.deploymentAddListenerException(t);
             }
         }
     }
@@ -68,7 +68,7 @@ public class ClusteredDeploymentRepository implements Service<ClusteredDeploymen
             try {
                 listener.deploymentRemoved(identifier);
             } catch (Throwable t) {
-                ClusterSubsystemLogger.ROOT_LOGGER.deploymentRemoveListenerException(t);
+                ClusteringMonitorSubsystemLogger.ROOT_LOGGER.deploymentRemoveListenerException(t);
             }
         }
     }

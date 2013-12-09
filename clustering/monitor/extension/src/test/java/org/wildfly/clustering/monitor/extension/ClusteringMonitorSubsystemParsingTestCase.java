@@ -17,7 +17,7 @@ import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
-import org.wildfly.clustering.monitor.extension.ClusterExtension;
+import org.wildfly.clustering.monitor.extension.ClusteringMonitorExtension;
 
 
 /**
@@ -28,12 +28,12 @@ import org.wildfly.clustering.monitor.extension.ClusterExtension;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
+public class ClusteringMonitorSubsystemParsingTestCase extends AbstractSubsystemTest {
 
     final int EXPECTED_NUM_OPERATIONS = 1 ;
 
-    public ClusterSubsystemParsingTestCase() {
-        super(ClusterExtension.SUBSYSTEM_NAME, new ClusterExtension());
+    public ClusteringMonitorSubsystemParsingTestCase() {
+        super(ClusteringMonitorExtension.SUBSYSTEM_NAME, new ClusteringMonitorExtension());
     }
 
     /**
@@ -56,7 +56,7 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
         Assert.assertEquals(1, addr.size());
         PathElement element = addr.getElement(0);
         Assert.assertEquals(SUBSYSTEM, element.getKey());
-        Assert.assertEquals(ClusterExtension.SUBSYSTEM_NAME, element.getValue());
+        Assert.assertEquals(ClusteringMonitorExtension.SUBSYSTEM_NAME, element.getValue());
     }
 
     /**
@@ -71,7 +71,7 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
 
         //Read the whole model and make sure it looks as expected
         ModelNode model = services.readWholeModel();
-        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(ClusterExtension.SUBSYSTEM_NAME));
+        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(ClusteringMonitorExtension.SUBSYSTEM_NAME));
     }
 
     /**
@@ -112,7 +112,7 @@ public class ClusterSubsystemParsingTestCase extends AbstractSubsystemTest {
         describeOp.get(OP).set(DESCRIBE);
         describeOp.get(OP_ADDR).set(
                 PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, ClusterExtension.SUBSYSTEM_NAME)).toModelNode());
+                        PathElement.pathElement(SUBSYSTEM, ClusteringMonitorExtension.SUBSYSTEM_NAME)).toModelNode());
         List<ModelNode> operations = super.checkResultAndGetContents(servicesA.executeOperation(describeOp)).asList();
 
 

@@ -3,7 +3,7 @@ package org.wildfly.clustering.monitor.extension;
 import java.io.IOException;
 
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
-import org.wildfly.clustering.monitor.extension.ClusterExtension;
+import org.wildfly.clustering.monitor.extension.ClusteringMonitorExtension;
 
 /**
  * This is the barebone test example that tests subsystem
@@ -11,10 +11,10 @@ import org.wildfly.clustering.monitor.extension.ClusterExtension;
  * If you need more control over what happens in tests look at  {@link SubsystemParsingTestCase}
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class ClusterSubsystemBaseParsingTestCase extends AbstractSubsystemBaseTest {
+public class ClusteringMonitorSubsystemBaseParsingTestCase extends AbstractSubsystemBaseTest {
 
-    public ClusterSubsystemBaseParsingTestCase() {
-        super(ClusterExtension.SUBSYSTEM_NAME, new ClusterExtension());
+    public ClusteringMonitorSubsystemBaseParsingTestCase() {
+        super(ClusteringMonitorExtension.SUBSYSTEM_NAME, new ClusteringMonitorExtension());
     }
 
 

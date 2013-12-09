@@ -36,19 +36,19 @@ import org.jboss.logging.annotations.MessageLogger;
 /**
  * ClusterSubsystemLogger
  *
- * logging id range: 20700 - 20709
+ * logging id range: 20700 - 20749
  *
  * @author Richard Achmatowicz (c) Red Hat Inc 2013
  */
 @MessageLogger(projectCode = "JBAS")
-public interface ClusterSubsystemLogger extends BasicLogger {
+public interface ClusteringMonitorSubsystemLogger extends BasicLogger {
 
-    String ROOT_LOGGER_CATEGORY = ClusterSubsystemLogger.class.getPackage().getName();
+    String ROOT_LOGGER_CATEGORY = ClusteringMonitorSubsystemLogger.class.getPackage().getName();
 
     /**
      * A logger with the category of the default clustering package.
      */
-    ClusterSubsystemLogger ROOT_LOGGER = Logger.getMessageLogger(ClusterSubsystemLogger.class, ROOT_LOGGER_CATEGORY);
+    ClusteringMonitorSubsystemLogger ROOT_LOGGER = Logger.getMessageLogger(ClusteringMonitorSubsystemLogger.class, ROOT_LOGGER_CATEGORY);
 
     /**
      * Logs an info message indicating startup of the cluster subsystem..
@@ -80,4 +80,29 @@ public interface ClusterSubsystemLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 20706, value = "IllegalAccessException handled for field %s in class %s")
     void illegalAccessExceptionHandled(String field, String clazz);
+
+    @LogMessage(level = TRACE)
+    @Message(id = 20707, value = "Processing cluster metrics request: channel = %s, attribute = %s")
+    void processingClusterMetricsRequest(String channel, String attr);
+
+    @LogMessage(level = TRACE)
+    @Message(id = 20708, value = "Processing deployment metrics request: channel = %s, deployment = %s, attribute = %s")
+    void processingDeploymentMetricsRequest(String channel, String deployment, String attr);
+
+    @LogMessage(level = TRACE)
+    @Message(id = 20709, value = "Processing bean metrics request: channel = %s, deployment = %s, attribute = %s")
+    void processingWebMetricsRequest(String channel, String deployment, String attr);
+
+    @LogMessage(level = TRACE)
+    @Message(id = 20710, value = "Processing bean metrics request: channel = %s, deployment = %s, bean = %s, attribute = %s")
+    void processingBeanMetricsRequest(String channel, String deployment, String bean, String attr);
+
+    @LogMessage(level = TRACE)
+    @Message(id = 20711, value = "Processed request: result = %s")
+    void processedRequestResult(String result);
+
+    @LogMessage(level = TRACE)
+    @Message(id = 20712, value = "Executing channel state command: channel = %s")
+    void executingChannelStateCommand(String channel);
+
 }

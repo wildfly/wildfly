@@ -18,7 +18,7 @@ import org.wildfly.clustering.monitor.extension.deployment.ClusteredWarDeploymen
 /**
  * @author Richard Achmatowicz (c) 2013 Red Hat Inc.
  */
-public class ClusterSubsystemHelper {
+public class ClusteringMonitorSubsystemHelper {
 
     public static final ServiceName CHANNEL_PARENT = ServiceName.of("jboss", "jgroups", "channel");
     public static final int CHANNEL_PREFIX_LENGTH = CHANNEL_PARENT.toString().length();

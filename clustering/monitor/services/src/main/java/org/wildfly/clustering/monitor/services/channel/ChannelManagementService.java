@@ -26,6 +26,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -43,6 +44,8 @@ public class ChannelManagementService implements Service<ChannelManagement>, Cha
     public static ServiceName getServiceName(String channelName) {
         return ChannelService.getServiceName(channelName).append("management");
     }
+
+    private static final Logger log = Logger.getLogger(ChannelManagementService.class.getPackage().getName());
 
     private final ServiceName name;
     private final Value<CommandDispatcherFactory> dispatcherFactory;
@@ -62,16 +65,25 @@ public class ChannelManagementService implements Service<ChannelManagement>, Cha
 
     @Override
     public void start(StartContext context) throws StartException {
+        if (log.isTraceEnabled()) {
+            log.debugf("Starting ChannelManagementService: channel name = %s\n", channelName);
+        }
         this.dispatcher = this.dispatcherFactory.getValue().createCommandDispatcher(this.name, this.channelName);
     }
 
     @Override
     public void stop(StopContext context) {
+        if (log.isTraceEnabled()) {
+            log.debugf("Stopping ChannelManagementService: channel name = %s\n", channelName);
+        }
         this.dispatcher.close();
     }
 
     @Override
     public Map<Node, ChannelState> getClusterState() throws InterruptedException {
+        if (log.isTraceEnabled()) {
+            log.debugf("Getting channel state: channel name = %s\n", channelName);
+        }
         Command<ChannelState, String> command = new ChannelStateCommand();
         Map<Node, CommandResponse<ChannelState>> responses = this.dispatcher.executeOnCluster(command);
         Map<Node, ChannelState> result = new TreeMap<Node, ChannelState>();
@@ -85,6 +97,9 @@ public class ChannelManagementService implements Service<ChannelManagement>, Cha
                 // Log
                 System.out.println("Execution exception: " + e.toString());
             }
+        }
+        if (log.isTraceEnabled()) {
+            log.debugf("Got channel state: result = %s\n", result.toString());
         }
         return result;
     }
