@@ -700,6 +700,7 @@
             <maven-resource group="org.apache.lucene" artifact="lucene-analyzers"/>
             <maven-resource group="org.apache.lucene" artifact="lucene-core"/>
             <maven-resource group="org.apache.lucene" artifact="lucene-facet"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-memory"/>
         </module-def>
 
         <module-def name="org.apache.neethi">
