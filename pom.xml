@@ -3302,6 +3302,11 @@
                 <artifactId>lucene-facet</artifactId>
                 <version>${version.org.apache.lucene}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-memory</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.myfaces.core</groupId>
