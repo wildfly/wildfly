@@ -52,12 +52,6 @@ public class ReverseProxyHandler extends Handler {
             .setDefaultValue(new ModelNode(30))
             .build();
 
-    public static final AttributeDefinition STICKY_SESSION_LIFETIME = new SimpleAttributeDefinitionBuilder(Constants.STICKY_SESSION_LIFETIME, ModelType.LONG)
-            .setAllowNull(true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(120))
-            .build();
-
     public static final AttributeDefinition SESSION_COOKIE_NAMES = new SimpleAttributeDefinitionBuilder(Constants.SESSION_COOKIE_NAMES, ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -81,7 +75,7 @@ public class ReverseProxyHandler extends Handler {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, STICKY_SESSION_LIFETIME, PROBLEM_SERVER_RETRY);
+        return Arrays.asList(CONNECTIONS_PER_THREAD, SESSION_COOKIE_NAMES, PROBLEM_SERVER_RETRY);
     }
 
     @Override
@@ -94,7 +88,6 @@ public class ReverseProxyHandler extends Handler {
 
         String sessionCookieNames = SESSION_COOKIE_NAMES.resolveModelAttribute(context, model).asString();
         int connectionsPerThread = CONNECTIONS_PER_THREAD.resolveModelAttribute(context, model).asInt();
-        int stickySessionLifetime = STICKY_SESSION_LIFETIME.resolveModelAttribute(context, model).asInt();
         int problemServerRetry = PROBLEM_SERVER_RETRY.resolveModelAttribute(context, model).asInt();
         ModelNode maxTimeNode = MAX_REQUEST_TIME.resolveModelAttribute(context, model);
         int maxTime = -1;
@@ -103,8 +96,7 @@ public class ReverseProxyHandler extends Handler {
         }
         final LoadBalancingProxyClient lb = new LoadBalancingProxyClient()
                 .setConnectionsPerThread(connectionsPerThread)
-                .setProblemServerRetry(problemServerRetry)
-                .setStickeySessionLifetime(stickySessionLifetime * 60);
+                .setProblemServerRetry(problemServerRetry);
         String[] sessionIds = sessionCookieNames.split(",");
         for (String id : sessionIds) {
             lb.addSessionCookieName(id);
