@@ -202,7 +202,7 @@ public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C
     }
 
     private RequestOptions createRequestOptions() {
-        return new RequestOptions(ResponseMode.GET_ALL, this.timeout, false, FILTER);
+        return new RequestOptions(ResponseMode.GET_ALL, this.timeout, false, FILTER, Message.Flag.DONT_BUNDLE);
     }
 
     static <R> CommandResponse<R> createCommandResponse(Rsp<R> response) {
