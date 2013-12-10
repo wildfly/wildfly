@@ -240,7 +240,6 @@
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="connections-per-thread" use="optional" type="xs:integer"/>
-        <xs:attribute name="sticky-session-lifetime" use="optional" type="xs:integer"/>
         <xs:attribute name="session-cookie-names" use="optional" type="xs:string"/>
         <xs:attribute name="problem-server-retry" use="optional" type="xs:integer"/>
         <xs:attribute name="max-request-time" use="optional" type="xs:integer"/>

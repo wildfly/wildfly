@@ -167,7 +167,6 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                         builder(ReverseProxyHandler.INSTANCE)
                                                 .addAttributes(
                                                         ReverseProxyHandler.CONNECTIONS_PER_THREAD,
-                                                        ReverseProxyHandler.STICKY_SESSION_LIFETIME,
                                                         ReverseProxyHandler.SESSION_COOKIE_NAMES,
                                                         ReverseProxyHandler.PROBLEM_SERVER_RETRY,
                                                         ReverseProxyHandler.MAX_REQUEST_TIME)
