@@ -15,7 +15,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-ts-integ</artifactId>
-        <version>7.3.0.Final-redhat-SNAPSHOT</version>
+        <version>7.4.0.Final-redhat-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -23,7 +23,7 @@
     <!-- ********************************************************************************** -->
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-rbac</artifactId>
-    <version>7.3.0.Final-redhat-SNAPSHOT</version>
+    <version>7.4.0.Final-redhat-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - Role Based Access Control</name>
 

@@ -35,7 +35,7 @@
     <groupId>org.jboss.as</groupId>
     <artifactId>jboss-as-subsystem-test-controller-7.2.0</artifactId>
     <name>JBoss Application Server: Subsystem Test Controller 7.2.0</name>
-    <version>7.3.0.Final-redhat-SNAPSHOT</version>
+    <version>7.4.0.Final-redhat-SNAPSHOT</version>
 
     <properties>
         <property.old.as.version>7.2.0.Final</property.old.as.version>

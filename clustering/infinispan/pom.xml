@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.jboss.as</groupId>
         <artifactId>jboss-as-clustering</artifactId>
-        <version>7.3.0.Final-redhat-SNAPSHOT</version>
+        <version>7.4.0.Final-redhat-SNAPSHOT</version>
     </parent>
 
     <artifactId>jboss-as-clustering-infinispan</artifactId>
