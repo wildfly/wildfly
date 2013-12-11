@@ -64,11 +64,13 @@ public abstract class ListenerService<T> implements Service<T> {
     private final String name;
     protected final OptionMap listenerOptions;
     protected volatile OpenListener openListener;
+    private final int redirectPort;
 
 
-    protected ListenerService(String name, OptionMap listenerOptions) {
+    protected ListenerService(String name, OptionMap listenerOptions, int redirectPort) {
         this.name = name;
         this.listenerOptions = listenerOptions;
+        this.redirectPort = redirectPort;
     }
 
     public InjectedValue<XnioWorker> getWorker() {
@@ -133,6 +135,10 @@ public abstract class ListenerService<T> implements Service<T> {
         serverService.getValue().unregisterListener(this);
         stopListening();
         unregisterBinding();
+    }
+
+    public Integer getRedirectPort() {
+        return redirectPort;
     }
 
     protected abstract OpenListener createOpenListener();

@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -53,6 +54,8 @@ public class Server implements Service<Server> {
     private final List<ListenerService<?>> listeners = new LinkedList<>();
     private final Set<Host> hosts = new CopyOnWriteArraySet<>();
 
+    private final HashMap<Integer,Integer> securePortMappings = new HashMap<>();
+
     protected Server(String name, String defaultHost) {
         this.name = name;
         this.defaultHost = defaultHost;
@@ -69,19 +72,20 @@ public class Server implements Service<Server> {
     }
 
     protected void registerListener(ListenerService<?> listener) {
-        listeners.add(listener);
-        if (listener.isSecure()) {
-            SocketBinding binding = (SocketBinding) listener.getBinding().getValue();
-            servletContainer.getValue().registerSecurePort(listener.getName(), binding.getSocketAddress().getPort());
-        }
-    }
+           listeners.add(listener);
+           if (!listener.isSecure()) {
+               SocketBinding binding = (SocketBinding) listener.getBinding().getValue();
+               securePortMappings.put(binding.getAbsolutePort(), listener.getRedirectPort());
+           }
+       }
 
-    protected void unregisterListener(ListenerService<?> listener) {
-        listeners.remove(listener);
-        if (listener.isSecure()) {
-            servletContainer.getValue().unregisterSecurePort(listener.getName());
-        }
-    }
+       protected void unregisterListener(ListenerService<?> listener) {
+           listeners.remove(listener);
+           if (!listener.isSecure()) {
+               SocketBinding binding = (SocketBinding) listener.getBinding().getValue();
+               securePortMappings.remove(binding.getAbsolutePort());
+           }
+       }
 
     protected void registerHost(final Host host) {
         hosts.add(host);
@@ -101,6 +105,10 @@ public class Server implements Service<Server> {
         if (host.getName().equals(getDefaultHost())) {
             virtualHostHandler.setDefaultHandler(ResponseCodeHandler.HANDLE_404);
         }
+    }
+
+    public int lookupSecurePort(final int unsecurePort) {
+        return securePortMappings.get(unsecurePort);
     }
 
     @Override

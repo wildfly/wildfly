@@ -351,7 +351,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private void handleJASPIMechanism(final DeploymentInfo deploymentInfo) {
         ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
 
-        if (JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
+        if (applicationPolicy!=null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
             deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(this.securityDomain));
         }
     }
@@ -396,7 +396,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             @Override
             public int getConfidentialPort(HttpServerExchange exchange) {
-                return container.getValue().lookupSecurePort("default");
+                int port = exchange.getHostPort();
+                return host.getValue().getServer().getValue().lookupSecurePort(port);
             }
         };
     }

@@ -43,8 +43,8 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
     private volatile AcceptingChannel<StreamConnection> server;
     private final String scheme;
 
-    public AjpListenerService(String name, final String scheme, OptionMap listenerOptions) {
-        super(name,listenerOptions);
+    public AjpListenerService(String name, final String scheme, OptionMap listenerOptions, int redirectPort) {
+        super(name, listenerOptions, redirectPort);
         this.scheme = scheme;
     }
 

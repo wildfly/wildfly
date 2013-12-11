@@ -32,10 +32,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import java.util.ConcurrentModificationException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Central Undertow 'Container' HTTP listeners will make this container accessible whilst deployers will add content.
  *
@@ -48,8 +44,6 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final SessionCookieConfig sessionCookieConfig;
     private final JSPConfig jspConfig;
     private volatile ServletContainer servletContainer;
-    @Deprecated
-    private final Map<String, Integer> secureListeners = new ConcurrentHashMap<>(1);
     private final InjectedValue<DirectBufferCache> bufferCacheInjectedValue = new InjectedValue<>();
     private final InjectedValue<SessionPersistenceManager> sessionPersistenceManagerInjectedValue = new InjectedValue<>();
     private final String defaultEncoding;
@@ -90,37 +84,6 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public ServletStackTraces getStackTraces() {
         return stackTraces;
-    }
-
-    public Integer lookupSecurePort(final String listenerName) {
-        Integer response = null;
-        response = secureListeners.get(listenerName);
-        if (response == null) {
-            while (response == null && secureListeners.isEmpty() == false) {
-                try {
-                    response = secureListeners.values().iterator().next();
-                } catch (ConcurrentModificationException cme) {
-                    // Ignored - The chance of happening is so small but do not wish to add
-                    // additional synchronisation. If listeners are being added and removed
-                    // to a server under load then behaviour could not be expected to be consistent.
-                }
-            }
-        }
-
-        if (response == null) {
-            throw new IllegalStateException("No secure listeners defined.");
-        }
-
-        return response;
-
-    }
-
-    public void registerSecurePort(final String listenerName, final Integer port) {
-        secureListeners.put(listenerName, port);
-    }
-
-    public void unregisterSecurePort(final String name) {
-        secureListeners.remove(name);
     }
 
     public SessionCookieConfig getSessionCookieConfig() {

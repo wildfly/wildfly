@@ -58,8 +58,8 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
 
     private final String serverName;
 
-    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, boolean certificateForwarding) {
-        super(name, listenerOptions);
+    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, boolean certificateForwarding, int redirectPort) {
+        super(name, listenerOptions, redirectPort);
         this.serverName = serverName;
         listenerHandlerWrappers.add(new HandlerWrapper() {
             @Override

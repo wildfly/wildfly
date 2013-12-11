@@ -74,6 +74,13 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    protected static final SimpleAttributeDefinition REDIRECT_PORT = new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_PORT, ModelType.INT)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setDefaultValue(new ModelNode(443))
+            .setAllowExpression(true)
+            .build();
+
 
     static final List<OptionAttributeDefinition> OPTIONS = OptionList.builder()
             .addOption(UndertowOptions.MAX_HEADER_SIZE, "max-header-size", new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE))

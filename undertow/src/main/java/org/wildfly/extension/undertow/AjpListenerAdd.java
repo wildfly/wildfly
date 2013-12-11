@@ -44,7 +44,8 @@ class AjpListenerAdd extends ListenerAdd {
         if(schemeNode.isDefined()) {
             scheme = schemeNode.asString();
         }
-        return new AjpListenerService(name, scheme, listenerOptions);
+        final Integer redirectPort = ListenerResourceDefinition.REDIRECT_PORT.resolveModelAttribute(context, model).asInt();
+        return new AjpListenerService(name, scheme, listenerOptions, redirectPort);
     }
 
     @Override

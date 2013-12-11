@@ -96,6 +96,16 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="port-forwarding" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                If this listener is supporting non-SSL requests, and a request is received for which a matching <security-constraint> requires SSL transport,
+                                undertow will automatically redirect the request to the port number specified here.
+                               ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -113,6 +123,16 @@
         <xs:complexContent>
             <xs:extension base="listener-type">
                 <xs:attribute name="scheme" type="xs:string"/>
+                <xs:attribute name="port-forwarding" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                                                If this listener is supporting non-SSL requests, and a request is received for which a matching <security-constraint> requires SSL transport,
+                                                undertow will automatically redirect the request to the port number specified here.
+                                               ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

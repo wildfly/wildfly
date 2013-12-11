@@ -42,7 +42,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
 
     protected static final SimpleAttributeDefinition CERTIFICATE_FORWARDING = new SimpleAttributeDefinitionBuilder(Constants.CERTIFICATE_FORWARDING, ModelType.BOOLEAN)
             .setAllowNull(true)
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setDefaultValue(new ModelNode(false))
             .setAllowExpression(true)
             .build();
@@ -60,6 +60,7 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
     public Collection<AttributeDefinition> getAttributes() {
         List<AttributeDefinition> attrs = new ArrayList<>(super.getAttributes());
         attrs.add(CERTIFICATE_FORWARDING);
+        attrs.add(REDIRECT_PORT);
         return attrs;
     }
 }
