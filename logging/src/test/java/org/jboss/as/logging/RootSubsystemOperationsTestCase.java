@@ -65,6 +65,14 @@ public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase 
     }
 
     @Test
+    public void testAttributes() throws Exception {
+        final KernelServices kernelServices = boot();
+        final ModelNode address = SUBSYSTEM_ADDRESS.toModelNode();
+        testWrite(kernelServices, address, LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES, true);
+        testUndefine(kernelServices, address, LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES);
+    }
+
+    @Test
     public void testListLogFiles() throws Exception {
         final KernelServices kernelServices = boot();
 

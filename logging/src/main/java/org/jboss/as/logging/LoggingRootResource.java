@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.ResultHandler;
 import org.jboss.as.controller.OperationFailedException;
@@ -48,13 +49,16 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -63,12 +67,19 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class LoggingRootResource extends SimpleResourceDefinition {
+public class LoggingRootResource extends TransformerResourceDefinition {
 
     private static final SensitiveTargetAccessConstraintDefinition VIEW_SERVER_LOGS = new SensitiveTargetAccessConstraintDefinition(
             new SensitivityClassification(LoggingExtension.SUBSYSTEM_NAME, "view-server-logs", false, false, false));
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
+
+    static final SimpleAttributeDefinition ADD_LOGGING_API_DEPENDENCIES = SimpleAttributeDefinitionBuilder.create("add-logging-api-dependencies", ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
+            .setDefaultValue(new ModelNode(true))
+            .setFlags(Flag.RESTART_ALL_SERVICES)
+            .build();
 
     static final SimpleAttributeDefinition NAME = SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING, false)
             .setAllowExpression(true)
@@ -126,12 +137,32 @@ public class LoggingRootResource extends SimpleResourceDefinition {
     }
 
     @Override
+    public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
+        super.registerAttributes(resourceRegistration);
+        resourceRegistration.registerReadWriteAttribute(ADD_LOGGING_API_DEPENDENCIES, null, new ModelOnlyWriteAttributeHandler(ADD_LOGGING_API_DEPENDENCIES));
+    }
+
+    @Override
     public void registerOperations(final ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         // Only register on server
         if (pathManager != null) {
             resourceRegistration.registerOperationHandler(LIST_LOG_FILES, new ListLogFilesOperation(pathManager));
             resourceRegistration.registerOperationHandler(READ_LOG_FILE, new ReadLogFileOperation(pathManager));
+        }
+    }
+
+    @Override
+    public void registerTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder rootResourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+        switch (modelVersion) {
+            case VERSION_1_1_0:
+            case VERSION_1_2_0:
+            case VERSION_1_3_0: {
+                rootResourceBuilder.getAttributeBuilder()
+                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ADD_LOGGING_API_DEPENDENCIES.getDefaultValue()), ADD_LOGGING_API_DEPENDENCIES)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, ADD_LOGGING_API_DEPENDENCIES)
+                        .end();
+            }
         }
     }
 

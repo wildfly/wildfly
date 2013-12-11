@@ -92,6 +92,9 @@ public class LoggingSubsystemWriter implements XMLStreamConstants, XMLElementWri
 
         ModelNode model = context.getModelNode();
 
+        // Marshall attributes
+        LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES.marshallAsElement(model, false, writer);
+
         writeContent(writer, model);
 
         if (model.hasDefined(LOGGING_PROFILE)) {
