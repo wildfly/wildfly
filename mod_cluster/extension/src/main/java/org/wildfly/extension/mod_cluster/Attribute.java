@@ -48,7 +48,7 @@ enum Attribute {
     AUTO_ENABLE_CONTEXTS(CommonAttributes.AUTO_ENABLE_CONTEXTS),
     STOP_CONTEXT_TIMEOUT(CommonAttributes.STOP_CONTEXT_TIMEOUT),
     SOCKET_TIMEOUT(CommonAttributes.SOCKET_TIMEOUT),
-    CONNECTOR(CommonAttributes.CONNECTOR),
+    @Deprecated CONNECTOR(CommonAttributes.CONNECTOR),
 
     STICKY_SESSION(CommonAttributes.STICKY_SESSION),
     STICKY_SESSION_REMOVE(CommonAttributes.STICKY_SESSION_REMOVE),

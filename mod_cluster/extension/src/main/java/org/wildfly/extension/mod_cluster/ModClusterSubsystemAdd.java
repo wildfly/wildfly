@@ -30,7 +30,6 @@ import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefiniti
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE_SOCKET;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.AUTO_ENABLE_CONTEXTS;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.BALANCER;
-import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.CONNECTOR;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.EXCLUDED_CONTEXTS;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.FLUSH_PACKETS;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.FLUSH_WAIT;
@@ -61,12 +60,11 @@ import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -97,17 +95,16 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Jean-Frederic Clere
  * @author Tomaz Cerar
+ * @author Radoslav Husar
  */
-class ModClusterSubsystemAdd extends AbstractAddStepHandler {
+class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final OperationContext.AttachmentKey<Boolean> SUBSYSTEM_ADD_KEY = OperationContext.AttachmentKey.create(Boolean.class);
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-
+    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceTarget target = context.getServiceTarget();
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final ModelNode modelConfig = fullModel.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair());
@@ -116,25 +113,18 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         newControllers.add(target.addService(ContainerEventHandlerService.CONFIG_SERVICE_NAME, new ValueService<>(new ImmediateValue<>(config))).setInitialMode(Mode.ACTIVE).install());
 
         final LoadBalanceFactorProvider loadProvider = getModClusterLoadProvider(context, modelConfig);
-        final String connector = CONNECTOR.resolveModelAttribute(context, modelConfig).asString();
         InjectedValue<SocketBindingManager> socketBindingManager = new InjectedValue<SocketBindingManager>();
         ContainerEventHandlerService service = new ContainerEventHandlerService(config, loadProvider, socketBindingManager);
         final ServiceBuilder<?> builder = AsynchronousService.addService(target, ContainerEventHandlerService.SERVICE_NAME, service, true, true)
                 .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, socketBindingManager)
                 .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE)
-        ;
+                .setInitialMode(Mode.ACTIVE);
         final ModelNode bindingRefNode = ADVERTISE_SOCKET.resolveModelAttribute(context, modelConfig);
         final String bindingRef = bindingRefNode.isDefined() ? bindingRefNode.asString() : null;
         if (bindingRef != null) {
             builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getSocketBindingInjector());
         }
         newControllers.add(builder.install());
-
-        // Install services for web container integration
-        for (ContainerEventHandlerAdapterBuilder adapterBuilder: ServiceLoader.load(ContainerEventHandlerAdapterBuilder.class, ContainerEventHandlerAdapterBuilder.class.getClassLoader())) {
-            newControllers.add(adapterBuilder.build(target, connector).addListener(verificationHandler).setInitialMode(Mode.PASSIVE).install());
-        }
     }
 
     /**

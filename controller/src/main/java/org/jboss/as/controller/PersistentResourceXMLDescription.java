@@ -215,7 +215,11 @@ public class PersistentResourceXMLDescription {
                 def.getValue().getAttributeMarshaller().marshallAsAttribute(def.getValue(), model, false, writer);
             }
             persistChildren(writer, model);
-            writer.writeEndElement();
+
+            // Do not attempt to write end element if the <subsystem/> has no elements!
+            if (!isSubsystem || !children.isEmpty()) {
+                writer.writeEndElement();
+            }
         }
 
         if (writeWrapper) {

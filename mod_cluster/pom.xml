@@ -35,7 +35,7 @@
     <artifactId>wildfly-mod_cluster</artifactId>
     <packaging>pom</packaging>
 
-    <name>WildFly: mod_cluster Subsystem</name>
+    <name>WildFly: mod_cluster</name>
 
     <modules>
         <module>extension</module>

@@ -22,6 +22,7 @@
         <subsystem>configuration/subsystems/mail.xml</subsystem>
         <subsystem supplement="ha">configuration/subsystems/messaging.xml</subsystem>
         <subsystem>configuration/subsystems/mod_cluster.xml</subsystem>
+        <subsystem>configuration/subsystems/mod_cluster-undertow.xml</subsystem>
         <subsystem>configuration/subsystems/naming.xml</subsystem>
         <subsystem>configuration/subsystems/pojo.xml</subsystem>
         <subsystem>configuration/subsystems/remoting.xml</subsystem>
