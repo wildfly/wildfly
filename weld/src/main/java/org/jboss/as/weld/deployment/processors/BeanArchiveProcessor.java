@@ -51,6 +51,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.Index;
 import org.jboss.modules.Module;
+import org.jboss.vfs.VirtualFile;
 import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 
@@ -95,7 +96,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
             // however we still want to create a module level bean manager
             for (BeanArchiveMetadata beanArchiveMetadata : cdiDeploymentMetadata.getBeanArchiveMetadata()) {
                 BeanDeploymentArchiveImpl bda = createBeanDeploymentArchive(indexes.get(beanArchiveMetadata.getResourceRoot()),
-                        beanArchiveMetadata, module, beanArchiveIdPrefix);
+                        beanArchiveMetadata, module, beanArchiveIdPrefix, deploymentUnit);
                 beanDeploymentArchives.add(bda);
                 bdaMap.put(beanArchiveMetadata.getResourceRoot(), bda);
                 if (beanArchiveMetadata.isDeploymentRoot()) {
@@ -156,7 +157,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
     }
 
     private BeanDeploymentArchiveImpl createBeanDeploymentArchive(final Index index, BeanArchiveMetadata beanArchiveMetadata,
-                                                                  Module module, String beanArchivePrefix) throws DeploymentUnitProcessingException {
+                                                                  Module module, String beanArchivePrefix, DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
 
         Set<String> classNames = new HashSet<String>();
         // index may be null if a war has a beans.xml but no WEB-INF/classes
@@ -165,8 +166,12 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
                 classNames.add(classInfo.name().toString());
             }
         }
-        return new BeanDeploymentArchiveImpl(classNames, beanArchiveMetadata.getBeansXml(), module, beanArchivePrefix
-                + beanArchiveMetadata.getResourceRoot().getRoot().getPathName());
+        String beanArchiveId = beanArchivePrefix;
+        if (beanArchiveMetadata.getResourceRoot() != null) {
+            final VirtualFile deploymentRootResource = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
+            beanArchiveId += "/" + beanArchiveMetadata.getResourceRoot().getRoot().getPathNameRelativeTo(deploymentRootResource);
+        }
+        return new BeanDeploymentArchiveImpl(classNames, beanArchiveMetadata.getBeansXml(), module, beanArchiveId);
     }
 
     @Override
