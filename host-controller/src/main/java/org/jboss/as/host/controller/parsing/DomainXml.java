@@ -270,7 +270,7 @@ public class DomainXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), false);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.SERVER_GROUPS) {
@@ -321,7 +321,7 @@ public class DomainXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), false);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.SERVER_GROUPS) {
@@ -376,7 +376,7 @@ public class DomainXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), false);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.SERVER_GROUPS) {
@@ -431,7 +431,7 @@ public class DomainXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), false);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.DEPLOYMENT_OVERLAYS) {
@@ -495,7 +495,7 @@ public class DomainXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, expectedNs, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), false);
             element = nextElement(reader, expectedNs);
         }
         if (element == Element.DEPLOYMENT_OVERLAYS) {
@@ -820,8 +820,9 @@ public class DomainXml extends CommonXml {
                         }
                         sawDeployments = true;
                         List<ModelNode> deployments = new ArrayList<ModelNode>();
-                        parseDeployments(reader, groupAddress, expectedNs, deployments, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED), Collections.<Element>emptySet());
-                        checkDeployments(deployments, reader);
+                        parseDeployments(reader, groupAddress, expectedNs, deployments,
+                                EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
+                                Collections.<Element>emptySet(), true);
                         list.addAll(deployments);
                         break;
                     }
@@ -838,26 +839,6 @@ public class DomainXml extends CommonXml {
                 }
             }
 
-        }
-    }
-
-    private void checkDeployments(List<ModelNode> deployments, final XMLExtendedStreamReader reader) throws XMLStreamException {
-        final Set<String> uniqueDeploymentNames = new HashSet<String>(deployments.size());
-        final Set<String> uniqueRuntimeNames = new HashSet<String>(deployments.size());
-        for (ModelNode deployment : deployments) {
-            String deploymentName = null;
-            for (Property property : deployment.get(ModelDescriptionConstants.ADDRESS).asPropertyList()) {
-                if (ModelDescriptionConstants.DEPLOYMENT.equals(property.getName())) {
-                    deploymentName = property.getValue().asString();
-                }
-            }
-            if (!uniqueDeploymentNames.add(deploymentName)) {
-                throw ParseUtils.duplicateNamedElement(reader, deploymentName);
-            }
-            String runtimeName = deployment.get(ModelDescriptionConstants.RUNTIME_NAME).asString();
-            if (!uniqueRuntimeNames.add(runtimeName)) {
-                throw ParseUtils.duplicateNamedElement(reader, runtimeName);
-            }
         }
     }
 
