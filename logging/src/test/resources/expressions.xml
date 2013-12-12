@@ -22,6 +22,7 @@
 
 <subsystem xmlns="urn:jboss:domain:logging:2.0">
     <add-logging-api-dependencies value="${test.add.deps:true}"/>
+    <use-deployment-logging-config value="${test.use.dep.config:true}"/>
 
     <async-handler name="async">
         <queue-length value="${test.queue.length:10}"/>

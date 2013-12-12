@@ -38,13 +38,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ModelOnlyWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.ResultHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
@@ -56,6 +56,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -75,6 +76,13 @@ public class LoggingRootResource extends TransformerResourceDefinition {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME);
 
     static final SimpleAttributeDefinition ADD_LOGGING_API_DEPENDENCIES = SimpleAttributeDefinitionBuilder.create("add-logging-api-dependencies", ModelType.BOOLEAN, true)
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
+            .setDefaultValue(new ModelNode(true))
+            .setFlags(Flag.RESTART_ALL_SERVICES)
+            .build();
+
+    static final SimpleAttributeDefinition USE_DEPLOYMENT_LOGGING_CONFIG = SimpleAttributeDefinitionBuilder.create("use-deployment-logging-config", ModelType.BOOLEAN, true)
             .setAllowExpression(true)
             .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .setDefaultValue(new ModelNode(true))
@@ -126,6 +134,11 @@ public class LoggingRootResource extends TransformerResourceDefinition {
             .setRuntimeOnly()
             .build();
 
+    static final SimpleAttributeDefinition[] ATTRIBUTES = {
+            ADD_LOGGING_API_DEPENDENCIES,
+            USE_DEPLOYMENT_LOGGING_CONFIG,
+    };
+
     private final PathManager pathManager;
 
     protected LoggingRootResource(final PathManager pathManager) {
@@ -139,7 +152,11 @@ public class LoggingRootResource extends TransformerResourceDefinition {
     @Override
     public void registerAttributes(final ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        resourceRegistration.registerReadWriteAttribute(ADD_LOGGING_API_DEPENDENCIES, null, new ModelOnlyWriteAttributeHandler(ADD_LOGGING_API_DEPENDENCIES));
+
+        final OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(ATTRIBUTES);
+        for (SimpleAttributeDefinition attribute : ATTRIBUTES) {
+            resourceRegistration.registerReadWriteAttribute(attribute, null, writeHandler);
+        }
     }
 
     @Override
@@ -158,10 +175,12 @@ public class LoggingRootResource extends TransformerResourceDefinition {
             case VERSION_1_1_0:
             case VERSION_1_2_0:
             case VERSION_1_3_0: {
-                rootResourceBuilder.getAttributeBuilder()
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, ADD_LOGGING_API_DEPENDENCIES.getDefaultValue()), ADD_LOGGING_API_DEPENDENCIES)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, ADD_LOGGING_API_DEPENDENCIES)
-                        .end();
+                AttributeTransformationDescriptionBuilder attributeBuilder = rootResourceBuilder.getAttributeBuilder();
+                for (SimpleAttributeDefinition attribute : ATTRIBUTES) {
+                    attributeBuilder.setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, true, attribute.getDefaultValue()), attribute)
+                            .addRejectCheck(RejectAttributeChecker.DEFINED, attribute);
+                }
+                attributeBuilder.end();
             }
         }
     }

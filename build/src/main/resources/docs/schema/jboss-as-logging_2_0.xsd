@@ -60,6 +60,15 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
+            <xs:element name="use-deployment-logging-config" type="booleanValueType">
+                <xs:annotation>
+                    <xs:documentation>
+                            Determines whether or not deployments should be scanned for configuration files. If set to
+                            true and a configuration file is found the log manager will be configured based on the
+                            configuration file.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="logging-profiles" type="logging-profilesType" minOccurs="0" maxOccurs="1"/>
         </xs:choice>
     </xs:complexType>

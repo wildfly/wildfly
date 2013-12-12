@@ -81,7 +81,9 @@ enum Element {
     SUFFIX(PeriodicHandlerResourceDefinition.SUFFIX),
     SYSLOG_FORMATTER(SyslogHandlerResourceDefinition.SYSLOG_FORMATTER),
     SYSLOG_HANDLER(SyslogHandlerResourceDefinition.SYSLOG_HANDLER),
-    TARGET(ConsoleHandlerResourceDefinition.TARGET),;
+    TARGET(ConsoleHandlerResourceDefinition.TARGET),
+    USE_DEPLOYMENT_LOGGING_CONFIG(LoggingRootResource.USE_DEPLOYMENT_LOGGING_CONFIG),
+    ;
 
     private final String name;
     private final AttributeDefinition definition;
