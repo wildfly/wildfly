@@ -5,7 +5,11 @@
     <extensions>
         <?EXTENSIONS?>
     </extensions>
-
+    
+    <system-properties>
+        <property name="eclipselink.archive.factory" value="org.jipijapa.eclipselink.JBossArchiveFactoryImpl"/>
+    </system-properties>
+    
     <management>
         <security-realms>
             <security-realm name="ManagementRealm">

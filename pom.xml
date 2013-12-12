@@ -249,6 +249,7 @@
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.4.1.Final</version.org.jgroups>
         <version.org.jipijapa>1.0.0.CR2</version.org.jipijapa>
+        <version.org.eclipselink>2.5.1</version.org.eclipselink>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.3</version.org.opensaml.opensaml>
@@ -4581,7 +4582,13 @@
                 <artifactId>jipijapa-eclipselink</artifactId>
                 <version>${version.org.jipijapa}</version>
             </dependency>
-
+            
+            <dependency>
+                <groupId>org.eclipse.persistence</groupId>
+                <artifactId>eclipselink</artifactId>
+                <version>${version.org.eclipselink}</version>
+            </dependency>            
+            
             <dependency>
                 <groupId>org.jipijapa</groupId>
                 <artifactId>jipijapa-openjpa</artifactId>
