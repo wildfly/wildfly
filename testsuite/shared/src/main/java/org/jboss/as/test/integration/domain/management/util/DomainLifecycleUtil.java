@@ -267,6 +267,9 @@ public class DomainLifecycleUtil {
             // but there may not be any servers or we may be in --admin-only mode
             awaitHostController(start);
             log.info("HostController started in " + (System.currentTimeMillis() - start) + " ms");
+
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Could not start container", e);
         }
