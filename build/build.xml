@@ -828,6 +828,7 @@
         <!-- create empty slot for EclipseLink jars -->
         <module-def name="org.eclipse.persistence">
             <maven-resource group="org.jipijapa" artifact="jipijapa-eclipselink"/>
+            <maven-resource group="org.eclipse.persistence" artifact="eclipselink"/>
         </module-def>
 
         <module-def name="org.hibernate.validator">

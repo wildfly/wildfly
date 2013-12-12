@@ -1393,6 +1393,21 @@
                     <groupId>org.jipijapa</groupId>
                     <artifactId>jipijapa-eclipselink</artifactId>
                 </dependency>
+                
+                <dependency>
+                    <groupId>org.eclipse.persistence</groupId>
+                    <artifactId>eclipselink</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.eclipse.persistence</groupId>
+                            <artifactId>javax.persistence</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>org.eclipse.persistence</groupId>
+                            <artifactId>commonj.sdo</artifactId>
+                        </exclusion>
+                    </exclusions>
+                </dependency>
 
                 <dependency>
                     <groupId>org.jipijapa</groupId>
