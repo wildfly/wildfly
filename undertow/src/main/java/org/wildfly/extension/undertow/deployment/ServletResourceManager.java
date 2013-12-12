@@ -20,8 +20,10 @@ public class ServletResourceManager implements ResourceManager {
 
     private final FileResourceManager deploymentResourceManager;
     private final Collection<VirtualFile> overlays;
+    private final boolean explodedDeployment;
 
-    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays) throws IOException {
+    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays, boolean explodedDeployment) throws IOException {
+        this.explodedDeployment = explodedDeployment;
         deploymentResourceManager = new FileResourceManager(resourcesRoot.getPhysicalFile(), 1024 * 1024);
         this.overlays = overlays;
     }
@@ -50,7 +52,7 @@ public class ServletResourceManager implements ResourceManager {
 
     @Override
     public boolean isResourceChangeListenerSupported() {
-        return false;
+        return explodedDeployment;
     }
 
     @Override

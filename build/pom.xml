@@ -1839,11 +1839,6 @@
 
                 <dependency>
                     <groupId>io.undertow</groupId>
-                    <artifactId>undertow-jsp</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>io.undertow</groupId>
                     <artifactId>undertow-websockets-jsr</artifactId>
                 </dependency>
 

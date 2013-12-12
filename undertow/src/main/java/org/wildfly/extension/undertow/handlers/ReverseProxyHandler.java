@@ -23,6 +23,7 @@
 package org.wildfly.extension.undertow.handlers;
 
 import io.undertow.server.HttpHandler;
+import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.proxy.LoadBalancingProxyClient;
 import io.undertow.server.handlers.proxy.ProxyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -102,7 +103,7 @@ public class ReverseProxyHandler extends Handler {
             lb.addSessionCookieName(id);
         }
 
-        ProxyHandler handler = new ProxyHandler(lb, maxTime);
+        ProxyHandler handler = new ProxyHandler(lb, maxTime, ResponseCodeHandler.HANDLE_404);
         return handler;
     }
 }

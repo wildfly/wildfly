@@ -106,8 +106,8 @@
         <version.groovy-all>2.1.8</version.groovy-all>
         <version.io.netty3>3.6.6.Final</version.io.netty3>
         <version.io.netty>4.0.12.Final</version.io.netty>
-        <version.io.undertow>1.0.0.Beta27</version.io.undertow>
-        <version.io.undertow.jastow>1.0.0.Beta1</version.io.undertow.jastow>
+        <version.io.undertow>1.0.0.Beta28</version.io.undertow>
+        <version.io.undertow.jastow>1.0.0.CR1</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.1</version.javax.enterprise>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
@@ -4896,22 +4896,6 @@
             <dependency>
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-servlet</artifactId>
-                <version>${version.io.undertow}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.undertow</groupId>
-                        <artifactId>undertow-build-config</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
-                        <artifactId>jboss-jsp-api_2.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>io.undertow</groupId>
-                <artifactId>undertow-jsp</artifactId>
                 <version>${version.io.undertow}</version>
                 <exclusions>
                     <exclusion>

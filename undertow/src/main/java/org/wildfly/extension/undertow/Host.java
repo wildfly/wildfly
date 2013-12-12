@@ -175,13 +175,6 @@ public class Host implements Service<Host> {
     }
 
     /**
-     * @return set of registered contexts for this Host
-     */
-    public Set<String> getContexts() {
-        return pathHandler.getPaths().keySet();
-    }
-
-    /**
      * @return set of currently registered {@link Deployment}s on this host
      */
     public Set<Deployment> getDeployments() {
