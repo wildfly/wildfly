@@ -74,11 +74,11 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    protected static final SimpleAttributeDefinition REDIRECT_PORT = new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_PORT, ModelType.INT)
+    protected static final SimpleAttributeDefinition REDIRECT_SOCKET = new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_SOCKET, ModelType.STRING)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .setDefaultValue(new ModelNode(443))
-            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode("https"))
+            .setAllowExpression(false)
             .build();
 
 

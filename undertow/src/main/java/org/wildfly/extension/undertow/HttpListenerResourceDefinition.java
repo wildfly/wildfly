@@ -47,6 +47,13 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    protected static final SimpleAttributeDefinition PROXY_ADDRESS_FORWARDING = new SimpleAttributeDefinitionBuilder("proxy-address-forwarding", ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .build();
+
 
     private HttpListenerResourceDefinition() {
         super(UndertowExtension.HTTP_LISTENER_PATH);
@@ -60,7 +67,8 @@ public class HttpListenerResourceDefinition extends ListenerResourceDefinition {
     public Collection<AttributeDefinition> getAttributes() {
         List<AttributeDefinition> attrs = new ArrayList<>(super.getAttributes());
         attrs.add(CERTIFICATE_FORWARDING);
-        attrs.add(REDIRECT_PORT);
+        attrs.add(REDIRECT_SOCKET);
+        attrs.add(PROXY_ADDRESS_FORWARDING);
         return attrs;
     }
 }

@@ -28,8 +28,8 @@
     </buffer-caches>
 
     <server name="default-server" default-host="localhost" servlet-container="myContainer">
-        <ajp-listener name="ajp-connector" socket-binding="ajp" redirect-port="${foo:5433}"/>
-        <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-port="5555"/>
+        <ajp-listener name="ajp-connector" socket-binding="ajp" redirect-socket="ajps"/>
+        <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-socket="ajp" proxy-address-forwarding="${prop.smth:false}"/>
         <http-listener name="second" socket-binding="http" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
         <https-listener name="https" socket-binding="https" security-realm="UndertowRealm" verify-client="REQUESTED"/>
         <https-listener name="https-2" socket-binding="https" security-realm="UndertowRealm" />

@@ -75,7 +75,8 @@ public class Server implements Service<Server> {
            listeners.add(listener);
            if (!listener.isSecure()) {
                SocketBinding binding = (SocketBinding) listener.getBinding().getValue();
-               securePortMappings.put(binding.getAbsolutePort(), listener.getRedirectPort());
+               SocketBinding redirectBinding = (SocketBinding) listener.getRedirectSocket().getValue();
+               securePortMappings.put(binding.getAbsolutePort(), redirectBinding.getAbsolutePort());
            }
        }
 

@@ -53,7 +53,7 @@ public class HttpsListenerService extends HttpListenerService {
     static final String PROTOCOL = "https";
 
     public HttpsListenerService(final String name, String serverName, OptionMap listenerOptions) {
-        super(name, serverName, listenerOptions, false, -1);
+        super(name, serverName, listenerOptions, false, false);
     }
 
     @Override

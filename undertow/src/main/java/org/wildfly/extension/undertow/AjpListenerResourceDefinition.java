@@ -57,7 +57,7 @@ public class AjpListenerResourceDefinition extends ListenerResourceDefinition {
     public Collection<AttributeDefinition> getAttributes() {
         List<AttributeDefinition> attrs = new ArrayList<>(super.getAttributes());
         attrs.add(SCHEME);
-        attrs.add(REDIRECT_PORT);
+        attrs.add(REDIRECT_SOCKET);
         return attrs;
     }
 }

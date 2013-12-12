@@ -30,6 +30,7 @@ import java.util.Iterator;
 import org.jboss.modcluster.container.Connector;
 import org.jboss.modcluster.container.Engine;
 import org.junit.Test;
+import org.wildfly.extension.undertow.HttpsListenerService;
 import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.Server;
@@ -40,7 +41,7 @@ public class UndertowEngineTestCase {
     private final String serverName = "name";
     private final String hostName = "host";
     private final Host host = new Host(this.hostName, Collections.<String>emptyList(), "ROOT.war") {};
-    private final ListenerService<?> listener = mock(ListenerService.class);
+    private final HttpsListenerService listener = new HttpsListenerService("default", "https",null);
     private final Server server = new TestServer(this.serverName, this.defaultHost, this.host, this.listener);
     private final UndertowService service = new TestUndertowService("default-container", "default-server", "default-virtual-host", "instance-id", this.server);
     private final Connector connector = mock(Connector.class);
@@ -67,8 +68,7 @@ public class UndertowEngineTestCase {
         assertTrue(results.hasNext());
         org.jboss.modcluster.container.Connector connector = results.next();
         
-        String listenerName = "listener";
-        when(this.listener.getName()).thenReturn(listenerName);
+        String listenerName = "default";
         assertSame(listenerName, connector.toString());
         assertFalse(results.hasNext());
     }
