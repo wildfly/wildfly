@@ -60,7 +60,6 @@ import org.junit.runner.RunWith;
 @ServerSetup({ JACCTranslateServletDDTestCase.SecurityDomainsSetup.class })
 @RunAsClient
 @Category(CommonCriteria.class)
-@Ignore("AS7-6796 - Undertow JACC")
 public class JACCTranslateServletDDTestCase {
     private static final String SECURITY_DOMAIN_NAME = "jacc-test";
     private static final String WEBAPP_NAME = "jacc-test.war";
@@ -160,7 +159,6 @@ public class JACCTranslateServletDDTestCase {
      * Test usage of qualified patterns.
      */
     @Test
-    @Ignore("JBPAPP-9402 JACC permissions added to the unchecked policy must be constructed using qualified pattern as their name")
     public void testQualifiedPatterns(@ArquillianResource URL webAppURL) throws Exception {
         final Node node = getContextPolicyNode(webAppURL, WEBAPP_NAME);
         assertTrue("Default pattern '/' must be qualified.", node.selectNodes("*/Permission[@name='/']").isEmpty());

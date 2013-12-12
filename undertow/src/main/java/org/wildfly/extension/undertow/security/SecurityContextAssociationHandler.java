@@ -35,10 +35,7 @@ import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.wildfly.extension.undertow.UndertowLogger;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
-import javax.security.jacc.PolicyContext;
-import java.security.PrivilegedAction;
 import java.util.Map;
 
 import static org.wildfly.extension.undertow.security.SecurityActions.setRunAsIdentity;
@@ -46,16 +43,11 @@ import static org.wildfly.extension.undertow.security.SecurityActions.setRunAsId
 public class SecurityContextAssociationHandler implements HttpHandler {
 
     private final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap;
-    private final String contextId;
     private final HttpHandler next;
 
-    private final PrivilegedAction<String> setContextIdAction;
-
-    public SecurityContextAssociationHandler(final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final String contextId, final HttpHandler next) {
+    public SecurityContextAssociationHandler(final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final HttpHandler next) {
         this.runAsIdentityMetaDataMap = runAsIdentityMetaDataMap;
-        this.contextId = contextId;
         this.next = next;
-        this.setContextIdAction = new SetContextIDAction(contextId);
     }
 
     @Override
@@ -74,50 +66,21 @@ public class SecurityContextAssociationHandler implements HttpHandler {
             }
             old = setRunAsIdentity(runAsIdentity, sc);
 
-            // set JACC contextID
-            previousContextID = setContextID(setContextIdAction);
-
             // Perform the request
             next.handleRequest(exchange);
         } finally {
             if (identity != null) {
                 setRunAsIdentity(old, sc);
             }
-            setContextID(new SetContextIDAction(previousContextID));
         }
     }
 
-    private static class SetContextIDAction implements PrivilegedAction<String> {
-
-        private final String contextID;
-
-        SetContextIDAction(String contextID) {
-            this.contextID = contextID;
-        }
-
-        @Override
-        public String run() {
-            String currentContextID = PolicyContext.getContextID();
-            PolicyContext.setContextID(this.contextID);
-            return currentContextID;
-        }
-    }
-
-    private String setContextID(PrivilegedAction<String> action) {
-        if(WildFlySecurityManager.isChecking()) {
-            return WildFlySecurityManager.doUnchecked(action);
-        }else {
-            return action.run();
-        }
-    }
-
-
-    public static HandlerWrapper wrapper(final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final String contextId) {
+    public static HandlerWrapper wrapper(final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap) {
         return new HandlerWrapper() {
             @Override
             public HttpHandler wrap(final HttpHandler handler) {
                 //we only run this on REQUEST or ASYNC invocations
-                return new PredicateHandler(Predicates.or(DispatcherTypePredicate.REQUEST, DispatcherTypePredicate.ASYNC), new SecurityContextAssociationHandler(runAsIdentityMetaDataMap, contextId, handler), handler);
+                return new PredicateHandler(Predicates.or(DispatcherTypePredicate.REQUEST, DispatcherTypePredicate.ASYNC), new SecurityContextAssociationHandler(runAsIdentityMetaDataMap, handler), handler);
             }
         };
     }
