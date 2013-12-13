@@ -84,6 +84,7 @@ import static org.jboss.as.messaging.CommonAttributes.SECURITY_INVALIDATION_INTE
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SERVER_DUMP_INTERVAL;
 import static org.jboss.as.messaging.CommonAttributes.SHARED_STORE;
+import static org.jboss.as.messaging.CommonAttributes.STATISTICS_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
@@ -161,6 +162,16 @@ class HornetQServerAdd implements OperationStepHandler {
 
         for (final AttributeDefinition attributeDefinition : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
             attributeDefinition.validateAndSet(operation, model);
+        }
+
+        ModelNode mceVal = model.get(MESSAGE_COUNTER_ENABLED.getName());
+        if (mceVal.isDefined()) {
+            ModelNode seVal = model.get(STATISTICS_ENABLED.getName());
+            if (seVal.isDefined() && !seVal.equals(mceVal)) {
+                throw MessagingMessages.MESSAGES.inconsistentStatisticsSettings(MESSAGE_COUNTER_ENABLED.getName(), STATISTICS_ENABLED.getName());
+            }
+            seVal.set(mceVal);
+            mceVal.set(new ModelNode());
         }
 
         if (context.isNormalServer()) {
@@ -403,7 +414,7 @@ class HornetQServerAdd implements OperationStepHandler {
         configuration.setMemoryMeasureInterval(MEMORY_MEASURE_INTERVAL.resolveModelAttribute(context, model).asLong());
         configuration.setMemoryWarningThreshold(MEMORY_WARNING_THRESHOLD.resolveModelAttribute(context, model).asInt());
 
-        configuration.setMessageCounterEnabled(MESSAGE_COUNTER_ENABLED.resolveModelAttribute(context, model).asBoolean());
+        configuration.setMessageCounterEnabled(STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean());
         configuration.setMessageCounterSamplePeriod(MESSAGE_COUNTER_SAMPLE_PERIOD.resolveModelAttribute(context, model).asInt());
         configuration.setMessageCounterMaxDayHistory(MESSAGE_COUNTER_MAX_DAY_HISTORY.resolveModelAttribute(context, model).asInt());
         configuration.setMessageExpiryScanPeriod(MESSAGE_EXPIRY_SCAN_PERIOD.resolveModelAttribute(context, model).asLong());

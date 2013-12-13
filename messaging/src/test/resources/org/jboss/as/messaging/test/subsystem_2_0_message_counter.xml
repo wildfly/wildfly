@@ -1,0 +1,6 @@
+
+<subsystem xmlns="urn:jboss:domain:messaging:2.0">
+    <hornetq-server>
+        <message-counter-enabled>${message.counter.enabled:true}</message-counter-enabled>
+    </hornetq-server>
+</subsystem>
