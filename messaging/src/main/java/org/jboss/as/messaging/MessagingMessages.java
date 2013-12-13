@@ -566,4 +566,7 @@ public interface MessagingMessages {
      */
     @Message(id = 11681, value = "Attribute (%s) can not been undefined as the resource does not define any alternative to this attribute.")
     String undefineAttributeWithoutAlternative(String name);
+
+    @Message(id = 11682, value = "Attributes %s and %s are alternatives; both cannot be set with conflicting values.")
+    OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);
 }

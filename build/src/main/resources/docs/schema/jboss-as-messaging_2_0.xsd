@@ -94,7 +94,14 @@
            -->
           <xs:element maxOccurs="1" minOccurs="0" name="jmx-management-enabled" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="jmx-domain" type="xs:string" />
-          <xs:element maxOccurs="1" minOccurs="0" name="message-counter-enabled" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="statistics-enabled" type="xs:boolean" />
+          <xs:element maxOccurs="1" minOccurs="0" name="message-counter-enabled" type="xs:boolean">
+              <xs:annotation>
+                  <xs:documentation>
+                      Deprecated. Use statistics-enabled.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="message-counter-sample-period" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="message-counter-max-day-history" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="connection-ttl-override" type="xs:long" />

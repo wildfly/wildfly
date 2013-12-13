@@ -41,9 +41,11 @@ import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOW
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_ENABLED;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_INCOMING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
+import static org.jboss.as.messaging.CommonAttributes.STATISTICS_ENABLED;
 import static org.jboss.as.messaging.GroupingHandlerDefinition.GROUP_TIMEOUT;
 import static org.jboss.as.messaging.GroupingHandlerDefinition.REAPER_PERIOD;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
@@ -105,6 +107,7 @@ public class MessagingTransformers {
         rejectDefinedAttribute(hornetqServer, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME, REMOTING_INCOMING_INTERCEPTORS, REMOTING_OUTGOING_INTERCEPTORS);
         rejectDefinedAttributeWithDefaultValue(hornetqServer, CHECK_FOR_LIVE_SERVER, MAX_SAVED_REPLICATED_JOURNAL_SIZE);
         convertUndefinedAttribute(hornetqServer, ID_CACHE_SIZE);
+        renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
 
         for (String path : MessagingPathHandlers.PATHS.keySet()) {
             ResourceTransformationDescriptionBuilder serverPaths = hornetqServer.addChildResource(pathElement(PATH, path));
@@ -240,6 +243,7 @@ public class MessagingTransformers {
                 }, CommonAttributes.CLUSTERED)
                 .end();
         rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE);
+        renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
 
         hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
         hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
@@ -274,6 +278,7 @@ public class MessagingTransformers {
 
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
         rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE);
+        renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
 
         hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
         hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
@@ -364,6 +369,14 @@ public class MessagingTransformers {
      */
     private static void discardAttribute(ResourceTransformationDescriptionBuilder builder, AttributeDefinition... attrs) {
         builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, attrs);
+    }
+
+    /**
+     * Rename an attribute
+     */
+    private static void renameAttribute(ResourceTransformationDescriptionBuilder builder,
+                                        AttributeDefinition attribute, AttributeDefinition alias) {
+        builder.getAttributeBuilder().addRename(attribute, alias.getName());
     }
 
 }

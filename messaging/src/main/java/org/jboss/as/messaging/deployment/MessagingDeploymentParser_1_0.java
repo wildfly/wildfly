@@ -29,12 +29,10 @@ import static org.jboss.as.messaging.CommonAttributes.DURABLE;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 
 import java.util.Collections;
-import java.util.EnumSet;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.messaging.Attribute;
 import org.jboss.as.messaging.CommonAttributes;
@@ -56,14 +54,6 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 class MessagingDeploymentParser_1_0 implements XMLStreamConstants, XMLElementReader<ParseResult> {
 
     private final PropertyReplacer propertyReplacer;
-
-    private static final EnumSet<Element> SIMPLE_ROOT_RESOURCE_ELEMENTS = EnumSet.noneOf(Element.class);
-
-    static {
-        for (AttributeDefinition attr : CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES) {
-            SIMPLE_ROOT_RESOURCE_ELEMENTS.add(Element.forName(attr.getXmlName()));
-        }
-    }
 
     MessagingDeploymentParser_1_0(final PropertyReplacer propertyReplacer) {
         //

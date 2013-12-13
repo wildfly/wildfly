@@ -16,7 +16,7 @@
         <cluster-password>${messaging.cluster.user.password}</cluster-password>
         <jmx-management-enabled>${jmx.management.enabled:false}</jmx-management-enabled>
         <jmx-domain>${jmx.domain:my.jmx.domain}</jmx-domain>
-        <message-counter-enabled>${message.counter.enabled:true}</message-counter-enabled>
+        <statistics-enabled>${statistics.enabled:true}</statistics-enabled>
         <message-counter-sample-period>${message.counter.sample.period:7654}</message-counter-sample-period>
         <message-counter-max-day-history>${message.counter.max.day.history:23}</message-counter-max-day-history>
         <connection-ttl-override>${connection.ttl.override:5432}</connection-ttl-override>
