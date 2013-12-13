@@ -285,6 +285,11 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     handleElementText(reader, element, "server", operation);
                     break;
                 }
+                case MESSAGE_COUNTER_ENABLED: {
+                    MessagingLogger.ROOT_LOGGER.deprecatedXMLElement(element.toString(), Element.STATISTICS_ENABLED.toString());
+                    handleElementText(reader, element, operation);
+                    break;
+                }
                 case HORNETQ_SERVER:
                     // The end of the hornetq-server element
                     if (namespace == Namespace.MESSAGING_1_0) {

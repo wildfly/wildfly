@@ -100,6 +100,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
+import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
@@ -220,6 +221,15 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
 
         clusteredTo120Test(VERSION_1_2_0, mainServices, true);
         clusteredTo120Test(VERSION_1_2_0, mainServices, false);
+    }
+
+    @Test
+    public void testMessageCounterEnabled() throws Exception {
+        standardSubsystemTest("subsystem_2_0_message_counter.xml");
+    }
+    protected void compareXml(String configId, final String original, final String marshalled) throws Exception {
+        String transformed = original.replace("message-counter-enabled", "statistics-enabled");
+        ModelTestUtils.compareXml(transformed, marshalled);
     }
 
     private void clusteredTo120Test(ModelVersion version120, KernelServices mainServices, boolean clustered) throws OperationFailedException {
