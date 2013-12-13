@@ -131,11 +131,11 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
             service.start();
         }
         Time timeout = this.expiration.getTimeout();
-        if ((timeout != null) && (timeout.getValue() > 0)) {
+        if ((timeout != null) && (timeout.getValue() >= 0)) {
             this.schedulers.add(new BeanExpirationScheduler<G, I, T>(this, new ExpiredBeanRemover<>(this.beanFactory), this.expiration));
         }
         if (this.passivation.isEvictionAllowed()) {
-            this.schedulers.add(new BeanEvictionScheduler<G, I, T>(this, this.beanFactory, this.passivation.getConfiguration()));
+            this.schedulers.add(new BeanEvictionScheduler<G, I, T>(this, this.beanFactory, this.passivation));
         }
         this.beanCache.addListener(this, this);
     }

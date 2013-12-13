@@ -28,17 +28,12 @@ import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
-import org.jboss.as.ejb3.component.stateful.VersionedMarshallingConfigurationService;
-import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.ejb.BeanContext;
-import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderProvider;
@@ -73,7 +68,7 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
     public DistributableCacheFactoryBuilderService(String name, BeanManagerFactoryBuilderProvider provider, BeanManagerFactoryBuilderConfiguration config) {
         this.name = name;
         this.config = config;
-        this.builder = provider.<UUID, K>getBeanManagerFactoryBuilder(config);
+        this.builder = provider.<UUID, K>getBeanManagerFactoryBuilder(name, config);
     }
 
     public ServiceBuilder<DistributableCacheFactoryBuilder<K, V>> build(ServiceTarget target) {
@@ -95,21 +90,14 @@ public class DistributableCacheFactoryBuilderService<K, V extends Identifiable<K
         this.builder.installDeploymentUnitDependencies(target, deploymentUnitServiceName);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public ServiceBuilder<? extends CacheFactory<K, V>> build(ServiceTarget target, ServiceName name, BeanContext context, StatefulTimeoutInfo statefulTimeout) {
-        ServiceName marshallingConfigurationServiceName = VersionedMarshallingConfigurationService.getServiceName(context.getDeploymentUnitServiceName());
-        ServiceName factoryServiceName = name.append("bean-manager");
-        this.builder.build(target, factoryServiceName, context, marshallingConfigurationServiceName)
+    public ServiceBuilder<? extends CacheFactory<K, V>> build(ServiceTarget target, ServiceName serviceName, BeanContext context, StatefulTimeoutInfo statefulTimeout) {
+        ServiceName factoryServiceName = serviceName.append(this.name, "bean-manager");
+        this.builder.build(target, factoryServiceName, context)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
-        InjectedValue<BeanManagerFactory> factory = new InjectedValue<>();
-        InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
-        return target.addService(name, new DistributableCacheFactoryService(factory, environment))
-                .addDependency(factoryServiceName, BeanManagerFactory.class, factory)
-                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, environment)
-        ;
+        return DistributableCacheFactoryService.build(target, serviceName, factoryServiceName);
     }
 
     @Override

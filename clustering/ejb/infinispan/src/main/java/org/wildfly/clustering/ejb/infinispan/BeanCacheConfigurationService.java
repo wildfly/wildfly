@@ -26,6 +26,8 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
+import org.jboss.as.server.deployment.Services;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.Value;
 
 /**
@@ -34,6 +36,14 @@ import org.jboss.msc.value.Value;
  * @author Paul Ferraro
  */
 public class BeanCacheConfigurationService extends AbstractCacheConfigurationService {
+
+    public static String getCacheName(ServiceName deploymentUnitServiceName) {
+        if (Services.JBOSS_DEPLOYMENT_SUB_UNIT.isParentOf(deploymentUnitServiceName)) {
+            return deploymentUnitServiceName.getParent().getSimpleName() + "/" + deploymentUnitServiceName.getSimpleName();
+        }
+        return deploymentUnitServiceName.getSimpleName();
+    }
+
     private final Value<Configuration> configuration;
     private final Value<EmbeddedCacheManager> container;
 

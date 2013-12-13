@@ -49,12 +49,15 @@ public class BeanEvictionSchedulerTestCase {
         Batch batch = mock(Batch.class);
         Evictor<String> evictor = mock(Evictor.class);
         ExecutorService executor = mock(ExecutorService.class);
-        BeanPassivationConfiguration config = mock(BeanPassivationConfiguration.class);
+        PassivationConfiguration<Bean<Object, String, Object>> config = mock(PassivationConfiguration.class);
+        BeanPassivationConfiguration passivationConfig = mock(BeanPassivationConfiguration.class);
         ArgumentCaptor<Runnable> capturedTask = ArgumentCaptor.forClass(Runnable.class);
 
-        when(config.getMaxSize()).thenReturn(1);
+        when(config.getExecutor()).thenReturn(executor);
+        when(config.getConfiguration()).thenReturn(passivationConfig);
+        when(passivationConfig.getMaxSize()).thenReturn(1);
 
-        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanEvictionScheduler<>(batcher, evictor, config, executor)) {
+        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanEvictionScheduler<>(batcher, evictor, config)) {
             when(evictedBean.getId()).thenReturn(evictedBeanId);
             when(activeBean.getId()).thenReturn(activeBeanId);
 
@@ -64,7 +67,7 @@ public class BeanEvictionSchedulerTestCase {
 
             scheduler.schedule(activeBean);
 
-            verify(executor).submit(capturedTask.capture());
+            verify(executor).execute(capturedTask.capture());
             
             when(batcher.startBatch()).thenReturn(batch);
             

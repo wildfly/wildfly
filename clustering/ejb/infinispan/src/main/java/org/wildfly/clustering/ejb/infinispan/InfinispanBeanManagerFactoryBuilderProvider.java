@@ -31,7 +31,7 @@ import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderProvider;
 public class InfinispanBeanManagerFactoryBuilderProvider implements BeanManagerFactoryBuilderProvider {
 
     @Override
-    public <G, I> BeanManagerFactoryBuilder<G, I> getBeanManagerFactoryBuilder(BeanManagerFactoryBuilderConfiguration config) {
-        return new InfinispanBeanManagerFactoryBuilder<>(config);
+    public <G, I> BeanManagerFactoryBuilder<G, I> getBeanManagerFactoryBuilder(String name, BeanManagerFactoryBuilderConfiguration config) {
+        return new InfinispanBeanManagerFactoryBuilder<>(name, config);
     }
 }

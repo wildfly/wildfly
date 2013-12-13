@@ -19,31 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.jboss.as.clustering.concurrent;
 
-package org.jboss.as.ejb3.cache;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
+import org.jboss.threads.JBossExecutors;
 
-public class DelegateCacheFactoryBuilderService<K, V extends Identifiable<K>> extends CacheFactoryBuilderService<K, V> {
-    @SuppressWarnings("rawtypes")
-    private final InjectedValue<CacheFactoryBuilder> builder = new InjectedValue<>();
-    private final ServiceName delegateName;
+/**
+ * Service that provides an {@link Executor} that uses a cached thread pool.
+ * @author Paul Ferraro
+ */
+public class CachedThreadPoolExecutorService implements Service<ExecutorService> {
 
-    public DelegateCacheFactoryBuilderService(String name, ServiceName delegateName) {
-        super(name);
-        this.delegateName = delegateName;
+    private final ThreadFactory threadFactory;
+
+    private volatile ExecutorService executor;
+
+    public CachedThreadPoolExecutorService(ThreadFactory threadFactory) {
+        this.threadFactory = threadFactory;
     }
 
     @Override
-    public ServiceBuilder<CacheFactoryBuilder<K, V>> build(ServiceTarget target) {
-        return super.build(target).addDependency(this.delegateName, CacheFactoryBuilder.class, this.builder);
+    public ExecutorService getValue() {
+        return JBossExecutors.protectedExecutorService(this.executor);
     }
 
     @Override
-    public CacheFactoryBuilder<K, V> getValue() {
-        return this.builder.getValue();
+    public void start(StartContext context) {
+        this.executor = Executors.newCachedThreadPool(this.threadFactory);
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        this.executor.shutdownNow();
     }
 }

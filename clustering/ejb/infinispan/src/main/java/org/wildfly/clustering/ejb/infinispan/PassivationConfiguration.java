@@ -21,6 +21,8 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
+import java.util.concurrent.Executor;
+
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 import org.wildfly.clustering.ejb.PassivationListener;
 
@@ -53,4 +55,6 @@ public interface PassivationConfiguration<T> {
     boolean isPersistent();
 
     BeanPassivationConfiguration getConfiguration();
+
+    Executor getExecutor();
 }

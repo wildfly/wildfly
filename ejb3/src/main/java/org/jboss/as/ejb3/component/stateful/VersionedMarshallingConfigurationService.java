@@ -42,7 +42,7 @@ import java.util.Map;
 public class VersionedMarshallingConfigurationService implements Service<VersionedMarshallingConfiguration>, VersionedMarshallingConfiguration {
 
     public static ServiceName getServiceName(ServiceName deploymentUnitServiceName) {
-        return deploymentUnitServiceName.append("marshalling-configuration");
+        return deploymentUnitServiceName.append("marshalling");
     }
 
     private static final int CURRENT_VERSION = 1;
