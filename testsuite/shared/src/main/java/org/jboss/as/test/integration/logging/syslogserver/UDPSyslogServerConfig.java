@@ -21,17 +21,18 @@
  */
 package org.jboss.as.test.integration.logging.syslogserver;
 
-import org.productivity.java.syslog4j.server.impl.net.tcp.TCPNetSyslogServerConfig;
+import org.productivity.java.syslog4j.server.impl.net.udp.UDPNetSyslogServerConfig;
 
 /**
- * Configuration class for {@link TCPSyslogServer}.
- * 
+ * Configuration class for {@link UDPSyslogServer}.
+ *
  * @author Josef Cacek
  */
-public class TCPSyslogServerConfig extends TCPNetSyslogServerConfig {
+public class UDPSyslogServerConfig extends UDPNetSyslogServerConfig {
 
     @Override
     public Class getSyslogServerClass() {
-        return TCPSyslogServer.class;
+        return UDPSyslogServer.class;
     }
+
 }
