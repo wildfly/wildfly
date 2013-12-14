@@ -63,6 +63,7 @@ interface CommonAttributes {
     String SOCKET = "socket";
     /** The process-id/socket attribute for max ports */
     String SOCKET_PROCESS_ID_MAX_PORTS = "max-ports";
+    String STATISTICS_ENABLED = "statistics-enabled";
     String STATUS_BINDING = "status-socket-binding";
     /** The process-id/uuid element */
     String UUID = "uuid";

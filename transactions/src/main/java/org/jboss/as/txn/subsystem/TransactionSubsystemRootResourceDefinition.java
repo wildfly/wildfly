@@ -23,7 +23,11 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -31,6 +35,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringBytesLengthValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
@@ -115,10 +120,18 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             .setAllowExpression(true).build();
 
     //coordinator environment
+    public static final SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(CommonAttributes.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode().set(false))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO should be runtime-changeable
+            .setAlternatives(CommonAttributes.ENABLE_STATISTICS)
+            .setAllowExpression(true).build();
+
     public static final SimpleAttributeDefinition ENABLE_STATISTICS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode().set(false))
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)  // TODO should be runtime-changeable
             .setXmlName(Attribute.ENABLE_STATISTICS.getLocalName())
+            .setAlternatives(CommonAttributes.STATISTICS_ENABLED)
+            .setDeprecated(ModelVersion.create(2))
             .setAllowExpression(true).build();
 
     public static final SimpleAttributeDefinition ENABLE_TSM_STATUS = new SimpleAttributeDefinitionBuilder(CommonAttributes.ENABLE_TSM_STATUS, ModelType.BOOLEAN, true)
@@ -222,7 +235,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     // all attributes
     static final AttributeDefinition[] attributes = new AttributeDefinition[] {
             BINDING, STATUS_BINDING, RECOVERY_LISTENER, NODE_IDENTIFIER, PROCESS_ID_UUID, PROCESS_ID_SOCKET_BINDING,
-            PROCESS_ID_SOCKET_MAX_PORTS, RELATIVE_TO, PATH, ENABLE_STATISTICS, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
+            PROCESS_ID_SOCKET_MAX_PORTS, RELATIVE_TO, PATH, STATISTICS_ENABLED, ENABLE_TSM_STATUS, DEFAULT_TIMEOUT,
             OBJECT_STORE_RELATIVE_TO, OBJECT_STORE_PATH, JTS, USEHORNETQSTORE, USE_JDBC_STORE, JDBC_STORE_DATASOURCE,
             JDBC_ACTION_STORE_DROP_TABLE, JDBC_ACTION_STORE_TABLE_PREFIX, JDBC_COMMUNICATION_STORE_DROP_TABLE,
             JDBC_COMMUNICATION_STORE_TABLE_PREFIX, JDBC_STATE_STORE_DROP_TABLE, JDBC_STATE_STORE_TABLE_PREFIX,
@@ -230,7 +243,7 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     };
 
     static final AttributeDefinition[] ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_0 = new AttributeDefinition[] {
-            DEFAULT_TIMEOUT, ENABLE_STATISTICS, ENABLE_TSM_STATUS, NODE_IDENTIFIER, OBJECT_STORE_PATH, OBJECT_STORE_RELATIVE_TO,
+            DEFAULT_TIMEOUT, STATISTICS_ENABLED, ENABLE_STATISTICS, ENABLE_TSM_STATUS, NODE_IDENTIFIER, OBJECT_STORE_PATH, OBJECT_STORE_RELATIVE_TO,
             PATH, PROCESS_ID_SOCKET_BINDING, PROCESS_ID_SOCKET_MAX_PORTS, RECOVERY_LISTENER, RELATIVE_TO, BINDING, STATUS_BINDING
     };
 
@@ -251,9 +264,34 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         for(final AttributeDefinition def : attributes) {
             resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
         }
+        resourceRegistration.registerReadWriteAttribute(ENABLE_STATISTICS, EnableStatisticsHandlers.READ_HANDLER,
+                EnableStatisticsHandlers.WRITE_HANDLER);
 
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
         }
+    }
+
+    private static class EnableStatisticsHandlers {
+        private static final OperationStepHandler READ_HANDLER = new OperationStepHandler() {
+
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                context.getResult().set(model.get(STATISTICS_ENABLED.getName()));
+                context.stepCompleted();
+            }
+        };
+
+        private static final OperationStepHandler WRITE_HANDLER = new OperationStepHandler() {
+
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                ModelNode aliased = operation.clone();
+                aliased.get(ModelDescriptionConstants.NAME).set(STATISTICS_ENABLED.getName());
+                context.addStep(aliased, new ReloadRequiredWriteAttributeHandler(STATISTICS_ENABLED), OperationContext.Stage.MODEL);
+                context.stepCompleted();
+            }
+        };
     }
 }
