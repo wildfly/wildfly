@@ -135,7 +135,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
         if (xmlFile.endsWith("1_0.xml") || xmlFile.endsWith("1_1.xml") || xmlFile.endsWith("1_2.xml") || xmlFile.endsWith("1_3.xml") || xmlFile.endsWith("1_4.xml")) {
             for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.CONTAINER_PATH.getKey()).asPropertyList()) {
                 Assert.assertTrue("cache-container=" + containerProp.getName(),
-                        containerProp.getValue().get(CacheContainerResourceDefinition.STATISTICS.getName()).asBoolean());
+                        containerProp.getValue().get(CacheContainerResourceDefinition.STATISTICS_ENABLED.getName()).asBoolean());
 
                 for (String key : containerProp.getValue().keys()) {
                     if (key.endsWith("-cache") && !key.equals("default-cache")) {
@@ -143,7 +143,7 @@ public class SubsystemParsingTestCase extends ClusteringSubsystemTest {
                         if (caches.isDefined()) {
                             for (Property cacheProp : caches.asPropertyList()) {
                                 Assert.assertTrue("cache-container=" + containerProp.getName() + "," + key + "=" + cacheProp.getName(),
-                                        containerProp.getValue().get(CacheResourceDefinition.STATISTICS.getName()).asBoolean());
+                                        containerProp.getValue().get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).asBoolean());
                             }
                         }
                     }
