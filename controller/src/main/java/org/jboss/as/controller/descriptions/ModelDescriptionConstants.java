@@ -367,6 +367,7 @@ public class ModelDescriptionConstants {
     public static final String START = "start";
     public static final String START_SERVERS = "start-servers";
     public static final String STATIC_DISCOVERY = "static-discovery";
+    public static final String STATISTICS_ENABLED = "statistics-enabled";
     public static final String STATUS = "status";
     public static final String STEPS = "steps";
     public static final String STOP = "stop";
