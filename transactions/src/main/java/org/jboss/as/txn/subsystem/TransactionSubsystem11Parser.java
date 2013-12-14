@@ -22,21 +22,6 @@
 
 package org.jboss.as.txn.subsystem;
 
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.dmr.ModelNode;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -49,9 +34,21 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttri
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.dmr.ModelNode;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+
 /**
  */
-class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
 
     public static final TransactionSubsystem11Parser INSTANCE = new TransactionSubsystem11Parser();
 
@@ -194,8 +191,8 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
     /**
      * Handle the core-environment element and children
      *
-     * @param reader
-     * @return ModelNode for the core-environment
+     * @param reader the stream reader
+     * @param operation ModelNode for the core-environment add operation
      * @throws javax.xml.stream.XMLStreamException
      *
      */
@@ -246,9 +243,9 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
     /**
      * Handle the process-id child elements
      *
-     * @param reader
-     * @param coreEnvironmentAdd
-     * @return
+     * @param reader  the stream reader
+     * @param coreEnvironmentAdd the add operation model node
+     *
      * @throws javax.xml.stream.XMLStreamException
      *
      */
@@ -332,7 +329,7 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
                     TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.parseAndSetParameter(value, operation, reader);
                     break;
                 default:
-                    unexpectedAttribute(reader, i);
+                    throw unexpectedAttribute(reader, i);
             }
         }
 
@@ -342,80 +339,5 @@ class TransactionSubsystem11Parser implements XMLStreamConstants, XMLElementRead
         // Handle elements
         requireNoContent(reader);
 
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-
-        context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
-
-        ModelNode node = context.getModelNode();
-
-
-        writer.writeStartElement(Element.CORE_ENVIRONMENT.getLocalName());
-
-        TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.marshallAsAttribute(node, writer);
-        TransactionSubsystemRootResourceDefinition.PATH.marshallAsAttribute(node, writer);
-        TransactionSubsystemRootResourceDefinition.RELATIVE_TO.marshallAsAttribute(node, writer);
-
-        writeProcessId(writer, node);
-
-        writer.writeEndElement();
-
-        if (TransactionSubsystemRootResourceDefinition.BINDING.isMarshallable(node) ||
-                TransactionSubsystemRootResourceDefinition.STATUS_BINDING.isMarshallable(node) ||
-                TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.isMarshallable(node)) {
-            writer.writeStartElement(Element.RECOVERY_ENVIRONMENT.getLocalName());
-            TransactionSubsystemRootResourceDefinition.BINDING.marshallAsAttribute(node, writer);
-
-            TransactionSubsystemRootResourceDefinition.STATUS_BINDING.marshallAsAttribute(node, writer);
-
-            TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER.marshallAsAttribute(node, writer);
-
-            writer.writeEndElement();
-        }
-        if (TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS.isMarshallable(node)
-                || TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.isMarshallable(node)
-                || TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.isMarshallable(node)) {
-
-            writer.writeStartElement(Element.COORDINATOR_ENVIRONMENT.getLocalName());
-
-            TransactionSubsystemRootResourceDefinition.ENABLE_STATISTICS.marshallAsAttribute(node, writer);
-            TransactionSubsystemRootResourceDefinition.ENABLE_TSM_STATUS.marshallAsAttribute(node, writer);
-            TransactionSubsystemRootResourceDefinition.DEFAULT_TIMEOUT.marshallAsAttribute(node, writer);
-
-            writer.writeEndElement();
-        }
-
-        if (TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.isMarshallable(node)
-                || TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.isMarshallable(node)) {
-            writer.writeStartElement(Element.OBJECT_STORE.getLocalName());
-            TransactionSubsystemRootResourceDefinition.OBJECT_STORE_PATH.marshallAsAttribute(node, writer);
-            TransactionSubsystemRootResourceDefinition.OBJECT_STORE_RELATIVE_TO.marshallAsAttribute(node, writer);
-            writer.writeEndElement();
-        }
-
-        if(node.hasDefined(CommonAttributes.JTS) && node.get(CommonAttributes.JTS).asBoolean()) {
-            writer.writeStartElement(Element.JTS.getLocalName());
-            writer.writeEndElement();
-        }
-
-        writer.writeEndElement();
-    }
-
-    private void writeProcessId(final XMLExtendedStreamWriter writer, final ModelNode value) throws XMLStreamException {
-        writer.writeStartElement(Element.PROCESS_ID.getLocalName());
-        if (value.get(TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID.getName()).asBoolean()) {
-            writer.writeEmptyElement(Element.UUID.getLocalName());
-        } else {
-            writer.writeStartElement(Element.SOCKET.getLocalName());
-            TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_BINDING.marshallAsAttribute(value, writer);
-            TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS.marshallAsAttribute(value, writer);
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
     }
 }
