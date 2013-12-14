@@ -41,7 +41,7 @@ import org.productivity.java.syslog4j.server.impl.net.tcp.ssl.SSLTCPNetSyslogSer
 
 /**
  * TCP syslog server implementation for syslog4j.
- * 
+ *
  * @author Josef Cacek
  */
 public class TLSSyslogServer extends TCPSyslogServer {
@@ -54,7 +54,7 @@ public class TLSSyslogServer extends TCPSyslogServer {
 
     /**
      * Creates custom sslContext from keystore and truststore configured in
-     * 
+     *
      * @see org.productivity.java.syslog4j.server.impl.net.tcp.TCPNetSyslogServer#initialize()
      */
     @Override
@@ -91,7 +91,7 @@ public class TLSSyslogServer extends TCPSyslogServer {
 
     /**
      * Returns {@link ServerSocketFactory} from custom {@link SSLContext} instance created in {@link #initialize()} method.
-     * 
+     *
      * @see org.productivity.java.syslog4j.server.impl.net.tcp.TCPNetSyslogServer#getServerSocketFactory()
      */
     @Override
@@ -101,7 +101,7 @@ public class TLSSyslogServer extends TCPSyslogServer {
 
     /**
      * Loads a JKS keystore with given path and password.
-     * 
+     *
      * @param keystoreFile path to keystore file
      * @param keystorePwd keystore password
      * @return
