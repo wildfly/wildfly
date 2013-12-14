@@ -31,26 +31,27 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 /**
-* Subsystem parsing test case
-*
-* @author Richard Achmatowicz (c) 2011 Red Hat Inc.
-*/
+ * Subsystem parsing test case
+ *
+ * @author Richard Achmatowicz (c) 2011 Red Hat Inc.
+ */
 @Ignore
 public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
-    static final String SUBSYSTEM_XML_FILE = "subsystem-infinispan_1_1.xml" ;
+    static final String SUBSYSTEM_XML_FILE = "subsystem-infinispan_1_1.xml";
 
     public SubsystemParsingTestCase() {
         super(InfinispanExtension.SUBSYSTEM_NAME, new InfinispanExtension());
     }
+
     /**
-      * Tests that the xml is parsed into the correct operations
+     * Tests that the xml is parsed into the correct operations
      */
     @Test
     public void testParseSubsystem() throws Exception {
 
         //Parse the subsystem xml into operations
-        String subsystemXml = getSubsystemXml() ;
+        String subsystemXml = getSubsystemXml();
         List<ModelNode> operations = super.parse(subsystemXml);
 
         // Check that we have the expected number of operations
@@ -59,7 +60,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
         //Check that each operation has the correct content
         for (int i = 0; i < 8; i++) {
-            ModelNode operation = operations.get(i) ;
+            ModelNode operation = operations.get(i);
             System.out.println(operation);
         }
     }
@@ -68,11 +69,11 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
     public void testInstallIntoController() throws Exception {
 
         // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
+        String subsystemXml = getSubsystemXml();
         KernelServices services = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         // print out the resulting model
-        ModelNode model = services.readWholeModel() ;
+        ModelNode model = services.readWholeModel();
         System.out.println(model);
 
         // use some assertions here to check the correctness of the model
@@ -80,15 +81,16 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
 
         assertRemoveSubsystemResources(services);
 
-       Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
+        Assert.assertTrue(model.get(SUBSYSTEM).hasDefined(getMainSubsystemName()));
 
-       checkLegacyParserStatisticsTrue(model.get(SUBSYSTEM, mainSubsystemName));
+        checkLegacyParserStatisticsTrue(model.get(SUBSYSTEM, mainSubsystemName));
     }
 
     private void checkLegacyParserStatisticsTrue(ModelNode subsystem) {
+//        if (xmlFile.endsWith("1_0.xml") || xmlFile.endsWith("1_1.xml") || xmlFile.endsWith("1_2.xml") || xmlFile.endsWith("1_3.xml") || xmlFile.endsWith("1_4.xml")) {
         for (Property containerProp : subsystem.get(CacheContainerResourceDefinition.CONTAINER_PATH.getKey()).asPropertyList()) {
             Assert.assertTrue("cache-container=" + containerProp.getName(),
-                    containerProp.getValue().get(CacheContainerResourceDefinition.STATISTICS.getName()).asBoolean());
+                    containerProp.getValue().get(CacheContainerResourceDefinition.STATISTICS_ENABLED.getName()).asBoolean());
 
             for (String key : containerProp.getValue().keys()) {
                 if (key.endsWith("-cache") && !key.equals("default-cache")) {
@@ -96,8 +98,9 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
                     if (caches.isDefined()) {
                         for (Property cacheProp : caches.asPropertyList()) {
                             Assert.assertTrue("cache-container=" + containerProp.getName() + "," + key + "=" + cacheProp.getName(),
-                                    containerProp.getValue().get(CacheResourceDefinition.STATISTICS.getName()).asBoolean());
+                                    containerProp.getValue().get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).asBoolean());
                         }
+//                        }
                     }
                 }
             }
@@ -112,20 +115,20 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
     public void testParseAndMarshallModel() throws Exception {
 
         // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
+        String subsystemXml = getSubsystemXml();
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         // list the names of the services which have been installed
         System.out.println("service names = " + servicesA.getContainer().getServiceNames());
 
-        ModelNode modelA = servicesA.readWholeModel() ;
+        ModelNode modelA = servicesA.readWholeModel();
         // print out the resulting model
         String marshalled = servicesA.getPersistedSubsystemXml();
         System.out.println("marshalled XML = " + marshalled);
 
         // install the persisted xml from the first controller into a second controller
         KernelServices servicesB = createKernelServicesBuilder(null).setSubsystemXml(marshalled).build();
-        ModelNode modelB = servicesB.readWholeModel() ;
+        ModelNode modelB = servicesB.readWholeModel();
 
         // make sure the models are identical
         super.compare(modelA, modelB);
@@ -136,7 +139,7 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
     public void testExecuteOperations() throws Exception {
 
         // Parse and install the XML into the controller
-        String subsystemXml = getSubsystemXml() ;
+        String subsystemXml = getSubsystemXml();
         KernelServices servicesA = createKernelServicesBuilder(null).setSubsystemXml(subsystemXml).build();
 
         // list the names of the services which have been installed
@@ -145,11 +148,11 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         // test an operation
         PathAddress rpcManagerAddr = PathAddress.pathAddress(
                 PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement("cache-container","maximal"),
+                PathElement.pathElement("cache-container", "maximal"),
                 PathElement.pathElement("distributed-cache", "dist"),
                 PathElement.pathElement("component", "rpc-manager"));
 
-        ModelNode readAttributeOp = new ModelNode() ;
+        ModelNode readAttributeOp = new ModelNode();
         readAttributeOp.get(OP).set(READ_ATTRIBUTE_OPERATION);
         readAttributeOp.get(OP_ADDR).set(rpcManagerAddr.toModelNode());
         readAttributeOp.get(NAME).set("replication-count");
@@ -160,7 +163,6 @@ public class SubsystemParsingTestCase extends AbstractSubsystemTest {
         System.out.println("result = " + result.toString());
 
     }
-
 
 
     private String getSubsystemXml() throws IOException {

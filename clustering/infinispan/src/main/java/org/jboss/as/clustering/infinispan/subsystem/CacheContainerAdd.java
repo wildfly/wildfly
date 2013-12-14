@@ -31,10 +31,8 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
-
 import javax.management.MBeanServer;
 
-import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.jgroups.ChannelFactory;
@@ -99,7 +97,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         CacheContainerResourceDefinition.EVICTION_EXECUTOR.validateAndSet(source, target);
         CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.validateAndSet(source, target);
         CacheContainerResourceDefinition.CACHE_CONTAINER_MODULE.validateAndSet(source, target);
-        CacheContainerResourceDefinition.STATISTICS.validateAndSet(source, target);
+        CacheContainerResourceDefinition.STATISTICS_ENABLED.validateAndSet(source, target);
     }
 
     @Override
@@ -129,7 +127,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         final String evictionExecutor = (resolvedValue = CacheContainerResourceDefinition.EVICTION_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
         final String replicationQueueExecutor = (resolvedValue = CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
         final ServiceController.Mode initialMode = StartMode.valueOf(CacheContainerResourceDefinition.START.resolveModelAttribute(context, containerModel).asString()).getMode();
-        final boolean statistics = CacheContainerResourceDefinition.STATISTICS.resolveModelAttribute(context, containerModel).asBoolean();
+        final boolean statistics = CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, containerModel).asBoolean();
 
         ServiceName[] aliases = null;
         if (containerModel.hasDefined(ModelKeys.ALIASES)) {

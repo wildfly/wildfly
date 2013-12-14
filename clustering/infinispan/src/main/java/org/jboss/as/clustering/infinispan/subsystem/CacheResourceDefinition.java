@@ -106,15 +106,15 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             .setDefaultValue(new ModelNode().set(StartMode.LAZY.name()))
             .build()
     ;
-    static final SimpleAttributeDefinition STATISTICS = new SimpleAttributeDefinitionBuilder(ModelKeys.STATISTICS, ModelType.BOOLEAN, true)
-            .setXmlName(Attribute.STATISTICS.getLocalName())
+    static final SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelKeys.STATISTICS_ENABLED, ModelType.BOOLEAN, true)
+            .setXmlName(Attribute.STATISTICS_ENABLED.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .setDefaultValue(new ModelNode().set(false))
             .build()
     ;
 
-    static final AttributeDefinition[] CACHE_ATTRIBUTES = { BATCHING, CACHE_MODULE, INDEXING, INDEXING_PROPERTIES, JNDI_NAME, START, STATISTICS };
+    static final AttributeDefinition[] CACHE_ATTRIBUTES = { BATCHING, CACHE_MODULE, INDEXING, INDEXING_PROPERTIES, JNDI_NAME, START, STATISTICS_ENABLED };
 
     // here for legacy purposes only
     static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelKeys.NAME, ModelType.STRING, true)

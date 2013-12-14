@@ -95,7 +95,7 @@ public enum Attribute {
     SOCKET_TIMEOUT(ModelKeys.SOCKET_TIMEOUT),
     STACK(ModelKeys.STACK),
     START(ModelKeys.START),
-    STATISTICS(ModelKeys.STATISTICS),
+    STATISTICS_ENABLED(ModelKeys.STATISTICS_ENABLED),
     STOP_TIMEOUT(ModelKeys.STOP_TIMEOUT),
     STRATEGY(ModelKeys.STRATEGY),
     STRIPING(ModelKeys.STRIPING),

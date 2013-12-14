@@ -70,7 +70,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("infinispan-transformer_2_0.xml");
+        return readResource("infinispan-transformer_1_4.xml");
     }
 
     @Test
@@ -167,7 +167,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
                 PathElement.pathElement(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH.getKey(), "cache"));
         ModelNode addOp = Util.createAddOperation(pa);
         addOp.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(1);
-        addOp.get(CacheResourceDefinition.STATISTICS.getName()).set(true);
+        addOp.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
 
         OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version140, addOp);
         Assert.assertFalse(transformedOperation.getTransformedOperation().has(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()));
