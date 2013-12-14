@@ -6,7 +6,7 @@
     </core-environment>
     <recovery-environment socket-binding="${test.recovery.socket-binding:txn-recovery-environment" status-socket-binding="${test.recovery.status-socketbinding:txn-status-manager}"
                           recovery-listener="${test.recovery.listener:false}"/>
-    <coordinator-environment enable-statistics="${test.enable.statistics:true}" enable-tsm-status="${test.enable.tsm.status:true}"
+    <coordinator-environment statistics-enabled="${test.statistics.enabled:true}" enable-tsm-status="${test.enable.tsm.status:true}"
                              default-timeout="${test.default.timeout:300}"/>
     <object-store path="${test.store.path:tx-object-store}" relative-to="${test.store.relative-to:jboss.server.data.dir}"/>
     <jts/>
