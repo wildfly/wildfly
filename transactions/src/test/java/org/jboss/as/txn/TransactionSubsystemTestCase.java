@@ -41,6 +41,7 @@ import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinit
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.PROCESS_ID_SOCKET_MAX_PORTS;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.RECOVERY_LISTENER;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.RELATIVE_TO;
+import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED;
 import static org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition.STATUS_BINDING;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -86,7 +87,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
-        super.compareXml(configId, original, marshalled, true);
+        String transformed = ModelTestUtils.normalizeXML(original.replace("enable-statistics", "statistics-enabled"));
+        super.compareXml(configId, transformed, marshalled, true);
     }
 
     @Test
@@ -234,6 +236,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                 new FailedOperationTransformationConfig.ChainedConfig(Arrays.asList(new FailedOperationTransformationConfig.AttributesPathAddressConfig<?>[] {
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(
                                 DEFAULT_TIMEOUT,
+                                STATISTICS_ENABLED,
                                 ENABLE_STATISTICS,
                                 ENABLE_TSM_STATUS,
                                 BINDING,
@@ -250,6 +253,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                         new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)
                 }) ,
                         DEFAULT_TIMEOUT,
+                        STATISTICS_ENABLED,
                         ENABLE_STATISTICS,
                         ENABLE_TSM_STATUS,
                         BINDING,

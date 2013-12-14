@@ -144,13 +144,20 @@
             <xs:documentation>
             <![CDATA[
                 The coordinator environment configuration.
-                enable-statistics - if recording of transaction statistics is enabled, false otherwise.
+                statistics-enabled - if recording of transaction statistics is enabled, false otherwise.
                 enable-tsm-status - if the transaction status manager (TSM) service, needed for out of process recovery, should be provided or not.
                 default-timeout - the default transaction lifetime, in seconds.
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="enable-statistics" type="xs:boolean" default="false"/>
+        <xs:attribute name="statistics-enabled" type="xs:boolean" default="false"/>
+        <xs:attribute name="enable-statistics" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[ Deprecated. Use statistics-enabled. ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="enable-tsm-status" type="xs:boolean" default="false"/>
         <xs:attribute name="default-timeout" type="xs:int" default="300" />
     </xs:complexType>

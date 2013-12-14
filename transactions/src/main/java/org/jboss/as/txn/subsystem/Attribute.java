@@ -42,6 +42,7 @@ enum Attribute {
     DEFAULT_TIMEOUT("default-timeout"),
     RECOVERY_LISTENER("recovery-listener"),
     RELATIVE_TO("relative-to"),
+    STATISTICS_ENABLED("statistics-enabled"),
     PATH("path"),
     DATASOURCE_JNDI_NAME("datasource-jndi-name"),
     TABLE_PREFIX("table-prefix"),

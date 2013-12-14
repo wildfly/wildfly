@@ -177,7 +177,10 @@ public class TransactionExtension implements Extension {
                         TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO);
+                .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
+                // Legacy name for enabling/disabling statistics
+                .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS);
+
 
         final ModelVersion version120 = ModelVersion.create(1, 2, 0);
         final TransformationDescription description120 = subsystemRoot120.build();
@@ -201,7 +204,9 @@ public class TransactionExtension implements Extension {
                             attributeValue.set(false);
                         }
                     }
-                }, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID);
+                }, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID)
+                // Legacy name for enabling/disabling statistics
+                .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS);
 
         // Transformations to the 1.1.1 Model:
         // 1) Remove JDBC store attributes if not used
