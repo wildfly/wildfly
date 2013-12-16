@@ -61,6 +61,7 @@
                                         <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/manualmode-build.xml">
                                             <property name="node1" value="${node1}"/>
                                             <property name="node0" value="${node0}"/>
+                                            <property name="jboss.dist" value="${jboss.dist}" />
                                             <target name="build-manual-mode"/>
                                         </ant>
                                     </target>
