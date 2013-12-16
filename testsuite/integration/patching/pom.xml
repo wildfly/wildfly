@@ -66,6 +66,7 @@
                         <configuration>
                             <target>
                                 <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/patching-build.xml">
+                                    <property name="jboss.dist" value="${jboss.dist}" />
                                     <target name="build-patching"/>
                                 </ant>
                             </target>
