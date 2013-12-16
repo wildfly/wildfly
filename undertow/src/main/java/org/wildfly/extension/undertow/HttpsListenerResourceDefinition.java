@@ -36,6 +36,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
+import org.xnio.Options;
 import org.xnio.SslClientAuthMode;
 
 /**
@@ -60,6 +61,12 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setDefaultValue(new ModelNode(SslClientAuthMode.NOT_REQUESTED.name()))
             .build();
 
+    protected static final OptionAttributeDefinition ENABLED_CIPHER_SUITES = OptionAttributeDefinition.builder("enabled-cipher-suites", Options.SSL_ENABLED_CIPHER_SUITES)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .build();
+
 
     private HttpsListenerResourceDefinition() {
         super(UndertowExtension.HTTPS_LISTENER_PATH);
@@ -70,6 +77,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
         Collection<AttributeDefinition> res = new LinkedList<>(super.getAttributes());
         res.add(SECURITY_REALM);
         res.add(VERIFY_CLIENT);
+        res.add(ENABLED_CIPHER_SUITES);
         return res;
     }
 

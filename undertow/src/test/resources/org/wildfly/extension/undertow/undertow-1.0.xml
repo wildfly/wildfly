@@ -32,7 +32,7 @@
         <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-socket="ajp" proxy-address-forwarding="${prop.smth:false}"/>
         <http-listener name="second" socket-binding="http" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
         <https-listener name="https" socket-binding="https" security-realm="UndertowRealm" verify-client="REQUESTED"/>
-        <https-listener name="https-2" socket-binding="https" security-realm="UndertowRealm" />
+        <https-listener name="https-2" socket-binding="https" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA"/>
 
         <host name="default-host" alias="localhost, some.host" default-web-module="something.war">
             <location name="/" handler="welcome-content">

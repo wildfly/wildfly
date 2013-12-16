@@ -45,6 +45,7 @@ public class HttpsListenerAdd extends ListenerAdd {
     ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException {
         OptionMap.Builder builder = OptionMap.builder().addAll(listenerOptions);
         HttpsListenerResourceDefinition.VERIFY_CLIENT.resolveOption(context, model,builder);
+        HttpsListenerResourceDefinition.ENABLED_CIPHER_SUITES.resolveOption(context, model, builder);
         return new HttpsListenerService(name, serverName, builder.getMap());
     }
 
