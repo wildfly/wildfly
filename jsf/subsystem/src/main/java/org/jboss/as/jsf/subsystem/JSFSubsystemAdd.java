@@ -32,6 +32,7 @@ import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
 import org.jboss.as.jsf.deployment.JSFBeanValidationFactoryProcessor;
 import org.jboss.as.jsf.deployment.JSFDependencyProcessor;
 import org.jboss.as.jsf.deployment.JSFManagedBeanProcessor;
+import org.jboss.as.jsf.deployment.JSFMetadataProcessor;
 import org.jboss.as.jsf.deployment.JSFSharedTldsProcessor;
 import org.jboss.as.jsf.deployment.JSFVersionProcessor;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -61,6 +62,7 @@ class JSFSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_VERSION, new JSFVersionProcessor(model));
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_SHARED_TLDS, new JSFSharedTldsProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_MANAGED_BEANS, new JSFManagedBeanProcessor());
+                processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_METADATA, new JSFMetadataProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JSF, new JSFDependencyProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JSFManagedBeanProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JSFAnnotationProcessor());

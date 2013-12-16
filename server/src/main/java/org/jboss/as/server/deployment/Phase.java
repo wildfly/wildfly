@@ -332,6 +332,7 @@ public enum Phase {
     public static final int PARSE_EE_CONCURRENT_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE  = 0x4803;
     public static final int PARSE_EE_DEFAULT_BINDINGS_CONFIG            = 0x4880;
     public static final int PARSE_JSF_MANAGED_BEANS                     = 0x4900;
+    public static final int PARSE_JSF_METADATA                          = 0x4A00;
 
     // REGISTER
     public static final int REGISTER_BUNDLE_INSTALL                     = 0x0100;
