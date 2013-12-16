@@ -33,12 +33,6 @@ import static org.xnio.Options.SSL_ENABLED;
 import static org.xnio.Options.SSL_STARTTLS;
 import static org.xnio.SslClientAuthMode.REQUESTED;
 
-import javax.net.ssl.SSLContext;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -49,6 +43,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.net.ssl.SSLContext;
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.PasswordCallback;
+import javax.security.auth.callback.UnsupportedCallbackException;
 
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.core.security.SubjectUserInfo;
@@ -295,9 +296,13 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
 
         return new AuthorizingCallbackHandler() {
 
+            private boolean serverHandled = false;
+
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                 serverCallbackHandler.handle(callbacks);
-                if (handled(callbacks) == false) {
+                if (handled(callbacks)) {
+                    serverHandled = true;
+                } else {
                     realmCallbackHandler.handle(callbacks);
                 }
             }
@@ -325,6 +330,32 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
             }
 
             public UserInfo createUserInfo(Collection<Principal> remotingPrincipals) throws IOException {
+                if (serverHandled) {
+                    final Subject subject = new Subject();
+                    Collection<Principal> allPrincipals = subject.getPrincipals();
+                    for (Principal userPrincipal : remotingPrincipals) {
+                        allPrincipals.add(userPrincipal);
+                        allPrincipals.add(new RealmUser(userPrincipal.getName()));
+                    }
+
+                    return new RealmSubjectUserInfo(new SubjectUserInfo() {
+
+                        @Override
+                        public String getUserName() {
+                            return subject.getPrincipals(RealmUser.class).iterator().next().getName();
+                        }
+
+                        @Override
+                        public Subject getSubject() {
+                            return subject;
+                        }
+
+                        @Override
+                        public Collection<Principal> getPrincipals() {
+                            return subject.getPrincipals();
+                        }
+                    });
+                }
                 return realmCallbackHandler.createUserInfo(remotingPrincipals);
             }
 
