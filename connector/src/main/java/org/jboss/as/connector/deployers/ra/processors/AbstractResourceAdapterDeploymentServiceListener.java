@@ -33,6 +33,7 @@ import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtens
 import org.jboss.as.connector.subsystems.resourceadapters.WorkManagerRuntimeAttributeReadHandler;
 import org.jboss.as.connector.subsystems.resourceadapters.WorkManagerRuntimeAttributeWriteHandler;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceBuilder;
@@ -206,13 +207,15 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                             if (!raResource.hasChild(peDistributedWm))
                                                 raResource.registerChild(peDistributedWm, dwmResource);
 
+                                            OperationStepHandler metricsHandler = new WorkManagerRuntimeAttributeReadHandler(wm, ((DistributedWorkManager)wm).getDistributedStatistics(), false);
                                             for (SimpleAttributeDefinition metric : Constants.WORKMANAGER_METRICS) {
-                                                dwmSubRegistration.registerMetric(metric, new WorkManagerRuntimeAttributeReadHandler(wm, ((DistributedWorkManager)wm).getDistributedStatistics() ));
+                                                dwmSubRegistration.registerMetric(metric, metricsHandler);
                                             }
 
+                                            OperationStepHandler readHandler = new WorkManagerRuntimeAttributeReadHandler(wm, ((DistributedWorkManager)wm).getDistributedStatistics(), true);
+                                            OperationStepHandler writeHandler = new WorkManagerRuntimeAttributeWriteHandler(wm, true, Constants.DISTRIBUTED_WORKMANAGER_RW_ATTRIBUTES);
                                             for (SimpleAttributeDefinition attribute : Constants.DISTRIBUTED_WORKMANAGER_RW_ATTRIBUTES) {
-                                                dwmSubRegistration.registerReadWriteAttribute(attribute, new WorkManagerRuntimeAttributeReadHandler(wm, ((DistributedWorkManager)wm).getDistributedStatistics()), new WorkManagerRuntimeAttributeWriteHandler(wm, Constants.WORKMANAGER_STATISTICS_ENABLED));
-
+                                                dwmSubRegistration.registerReadWriteAttribute(attribute, readHandler, writeHandler);
                                             }
 
                                             dwmSubRegistration.registerOperationHandler(ClearWorkManagerStatisticsHandler.DEFINITION, new ClearWorkManagerStatisticsHandler(wm));
@@ -227,13 +230,15 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                             if (!raResource.hasChild(peWm))
                                                 raResource.registerChild(peWm, wmResource);
 
+                                            OperationStepHandler metricHandler = new WorkManagerRuntimeAttributeReadHandler(wm, wm.getStatistics(), false);
                                             for (SimpleAttributeDefinition metric : Constants.WORKMANAGER_METRICS) {
-                                                wmSubRegistration.registerMetric(metric, new WorkManagerRuntimeAttributeReadHandler(wm, wm.getStatistics()));
+                                                wmSubRegistration.registerMetric(metric, metricHandler);
                                             }
 
+                                            OperationStepHandler readHandler = new WorkManagerRuntimeAttributeReadHandler(wm, wm.getStatistics(), false);
+                                            OperationStepHandler writeHandler = new WorkManagerRuntimeAttributeWriteHandler(wm, false, Constants.WORKMANAGER_RW_ATTRIBUTES);
                                             for (SimpleAttributeDefinition attribute : Constants.WORKMANAGER_RW_ATTRIBUTES) {
-                                                wmSubRegistration.registerReadWriteAttribute(attribute, new WorkManagerRuntimeAttributeReadHandler(wm, wm.getStatistics()), new WorkManagerRuntimeAttributeWriteHandler(wm, Constants.WORKMANAGER_STATISTICS_ENABLED));
-
+                                                wmSubRegistration.registerReadWriteAttribute(attribute, readHandler, writeHandler);
                                             }
 
                                             wmSubRegistration.registerOperationHandler(ClearWorkManagerStatisticsHandler.DEFINITION, new ClearWorkManagerStatisticsHandler(wm));
