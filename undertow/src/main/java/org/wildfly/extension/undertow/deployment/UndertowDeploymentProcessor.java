@@ -170,11 +170,19 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader(), componentRegistry);
 
         String jaccContextId = metaData.getJaccContextID();
+
         if (jaccContextId == null) {
             jaccContextId = deploymentUnit.getName();
         }
         if (deploymentUnit.getParent() != null) {
             jaccContextId = deploymentUnit.getParent().getName() + "!" + jaccContextId;
+        }
+
+        String deploymentName;
+        if(deploymentUnit.getParent() == null) {
+            deploymentName = deploymentUnit.getName();
+        } else {
+            deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
         }
 
         final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
@@ -207,7 +215,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
                 .setContextPath(pathName)
-                .setDeploymentName(pathName) //todo: is this deployment name concept really applicable?
+                .setDeploymentName(deploymentName) //todo: is this deployment name concept really applicable?
                 .setDeploymentRoot(deploymentRoot)
                 .setMergedMetaData(warMetaData.getMergedJBossWebMetaData())
                 .setModule(module)
