@@ -1404,6 +1404,11 @@
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-spring</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
                     <artifactId>async-http-servlet-3.0</artifactId>
                 </dependency>
 

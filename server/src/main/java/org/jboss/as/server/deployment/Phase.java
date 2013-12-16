@@ -330,6 +330,7 @@ public enum Phase {
     public static final int DEPENDENCIES_WS                             = 0x0C00;
     public static final int DEPENDENCIES_SECURITY                       = 0x0C50;
     public static final int DEPENDENCIES_JAXRS                          = 0x0D00;
+    public static final int DEPENDENCIES_JAXRS_SPRING                   = 0x0D80;
     public static final int DEPENDENCIES_SUB_DEPLOYMENTS                = 0x0E00;
     public static final int DEPENDENCIES_PERSISTENCE_ANNOTATION         = 0x0F00;
     public static final int DEPENDENCIES_JPA                            = 0x1000;

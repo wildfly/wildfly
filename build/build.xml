@@ -100,6 +100,8 @@
     <target name="create-ext-content">
         <mkdir dir="${output.dir}/modules/system/layers/base/org/jboss/integration/ext-content/main/bundled"/>
         <copy file="${org.jboss.seam.integration:jboss-seam-int-jbossas:jar}" tofile="${output.dir}/modules/system/layers/base/org/jboss/integration/ext-content/main/bundled/jboss-seam-int.jar"/>
+        <!-- resteasy spring integration -->
+        <copy file="${org.jboss.resteasy:resteasy-spring:jar}" tofile="${output.dir}/modules/system/layers/base/org/jboss/resteasy/resteasy-spring/main/bundled/resteasy-spring.jar"/>
 
         <!-- Copy the EJB specific schemas to the JBOSS_HOME/docs/schema folder -->
         <unzip src="${org.jboss.metadata:jboss-metadata-ejb:jar}" dest="${output.dir}/docs/schema/">
@@ -1186,6 +1188,8 @@
         <module-def name="org.jboss.resteasy.resteasy-multipart-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-multipart-provider"/>
         </module-def>
+
+        <module-def name="org.jboss.resteasy.resteasy-spring"/>
 
         <module-def name="org.jboss.resteasy.resteasy-yaml-provider">
             <maven-resource group="org.jboss.resteasy" artifact="resteasy-yaml-provider"/>

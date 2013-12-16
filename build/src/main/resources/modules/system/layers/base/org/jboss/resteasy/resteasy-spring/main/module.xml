@@ -22,35 +22,14 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.jaxrs">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
+<module xmlns="urn:jboss:module:1.1" name="org.jboss.resteasy.resteasy-spring">
 
     <resources>
-        <!-- Insert resources here -->
+        <!-- This module just contains the jar as a resource root. It cannot be depended on to get
+         access to the jar classes-->
+        <resource-root path="bundled"/>
     </resources>
 
     <dependencies>
-        <module name="javax.api"/>
-        <module name="javax.enterprise.api"/>
-        <module name="javax.ws.rs.api"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.ee"/>
-        <module name="org.jboss.as.ejb3"/>
-        <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.web"/>
-        <module name="org.jboss.as.weld"/>
-        <module name="org.jboss.jandex"/>
-        <module name="org.jboss.metadata"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.msc"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.resteasy.resteasy-cdi"/>
-        <module name="org.jboss.resteasy.resteasy-jaxrs"/>
-        <module name="org.jboss.resteasy.resteasy-spring" />
-        <module name="org.jboss.staxmapper"/>
-        <module name="org.jboss.vfs"/>
-        <module name="org.jboss.weld.spi"/>
     </dependencies>
 </module>
