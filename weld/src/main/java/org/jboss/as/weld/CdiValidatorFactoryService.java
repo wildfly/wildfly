@@ -89,6 +89,16 @@ public class CdiValidatorFactoryService implements Service<CdiValidatorFactorySe
 
     @Override
     public void stop(final StopContext context) {
+        final ClassLoader cl = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+            ValidatorFactory validatorFactory = deploymentUnit.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+            if (validatorFactory != null) {
+                validatorFactory.close();
+            }
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(cl);
+        }
     }
 
     @Override

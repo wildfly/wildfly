@@ -21,11 +21,14 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
+import javax.validation.ValidatorFactory;
+
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentNamingMode;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -110,6 +113,12 @@ public class BeanValidationFactoryDeployer implements DeploymentUnitProcessor {
     }
     @Override
     public void undeploy(DeploymentUnit context) {
+        ValidatorFactory validatorFactory = context.getAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
+        if ((validatorFactory != null) && (!WeldDeploymentMarker.isPartOfWeldDeployment(context))) {
+            // If the ValidatorFactory is not CDI-enabled, close it here. Otherwise, it's
+            // closed via CdiValidatorFactoryService before the Weld service is stopped.
+            validatorFactory.close();
+        }
         context.removeAttachment(BeanValidationAttachments.VALIDATOR_FACTORY);
     }
 
