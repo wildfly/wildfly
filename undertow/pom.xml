@@ -72,11 +72,11 @@
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-jsp</artifactId>
+            <artifactId>undertow-websockets-jsr</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
+            <groupId>io.undertow.jastow</groupId>
+            <artifactId>jastow</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>

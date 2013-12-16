@@ -70,7 +70,7 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
         SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(PersistentSessionsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
         final ModelNode bufferCacheValue = ServletContainerDefinition.DEFAULT_BUFFER_CACHE.resolveModelAttribute(context, model);
         final String bufferCache = bufferCacheValue.isDefined() ? bufferCacheValue.asString() : null;

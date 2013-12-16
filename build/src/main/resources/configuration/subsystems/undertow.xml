@@ -39,7 +39,7 @@
         </server>
         <servlet-container name="default" default-buffer-cache="default" stack-trace-on-error="local-only" >
             <jsp-config/>
-            <persistent-sessions path="persistent-web-sessions" relative-to="jboss.server.data.dir"/>
+            <persistent-sessions/>
         </servlet-container>
         <handlers>
             <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>

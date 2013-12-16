@@ -23,7 +23,7 @@
 package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.Handlers;
-import io.undertow.jsp.JspFileWrapper;
+import io.undertow.jsp.JspFileHandler;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -436,7 +436,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final ServletContainerService servletContainer = container.getValue();
             try {
                 //TODO: make the caching limits configurable
-                ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays);
+                ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays, explodedDeployment);
 
                 resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, servletContainer.getBufferCache(), resourceManager, explodedDeployment ? 2000 : -1);
                 d.setResourceManager(resourceManager);
@@ -534,7 +534,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
                     if (servlet.getJspFile() != null) {
                         s = new ServletInfo(servlet.getName(), JspServlet.class);
-                        s.addHandlerChainWrapper(new JspFileWrapper(servlet.getJspFile()));
+                        s.addHandlerChainWrapper(JspFileHandler.jspFileHandlerWrapper(servlet.getJspFile()));
                     } else {
                         Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
                         ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass);

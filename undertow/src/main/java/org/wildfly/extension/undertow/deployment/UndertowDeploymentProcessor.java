@@ -207,7 +207,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
                 .setContextPath(pathName)
-                .setDeploymentName(deploymentUnit.getName())
+                .setDeploymentName(pathName) //todo: is this deployment name concept really applicable?
                 .setDeploymentRoot(deploymentRoot)
                 .setMergedMetaData(warMetaData.getMergedJBossWebMetaData())
                 .setModule(module)

@@ -1519,7 +1519,6 @@
             <maven-resource group="io.undertow" artifact="undertow-servlet"/>
         </module-def>
         <module-def name="io.undertow.jsp">
-            <maven-resource group="io.undertow" artifact="undertow-jsp"/>
             <maven-resource group="io.undertow.jastow" artifact="jastow"/>
         </module-def>
         <module-def name="io.undertow.jasper-jdt">
