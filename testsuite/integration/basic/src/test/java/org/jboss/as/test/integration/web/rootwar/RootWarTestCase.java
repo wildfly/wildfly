@@ -55,6 +55,7 @@ public class RootWarTestCase {
     public static WebArchive getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ROOT.war");
         war.add(new StringAsset(INDEX_HTML), "index.html");
+        war.addAsWebInfResource(new StringAsset("<web/>"), "web.xml");
         return war;
     }
 
