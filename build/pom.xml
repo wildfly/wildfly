@@ -849,6 +849,11 @@
 
                 <dependency>
                     <groupId>org.hornetq</groupId>
+                    <artifactId>hornetq-tools</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hornetq</groupId>
                     <artifactId>hornetq-core-client</artifactId>
                 </dependency>
 
@@ -1522,6 +1527,21 @@
                 <dependency>
                     <groupId>org.jboss.mod_cluster</groupId>
                     <artifactId>mod_cluster-core</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.xnio.netty</groupId>
+                    <artifactId>netty-xnio-transport</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>io.netty</groupId>
+                            <artifactId>netty-transport</artifactId>
+                        </exclusion>
+                        <exclusion>
+                            <groupId>io.netty</groupId>
+                            <artifactId>netty-buffer</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
 
                 <dependency>

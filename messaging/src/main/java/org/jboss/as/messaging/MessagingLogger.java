@@ -202,4 +202,13 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11614, value = "Ignoring %s property that is not a known property for pooled connection factory.")
     void unknownPooledConnectionFactoryAttribute(String name);
+
+    /**
+     * Logs an info message when a HTTP Upgrade handler is registered for the given {@code protocol}.
+     *
+     * @param name the name of the protocol that is handled
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 11615, value = "Registered HTTP upgrade handler for %s protocol")
+    void registeredHTTPUpgradeHandler(String name);
 }

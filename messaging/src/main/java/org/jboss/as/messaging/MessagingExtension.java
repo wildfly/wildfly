@@ -172,11 +172,13 @@ public class MessagingExtension implements Extension {
         serverRegistration.registerSubModel(QueueDefinition.newRuntimeQueueDefinition(registerRuntimeOnly));
 
         // Acceptors
+        serverRegistration.registerSubModel(new HTTPAcceptorDefinition(registerRuntimeOnly));
         serverRegistration.registerSubModel(GenericTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
         serverRegistration.registerSubModel(RemoteTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
         serverRegistration.registerSubModel(InVMTransportDefinition.createAcceptorDefinition(registerRuntimeOnly));
 
         // Connectors
+        serverRegistration.registerSubModel(new HTTPConnectorDefinition(registerRuntimeOnly));
         serverRegistration.registerSubModel(GenericTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
         serverRegistration.registerSubModel(RemoteTransportDefinition.createConnectorDefinition(registerRuntimeOnly));
         serverRegistration.registerSubModel(InVMTransportDefinition.createConnectorDefinition(registerRuntimeOnly));

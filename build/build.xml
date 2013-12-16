@@ -842,6 +842,7 @@
             <maven-resource group="org.hornetq" artifact="hornetq-core-client"/>
             <maven-resource group="org.hornetq" artifact="hornetq-server"/>
             <maven-resource group="org.hornetq" artifact="hornetq-commons"/>
+            <maven-resource group="org.hornetq" artifact="hornetq-tools"/>
             <maven-resource group="org.hornetq" artifact="hornetq-journal"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-client"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-server"/>
@@ -1375,6 +1376,10 @@
 
         <module-def name="org.jboss.ws.tools.common">
             <maven-resource group="org.jboss.ws" artifact="jbossws-common-tools"/>
+        </module-def>
+
+        <module-def name="org.jboss.xnio.netty.netty-xnio-transport">
+            <maven-resource group="org.jboss.xnio.netty" artifact="netty-xnio-transport"/>
         </module-def>
 
         <module-def name="org.opensaml">
