@@ -94,5 +94,8 @@ public interface JaxrsMessages {
 
     @Message(id = 11235, value = "Invalid value for parameter %s: %s")
     DeploymentUnitProcessingException invalidParamValue(String param, String value);
+
+    @Message(id = 11236, value = "No spring integration jar found")
+    DeploymentUnitProcessingException noSpringIntegrationJar();
 }
 
