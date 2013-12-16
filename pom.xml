@@ -5090,6 +5090,18 @@
 
             <dependency>
                 <groupId>org.jboss.resteasy</groupId>
+                <artifactId>resteasy-spring</artifactId>
+                <version>${version.org.jboss.resteasy}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.spec.javax.annotation</groupId>
+                        <artifactId>jboss-annotations-api_1.1_spec</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.resteasy</groupId>
                 <artifactId>resteasy-cdi</artifactId>
                 <version>${version.org.jboss.resteasy}</version>
                 <exclusions>

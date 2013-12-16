@@ -56,6 +56,7 @@
         <module name="org.jboss.resteasy.resteasy-jettison-provider"/>
         <module name="org.jboss.resteasy.resteasy-jsapi"/>
         <module name="org.jboss.resteasy.resteasy-multipart-provider"/>
+        <module name="org.jboss.resteasy.resteasy-spring" />
         <module name="org.jboss.resteasy.resteasy-validator-provider-11"/>
         <module name="org.jboss.resteasy.resteasy-yaml-provider"/>
         <module name="org.jboss.staxmapper"/>

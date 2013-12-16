@@ -1550,6 +1550,11 @@
 
                 <dependency>
                     <groupId>org.jboss.resteasy</groupId>
+                    <artifactId>resteasy-spring</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.resteasy</groupId>
                     <artifactId>resteasy-atom-provider</artifactId>
                 </dependency>
 
