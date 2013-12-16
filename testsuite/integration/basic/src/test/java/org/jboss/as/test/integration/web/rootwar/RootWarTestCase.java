@@ -49,13 +49,15 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(Arquillian.class)
 public class RootWarTestCase {
-    private static final String INDEX_JSP = "<%=request.getContextPath()%>";
+    private static final String INDEX_JSP = "[<%=request.getContextPath()%>]";
+    // private static final String JBOSS_WEB = "<jboss-web><context-root>/</context-root></jboss-web>";
 
     @Deployment
     public static WebArchive getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "ROOT.war");
         war.add(new StringAsset(INDEX_JSP), "index.jsp");
         war.addAsWebInfResource(new StringAsset("<web/>"), "web.xml");
+        // war.addAsWebInfResource(new StringAsset(JBOSS_WEB), "jboss-web.xml");
         return war;
     }
 
@@ -71,7 +73,7 @@ public class RootWarTestCase {
 
             StatusLine statusLine = response.getStatusLine();
             assertEquals(200, statusLine.getStatusCode());
-            assertEquals("/", EntityUtils.toString(entity));
+            assertEquals("[]", EntityUtils.toString(entity));
         } finally {
             client.getConnectionManager().shutdown();
         }
