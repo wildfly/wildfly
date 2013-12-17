@@ -71,6 +71,11 @@
 
         <dependency>
             <groupId>org.hornetq</groupId>
+            <artifactId>hornetq-tools</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hornetq</groupId>
             <artifactId>hornetq-journal</artifactId>
         </dependency>
 
@@ -160,6 +165,11 @@
         <dependency>
             <groupId>org.jboss.common</groupId>
             <artifactId>jboss-common-beans</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.xnio.netty</groupId>
+            <artifactId>netty-xnio-transport</artifactId>
         </dependency>
 
         <dependency>

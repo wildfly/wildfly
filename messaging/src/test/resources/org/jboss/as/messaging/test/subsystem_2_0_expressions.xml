@@ -74,6 +74,9 @@
         <journal-directory path="${my.journal.dir:test}" relative-to="test" />
         <large-messages-directory path="${my.largemessages.dir:test}" relative-to="test" />
         <connectors>
+            <http-connector name="http" socket-binding="http">
+                <param key="batch-delay" value="${batch.delay:50}"/>
+            </http-connector>
             <netty-connector name="netty" socket-binding="messaging" />
             <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                 <param key="batch-delay" value="${batch.delay:50}"/>
@@ -90,6 +93,9 @@
             </connector>
         </connectors>
         <acceptors>
+            <http-acceptor name="http" http-listener="default">
+                <param key="batch-delay" value="${batch.delay:50}"/>
+            </http-acceptor>
             <netty-acceptor name="netty" socket-binding="messaging" />
             <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
                 <param key="batch-delay" value="50"/>

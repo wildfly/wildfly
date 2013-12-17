@@ -25,6 +25,8 @@ package org.jboss.as.messaging;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
+import static org.jboss.as.messaging.CommonAttributes.HTTP_ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.HTTP_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
@@ -44,6 +46,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -99,6 +102,15 @@ class TransportConfigOperationHandlers {
                 final Map<String, Object> parameters = getParameters(context, config);
                 parameters.put(InVMTransportDefinition.SERVER_ID.getName(), InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, config).asInt());
                 acceptors.put(acceptorName, new TransportConfiguration(InVMAcceptorFactory.class.getName(), parameters, acceptorName));
+            }
+        }
+        if (params.hasDefined(HTTP_ACCEPTOR)) {
+            for (final Property property : params.get(HTTP_ACCEPTOR).asPropertyList()) {
+                final String acceptorName = property.getName();
+                final ModelNode config = property.getValue();
+                final Map<String, Object> parameters = getParameters(context, config);
+                parameters.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
+                acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName));
             }
         }
         configuration.setAcceptorConfigurations(new HashSet<TransportConfiguration>(acceptors.values()));
@@ -162,6 +174,19 @@ class TransportConfigOperationHandlers {
                 final Map<String, Object> parameters = getParameters(context, config);
                 parameters.put(InVMTransportDefinition.SERVER_ID.getName(), InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, config).asInt());
                 connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName));
+            }
+        }
+        if (params.hasDefined(HTTP_CONNECTOR)) {
+            for (final Property property : params.get(HTTP_CONNECTOR).asPropertyList()) {
+                final String connectorName = property.getName();
+                final ModelNode config = property.getValue();
+                final Map<String, Object> parameters = getParameters(context, config);
+
+                final String binding = HTTPConnectorDefinition.SOCKET_BINDING.resolveModelAttribute(context, config).asString();
+                bindings.add(binding);
+                parameters.put(HTTPConnectorDefinition.SOCKET_BINDING.getName(), binding);
+                parameters.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
+                connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
         configuration.setConnectorConfigurations(connectors);
