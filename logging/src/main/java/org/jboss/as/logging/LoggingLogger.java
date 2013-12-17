@@ -175,4 +175,35 @@ public interface LoggingLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 11513, value = "The log context (%s) could not be removed for deployment %s")
     void logContextNotRemoved(LogContext logContext, String deploymentName);
+
+    /**
+     * Logs a warning message indicating the per-logging deployment property has been deprecated and should not be
+     * used. Instead the attribute on the root subsystem should be used.
+     *
+     * @param propertyName  the per-deployment property name
+     * @param attributeName the name of the new attribute
+     *
+     * @deprecated will be removed when the {@link org.jboss.as.logging.deployments.LoggingConfigDeploymentProcessor#PER_DEPLOYMENT_LOGGING}
+     * is removed
+     */
+    @Deprecated
+    @LogMessage(level = WARN)
+    @Message(id = 11514, value = "The per-logging deployment property (%s) has been deprecated. Please use the %s attribute to enable/disable per-deployment logging.")
+    void perDeploymentPropertyDeprecated(String propertyName, String attributeName);
+
+    /**
+     * Logs a warning message indicating the per-logging deployment property is being ignored because the attribute has
+     * been set to ignore the deployments logging configuration.
+     *
+     * @param propertyName   the per-deployment property name
+     * @param attributeName  the name of the new attribute
+     * @param deploymentName the name of the deployment
+     *
+     * @deprecated will be removed when the {@link org.jboss.as.logging.deployments.LoggingConfigDeploymentProcessor#PER_DEPLOYMENT_LOGGING}
+     * is removed
+     */
+    @Deprecated
+    @LogMessage(level = WARN)
+    @Message(id = 11515, value = "The per-logging deployment property (%s) is being ignored because the attribute %s has been set to ignore configuration files in the deployment %s.")
+    void perLoggingDeploymentIgnored(String propertyName, String attributeName, String deploymentName);
 }

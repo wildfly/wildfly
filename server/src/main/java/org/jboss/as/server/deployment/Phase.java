@@ -369,6 +369,7 @@ public enum Phase {
     public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1A00;
     public static final int DEPENDENCIES_BATCH                          = 0x1B00;
     public static final int DEPENDENCIES_CLUSTERING                     = 0x1C00;
+    public static final int DEPENDENCIES_LOGGING                        = 0x1D00;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;

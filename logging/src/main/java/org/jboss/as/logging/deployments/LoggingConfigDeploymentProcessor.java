@@ -53,6 +53,10 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public class LoggingConfigDeploymentProcessor extends AbstractLoggingDeploymentProcessor implements DeploymentUnitProcessor {
 
+    /**
+     * @deprecated use the {@code use-deployment-logging-config} on the root resource
+     */
+    @Deprecated
     public static final String PER_DEPLOYMENT_LOGGING = "org.jboss.as.logging.per-deployment";
 
     private static final String ENCODING = "utf-8";
@@ -63,14 +67,30 @@ public class LoggingConfigDeploymentProcessor extends AbstractLoggingDeploymentP
     private static final String JBOSS_PROPERTIES = "jboss-logging.properties";
     private static final Object CONTEXT_LOCK = new Object();
 
-    public LoggingConfigDeploymentProcessor(final WildFlyLogContextSelector logContextSelector) {
+    private final String attributeName;
+    private final boolean process;
+
+    public LoggingConfigDeploymentProcessor(final WildFlyLogContextSelector logContextSelector, final String attributeName, final boolean process) {
         super(logContextSelector);
+        this.attributeName = attributeName;
+        this.process = process;
     }
 
     @Override
     protected void processDeployment(final DeploymentPhaseContext phaseContext, final DeploymentUnit deploymentUnit, final ResourceRoot root) throws DeploymentUnitProcessingException {
+        boolean process = this.process;
+        // Get the system properties
+        final Properties systemProps = WildFlySecurityManager.getSystemPropertiesPrivileged();
+        if (systemProps.containsKey(PER_DEPLOYMENT_LOGGING)) {
+            LoggingLogger.ROOT_LOGGER.perDeploymentPropertyDeprecated(PER_DEPLOYMENT_LOGGING, attributeName);
+            if (process) {
+                process = Boolean.valueOf(WildFlySecurityManager.getPropertyPrivileged(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)));
+            } else {
+                LoggingLogger.ROOT_LOGGER.perLoggingDeploymentIgnored(PER_DEPLOYMENT_LOGGING, attributeName, deploymentUnit.getName());
+            }
+        }
         // Check that per-deployment logging is not turned off
-        if (Boolean.valueOf(WildFlySecurityManager.getPropertyPrivileged(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
+        if (process) {
             LoggingLogger.ROOT_LOGGER.trace("Scanning for logging configuration files.");
             final List<DeploymentUnit> subDeployments = getSubDeployments(deploymentUnit);
             // Check for a config file

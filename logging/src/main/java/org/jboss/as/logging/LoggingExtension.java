@@ -138,7 +138,7 @@ public class LoggingExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(rootResource);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
         // Register root sub-models
-        registerSubModels(registration, resolvePathHandler, true, subsystem, context.isRegisterTransformers());
+        registerSubModels(registration, resolvePathHandler, true, subsystem, rootResource, context.isRegisterTransformers());
         // Register logging profile sub-models
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SUBSYSTEM_NAME, CommonAttributes.LOGGING_PROFILE);
         final List<AccessConstraintDefinition> accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
@@ -167,12 +167,12 @@ public class LoggingExtension implements Extension {
     }
 
     private void registerLoggingProfileSubModels(final ManagementResourceRegistration registration, final ResolvePathHandler resolvePathHandler) {
-        registerSubModels(registration, resolvePathHandler, false, null, false);
+        registerSubModels(registration, resolvePathHandler, false, null, null, false);
     }
 
     private void registerSubModels(final ManagementResourceRegistration registration, final ResolvePathHandler resolvePathHandler,
                                    final boolean includeLegacyAttributes, final SubsystemRegistration subsystem,
-                                   final boolean registerTransformers) {
+                                   final LoggingRootResource subsystemResourceDefinition, final boolean registerTransformers) {
         final RootLoggerResourceDefinition rootLoggerResourceDefinition = new RootLoggerResourceDefinition(includeLegacyAttributes);
         registration.registerSubModel(rootLoggerResourceDefinition);
 
@@ -215,6 +215,7 @@ public class LoggingExtension implements Extension {
                     }
 
                     // Register the transformers
+                    subsystemResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     rootLoggerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     loggerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     asyncHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
