@@ -162,7 +162,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         try {
             jbossInternalStop();
         } catch (Throwable t) {
-            log.warn("Error in stop " + jbossInternalDescription(), t);
+            log.warn(ServiceMBeanMessages.MESSAGES.errorInStop(t, jbossInternalDescription()));
         }
     }
 
@@ -170,7 +170,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         try {
             jbossInternalDestroy();
         } catch (Throwable t) {
-            log.warn("Error in destroy " + jbossInternalDescription(), t);
+            log.warn(ServiceMBeanMessages.MESSAGES.errorInDestroy(t, jbossInternalDescription()));
         }
     }
 
@@ -183,7 +183,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
 
     public void jbossInternalLifecycle(String method) throws Exception {
         if (method == null)
-            throw new IllegalArgumentException("Null method name");
+            throw ServiceMBeanMessages.MESSAGES.nullMethodName();
 
         if (method.equals("create"))
             jbossInternalCreate();
@@ -194,7 +194,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         else if (method.equals("destroy"))
             jbossInternalDestroy();
         else
-            throw new IllegalArgumentException("Unknown lifecyle method " + method);
+            throw ServiceMBeanMessages.MESSAGES.unknownLifecycleMethod(method);
     }
 
     protected void jbossInternalCreate() throws Exception {
@@ -217,7 +217,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
             createService();
             state = CREATED;
         } catch (Exception e) {
-            log.warn("Initialization failed " + jbossInternalDescription(), e);
+            log.warn(ServiceMBeanMessages.MESSAGES.initializationFailed(e, jbossInternalDescription()));
             throw e;
         }
 
@@ -250,7 +250,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
             startService();
         } catch (Exception e) {
             state = FAILED;
-            log.warn("Starting failed " + jbossInternalDescription(), e);
+            log.warn(ServiceMBeanMessages.MESSAGES.startingFailed(e, jbossInternalDescription()));
             throw e;
         }
 
@@ -283,7 +283,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
             stopService();
         } catch (Throwable e) {
             state = FAILED;
-            log.warn("Stopping failed " + jbossInternalDescription(), e);
+            log.warn(ServiceMBeanMessages.MESSAGES.stoppingFailed(e, jbossInternalDescription()));
             return;
         }
 
@@ -314,7 +314,7 @@ public class ServiceMBeanSupport implements ServiceMBean, MBeanRegistration {
         try {
             destroyService();
         } catch (Throwable t) {
-            log.warn("Destroying failed " + jbossInternalDescription(), t);
+            log.warn(ServiceMBeanMessages.MESSAGES.destroyingFailed(t, jbossInternalDescription()));
         }
         state = DESTROYED;
         if (log.isDebugEnabled()) {
