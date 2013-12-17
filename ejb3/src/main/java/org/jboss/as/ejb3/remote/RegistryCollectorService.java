@@ -28,20 +28,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.registry.Registry;
 
 /**
  * @author Paul Ferraro
  */
-public class RegistryCollectorService<K, V> implements Service<RegistryCollector<K, V>>, RegistryCollector<K, V> {
+public class RegistryCollectorService<K, V> extends AbstractService<RegistryCollector<K, V>> implements RegistryCollector<K, V> {
+
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remoting", "connector", "client-mappings", "registries");
+
     private final ConcurrentMap<String, Registry<K, V>> registries = new ConcurrentHashMap<>();
     private final Set<Listener<K, V>> listeners = new CopyOnWriteArraySet<>();
 
     @Override
-    public RegistryCollector<K, V> getValue() throws IllegalStateException, IllegalArgumentException {
+    public RegistryCollector<K, V> getValue() {
         return this;
     }
 
@@ -76,13 +78,5 @@ public class RegistryCollectorService<K, V> implements Service<RegistryCollector
     @Override
     public Collection<Registry<K, V>> getRegistries() {
         return Collections.unmodifiableCollection(this.registries.values());
-    }
-
-    @Override
-    public void start(StartContext context) {
-    }
-
-    @Override
-    public void stop(StopContext context) {
     }
 }

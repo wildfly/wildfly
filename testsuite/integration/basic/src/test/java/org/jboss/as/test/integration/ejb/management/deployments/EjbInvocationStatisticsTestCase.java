@@ -178,15 +178,12 @@ public class EjbInvocationStatisticsTestCase {
                 assertEquals(0L, result.get("passivated-count").asLong());
                 assertEquals(1L, result.get("total-size").asLong());
 
-                // wait a few seconds to let passivation happens, idle-timeout=2
-                TimeUnit.SECONDS.sleep(4);
-                result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
-                assertEquals(0L, result.get("cache-size").asLong());
-                assertEquals(1L, result.get("passivated-count").asLong());
-                assertEquals(1L, result.get("total-size").asLong());
-
+                // Create a second bean forcing the first bean to passivate
                 BusinessInterface bean2 = (BusinessInterface) context.lookup("ejb:/" + MODULE_NAME + "//" + name + "!" + BusinessInterface.class.getName() + (type == EJBComponentType.STATEFUL ? "?stateful" : ""));
                 bean2.doIt();
+
+                // Eviction is asynchronous, so wait a bit for this to take effect
+                Thread.sleep(500);
 
                 result = executeOperation(managementClient, ModelDescriptionConstants.READ_RESOURCE_OPERATION, address);
                 assertEquals(1L, result.get("cache-size").asLong());

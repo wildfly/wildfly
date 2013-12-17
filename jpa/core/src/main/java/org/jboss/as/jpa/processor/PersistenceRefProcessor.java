@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,8 +62,6 @@ import org.jboss.metadata.javaee.spec.PropertyMetaData;
 import org.jboss.metadata.javaee.spec.RemoteEnvironment;
 import org.jboss.msc.service.ServiceName;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
-
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for processing persistence unit / context references from deployment descriptors.
@@ -208,6 +208,9 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
             searchName = unitName;
         }
         final PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
+        if (null == pu) {
+            throw new DeploymentUnitProcessingException(MESSAGES.persistenceUnitNotFound(searchName, deploymentUnit));
+        }
         String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         return new PersistenceUnitInjectionSource(puServiceName, deploymentUnit.getServiceRegistry(), EntityManagerFactory.class.getName(), pu);

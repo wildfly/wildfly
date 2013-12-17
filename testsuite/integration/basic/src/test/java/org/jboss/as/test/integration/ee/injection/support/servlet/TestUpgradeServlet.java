@@ -46,7 +46,6 @@ public class TestUpgradeServlet extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_SWITCHING_PROTOCOLS);
             resp.setHeader("Upgrade", "foo");
             resp.setHeader("Connection", "Upgrade");
-            System.out.println("Upgrade request processed");
         } else {
             resp.setStatus(500);
         }

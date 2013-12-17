@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.subsystem;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
-import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreSourceService;
+import org.jboss.as.ejb3.cache.distributable.DistributableCacheFactoryBuilderService;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -38,6 +38,6 @@ public class PassivationStoreRemove extends ServiceRemoveStepHandler {
 
     @Override
     protected ServiceName serviceName(final String name) {
-        return BackingCacheEntryStoreSourceService.getServiceName(name);
+        return DistributableCacheFactoryBuilderService.getServiceName(name);
     }
 }

@@ -23,8 +23,8 @@ package org.jboss.as.cli.parsing.operation;
 
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.parsing.CharacterHandler;
-import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.DefaultStateWithEndCharacter;
+import org.jboss.as.cli.parsing.ExpressionBaseState;
 import org.jboss.as.cli.parsing.GlobalCharacterHandlers;
 import org.jboss.as.cli.parsing.ParsingContext;
 import org.jboss.as.cli.parsing.QuotesState;
@@ -34,7 +34,7 @@ import org.jboss.as.cli.parsing.WordCharacterHandler;
  *
  * @author Alexey Loubyansky
  */
-public class PropertyValueState extends DefaultParsingState {
+public class PropertyValueState extends ExpressionBaseState {
 
     public static final PropertyValueState INSTANCE = new PropertyValueState();
     public static final String ID = "PROP_VALUE";
@@ -44,7 +44,7 @@ public class PropertyValueState extends DefaultParsingState {
     }
 
     PropertyValueState(char propSeparator, char... listEnd) {
-        super(ID);
+        super(ID, false);
         this.setEnterHandler(new CharacterHandler() {
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {

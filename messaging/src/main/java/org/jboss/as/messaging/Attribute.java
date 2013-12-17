@@ -41,7 +41,6 @@ public enum Attribute {
    BACKUP_CONNECTOR_NAME("backup-connector-name"),
    CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
    KEY(CommonAttributes.KEY),
-   HOST(ServletConnectorDefinition.HOST.getName()),
    MATCH(CommonAttributes.MATCH),
    NAME(CommonAttributes.NAME),
    PATH(ModelDescriptionConstants.PATH),

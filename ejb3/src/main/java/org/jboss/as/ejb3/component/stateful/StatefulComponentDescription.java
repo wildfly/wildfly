@@ -84,6 +84,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     private CacheInfo cache;
     // by default stateful beans are passivation capable, but beans can override it via annotation or deployment descriptor, starting EJB 3.2
     private boolean passivationApplicable = true;
+    private final ServiceName deploymentUnitServiceName;
 
     /**
      * Map of init method, to the corresponding home create method on the home interface
@@ -138,7 +139,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     public StatefulComponentDescription(final String componentName, final String componentClassName, final EjbJarDescription ejbJarDescription,
                                         final ServiceName deploymentUnitServiceName, final SessionBeanMetaData descriptorData) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
-
+        this.deploymentUnitServiceName = deploymentUnitServiceName;
         addInitMethodInvokingInterceptor();
     }
 
@@ -420,5 +421,9 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
     @Override
     public boolean isTimerServiceRequired() {
         return false;
+    }
+
+    public ServiceName getDeploymentUnitServiceName() {
+        return this.deploymentUnitServiceName;
     }
 }

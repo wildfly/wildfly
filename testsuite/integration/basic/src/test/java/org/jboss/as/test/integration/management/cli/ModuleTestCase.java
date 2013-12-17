@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.management.cli;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
@@ -56,7 +57,7 @@ public class ModuleTestCase extends AbstractCliTestBase {
     public static void beforeClass() throws Exception {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "Dummy.jar");
         jar.addClass(ModuleTestCase.class);
-        jarFile = new File(System.getProperty("java.io.tmpdir") + File.separator + "Dummy.jar");
+        jarFile = new File(TestSuiteEnvironment.getTmpDir() + File.separator + "Dummy.jar");
         new ZipExporterImpl(jar).exportTo(jarFile, true);
 
         AbstractCliTestBase.initCLI();
@@ -131,9 +132,9 @@ public class ModuleTestCase extends AbstractCliTestBase {
     }
 
     private File getModulePath() {
-   		String modulePath = System.getProperty("module.path", null);
+   		String modulePath = TestSuiteEnvironment.getSystemProperty("module.path", null);
    		if (modulePath == null) {
-   			String jbossHome = System.getProperty("jboss.home", null);
+   			String jbossHome = TestSuiteEnvironment.getSystemProperty("jboss.home", null);
    			if (jbossHome == null) {
    				throw new IllegalStateException(
    						"Neither -Dmodule.path nor -Djboss.home were set");

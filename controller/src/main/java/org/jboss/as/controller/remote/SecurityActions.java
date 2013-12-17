@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.remote;
 
+import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -37,7 +38,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 class SecurityActions {
 
     static Subject getSubject() {
-        return getSubjectAction().getSubject();
+        AccessControlContext acc = AccessController.getContext();
+        return getSubjectAction().getSubject(acc);
     }
 
     private static GetSubjectAction getSubjectAction() {
@@ -45,25 +47,25 @@ class SecurityActions {
     }
 
     private interface GetSubjectAction {
-        Subject getSubject();
+        Subject getSubject(AccessControlContext acc);
 
         GetSubjectAction NON_PRIVILEGED = new GetSubjectAction() {
 
             @Override
-            public Subject getSubject() {
-                return Subject.getSubject(AccessController.getContext());
+            public Subject getSubject(AccessControlContext acc) {
+                return Subject.getSubject(acc);
             }
         };
 
         GetSubjectAction PRIVILEGED = new GetSubjectAction() {
 
             @Override
-            public Subject getSubject() {
+            public Subject getSubject(final AccessControlContext acc) {
                 return AccessController.doPrivileged(new PrivilegedAction<Subject>() {
 
                     @Override
                     public Subject run() {
-                        return NON_PRIVILEGED.getSubject();
+                        return NON_PRIVILEGED.getSubject(acc);
                     }
                 });
             }

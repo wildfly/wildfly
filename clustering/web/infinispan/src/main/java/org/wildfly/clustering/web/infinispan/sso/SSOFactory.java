@@ -21,8 +21,9 @@
  */
 package org.wildfly.clustering.web.infinispan.sso;
 
-import org.wildfly.clustering.web.infinispan.Locator;
-import org.wildfly.clustering.web.infinispan.Remover;
+import org.jboss.as.clustering.infinispan.invoker.Creator;
+import org.jboss.as.clustering.infinispan.invoker.Locator;
+import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.wildfly.clustering.web.sso.SSO;
 
 /**
@@ -30,6 +31,6 @@ import org.wildfly.clustering.web.sso.SSO;
  * @author Paul Ferraro
  * @param <V> the cache value type
  */
-public interface SSOFactory<V, L> extends Locator<String, V>, Remover<String> {
+public interface SSOFactory<V, L> extends Creator<String, V>, Locator<String, V>, Remover<String> {
     SSO<L> createSSO(String id, V value);
 }

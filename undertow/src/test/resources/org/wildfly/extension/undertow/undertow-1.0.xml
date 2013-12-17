@@ -29,7 +29,7 @@
 
     <server name="default-server" default-host="localhost" servlet-container="myContainer">
         <ajp-listener name="ajp-connector" socket-binding="ajp"/>
-        <http-listener name="default" socket-binding="http" certificate-forwarding="true"/>
+        <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}"/>
         <http-listener name="second" socket-binding="http" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
         <https-listener name="https" socket-binding="https" security-realm="UndertowRealm" verify-client="REQUESTED"/>
         <https-listener name="https-2" socket-binding="https" security-realm="UndertowRealm" />
@@ -51,7 +51,7 @@
     </server>
 
 
-    <servlet-container name="myContainer" default-buffer-cache="default">
+    <servlet-container name="myContainer" default-buffer-cache="default" use-listener-encoding="${prop.foo:false}">
         <jsp-config
                 disabled="${prop.disabled:false}"
                 keep-generated="${prop.keep-generated:true}"

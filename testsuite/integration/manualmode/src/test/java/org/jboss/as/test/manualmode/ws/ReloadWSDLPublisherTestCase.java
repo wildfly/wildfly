@@ -37,7 +37,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.as.controller.client.helpers.ClientConstants;
+import org.jboss.as.controller.client.helpers.Operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -65,6 +65,7 @@ public class ReloadWSDLPublisherTestCase {
 
     private static final String DEFAULT_JBOSSAS = "default-jbossas";
     private static final String DEPLOYMENT = "jaxws-manual-pojo";
+    private static final String keepAlive = System.getProperty("http.keepAlive") == null ? "true" : System.getProperty("http.keepAlive");
 
     @ArquillianResource
     ContainerController containerController;
@@ -110,6 +111,7 @@ public class ReloadWSDLPublisherTestCase {
 
     @After
     public void stopContainer() {
+        System.setProperty("http.keepAlive", keepAlive);
         if (containerController.isStarted(DEFAULT_JBOSSAS)) {
             deployer.undeploy(DEPLOYMENT);
         }
@@ -128,8 +130,7 @@ public class ReloadWSDLPublisherTestCase {
         operation.get(OP_ADDR).setEmptyList();
         operation.get(OP).set("reload");
         try {
-            ModelNode result = client.execute(operation);
-            Assert.assertEquals("success", result.get(ClientConstants.OUTCOME).asString());
+            Assert.assertTrue(Operations.isSuccessfulOutcome(client.execute(operation)));
         } catch(IOException e) {
             final Throwable cause = e.getCause();
             if (cause instanceof ExecutionException) {
@@ -169,6 +170,7 @@ public class ReloadWSDLPublisherTestCase {
     }
 
     private void checkWsdl(URL wsdlURL) throws IOException {
+        System.setProperty("http.keepAlive", "false");
         HttpURLConnection connection = (HttpURLConnection) wsdlURL.openConnection();
         try {
             connection.connect();

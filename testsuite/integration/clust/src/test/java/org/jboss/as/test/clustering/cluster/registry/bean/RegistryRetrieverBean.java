@@ -7,11 +7,9 @@ import javax.ejb.EJB;
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 
-import org.jboss.ejb3.annotation.Clustered;
 import org.wildfly.clustering.registry.Registry;
 
 @Stateless
-@Clustered
 @Remote(RegistryRetriever.class)
 public class RegistryRetrieverBean implements RegistryRetriever {
     @EJB

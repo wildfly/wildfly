@@ -27,94 +27,107 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 
-
 /**
  * A test class for the command starts with {EXT}/{EXTC[:TIMEOUT]} to obtain password for login modules
  * Prints first argument as a password to stream. Number of calls is saved in external file.
- * 
+ *
  * @author Filip Bogyai
  */
-public class ExternalPasswordProvider
-{
-   private static File counterFile = new File(System.getProperty("java.io.tmpdir"), "tmp.password");
-	
-   public static void main(String[] args)
-   {
-      String password = null;
-      if (args != null && args.length == 1) {      
-    	 //increase counter in external file 
-    	 increaseFileCounter();    	 
-         password = args[0];
-      }
-      else {
-         //original value as default    	 
-         password = "secret";       
-         
-      }
-      
-      System.out.println(password);
-      System.out.flush();
-      
-   }
-   
-   /**
-    * Read and increase the number in File that counts how many times was this class called
-    *  
-    * @return new increased number
-    */
-   public static int increaseFileCounter(){
-	   int callsCounter = -1;
-	   try{
-		   FileReader reader = new FileReader(counterFile);
-		   callsCounter = reader.read();
-		   reader.close();
-		   
-		   callsCounter++;
-		   
-		   FileWriter writer = new FileWriter(counterFile);
-		   writer.write(callsCounter);
-		   writer.close();
-	   }catch(IOException ex){
-		   throw new RuntimeException("File for counting IO exception", ex);
-	   }
-	   
-	   return callsCounter;
-   }
-   
-   /**
-    * Set number in File to 0
-    *  
-    */
-   public void resetFileCounter(){
-	   try{
-		   FileWriter writer = new FileWriter(counterFile);
-		   writer.write(0);
-		   writer.close();
-	   }catch(IOException ex){
-		   throw new RuntimeException("File for counting IO exception", ex);
-	   }
-	   
-	   
-   }
-   
-   /**
-    * Read number in File that counts how many times was this class called
-    *  
-    */
-   public int readFileCounter(){
-	   int callsCounter = -1 ;
-	   
-	   try{
-		   FileReader reader = new FileReader(counterFile);
-		   callsCounter = reader.read();
-		   reader.close();
-	   }catch(IOException ex){
-		   throw new RuntimeException("File for counting IO exception", ex);
-	   }
-	   
-	   return callsCounter;
-	   
-   }
-   
-  
+public class ExternalPasswordProvider {
+    //private File counterFile = new File(System.getProperty("java.io.tmpdir"), "tmp.password");
+    private final File counterFile;
+
+    public static void main(String... args) {
+        String password = null;
+        if (args != null && args.length == 2) {
+            //increase counter in external file
+            ExternalPasswordProvider provider = new ExternalPasswordProvider(args[0]);
+            provider.increaseFileCounter();
+            password = args[1];
+        } else if (args != null && args.length == 1) {
+            ExternalPasswordProvider provider = new ExternalPasswordProvider(args[0]);
+            provider.increaseFileCounter();
+            password = "secret";
+        } else {
+            //original value as default
+            password = "secret";
+        }
+
+        System.out.println(password);
+        System.out.flush();
+
+    }
+
+    public ExternalPasswordProvider(String fileName) {
+        this.counterFile = new File(fileName);
+    }
+
+    /**
+     * Read and increase the number in File that counts how many times was this class called
+     *
+     * @return new increased number
+     */
+    public int increaseFileCounter() {
+        int callsCounter = -1;
+        try {
+            FileReader reader = new FileReader(counterFile);
+            callsCounter = reader.read();
+            reader.close();
+            callsCounter++;
+            FileWriter writer = new FileWriter(counterFile);
+            writer.write(callsCounter);
+            writer.close();
+        } catch (IOException ex) {
+            throw new RuntimeException("File for counting IO exception", ex);
+        }
+
+        return callsCounter;
+    }
+
+    /**
+     * Set number in File to 0
+     */
+    public void resetFileCounter() {
+        try {
+            System.out.println("reseting file writer");
+            System.out.println("counterFile = " + counterFile);
+            FileWriter writer = new FileWriter(counterFile);
+            writer.write(0);
+            writer.close();
+        } catch (IOException ex) {
+            throw new RuntimeException("File for counting IO exception", ex);
+        }
+
+
+    }
+
+    /**
+     * Read number in File that counts how many times was this class called
+     */
+    public int readFileCounter() {
+        int callsCounter = -1;
+
+        try {
+            System.out.println("callsCounter = " + callsCounter);
+            System.out.println("reading counter file: " + counterFile);
+            FileReader reader = new FileReader(counterFile);
+            callsCounter = reader.read();
+            reader.close();
+        } catch (IOException ex) {
+            throw new RuntimeException("File for counting IO exception", ex);
+        }
+
+        return callsCounter;
+
+    }
+
+    public String getCounterFile() {
+        return counterFile.getAbsolutePath();
+    }
+
+    void cleanup() {
+        if (counterFile.exists()) {
+            counterFile.delete();
+        }
+    }
 }

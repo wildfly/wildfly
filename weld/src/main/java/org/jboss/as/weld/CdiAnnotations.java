@@ -68,6 +68,10 @@ public enum CdiAnnotations {
      */
     DEPENDENT(Constants.JAVAX_ENT_CONTEXT, "Dependent"),
     /**
+     * javax.inject.Singleton annotation.
+     */
+    SINGLETON(Constants.JAVAX_INJ, "Singleton"),
+    /**
      * javax.enterprise.event.Observes CDI annotation.
      */
     OBSERVES(Constants.JAVAX_ENT_EVT, "Observes"),
@@ -177,7 +181,7 @@ public enum CdiAnnotations {
     }
 
     public static final DotName SCOPE = DotName.createComponentized(Constants.JAVAX_INJ, "Scope");
-    public static final Set<DotName> BUILT_IN_SCOPE_NAMES = ImmutableSet.<DotName>of(DEPENDENT.getDotName(), REQ_SCOPED.getDotName(), CONV_SCOPED.getDotName(), SESS_SCOPED.getDotName(), APP_SCOPED.getDotName());
+    public static final Set<DotName> BUILT_IN_SCOPE_NAMES = ImmutableSet.<DotName>of(DEPENDENT.getDotName(), REQ_SCOPED.getDotName(), CONV_SCOPED.getDotName(), SESS_SCOPED.getDotName(), APP_SCOPED.getDotName(), SINGLETON.getDotName());
 
     public static final Set<AnnotationType> BUILT_IN_SCOPES = ImmutableSet.copyOf(Collections2.transform(BUILT_IN_SCOPE_NAMES,
             new Function<DotName, AnnotationType>() {

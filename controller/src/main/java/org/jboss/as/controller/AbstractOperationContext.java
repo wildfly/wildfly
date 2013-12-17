@@ -69,7 +69,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.wildfly.security.manager.SubjectUtils;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -360,9 +359,9 @@ abstract class AbstractOperationContext implements OperationContext {
     void logAuditRecord() {
         if (!auditLogged) {
             try {
-                Subject subject = SubjectUtils.getCurrent();
                 AccessAuditContext accessContext = SecurityActions.currentAccessAuditContext();
                 Caller caller = getCaller();
+                Subject subject = SecurityActions.getSubject(caller);
                 auditLogger.log(
                         !isModelAffected(),
                         resultAction,

@@ -603,7 +603,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
          */
         public String getQualifiedPattern() {
             if (qpattern == null) {
-                StringBuffer tmp = new StringBuffer(pattern);
+                StringBuilder tmp = new StringBuilder(pattern);
                 for (int n = 0; n < qualifiers.size(); n++) {
                     tmp.append(':');
                     PatternInfo info = qualifiers.get(n);
@@ -652,7 +652,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
         }
 
         public String toString() {
-            StringBuffer tmp = new StringBuffer("PatternInfo[");
+            StringBuilder tmp = new StringBuilder("PatternInfo[");
             tmp.append("pattern=");
             tmp.append(pattern);
             tmp.append(",type=");

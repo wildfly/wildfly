@@ -63,35 +63,114 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0));
+        testTransformer_1_1_0(
+                ModelTestControllerVersion.V7_1_2_FINAL,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_1_2_FINAL.getMavenGavVersion()
+        );
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 0));
+        testTransformer_1_1_0(
+                ModelTestControllerVersion.V7_1_3_FINAL,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_1_3_FINAL.getMavenGavVersion()
+        );
     }
 
     @Test
     public void testTransformerAS720() throws Exception {
-        testTransformer(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 2, 0));
+        testTransformer_1_2_0(
+                ModelTestControllerVersion.V7_2_0_FINAL,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_2_0_FINAL.getMavenGavVersion()
+                );
+    }
+
+    @Test
+    public void testTransformerEAP600() throws Exception {
+        testTransformer_1_1_0(
+                ModelTestControllerVersion.EAP_6_0_0,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_0_0.getMavenGavVersion()
+        );
+    }
+
+    @Test
+    public void testTransformerEAP601() throws Exception {
+        testTransformer_1_1_0(
+                ModelTestControllerVersion.EAP_6_0_1,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_0_1.getMavenGavVersion()
+        );
+    }
+
+    @Test
+    public void testTransformerEAP610() throws Exception {
+        testTransformer_1_2_0(
+                ModelTestControllerVersion.EAP_6_1_0,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_1_0.getMavenGavVersion()
+                );
+    }
+
+    @Test
+    public void testTransformerEAP611() throws Exception {
+        testTransformer_1_2_0(
+                ModelTestControllerVersion.EAP_6_1_1,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_1_1.getMavenGavVersion()
+                );
     }
 
     /**
-     * Tests transformation of model from 2.0.0 version into 1.1.0 or 1.2.0 version.
+     * Tests transformation of model from 2.0.0 version into 1.1.0 version.
      *
      * @throws Exception
      */
-    private void testTransformer(ModelTestControllerVersion controllerVersion, ModelVersion version) throws Exception {
+    private void testTransformer_1_1_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
+        ModelVersion version110 = ModelVersion.create(1,1,0);
         String subsystemXml = readResource("subsystem-jgroups-transform-2_0.xml");
+
+        // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
-                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:" + controllerVersion.getMavenGavVersion());
+
+        // initialize the legacy services and add required jars
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version110)
+                .addMavenResourceURL(mavenResourceURLs);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
-        Assert.assertTrue(mainServices.getLegacyServices(version).isSuccessfulBoot());
-        checkSubsystemModelTransformation(mainServices, version);
+        Assert.assertTrue(mainServices.getLegacyServices(version110).isSuccessfulBoot());
+
+        // check that both versions of the legacy model are the same and valid
+        checkSubsystemModelTransformation(mainServices, version110);
+
+        // 1.1.0 API specific checks:
+        // - check description here
+    }
+
+    /**
+     * Tests transformation of model from 2.0.0 version into 1.2.0 version.
+     *
+     * @throws Exception
+     */
+    private void testTransformer_1_2_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
+        ModelVersion version120 = ModelVersion.create(1,2,0);
+        String subsystemXml = readResource("subsystem-jgroups-transform-2_0.xml");
+
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXml(subsystemXml);
+
+        // initialize the legacy services and add required jars
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, version120)
+                .addMavenResourceURL(mavenResourceURLs);
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(mainServices.getLegacyServices(version120).isSuccessfulBoot());
+
+        // check that both versions of the legacy model are the same and valid
+        checkSubsystemModelTransformation(mainServices, version120);
+
+        // 1.2.0 API specific checks:
+        // - check description here
     }
 
     /**
@@ -132,17 +211,58 @@ public class TransformersTestCase extends OperationTestCaseBase {
 
     @Test
     public void testRejectionsAS712() throws Exception {
-        testRejections_1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+        testRejections_1_1_0(
+                ModelTestControllerVersion.V7_1_2_FINAL,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_1_2_FINAL.getMavenGavVersion()
+                );
     }
 
     @Test
     public void testRejectionsAS713() throws Exception {
-        testRejections_1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+        testRejections_1_1_0(
+                ModelTestControllerVersion.V7_1_3_FINAL,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_1_3_FINAL.getMavenGavVersion()
+                );
     }
 
     @Test
     public void testRejectionsAS720() throws Exception {
-        testRejections_1_2_0(ModelTestControllerVersion.V7_2_0_FINAL);
+        testRejections_1_2_0(
+                ModelTestControllerVersion.V7_2_0_FINAL,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.V7_2_0_FINAL.getMavenGavVersion()
+                );
+    }
+
+    @Test
+    public void testRejectionsEAP600() throws Exception {
+        testRejections_1_1_0(
+                ModelTestControllerVersion.EAP_6_0_0,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_0_0.getMavenGavVersion()
+                );
+    }
+
+    @Test
+    public void testRejectionsEAP601() throws Exception {
+        testRejections_1_1_0(
+                ModelTestControllerVersion.EAP_6_0_1,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_0_1.getMavenGavVersion()
+                );
+    }
+
+    @Test
+    public void testRejectionsEAP610() throws Exception {
+        testRejections_1_2_0(
+                ModelTestControllerVersion.EAP_6_1_0,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_1_0.getMavenGavVersion()
+                );
+    }
+
+    @Test
+    public void testRejectionsEAP611() throws Exception {
+        testRejections_1_2_0(
+                ModelTestControllerVersion.EAP_6_1_1,
+                "org.jboss.as:jboss-as-clustering-jgroups:" + ModelTestControllerVersion.EAP_6_1_1.getMavenGavVersion()
+                );
     }
 
     /**
@@ -150,18 +270,18 @@ public class TransformersTestCase extends OperationTestCaseBase {
      *
      * @throws Exception
      */
-    private void testRejections_1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testRejections_1_1_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
+        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
         // create builder for current subsystem version
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
 
-        // create builder for legacy subsystem version
-        ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
+        // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
-            .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:" + controllerVersion.getMavenGavVersion())
-            //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
-            //which is strange since it should be loading it all from the current jboss modules
-            //Also this works in several other tests
-            .dontPersistXml();
+                .addMavenResourceURL(mavenResourceURLs)
+                //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
+                //which is strange since it should be loading it all from the current jboss modules
+                //Also this works in several other tests
+                .dontPersistXml();
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -206,11 +326,15 @@ public class TransformersTestCase extends OperationTestCaseBase {
      *
      * @throws Exception
      */
-    private void testRejections_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+    private void testRejections_1_2_0(ModelTestControllerVersion controllerVersion, String ... mavenResourceURLs) throws Exception {
         ModelVersion version_1_2_0 = ModelVersion.create(1, 2, 0);
+
+        // create builder for current subsystem version
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        // initialize the legacy services and add required jars
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_2_0)
-                .addMavenResourceURL("org.jboss.as:jboss-as-clustering-jgroups:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL(mavenResourceURLs)
                 .dontPersistXml();
 
         KernelServices mainServices = builder.build();

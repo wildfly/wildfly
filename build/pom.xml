@@ -472,6 +472,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.cxf</groupId>
                     <artifactId>cxf-api</artifactId>
                 </dependency>
@@ -657,6 +662,23 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-analyzers</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-core</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-facet</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-memory</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.apache.neethi</groupId>
                     <artifactId>neethi</artifactId>
                 </dependency>
@@ -793,8 +815,26 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-engine</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-infinispan</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.hibernate.javax.persistence</groupId>
                     <artifactId>hibernate-jpa-2.1-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.hibernate.hql</groupId>
+                    <artifactId>hibernate-hql-lucene</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.hibernate.hql</groupId>
+                    <artifactId>hibernate-hql-parser</artifactId>
                 </dependency>
 
                 <dependency>
@@ -820,6 +860,12 @@
                 <dependency>
                     <groupId>org.hornetq</groupId>
                     <artifactId>hornetq-jms-server</artifactId>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>org.jboss.jbossts.jts</groupId>
+                            <artifactId>jbossjts-jacorb</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
 
                 <dependency>
@@ -851,37 +897,42 @@
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-cachestore-jdbc</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-cachestore-remote</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-client-hotrod</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-commons</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-core</artifactId>
                 </dependency>
-
+                <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-lucene-directory</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-lucene-v3</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.infinispan</groupId>
+                    <artifactId>infinispan-query</artifactId>
+                </dependency>
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-query-dsl</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-remote-query-client</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.infinispan.protostream</groupId>
                     <artifactId>protostream</artifactId>
@@ -967,7 +1018,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
+                    <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-ejb-spi</artifactId>
                 </dependency>
 
                 <dependency>
@@ -992,14 +1047,16 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-clustering-web-api</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-web-infinispan</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-web-spi</artifactId>
                 </dependency>
-
                 <dependency>
                     <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-clustering-web-undertow</artifactId>
@@ -1016,9 +1073,9 @@
                 </dependency>
 
                 <dependency>
-		    <groupId>org.jboss.hal</groupId>
+                    <groupId>org.jboss.hal</groupId>
                     <artifactId>release-stream</artifactId>                    
-		    <classifier>resources</classifier>
+                    <classifier>resources</classifier>
                 </dependency>
 
                 <dependency>
@@ -1472,9 +1529,22 @@
                     <artifactId>undertow-core</artifactId>
                 </dependency>
 
+                <!--
+                    Netty 3
+                    io.netty:netty is for Netty 3.x versions
+                -->
                 <dependency>
                     <groupId>io.netty</groupId>
                     <artifactId>netty</artifactId>
+                </dependency>
+
+                <!--
+                    Netty 4
+                    io.netty:netty-all is for Netty 4.x versions
+                -->
+                <dependency>
+                    <groupId>io.netty</groupId>
+                    <artifactId>netty-all</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1769,11 +1839,6 @@
 
                 <dependency>
                     <groupId>io.undertow</groupId>
-                    <artifactId>undertow-jsp</artifactId>
-                </dependency>
-
-                <dependency>
-                    <groupId>io.undertow</groupId>
                     <artifactId>undertow-websockets-jsr</artifactId>
                 </dependency>
 
@@ -1805,12 +1870,6 @@
                 <dependency>
                     <groupId>org.jboss.weld</groupId>
                     <artifactId>weld-core-impl</artifactId>
-                    <exclusions>
-                        <exclusion>
-                            <groupId>org.jboss.spec.javax.interceptor</groupId>
-                            <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
-                        </exclusion>
-                    </exclusions>
                 </dependency>
 
                 <dependency>
@@ -1914,41 +1973,41 @@
                     <artifactId>org.osgi.core</artifactId>
                 </dependency>
 
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-api</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-impl</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-federation</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-common</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-config</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-idm-api</artifactId>
-				</dependency>
-			
-				<dependency>
-					<groupId>org.picketlink</groupId>
-					<artifactId>picketlink-idm-impl</artifactId>
-				</dependency>
-	
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-api</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-impl</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-federation</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-common</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-config</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-idm-api</artifactId>
+                </dependency>
+            
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-idm-impl</artifactId>
+                </dependency>
+    
                 <dependency>
                     <groupId>org.picketlink.distribution</groupId>
                     <artifactId>picketlink-jbas7</artifactId>
@@ -2071,6 +2130,44 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>build-core</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="build-core.xml" inheritRefs="true">
+                                            <target name="${ant.target}"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jboss</groupId>
+                                <artifactId>jandex</artifactId>
+                                <version>${version.org.jboss.jandex}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.ant</groupId>
+                                <artifactId>ant-apache-bsf</artifactId>
+                                <version>${version.org.apache.ant}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>rhino</groupId>
+                                <artifactId>js</artifactId>
+                                <version>${version.rhino.js}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -2162,8 +2259,6 @@
                 </plugins>
             </build>
         </profile>
-
-
     </profiles>
 
 </project>

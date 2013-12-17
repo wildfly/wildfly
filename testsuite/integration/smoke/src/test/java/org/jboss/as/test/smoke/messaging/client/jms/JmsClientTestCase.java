@@ -22,6 +22,29 @@
 
 package org.jboss.as.test.smoke.messaging.client.jms;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static javax.jms.Session.AUTO_ACKNOWLEDGE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.naming.Context;
+
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ContainerResource;
@@ -33,17 +56,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.jms.*;
-import javax.naming.Context;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static javax.jms.Session.AUTO_ACKNOWLEDGE;
-import static org.junit.Assert.*;
 
 /**
  * Demo using the AS management API to create and destroy a JMS queue.
@@ -88,19 +100,10 @@ public class JmsClientTestCase {
     }
 
     @Test
-    public void testJMSOverTCP() throws  Exception {
-        doSendAndReceive("jms/RemoteConnectionFactory");
-    }
-
-    @Test
-    public void testJMSOverHTTPWithServlet() throws  Exception {
-        doSendAndReceive("jms/ServletConnectionFactory");
-    }
-
-    private void doSendAndReceive(final String connectionFactoryLookupName) throws Exception {
+    public void testSendAndReceive() throws  Exception {
         Connection conn = null;
         try {
-            ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup(connectionFactoryLookupName);
+            ConnectionFactory cf = (ConnectionFactory) remoteContext.lookup("jms/RemoteConnectionFactory");
             assertNotNull(cf);
             Destination destination = (Destination) remoteContext.lookup(QUEUE_NAME);
             assertNotNull(destination);

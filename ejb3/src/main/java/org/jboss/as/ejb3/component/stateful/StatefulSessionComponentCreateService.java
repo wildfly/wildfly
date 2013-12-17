@@ -24,10 +24,8 @@ package org.jboss.as.ejb3.component.stateful;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheInfo;
-import org.jboss.as.ejb3.cache.impl.factory.NonPassivatingCacheFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
@@ -38,23 +36,25 @@ import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
-import org.jboss.marshalling.MarshallingConfiguration;
-import org.jboss.marshalling.ModularClassResolver;
-import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
+import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
+import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.wildfly.clustering.ejb.BeanContext;
+import org.wildfly.clustering.ejb.Time;
 
 /**
  * @author Stuart Douglas
  */
-public class StatefulSessionComponentCreateService extends SessionBeanComponentCreateService {
-    private static final int CURRENT_MARSHALLING_VERSION = 1;
+public class StatefulSessionComponentCreateService extends SessionBeanComponentCreateService implements BeanContext {
 
     private final InterceptorFactory afterBegin;
     private final Method afterBeginMethod;
@@ -67,20 +67,23 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     private final StatefulTimeoutInfo statefulTimeout;
     private final CacheInfo cache;
     private final ClassLoader loader;
-    private final Map<Integer, MarshallingConfiguration> marshallingConfigurations;
     private final InjectedValue<DefaultAccessTimeoutService> defaultAccessTimeoutService = new InjectedValue<DefaultAccessTimeoutService>();
     private final InterceptorFactory ejb2XRemoveMethod;
+    private final Value<CacheFactory> cacheFactory;
     @SuppressWarnings("rawtypes")
-    private final PassivationCheckInjectedValue cacheFactory = new PassivationCheckInjectedValue(new InjectedValue<CacheFactory>());
+    private final InjectedValue<CacheFactoryBuilder> cacheFactoryBuilder = new InjectedValue<>();
     private final Set<Object> serializableInterceptorContextKeys;
-    private final boolean passivationCapable;
+    final boolean passivationCapable;
+    private final ModuleLoader moduleLoader;
+    private final ServiceName deploymentUnitServiceName;
+    private final ServiceName componentServiceName;
 
     /**
      * Construct a new instance.
      *
      * @param componentConfiguration the component configuration
      */
-    public StatefulSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration) {
+    public StatefulSessionComponentCreateService(final ComponentConfiguration componentConfiguration, final ApplicationExceptions ejbJarConfiguration, Value<CacheFactory> cacheFactory) {
         super(componentConfiguration, ejbJarConfiguration);
 
         final StatefulComponentDescription componentDescription = (StatefulComponentDescription) componentConfiguration.getComponentDescription();
@@ -101,20 +104,28 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         this.ejb2XRemoveMethod = Interceptors.getChainedInterceptorFactory(StatefulSessionSynchronizationInterceptor.factory(componentDescription.getTransactionManagementType()), new ImmediateInterceptorFactory(new StatefulRemoveInterceptor(false)), Interceptors.getTerminalInterceptorFactory());
         this.cache = componentDescription.getCache();
         this.loader = componentConfiguration.getModuleClassLoader();
-        MarshallingConfiguration marshallingConfiguration = new MarshallingConfiguration();
-        marshallingConfiguration.setClassResolver(ModularClassResolver.getInstance(componentConfiguration.getModuleLoader()));
-        marshallingConfiguration.setSerializabilityChecker(new StatefulSessionBeanSerializabilityChecker(componentConfiguration.getComponentClass()));
-        marshallingConfiguration.setClassTable(new StatefulSessionBeanClassTable());
-        // ObjectTable which handles serialization of EJB proxies
-        marshallingConfiguration.setObjectTable(new EJBClientContextIdentifierObjectTable());
-        this.marshallingConfigurations = Collections.singletonMap(CURRENT_MARSHALLING_VERSION, marshallingConfiguration);
+        this.moduleLoader = componentConfiguration.getModuleLoader();
         this.serializableInterceptorContextKeys = componentConfiguration.getInterceptorContextKeys();
         this.passivationCapable = componentDescription.isPassivationApplicable();
+        this.deploymentUnitServiceName = componentDescription.getDeploymentUnitServiceName();
+        this.componentServiceName = componentDescription.getServiceName();
+        this.cacheFactory = cacheFactory;
     }
 
     private static InterceptorFactory invokeMethodOnTarget(final Method method) {
         method.setAccessible(true);
         return InvokeMethodOnTargetInterceptor.factory(method);
+    }
+
+    @Override
+    public void start(StartContext context) throws StartException {
+        super.start(context);
+        this.cacheFactoryBuilder.getValue().build(context.getChildTarget(), this.componentServiceName.append("cache"), this, this.statefulTimeout).install();
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        super.stop(context);
     }
 
     @Override
@@ -154,24 +165,8 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return beforeCompletionMethod;
     }
 
-    public StatefulTimeoutInfo getStatefulTimeout() {
-        return statefulTimeout;
-    }
-
     public CacheInfo getCache() {
         return this.cache;
-    }
-
-    public ClassLoader getClassLoader() {
-        return this.loader;
-    }
-
-    public int getCurrentMarshallingVersion() {
-        return CURRENT_MARSHALLING_VERSION;
-    }
-
-    public Map<Integer, MarshallingConfiguration> getMarshallingConfigurations() {
-        return this.marshallingConfigurations;
     }
 
     public DefaultAccessTimeoutService getDefaultAccessTimeoutService() {
@@ -191,12 +186,17 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
     }
 
     @SuppressWarnings("unchecked")
-    public CacheFactory<SessionID, StatefulSessionComponentInstance> getCacheFactory() {
-        return (CacheFactory<SessionID, StatefulSessionComponentInstance>) this.cacheFactory.getValue();
+    public CacheFactoryBuilder<SessionID, StatefulSessionComponentInstance> getCacheFactoryBuilder() {
+        return (CacheFactoryBuilder<SessionID, StatefulSessionComponentInstance>) this.cacheFactory.getValue();
     }
 
     @SuppressWarnings("rawtypes")
-    Injector<CacheFactory> getCacheFactoryInjector() {
+    Injector<CacheFactoryBuilder> getCacheFactoryBuilderInjector() {
+        return this.cacheFactoryBuilder;
+    }
+
+    @SuppressWarnings("rawtypes")
+    Value<CacheFactory> getCacheFactory() {
         return this.cacheFactory;
     }
 
@@ -204,39 +204,28 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
         return this.passivationCapable;
     }
 
-    /**
-     * An {@link Injector} and a {@link Value} which is used to check if the stateful bean component is disabled for passivation
-     * and if it is then the cache factory being injected doesn't have a passivation store associated with it.
-     */
-    @SuppressWarnings("rawtypes")
-    private class PassivationCheckInjectedValue implements Injector<CacheFactory>, Value<CacheFactory> {
+    @Override
+    public ClassLoader getClassLoader() {
+        return this.loader;
+    }
 
-        private final InjectedValue<CacheFactory> delegate;
+    @Override
+    public Class<?> getBeanClass() {
+        return this.getComponentClass();
+    }
 
-        PassivationCheckInjectedValue(final InjectedValue<CacheFactory> delegate) {
-            this.delegate = delegate;
-        }
+    @Override
+    public ModuleLoader getModuleLoader() {
+        return this.moduleLoader;
+    }
 
-        @Override
-        public void inject(CacheFactory value) throws InjectionException {
-            // if the SFSB is disabled for passivation then the backing cache factory isn't allowed to have a passivation store.
-            // For now we rely on the CacheFactory class type to see if the cache factory is enabled/disabled for passivation,
-            // since there are only a couple of cache factory types (NonPassivatingCacheFactory is one of them) and there isn't
-            // a specific, straightforward API for getting that information from the cache factory
-            if (!passivationCapable && !(value instanceof NonPassivatingCacheFactory)) {
-                throw EjbMessages.MESSAGES.requiresNonPassivatingCacheFactory(getComponentName(), value);
-            }
-            this.delegate.inject(value);
-        }
+    @Override
+    public ServiceName getDeploymentUnitServiceName() {
+        return this.deploymentUnitServiceName;
+    }
 
-        @Override
-        public void uninject() {
-            this.delegate.uninject();
-        }
-
-        @Override
-        public CacheFactory getValue() throws IllegalStateException, IllegalArgumentException {
-            return this.delegate.getValue();
-        }
+    @Override
+    public Time getTimeout() {
+        return (this.statefulTimeout != null) ? new Time(this.statefulTimeout.getValue(), this.statefulTimeout.getTimeUnit()) : null;
     }
 }

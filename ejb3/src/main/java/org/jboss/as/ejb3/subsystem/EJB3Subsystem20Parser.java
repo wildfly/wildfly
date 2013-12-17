@@ -22,11 +22,14 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -36,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
+import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
@@ -112,10 +116,6 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
                 }
                 case CACHE_REF: {
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
-                    break;
-                }
-                case CLUSTERED_CACHE_REF: {
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 case PASSIVATION_DISABLED_CACHE_REF: {
@@ -293,4 +293,65 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
         requireNoContent(reader);
     }
 
+    @Override
+    protected void parsePassivationStores(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        // no attributes expected
+        requireNoAttributes(reader);
+
+        while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
+            switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
+                case PASSIVATION_STORE: {
+                    this.parsePassivationStore(reader, operations);
+                    break;
+                }
+                case FILE_PASSIVATION_STORE: {
+                    this.parseFilePassivationStore(reader, operations);
+                    break;
+                }
+                case CLUSTER_PASSIVATION_STORE: {
+                    this.parseClusterPassivationStore(reader, operations);
+                    break;
+                }                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
+
+    protected void parsePassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+        String name = null;
+        ModelNode operation = Util.createAddOperation();
+        for (int i = 0; i < reader.getAttributeCount(); i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            switch (EJB3SubsystemXMLAttribute.forName(reader.getAttributeLocalName(i))) {
+                case NAME: {
+                    name = value;
+                    break;
+                }
+                case MAX_SIZE: {
+                    PassivationStoreResourceDefinition.MAX_SIZE.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case CACHE_CONTAINER: {
+                    PassivationStoreResourceDefinition.CACHE_CONTAINER.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case BEAN_CACHE: {
+                    PassivationStoreResourceDefinition.BEAN_CACHE.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        requireNoContent(reader);
+        if (name == null) {
+            throw missingRequired(reader, Collections.singleton(EJB3SubsystemXMLAttribute.NAME.getLocalName()));
+        }
+        // create and add the operation
+        operation.get(OP_ADDR).set(SUBSYSTEM_PATH.append(PASSIVATION_STORE, name).toModelNode());
+        operations.add(operation);
+    }
 }

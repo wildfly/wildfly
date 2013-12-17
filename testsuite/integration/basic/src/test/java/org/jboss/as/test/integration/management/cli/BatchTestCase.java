@@ -36,6 +36,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -75,7 +76,7 @@ public class BatchTestCase extends AbstractCliTestBase {
         wars[0] = ShrinkWrap.create(WebArchive.class, "deployment0.war");
         wars[0].addClass(SimpleServlet.class);
         wars[0].addAsWebResource(new StringAsset("Version0"), "page.html");
-        String tempDir = System.getProperty("java.io.tmpdir");
+        String tempDir = TestSuiteEnvironment.getTmpDir();
         warFiles[0] = new File(tempDir + File.separator + "deployment0.war");
         new ZipExporterImpl(wars[0]).exportTo(warFiles[0], true);
 

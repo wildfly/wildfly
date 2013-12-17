@@ -53,7 +53,6 @@ import org.jboss.as.domain.controller.operations.coordination.DomainOperationCon
 import org.jboss.as.domain.controller.plan.ServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
-import org.wildfly.security.manager.SubjectUtils;
 
 /**
  * Coordinates rolling out a series of operations to the servers specified in a rollout plan.
@@ -94,7 +93,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
 
         if (rolloutPlan.hasDefined(IN_SERIES)) {
             ConcurrentGroupServerUpdatePolicy predecessor = null;
-            Subject subject = SubjectUtils.getCurrent();
+            Subject subject = SecurityActions.getCurrentSubject();
             for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
 
                 final List<Runnable> seriesTasks = new ArrayList<Runnable>();

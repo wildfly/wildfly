@@ -27,13 +27,10 @@ import javax.ejb.RemoteHome;
 import javax.ejb.SessionBean;
 import javax.ejb.Stateless;
 
-import org.jboss.ejb3.annotation.Clustered;
-
 /**
  * @author Ondrej Chaloupka
  */
 @Stateless
-@Clustered
 @RemoteHome(StatelessRemoteHome.class)
 @Remote(StatelessRemote.class)
 public class StatelessBean extends StatelessBeanBase implements SessionBean {

@@ -60,7 +60,7 @@ public class WeldTransactionServices implements TransactionServices, Service<Wel
     @Override
     public boolean isTransactionActive() {
         try {
-            final int status = injectedTransaction.getValue().getStatus();
+            final int status = injectedTransactionManager.getValue().getStatus();
             return status == Status.STATUS_ACTIVE ||
                     status == Status.STATUS_COMMITTING ||
                     status == Status.STATUS_MARKED_ROLLBACK ||

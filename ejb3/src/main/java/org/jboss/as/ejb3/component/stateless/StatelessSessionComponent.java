@@ -82,14 +82,6 @@ public class StatelessSessionComponent extends SessionBeanComponent implements P
 
         this.timeoutMethod = slsbComponentCreateService.getTimeoutMethod();
         this.weakAffinity = slsbComponentCreateService.getWeakAffinity();
-/*      // Not sure what this is doing here, since deploymentName is never referenced
-        final String deploymentName;
-        if (slsbComponentCreateService.getDistinctName() == null || slsbComponentCreateService.getDistinctName().length() == 0) {
-            deploymentName = slsbComponentCreateService.getApplicationName() + "." + slsbComponentCreateService.getModuleName();
-        } else {
-            deploymentName = slsbComponentCreateService.getApplicationName() + "." + slsbComponentCreateService.getModuleName() + "." + slsbComponentCreateService.getDistinctName();
-        }
-*/
     }
 
 

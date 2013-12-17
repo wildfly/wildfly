@@ -1,24 +1,24 @@
-/*
-* JBoss, Home of Professional Open Source
-* Copyright 2010, Red Hat Inc., and individual contributors as indicated
-* by the @authors tag. See the copyright.txt in the distribution for a
-* full listing of individual contributors.
-*
-* This is free software; you can redistribute it and/or modify it
-* under the terms of the GNU Lesser General Public License as
-* published by the Free Software Foundation; either version 2.1 of
-* the License, or (at your option) any later version.
-*
-* This software is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-* Lesser General Public License for more details.
-*
-* You should have received a copy of the GNU Lesser General Public
-* License along with this software; if not, write to the Free
-* Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-* 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-*/
+/**
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.jboss.as.network;
 
 import java.io.IOException;
@@ -213,7 +213,7 @@ public final class SocketBinding {
      * Note that this method does NOT take into account any port-offset that might have been configured. Use {@link #getAbsolutePort()}
      * if the port-offset has to be considered.
      *
-     * @return
+     * @return port number configured for this socket binding without taking into account any port-offset
      */
     public int getPort() {
         return port;
@@ -266,14 +266,12 @@ public final class SocketBinding {
     /**
      * Unlike the {@link #getPort()} method, this method takes into account the port offset, if the port
      * is <i>not</i> a fixed port and returns the absolute port number which is the sum of the port offset
-     * and the (relative) port
-     * @return
+     * and the (relative) port.
+     *
+     * @return port number configured for this socket binding taking port-offset into account
      */
     public int getAbsolutePort() {
-        if (this.isFixedPort) {
-            return port;
-        }
-        return this.port + this.socketBindings.getPortOffset();
+        return calculatePort();
     }
 
     void checkNotBound() {

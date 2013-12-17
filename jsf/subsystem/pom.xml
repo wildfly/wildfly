@@ -118,12 +118,10 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <module.path>${basedir}${file.separator}src${file.separator}test${file.separator}resources${file.separator}modules${path.separator}${basedir}${file.separator}src${file.separator}test${file.separator}resources${file.separator}modules2</module.path>
-                        <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
-                        <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
-                        <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
+                        <module.path>
+                            ${basedir}${file.separator}src${file.separator}test${file.separator}resources${file.separator}modules${path.separator}${basedir}${file.separator}src${file.separator}test${file.separator}resources${file.separator}modules2
+                        </module.path>
                     </systemPropertyVariables>
-
                 </configuration>
             </plugin>
         </plugins>

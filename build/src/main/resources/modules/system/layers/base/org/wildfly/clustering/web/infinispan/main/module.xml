@@ -47,6 +47,7 @@
         <module name="org.jgroups"/>
         <module name="org.wildfly.clustering.api"/>
         <module name="org.wildfly.clustering.server" services="import"/>
+        <module name="org.wildfly.clustering.web.api"/>
         <module name="org.wildfly.clustering.web.spi"/>
         <module name="org.wildfly.security.manager"/>
     </dependencies>

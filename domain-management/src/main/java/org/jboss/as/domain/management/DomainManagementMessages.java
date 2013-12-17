@@ -865,9 +865,42 @@ public interface DomainManagementMessages {
     @Message(id = 15298, value = "The password must be different from the username")
     PasswordValidationException passwordUsernameMatchError();
 
+    /**
+     * Create an exception indicating that there are no keys in the keystore.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 15299, value = "The KeyStore %s does not contain any keys.")
+    StartException noKey(String path);
+
+    /**
+     * Create an exception indicating that the alias specified is not a key.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 21000, value = "The alias specified '%s' is not a Key, valid aliases are %s")
+    StartException aliasNotKey(String alias, String validList);
+
+    /**
+     * Create an exception indicating that the alias specified was not found.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 21001, value = "The alias specified '%s' does not exist in the KeyStore, valid aliases are %s")
+    StartException aliasNotFound(String alias, String validList);
+
+    /**
+     * Create an exception indicating that the keystore was not found.
+     *
+     * @return a {@link StartException} for the error.
+     */
+    @Message(id = 21002, value = "The KeyStore can not be found at %s")
+    StartException keyStoreNotFound(String path);
+
     /*
-     * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementLogger also contains messages in
-     * this range commencing 15200.
+     * Logging IDs 15200-15299 and 21000-21099 are reserved for domain management
+     *
+     * The file DomainManagementLogger also contains messages in this range 15200-15220.
      */
 
     /**

@@ -503,12 +503,12 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         KeyPair pair = null;
         if (ssl.hasDefined(KEYSTORE_PATH)) {
             keystoreServiceName = FileKeystore.ServiceUtil.createKeystoreServiceName(realmName);
-            pair = addFileKeystoreService(context, ssl, keystoreServiceName, serviceTarget, newControllers);
+            pair = addFileKeystoreService(context, ssl, true, keystoreServiceName, serviceTarget, newControllers);
         }
         ServiceName truststoreServiceName = null;
         if (trustStore != null) {
             truststoreServiceName = FileKeystore.ServiceUtil.createTrusttoreServiceName(realmName);
-            addFileKeystoreService(context, trustStore, truststoreServiceName, serviceTarget, newControllers);
+            addFileKeystoreService(context, trustStore, false, truststoreServiceName, serviceTarget, newControllers);
         }
 
         String protocol = SSLServerIdentityResourceDefinition.PROTOCOL.resolveModelAttribute(context, ssl).asString();
@@ -537,19 +537,28 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         private char[] keyPassword;
     }
 
-    private KeyPair addFileKeystoreService(OperationContext context, ModelNode ssl, ServiceName serviceName,
+    private KeyPair addFileKeystoreService(OperationContext context, ModelNode ssl, boolean forKeyStore, ServiceName serviceName,
             ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         char[] keystorePassword = KeystoreAttributes.KEYSTORE_PASSWORD.resolveModelAttribute(context, ssl).asString().toCharArray();
-        char[] keyPassword = null;
-        ModelNode pwordNode = KeystoreAttributes.KEY_PASSWORD.resolveModelAttribute(context, ssl);
-        if (pwordNode.isDefined()) {
-            keyPassword = pwordNode.asString().toCharArray();
-        }
-
         String path = KeystoreAttributes.KEYSTORE_PATH.resolveModelAttribute(context, ssl).asString();
-        ModelNode aliasNode = KeystoreAttributes.ALIAS.resolveModelAttribute(context, ssl);
-        String alias = aliasNode.isDefined() ? aliasNode.asString() : null;
-        FileKeystoreService fileKeystoreService = new FileKeystoreService(path, keystorePassword, alias, keyPassword);
+
+        final FileKeystoreService fileKeystoreService;
+        final char[] keyPassword;
+
+        if (forKeyStore) {
+            ModelNode pwordNode = KeystoreAttributes.KEY_PASSWORD.resolveModelAttribute(context, ssl);
+            if (pwordNode.isDefined()) {
+                keyPassword = pwordNode.asString().toCharArray();
+            } else {
+                keyPassword = null;
+            }
+            ModelNode aliasNode = KeystoreAttributes.ALIAS.resolveModelAttribute(context, ssl);
+            String alias = aliasNode.isDefined() ? aliasNode.asString() : null;
+            fileKeystoreService = FileKeystoreService.newKeyStoreService(path, keystorePassword, alias, keyPassword);
+        } else {
+            keyPassword = null;
+            fileKeystoreService = FileKeystoreService.newTrustStoreService(path, keystorePassword);
+        }
 
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, fileKeystoreService);
         ModelNode relativeTo = KeystoreAttributes.KEYSTORE_RELATIVE_TO.resolveModelAttribute(context, ssl);

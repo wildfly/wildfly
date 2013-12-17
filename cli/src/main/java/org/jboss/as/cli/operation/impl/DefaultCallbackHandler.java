@@ -102,20 +102,30 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         address = prefix;
     }
 
+    @Deprecated
     public void parse(OperationRequestAddress initialAddress, String argsStr) throws CommandFormatException {
+        parse(initialAddress, argsStr, null);
+    }
+
+    public void parse(OperationRequestAddress initialAddress, String argsStr, CommandContext ctx) throws CommandFormatException {
         reset();
         if(initialAddress != null) {
             address = new DefaultOperationRequestAddress(initialAddress);
         }
         this.originalLine = argsStr;
-        ParserUtil.parse(argsStr, this, validation);
+        ParserUtil.parse(argsStr, this, validation, ctx);
     }
 
+    @Deprecated
     public void parse(OperationRequestAddress initialAddress, String argsStr, boolean validation) throws CommandFormatException {
+        parse(initialAddress, argsStr, validation, null);
+    }
+
+    public void parse(OperationRequestAddress initialAddress, String argsStr, boolean validation, CommandContext ctx) throws CommandFormatException {
         final boolean defaultValidation = this.validation;
         this.validation = validation;
         try {
-            parse(initialAddress, argsStr);
+            parse(initialAddress, argsStr, ctx);
         } finally {
             this.validation = defaultValidation;
         }
@@ -505,6 +515,24 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         address.toNodeType();
         separator = SEPARATOR_NONE;
         lastChunkIndex = index;
+    }
+
+    @Override
+    public void nodeName(int index, String nodeName) throws OperationFormatException {
+        if(validation) {
+            super.nodeName(index, nodeName);
+        } else {
+            this.validatedNodeName(index, nodeName);
+        }
+    }
+
+    @Override
+    public void nodeType(int index, String nodeType) throws OperationFormatException {
+        if(validation) {
+            super.nodeType(index, nodeType);
+        } else {
+            this.validatedNodeType(index, nodeType);
+        }
     }
 
     @Override

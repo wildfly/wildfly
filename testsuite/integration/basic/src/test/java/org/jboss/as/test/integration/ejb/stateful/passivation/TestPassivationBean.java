@@ -37,6 +37,7 @@ import javax.interceptor.Interceptors;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceContextType;
+
 import org.jboss.ejb3.annotation.Cache;
 import org.jboss.logging.Logger;
 
@@ -44,8 +45,8 @@ import org.jboss.logging.Logger;
  * @author <a href="mailto:andrew.rubinger@jboss.org">ALR</a>
  */
 @Stateful
-@Remote(TestPassivationRemote.class)
 @Cache("passivating")
+@Remote(TestPassivationRemote.class)
 @Interceptors(PassivationInterceptor.class)
 public class TestPassivationBean extends PassivationSuperClass implements TestPassivationRemote {
     private static final Logger log = Logger.getLogger(TestPassivationBean.class);

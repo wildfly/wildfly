@@ -38,17 +38,17 @@ import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Hashtable;
 import java.util.Properties;
 
 /**
@@ -79,29 +79,28 @@ public class RemoteOutboundConnectionReconnectTestCase {
     @ArquillianResource
     private Deployer deployer;
 
-    private static Context context;
-    private static ContextSelector<EJBClientContext> previousClientContextSelector;
+    private Context context;
+    private ContextSelector<EJBClientContext> previousClientContextSelector;
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        final Hashtable props = new Hashtable();
-        props.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
-        context = new InitialContext(props);
+    @Before
+    public void beforeClass() throws Exception {
+        Properties env = new Properties();
+        env.put(Context.URL_PKG_PREFIXES, "org.jboss.ejb.client.naming");
+        this.context = new InitialContext(env);
         // setup the client context selector
-        previousClientContextSelector = setupEJBClientContextSelector();
-
+        this.previousClientContextSelector = setupEJBClientContextSelector();
     }
 
-    @AfterClass
-    public static void afterClass() {
-        if (previousClientContextSelector != null) {
-            EJBClientContext.setSelector(previousClientContextSelector);
+    @After
+    public void after() {
+        if (this.previousClientContextSelector != null) {
+            EJBClientContext.setSelector(this.previousClientContextSelector);
         }
     }
 
     @Deployment(name = DEFAULT_AS_DEPLOYMENT, managed = false, testable = false)
     @TargetsContainer(DEFAULT_JBOSSAS)
-    public static Archive createContainer1Deployment() {
+    public static Archive<?> createContainer1Deployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SERVER_TWO_MODULE_NAME + ".jar");
         ejbJar.addClasses(EchoOnServerTwo.class, RemoteEcho.class);
         return ejbJar;
@@ -109,7 +108,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
 
     @Deployment(name = DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML, managed = false, testable = false)
     @TargetsContainer(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION)
-    public static Archive createContainer2Deployment() {
+    public static Archive<?> createContainer2Deployment() {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, SERVER_ONE_MODULE_NAME + ".jar");
         ejbJar.addClasses(EchoOnServerOne.class, RemoteEcho.class, IndependentBean.class);
         ejbJar.addAsManifestResource(EchoOnServerOne.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
@@ -134,7 +133,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
             // deploy a deployment which contains jboss-ejb-client.xml that contains a EJB receiver pointing
             // to a server which hasn't yet started. Should succeed without throwing deployment error
             this.deployer.deploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
-            // To make sure deployment succeeded and invocations are possible, call a independent bean
+            // To make sure deployment succeeded and invocations are possible, call an independent bean
             final RemoteEcho independentBean = (RemoteEcho) context.lookup("ejb:/" + SERVER_ONE_MODULE_NAME + "//" + IndependentBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
             final String msg = "Hellooooo!";
             final String echoFromIndependentBean = independentBean.echo(msg);
@@ -178,7 +177,6 @@ public class RemoteOutboundConnectionReconnectTestCase {
                 }
             }
         }
-
     }
 
     /**

@@ -585,7 +585,13 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14265, value = "Error during transaction recovery")
     void errorDuringTransactionRecovery(@Cause Throwable cause);
 
+    @LogMessage(level = WARN)
+    @Message(id = 14266, value = "The @%s annotation is deprecated and will be ignored.")
+    void deprecatedAnnotation(String annotation);
 
+    @LogMessage(level = WARN)
+    @Message(id = 14267, value = "The <%2$s xmlns=\"%1$s\"/> element will be ignored.")
+    void deprecatedNamespace(String namespace, String element);
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

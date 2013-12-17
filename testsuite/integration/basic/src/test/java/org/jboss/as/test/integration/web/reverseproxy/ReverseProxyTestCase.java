@@ -194,10 +194,11 @@ public class ReverseProxyTestCase {
         Assert.assertEquals(2, results.size());
         Assert.assertTrue(results.contains("server1"));
         Assert.assertTrue(results.contains("server2"));
-        String session = performCall("name?session=true");
+        //TODO: re-add JVM route based sticky session testing
+        //String session = performCall("name?session=true");
         //sticky sessions should stick it to this node
-        for (int i = 0; i < 10; ++i) {
-            Assert.assertEquals(session, performCall("name"));
-        }
+        //for (int i = 0; i < 10; ++i) {
+        //    Assert.assertEquals(session, performCall("name"));
+        //}
     }
 }

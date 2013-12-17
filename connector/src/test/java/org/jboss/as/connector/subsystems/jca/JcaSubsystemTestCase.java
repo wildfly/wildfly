@@ -26,6 +26,7 @@ import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_
 
 import java.io.IOException;
 import java.util.List;
+
 import org.jboss.as.connector.logging.ConnectorLogger;
 
 import org.jboss.as.controller.ModelVersion;
@@ -71,12 +72,22 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer1_1_0(ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformer(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0), "jca-full.xml");
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer1_1_0(ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformer(ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 0), "jca-full.xml");
+    }
+
+    @Test
+    public void testTransformerAS72() throws Exception {
+        testTransformer(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 2, 0), "jca-full.xml");
+    }
+
+    @Test
+    public void testTransformerAS72WithExpressions() throws Exception {
+        testTransformer(ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 2, 0), "jca-full-expression.xml");
     }
 
     /**
@@ -84,33 +95,32 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
      *
      * @throws Exception
      */
-    private void testTransformer1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testTransformer(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, String xmlResourceName) throws Exception {
         // create builder for current subsystem version
-                KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
-                // create builder for legacy subsystem version
-                ModelVersion version_1_1_0 = ModelVersion.create(1, 1, 0);
-                builder.createLegacyKernelServicesBuilder(null, controllerVersion, version_1_1_0)
-                        .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
-                        .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
-                        .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
-                        .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+        // create builder for legacy subsystem version
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.as:jboss-as-threads:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.connector.subsystems.jca.JcaExtension")
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
 
-                KernelServices mainServices = builder.build();
-                KernelServices legacyServices = mainServices.getLegacyServices(version_1_1_0);
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
 
-                Assert.assertNotNull(legacyServices);
-                Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
-                Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-                List<ModelNode> xmlOps = builder.parseXmlResource("jca-full.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource(xmlResourceName);
 
-                ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_1_0, xmlOps,
-                        new FailedOperationTransformationConfig()
-                                .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER),
-                                        FailedOperationTransformationConfig.REJECTED_RESOURCE)
-                                .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER, PathElement.pathElement(WORKMANAGER_SHORT_RUNNING)),
-                                        FailedOperationTransformationConfig.REJECTED_RESOURCE));
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps,
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(PathAddress.pathAddress(JcaSubsystemRootDefinition.PATH_SUBSYSTEM, JcaDistributedWorkManagerDefinition.PATH_DISTRIBUTED_WORK_MANAGER, PathElement.pathElement(WORKMANAGER_SHORT_RUNNING)),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 
     @Test
@@ -162,4 +172,6 @@ public class JcaSubsystemTestCase extends AbstractSubsystemBaseTest {
     protected void compareXml(String configId, String original, String marshalled) throws Exception {
         super.compareXml(configId, original, marshalled, true);
     }
+
+
 }

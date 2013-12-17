@@ -21,17 +21,16 @@
 */
 
 body {
-	background-image:url(bkg.gif);
-	background-repeat: repeat-x;
+	background: url(bkg.gif) repeat-x;
 	color: #5B5B5B;
 	font-family: "Lucida Sans Unicode", "Lucida Grande", Geneva, Verdana, Arial, sans-serif;
 	margin-top: 100px;
-	text-align:center;
+	text-align: center;
 }
 .wrapper {
 	margin-left: auto;
-	margin-right:auto;
-	width:50em;
+	margin-right: auto;
+	width: 50em;
 	text-align: left;
 }
 a {
@@ -47,7 +46,7 @@ a:hover {
 	color: #8ec6d9;
 }
 .content {
-    margin:0;
+    margin: 0;
     padding: 0;
 }
 .dualbrand {

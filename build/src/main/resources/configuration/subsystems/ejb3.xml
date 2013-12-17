@@ -18,13 +18,11 @@
            </bean-instance-pools>
        </pools>
        <caches>
-           <cache name="simple" aliases="NoPassivationCache"/>
-           <cache name="passivating" passivation-store-ref="file" aliases="SimpleStatefulCache"/>
-           <?CLUSTERED-CACHE?>
+           <cache name="simple"/>
+           <cache name="distributable" aliases="passivating clustered" passivation-store-ref="infinispan"/>
        </caches>
        <passivation-stores>
-           <file-passivation-store name="file"/>
-           <?CLUSTER-PASSIVATION-STORE?>
+           <passivation-store name="infinispan" cache-container="ejb" max-size="10000"/>
        </passivation-stores>
        <async thread-pool-name="default"/>
        <timer-service thread-pool-name="default" default-data-store="default-file-store">
@@ -53,21 +51,15 @@
          <iiop enable-by-default="false" use-qualified-name="false"/>
       </replacement>
       <replacement placeholder="MDB">
-	       <mdb>
-	           <resource-adapter-ref resource-adapter-name="${ejb.resource-adapter-name:hornetq-ra}"/>
-	           <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
-	       </mdb>
+         <mdb>
+             <resource-adapter-ref resource-adapter-name="${ejb.resource-adapter-name:hornetq-ra.rar}"/>
+             <bean-instance-pool-ref pool-name="mdb-strict-max-pool"/>
+         </mdb>
       </replacement>
    </supplement>
    <supplement name="ha">
       <replacement placeholder="STATEFUL-BEAN">
-         <stateful default-access-timeout="5000" cache-ref="simple" clustered-cache-ref="clustered" passivation-disabled-cache-ref="simple"/>
-      </replacement>
-      <replacement placeholder="CLUSTERED-CACHE">
-         <cache name="clustered" passivation-store-ref="infinispan" aliases="StatefulTreeCache"/>
-      </replacement>
-      <replacement placeholder="CLUSTER-PASSIVATION-STORE">
-         <cluster-passivation-store name="infinispan" cache-container="ejb"/>
+         <stateful default-access-timeout="5000" cache-ref="distributable" passivation-disabled-cache-ref="simple"/>
       </replacement>
    </supplement>
    <supplement name="full-ha" includes="full ha"/>

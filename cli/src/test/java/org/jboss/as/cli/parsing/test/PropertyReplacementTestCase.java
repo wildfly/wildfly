@@ -39,8 +39,9 @@ import org.junit.Test;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * @author Alexey Loubyansky
+ * System property replacement tests.
  *
+ * @author Alexey Loubyansky
  */
 public class PropertyReplacementTestCase {
 
@@ -122,6 +123,14 @@ public class PropertyReplacementTestCase {
     }
 
     @Test
+    public void testOperationNameAndValue() throws Exception {
+        final ParsedCommandLine parsed = parse(":write-attribute(${" + OP_PROP_PROP_NAME + "}=${" + OP_PROP_PROP_NAME + "})");
+        assertEquals("write-attribute", parsed.getOperationName());
+        // variables unlike system properties are always resolved
+        assertEquals("${" + OP_PROP_PROP_NAME + "}", parsed.getPropertyValue(OP_PROP_PROP_VALUE));
+    }
+
+    @Test
     public void testUnresolvedCommandName() {
         assertFailedToParse("${" + OP_PROP_NAME + "xxx}");
     }
@@ -198,7 +207,7 @@ public class PropertyReplacementTestCase {
 
     protected ParsedCommandLine parse(String line) throws CommandFormatException {
         DefaultCallbackHandler args = new DefaultCallbackHandler();
-        args.parse(null, line);
+        args.parse(null, line, null);
         return args;
     }
 }

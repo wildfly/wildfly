@@ -58,6 +58,8 @@ public class InitialState extends DefaultParsingState {
             public void handle(ParsingContext ctx) throws CommandFormatException {
                 if(Character.isWhitespace(ctx.getCharacter())) {
                     ctx.enterState(leadingWs);
+                } else {
+                    ctx.resolveExpression(true, true);
                 }
             }});
         enterState('.', opState);
@@ -81,6 +83,7 @@ public class InitialState extends DefaultParsingState {
                 public void handle(ParsingContext ctx) throws CommandFormatException {
                     if(!Character.isWhitespace(ctx.getCharacter())) {
                         ctx.leaveState();
+                        ctx.resolveExpression(true, true);
                         InitialState.this.getHandler(ctx.getCharacter()).handle(ctx);
                     }
                 }});

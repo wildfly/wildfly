@@ -33,6 +33,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
+import java.util.Enumeration;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.inject.Injector;
@@ -53,15 +54,36 @@ final class FileKeystore {
     private final String path;
     private long lastModificationTime;
     private final char[] keystorePassword;
+    /** If not a KeyStore it is being used as a trust store. */
+    private final boolean isKeyStore;
+
     private final char[] keyPassword;
     private final String alias;
 
-    FileKeystore(final String path, final char[] keystorePassword, final char[] keyPassword,final String alias) {
+    private FileKeystore(final String path, final char[] keystorePassword) {
+        this.path = path;
+        this.keystorePassword = keystorePassword;
+        this.keyPassword = null;
+        this.alias = null;
+        this.lastModificationTime = 0;
+        this.isKeyStore = false;
+    }
+
+    private FileKeystore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
         this.path = path;
         this.keystorePassword = keystorePassword;
         this.keyPassword = keyPassword;
         this.alias = alias;
         this.lastModificationTime = 0;
+        this.isKeyStore = true;
+    }
+
+    static FileKeystore newKeyStore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
+        return new FileKeystore(path, keystorePassword, keyPassword, alias);
+    }
+
+    static FileKeystore newTrustStore(final String path, final char[] keystorePassword) {
+        return new FileKeystore(path, keystorePassword);
     }
 
     /**
@@ -90,8 +112,14 @@ final class FileKeystore {
             if (new File(path).exists()) {
                 fis = new FileInputStream(path);
                 loadedKeystore.load(fis, keystorePassword);
+            } else if (isKeyStore) {
+                throw MESSAGES.keyStoreNotFound(path);
             } else {
                 loadedKeystore.load(null);
+            }
+
+            if (isKeyStore) {
+                assertContainsKey(loadedKeystore);
             }
 
             if (alias == null) {
@@ -102,8 +130,17 @@ final class FileKeystore {
 
                 KeyStore.ProtectionParameter passParam = new KeyStore.PasswordProtection(keyPassword == null ? keystorePassword
                         : keyPassword);
-                KeyStore.Entry entry = loadedKeystore.getEntry(this.alias, passParam);
-                newKeystore.setEntry(alias, entry, passParam);
+
+                if (loadedKeystore.containsAlias(alias)) {
+                    if (loadedKeystore.isKeyEntry(alias)) {
+                        KeyStore.Entry entry = loadedKeystore.getEntry(this.alias, passParam);
+                        newKeystore.setEntry(alias, entry, passParam);
+                    } else {
+                        throw MESSAGES.aliasNotKey(alias, validAliasList(loadedKeystore));
+                    }
+                } else {
+                    throw MESSAGES.aliasNotFound(alias, validAliasList(loadedKeystore));
+                }
 
                 this.setKeyStore(newKeystore);
             }
@@ -121,6 +158,34 @@ final class FileKeystore {
         } finally {
             safeClose(fis);
         }
+    }
+
+    private void assertContainsKey(final KeyStore keyStore) throws StartException, KeyStoreException {
+        Enumeration<String> aliases = keyStore.aliases();
+        while (aliases.hasMoreElements()) {
+            if (keyStore.isKeyEntry(aliases.nextElement())) {
+                return;
+            }
+        }
+
+        throw MESSAGES.noKey(path);
+    }
+
+    private String validAliasList(final KeyStore keyStore) throws KeyStoreException {
+        Enumeration<String> aliases = keyStore.aliases();
+        StringBuilder sb = new StringBuilder("{");
+        while (aliases.hasMoreElements()) {
+            String current = aliases.nextElement();
+            if (keyStore.isKeyEntry(current)) {
+                if (sb.length() > 1) {
+                    sb.append(", ");
+                }
+                sb.append(current);
+            }
+
+        }
+
+        return sb.append("}").toString();
     }
 
     /**

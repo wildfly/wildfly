@@ -377,4 +377,22 @@ public class MockCommandContext implements CommandContext {
     public int getTerminalHeight() {
         return -1;
     }
+
+    @Override
+    public void setVariable(String name, String value) throws CommandLineException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String getVariable(String name) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public Collection<String> getVariables() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

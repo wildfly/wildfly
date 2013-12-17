@@ -107,7 +107,11 @@ public class DeploymentOperationsTestCase extends ContainerResourceMgmtTestBase 
         composite.get(OP).set(COMPOSITE);
         composite.get(OPERATION_HEADERS).get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-        final ModelNode steps = composite.get(STEPS).setEmptyList();
+        final ModelNode nested = composite.get(STEPS).setEmptyList().add();
+        nested.get(OP).set(COMPOSITE);
+        nested.get(OP_ADDR).setEmptyList();
+
+        final ModelNode steps = nested.get(STEPS).setEmptyList();
 
         final ModelNode deployOne = steps.add();
         deployOne.get(OP).set(ADD);
@@ -129,7 +133,10 @@ public class DeploymentOperationsTestCase extends ContainerResourceMgmtTestBase 
         final ModelControllerClient client = getModelControllerClient();
         try {
             // Deploy
-            final ModelNode result = client.execute(operation);
+            final ModelNode overallResult = client.execute(operation);
+            Assert.assertTrue(overallResult.asString(), SUCCESS.equals(overallResult.get(OUTCOME).asString()));
+
+            final ModelNode result = overallResult.get(RESULT, "step-1");
             Assert.assertTrue(result.asString(), SUCCESS.equals(result.get(OUTCOME).asString()));
 
             final ModelNode step1 = result.get(RESULT, "step-1");

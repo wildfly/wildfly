@@ -169,9 +169,20 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         final WebInjectionContainer injectionContainer = new WebInjectionContainer(module.getClassLoader(), componentRegistry);
 
-        String securityContextId = deploymentUnit.getName();
+        String jaccContextId = metaData.getJaccContextID();
+
+        if (jaccContextId == null) {
+            jaccContextId = deploymentUnit.getName();
+        }
         if (deploymentUnit.getParent() != null) {
-            securityContextId = deploymentUnit.getParent().getName() + "!" + securityContextId;
+            jaccContextId = deploymentUnit.getParent().getName() + "!" + jaccContextId;
+        }
+
+        String deploymentName;
+        if(deploymentUnit.getParent() == null) {
+            deploymentName = deploymentUnit.getName();
+        } else {
+            deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
         }
 
         final String pathName = pathNameOfDeployment(deploymentUnit, metaData);
@@ -204,12 +215,12 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
                         .setAttributes(deploymentUnit.getAttachment(ServletContextAttribute.ATTACHMENT_KEY))
                 .setContextPath(pathName)
-                .setDeploymentName(deploymentUnit.getName())
+                .setDeploymentName(deploymentName) //todo: is this deployment name concept really applicable?
                 .setDeploymentRoot(deploymentRoot)
                 .setMergedMetaData(warMetaData.getMergedJBossWebMetaData())
                 .setModule(module)
                 .setScisMetaData(scisMetaData)
-                .setSecurityContextId(securityContextId)
+                .setJaccContextId(jaccContextId)
                 .setSecurityDomain(securityDomain)
                 .setSharedTlds(tldsMetaData == null ? Collections.<TldMetaData>emptyList() : tldsMetaData.getSharedTlds(deploymentUnit))
                 .setTldsMetaData(tldsMetaData)
@@ -285,7 +296,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
         // adding JACC service
         AbstractSecurityDeployer<WarMetaData> deployer = new WarJACCDeployer();
-        JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit);
+        JaccService<WarMetaData> jaccService = deployer.deploy(deploymentUnit, jaccContextId);
         if (jaccService != null) {
             final ServiceName jaccServiceName = deploymentUnit.getServiceName().append(JaccService.SERVICE_NAME);
             ServiceBuilder<?> jaccBuilder = serviceTarget.addService(jaccServiceName, jaccService);

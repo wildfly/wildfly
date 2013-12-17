@@ -40,7 +40,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.integration.ee.injection.support.InjectionSupportTestCase;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,7 +51,6 @@ import org.junit.runner.RunWith;
  */
 @RunAsClient
 @RunWith(Arquillian.class)
-@Ignore("WFLY-2457")
 public class HttpUpgradeHandlerInjectionSupportTestCase extends InjectionSupportTestCase {
 
     private static final String CRLF = "\r\n";
@@ -94,27 +92,23 @@ public class HttpUpgradeHandlerInjectionSupportTestCase extends InjectionSupport
             out.write("Connection: Upgrade" + CRLF);
             out.write(CRLF);
             out.flush();
-            System.out.println("Upgrade requested");
 
             // Receive the protocol upgrade response
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             String line = null;
             while ((line = in.readLine()) != null) {
-                System.out.println(line);
                 if ("".equals(line)) {
                     break;
                 }
             }
 
             // Send dummy request
-            out.write("dummy request" + CRLF);
+            out.write("dummy request#");
             out.flush();
-            System.out.println("Dummy request sent");
 
             // Receive the dummy response
             StringBuilder buffer = new StringBuilder();
             while (!(line = in.readLine()).equals("END")) {
-                System.out.println(line);
                 buffer.append(line);
             }
             response = buffer.toString();

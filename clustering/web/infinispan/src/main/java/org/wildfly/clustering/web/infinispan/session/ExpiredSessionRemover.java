@@ -21,8 +21,8 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
-import org.wildfly.clustering.web.infinispan.Remover;
 import org.wildfly.clustering.web.session.Session;
 
 /**

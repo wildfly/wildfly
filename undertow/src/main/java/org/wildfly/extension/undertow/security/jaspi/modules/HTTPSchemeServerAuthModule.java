@@ -24,13 +24,8 @@ package org.wildfly.extension.undertow.security.jaspi.modules;
 
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.SecurityContext;
-import io.undertow.security.impl.BasicAuthenticationMechanism;
-import io.undertow.security.impl.ClientCertAuthenticationMechanism;
-import io.undertow.security.impl.DigestAuthenticationMechanism;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.api.LoginConfig;
 import io.undertow.servlet.handlers.ServletRequestContext;
-import io.undertow.servlet.handlers.security.ServletFormAuthenticationMechanism;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
 
 import javax.security.auth.Subject;
@@ -44,12 +39,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
-import static io.undertow.security.api.AuthenticationMechanism.AuthenticationMechanismOutcome.*;
-import static javax.security.auth.message.AuthStatus.*;
-import static javax.servlet.http.HttpServletRequest.*;
-import static org.wildfly.extension.undertow.UndertowLogger.*;
+import static io.undertow.security.api.AuthenticationMechanism.AuthenticationMechanismOutcome.AUTHENTICATED;
+import static io.undertow.security.api.AuthenticationMechanism.AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
+import static javax.security.auth.message.AuthStatus.SEND_CONTINUE;
+import static javax.security.auth.message.AuthStatus.SUCCESS;
+import static org.wildfly.extension.undertow.UndertowLogger.ROOT_LOGGER;
 
 /**
  * <p> This class implements a JASPI {@code ServerAuthModule} that handles the standards HTTP Authentication
@@ -82,20 +79,35 @@ public class HTTPSchemeServerAuthModule implements ServerAuthModule {
             throws AuthException {
         HttpServerExchange exchange = (HttpServerExchange) messageInfo.getMap().get(JASPIAuthenticationMechanism.HTTP_SERVER_EXCHANGE_ATTACHMENT_KEY);
         SecurityContext securityContext = (SecurityContext) messageInfo.getMap().get(JASPIAuthenticationMechanism.SECURITY_CONTEXT_ATTACHMENT_KEY);
+        ServletRequestContext src = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+        List<AuthenticationMechanism> mechanisms = src.getDeployment().getAuthenticationMechanisms();
 
         try {
-            AuthenticationMechanism mechanism = getAuthenticationMechanism(exchange);
-
-            if (!AUTHENTICATED.equals(mechanism.authenticate(exchange, securityContext))) {
-                AuthenticationMechanism.ChallengeResult challengeResult = mechanism.sendChallenge(exchange, securityContext);
-
-                exchange.setResponseCode(challengeResult.getDesiredResponseCode());
-
+            boolean success = false;
+            for (AuthenticationMechanism mechanism : mechanisms) {
+                AuthenticationMechanism.AuthenticationMechanismOutcome result = mechanism.authenticate(exchange, securityContext);
+                if (result == AUTHENTICATED) {
+                    success = true;
+                    break;
+                } else if (result == NOT_AUTHENTICATED) {
+                    break;
+                }
+            }
+            if (!success) {
+                for (AuthenticationMechanism mechanism : mechanisms) {
+                    AuthenticationMechanism.ChallengeResult challengeResult = mechanism.sendChallenge(exchange, securityContext);
+                    if (challengeResult.getDesiredResponseCode() != null) {
+                        exchange.setResponseCode(challengeResult.getDesiredResponseCode());
+                    }
+                    if(exchange.isResponseComplete()) {
+                        break;
+                    }
+                }
                 return SEND_CONTINUE;
             }
         } catch (Exception e) {
             ROOT_LOGGER.debug(e);
-            throw new AuthException("Could not validateRequest using mechanism [" + BasicAuthenticationMechanism.class.getName() + "].");
+            throw new AuthException("Could not validateRequest using mechanisms [" + mechanisms + ".");
         }
 
         return SUCCESS;
@@ -111,31 +123,4 @@ public class HTTPSchemeServerAuthModule implements ServerAuthModule {
     public void cleanSubject(final MessageInfo messageInfo, final Subject subject) throws AuthException {
         //TODO: is necessary to clean the subject here ?
     }
-
-    protected AuthenticationMechanism getAuthenticationMechanism(HttpServerExchange exchange) {
-        if (this.authenticationMechanism == null) {
-            this.authenticationMechanism = doCreateAuthenticationMechanism(exchange);
-        }
-        return this.authenticationMechanism;
-    }
-
-    protected AuthenticationMechanism doCreateAuthenticationMechanism(HttpServerExchange exchange) {
-        ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
-        LoginConfig loginConfig = servletRequestContext.getDeployment().getDeploymentInfo().getLoginConfig();
-
-        String desiredAuthMethod = loginConfig.getAuthMethod().toUpperCase();
-
-        if (BASIC_AUTH.equals(desiredAuthMethod)) {
-            return new BasicAuthenticationMechanism(loginConfig.getRealmName());
-        } else if (DIGEST_AUTH.equals(desiredAuthMethod)) {
-            return new DigestAuthenticationMechanism(loginConfig.getRealmName(), servletRequestContext.getCurrentServetContext().getContextPath(), DIGEST_AUTH);
-        } else if (FORM_AUTH.equals(desiredAuthMethod)) {
-            return new ServletFormAuthenticationMechanism(FORM_AUTH, loginConfig.getLoginPage(), loginConfig.getErrorPage());
-        } else if (CLIENT_CERT_AUTH.equals(desiredAuthMethod)) {
-            return new ClientCertAuthenticationMechanism();
-        } else {
-            throw new RuntimeException("Invalid authentication mechanism [" + loginConfig.getAuthMethod() + "].");
-        }
-    }
-
 }

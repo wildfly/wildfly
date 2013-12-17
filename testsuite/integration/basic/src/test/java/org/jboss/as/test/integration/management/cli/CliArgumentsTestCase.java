@@ -42,7 +42,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class CliArgumentsTestCase extends CliScriptTestBase {
 
-    private static final String tempDir = System.getProperty("java.io.tmpdir");
+    private static final String tempDir = TestSuiteEnvironment.getTmpDir();
 
     @Test
     public void testVersionArgument() throws Exception {
@@ -80,7 +80,7 @@ public class CliArgumentsTestCase extends CliScriptTestBase {
         // prepare file
         File cliScriptFile = new File(tempDir, "testScript.cli");
         if (cliScriptFile.exists()) Assert.assertTrue(cliScriptFile.delete());
-        FileUtils.writeStringToFile(cliScriptFile, "version" + System.getProperty("line.separator"));
+        FileUtils.writeStringToFile(cliScriptFile, "version" + TestSuiteEnvironment.getSystemProperty("line.separator"));
 
         // pass it to CLI
         execute(false, "--file=" + cliScriptFile.getAbsolutePath());

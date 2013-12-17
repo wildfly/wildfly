@@ -22,8 +22,10 @@
 
 package org.jboss.as.server.deployment;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -96,5 +98,9 @@ public class SimpleAttachable implements Attachable {
                 list.add(value);
             }
         }
+    }
+
+    public synchronized Collection<AttachmentKey<?>> attachmentKeys() {
+        return new HashSet<AttachmentKey<?>>(attachments.keySet());
     }
 }

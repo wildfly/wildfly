@@ -1,0 +1,13 @@
+SYNOPSIS
+
+   echo ($name)* 
+
+DESCRIPTION
+
+   Prints values for the specified variables.
+   If the command is executed w/o arguments then the command will print
+   all the existing variables with their values in the name=value format.
+
+ARGUMENTS
+
+   Optional whitespace-separated sequence of variable names.

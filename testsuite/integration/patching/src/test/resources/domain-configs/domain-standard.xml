@@ -161,11 +161,11 @@
                     </bean-instance-pools>
                 </pools>
                 <caches>
-                    <cache name="simple" aliases="NoPassivationCache"/>
-                    <cache name="passivating" passivation-store-ref="file" aliases="SimpleStatefulCache"/>
+                    <cache name="simple"/>
+                    <cache name="distributable" aliases="passivating clustered" passivation-store-ref="infinispan"/>
                 </caches>
                 <passivation-stores>
-                    <file-passivation-store name="file"/>
+                    <passivation-store name="infinispan" cache-container="ejb" max-size="10000"/>
                 </passivation-stores>
                 <async thread-pool-name="default"/>
                 <timer-service thread-pool-name="default" default-data-store="default-file-store">
@@ -184,8 +184,19 @@
                 <default-missing-method-permissions-deny-access value="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:2.0">
-                <cache-container name="web" aliases="standard-session-cache" default-cache="local-web" module="org.wildfly.clustering.web.infinispan">
-                    <local-cache name="local-web" batching="true">
+                <cache-container name="web" default-cache="local" module="org.wildfly.clustering.web.infinispan">
+                    <local-cache name="local" batching="true">
+                        <file-store passivation="true" purge="false"/>
+                    </local-cache>
+                    <local-cache name="persistent" batching="true">
+                        <file-store passivation="false" purge="false"/>
+                    </local-cache>
+                </cache-container>
+                <cache-container name="ejb" aliases="sfsb" default-cache="local" module="org.wildfly.clustering.ejb.infinispan">
+                    <local-cache name="local" batching="true">
+                        <file-store passivation="true" purge="false"/>
+                    </local-cache>
+                    <local-cache name="persistent" batching="true">
                         <file-store passivation="false" purge="false"/>
                     </local-cache>
                 </cache-container>
@@ -485,11 +496,11 @@
                     </bean-instance-pools>
                 </pools>
                 <caches>
-                    <cache name="simple" aliases="NoPassivationCache"/>
-                    <cache name="passivating" passivation-store-ref="file" aliases="SimpleStatefulCache"/>
+                    <cache name="simple"/>
+                    <cache name="distributable" aliases="passivating clustered" passivation-store-ref="infinispan"/>
                 </caches>
                 <passivation-stores>
-                    <file-passivation-store name="file"/>
+                    <passivation-store name="infinispan" cache-container="ejb" max-size="10000"/>
                 </passivation-stores>
                 <async thread-pool-name="default"/>
                 <timer-service thread-pool-name="default" default-data-store="default-file-store">
@@ -508,8 +519,19 @@
                 <default-missing-method-permissions-deny-access value="true"/>
             </subsystem>
             <subsystem xmlns="urn:jboss:domain:infinispan:2.0">
-                <cache-container name="web" aliases="standard-session-cache" default-cache="local-web" module="org.wildfly.clustering.web.infinispan">
-                    <local-cache name="local-web" batching="true">
+                <cache-container name="web" default-cache="local" module="org.wildfly.clustering.web.infinispan">
+                    <local-cache name="local" batching="true">
+                        <file-store passivation="true" purge="false"/>
+                    </local-cache>
+                    <local-cache name="persistent" batching="true">
+                        <file-store passivation="false" purge="false"/>
+                    </local-cache>
+                </cache-container>
+                <cache-container name="ejb" aliases="sfsb" default-cache="local" module="org.wildfly.clustering.ejb.infinispan">
+                    <local-cache name="local" batching="true">
+                        <file-store passivation="true" purge="false"/>
+                    </local-cache>
+                    <local-cache name="persistent" batching="true">
                         <file-store passivation="false" purge="false"/>
                     </local-cache>
                 </cache-container>

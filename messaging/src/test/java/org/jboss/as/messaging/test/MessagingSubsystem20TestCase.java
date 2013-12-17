@@ -37,6 +37,7 @@ import static org.jboss.as.messaging.CommonAttributes.CALL_FAILOVER_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.CHECK_FOR_LIVE_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
+import static org.jboss.as.messaging.CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.HornetQServerResourceDefinition.HORNETQ_SERVER_PATH;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_1_0;
@@ -86,7 +87,6 @@ import org.jboss.as.messaging.HornetQServerResourceDefinition;
 import org.jboss.as.messaging.InVMTransportDefinition;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.QueueDefinition;
-import org.jboss.as.messaging.ServletConnectorDefinition;
 import org.jboss.as.messaging.TransportParamDefinition;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryDefinition;
@@ -278,7 +278,7 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                                 createChainedConfig(
                                         HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
                                         concat(new AttributeDefinition[]{CommonAttributes.BACKUP_GROUP_NAME, CommonAttributes.REPLICATION_CLUSTERNAME,
-                                                CommonAttributes.REMOTING_INCOMING_INTERCEPTORS, CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS}, CHECK_FOR_LIVE_SERVER)))
+                                                CommonAttributes.REMOTING_INCOMING_INTERCEPTORS, CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS}, MAX_SAVED_REPLICATED_JOURNAL_SIZE, CHECK_FOR_LIVE_SERVER)))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(ModelDescriptionConstants.PATH)),
                                 new RejectExpressionsConfig(ModelDescriptionConstants.PATH))
@@ -306,9 +306,6 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.REMOTE_CONNECTOR), TransportParamDefinition.PATH),
                                 new RejectExpressionsConfig(TransportParamDefinition.VALUE))
-                        .addFailedAttribute(
-                                subsystemAddress.append(HORNETQ_SERVER_PATH, ServletConnectorDefinition.PATH),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, pathElement(CommonAttributes.ACCEPTOR)),
                                 new RejectExpressionsConfigWithAddOnlyParam(PARAM))
@@ -363,7 +360,8 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                                         new AttributeDefinition[]{BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
-                                new RejectExpressionsConfig(GroupingHandlerDefinition.TYPE, GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, GroupingHandlerDefinition.TIMEOUT))
+                                createChainedConfig(new AttributeDefinition[] { GroupingHandlerDefinition.TYPE, GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, GroupingHandlerDefinition.TIMEOUT },
+                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, AddressSettingDefinition.PATH),
                                 createChainedConfig(AddressSettingDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0,
@@ -418,12 +416,17 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                 modelNodes,
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(
-                                subsystemAddress.append(HORNETQ_SERVER_PATH, ServletConnectorDefinition.PATH),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                                subsystemAddress.append(HORNETQ_SERVER_PATH),
+                                createChainedConfig(new AttributeDefinition[]{},
+                                        new AttributeDefinition[]{MAX_SAVED_REPLICATED_JOURNAL_SIZE}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, BridgeDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE}))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
+                                createChainedConfig(new AttributeDefinition[] {},
+                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
@@ -457,12 +460,17 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
                 modelNodes,
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(
-                                subsystemAddress.append(HORNETQ_SERVER_PATH, ServletConnectorDefinition.PATH),
-                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                                subsystemAddress.append(HORNETQ_SERVER_PATH),
+                                createChainedConfig(new AttributeDefinition[]{},
+                                        new AttributeDefinition[]{MAX_SAVED_REPLICATED_JOURNAL_SIZE}))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH, BridgeDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
                                         new AttributeDefinition[]{BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE}))
+                        .addFailedAttribute(
+                                subsystemAddress.append(HORNETQ_SERVER_PATH, GroupingHandlerDefinition.PATH),
+                                createChainedConfig(new AttributeDefinition[] {},
+                                        new AttributeDefinition[] { GroupingHandlerDefinition.GROUP_TIMEOUT, GroupingHandlerDefinition.REAPER_PERIOD }))
                         .addFailedAttribute(
                                 subsystemAddress.append(HORNETQ_SERVER_PATH).append(AddressSettingDefinition.PATH),
                                 createChainedConfig(new AttributeDefinition[]{},
@@ -474,10 +482,10 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(xmlFileName);
         // create builder for legacy subsystem version
-        HornetQDependencies.addDependencies(controllerVersion,
-                builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                        .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
-                        .configureReverseControllerCheck(null, fixer));
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(null, fixer)
+                .addMavenResourceURL(HornetQDependencies.getDependencies(controllerVersion));
         return builder;
     }
 
@@ -485,10 +493,10 @@ public class MessagingSubsystem20TestCase extends AbstractSubsystemBaseTest {
         //Boot up empty controllers with the resources needed for the ops coming from the xml to work
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource("subsystem_2_0.xml");
-        HornetQDependencies.addDependencies(controllerVersion,
-                builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
-                        .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
-                        .configureReverseControllerCheck(null, fixer));
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, messagingVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-messaging:" + controllerVersion.getMavenGavVersion())
+                .configureReverseControllerCheck(null, fixer)
+                .addMavenResourceURL(HornetQDependencies.getDependencies(controllerVersion));
 
         KernelServices mainServices = builder.build();
         assertTrue(mainServices.isSuccessfulBoot());

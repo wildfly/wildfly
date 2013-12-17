@@ -39,6 +39,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -94,6 +95,7 @@ import org.jboss.as.cli.handlers.DeployHandler;
 import org.jboss.as.cli.handlers.DeploymentInfoHandler;
 import org.jboss.as.cli.handlers.DeploymentOverlayHandler;
 import org.jboss.as.cli.handlers.EchoDMRHandler;
+import org.jboss.as.cli.handlers.EchoVariableHandler;
 import org.jboss.as.cli.handlers.GenericTypeOperationHandler;
 import org.jboss.as.cli.handlers.HelpHandler;
 import org.jboss.as.cli.handlers.HistoryHandler;
@@ -105,8 +107,10 @@ import org.jboss.as.cli.handlers.QuitHandler;
 import org.jboss.as.cli.handlers.ReadAttributeHandler;
 import org.jboss.as.cli.handlers.ReadOperationHandler;
 import org.jboss.as.cli.handlers.ReloadHandler;
+import org.jboss.as.cli.handlers.SetVariableHandler;
 import org.jboss.as.cli.handlers.ShutdownHandler;
 import org.jboss.as.cli.handlers.UndeployHandler;
+import org.jboss.as.cli.handlers.UnsetVariableHandler;
 import org.jboss.as.cli.handlers.VersionHandler;
 import org.jboss.as.cli.handlers.batch.BatchClearHandler;
 import org.jboss.as.cli.handlers.batch.BatchDiscardHandler;
@@ -227,6 +231,8 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     /** whether to write messages to the terminal output */
     private boolean silent;
+
+    private Map<String, String> variables;
 
     /**
      * Version mode - only used when --version is called from the command line.
@@ -349,6 +355,11 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         cmdRegistry.registerHandler(new ReloadHandler(this), "reload");
         cmdRegistry.registerHandler(new ShutdownHandler(this), "shutdown");
         cmdRegistry.registerHandler(new VersionHandler(), "version");
+
+        // variables
+        cmdRegistry.registerHandler(new SetVariableHandler(), "set");
+        cmdRegistry.registerHandler(new EchoVariableHandler(), "echo");
+        cmdRegistry.registerHandler(new UnsetVariableHandler(), "unset");
 
         // deployment
         cmdRegistry.registerHandler(new DeployHandler(this), "deploy");
@@ -605,6 +616,8 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             while(t1 != null) {
                 if(t1.getLocalizedMessage() != null) {
                     buf.append(": ").append(t1.getLocalizedMessage());
+                } else {
+                    t1.printStackTrace();
                 }
                 t1 = t1.getCause();
             }
@@ -848,7 +861,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         if (trustManager == null || (lastChain = trustManager.getLastFailedCertificateChain()) == null) {
             return false;
         }
-        error("Unable to connect due to unrecognised server certificate");
+        printLine("Unable to connect due to unrecognised server certificate");
         for (Certificate current : lastChain) {
             if (current instanceof X509Certificate) {
                 X509Certificate x509Current = (X509Certificate) current;
@@ -1068,7 +1081,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     private void resetArgs(String cmdLine) throws CommandFormatException {
         if (cmdLine != null) {
-            parsedCmd.parse(prefix, cmdLine);
+            parsedCmd.parse(prefix, cmdLine, this);
             setOutputTarget(parsedCmd.getOutputTarget());
         }
         this.cmdLine = cmdLine;
@@ -1263,6 +1276,44 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             }
         }
         return console.getTerminalHeight();
+    }
+
+    @Override
+    public void setVariable(String name, String value) throws CommandLineException {
+        if(name == null || name.isEmpty()) {
+            throw new CommandLineException("Variable name can't be null or an empty string");
+        }
+        if(!Character.isJavaIdentifierStart(name.charAt(0))) {
+            throw new CommandLineException("Variable name must be a valid Java identifier (and not contain '$'): '" + name + "'");
+        }
+        for(int i = 1; i < name.length(); ++i) {
+            final char c = name.charAt(i);
+            if(!Character.isJavaIdentifierPart(c) || c == '$') {
+                throw new CommandLineException("Variable name must be a valid Java identifier (and not contain '$'): '" + name + "'");
+            }
+        }
+
+        if(value == null) {
+            if(variables == null) {
+                return;
+            }
+            variables.remove(name);
+        } else {
+            if(variables == null) {
+                variables = new HashMap<String,String>();
+            }
+            variables.put(name, value);
+        }
+    }
+
+    @Override
+    public String getVariable(String name) {
+        return variables == null ? null : variables.get(name);
+    }
+
+    @Override
+    public Collection<String> getVariables() {
+        return variables == null ? Collections.<String>emptySet() : variables.keySet();
     }
 
     private class AuthenticationCallbackHandler implements CallbackHandler {

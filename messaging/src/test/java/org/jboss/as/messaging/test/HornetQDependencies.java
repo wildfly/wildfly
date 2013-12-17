@@ -21,13 +21,11 @@
  */
 package org.jboss.as.messaging.test;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.as.model.test.ModelTestControllerVersion;
-import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
 
 /**
  *
@@ -83,10 +81,7 @@ public class HornetQDependencies {
         HORNET_Q_DEPENDENCIES = Collections.unmodifiableMap(map);
     }
 
-    static LegacyKernelServicesInitializer addDependencies(ModelTestControllerVersion controllerVersion, LegacyKernelServicesInitializer initializer) throws IOException, ClassNotFoundException {
-        for (String dep : HORNET_Q_DEPENDENCIES.get(controllerVersion)) {
-            initializer.addMavenResourceURL(dep);
-        }
-        return initializer;
+    static String[] getDependencies(ModelTestControllerVersion controllerVersion) {
+        return HORNET_Q_DEPENDENCIES.get(controllerVersion);
     }
 }

@@ -20,26 +20,29 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project name="module-repository" basedir="." default="all">
+<project name="build-configs" basedir="." default="all">
 
     <property name="output.dir" value="../${wildfly.build.output.dir}"/>
 
-    <target name="generate-configs" description="Generate standard standalone configurations">
-    	<!-- make output file directory -->
-    	<mkdir dir="${generated.configs.standalone}"/>
-      <mkdir dir="${generated.configs.domain}"/>
-      <mkdir dir="${generated.configs.examples}"/>
-    	<delete>
-         <fileset dir="${generated.configs.standalone}">
-            <include name="**/*"/>
-         </fileset>
-         <fileset dir="${generated.configs.domain}">
-            <include name="**/*"/>
-         </fileset>
-         <fileset dir="${generated.configs.examples}">
-            <include name="**/*"/>
-         </fileset>
-    	</delete>
+    <target name="init-configs">
+        <mkdir dir="${generated.configs.standalone}"/>
+        <mkdir dir="${generated.configs.domain}"/>
+        <mkdir dir="${generated.configs.examples}"/>
+        <delete>
+            <fileset dir="${generated.configs.standalone}">
+                <include name="**/*"/>
+            </fileset>
+            <fileset dir="${generated.configs.domain}">
+                <include name="**/*"/>
+            </fileset>
+            <fileset dir="${generated.configs.examples}">
+                <include name="**/*"/>
+            </fileset>
+        </delete>
+    </target>
+
+    <target name="generate-configs" depends="init-configs" description="Generate standard standalone configurations">
+
     	
     	<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
     	

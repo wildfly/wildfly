@@ -56,9 +56,11 @@ public class NicInterfaceCriteriaUnitTestCase {
             assertEquals(1, result.size());
             Set<InetAddress> addresses = result.get(nic);
             assertNotNull(addresses);
-            Set<InetAddress> rightType = getRightTypeAddresses(entry.getValue());
-            assertEquals(rightType, addresses);
-            assertTrue(addresses.containsAll(rightType));
+            // WFLY-786 NicInterfaceCriteria doesn't prune based on IPv6/v4 preference
+            // so we shouldn't test that it does. Pruning is done by OverallInterfaceCriteria
+//            Set<InetAddress> rightType = getRightTypeAddresses(entry.getValue());
+//            assertEquals(rightType, addresses);
+//            assertTrue(addresses.containsAll(rightType));
         }
     }
 

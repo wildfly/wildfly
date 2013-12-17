@@ -471,6 +471,14 @@
             <maven-resource group="gnu.getopt" artifact="java-getopt" />
         </module-def>
 
+        <!--
+            Starting with Netty 4.x, Netty packages have changed from org.jboss.netty to io.netty.
+            Add a new module io.netty for Netty 4.x (and keep org.jboss.netty for Netty 3.x versions).
+        -->
+        <module-def name="io.netty">
+            <maven-resource group="io.netty" artifact="netty-all"/>
+        </module-def>
+
         <module-def name="javaee.api"/>
 
         <module-def name="javax.activation.api">
@@ -603,6 +611,10 @@
             <maven-resource group="net.jcip" artifact="jcip-annotations"/>
         </module-def>
 
+        <module-def name="org.apache.avro">
+            <maven-resource group="org.apache.avro" artifact="avro"/>
+        </module-def>
+
         <module-def name="org.apache.commons.beanutils">
             <maven-resource group="commons-beanutils" artifact="commons-beanutils"/>
         </module-def>
@@ -682,6 +694,13 @@
 
         <module-def name="org.apache.james.mime4j">
             <maven-resource group="org.apache.james" artifact="apache-mime4j"/>
+        </module-def>
+
+        <module-def name="org.apache.lucene">
+            <maven-resource group="org.apache.lucene" artifact="lucene-analyzers"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-core"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-facet"/>
+            <maven-resource group="org.apache.lucene" artifact="lucene-memory"/>
         </module-def>
 
         <module-def name="org.apache.neethi">
@@ -777,8 +796,18 @@
             <maven-resource group="org.hibernate.common" artifact="hibernate-commons-annotations"/>
         </module-def>
 
+        <module-def name="org.hibernate.hql">
+            <maven-resource group="org.hibernate.hql" artifact="hibernate-hql-lucene"/>
+            <maven-resource group="org.hibernate.hql" artifact="hibernate-hql-parser"/>
+        </module-def>
+
         <!-- envers is 1-1 with hibernate orm, so move into hibernate but leave empty module for apps that might depend on it -->
         <module-def name="org.hibernate.envers">
+        </module-def>
+
+        <module-def name="org.hibernate.search">
+            <maven-resource group="org.hibernate" artifact="hibernate-search-engine"/>
+            <maven-resource group="org.hibernate" artifact="hibernate-search-infinispan"/>
         </module-def>
 
         <!-- create empty slot for Hibernate 3.x jars -->
@@ -816,6 +845,10 @@
             <maven-resource group="org.hornetq" artifact="hornetq-journal"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-client"/>
             <maven-resource group="org.hornetq" artifact="hornetq-jms-server"/>
+            <!-- hornetq-native is a regular jar (with Java classes)
+                 and contains native libraries that are extracted
+            -->
+            <maven-resource group="org.hornetq" artifact="hornetq-native"/>
             <extract-native-jar group="org.hornetq" artifact="hornetq-native"/>
         </module-def>
 
@@ -849,9 +882,23 @@
 
         <module-def name="org.infinispan.client.hotrod">
             <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod"/>
-            <maven-resource group="org.infinispan" artifact="infinispan-query-dsl"/>
             <maven-resource group="org.infinispan" artifact="infinispan-remote-query-client"/>
             <maven-resource group="org.infinispan.protostream" artifact="protostream"/>
+        </module-def>
+
+        <module-def name="org.infinispan.lucene">
+            <maven-resource group="org.infinispan" artifact="infinispan-lucene-v3"/>
+        </module-def>
+        <module-def name="org.infinispan.lucene.directory">
+            <maven-resource group="org.infinispan" artifact="infinispan-lucene-directory"/>
+        </module-def>
+
+        <module-def name="org.infinispan.query">
+            <maven-resource group="org.infinispan" artifact="infinispan-query"/>
+        </module-def>
+
+        <module-def name="org.infinispan.query.dsl">
+            <maven-resource group="org.infinispan" artifact="infinispan-query-dsl"/>
         </module-def>
 
         <module-def name="org.jacorb">
@@ -896,9 +943,14 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-common"/>
         </module-def>
 
-        <module-def name="org.jboss.as.clustering.ejb3.infinispan">
-            <maven-resource group="org.wildfly" artifact="wildfly-clustering-ejb3-infinispan"/>
+        <module-def name="org.wildfly.clustering.ejb.infinispan">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-ejb-infinispan"/>
         </module-def>
+        <module-def name="org.wildfly.clustering.ejb.spi">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-ejb-spi"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.clustering.ejb3.infinispan"/>
 
         <module-def name="org.jboss.as.clustering.infinispan">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-infinispan"/>
@@ -918,14 +970,15 @@
 
         <module-def name="org.jboss.as.clustering.web.infinispan"/>
 
+        <module-def name="org.wildfly.clustering.web.api">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-api"/>
+        </module-def>
         <module-def name="org.wildfly.clustering.web.infinispan">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-infinispan"/>
         </module-def>
-
         <module-def name="org.wildfly.clustering.web.spi">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-spi"/>
         </module-def>
-
         <module-def name="org.wildfly.clustering.web.undertow">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-web-undertow"/>
         </module-def>
@@ -1176,7 +1229,8 @@
         </module-def>
 
         <!--
-          starting with 3.4.x Netty has changed its groupId to io.netty.
+          Starting with 3.4.x Netty has changed its groupId to io.netty but packages
+          remained with org.jboss.netty
         -->
         <module-def name="org.jboss.netty">
             <maven-resource group="io.netty" artifact="netty"/>
@@ -1465,7 +1519,6 @@
             <maven-resource group="io.undertow" artifact="undertow-servlet"/>
         </module-def>
         <module-def name="io.undertow.jsp">
-            <maven-resource group="io.undertow" artifact="undertow-jsp"/>
             <maven-resource group="io.undertow.jastow" artifact="jastow"/>
         </module-def>
         <module-def name="io.undertow.jasper-jdt">

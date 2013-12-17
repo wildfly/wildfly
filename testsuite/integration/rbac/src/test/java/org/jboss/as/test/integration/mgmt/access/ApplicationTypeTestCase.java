@@ -140,7 +140,7 @@ public class ApplicationTypeTestCase extends AbstractRbacTestCase {
     private void testMailSession(boolean canWrite, ModelControllerClient client) throws IOException {
         ModelNode operation = Util.createOperation(WRITE_ATTRIBUTE_OPERATION, pathAddress(
                 pathElement(SUBSYSTEM, "mail"),
-                pathElement("mail-session", "java:jboss/mail/Default")
+                pathElement("mail-session", "default")
         ));
         operation.get(NAME).set("jndi-name");
         operation.get(VALUE).set("java:jboss/mail/Default_XXX");

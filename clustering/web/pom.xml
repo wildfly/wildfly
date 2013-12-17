@@ -38,6 +38,7 @@
     <name>WildFly: Web session clustering</name>
 
     <modules>
+        <module>api</module>
         <module>spi</module>
         <module>undertow</module>
         <module>infinispan</module>

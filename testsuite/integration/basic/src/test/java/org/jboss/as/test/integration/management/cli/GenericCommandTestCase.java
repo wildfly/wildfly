@@ -34,6 +34,7 @@ import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLIOpResult;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -53,7 +54,7 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class GenericCommandTestCase extends AbstractCliTestBase {
 
-    private static final String tempDir = System.getProperty("java.io.tmpdir");
+    private static final String tempDir = TestSuiteEnvironment.getTmpDir();
     private static WebArchive war;
     private static File warFile;
     private static File deployDir;

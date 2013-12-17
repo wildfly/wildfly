@@ -163,7 +163,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>keytool-maven-plugin</artifactId>
-                        <version>1.2</version>
+                        <version>1.3</version>
                         <executions>
                             <execution>
                                 <phase>generate-test-resources</phase>
@@ -176,7 +176,7 @@
                                 <phase>generate-test-resources</phase>
                                 <id>genkey-jcetest-keystore</id>
                                 <goals>
-                                    <goal>genkey</goal>
+                                    <goal>generateKeyPair</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -328,13 +328,6 @@
                             </execution>
                         </executions>
 
-                    </plugin>
-
-                    <plugin>
-                        <groupId>org.apache.felix</groupId>
-                        <artifactId>maven-bundle-plugin</artifactId>
-                        <inherited>true</inherited>
-                        <extensions>true</extensions>
                     </plugin>
 
                 </plugins>
