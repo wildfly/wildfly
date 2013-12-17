@@ -178,7 +178,6 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
-            <xs:element name="filter" type="valueType" minOccurs="0"/>
             <xs:element name="formatter" type="handlerFormatterType" minOccurs="0"/>
             <xs:element name="target" minOccurs="0">
                 <xs:complexType>
