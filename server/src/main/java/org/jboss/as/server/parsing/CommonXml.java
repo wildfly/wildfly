@@ -960,11 +960,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected void parseDeployments(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list,
-                                    final Set<Attribute> allowedAttributes, final Set<Element> allowedElements) throws XMLStreamException {
+                                    final Set<Attribute> allowedAttributes, final Set<Element> allowedElements, boolean validateUniqueRuntimeNames) throws XMLStreamException {
         requireNoAttributes(reader);
 
         final Set<String> names = new HashSet<String>();
-        final Set<String> runtimeNames = new HashSet<String>();
+        final Set<String> runtimeNames = validateUniqueRuntimeNames ? new HashSet<String>() : null;
 
         while (reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -976,6 +976,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
             // Handle attributes
             String uniqueName = null;
+            String runtimeName = null;
+            boolean enabled = false;
             Set<Attribute> requiredAttributes = EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME);
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
@@ -997,14 +999,13 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                             break;
                         }
                         case RUNTIME_NAME: {
-                            if (!runtimeNames.add(value)) {
-                                throw duplicateNamedElement(reader, value);
-                            }
                             DeploymentAttributes.RUNTIME_NAME.parseAndSetParameter(value, deploymentAdd, reader);
+                            runtimeName = value;
                             break;
                         }
                         case ENABLED: {
                             DeploymentAttributes.ENABLED.parseAndSetParameter(value, deploymentAdd, reader);
+                            enabled = deploymentAdd.get(DeploymentAttributes.ENABLED.getName()).asBoolean(false);
                             break;
                         }
                         default:
@@ -1014,6 +1015,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             if (requiredAttributes.size() > 0) {
                 throw missingRequired(reader, requiredAttributes);
+            }
+
+            if (validateUniqueRuntimeNames && enabled && runtimeName != null && !runtimeNames.add(runtimeName)) {
+                throw duplicateNamedElement(reader, runtimeName);
             }
 
             final ModelNode deploymentAddress = address.clone().add(DEPLOYMENT, uniqueName);

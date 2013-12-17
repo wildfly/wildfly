@@ -34,8 +34,8 @@
             <socket-binding-group ref="test-sockets" port-offset="10"/>
 
             <deployments>
-                <deployment name="test-deployment" runtime-name="foo.war" enabled="false" />
-                <deployment name="other-test-deployment" runtime-name="foo.war" enabled="false" />
+                <deployment name="test-deployment" runtime-name="foo.war" />
+                <deployment name="other-test-deployment" runtime-name="foo.war" />
             </deployments>
 
         </server-group>

@@ -254,7 +254,7 @@ public class StandaloneXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, DOMAIN_1_0, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), true);
             element = nextElement(reader, DOMAIN_1_0);
         }
 
@@ -364,7 +364,7 @@ public class StandaloneXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, namespace, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), true);
             element = nextElement(reader, namespace);
         }
         if (element != null) {
@@ -472,7 +472,7 @@ public class StandaloneXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, namespace, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), true);
             element = nextElement(reader, namespace);
         }
 
