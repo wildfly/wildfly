@@ -70,6 +70,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -655,14 +656,15 @@ class ModelControllerImpl implements ModelController {
         @Override
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             if (MGMT_OP_LOGGER.isTraceEnabled()) {
-                MGMT_OP_LOGGER.trace("Executing " + operation.get(OP) + " " + operation.get(OP_ADDR));
+                MGMT_OP_LOGGER.tracef("Executing %s %s", operation.get(OP), operation.get(OP_ADDR));
             }
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String operationName =  operation.require(OP).asString();
-            final OperationStepHandler stepHandler = rootRegistration.getOperationHandler(address, operationName);
+            final OperationStepHandler stepHandler = resolveOperationHandler(address, operationName);
             if(stepHandler != null) {
                 context.addStep(stepHandler, OperationContext.Stage.MODEL);
             } else {
+
                 ImmutableManagementResourceRegistration child = rootRegistration.getSubModel(address);
                 if (child == null) {
                     context.getFailureDescription().set(MESSAGES.noSuchResourceType(address));
@@ -672,6 +674,40 @@ class ModelControllerImpl implements ModelController {
             }
             context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);
         }
+    }
+
+    private OperationStepHandler resolveOperationHandler(final PathAddress address, final String operationName) {
+        OperationStepHandler result = rootRegistration.getOperationHandler(address, operationName);
+        if (result == null && address.size() > 0) {
+            // For wildcard elements, check specific registrations where the same OSH is used
+            // for all such registrations
+            PathElement pe = address.getLastElement();
+            if (pe.isWildcard()) {
+                String type = pe.getKey();
+                PathAddress parent = address.subAddress(0, address.size() - 1);
+                Set<PathElement> children = rootRegistration.getChildAddresses(parent);
+                if (children != null) {
+                    OperationStepHandler found = null;
+                    for (PathElement child : children) {
+                        if (type.equals(child.getKey())) {
+                            OperationEntry oe = rootRegistration.getOperationEntry(parent.append(child), operationName);
+                            OperationStepHandler osh = oe == null ? null : oe.getOperationHandler();
+                            if (osh == null || (found != null && !found.equals(osh))) {
+                                // Not all children have the same handler; give up
+                                found = null;
+                                break;
+                            }
+                            // We have a candidate OSH
+                            found = osh;
+                        }
+                    }
+                    if (found != null) {
+                        result = found;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
     /**

@@ -62,7 +62,7 @@ public class CLISecurityTestCase {
     public static class UnauthentizedCLI extends CLIWrapper {
 
         public UnauthentizedCLI() throws Exception {
-            super();
+            super(false, null, createConsoleInput());
         }
 
         @Override
@@ -70,8 +70,7 @@ public class CLISecurityTestCase {
             return null;
         }
 
-        @Override
-        protected InputStream createConsoleInput() {
+        private static InputStream createConsoleInput() {
             return new InputStream() {
                 private final byte[] bytes = (Authentication.USERNAME + '\n').getBytes();
                 private int i = 0;

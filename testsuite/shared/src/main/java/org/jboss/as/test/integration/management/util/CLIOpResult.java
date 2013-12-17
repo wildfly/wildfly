@@ -39,12 +39,14 @@ import org.jboss.dmr.Property;
  */
 public class CLIOpResult {
 
+    private ModelNode responseNode;
     private boolean isOutcomeSuccess;
     private Map<String, Object> responseMap;
 
     public CLIOpResult() {}
 
     public CLIOpResult(ModelNode node) {
+        this.responseNode = node;
         this.responseMap = toMap(node);
         this.isOutcomeSuccess = ModelDescriptionConstants.SUCCESS.equals(this.responseMap.get(ModelDescriptionConstants.OUTCOME));
     }
@@ -87,6 +89,10 @@ public class CLIOpResult {
 
     public Object getResult() {
         return getFromResponse(ModelDescriptionConstants.RESULT);
+    }
+
+    public ModelNode getResponseNode() {
+        return responseNode;
     }
 
     /**
