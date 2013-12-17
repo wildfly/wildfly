@@ -30,6 +30,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.ListenerRegistry;
 import io.undertow.server.OpenListener;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
+import io.undertow.server.handlers.ProxyPeerAddressHandler;
 import io.undertow.server.handlers.SSLHeaderHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
 import org.jboss.msc.service.ServiceName;
@@ -58,7 +59,7 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
 
     private final String serverName;
 
-    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, boolean certificateForwarding) {
+    public HttpListenerService(String name, final String serverName, OptionMap listenerOptions, boolean certificateForwarding, boolean proxyAddressForwarding) {
         super(name, listenerOptions);
         this.serverName = serverName;
         listenerHandlerWrappers.add(new HandlerWrapper() {
@@ -73,6 +74,13 @@ public class HttpListenerService extends ListenerService<HttpListenerService> {
                 @Override
                 public HttpHandler wrap(HttpHandler handler) {
                     return new SSLHeaderHandler(handler);
+                }
+            });
+        }if (proxyAddressForwarding) {
+            listenerHandlerWrappers.add(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(HttpHandler handler) {
+                    return new ProxyPeerAddressHandler(handler);
                 }
             });
         }

@@ -69,18 +69,20 @@ public class OptionAttributeDefinition extends SimpleAttributeDefinition {
 
     public OptionMap.Builder resolveOption(final OperationContext context, final ModelNode model, OptionMap.Builder builder) throws OperationFailedException {
         ModelNode value = resolveModelAttribute(context, model);
-        if (getType() == ModelType.INT) {
-            builder.set((Option<Integer>) option, value.asInt());
-        } else if (getType() == ModelType.LONG) {
-            builder.set(option, value.asLong());
-        } else if (getType() == ModelType.BOOLEAN) {
-            builder.set(option, value.asBoolean());
-        } else if (optionType.isEnum()) {
-            builder.set(option, option.parseValue(value.asString(),option.getClass().getClassLoader()));
-        } else if (getType() == ModelType.STRING) {
-            builder.set(option, value.asString());
-        } else {
-            throw new OperationFailedException("Dont know how to handle: " + option + " with value: " + value);
+        if (value.isDefined()) {
+            if (getType() == ModelType.INT) {
+                builder.set((Option<Integer>) option, value.asInt());
+            } else if (getType() == ModelType.LONG) {
+                builder.set(option, value.asLong());
+            } else if (getType() == ModelType.BOOLEAN) {
+                builder.set(option, value.asBoolean());
+            } else if (optionType.isEnum()) {
+                builder.set(option, option.parseValue(value.asString(), option.getClass().getClassLoader()));
+            } else if (getType() == ModelType.STRING) {
+                builder.set(option, value.asString());
+            } else {
+                throw new OperationFailedException("Dont know how to handle: " + option + " with value: " + value);
+            }
         }
         return builder;
     }
@@ -113,7 +115,13 @@ public class OptionAttributeDefinition extends SimpleAttributeDefinition {
 
         private void setType() {
             try {
-                Field typeField = option.getClass().getDeclaredField("type");
+                final Field typeField;
+                if (option.getClass().getSimpleName().equals("SequenceOption")){
+                    typeField = option.getClass().getDeclaredField("elementType");
+                }else{
+                    typeField = option.getClass().getDeclaredField("type");
+                }
+
                 typeField.setAccessible(true);
                 optionType = (Class<?>) typeField.get(option);
 
