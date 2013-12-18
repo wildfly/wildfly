@@ -368,13 +368,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
         // TODO make the authorization manager implementation configurable in Undertow or jboss-web.xml
         ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
-        AuthorizationInfo authzInfo = applicationPolicy.getAuthorizationInfo();
-
-        if (authzInfo != null) {
-            for (AuthorizationModuleEntry entry : authzInfo.getModuleEntries()) {
-                if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
-                    deploymentInfo.setAuthorizationManager(new JACCAuthorizationManager());
-                    break;
+        if (applicationPolicy != null) {
+            AuthorizationInfo authzInfo = applicationPolicy.getAuthorizationInfo();
+            if (authzInfo != null) {
+                for (AuthorizationModuleEntry entry : authzInfo.getModuleEntries()) {
+                    if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
+                        deploymentInfo.setAuthorizationManager(new JACCAuthorizationManager());
+                        break;
+                    }
                 }
             }
         }
