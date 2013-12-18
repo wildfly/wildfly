@@ -77,6 +77,8 @@ public class RemoveMethodExceptionTestCase {
             if (!(e instanceof NoSuchEJBException)){
                 Assert.fail("Expected NoSuchEJBException but got: " + e);
             }
+            return;
         }
+        Assert.fail("NoSuchEJBException should occur but didn't!");
     }
 }
