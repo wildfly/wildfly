@@ -69,12 +69,21 @@ public class MessagingClientTestCase {
     public void testMessagingClientUsingMessagingPort() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getWebUri().getHost(), 5445, false);
         doMessagingClient(sf);
+        sf.close();
     }
 
     @Test
     public void testMessagingClientUsingHTTPPort() throws Exception {
         final ClientSessionFactory sf = createClientSessionFactory(managementClient.getWebUri().getHost(), managementClient.getWebUri().getPort(), true);
         doMessagingClient(sf);
+        sf.close();
+    }
+
+    public void loop() throws Exception {
+        for (int i = 0; i < 1000; i++) {
+            System.out.println("i = " + i);
+            testMessagingClientUsingHTTPPort();
+        }
     }
 
     private void doMessagingClient(ClientSessionFactory sf) throws Exception {
