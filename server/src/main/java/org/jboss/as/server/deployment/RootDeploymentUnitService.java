@@ -58,8 +58,8 @@ final class RootDeploymentUnitService extends AbstractDeploymentUnitService {
      * @param registration the registration
      * @param mutableRegistration the mutable registration
      * @param resource the model
-     * @param serviceVerificationHandler operation step handler that will verify service changes made during deployment processing
-     * @param vaultReader source for resolving data from the security vault
+     * @param serviceVerificationHandler
+     * @param vaultReader
      */
     public RootDeploymentUnitService(final String name, final String managementName, final DeploymentUnit parent, final ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler, final AbstractVaultReader vaultReader) {
         this.serviceVerificationHandler = serviceVerificationHandler;
