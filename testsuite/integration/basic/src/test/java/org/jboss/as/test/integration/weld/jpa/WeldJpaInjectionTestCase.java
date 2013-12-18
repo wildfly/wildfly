@@ -85,6 +85,8 @@ public class WeldJpaInjectionTestCase {
             if (!(e instanceof NoResultException)){
                 Assert.fail("Expected NoResultException but got " + e);
             }
+            return;
         }
+        Assert.fail("NoResultException should occur but didn't!");
     }
 }
