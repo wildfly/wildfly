@@ -25,6 +25,6 @@
 
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
-   <extension-module>org.wildfly.clustering.monitor.extension</extension-module>
+   <extension-module>org.wildfly.extension.clustering.monitor</extension-module>
    <subsystem xmlns="urn:jboss:domain:clustering-monitor:1.0"/>
 </config>
