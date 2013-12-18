@@ -22,6 +22,9 @@
 
 package org.jboss.as.test.integration.weld.jpa.scoping;
 
+import javax.inject.Inject;
+import javax.persistence.NoResultException;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.shrinkwrap.api.Archive;
@@ -31,15 +34,13 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import javax.inject.Inject;
-import javax.persistence.NoResultException;
-
 /**
- *  AS7-1761
- *
+ * AS7-1761
+ * <p/>
  * Weld JPA injection tests. Simply tests that a persistence context can be injected into a CDI bean in another deployment unit
  *
  * @author Stuart Douglas
@@ -48,16 +49,16 @@ import javax.persistence.NoResultException;
 public class WeldJpaInjectionScopeTestCase {
 
     private static final String persistence_xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
-            "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
-            "  <persistence-unit name=\"cdiPu\">" +
-            "    <description>OrmTestCase Persistence Unit." +
-            "    </description>" +
-            "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
-            "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
-            "</properties>" +
-            "  </persistence-unit>" +
-            "</persistence>";
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
+                    "<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" version=\"1.0\">" +
+                    "  <persistence-unit name=\"cdiPu\">" +
+                    "    <description>OrmTestCase Persistence Unit." +
+                    "    </description>" +
+                    "  <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
+                    "<properties> <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\"/>" +
+                    "</properties>" +
+                    "  </persistence-unit>" +
+                    "</persistence>";
 
 
     @Deployment
@@ -78,8 +79,15 @@ public class WeldJpaInjectionScopeTestCase {
     @Inject
     private CdiJpaInjectingBean bean;
 
-    @Test(expected= NoResultException.class)
+    @Test
     public void testOrmXmlDefinedEmployeeEntity() throws Exception {
-        Employee emp = bean.queryEmployeeName(1);
+        try {
+            Employee emp = bean.queryEmployeeName(1);
+        } catch (Exception e) {
+            if (!(e instanceof NoResultException)) {
+                Assert.fail("Expected NoResultException but got " + e);
+            }
+        }
     }
 }
+
