@@ -24,7 +24,7 @@ public class JSFMetadataProcessor implements DeploymentUnitProcessor {
         }
         JBossServletMetaData jsf = null;
         for(JBossServletMetaData servlet : metaData.getMergedJBossWebMetaData().getServlets()) {
-            if(servlet.getServletClass().equals(JAVAX_FACES_WEBAPP_FACES_SERVLET)) {
+            if(JAVAX_FACES_WEBAPP_FACES_SERVLET.equals(servlet.getServletClass())) {
                 jsf = servlet;
             }
         }
