@@ -24,11 +24,13 @@ package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT_LOG;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APPLICATION_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONSTRAINT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -40,6 +42,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_SEARCH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_TO_PRINCIPAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST_SCOPED_ROLE;
@@ -47,6 +51,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JSON_FORMATTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOGGER;
@@ -56,8 +61,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT_OFFSET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRINCIPAL_TO_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROVIDER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING;
@@ -76,6 +83,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_PORT_OFFSET;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_FILTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_IS_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_TO_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
@@ -106,11 +116,11 @@ import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathAddHandler;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.JsonAuditLogFormatterResourceDefinition;
 import org.jboss.as.domain.management.audit.SyslogAuditLogHandlerResourceDefinition;
-import org.jboss.as.domain.management.access.SensitivityResourceDefinition;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.operations.SetServerGroupHostHandler;
@@ -403,17 +413,55 @@ public final class ManagedServerOperationsFactory {
                     addManagementComponentComponent(currentRealm, realmAddress, AUTHENTICATION, updates);
                 }
                 if (currentRealm.hasDefined(AUTHORIZATION)) {
-                    addManagementComponentComponent(currentRealm, realmAddress, AUTHORIZATION, updates);
+                    ModelNode authorization = currentRealm.require(AUTHORIZATION);
+                    if (authorization.hasDefined(PROPERTIES)) {
+                        addManagementComponentComponent(currentRealm, realmAddress, AUTHORIZATION, updates);
+                    } else if (authorization.hasDefined(LDAP)) {
+                        ModelNode ldap = authorization.require(LDAP);
+                        // Add authorization=ldap
+                        ModelNode addLdap = new ModelNode();
+                        ModelNode ldapAddr = realmAddress.clone().add(AUTHORIZATION, LDAP);
+                        addAddNameAndAddress(addLdap, ldapAddr);
+                        addLdap.get(CONNECTION).set(ldap.get(CONNECTION));
+                        updates.add(addLdap);
+
+                        // Add sub-resources
+                        if (ldap.hasDefined(USERNAME_TO_DN)) {
+                            ModelNode usernameToDn = ldap.require(USERNAME_TO_DN);
+                            if (usernameToDn.hasDefined(USERNAME_IS_DN)) {
+                                addLdapChild(usernameToDn.require(USERNAME_IS_DN), ldapAddr, USERNAME_TO_DN, USERNAME_IS_DN, updates);
+                            } else if (usernameToDn.hasDefined(USERNAME_FILTER)) {
+                                addLdapChild(usernameToDn.require(USERNAME_FILTER), ldapAddr, USERNAME_TO_DN, USERNAME_FILTER, updates);
+                            } else if (usernameToDn.hasDefined(ADVANCED_FILTER)) {
+                                addLdapChild(usernameToDn.require(ADVANCED_FILTER), ldapAddr, USERNAME_TO_DN, ADVANCED_FILTER, updates);
+                            }
+                        }
+                        if (ldap.hasDefined(GROUP_SEARCH)) {
+                            ModelNode groupSearch = ldap.require(GROUP_SEARCH);
+                            if (groupSearch.hasDefined(GROUP_TO_PRINCIPAL)) {
+                                addLdapChild(groupSearch.require(GROUP_TO_PRINCIPAL), ldapAddr, GROUP_SEARCH, GROUP_TO_PRINCIPAL, updates);
+                            } else if (groupSearch.hasDefined(PRINCIPAL_TO_GROUP)) {
+                                addLdapChild(groupSearch.require(PRINCIPAL_TO_GROUP), ldapAddr, GROUP_SEARCH, PRINCIPAL_TO_GROUP, updates);
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
-    private void addManagementComponentComponent(ModelNode realm, ModelNode parentAddress, String key, List<ModelNode> updates) {
-        for (String currentComponent : realm.get(key).keys()) {
+    private void addLdapChild(ModelNode child, ModelNode parentAddress, String key, String value, List<ModelNode> updates) {
+        ModelNode add = new ModelNode();
+        convertAttributesToParams(child, add);
+        addAddNameAndAddress(add, parentAddress.clone().add(key, value));
+        updates.add(add);
+    }
+
+    private void addManagementComponentComponent(ModelNode parent, ModelNode parentAddress, String key, List<ModelNode> updates) {
+        for (String currentComponent : parent.get(key).keys()) {
             ModelNode addComponent = new ModelNode();
             // First take the properties to pass over.
-            addComponent.set(realm.get(key, currentComponent));
+            addComponent.set(parent.get(key, currentComponent));
 
             // Now convert it to an operation by adding a name and address.
             ModelNode identityAddress = parentAddress.clone().add(key, currentComponent);
