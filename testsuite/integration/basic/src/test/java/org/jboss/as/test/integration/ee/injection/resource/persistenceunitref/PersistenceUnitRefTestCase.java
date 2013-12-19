@@ -25,6 +25,7 @@ import static org.junit.Assert.assertNotNull;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.persistence.NoResultException;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
@@ -32,6 +33,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -82,16 +84,28 @@ public class PersistenceUnitRefTestCase {
         bean.getMypu().getMetamodel().entity(PuMyEntity.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCorrectPersistenceUnitInjectedFromAnnotation2() throws NamingException {
-        PuManagedBean bean = getManagedBean();
-        bean.getMypu().getMetamodel().entity(PuOtherEntity.class);
+        try {
+            PuManagedBean bean = getManagedBean();
+            bean.getMypu().getMetamodel().entity(PuOtherEntity.class);
+        } catch (IllegalArgumentException e) {
+            //all is fine!
+            return;
+        }
+        Assert.fail("IllegalArgumentException should occur but didn't!");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCorrectPersistenceUnitInjectedFromPersistenceUnitRef() throws NamingException {
-        PuManagedBean bean = getManagedBean();
-        bean.getOtherpc().getMetamodel().entity(PuMyEntity.class);
+        try {
+            PuManagedBean bean = getManagedBean();
+            bean.getOtherpc().getMetamodel().entity(PuMyEntity.class);
+        } catch (IllegalArgumentException e) {
+            //all is fine!
+            return;
+        }
+        Assert.fail("IllegalArgumentException should occur but didn't!");
     }
 
     @Test
@@ -106,10 +120,16 @@ public class PersistenceUnitRefTestCase {
         bean.getMypu2().getMetamodel().entity(PuMyEntity.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCorrectPersistenceUnitInjectedFromRefInjectionTarget2() throws NamingException {
-        PuManagedBean bean = getManagedBean();
-        bean.getMypu2().getMetamodel().entity(PuOtherEntity.class);
+        try {
+            PuManagedBean bean = getManagedBean();
+            bean.getMypu2().getMetamodel().entity(PuOtherEntity.class);
+        } catch (IllegalArgumentException e) {
+            //all is fine!
+            return;
+        }
+        Assert.fail("IllegalArgumentException should occur but didn't!");
     }
 
 
