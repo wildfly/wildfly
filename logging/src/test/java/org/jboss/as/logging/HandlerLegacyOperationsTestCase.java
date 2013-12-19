@@ -113,7 +113,9 @@ public class HandlerLegacyOperationsTestCase extends AbstractOperationsTestCase 
         assertTrue("Subhandlers should be empty: " + result, SubsystemOperations.readResultAsList(result).isEmpty());
 
         // Write each attribute and check the value
-        testUpdateCommonHandlerAttributes(kernelServices, address);
+
+        testUpdateProperties(kernelServices, address, CommonAttributes.LEVEL, "TRACE");
+        testUpdateProperties(kernelServices, address, CommonAttributes.FILTER_SPEC, "deny");
         testUpdateProperties(kernelServices, address, AsyncHandlerResourceDefinition.OVERFLOW_ACTION, "BLOCK");
         testUpdateProperties(kernelServices, address, AsyncHandlerResourceDefinition.SUBHANDLERS, subhandlers);
         testUpdateProperties(kernelServices, address, AsyncHandlerResourceDefinition.QUEUE_LENGTH, 20);

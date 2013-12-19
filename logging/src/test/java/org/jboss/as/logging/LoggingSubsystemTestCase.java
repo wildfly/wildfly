@@ -47,12 +47,14 @@ import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logmanager.LogContext;
 import org.junit.Assert;
 import org.junit.Test;
@@ -136,7 +138,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
-        final ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, modelVersion);
+        final ModelNode legacyModel = checkSubsystemModelTransformation(mainServices, modelVersion, AsyncModelFixer.INSTANCE);
 
         testTransformOperations(mainServices, modelVersion, legacyModel);
     }
@@ -231,7 +233,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
         Assert.assertNotNull(legacyServices);
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        checkSubsystemModelTransformation(mainServices, modelVersion, AsyncModelFixer.INSTANCE);
     }
 
     private void testFailedTransformedBootOperations1_2_0(final ModelTestControllerVersion controllerVersion) throws Exception {
@@ -436,5 +438,25 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         op = SubsystemOperations.createReadAttributeOperation(address, CommonAttributes.FILTER);
         result = executeTransformOperation(kernelServices, modelVersion, op);
         Assert.assertEquals("Transformed spec does not match filter expression.", Filters.filterToFilterSpec(SubsystemOperations.readResult(result)), filterExpression);
+    }
+
+    private static class AsyncModelFixer implements ModelFixer {
+
+        static final AsyncModelFixer INSTANCE = new AsyncModelFixer();
+
+        @Override
+        public ModelNode fixModel(final ModelNode modelNode) {
+            // Find the async-handler
+            if (modelNode.hasDefined(AsyncHandlerResourceDefinition.ASYNC_HANDLER)) {
+                final ModelNode asyncHandlers = modelNode.get(AsyncHandlerResourceDefinition.ASYNC_HANDLER);
+                for (Property asyncHandler : asyncHandlers.asPropertyList()) {
+                    final ModelNode async = asyncHandler.getValue();
+                    async.remove(CommonAttributes.ENCODING.getName());
+                    async.remove(AbstractHandlerDefinition.FORMATTER.getName());
+                    asyncHandlers.get(asyncHandler.getName()).set(async);
+                }
+            }
+            return modelNode;
+        }
     }
 }

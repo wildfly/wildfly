@@ -23,6 +23,10 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.logging.CommonAttributes.ADD_HANDLER_OPERATION_NAME;
+import static org.jboss.as.logging.CommonAttributes.ENABLED;
+import static org.jboss.as.logging.CommonAttributes.ENCODING;
+import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
+import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.REMOVE_HANDLER_OPERATION_NAME;
 
 import java.util.Locale;
@@ -39,6 +43,8 @@ import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.logging.resolvers.OverflowActionResolver;
@@ -108,7 +114,7 @@ class AsyncHandlerResourceDefinition extends AbstractHandlerDefinition {
             .setAllowNull(true)
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, QUEUE_LENGTH, OVERFLOW_ACTION, SUBHANDLERS);
+    static final AttributeDefinition[] ATTRIBUTES = {ENABLED, LEVEL, FILTER_SPEC, QUEUE_LENGTH, OVERFLOW_ACTION, SUBHANDLERS};
 
 
     public AsyncHandlerResourceDefinition(final boolean includeLegacyAttributes) {
@@ -127,11 +133,11 @@ class AsyncHandlerResourceDefinition extends AbstractHandlerDefinition {
 
     @Override
     protected void registerResourceTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder resourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+        final AttributeTransformationDescriptionBuilder attributeBuilder = resourceBuilder.getAttributeBuilder();
         switch (modelVersion) {
             case VERSION_1_1_0: {
-                resourceBuilder
-                        .getAttributeBuilder()
-                            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, QUEUE_LENGTH, OVERFLOW_ACTION)
+                attributeBuilder
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, QUEUE_LENGTH, OVERFLOW_ACTION)
                             .end()
                         .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
                             .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
@@ -140,6 +146,13 @@ class AsyncHandlerResourceDefinition extends AbstractHandlerDefinition {
                             .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
                             .end();
             }
+            case VERSION_1_2_0:
+            case VERSION_1_3_0: {
+                // These attributes at some point made it on the resource model, but should have never been there. They
+                // are not used by the handler and not persisted to the XML. Discarding them should have no effect.
+                attributeBuilder.setDiscard(DiscardAttributeChecker.ALWAYS, FORMATTER, ENCODING);
+            }
         }
+        attributeBuilder.end();
     }
 }
