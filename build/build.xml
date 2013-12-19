@@ -23,12 +23,13 @@
 <project name="module-repository" basedir="." default="modules">
 
     <import file="lib.xml"/>
+    <import file="build-configs.xml"/>
 
     <property name="output.dir" value="../${wildfly.build.output.dir}"/>
 
     <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
 
-    <target name="copy-files">
+    <target name="copy-files" depends="all-configs">
         <copy todir="${output.dir}">
             <fileset dir="src/main/resources">
                 <include name="LICENSE.txt"/>
