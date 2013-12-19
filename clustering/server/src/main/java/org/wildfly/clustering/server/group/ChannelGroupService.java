@@ -56,7 +56,7 @@ public class ChannelGroupService implements Group, Service<Group> {
     }
 
     @Override
-    public Group getValue() throws IllegalStateException, IllegalArgumentException {
+    public Group getValue() {
         return this;
     }
 

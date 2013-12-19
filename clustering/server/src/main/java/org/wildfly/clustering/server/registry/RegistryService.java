@@ -21,10 +21,14 @@
  */
 package org.wildfly.clustering.server.registry;
 
+import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
@@ -35,17 +39,22 @@ import org.wildfly.clustering.registry.RegistryFactory;
  */
 public class RegistryService<K, V> implements Service<Registry<K, V>> {
 
-    @SuppressWarnings("rawtypes")
-    private final Value<RegistryFactory> factory;
-    @SuppressWarnings("rawtypes")
-    private final Value<RegistryEntryProvider> provider;
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static <K, V> ServiceBuilder<Registry<K, V>> build(ServiceTarget target, String containerName, String cacheName) {
+        RegistryService<K, V> service = new RegistryService<>();
+        return AsynchronousService.addService(target, RegistryFactoryProvider.getServiceName(containerName, cacheName), service)
+                .addDependency(RegistryFactoryProvider.getFactoryServiceName(containerName, cacheName), RegistryFactory.class, (Injector) service.factory)
+                .addDependency(RegistryFactoryProvider.getEntryProviderServiceName(containerName, cacheName), RegistryEntryProvider.class, service.provider)
+        ;
+    }
+
+    private final InjectedValue<RegistryFactory<K, V>> factory = new InjectedValue<>();
+    private final InjectedValue<RegistryEntryProvider<K, V>> provider = new InjectedValue<>();
 
     private volatile Registry<K, V> registry;
 
-    @SuppressWarnings("rawtypes")
-    public RegistryService(Value<RegistryFactory> factory, Value<RegistryEntryProvider> provider) {
-        this.factory = factory;
-        this.provider = provider;
+    private RegistryService() {
+        // Hide
     }
 
     @Override

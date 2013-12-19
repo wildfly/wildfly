@@ -107,10 +107,9 @@ public class ServiceProviderRegistrationFactoryProvider implements CacheServiceP
         return Arrays.asList(builder.install(), binderBuilder.install());
     }
 
-    @SuppressWarnings("rawtypes")
     private static class ServiceProviderRegistrationFactoryConfig implements ServiceProviderRegistrationFactoryConfiguration {
         private final InjectedValue<Group> group = new InjectedValue<>();
-        private final InjectedValue<Cache> cache = new InjectedValue<>();
+        private final InjectedValue<Cache<Object, Set<Node>>> cache = new InjectedValue<>();
         private final InjectedValue<CommandDispatcherFactory> factory = new InjectedValue<>();
         private final Object id;
         private final CacheInvoker invoker = new BatchCacheInvoker();
@@ -148,8 +147,9 @@ public class ServiceProviderRegistrationFactoryProvider implements CacheServiceP
             return this.group;
         }
 
+        @SuppressWarnings({ "rawtypes", "unchecked" })
         Injector<Cache> getCacheInjector() {
-            return this.cache;
+            return (Injector) this.cache;
         }
 
         Injector<CommandDispatcherFactory> getCommandDispatcherFactoryInjector() {
