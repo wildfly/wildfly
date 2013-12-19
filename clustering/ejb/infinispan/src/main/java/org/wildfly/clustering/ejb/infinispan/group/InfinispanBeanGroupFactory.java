@@ -73,8 +73,10 @@ public class InfinispanBeanGroupFactory<G, I, T> implements BeanGroupFactory<G, 
 
     @Override
     public void evict(G id) {
-        if (!this.invoker.invoke(this.cache, new EvictOperation<G, BeanGroupEntry<I, T>>(id)).booleanValue()) {
-            InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBeanGroup(id);
+        try {
+            this.cache.evict(id);
+        } catch (Throwable e) {
+            InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBeanGroup(e, id);
         }
     }
 

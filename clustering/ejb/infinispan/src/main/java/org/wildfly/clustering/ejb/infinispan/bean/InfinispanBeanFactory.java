@@ -115,9 +115,11 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
         BeanKey<I> key = this.createKey(id);
         BeanEntry<G> entry = this.invoker.invoke(this.cache, new Locator.FindOperation<BeanKey<I>, BeanEntry<G>>(key));
         if (entry != null) {
-            // This will trigger the @CacheEntryEvicted event in InfinispanBeanManager
-            if (!this.invoker.invoke(this.cache, new PreLockedEvictOperation<BeanKey<I>, BeanEntry<G>>(key)).booleanValue()) {
-                InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBean(id);
+            try {
+                // This will trigger the @CacheEntryEvicted event in InfinispanBeanManager
+                this.cache.evict(key);
+            } catch (Throwable e) {
+                InfinispanEjbLogger.ROOT_LOGGER.failedToPassivateBean(e, id);
             }
             // The actual bean instance is stored in the group, so this is the important entry to evict.
             this.groupFactory.evict(entry.getGroupId());

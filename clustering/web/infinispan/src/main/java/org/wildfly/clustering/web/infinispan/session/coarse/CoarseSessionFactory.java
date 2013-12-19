@@ -120,9 +120,11 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
 
     @Override
     public void evict(String id) {
-        boolean evicted = this.invoker.invoke(this.sessionCache, new EvictOperation<String, CoarseSessionCacheEntry<L>>(id)).booleanValue();
-        if (!evicted || !this.invoker.invoke(this.attributesCache, new PreLockedEvictOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id))).booleanValue()) {
-            InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(id);
+        try {
+            this.sessionCache.evict(id);
+            this.attributesCache.evict(new SessionAttributesCacheKey(id));
+        } catch (Throwable e) {
+            InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, id);
         }
     }
 }
