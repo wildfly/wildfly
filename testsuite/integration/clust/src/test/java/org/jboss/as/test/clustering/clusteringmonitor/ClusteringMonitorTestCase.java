@@ -55,7 +55,7 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.wildfly.clustering.monitor.extension.ClusterExtension;
+import org.wildfly.clustering.monitor.extension.ClusteringMonitorExtension;
 
 /**
  * Tests basic functionality of the clustering-monitor subsystem.
@@ -216,7 +216,7 @@ public class ClusteringMonitorTestCase {
 
     private static PathAddress getClusterAddress(String cluster) {
         PathAddress address = PathAddress.pathAddress(
-                PathElement.pathElement(SUBSYSTEM, ClusterExtension.SUBSYSTEM_NAME),
+                PathElement.pathElement(SUBSYSTEM, ClusteringMonitorExtension.SUBSYSTEM_NAME),
                 PathElement.pathElement("cluster",cluster));
         return address ;
     }
