@@ -83,6 +83,7 @@
                             <includes>
                                 <include>org/jboss/as/test/manualmode/**/*TestCase.java</include>
                             </includes>
+                            <runOrder>alphabetical</runOrder>
 
                             <!-- Parameters to test cases. -->
                             <systemPropertyVariables combine.children="append">
