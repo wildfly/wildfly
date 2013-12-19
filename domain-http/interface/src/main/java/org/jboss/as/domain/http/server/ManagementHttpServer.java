@@ -206,25 +206,25 @@ public class ManagementHttpServer {
         }
 
         try {
-            pathHandler.addPath(ErrorContextHandler.ERROR_CONTEXT, ErrorContextHandler.createErrorContext(consoleSlot));
+            pathHandler.addPrefixPath(ErrorContextHandler.ERROR_CONTEXT, ErrorContextHandler.createErrorContext(consoleSlot));
         } catch (ModuleLoadException e) {
             ROOT_LOGGER.error(consoleSlot == null ? "main" : consoleSlot);
         }
 
         ManagementRootConsoleRedirectHandler rootConsoleRedirectHandler = new ManagementRootConsoleRedirectHandler(consoleHandler);
         DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelController, controlledProcessStateService);
-        pathHandler.addPath("/", rootConsoleRedirectHandler);
+        pathHandler.addPrefixPath("/", rootConsoleRedirectHandler);
         if (consoleHandler != null) {
             HttpHandler readinessHandler = new RedirectReadinessHandler(securityRealm, consoleHandler.getHandler(),
                     ErrorContextHandler.ERROR_CONTEXT);
-            pathHandler.addPath(consoleHandler.getContext(), readinessHandler);
+            pathHandler.addPrefixPath(consoleHandler.getContext(), readinessHandler);
         }
 
         HttpHandler readinessHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(domainApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
-        pathHandler.addPath(DomainApiCheckHandler.PATH, readinessHandler);
+        pathHandler.addPrefixPath(DomainApiCheckHandler.PATH, readinessHandler);
 
         if (securityRealm != null) {
-            pathHandler.addPath(LogoutHandler.PATH, new LogoutHandler(securityRealm.getName()));
+            pathHandler.addPrefixPath(LogoutHandler.PATH, new LogoutHandler(securityRealm.getName()));
         }
     }
 
