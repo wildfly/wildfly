@@ -45,9 +45,9 @@ public interface InfinispanWebLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 10320, value = "Failed to passivate attributes of session %s")
-    void failedToPassivateSession(String sessionId);
+    void failedToPassivateSession(@Cause Throwable cause, String sessionId);
 
     @LogMessage(level = WARN)
     @Message(id = 10321, value = "Failed to passivate attribute %2$s of session %1$s")
-    void failedToPassivateSessionAttribute(@Cause Throwable exception, String sessionId, String attribute);
+    void failedToPassivateSessionAttribute(@Cause Throwable cause, String sessionId, String attribute);
 }

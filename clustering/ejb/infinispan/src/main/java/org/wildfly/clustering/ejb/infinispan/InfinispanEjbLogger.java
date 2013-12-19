@@ -25,6 +25,7 @@ import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
@@ -48,9 +49,9 @@ public interface InfinispanEjbLogger extends BasicLogger {
 
     @LogMessage(level = WARN)
     @Message(id = 10320, value = "Failed to passivate stateful session bean %s")
-    void failedToPassivateBean(Object id);
+    void failedToPassivateBean(@Cause Throwable cause, Object id);
 
     @LogMessage(level = WARN)
     @Message(id = 10321, value = "Failed to passivate stateful session bean group %s")
-    void failedToPassivateBeanGroup(Object id);
+    void failedToPassivateBeanGroup(@Cause Throwable cause, Object id);
 }

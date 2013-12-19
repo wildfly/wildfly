@@ -21,12 +21,8 @@
  */
 package org.jboss.as.clustering.infinispan.invoker;
 
-import java.util.Collections;
-
 import org.infinispan.Cache;
-import org.infinispan.commons.CacheException;
 import org.infinispan.context.Flag;
-import org.jboss.as.clustering.infinispan.InfinispanLogger;
 
 /**
  * Evicts a cache entry.
@@ -42,41 +38,17 @@ public interface Evictor<K> {
     /**
      * Reusable eviction operation.
      */
-    class EvictOperation<K, V> implements CacheInvoker.Operation<K, V, Boolean> {
+    class EvictOperation<K, V> implements CacheInvoker.Operation<K, V, Void> {
         private final K key;
-        private final CacheInvoker.Operation<K, V, Boolean> operation;
 
         public EvictOperation(K key) {
             this.key = key;
-            this.operation = new PreLockedEvictOperation<>(key);
         }
 
         @Override
-        public Boolean invoke(Cache<K, V> cache) {
-            boolean locked = cache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).lock(Collections.singleton(this.key));
-            return (locked) ? this.operation.invoke(cache) : locked;
-        }
-    }
-
-    /**
-     * Reusable eviction operation.
-     */
-    class PreLockedEvictOperation<K, V> implements CacheInvoker.Operation<K, V, Boolean> {
-        private final K key;
-
-        public PreLockedEvictOperation(K key) {
-            this.key = key;
-        }
-
-        @Override
-        public Boolean invoke(Cache<K, V> cache) {
-            try {
-                cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING).evict(this.key);
-                return true;
-            } catch (CacheException e) {
-                InfinispanLogger.ROOT_LOGGER.debugf(e, "Failed to evict %s from %s.%s cache", this.key, cache.getCacheManager().getCacheManagerConfiguration().globalJmxStatistics().cacheManagerName(), cache.getName());
-                return false;
-            }
+        public Void invoke(Cache<K, V> cache) {
+            cache.getAdvancedCache().withFlags(Flag.FAIL_SILENTLY).evict(this.key);
+            return null;
         }
     }
 }
