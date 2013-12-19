@@ -21,9 +21,22 @@
  */
 package org.jboss.as.ejb3.cache.simple;
 
+import java.security.AccessController;
+import java.util.concurrent.ThreadFactory;
+
+import org.jboss.as.clustering.concurrent.RemoveOnCancelScheduledExecutorService;
+import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
 import org.jboss.as.ejb3.cache.Identifiable;
+import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.clustering.ejb.BeanContext;
+import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Service that provides a simple {@link CacheFactoryBuilder}.
@@ -33,16 +46,37 @@ import org.jboss.as.ejb3.cache.Identifiable;
  * @param <K> the cache key type
  * @param <V> the cache value type
  */
-public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> extends CacheFactoryBuilderService<K, V> {
+public class SimpleCacheFactoryBuilderService<K, V extends Identifiable<K>> extends CacheFactoryBuilderService<K, V> implements CacheFactoryBuilder<K, V>  {
 
-    private final CacheFactoryBuilder<K, V> builder = new SimpleCacheFactoryBuilder<>();
+    private static final ThreadFactory THREAD_FACTORY = new JBossThreadFactory(new ThreadGroup(SimpleCache.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
+
+    private final String name;
 
     public SimpleCacheFactoryBuilderService(String name) {
         super(name);
+        this.name = name;
     }
 
     @Override
     public CacheFactoryBuilder<K, V> getValue() {
-        return this.builder;
+        return this;
+    }
+
+    @Override
+    public void installDeploymentUnitDependencies(ServiceTarget target, ServiceName deploymentUnitServiceName) {
+        target.addService(deploymentUnitServiceName.append(this.name, "expiration"), new RemoveOnCancelScheduledExecutorService(THREAD_FACTORY))
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
+    }
+
+    @Override
+    public ServiceBuilder<? extends CacheFactory<K, V>> build(ServiceTarget target, ServiceName name, BeanContext context, StatefulTimeoutInfo timeout) {
+        return SimpleCacheFactoryService.build(this.name, target, name, context, timeout);
+    }
+
+    @Override
+    public boolean supportsPassivation() {
+        return false;
     }
 }

@@ -21,22 +21,17 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.security.AccessController;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.clustering.concurrent.Scheduler;
-import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.Batcher;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.Time;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Schedules a bean for expiration.
@@ -52,27 +47,11 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>
     final Batcher batcher;
     final BeanRemover<I, T> remover;
     final ExpirationConfiguration<T> expiration;
-    private final ScheduledExecutorService executor;
 
     public BeanExpirationScheduler(Batcher batcher, BeanRemover<I, T> remover, ExpirationConfiguration<T> expiration) {
-        this(batcher, remover, expiration, createScheduledExecutor(createThreadFactory()));
-    }
-
-    private static ThreadFactory createThreadFactory() {
-        return new JBossThreadFactory(new ThreadGroup(BeanExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
-    }
-
-    private static ScheduledExecutorService createScheduledExecutor(ThreadFactory factory) {
-        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, factory);
-        executor.setRemoveOnCancelPolicy(true);
-        return executor;
-    }
-
-    public BeanExpirationScheduler(Batcher batcher, BeanRemover<I, T> remover, ExpirationConfiguration<T> expiration, ScheduledExecutorService executor) {
         this.batcher = batcher;
         this.remover = remover;
         this.expiration = expiration;
-        this.executor = executor;
     }
 
     @Override
@@ -86,7 +65,7 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>
             ExpirationTask task = new ExpirationTask(id);
             // Make sure the expiration future map insertion happens before map removal (during task execution).
             synchronized (task) {
-                this.expirationFutures.put(id, this.executor.schedule(task, value, unit));
+                this.expirationFutures.put(id, this.expiration.getExecutor().schedule(task, value, unit));
             }
         }
     }
@@ -101,7 +80,21 @@ public class BeanExpirationScheduler<G, I, T> implements Scheduler<Bean<G, I, T>
 
     @Override
     public void close() {
-        this.executor.shutdown();
+        for (Future<?> future: this.expirationFutures.values()) {
+            future.cancel(false);
+        }
+        for (Future<?> future: this.expirationFutures.values()) {
+            if (!future.isCancelled() && !future.isDone()) {
+                try {
+                    future.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    // Ignore
+                }
+            }
+        }
+        this.expirationFutures.clear();
     }
 
     private class ExpirationTask implements Runnable {

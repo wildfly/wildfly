@@ -26,6 +26,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.clustering.concurrent.Scheduler;
@@ -46,6 +47,7 @@ public class BeanExpirationSchedulerTestCase {
         RemoveListener<Object> listener = mock(RemoveListener.class);
         String beanId = "immortal";
 
+        when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
         when(bean.getId()).thenReturn(beanId);
         when(bean.isExpired()).thenReturn(false);
 
@@ -73,6 +75,7 @@ public class BeanExpirationSchedulerTestCase {
         RemoveListener<Object> listener = mock(RemoveListener.class);
         String beanId = "expiring";
 
+        when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
         when(batcher.startBatch()).thenReturn(batch);
 
         when(bean.isExpired()).thenReturn(false);
@@ -101,6 +104,7 @@ public class BeanExpirationSchedulerTestCase {
         RemoveListener<Object> listener = mock(RemoveListener.class);
         String beanId = "canceled";
 
+        when(config.getExecutor()).thenReturn(Executors.newSingleThreadScheduledExecutor());
         when(bean.isExpired()).thenReturn(false);
 
         when(config.getTimeout()).thenReturn(new Time(1, TimeUnit.MINUTES));

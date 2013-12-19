@@ -166,8 +166,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
      * Validates failover on redeploy of a simple @Stateful bean
      */
     @Test
-    @Ignore("WFLY-2282 SFSB serialization fails if containing EntityManager or EntityManagerFactory field w/2LC enabled")
-//    @Ignore("WFLY-835 @Resource UserTransaction error when file passivation store is selected")
+    @Ignore("WFLY-835 @Resource UserTransaction error when file passivation store is selected")
     public void persistenceFailover(
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
             @ArquillianResource() @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws Exception {

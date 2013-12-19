@@ -24,10 +24,9 @@ package org.jboss.as.ejb3.cache.simple;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -57,42 +56,35 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
     private final IdentifierFactory<K> identifierFactory;
     private final StatefulTimeoutInfo timeout;
     private final ServerEnvironment environment;
-    private final ThreadFactory threadFactory;
-    private volatile ScheduledExecutorService executor;
-
-    public SimpleCache(StatefulObjectFactory<V> factory, IdentifierFactory<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment, ThreadFactory threadFactory) {
-        this(factory, identifierFactory, timeout, environment, null, threadFactory);
-    }
+    private final ScheduledExecutorService executor;
 
     public SimpleCache(StatefulObjectFactory<V> factory, IdentifierFactory<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment, ScheduledExecutorService executor) {
-        this(factory, identifierFactory, timeout, environment, executor, null);
-    }
-
-    private SimpleCache(StatefulObjectFactory<V> factory, IdentifierFactory<K> identifierFactory, StatefulTimeoutInfo timeout, ServerEnvironment environment, ScheduledExecutorService executor, ThreadFactory threadFactory) {
         this.factory = factory;
         this.identifierFactory = identifierFactory;
         this.timeout = timeout;
         this.environment = environment;
         this.executor = executor;
-        this.threadFactory = threadFactory;
     }
 
     @Override
     public void start() {
-        if (this.threadFactory != null) {
-            ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, this.threadFactory);
-            executor.setRemoveOnCancelPolicy(true);
-            this.executor = executor;
-        }
+        // Do nothing
     }
 
     @Override
     public void stop() {
-        if (this.threadFactory != null) {
-            this.executor.shutdownNow();
-        } else {
-            for (Future<?> future: this.expirationFutures.values()) {
-                future.cancel(true);
+        for (Future<?> future: this.expirationFutures.values()) {
+            future.cancel(true);
+        }
+        for (Future<?> future: this.expirationFutures.values()) {
+            if (!future.isCancelled() && !future.isDone()) {
+                try {
+                    future.get();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (ExecutionException e) {
+                    // Ignore
+                }
             }
         }
         this.expirationFutures.clear();

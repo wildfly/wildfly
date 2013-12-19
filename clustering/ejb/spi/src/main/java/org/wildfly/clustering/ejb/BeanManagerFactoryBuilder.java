@@ -26,7 +26,19 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 public interface BeanManagerFactoryBuilder<G, I> {
-    void installDeploymentUnitDependencies(ServiceTarget target, ServiceName deploymentUnitServiceName);
+    /**
+     * Installs dependencies for a deployment unit
+     * @param target the service target
+     * @param name the service name of the deployment unit
+     */
+    void installDeploymentUnitDependencies(ServiceTarget target, ServiceName name);
 
-    <T> ServiceBuilder<? extends BeanManagerFactory<G, I, T>> build(ServiceTarget target, ServiceName name, BeanContext context, ServiceName marshallingConfigurationServiceName);
+    /**
+     * Builds a bean manager factory for an EJB within a deployment.
+     * @param target the service target
+     * @param name the service name of bean manager factory
+     * @param context the bean context
+     * @return a service builder
+     */
+    <T> ServiceBuilder<? extends BeanManagerFactory<G, I, T>> build(ServiceTarget target, ServiceName name, BeanContext context);
 }

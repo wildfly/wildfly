@@ -21,22 +21,15 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import java.security.AccessController;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
-import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.Batcher;
 import org.wildfly.clustering.ejb.Bean;
-import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
-import org.wildfly.security.manager.GetAccessControlContextAction;
 
 /**
  * Schedules a bean for eviction.
@@ -52,22 +45,12 @@ public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>> 
     private final Set<I> evictionQueue = new LinkedHashSet<>();
     final Batcher batcher;
     final Evictor<I> evictor;
-    private final ExecutorService executor;
-    private final BeanPassivationConfiguration config;
+    private final PassivationConfiguration<?> config;
 
-    public BeanEvictionScheduler(Batcher batcher, Evictor<I> evictor, BeanPassivationConfiguration config) {
-        this(batcher, evictor, config, Executors.newCachedThreadPool(createThreadFactory()));
-    }
-
-    private static ThreadFactory createThreadFactory() {
-        return new JBossThreadFactory(new ThreadGroup(BeanEvictionScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
-    }
-
-    public BeanEvictionScheduler(Batcher batcher, Evictor<I> evictor, BeanPassivationConfiguration config, ExecutorService executor) {
+    public BeanEvictionScheduler(Batcher batcher, Evictor<I> evictor, PassivationConfiguration<?> config) {
         this.batcher = batcher;
         this.evictor = evictor;
         this.config = config;
-        this.executor = executor;
     }
 
     @Override
@@ -82,9 +65,9 @@ public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>> 
         synchronized (this.evictionQueue) {
             this.evictionQueue.add(bean.getId());
             // Trigger eviction of oldest bean if necessary
-            if (this.evictionQueue.size() > this.config.getMaxSize()) {
+            if (this.evictionQueue.size() > this.config.getConfiguration().getMaxSize()) {
                 Iterator<I> beans = this.evictionQueue.iterator();
-                this.executor.submit(new EvictionTask(beans.next()));
+                this.config.getExecutor().execute(new EvictionTask(beans.next()));
                 beans.remove();
             }
         }
@@ -95,7 +78,6 @@ public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>> 
         synchronized (this.evictionQueue) {
             this.evictionQueue.clear();
         }
-        this.executor.shutdown();
     }
 
     private class EvictionTask implements Runnable {

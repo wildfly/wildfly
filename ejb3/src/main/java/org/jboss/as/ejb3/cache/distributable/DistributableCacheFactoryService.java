@@ -11,8 +11,13 @@ import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.IdentifierFactory;
@@ -27,12 +32,20 @@ import org.wildfly.clustering.ejb.PassivationListener;
  */
 public class DistributableCacheFactoryService<K, V extends Identifiable<K>> extends AbstractService<CacheFactory<K, V>> implements CacheFactory<K, V> {
 
-    private final Value<BeanManagerFactory<UUID, K, V>> factory;
-    private final Value<ServerEnvironment> environment;
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static <K, V extends Identifiable<K>> ServiceBuilder<CacheFactory<K, V>> build(ServiceTarget target, ServiceName name, ServiceName factoryServiceName) {
+        DistributableCacheFactoryService<K, V> service = new DistributableCacheFactoryService<>();
+        return target.addService(name, service)
+                .addDependency(factoryServiceName, BeanManagerFactory.class, (Injector) service.factory)
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.environment)
+        ;
+    }
 
-    public DistributableCacheFactoryService(Value<BeanManagerFactory<UUID, K, V>> factory, Value<ServerEnvironment> environment) {
-        this.factory = factory;
-        this.environment = environment;
+    private final InjectedValue<BeanManagerFactory<UUID, K, V>> factory = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
+
+    private DistributableCacheFactoryService() {
+        // Hide
     }
 
     @Override

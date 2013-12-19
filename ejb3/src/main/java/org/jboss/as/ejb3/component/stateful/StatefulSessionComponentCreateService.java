@@ -31,7 +31,6 @@ import org.jboss.as.ejb3.component.InvokeMethodOnTargetInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentCreateService;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
-import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.ContextClassLoaderInterceptor;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorFactory;
@@ -42,6 +41,7 @@ import org.jboss.msc.value.Value;
 
 import java.lang.reflect.Method;
 import java.util.Set;
+
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
@@ -183,11 +183,6 @@ public class StatefulSessionComponentCreateService extends SessionBeanComponentC
 
     public Set<Object> getSerializableInterceptorContextKeys() {
         return serializableInterceptorContextKeys;
-    }
-
-    @SuppressWarnings("unchecked")
-    public CacheFactoryBuilder<SessionID, StatefulSessionComponentInstance> getCacheFactoryBuilder() {
-        return (CacheFactoryBuilder<SessionID, StatefulSessionComponentInstance>) this.cacheFactory.getValue();
     }
 
     @SuppressWarnings("rawtypes")
