@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -54,6 +55,12 @@ public class ManagementResourceDefinition extends SimpleResourceDefinition {
     private final Statistics statistics;
     private final EntityManagerFactoryLookup entityManagerFactoryLookup;
     private final ResourceDescriptionResolver descriptionResolver;
+
+    /**
+     * specify the management api version used in JPAExtension that 'enabled' attribute is deprecated in
+     */
+    private static final ModelVersion ENABLED_ATTRIBUTE_DEPRECATED_MODEL_VERSION = ModelVersion.create(1, 2, 0);
+    private static final String ENABLED_ATTRIBUTE = "enabled";
 
     public ManagementResourceDefinition(
             final PathElement pathElement,
@@ -103,14 +110,19 @@ public class ManagementResourceDefinition extends SimpleResourceDefinition {
 
         for(final String statisticName: statistics.getNames()) {
             final ModelType modelType = getModelType(statistics.getType(statisticName));
-            AttributeDefinition attributeDefinition =
+            final SimpleAttributeDefinitionBuilder simpleAttributeDefinitionBuilder =
                     new SimpleAttributeDefinitionBuilder(statisticName, modelType, true)
                             .setXmlName(statisticName)
                             .setAllowExpression(true)
-                            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
-                            .build();
+                            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME);
 
             if (statistics.isAttribute(statisticName)) {
+
+                // WFLY-561 improves usability by using "statistics-enabled" instead of "enabled"
+                if (ENABLED_ATTRIBUTE.equals(statisticName)) {
+                    simpleAttributeDefinitionBuilder.setDeprecated(ENABLED_ATTRIBUTE_DEPRECATED_MODEL_VERSION);
+                }
+
                 OperationStepHandler readHandler =
                     new AbstractMetricsHandler() {
                         @Override
@@ -186,11 +198,11 @@ public class ManagementResourceDefinition extends SimpleResourceDefinition {
                                 });
                             }
                         };
-                    resourceRegistration.registerReadWriteAttribute(attributeDefinition, readHandler, writeHandler);
+                    resourceRegistration.registerReadWriteAttribute(simpleAttributeDefinitionBuilder.build(), readHandler, writeHandler);
 
                 }
                 else {
-                    resourceRegistration.registerMetric(attributeDefinition, readHandler);
+                    resourceRegistration.registerMetric(simpleAttributeDefinitionBuilder.build(), readHandler);
                 }
             }
         }
