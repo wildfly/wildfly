@@ -25,6 +25,7 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
+import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_ENABLED;
 import static org.jboss.as.messaging.HornetQActivationService.isHornetQServerActive;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -38,6 +39,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -65,6 +67,10 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                     registry.registerReadWriteAttribute(CLUSTERED,
                             ClusteredAttributeHandlers.READ_HANDLER,
                             ClusteredAttributeHandlers.WRITE_HANDLER);
+                } else if (attr.getName().equals(MESSAGE_COUNTER_ENABLED.getName())) {
+                    registry.registerReadWriteAttribute(MESSAGE_COUNTER_ENABLED,
+                            MessageCounterEnabledHandlers.READ_HANDLER,
+                            MessageCounterEnabledHandlers.WRITE_HANDLER);
                 } else {
                     registry.registerReadWriteAttribute(attr, null, this);
                 }
@@ -140,14 +146,14 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                 serverControl.setMessageCounterSamplePeriod(CommonAttributes.MESSAGE_COUNTER_SAMPLE_PERIOD.resolveModelAttribute(context, operation).asLong());
             } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY.getName())) {
                 serverControl.setMessageCounterMaxDayCount(CommonAttributes.MESSAGE_COUNTER_MAX_DAY_HISTORY.resolveModelAttribute(context, operation).asInt());
-            } else if (attributeName.equals(CommonAttributes.MESSAGE_COUNTER_ENABLED.getName())) {
-                boolean enabled = CommonAttributes.MESSAGE_COUNTER_ENABLED.resolveModelAttribute(context, operation).asBoolean();
+            } else if (attributeName.equals(CommonAttributes.STATISTICS_ENABLED.getName())) {
+                boolean enabled = CommonAttributes.STATISTICS_ENABLED.resolveModelAttribute(context, operation).asBoolean();
                 if (enabled) {
                     serverControl.enableMessageCounters();
                 } else {
                     serverControl.disableMessageCounters();
                 }
-            } else {
+            } {
                 // Bug! Someone added the attribute to the set but did not implement
                 throw MESSAGES.unsupportedRuntimeAttribute(attributeName);
             }
@@ -199,5 +205,28 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
             Set<String> clusterConnectionNames = context.readResource(PathAddress.EMPTY_ADDRESS).getChildrenNames(ClusterConnectionDefinition.PATH.getKey());
             return !clusterConnectionNames.isEmpty();
         }
+    }
+
+    private static class MessageCounterEnabledHandlers {
+        private static final OperationStepHandler READ_HANDLER = new OperationStepHandler() {
+
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                ModelNode model = context.readResource(PathAddress.EMPTY_ADDRESS).getModel();
+                context.getResult().set(model.get(CommonAttributes.STATISTICS_ENABLED.getName()));
+                context.stepCompleted();
+            }
+        };
+
+        private static final OperationStepHandler WRITE_HANDLER = new OperationStepHandler() {
+
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                ModelNode aliased = operation.clone();
+                aliased.get(ModelDescriptionConstants.NAME).set(CommonAttributes.STATISTICS_ENABLED.getName());
+                context.addStep(aliased, HornetQServerControlWriteHandler.INSTANCE, OperationContext.Stage.MODEL);
+                context.stepCompleted();
+            }
+        };
     }
 }

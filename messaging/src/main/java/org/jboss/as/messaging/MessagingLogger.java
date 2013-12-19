@@ -211,4 +211,14 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 11615, value = "Registered HTTP upgrade handler for %s protocol")
     void registeredHTTPUpgradeHandler(String name);
+
+    /**
+     * Logs a warning message indicating the XML element with the given {@code name}
+     * is deprecated and instead a different attribute will be used.
+     *
+     * @param name the name of the deprecated XML element
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11616, value = "Element %s is deprecated and %s will be used in its place")
+    void deprecatedXMLElement(String name, String replacement);
 }

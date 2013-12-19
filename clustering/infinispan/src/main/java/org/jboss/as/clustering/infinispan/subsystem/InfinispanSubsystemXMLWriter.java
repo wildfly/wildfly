@@ -63,7 +63,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
                 CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.marshallAsAttribute(container, writer);
                 CacheContainerResourceDefinition.START.marshallAsAttribute(container, writer);
                 CacheContainerResourceDefinition.MODULE.marshallAsAttribute(container, writer);
-                CacheContainerResourceDefinition.STATISTICS.marshallAsAttribute(container, writer);
+                CacheContainerResourceDefinition.STATISTICS_ENABLED.marshallAsAttribute(container, writer);
 
                 CacheContainerResourceDefinition.ALIASES.marshallAsElement(container, writer);
 
@@ -147,7 +147,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         CacheResourceDefinition.BATCHING.marshallAsAttribute(cache, writer);
         CacheResourceDefinition.JNDI_NAME.marshallAsAttribute(cache, writer);
         CacheResourceDefinition.MODULE.marshallAsAttribute(cache, writer);
-        CacheResourceDefinition.STATISTICS.marshallAsAttribute(cache, writer);
+        CacheResourceDefinition.STATISTICS_ENABLED.marshallAsAttribute(cache, writer);
     }
 
     private static void writeClusteredCacheAttributes(XMLExtendedStreamWriter writer, String name, ModelNode cache) throws XMLStreamException {

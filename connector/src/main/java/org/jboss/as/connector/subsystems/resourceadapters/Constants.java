@@ -23,6 +23,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -31,6 +32,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
@@ -473,13 +475,23 @@ public class Constants {
     public static SimpleAttributeDefinition[] WORKMANAGER_METRICS = new SimpleAttributeDefinition[]{WORK_ACTIVE, WORK_SUCCESSFUL, WORK_FAILED, DO_WORK_ACCEPTED,
             DO_WORK_REJECTED, SCHEDULED_WORK_ACCEPTED, SCHEDULED_WORK_REJECTED, START_WORK_ACCEPTED, START_WORK_REJECTED};
 
-
     public static final String WORKMANAGER_STATISTICS_ENABLED_NAME = "workmanager-statistics-enabled";
-    public static SimpleAttributeDefinition WORKMANAGER_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(WORKMANAGER_STATISTICS_ENABLED_NAME, ModelType.BOOLEAN)
+    public static SimpleAttributeDefinition WORKMANAGER_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
+            .setStorageRuntime()
+            .setAlternatives(WORKMANAGER_STATISTICS_ENABLED_NAME)
+            .build();
+
+    public static SimpleAttributeDefinition WORKMANAGER_STATISTICS_ENABLED_DEPRECATED = new SimpleAttributeDefinitionBuilder(WORKMANAGER_STATISTICS_ENABLED_NAME, ModelType.BOOLEAN)
                 .setStorageRuntime()
+                .setAlternatives(ModelDescriptionConstants.STATISTICS_ENABLED)
+                .setDeprecated(ModelVersion.create(2))
                 .build();
+
     public static final String DISTRIBUTED_STATISTICS_ENABLED_NAME = "distributed-workmanager-statistics-enabled";
-    public static SimpleAttributeDefinition DISTRIBUTED_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(DISTRIBUTED_STATISTICS_ENABLED_NAME, ModelType.BOOLEAN)
+    public static SimpleAttributeDefinition DISTRIBUTED_STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(WORKMANAGER_STATISTICS_ENABLED)
+            .setAlternatives(DISTRIBUTED_STATISTICS_ENABLED_NAME)
+            .build();
+    public static SimpleAttributeDefinition DISTRIBUTED_STATISTICS_ENABLED_DEPRECATED = new SimpleAttributeDefinitionBuilder(DISTRIBUTED_STATISTICS_ENABLED_NAME, ModelType.BOOLEAN)
             .setStorageRuntime()
             .build();
     public static final String DOWORK_DISTRIBUTION_ENABLED_NAME = "dowork-distribution-enabled";
@@ -495,11 +507,13 @@ public class Constants {
             .setStorageRuntime()
             .build();
     public static SimpleAttributeDefinition[] WORKMANAGER_RW_ATTRIBUTES = new SimpleAttributeDefinition[]{
-            WORKMANAGER_STATISTICS_ENABLED
+            WORKMANAGER_STATISTICS_ENABLED,
+            WORKMANAGER_STATISTICS_ENABLED_DEPRECATED
     };
 
     public static SimpleAttributeDefinition[] DISTRIBUTED_WORKMANAGER_RW_ATTRIBUTES = new SimpleAttributeDefinition[]{
             DISTRIBUTED_STATISTICS_ENABLED,
+            DISTRIBUTED_STATISTICS_ENABLED_DEPRECATED,
             DOWORK_DISTRIBUTION_ENABLED,
             SCHEDULEWORK_DISTRIBUTION_ENABLED,
             STARTWORK_DISTRIBUTION_ENABLED

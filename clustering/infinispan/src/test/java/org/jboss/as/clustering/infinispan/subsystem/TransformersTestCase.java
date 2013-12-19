@@ -26,7 +26,7 @@ import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DISTRIBUTED
 import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.INVALIDATION_CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.LOCAL_CACHE;
 import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.REPLICATED_CACHE;
-import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.STATISTICS;
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.STATISTICS_ENABLED;
 import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.VIRTUAL_NODES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
@@ -229,7 +229,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 PathElement.pathElement(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH.getKey(), "cache"));
         ModelNode addOp = Util.createAddOperation(pa);
         addOp.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(4);
-        addOp.get(CacheResourceDefinition.STATISTICS.getName()).set(true);
+        addOp.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
 
         OperationTransformer.TransformedOperation transformedOperation = mainServices.transformOperation(version140, addOp);
         Assert.assertFalse(transformedOperation.getTransformedOperation().has(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()));
@@ -290,7 +290,7 @@ public class TransformersTestCase extends OperationTestCaseBase {
                 PathElement.pathElement(DistributedCacheResourceDefinition.DISTRIBUTED_CACHE_PATH.getKey(), "cache"));
         ModelNode addOp = Util.createAddOperation(pa);
         addOp.get(DistributedCacheResourceDefinition.VIRTUAL_NODES.getName()).set(1);
-        addOp.get(CacheResourceDefinition.STATISTICS.getName()).set(true);
+        addOp.get(CacheResourceDefinition.STATISTICS_ENABLED.getName()).set(true);
 
         // what happens to virtual nodes now? current - 1.4.1
         /*
@@ -680,15 +680,15 @@ public class TransformersTestCase extends OperationTestCaseBase {
             ModelNode fixedModelNode = modelNode;
             // set statistics to true for cache container and caches in the model
             // we are assuming the model specified in infinispan-transformer-2_0.xml
-            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
 
-            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
 
             return fixedModelNode;
         }
@@ -710,14 +710,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
             ModelNode fixedModelNode = modelNode;
             // set statistics to true for cache container and caches in the model
             // we are assuming the model specified in infinispan-transformer-2_0.xml
-            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
 
-            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
 
             return fixedModelNode;
         }
@@ -739,14 +739,14 @@ public class TransformersTestCase extends OperationTestCaseBase {
             ModelNode fixedModelNode = modelNode;
             // set statistics to true for cache container and caches in the model
             // we are assuming the model specified in infinispan-transformer-2_0.xml
-            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
 
-            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS).set(true);
-            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
 
             return fixedModelNode;
         }
