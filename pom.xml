@@ -106,7 +106,7 @@
         <version.groovy-all>2.1.8</version.groovy-all>
         <version.io.netty3>3.6.6.Final</version.io.netty3>
         <version.io.netty>4.0.13.Final</version.io.netty>
-        <version.io.undertow>1.0.0.Beta28</version.io.undertow>
+        <version.io.undertow>1.0.0.Beta29</version.io.undertow>
         <version.io.undertow.jastow>1.0.0.CR1</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.1</version.javax.enterprise>
@@ -245,7 +245,7 @@
         <version.org.jboss.ws.cxf>4.2.3.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
-        <version.org.jboss.xnio>3.2.0.Beta3</version.org.jboss.xnio>
+        <version.org.jboss.xnio>3.2.0.Beta4</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.4.1.Final</version.org.jgroups>
