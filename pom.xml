@@ -135,7 +135,7 @@
         <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.2</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.4</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>1.5.5</version.org.apache.santuario>
+        <version.org.apache.santuario>1.5.6</version.org.apache.santuario>
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
         <version.org.apache.ws.security>1.6.12</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.0.2</version.org.apache.ws.xmlschema>
