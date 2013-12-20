@@ -126,7 +126,7 @@ public class CLI {
     public void disconnect() {
         try {
             checkNotConnected();
-            ctx.disconnectController();
+            ctx.terminateSession();
         } finally {
             ctx = null;
         }

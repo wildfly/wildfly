@@ -227,6 +227,8 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /** whether to write messages to the terminal output */
     private boolean silent;
 
+    private CliShutdownHook.Handler shutdownHook;
+
     /**
      * Version mode - only used when --version is called from the command line.
      *
@@ -248,6 +250,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         password = null;
         disableLocalAuth = false;
         initSSLContext();
+        addShutdownHook();
     }
 
     CommandContextImpl(String username, char[] password, boolean disableLocalAuth) throws CliInitializationException {
@@ -295,6 +298,8 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             this.cmdCompleter = null;
             this.operationCandidatesProvider = null;
         }
+
+        addShutdownHook();
     }
 
     CommandContextImpl(String defaultControllerHost, int defaultControllerPort,
@@ -331,6 +336,17 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         initBasicConsole(consoleInput, consoleOutput);
         console.addCompleter(cmdCompleter);
         this.operationCandidatesProvider = new DefaultOperationCandidatesProvider();
+
+        addShutdownHook();
+    }
+
+    protected void addShutdownHook() {
+        shutdownHook = new CliShutdownHook.Handler() {
+            @Override
+            public void shutdown() {
+                terminateSession();
+            }};
+        CliShutdownHook.add(shutdownHook);
     }
 
     protected void initBasicConsole(InputStream consoleInput, OutputStream consoleOutput) throws CliInitializationException {
@@ -653,6 +669,9 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     public void terminateSession() {
         terminate = true;
         disconnectController();
+        if(shutdownHook != null) {
+            CliShutdownHook.remove(shutdownHook);
+        }
     }
 
     @Override
