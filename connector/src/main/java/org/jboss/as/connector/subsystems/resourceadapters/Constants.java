@@ -180,6 +180,9 @@ public class Constants {
 
     public static final String CLEAR_STATISTICS = "clear-statistics";
 
+    public static final String ENABLE_STATISTICS = "enable-statistics";
+
+    public static final String DISABLE_STATISTICS = "disable-statistics";
 
     static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinition(CLASS_NAME_NAME, CommonConnDef.Attribute.CLASS_NAME.getLocalName(), new ModelNode(), ModelType.STRING, false, true, MeasurementUnit.NONE);
 
