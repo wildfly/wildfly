@@ -159,10 +159,10 @@ public class JPAService implements Service<Void> {
      *       will be incremented.
      *
      *
-     * @param managementAdaptor
-     * @param scopedPersistenceUnitName
-     * @param deploymentUnit
-     * @return
+     * @param managementAdaptor the management adaptor that will provide statistics
+     * @param scopedPersistenceUnitName name of the persistence unit
+     * @param deploymentUnit deployment unit for the deployment requesting a resource
+     * @return the management resource
      */
     public static Resource createManagementStatisticsResource(
             final ManagementAdaptor managementAdaptor,
@@ -180,17 +180,23 @@ public class JPAService implements Service<Void> {
                 ResourceDescriptionResolver resourceDescriptionResolver = new StandardResourceDescriptionResolver(
                         statistics.getResourceBundleKeyPrefix(), statistics.getResourceBundleName(), statistics.getClass().getClassLoader());
 
-                ManagementResourceRegistration managementResourceRegistration =
-                        deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT).
-                                getSubModel(PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME)));
+                PathElement subsystemPE = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JPAExtension.SUBSYSTEM_NAME);
+                ManagementResourceRegistration deploymentResourceRegistration = deploymentUnit.getAttachment(DeploymentModelUtils.MUTABLE_REGISTRATION_ATTACHMENT);
+                ManagementResourceRegistration deploymentSubsystemRegistration =
+                        deploymentResourceRegistration.getSubModel(PathAddress.pathAddress(subsystemPE));
+                ManagementResourceRegistration subdeploymentSubsystemRegistration =
+                        deploymentResourceRegistration.getSubModel(PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBDEPLOYMENT), subsystemPE));
 
-                managementResourceRegistration.registerSubModel(
-                                new ManagementResourceDefinition(PathElement.pathElement(managementAdaptor.getIdentificationLabel()), resourceDescriptionResolver, statistics, entityManagerFactoryLookup));
+                deploymentSubsystemRegistration.registerSubModel(
+                        new ManagementResourceDefinition(PathElement.pathElement(managementAdaptor.getIdentificationLabel()), resourceDescriptionResolver, statistics, entityManagerFactoryLookup));
+
+                subdeploymentSubsystemRegistration.registerSubModel(
+                        new ManagementResourceDefinition(PathElement.pathElement(managementAdaptor.getIdentificationLabel()), resourceDescriptionResolver, statistics, entityManagerFactoryLookup));
+
                 existingResourceDescriptionResolver.add(managementAdaptor.getVersion());
             }
             // create (per deployment) dynamic Resource implementation that can reflect the deployment specific names (e.g. jpa entity classname/Hibernate region name)
-            Resource    result = new DynamicManagementStatisticsResource(statistics, scopedPersistenceUnitName, managementAdaptor.getIdentificationLabel(), entityManagerFactoryLookup);
-            return result;
+            return new DynamicManagementStatisticsResource(statistics, scopedPersistenceUnitName, managementAdaptor.getIdentificationLabel(), entityManagerFactoryLookup);
         }
     }
 
