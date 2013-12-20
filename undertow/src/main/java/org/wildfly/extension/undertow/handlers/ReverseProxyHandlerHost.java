@@ -33,10 +33,12 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ServiceRemoveStepHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -64,13 +66,20 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     public static final ServiceName SERVICE_NAME = UndertowService.HANDLER.append("reverse-proxy", "host");
 
+
+    public static final AttributeDefinition NODE_ID = new SimpleAttributeDefinitionBuilder(Constants.NODE_ID, ModelType.STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
+
     private ReverseProxyHandlerHost() {
         super(PathElement.pathElement(Constants.HOST), UndertowExtension.getResolver(Constants.HANDLER, Constants.REVERSE_PROXY, Constants.HOST));
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.emptyList();
+        return Collections.singletonList(NODE_ID);
     }
 
 
@@ -91,14 +100,27 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
 
     private final class ReverseProxyHostAdd extends AbstractAddStepHandler {
+
+        @Override
+        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+            for (AttributeDefinition def : getAttributes()) {
+                def.validateAndSet(operation, model);
+            }
+        }
+
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
             final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
             final String name = address.getLastElement().getValue();
             final String proxyName = address.getElement(address.size() - 2).getValue();
-
-            ReverseProxyHostService service = new ReverseProxyHostService(name);
+            final String jvmRoute;
+            if(model.hasDefined(Constants.NODE_ID)) {
+                jvmRoute = NODE_ID.resolveModelAttribute(context, model).asString();
+            } else {
+                jvmRoute = null;
+            }
+            ReverseProxyHostService service = new ReverseProxyHostService(name, jvmRoute);
             ServiceBuilder<ReverseProxyHostService> builder = context.getServiceTarget().addService(SERVICE_NAME.append(proxyName).append(name), service)
                     .addDependency(UndertowService.HANDLER.append(proxyName), ProxyHandler.class, service.proxyHandler);
             if (verificationHandler != null) {
@@ -116,16 +138,18 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
         private final InjectedValue<ProxyHandler> proxyHandler = new InjectedValue<>();
 
         private final String name;
+        private final String nodeId;
 
-        private ReverseProxyHostService(String name) {
+        private ReverseProxyHostService(String name, String nodeId) {
             this.name = name;
+            this.nodeId = nodeId;
         }
 
         @Override
         public void start(StartContext startContext) throws StartException {
             final LoadBalancingProxyClient client = (LoadBalancingProxyClient) proxyHandler.getValue().getProxyClient();
             try {
-                client.addHost(new URI(name));
+                client.addHost(new URI(name), nodeId);
             } catch (URISyntaxException e) {
                 throw new StartException(e);
             }

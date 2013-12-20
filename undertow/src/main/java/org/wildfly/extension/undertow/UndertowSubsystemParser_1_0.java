@@ -171,7 +171,8 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                         ReverseProxyHandler.PROBLEM_SERVER_RETRY,
                                                         ReverseProxyHandler.MAX_REQUEST_TIME)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
-                                                        .setXmlElementName(Constants.HOST))
+                                                        .setXmlElementName(Constants.HOST)
+                                                .addAttributes(ReverseProxyHandlerHost.NODE_ID))
                                 )
 
 

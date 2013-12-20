@@ -277,6 +277,7 @@
 
     <xs:complexType name="reverse-proxy-hostType">
         <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="node-id" use="optional" type="xs:string"/>
     </xs:complexType>
 
     <xs:complexType name="filter-refType">
