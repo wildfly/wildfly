@@ -30,12 +30,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-jpa-parent</artifactId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.CR1</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-jpa-util</artifactId>
-    <version>8.0.0.Beta2-SNAPSHOT</version>
+    <version>8.0.0.CR1</version>
 
     <name>WildFly: JPA UTIL</name>
 

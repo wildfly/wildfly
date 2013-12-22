@@ -31,7 +31,7 @@
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
-    <version>8.0.0.Beta2-SNAPSHOT</version>
+    <version>8.0.0.CR1</version>
 
     <name>WildFly: Parent Aggregator</name>
     <description>WildFly: Parent Aggregator</description>

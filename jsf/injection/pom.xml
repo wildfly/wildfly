@@ -29,12 +29,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-jsf-parent</artifactId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.CR1</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-jsf-injection</artifactId>
-    <version>8.0.0.Beta2-SNAPSHOT</version>
+    <version>8.0.0.CR1</version>
 
     <name>WildFly: JSF Injection Handlers</name>
 

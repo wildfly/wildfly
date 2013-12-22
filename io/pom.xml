@@ -29,7 +29,7 @@
     <parent>
         <artifactId>wildfly-parent</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.CR1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
