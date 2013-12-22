@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<project name="build-configs" basedir="." default="all">
+<project name="build-configs" basedir="." default="all-configs">
 
     <property name="output.dir" value="../${wildfly.build.output.dir}"/>
 
@@ -136,7 +136,7 @@
     </target>
 
 
-    <target name="all" depends="generate-configs"/>
+    <target name="all-configs" depends="generate-configs"/>
 
 	<macrodef name="generate-server-config">
       <attribute name="paramTemplateFile"/>

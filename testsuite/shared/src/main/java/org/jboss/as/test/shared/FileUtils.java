@@ -1,16 +1,14 @@
 package org.jboss.as.test.shared;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.Closeable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Shared fs utils for the test suite.
@@ -83,26 +81,12 @@ public class FileUtils {
 
 
     public static void copyFile(final File src, final File dest) throws IOException {
-        final InputStream in = new BufferedInputStream(new FileInputStream(src));
-        try {
-            copyFile(in, dest);
-        } finally {
-            close(in);
-        }
+        Files.copy(src.toPath(),dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     public static void copyFile(final InputStream in, final File dest) throws IOException {
         dest.getParentFile().mkdirs();
-        final OutputStream out = new BufferedOutputStream(new FileOutputStream(dest));
-        try {
-            int i = in.read();
-            while (i != -1) {
-                out.write(i);
-                i = in.read();
-            }
-        } finally {
-            close(out);
-        }
+        Files.copy(in,dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**

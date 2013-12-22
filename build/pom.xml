@@ -47,63 +47,6 @@
         <generated.configs.src.dir>${basedir}/src/main/resources</generated.configs.src.dir>
     </properties>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <inherited>false</inherited>
-                <executions>
-                    <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
-                    <execution>
-                        <id>generate-configs</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <target>
-                                <ant antfile="build-configs.xml" inheritRefs="true">
-                                    <target name="all"/>
-                                </ant>
-                            </target>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>build-dist</id>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <target>
-                                <ant antfile="build.xml" inheritRefs="true">
-                                    <target name="${ant.target}"/>
-                                </ant>
-                            </target>
-                        </configuration>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.jboss</groupId>
-                        <artifactId>jandex</artifactId>
-                        <version>${version.org.jboss.jandex}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.apache.ant</groupId>
-                        <artifactId>ant-apache-bsf</artifactId>
-                        <version>${version.org.apache.ant}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>rhino</groupId>
-                        <artifactId>js</artifactId>
-                        <version>${version.rhino.js}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-        </plugins>
-    </build>
 
     <dependencies>
 
@@ -226,7 +169,9 @@
         <profile>
             <id>normal</id>
             <activation>
-                <property><name>!minimalistic</name></property>
+                <property>
+                    <name>!minimalistic</name>
+                </property>
             </activation>
 
             <dependencies>
@@ -2120,11 +2065,61 @@
         </profile>
 
         <profile>
+            <id>default-build</id>
+            <activation>
+                <property>
+                    <name>!release</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>build-dist</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="build.xml" inheritRefs="true">
+                                            <target name="${ant.target}"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.jboss</groupId>
+                                <artifactId>jandex</artifactId>
+                                <version>${version.org.jboss.jandex}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>org.apache.ant</groupId>
+                                <artifactId>ant-apache-bsf</artifactId>
+                                <version>${version.org.apache.ant}</version>
+                            </dependency>
+                            <dependency>
+                                <groupId>rhino</groupId>
+                                <artifactId>js</artifactId>
+                                <version>${version.rhino.js}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>release</id>
             <activation>
                 <property>
                     <name>release</name>
-                    <value>true</value>
                 </property>
             </activation>
             <build>
@@ -2169,7 +2164,22 @@
                                     </target>
                                 </configuration>
                             </execution>
+                            <execution>
+                                <id>build-dist</id>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <phase>package</phase>
+                                <configuration>
+                                    <target>
+                                        <ant antfile="build.xml" inheritRefs="true">
+                                            <target name="${ant.target}"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
                         </executions>
+
                         <dependencies>
                             <dependency>
                                 <groupId>org.jboss</groupId>
@@ -2238,7 +2248,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9</version>
+                        <version>${version.javadoc.plugin}</version>
                         <executions>
                             <execution>
                                 <id>javadocs-dist</id>
