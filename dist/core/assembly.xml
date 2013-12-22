@@ -59,7 +59,7 @@
             <directory>../../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>**/*-users.properties</include>
+                <include>${server.output.dir.prefix}-core-*/**/*-users.properties</include>
             </includes>
             <fileMode>0600</fileMode>
         </fileSet>

@@ -14,12 +14,12 @@
             <directory>../../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>${server.output.dir.prefix}-*/**</include>
+                <include>${server.output.dir.prefix}-${version}/**</include>
             </includes>
             <excludes>
                 <exclude>**/*.sh</exclude>
-                <exclude>${server.output.dir.prefix}-*/domain/tmp/auth</exclude>
-                <exclude>${server.output.dir.prefix}-*/standalone/tmp/auth</exclude>
+                <exclude>${server.output.dir.prefix}-${version}/domain/tmp/auth</exclude>
+                <exclude>${server.output.dir.prefix}-${version}/standalone/tmp/auth</exclude>
                 <exclude>**/*-users.properties</exclude>
             </excludes>
         </fileSet>
@@ -27,7 +27,7 @@
             <directory>../../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>${server.output.dir.prefix}-*/**/*.sh</include>
+                <include>${server.output.dir.prefix}-${version}/**/*.sh</include>
             </includes>
             <fileMode>0755</fileMode>
         </fileSet>
@@ -35,7 +35,7 @@
             <directory>../../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>**/*-users.properties</include>
+                <include>${server.output.dir.prefix}-${version}/**/*-users.properties</include>
             </includes>
             <fileMode>0600</fileMode>
         </fileSet>
@@ -43,8 +43,8 @@
             <directory>../../build/target</directory>
             <outputDirectory/>
             <includes>
-                <include>${server.output.dir.prefix}-*/domain/tmp/auth</include>
-                <include>${server.output.dir.prefix}-*/standalone/tmp/auth</include>
+                <include>${server.output.dir.prefix}-${version}/domain/tmp/auth</include>
+                <include>${server.output.dir.prefix}-${version}/standalone/tmp/auth</include>
             </includes>
             <directoryMode>0700</directoryMode>
         </fileSet>
