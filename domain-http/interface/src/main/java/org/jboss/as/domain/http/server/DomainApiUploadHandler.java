@@ -45,7 +45,6 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
-import org.xnio.streams.ChannelOutputStream;
 
 /**
  *
@@ -103,16 +102,16 @@ class DomainApiUploadHandler implements HttpHandler {
     }
 
     static void writeResponse(HttpServerExchange exchange, ModelNode response, String contentType) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType  + ";" + Common.UTF_8);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, contentType  + "; charset=" + Common.UTF_8);
         exchange.setResponseCode(200);
 
         //TODO Content-Length?
+        exchange.startBlocking();
 
-        PrintWriter print = new PrintWriter(new ChannelOutputStream(exchange.getResponseChannel()));
+        PrintWriter print = new PrintWriter(exchange.getOutputStream());
         try {
             response.writeJSONString(print, true);
         } finally {
-            print.flush();
             IoUtils.safeClose(print);
         }
     }
