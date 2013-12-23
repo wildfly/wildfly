@@ -53,6 +53,7 @@ import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.jdbc.DatabaseType;
 import org.infinispan.persistence.jdbc.configuration.AbstractJdbcStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfigurationBuilder;
 import org.infinispan.persistence.jdbc.configuration.JdbcMixedStoreConfigurationBuilder;
@@ -604,7 +605,10 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             dependencies.add(new Dependency<>(PathManagerService.SERVICE_NAME, PathManager.class, injector));
             return builder;
         } else if (storeKey.equals(ModelKeys.STRING_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.BINARY_KEYED_JDBC_STORE) || storeKey.equals(ModelKeys.MIXED_KEYED_JDBC_STORE)) {
-            AbstractJdbcStoreConfigurationBuilder<?, ?> builder = buildJdbcStore(persistenceBuilder, context, store);
+            ModelNode dialect = JDBCStoreResourceDefinition.DIALECT.resolveModelAttribute(context, store);
+            DatabaseType type = dialect.isDefined() ? DatabaseType.valueOf(dialect.asString()) : null;
+
+            AbstractJdbcStoreConfigurationBuilder<?, ?> builder = buildJdbcStore(persistenceBuilder, context, store, type);
 
             String datasource = JDBCStoreResourceDefinition.DATA_SOURCE.resolveModelAttribute(context, store).asString();
 
@@ -651,36 +655,37 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         }
     }
 
-    private static AbstractJdbcStoreConfigurationBuilder<?, ?> buildJdbcStore(PersistenceConfigurationBuilder persistenceBuilder, OperationContext context, ModelNode store) throws OperationFailedException {
+    private static AbstractJdbcStoreConfigurationBuilder<?, ?> buildJdbcStore(PersistenceConfigurationBuilder persistenceBuilder, OperationContext context, ModelNode store, DatabaseType type) throws OperationFailedException {
         boolean useStringKeyedTable = store.hasDefined(ModelKeys.STRING_KEYED_TABLE);
         boolean useBinaryKeyedTable = store.hasDefined(ModelKeys.BINARY_KEYED_TABLE);
         if (useStringKeyedTable && !useBinaryKeyedTable) {
             JdbcStringBasedStoreConfigurationBuilder builder = persistenceBuilder.addStore(JdbcStringBasedStoreConfigurationBuilder.class);
-            buildStringKeyedTable(builder.table(), context, store.get(ModelKeys.STRING_KEYED_TABLE));
+            buildStringKeyedTable(builder.table(), context, store.get(ModelKeys.STRING_KEYED_TABLE), type);
             return builder;
         } else if (useBinaryKeyedTable && !useStringKeyedTable) {
             JdbcBinaryStoreConfigurationBuilder builder = persistenceBuilder.addStore(JdbcBinaryStoreConfigurationBuilder.class);
-            buildBinaryKeyedTable(builder.table(), context, store.get(ModelKeys.BINARY_KEYED_TABLE));
+            buildBinaryKeyedTable(builder.table(), context, store.get(ModelKeys.BINARY_KEYED_TABLE), type);
             return builder;
         }
         // Else, use mixed mode
         JdbcMixedStoreConfigurationBuilder builder = persistenceBuilder.addStore(JdbcMixedStoreConfigurationBuilder.class);
-        buildStringKeyedTable(builder.stringTable(), context, store.get(ModelKeys.STRING_KEYED_TABLE));
-        buildBinaryKeyedTable(builder.binaryTable(), context, store.get(ModelKeys.BINARY_KEYED_TABLE));
+        buildStringKeyedTable(builder.stringTable(), context, store.get(ModelKeys.STRING_KEYED_TABLE), type);
+        buildBinaryKeyedTable(builder.binaryTable(), context, store.get(ModelKeys.BINARY_KEYED_TABLE), type);
         return builder;
     }
 
-    private static void buildBinaryKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table) throws OperationFailedException {
-        buildTable(builder, context, table, "ispn_bucket");
+    private static void buildBinaryKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, DatabaseType type) throws OperationFailedException {
+        buildTable(builder, context, table, type, "ispn_bucket");
     }
 
-    private static void buildStringKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table) throws OperationFailedException {
-        buildTable(builder, context, table, "ispn_entry");
+    private static void buildStringKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, DatabaseType type) throws OperationFailedException {
+        buildTable(builder, context, table, type, "ispn_entry");
     }
 
-    private static void buildTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, String defaultTableNamePrefix) throws OperationFailedException {
+    private static void buildTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, DatabaseType type, String defaultTableNamePrefix) throws OperationFailedException {
         ModelNode tableNamePrefix = JDBCStoreResourceDefinition.PREFIX.resolveModelAttribute(context, table);
-        builder.batchSize(JDBCStoreResourceDefinition.BATCH_SIZE.resolveModelAttribute(context, table).asInt())
+        builder.databaseType(type)
+                .batchSize(JDBCStoreResourceDefinition.BATCH_SIZE.resolveModelAttribute(context, table).asInt())
                 .fetchSize(JDBCStoreResourceDefinition.FETCH_SIZE.resolveModelAttribute(context, table).asInt())
                 .tableNamePrefix(tableNamePrefix.isDefined() ? tableNamePrefix.asString() : defaultTableNamePrefix)
                 .idColumnName(getColumnProperty(context, table, ModelKeys.ID_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "id"))
@@ -688,7 +693,8 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 .dataColumnName(getColumnProperty(context, table, ModelKeys.DATA_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "datum"))
                 .dataColumnType(getColumnProperty(context, table, ModelKeys.DATA_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "BINARY"))
                 .timestampColumnName(getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "version"))
-                .timestampColumnType(getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "BIGINT"));
+                .timestampColumnType(getColumnProperty(context, table, ModelKeys.TIMESTAMP_COLUMN, JDBCStoreResourceDefinition.COLUMN_TYPE, "BIGINT"))
+        ;
     }
 
     private static String getColumnProperty(OperationContext context, ModelNode table, String columnKey, AttributeDefinition columnAttribute, String defaultValue) throws OperationFailedException

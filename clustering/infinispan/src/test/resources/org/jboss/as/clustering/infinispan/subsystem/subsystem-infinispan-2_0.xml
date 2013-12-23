@@ -69,7 +69,7 @@
             <eviction max-entries="20000" strategy="UNORDERED"/>
             <expiration interval="10000" lifespan="10" max-idle="10"/>
             <state-transfer enabled="true" timeout="60000" chunk-size="10000" />
-            <mixed-keyed-jdbc-store datasource="java:jboss/jdbc/store" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false">
+            <mixed-keyed-jdbc-store datasource="java:jboss/jdbc/store" dialect="MYSQL" fetch-state="false" passivation="false" preload="true" purge="false" shared="false" singleton="false">
                 <write-behind flush-lock-timeout="2" modification-queue-size="2048" shutdown-timeout="20000" thread-pool-size="1" />
                 <string-keyed-table prefix="ispn_bucket" batch-size="100" fetch-size="100">
                     <id-column name="id" type="VARCHAR"/>

@@ -345,6 +345,7 @@ public class InfinispanSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         writeStoreAttributes(writer, store);
 
         JDBCStoreResourceDefinition.DATA_SOURCE.marshallAsAttribute(store, writer);
+        JDBCStoreResourceDefinition.DIALECT.marshallAsAttribute(store, writer);
     }
 
     private static void writeStoreElements(XMLExtendedStreamWriter writer, ModelNode store) throws XMLStreamException {
