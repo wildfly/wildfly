@@ -50,6 +50,7 @@ public enum Attribute {
     DATASOURCE(ModelKeys.DATASOURCE),
     DEFAULT_CACHE(ModelKeys.DEFAULT_CACHE),
     @Deprecated DEFAULT_CACHE_CONTAINER("default-cache-container"),
+    DIALECT(ModelKeys.DIALECT),
     @Deprecated EAGER_LOCKING("eager-locking"),
     ENABLED(ModelKeys.ENABLED),
     EVICTION_EXECUTOR(ModelKeys.EVICTION_EXECUTOR),
