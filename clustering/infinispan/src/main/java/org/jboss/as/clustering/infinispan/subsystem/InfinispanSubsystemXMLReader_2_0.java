@@ -315,7 +315,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -369,7 +369,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -407,7 +407,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
 
         // ModelNode for the cache add operation
         ModelNode cache = Util.getEmptyOperation(ModelDescriptionConstants.ADD, null);
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -752,7 +752,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             }
         }
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
         this.parseStoreElements(reader, store, additionalConfigurationOperations);
         operations.add(store);
         operations.addAll(additionalConfigurationOperations);
@@ -763,7 +763,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.REMOTE_STORE, ModelKeys.REMOTE_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -833,7 +833,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.STRING_KEYED_JDBC_STORE, ModelKeys.STRING_KEYED_JDBC_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -841,6 +841,10 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             switch (attribute) {
                 case DATASOURCE: {
                     JDBCStoreResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    break;
+                }
+                case DIALECT: {
+                    JDBCStoreResourceDefinition.DIALECT.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -878,7 +882,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -886,6 +890,10 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             switch (attribute) {
                 case DATASOURCE: {
                     JDBCStoreResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    break;
+                }
+                case DIALECT: {
+                    JDBCStoreResourceDefinition.DIALECT.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {
@@ -923,7 +931,7 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
         PathAddress storeAddress = PathAddress.pathAddress(cache.get(OP_ADDR)).append(ModelKeys.MIXED_KEYED_JDBC_STORE, ModelKeys.MIXED_KEYED_JDBC_STORE_NAME);
         ModelNode store = Util.createAddOperation(storeAddress);
 
-        List<ModelNode> additionalConfigurationOperations = new ArrayList<ModelNode>();
+        List<ModelNode> additionalConfigurationOperations = new ArrayList<>();
 
         for (int i = 0; i < reader.getAttributeCount(); i++) {
             String value = reader.getAttributeValue(i);
@@ -931,6 +939,10 @@ public final class InfinispanSubsystemXMLReader_2_0 implements XMLElementReader<
             switch (attribute) {
                 case DATASOURCE: {
                     JDBCStoreResourceDefinition.DATA_SOURCE.parseAndSetParameter(value, store, reader);
+                    break;
+                }
+                case DIALECT: {
+                    JDBCStoreResourceDefinition.DIALECT.parseAndSetParameter(value, store, reader);
                     break;
                 }
                 default: {

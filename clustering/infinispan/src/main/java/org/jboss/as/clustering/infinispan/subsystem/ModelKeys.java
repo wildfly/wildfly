@@ -52,6 +52,7 @@ public class ModelKeys {
     static final String CONCURRENCY_LEVEL = "concurrency-level";
     static final String DATA_COLUMN = "data-column";
     static final String DATASOURCE = "datasource";
+    static final String DIALECT = "dialect";
     static final String DEFAULT_CACHE = "default-cache";
     static final String DISTRIBUTED_CACHE = "distributed-cache";
     static final String ENABLED = "enabled";

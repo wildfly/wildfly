@@ -118,6 +118,7 @@ public class InfinispanResourceDescriptionResolver extends StandardResourceDescr
         sharedAttributeResolver.put(StoreResourceDefinition.PROPERTIES.getName(), "store");
 
         sharedAttributeResolver.put(JDBCStoreResourceDefinition.DATA_SOURCE.getName(), "jdbc-store");
+        sharedAttributeResolver.put(JDBCStoreResourceDefinition.DIALECT.getName(), "jdbc-store");
         sharedAttributeResolver.put(JDBCStoreResourceDefinition.BATCH_SIZE.getName(), "jdbc-store");
         sharedAttributeResolver.put(JDBCStoreResourceDefinition.FETCH_SIZE.getName(), "jdbc-store");
         sharedAttributeResolver.put(JDBCStoreResourceDefinition.PREFIX.getName(), "jdbc-store");
