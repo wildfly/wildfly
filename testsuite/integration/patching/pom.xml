@@ -7,7 +7,7 @@
     <parent>
         <artifactId>wildfly-ts-integ</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>8.0.0.CR1</version>
+        <version>8.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-ts-integ-patching</artifactId>
