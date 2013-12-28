@@ -253,7 +253,7 @@ public class JGroupsSubsystemRootResource implements Resource {
         assert registry != null;
         List<ServiceName> serviceNames = registry.getServiceNames();
         for (ServiceName serviceName : serviceNames) {
-            if (ChannelInstanceResource.CHANNEL_PARENT.isParentOf(serviceName)) {
+            if (isValidChannelServiceName(serviceName)) {
                 if (serviceIsUp(serviceName)) {
                     channelServiceNames.add(serviceName);
                 }
@@ -294,4 +294,15 @@ public class JGroupsSubsystemRootResource implements Resource {
         ServiceController<?> controller = registry.getService(name);
         return (controller != null) ? ServiceController.State.UP.equals(controller.getState()) : false;
     }
+
+    /*
+     * Need to differentiate between real channel names and the services which are used to support them
+     */
+    private boolean isValidChannelServiceName(ServiceName serviceName) {
+        boolean hasParentPrefix = ChannelInstanceResource.CHANNEL_PARENT.isParentOf(serviceName);
+        boolean hasLengthFour = serviceName.length() == 4;
+
+        return hasParentPrefix && hasLengthFour;
+    }
+
 }

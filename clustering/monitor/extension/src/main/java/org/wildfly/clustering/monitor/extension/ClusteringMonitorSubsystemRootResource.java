@@ -234,6 +234,9 @@ public class ClusteringMonitorSubsystemRootResource implements Resource {
         if (registry == null) return false;
         assert element.getKey().equals(ModelKeys.CLUSTER);
         ServiceName channelName = ClusteringMonitorSubsystemHelper.CHANNEL_PARENT.append(element.getValue());
+        if (!ClusteringMonitorSubsystemHelper.isValidChannelServiceName(channelName)) {
+            return false;
+        }
         ServiceController<?> controller = registry.getService(channelName);
         return (controller != null) && ClusteringMonitorSubsystemHelper.serviceIsUp(this.registry, channelName);
     }

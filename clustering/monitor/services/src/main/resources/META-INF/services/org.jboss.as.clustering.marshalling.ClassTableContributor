@@ -1,2 +1,2 @@
-org.wildfly.clustering.monitor.services.cache.CacheManagementClassTableProvider
-org.wildfly.clustering.monitor.services.channel.ChannelManagementClassTableProvider
+org.wildfly.clustering.monitor.services.cache.CacheManagementClassTableContributor
+org.wildfly.clustering.monitor.services.channel.ChannelManagementClassTableContributor

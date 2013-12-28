@@ -26,6 +26,11 @@ public class ClusteringMonitorSubsystemHelper {
     /*
      * Returns the set of all Channel ServiceNames at this address (service jboss.jgroups.channel.*)
      * which are in the UP state.
+     *
+     * NOTE: We need to eliminate the service names which we create for our own use; namely,
+     * X.management             - the ChannelManagementServiceName for channel X
+     * X.management.controller  - the ChannelManagementServiceNameController for channel X
+     *
      */
     public static Set<ServiceName> getChannelServiceNames(ServiceRegistry registry) {
         if (registry == null) {
@@ -34,7 +39,7 @@ public class ClusteringMonitorSubsystemHelper {
         Set<ServiceName> channelServiceNames = new HashSet<ServiceName>();
         List<ServiceName> serviceNames = registry.getServiceNames();
         for (ServiceName serviceName : serviceNames) {
-            if (CHANNEL_PARENT.isParentOf(serviceName)) {
+            if (isValidChannelServiceName(serviceName)) {
                 if (serviceIsUp(registry, serviceName)) {
                     channelServiceNames.add(serviceName);
                 }
@@ -54,11 +59,21 @@ public class ClusteringMonitorSubsystemHelper {
         Set<ServiceName> channelServiceNames = new HashSet<ServiceName>();
         List<ServiceName> serviceNames = registry.getServiceNames();
         for (ServiceName serviceName : serviceNames) {
-            if (CHANNEL_PARENT.isParentOf(serviceName)) {
+            if (isValidChannelServiceName(serviceName)) {
                 channelServiceNames.add(serviceName);
             }
         }
         return channelServiceNames;
+    }
+
+    /*
+     * Need to differentiate between real channel names and the services which are used to support them
+     */
+    public static boolean isValidChannelServiceName(ServiceName serviceName) {
+        boolean hasParentPrefix = CHANNEL_PARENT.isParentOf(serviceName);
+        boolean hasLengthFour = serviceName.length() == 4;
+
+        return hasParentPrefix && hasLengthFour;
     }
 
     /*
