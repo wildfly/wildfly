@@ -21,19 +21,27 @@
  */
 package org.jboss.as.ejb3.component.concurrent;
 
+import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.concurrent.handle.ContextHandle;
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
+import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
 import org.jboss.invocation.InterceptorContext;
 
 import javax.enterprise.concurrent.ContextService;
+import javax.transaction.SystemException;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
 
 /**
- * The context handle factory responsible for saving and setting the ejb context.
+ * The context handle factory responsible for saving and setting the ejb context. It is also responsible for starting
+ * and finishing a transaction if the EJB is CMT and there was a transaction when the context is saved.
+ *
  * @author Eduardo Martins
  */
 public class EJBContextHandleFactory implements ContextHandleFactory {
@@ -73,9 +81,24 @@ public class EJBContextHandleFactory implements ContextHandleFactory {
     private static class EJBContextHandle implements ContextHandle {
 
         private final transient InterceptorContext interceptorContext;
+        private transient TransactionManager transactionManager;
+        private transient Transaction transaction;
 
         private EJBContextHandle() {
             interceptorContext = CurrentInvocationContext.get();
+            if(interceptorContext != null) {
+                final EJBComponent component = (EJBComponent) interceptorContext.getPrivateData(Component.class);
+                if (component != null && !component.isBeanManagedTransaction()) {
+                    final TransactionManager transactionManager = component.getTransactionManager();
+                    try {
+                        if (transactionManager != null && transactionManager.getTransaction() != null) {
+                            this.transactionManager = transactionManager;
+                        }
+                    } catch (SystemException e) {
+                        EjbLogger.ROOT_LOGGER.debug("EE Concurrency's EJB context handle failed to obtain transaction", e);
+                    }
+                }
+            }
         }
 
         @Override
@@ -87,11 +110,33 @@ public class EJBContextHandleFactory implements ContextHandleFactory {
         public void setup() throws IllegalStateException {
             if(interceptorContext != null) {
                 CurrentInvocationContext.push(interceptorContext);
+                if (transactionManager != null) {
+                    try {
+                        transactionManager.begin();
+                        transaction = transactionManager.getTransaction();
+                    } catch (Throwable e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
             }
         }
 
         @Override
         public void reset() {
+            if (transaction != null) {
+                try {
+                    transaction.commit();
+                } catch (Throwable e) {
+                    EjbLogger.ROOT_LOGGER.debug("EE Concurrency's EJB context handle failed to commit transaction",e);
+                    try {
+                        transaction.rollback();
+                    } catch (Throwable e1) {
+                        EjbLogger.ROOT_LOGGER.debug("EE Concurrency's EJB context handle failed to rollback transaction", e);
+                    }
+                } finally {
+                    transaction = null;
+                }
+            }
             if(interceptorContext != null) {
                 CurrentInvocationContext.pop();
             }
