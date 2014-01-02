@@ -466,7 +466,7 @@ public class CalendarBasedTimeoutTestCase {
     }
 
     /**
-     * Create a Timeout with a Schedule start date in the past (1.Day of the current month 01:00) to ensure the time is set correctly.
+     * Create a Timeout with a Schedule start date in the past (day before) to ensure the time is set correctly.
      * The schedule is on the first day of month to ensure that the calculated time must be moved to the next month.
      */
     //@Test
@@ -477,22 +477,13 @@ public class CalendarBasedTimeoutTestCase {
         schedule.hour("0-1");
         schedule.minute("0");
         schedule.second("0/5");
-        Calendar start = Calendar.getInstance();
-        int year = start.get(Calendar.YEAR);
-        int month = start.get(Calendar.MONTH);
-        int day = start.get(Calendar.DAY_OF_MONTH);
-        if(day < 2) {
-            if(month == Calendar.JANUARY) {
-                year--;
-                month = Calendar.DECEMBER;
-            }else{
-                month--;
-            }
-        }else{
-            day--;
+        Calendar start = Calendar.getInstance(this.timezone);
+        // subtract one day
+        start.add(Calendar.DAY_OF_MONTH, -1);
+        if(start.get(Calendar.DAY_OF_MONTH) == 1) {
+            // if the previous day is 1, subtract one more day
+            start.add(Calendar.DAY_OF_MONTH, -1);
         }
-        //noinspection MagicConstant
-        start.set(year, month, day, 1, 0);
         schedule.start(start.getTime());
 
         CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
@@ -507,7 +498,7 @@ public class CalendarBasedTimeoutTestCase {
     }
 
     /**
-     * Check a Timeout if the Schedule start date in the future (moved to the next day)
+     * Check a Timeout if the Schedule start date in the future (day after)
      * The schedule is on the first day of month to ensure that the calculated time must be moved to the next month.
      */
     //@Test
@@ -518,8 +509,13 @@ public class CalendarBasedTimeoutTestCase {
         schedule.hour("0-12");
         schedule.minute("0/5");
         schedule.second("0");
-        Calendar start = Calendar.getInstance();
+        Calendar start = Calendar.getInstance(this.timezone);
+        // add one day
         start.add(Calendar.DAY_OF_MONTH, 1);
+        if(start.get(Calendar.DAY_OF_MONTH) == 1) {
+            // if the next day is 1, add one more day, to avoid first timeout by advancing minutes only
+            start.add(Calendar.DAY_OF_MONTH, 1);
+        }
         schedule.start(start.getTime());
 
         CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(schedule);
