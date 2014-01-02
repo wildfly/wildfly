@@ -436,7 +436,7 @@ public enum Phase {
     public static final int POST_MODULE_EL_EXPRESSION_FACTORY           = 0x2C00;
     public static final int POST_MODULE_SAR_SERVICE_COMPONENT           = 0x2D00;
     public static final int POST_MODULE_WS_SERVICES_DEPS                = 0x3200;
-
+    public static final int POST_MODULE_RAR_SERVICES_DEPS               = 0x3300;
     // INSTALL
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
     public static final int INSTALL_COMPONENT_AGGREGATION               = 0x0400;
