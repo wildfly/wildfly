@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRU
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -179,7 +180,7 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
             throw DomainManagementMessages.MESSAGES.noSyslogProtocol();
         }
         final ResourceEntry protocol = protocols.iterator().next();
-        final SyslogAuditLogHandler.Transport transport = SyslogAuditLogHandler.Transport.valueOf(protocol.getPathElement().getValue().toUpperCase());
+        final SyslogAuditLogHandler.Transport transport = SyslogAuditLogHandler.Transport.valueOf(protocol.getPathElement().getValue().toUpperCase(Locale.ENGLISH));
         handler.setTransport(transport);
         try {
             handler.setSyslogServerAddress(

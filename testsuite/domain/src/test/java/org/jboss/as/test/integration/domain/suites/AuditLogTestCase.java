@@ -21,14 +21,29 @@
  */
 package org.jboss.as.test.integration.domain.suites;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BOOT_TIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FORMATTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JSON_FORMATTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UDP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.io.BufferedReader;
@@ -38,20 +53,25 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.audit.JsonAuditLogItemFormatter;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xnio.IoUtils;
@@ -64,34 +84,35 @@ public class AuditLogTestCase {
     private static DomainLifecycleUtil masterLifecycleUtil;
     private static DomainLifecycleUtil slaveLifecycleUtil;
 
-    private PathAddress masterCoreLogggerAddress = PathAddress.pathAddress(
+    private static final int SYSLOG_PORT = 10514;
+
+    private static final int ADJUSTED_SECOND = TimeoutUtil.adjust(1000);
+
+
+    private PathAddress masterAuditAddress = PathAddress.pathAddress(
             PathElement.pathElement(HOST, "master"),
             CoreManagementResourceDefinition.PATH_ELEMENT,
-            AccessAuditResourceDefinition.PATH_ELEMENT,
-            AuditLogLoggerResourceDefinition.PATH_ELEMENT);
+            AccessAuditResourceDefinition.PATH_ELEMENT);
 
-    private PathAddress masterServerLoggerAddress = PathAddress.pathAddress(
-            PathElement.pathElement(HOST, "master"),
-            CoreManagementResourceDefinition.PATH_ELEMENT,
-            AccessAuditResourceDefinition.PATH_ELEMENT,
-            AuditLogLoggerResourceDefinition.HOST_SERVER_PATH_ELEMENT);
+    private PathAddress masterCoreLogggerAddress = masterAuditAddress.append(AuditLogLoggerResourceDefinition.PATH_ELEMENT);
 
-    private PathAddress slaveCoreLogggerAddress = PathAddress.pathAddress(
+    private PathAddress masterServerLoggerAddress = masterAuditAddress.append(AuditLogLoggerResourceDefinition.HOST_SERVER_PATH_ELEMENT);
+
+    private PathAddress slaveAuditAddress = PathAddress.pathAddress(
             PathElement.pathElement(HOST, "slave"),
             CoreManagementResourceDefinition.PATH_ELEMENT,
-            AccessAuditResourceDefinition.PATH_ELEMENT,
-            AuditLogLoggerResourceDefinition.PATH_ELEMENT);
+            AccessAuditResourceDefinition.PATH_ELEMENT);
 
-    private PathAddress slaveServerLoggerAddress = PathAddress.pathAddress(
-            PathElement.pathElement(HOST, "slave"),
-            CoreManagementResourceDefinition.PATH_ELEMENT,
-            AccessAuditResourceDefinition.PATH_ELEMENT,
-            AuditLogLoggerResourceDefinition.HOST_SERVER_PATH_ELEMENT);
+
+    private PathAddress slaveCoreLogggerAddress = slaveAuditAddress.append(AuditLogLoggerResourceDefinition.PATH_ELEMENT);
+
+    private PathAddress slaveServerLoggerAddress = slaveAuditAddress.append(AuditLogLoggerResourceDefinition.HOST_SERVER_PATH_ELEMENT);
 
     private static File masterAuditLog;
     private static File masterServerAuditLog;
     private static File slaveAuditLog;
     private static File slaveServerAuditLog;
+    private static SimpleSyslogServer server;
 
     @BeforeClass
     public static void setupDomain() throws Exception {
@@ -123,10 +144,8 @@ public class AuditLogTestCase {
         file = new File(file, "audit-log.log");
         slaveServerAuditLog = file;
 
-        masterAuditLog.delete();
-        masterServerAuditLog.delete();
-        slaveAuditLog.delete();
-        slaveServerAuditLog.delete();
+        //Start up syslog server
+        server = SimpleSyslogServer.createUdp(SYSLOG_PORT);
     }
 
     @AfterClass
@@ -135,10 +154,36 @@ public class AuditLogTestCase {
         masterLifecycleUtil = null;
         slaveLifecycleUtil = null;
         DomainTestSuite.stopSupport();
+
+        //Stop syslog server
+        server.close();
+    }
+
+    @Before
+    public void before() {
+        masterAuditLog.delete();
+        masterServerAuditLog.delete();
+        slaveAuditLog.delete();
+        slaveServerAuditLog.delete();
+    }
+
+    @After
+    public void turnOffSysylog() throws Exception {
+        ModelNode op = Util.getWriteAttributeOperation(masterCoreLogggerAddress, ENABLED, new ModelNode(false));
+        masterLifecycleUtil.executeForResult(op);
+
+        op = Util.getWriteAttributeOperation(slaveCoreLogggerAddress, ENABLED, new ModelNode(false));
+        slaveLifecycleUtil.executeForResult(op);
+
+        op = Util.getWriteAttributeOperation(masterServerLoggerAddress, ENABLED, new ModelNode(false));
+        masterLifecycleUtil.executeForResult(op);
+
+        op = Util.getWriteAttributeOperation(slaveServerLoggerAddress, ENABLED, new ModelNode(false));
+        slaveLifecycleUtil.executeForResult(op);
     }
 
     @Test
-    public void testAuditLogInDomain() throws Exception {
+    public void testFileAuditLogInDomain() throws Exception {
         Assert.assertFalse(masterAuditLog.exists());
         Assert.assertFalse(masterServerAuditLog.exists());
         Assert.assertFalse(slaveAuditLog.exists());
@@ -246,6 +291,171 @@ public class AuditLogTestCase {
         compareOpsWithoutHeaders(addOp, slaveServerOp, BOOT_TIME);
     }
 
+    @Test
+    public void testCanAddSyslogServerToMaster() throws Exception {
+        testCanAddSyslogServer(masterAuditAddress);
+    }
+
+    @Test
+    public void testCanAddSyslogServerToSlave() throws Exception {
+        testCanAddSyslogServer(slaveAuditAddress);
+    }
+
+    private void testCanAddSyslogServer(PathAddress baseAddress) throws Exception {
+        final PathAddress handlerAddress = PathAddress.pathAddress(baseAddress.append(SYSLOG_HANDLER, "test-syslog"));
+
+        //First enable all the loggers
+        ModelNode op = Util.getWriteAttributeOperation(masterCoreLogggerAddress, ENABLED, new ModelNode(true));
+        masterLifecycleUtil.executeForResult(op);
+        op = Util.getWriteAttributeOperation(slaveCoreLogggerAddress, ENABLED, new ModelNode(true));
+        slaveLifecycleUtil.executeForResult(op);
+        op = Util.getWriteAttributeOperation(masterServerLoggerAddress, ENABLED, new ModelNode(true));
+        masterLifecycleUtil.executeForResult(op);
+        op = Util.getWriteAttributeOperation(slaveServerLoggerAddress, ENABLED, new ModelNode(true));
+        slaveLifecycleUtil.executeForResult(op);
+
+
+
+        final ModelNode compositeAdd = new ModelNode();
+        compositeAdd.get(OP).set(COMPOSITE);
+        ModelNode add = Util.createAddOperation(handlerAddress);
+        add.get(FORMATTER).set(JSON_FORMATTER);
+        compositeAdd.get(STEPS).add(add);
+
+        add = Util.createAddOperation(handlerAddress.append(PathElement.pathElement(PROTOCOL, UDP)));
+        add.get(HOST).set("localhost");
+        add.get(PORT).set(SYSLOG_PORT);
+        compositeAdd.get(STEPS).add(add);
+
+        masterLifecycleUtil.executeForResult(compositeAdd);
+
+        try {
+            expectNoSyslogData();
+
+            //Add handler reference to server logger and check it gets logged, then remove handler reference when done
+            final PathElement testHandlerReference = PathElement.pathElement(HANDLER, "test-syslog");
+            final PathAddress serverLoggerHandlerReferenceAddress = baseAddress.append(AuditLogLoggerResourceDefinition.HOST_SERVER_PATH_ELEMENT).append(testHandlerReference);
+            final ModelNode addServerLoggerHandlerReference = Util.createAddOperation(serverLoggerHandlerReferenceAddress);
+            masterLifecycleUtil.executeForResult(addServerLoggerHandlerReference);
+            boolean removed = false;
+            try {
+                //Master has one server, slave has two
+                final List<String> servers = new ArrayList<String>();
+                if (baseAddress.getElement(0).getValue().equals("master")) {
+                    servers.add("main-one");
+                } else {
+                    servers.add("main-three");
+                    servers.add("other-two");
+                }
+
+                final PathAddress serverLoggerAddressOnServer = PathAddress.pathAddress(CoreManagementResourceDefinition.PATH_ELEMENT, AccessAuditResourceDefinition.PATH_ELEMENT, AuditLogLoggerResourceDefinition.PATH_ELEMENT);
+                for (int i = 0 ; i < servers.size() ; i++) {
+                    expectSyslogData(serverLoggerAddressOnServer.append(testHandlerReference), addServerLoggerHandlerReference, false);
+                }
+                expectNoSyslogData();
+
+                //Now disable the server logger
+                PathAddress serverLoggerAddress = baseAddress.append(AuditLogLoggerResourceDefinition.HOST_SERVER_PATH_ELEMENT);
+                final ModelNode writeFalseEnabled = Util.getWriteAttributeOperation(serverLoggerAddress, ENABLED, new ModelNode(false));
+                masterLifecycleUtil.executeForResult(writeFalseEnabled);
+                for (int i = 0 ; i < servers.size() ; i++) {
+                    expectSyslogData(serverLoggerAddressOnServer, writeFalseEnabled, false);
+                }
+                expectNoSyslogData();
+
+                //Restart a server
+                final PathAddress serverAddress = PathAddress.pathAddress(baseAddress.getElement(0)).append(SERVER_CONFIG, servers.get(0));
+                final ModelNode restartOp = Util.createEmptyOperation("reload", serverAddress);
+                restartOp.get(BLOCKING).set(true);
+                expectNoSyslogData();
+
+                //Now enable the server logger again
+                final ModelNode writeTrueEnabled = Util.getWriteAttributeOperation(serverLoggerAddress, ENABLED, new ModelNode(true));
+                masterLifecycleUtil.executeForResult(writeTrueEnabled);
+                for (int i = 0 ; i < servers.size() ; i++) {
+                    expectSyslogData(serverLoggerAddressOnServer, writeTrueEnabled, false);
+                }
+                expectNoSyslogData();
+
+
+                //Remove handler address
+                final ModelNode removeServerLoggerHandlerReference = Util.createRemoveOperation(serverLoggerHandlerReferenceAddress);
+                masterLifecycleUtil.executeForResult(removeServerLoggerHandlerReference);
+                removed = true;
+                for (int i = 0 ; i < servers.size() ; i++) {
+                    expectSyslogData(serverLoggerAddressOnServer.append(testHandlerReference), removeServerLoggerHandlerReference, false);
+                }
+                expectNoSyslogData();
+            } finally {
+                if (!removed) {
+                    masterLifecycleUtil.executeForResult(Util.createRemoveOperation(serverLoggerHandlerReferenceAddress));
+                }
+            }
+
+
+            //Add handler reference to host logger and check it gets logged, then remove handler reference when done
+            final PathAddress hostLoggerHandlerReferenceAddress = baseAddress.append(AuditLogLoggerResourceDefinition.PATH_ELEMENT).append(PathElement.pathElement(HANDLER, "test-syslog"));
+            final ModelNode addHostLoggerHandlerReference = Util.createAddOperation(hostLoggerHandlerReferenceAddress);
+            masterLifecycleUtil.executeForResult(addHostLoggerHandlerReference);
+            removed = false;
+            try {
+                boolean master = baseAddress.getElement(0).getValue().equals("master");
+                expectSyslogData(hostLoggerHandlerReferenceAddress, addHostLoggerHandlerReference, master);
+                expectNoSyslogData();
+                final ModelNode removeHostLoggerHandlerReference = Util.createRemoveOperation(hostLoggerHandlerReferenceAddress);
+                masterLifecycleUtil.executeForResult(removeHostLoggerHandlerReference);
+                removed = true;
+                expectSyslogData(hostLoggerHandlerReferenceAddress, removeHostLoggerHandlerReference, master);
+                expectNoSyslogData();
+            } finally {
+                if (!removed) {
+                    masterLifecycleUtil.executeForResult(Util.createRemoveOperation(hostLoggerHandlerReferenceAddress));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            masterLifecycleUtil.executeForResult(Util.createRemoveOperation(handlerAddress));
+        }
+    }
+
+    private ModelNode expectSyslogData(PathAddress pathAddress, ModelNode op, boolean masterOnlyOp) throws Exception {
+        byte[] data = server.receiveData(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
+        Assert.assertNotNull(data);
+        String msg = new String(data, "utf-8");
+        msg = msg.substring(msg.indexOf('{')).replace("#012", "\n");
+        ModelNode syslogData =  ModelNode.fromJSONString(msg);
+
+        Assert.assertEquals(!masterOnlyOp, syslogData.hasDefined("domainUUID"));
+        Assert.assertEquals(AccessMechanism.NATIVE.toString(), syslogData.get(ACCESS).asString());
+        Assert.assertTrue(syslogData.hasDefined("remote-address") && syslogData.get("remote-address").asString().length() > 0);
+        Assert.assertFalse(syslogData.hasDefined("r/o") && syslogData.get("r/o").asBoolean());
+        Assert.assertFalse(syslogData.hasDefined("booting") && syslogData.get("booting").asBoolean());
+        Assert.assertEquals("$local", syslogData.get(USER).asString());
+        Assert.assertTrue(syslogData.hasDefined(SUCCESS) && syslogData.get(SUCCESS).asBoolean());
+
+        List<ModelNode> ops = syslogData.get("ops").asList();
+        Assert.assertEquals(1, ops.size());
+        ModelNode loggedOp = ops.get(0);
+        loggedOp.remove(OPERATION_HEADERS);
+
+        ModelNode expectedOperation = op.clone();
+        expectedOperation.get(OP_ADDR).set(pathAddress.toModelNode());
+        //Do this to make the format of the address the same as for the one from the syslog
+        expectedOperation = ModelNode.fromJSONString(expectedOperation.toJSONString(true));
+
+        Assert.assertEquals(expectedOperation, loggedOp);
+
+        return syslogData;
+    }
+
+    private void expectNoSyslogData() throws InterruptedException {
+        byte[] data = server.receiveData(1 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
+        Assert.assertNull(data);
+    }
+
     private ModelNode getOp(ModelNode record){
         List<ModelNode> ops = record.get("ops").asList();
         Assert.assertEquals(1, ops.size());
@@ -303,6 +513,4 @@ public class AuditLogTestCase {
         Assert.assertEquals(list.toString(), expectedRecords, list.size());
         return list;
     }
-
-
 }
