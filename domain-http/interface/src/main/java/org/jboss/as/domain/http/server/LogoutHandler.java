@@ -22,14 +22,13 @@
 
 package org.jboss.as.domain.http.server;
 
-import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
 import static org.jboss.as.domain.http.server.Constants.AUTHORIZATION_HEADER;
-import static org.jboss.as.domain.http.server.Constants.REFERER;
-import static org.jboss.as.domain.http.server.Constants.USER_AGENT;
-import static org.jboss.as.domain.http.server.Constants.HTTP;
 import static org.jboss.as.domain.http.server.Constants.LOCATION;
+import static org.jboss.as.domain.http.server.Constants.REFERER;
 import static org.jboss.as.domain.http.server.Constants.TEMPORARY_REDIRECT;
+import static org.jboss.as.domain.http.server.Constants.USER_AGENT;
 import static org.jboss.as.domain.http.server.Constants.WWW_AUTHENTICATE_HEADER;
+import static org.jboss.as.domain.http.server.DomainUtil.constructUrl;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -43,8 +42,8 @@ import org.jboss.as.domain.http.server.security.NonceFactory;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
-import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.com.sun.net.httpserver.HttpsExchange;
+import org.jboss.com.sun.net.httpserver.HttpServer;
 import org.jboss.util.Base64;
 
 
@@ -95,13 +94,13 @@ class LogoutHandler implements ManagementHttpHandler {
         String referrer = responseHeaders.getFirst(REFERER);
 
         // Calculate location URL
-        String protocol = HTTP;
+        String protocol = exchange instanceof HttpsExchange ? "https" : "http";
         String host = null;
         if (referrer != null) {
             try {
                 URI uri = new URI(referrer);
                 protocol = uri.getScheme();
-                host = uri.getHost() + (uri.getPort() == -1 ? "" : ":" + String.valueOf(uri.getPort()));
+                host = uri.getHost() + portPortion(protocol, uri.getPort());
             } catch (URISyntaxException e) {
             }
         }
@@ -176,5 +175,13 @@ class LogoutHandler implements ManagementHttpHandler {
         // Success, now back to the login screen
         responseHeaders.set(LOCATION, protocol + "://" + host + "/");
         exchange.sendResponseHeaders(TEMPORARY_REDIRECT, -1);
+    }
+
+    private String portPortion(final String scheme, final int port) {
+        if (port == -1 || "http".equals(scheme) && port == 80 || "https".equals(scheme) && port == 443) {
+            return "";
+        }
+
+        return ":" + String.valueOf(port);
     }
 }
