@@ -27,7 +27,6 @@ import java.util.List;
 
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
-import io.undertow.servlet.api.ThreadSetupAction;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -40,7 +39,7 @@ import org.wildfly.extension.undertow.deployment.UndertowAttachments;
  * <p/>
  * <ul>
  * <li>{@link RequestCountHttpHandler}</li>
- * <li>{@link RunningRequestsThreadSetupAction}</li>
+ * <li>{@link RunningRequestsHttpHandler}</li>
  * <li>{@link BytesReceivedHttpHandler}</li>
  * <li>{@link BytesSentHttpHandler}</li>
  * </ul>
@@ -86,13 +85,21 @@ class MetricDeploymentProcessor implements DeploymentUnitProcessor {
         });
 
         // Busyness thread setup actions
-        List<ThreadSetupAction> setupAttachment = deploymentUnit.getAttachment(UndertowAttachments.UNDERTOW_THREAD_SETUP_ACTIONS);
 
-        if (setupAttachment == null) {
-            setupAttachment = new LinkedList<ThreadSetupAction>();
-            deploymentUnit.putAttachment(UndertowAttachments.UNDERTOW_THREAD_SETUP_ACTIONS, setupAttachment);
+        List<HandlerWrapper> outerHandlerAttachment = deploymentUnit.getAttachment(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS);
+
+        if (outerHandlerAttachment == null) {
+            outerHandlerAttachment = new LinkedList<HandlerWrapper>();
+            deploymentUnit.putAttachment(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS, outerHandlerAttachment);
         }
-        setupAttachment.add(new RunningRequestsThreadSetupAction());
+
+        outerHandlerAttachment.add(new HandlerWrapper() {
+            @Override
+            public HttpHandler wrap(final HttpHandler handler) {
+                return new RunningRequestsHttpHandler(handler);
+            }
+        });
+
     }
 
     @Override
