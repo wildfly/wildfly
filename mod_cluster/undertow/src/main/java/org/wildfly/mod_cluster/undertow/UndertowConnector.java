@@ -31,7 +31,7 @@ import org.wildfly.extension.undertow.HttpListenerService;
 import org.wildfly.mod_cluster.undertow.metric.BytesReceivedStreamSourceConduit;
 import org.wildfly.mod_cluster.undertow.metric.BytesSentStreamSinkConduit;
 import org.wildfly.mod_cluster.undertow.metric.RequestCountHttpHandler;
-import org.wildfly.mod_cluster.undertow.metric.RunningRequestsThreadSetupAction;
+import org.wildfly.mod_cluster.undertow.metric.RunningRequestsHttpHandler;
 
 /**
  * Adapts {@link org.wildfly.extension.undertow.ListenerService} to a {@link Connector}.
@@ -101,7 +101,7 @@ public class UndertowConnector implements Connector {
      */
     @Override
     public int getBusyThreads() {
-        return RunningRequestsThreadSetupAction.getRunningRequestCount();
+        return RunningRequestsHttpHandler.getRunningRequestCount();
     }
 
     /**
