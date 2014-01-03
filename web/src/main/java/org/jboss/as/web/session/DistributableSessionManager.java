@@ -1231,8 +1231,11 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
                                 // expire() are meant to be multi-threaded and synchronize
                                 // properly internally; synchronizing externally can lead
                                 // to deadlocks!!
-                                if (!session.isValid())
+                                if (!session.isValid()) {
+                                    // BZ 1039585 - Clustered session memory leaking
+                                    session.relinquishSessionOwnership(true);
                                     continue;
+                                }
 
                                 likelyExpired = false;
                             }

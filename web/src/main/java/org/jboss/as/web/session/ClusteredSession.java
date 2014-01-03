@@ -568,7 +568,7 @@ public abstract class ClusteredSession<O extends OutgoingDistributableSessionDat
         }
     }
 
-    private void relinquishSessionOwnership(boolean remove) {
+    void relinquishSessionOwnership(boolean remove) {
         SessionOwnershipSupport support = this.distributedCacheManager.getSessionOwnershipSupport();
 
         if (support != null) {
