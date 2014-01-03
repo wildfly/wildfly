@@ -31,6 +31,7 @@ import java.util.Arrays;
 
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.process.stdin.Base64InputStream;
 import org.jboss.as.server.mgmt.domain.HostControllerClient;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.logmanager.Level;
@@ -71,7 +72,7 @@ public final class DomainServerMain {
      */
     public static void main(String[] args) {
 
-        final InputStream initialInput = System.in;
+        final InputStream initialInput = new Base64InputStream(System.in);
         final PrintStream initialError = System.err;
 
         // Make sure our original stdio is properly captured.
@@ -91,7 +92,7 @@ public final class DomainServerMain {
 
         final byte[] authKey = new byte[16];
         try {
-            org.jboss.as.process.protocol.StreamUtils.readFully(initialInput, authKey);
+            StreamUtils.readFully(initialInput, authKey);
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(ExitCodes.FAILED);

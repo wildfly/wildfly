@@ -45,6 +45,7 @@ import org.jboss.as.process.CommandLineArgumentUsageImpl;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.process.stdin.Base64InputStream;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;
@@ -84,7 +85,7 @@ public final class Main {
 
         final byte[] authKey = new byte[16];
         try {
-            StreamUtils.readFully(System.in, authKey);
+            StreamUtils.readFully(new Base64InputStream(System.in), authKey);
         } catch (IOException e) {
             System.err.println(MESSAGES.failedToReadAuthenticationKey(e));
             fail();
