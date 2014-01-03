@@ -154,7 +154,7 @@ public abstract class AbstractClusterLockSupport implements GroupMembershipListe
                     boolean remoteLocked = true;
                     if (rsps != null) {
                         for (RemoteLockResponse rsp : rsps) {
-                            if (rsp.flag != RemoteLockResponse.Flag.OK) {
+                            if ((rsp != null) && (rsp.flag != RemoteLockResponse.Flag.OK)) {
                                 remoteLocked = false;
                                 if (superiorCompetitor == null) {
                                     superiorCompetitor = getSuperiorCompetitor(rsp.holder);
