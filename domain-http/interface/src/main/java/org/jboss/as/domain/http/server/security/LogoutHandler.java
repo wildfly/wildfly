@@ -52,7 +52,6 @@ public class LogoutHandler implements HttpHandler {
 
     public static final String PATH = "/logout";
     public static final String CONTEXT = "org.jboss.as.console.logout.context";
-    public static final String REDIRECT = "org.jboss.as.console.logout.redirect";
     private static final String EXIT = "org.jboss.as.console.logout.exit";
 
     private final DigestAuthenticationMechanism digestMechanism;
@@ -73,13 +72,13 @@ public class LogoutHandler implements HttpHandler {
         final HeaderMap responseHeaders = exchange.getResponseHeaders();
 
         String referrer = responseHeaders.getFirst(REFERER);
-        String protocol = "http";
+        String protocol = exchange.getRequestScheme();
         String host = null;
         if (referrer != null) {
             try {
                 URI uri = new URI(referrer);
                 protocol = uri.getScheme();
-                host = uri.getHost() + (uri.getPort() == -1 ? "" : ":" + String.valueOf(uri.getPort()));
+                host = uri.getHost() + portPortion(protocol, uri.getPort());
             } catch (URISyntaxException e) {
             }
         }
@@ -94,17 +93,14 @@ public class LogoutHandler implements HttpHandler {
         /*
          * Main sequence of events:
          *
-         * 1. Redirect to DomainApiCheckHandler to logout from the securioty context. Then redirect back to this
-         * handler.
-         *
-         * 2. Redirect to self using user:pass@host form of authority. This forces Safari to overwrite its cache. (Also
+         * 1. Redirect to self using user:pass@host form of authority. This forces Safari to overwrite its cache. (Also
          * forces FF and Chrome, but not absolutely necessary) Set the exit flag as a state signal for step 3
          *
-         * 3. Send 401 digest without a nonce stale marker, this will force FF and Chrome and likely other browsers to
+         * 2. Send 401 digest without a nonce stale marker, this will force FF and Chrome and likely other browsers to
          * assume an invalid (old) password. In the case of Opera, which doesn't invalidate under such a circumstance,
          * send an invalid realm. This will overwrite its auth cache, since it indexes it by host and not realm.
          *
-         * 4. The credentials in 307 redirect wlll be transparently accepted and a final redirect to the console is
+         * 3. The credentials in 307 redirect wlll be transparently accepted and a final redirect to the console is
          * performed. Opera ignores these, so the user must hit escape which will use javascript to perform the redirect
          *
          * In the case of Internet Explorer, all of this will be bypassed and will simply redirect to the console. The console
@@ -116,40 +112,41 @@ public class LogoutHandler implements HttpHandler {
 
         String rawQuery = exchange.getQueryString();
         boolean exit = rawQuery != null && rawQuery.contains(EXIT);
-        boolean redirect = rawQuery != null && rawQuery.contains(REDIRECT);
 
         if (win) {
             responseHeaders.add(LOCATION, protocol + "://" + host + "/");
             exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
         } else {
-            if (!redirect && !exit) {
-                // Hand over to DomainApiCheckHandler
-                responseHeaders.add(LOCATION, protocol + "://" + host + "/management?" + CONTEXT);
-                exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
-            } else {
-                // Do the redirects to finish the logout
-                String authorization = requestHeaders.getFirst(AUTHORIZATION);
+            // Do the redirects to finish the logout
+            String authorization = requestHeaders.getFirst(AUTHORIZATION);
 
-                if (authorization == null || !authorization.contains("enter-login-here")) {
-                    if (!exit) {
-                        responseHeaders.add(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?" + EXIT);
-                        exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
-                        return;
-                    }
-
-                    DigestAuthenticationMechanism mech = opera ? fakeRealmdigestMechanism : digestMechanism;
-                    mech.sendChallenge(exchange, null);
-                    String reply = "<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host
-                            + "/\";</script></html>";
-                    exchange.setResponseCode(StatusCodes.UNAUTHORIZED);
-                    exchange.getResponseSender().send(reply, IoCallback.END_EXCHANGE);
+            if (authorization == null || !authorization.contains("enter-login-here")) {
+                if (!exit) {
+                    responseHeaders.add(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?" + EXIT);
+                    exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
                     return;
                 }
 
-                // Success, now back to the login screen
-                responseHeaders.add(LOCATION, protocol + "://" + host + "/");
-                exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
+                DigestAuthenticationMechanism mech = opera ? fakeRealmdigestMechanism : digestMechanism;
+                mech.sendChallenge(exchange, null);
+                String reply = "<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host
+                        + "/\";</script></html>";
+                exchange.setResponseCode(StatusCodes.UNAUTHORIZED);
+                exchange.getResponseSender().send(reply, IoCallback.END_EXCHANGE);
+                return;
             }
+
+            // Success, now back to the login screen
+            responseHeaders.add(LOCATION, protocol + "://" + host + "/");
+            exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
         }
+    }
+
+    private String portPortion(final String scheme, final int port) {
+        if (port == -1 || "http".equals(scheme) && port == 80 || "https".equals(scheme) && port == 443) {
+            return "";
+        }
+
+        return ":" + String.valueOf(port);
     }
 }
