@@ -21,6 +21,9 @@
  */
 package org.jboss.as.ejb3.component.stateful;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
 import org.jboss.as.clustering.marshalling.VersionedMarshallingConfiguration;
 import org.jboss.as.ejb3.EjbMessages;
@@ -33,9 +36,6 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.Value;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Service that provides a versioned marshalling configuration for a deployment unit.
  */
@@ -47,7 +47,7 @@ public class VersionedMarshallingConfigurationService implements Service<Version
 
     private static final int CURRENT_VERSION = 1;
 
-    private final Map<Integer, MarshallingConfiguration> configurations = new HashMap<>();
+    private final Map<Integer, MarshallingConfiguration> configurations = new ConcurrentHashMap<>();
     private final Value<ModuleDeployment> deployment;
     private final Value<ModuleLoader> loader;
 
