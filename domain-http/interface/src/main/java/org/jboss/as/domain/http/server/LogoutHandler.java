@@ -35,6 +35,8 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.Map;
 
 import org.jboss.as.domain.http.server.security.DigestAuthenticator;
 import org.jboss.as.domain.http.server.security.NonceFactory;
@@ -42,11 +44,21 @@ import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
+import org.jboss.com.sun.net.httpserver.HttpsExchange;
+import org.jboss.util.Base64;
+
 
 /**
 * @author Jason T. Greene
 */
 class LogoutHandler implements ManagementHttpHandler {
+
+    private static final String BASIC = "BASIC";
+    private static final String DIGEST = "DIGEST";
+    private static final String MECHANISM = "mechanism";
+
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
+
     private NonceFactory nonceFactory = new NonceFactory();
     private String realm;
 
@@ -121,23 +133,44 @@ class LogoutHandler implements ManagementHttpHandler {
          * logout.
          *
          */
-        if (!win && (authorization == null || !authorization.contains("enter-login-here"))) {
-            if (! query) {
-                responseHeaders.set(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?logout");
-                exchange.sendResponseHeaders(TEMPORARY_REDIRECT, -1);
-                return;
+        if (!win) {
+            boolean digest = true;
+            Map<String, String> parameters = DomainApiHandler.decodeQuery(rawQuery);
+            if (parameters.containsKey(MECHANISM)) {
+                digest = !BASIC.equals(parameters.get(MECHANISM));
+            }
+            if (authorization != null && authorization.length() > BASIC.length()
+                    && BASIC.equalsIgnoreCase(authorization.substring(0, BASIC.length()))) {
+                digest = false;
+
+                authorization = new String(Base64.decode(authorization.substring(6)), UTF_8);
             }
 
-            String realm = opera ? "HIT THE ESCAPE KEY" : this.realm;
-            DigestAuthenticator.DigestContext context = DigestAuthenticator.getOrCreateNegotiationContext(exchange, nonceFactory, false);
-            responseHeaders.add(WWW_AUTHENTICATE_HEADER, "Digest " + DigestAuthenticator.createChallenge(context, realm, false));
-            exchange.sendResponseHeaders(401, 0);
-            PrintStream print = new PrintStream(exchange.getResponseBody());
-            print.println("<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host + "/\";</script></html>");
-            print.flush();
-            print.close();
+            if (authorization == null || !authorization.contains("enter-login-here")) {
+                if (!query) {
+                    responseHeaders.set(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?logout&" + MECHANISM + "=" + (digest ? DIGEST : BASIC));
+                    exchange.sendResponseHeaders(TEMPORARY_REDIRECT, -1);
+                    return;
+                }
 
-            return;
+                String realm = opera ? "HIT THE ESCAPE KEY" : this.realm;
+                if (digest) {
+                DigestAuthenticator.DigestContext context = DigestAuthenticator.getOrCreateNegotiationContext(exchange,
+                        nonceFactory, false);
+                responseHeaders.add(WWW_AUTHENTICATE_HEADER,
+                        "Digest " + DigestAuthenticator.createChallenge(context, realm, false));
+                } else {
+                    responseHeaders.add(WWW_AUTHENTICATE_HEADER, "Basic realm=" + realm);
+                }
+                exchange.sendResponseHeaders(401, 0);
+                PrintStream print = new PrintStream(exchange.getResponseBody());
+                print.println("<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host
+                        + "/\";</script></html>");
+                print.flush();
+                print.close();
+
+                return;
+            }
         }
 
         // Success, now back to the login screen

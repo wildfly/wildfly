@@ -36,6 +36,7 @@
         <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.as.domain-management"/>
         <module name="org.jboss.com.sun.httpserver"/>
+        <module name="org.jboss.common-core"/>
         <module name="org.jboss.dmr"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.modules"/>

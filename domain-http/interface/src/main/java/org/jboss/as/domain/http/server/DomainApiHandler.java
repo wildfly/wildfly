@@ -484,7 +484,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         return segments;
     }
 
-    private String unescape(String string) {
+    private static String unescape(String string) {
         try {
             // URLDecoder could be way more efficient, replace it one day
             return URLDecoder.decode(string, UTF_8);
@@ -493,7 +493,7 @@ class DomainApiHandler implements ManagementHttpHandler {
         }
     }
 
-    private Map<String, String> decodeQuery(String query) {
+    static Map<String, String> decodeQuery(String query) {
         if (query == null || query.isEmpty())
             return Collections.emptyMap();
 
