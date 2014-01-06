@@ -23,6 +23,7 @@
 package org.wildfly.mod_cluster.undertow.metric;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,6 +32,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.mod_cluster.BoottimeHandlerProvider;
 import org.wildfly.extension.mod_cluster.ModClusterExtension;
@@ -39,15 +41,16 @@ import org.wildfly.extension.mod_cluster.ModClusterExtension;
  * {@inheritDoc}
  *
  * @author Radoslav Husar
+ * @version Jan 2014
  * @since 8.0
  */
 public class UndertowBoottimeHandler implements BoottimeHandlerProvider {
 
     @Override
-    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    public void performBoottime(final Set<LoadMetric> enabledMetrics, OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
-                processorTarget.addDeploymentProcessor(ModClusterExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_MODCLUSTER, new MetricDeploymentProcessor());
+                processorTarget.addDeploymentProcessor(ModClusterExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_UNDERTOW_MODCLUSTER, new MetricDeploymentProcessor(enabledMetrics));
             }
         }, OperationContext.Stage.RUNTIME);
     }
