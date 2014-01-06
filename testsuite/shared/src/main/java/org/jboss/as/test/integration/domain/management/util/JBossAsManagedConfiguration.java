@@ -129,7 +129,7 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
             Validate.configurationDirectoryExists(javaHome, "javaHome must exist at " + javaHome);
         }
         if (controllerJavaHome != null) {
-            Validate.configurationDirectoryExists(javaHome, "controllerJavaHome must exist at " + controllerJavaHome);
+            Validate.configurationDirectoryExists(controllerJavaHome, "controllerJavaHome must exist at " + controllerJavaHome);
         }
     }
 
