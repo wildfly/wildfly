@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.annotation;
 
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
+import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.ejb3.annotation.Pool;
 import org.jboss.jandex.AnnotationInstance;
 
@@ -40,6 +41,9 @@ public class PoolAnnotationInformationFactory extends ClassAnnotationInformation
 
     @Override
     protected String fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
-        return annotationInstance.value().asString();
+        if (replacement)
+            return PropertiesValueResolver.replaceProperties(annotationInstance.value().asString());
+        else
+            return annotationInstance.value().asString();
     }
 }
