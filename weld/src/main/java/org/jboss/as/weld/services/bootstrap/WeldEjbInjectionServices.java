@@ -128,7 +128,7 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
             Class<?> injectionPointRawType = Reflections.getRawType(injectionPoint.getType());
             //we just compare names, as for remote views the actual classes may be loaded from different class loaders
             Class<?> c = clazz;
-            boolean found = true;
+            boolean found = false;
             while (c != null && c != Object.class) {
                 if (injectionPointRawType.getName().equals(c.getName())) {
                     found = true;
