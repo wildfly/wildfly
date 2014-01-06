@@ -23,6 +23,7 @@
 package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ee.structure.Attachments;
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
@@ -30,6 +31,7 @@ import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.component.stateless.StatelessComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
+import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.EjbDeploymentMarker;
@@ -109,6 +111,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
 
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);
         final ServiceName deploymentUnitServiceName = deploymentUnit.getServiceName();
+        final boolean replacement = deploymentUnit.getAttachment(Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
 
         // process these session bean annotations and create component descriptions out of it
         for (final AnnotationInstance sessionBeanAnnotation : sessionBeanAnnotations) {
@@ -125,7 +128,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             }
             final String ejbName = sessionBeanClassInfo.name().local();
             final AnnotationValue nameValue = sessionBeanAnnotation.value("name");
-            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
+            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : (replacement ? PropertiesValueResolver.replaceProperties(nameValue.asString()) : nameValue.asString());
             final SessionBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, SessionBeanMetaData.class);
             final SessionBeanComponentDescription.SessionBeanType sessionBeanType;
             final String beanClassName;
