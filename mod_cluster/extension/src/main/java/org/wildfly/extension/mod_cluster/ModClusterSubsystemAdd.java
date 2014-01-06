@@ -102,6 +102,7 @@ import org.jboss.util.propertyeditor.PropertyEditors;
  * @author Jean-Frederic Clere
  * @author Tomaz Cerar
  * @author Radoslav Husar
+ * @version Jan 2014
  */
 class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
@@ -111,11 +112,6 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     @Override
     public void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-
-        for (BoottimeHandlerProvider handler : ServiceLoader.load(BoottimeHandlerProvider.class, BoottimeHandlerProvider.class.getClassLoader())) {
-            handler.performBoottime(context, operation, model, verificationHandler, newControllers);
-        }
-
         ServiceTarget target = context.getServiceTarget();
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final ModelNode modelConfig = fullModel.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair());
@@ -123,7 +119,14 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         newControllers.add(target.addService(ContainerEventHandlerService.CONFIG_SERVICE_NAME, new ValueService<>(new ImmediateValue<>(config))).setInitialMode(Mode.ACTIVE).install());
 
-        final LoadBalanceFactorProvider loadProvider = getModClusterLoadProvider(context, modelConfig);
+        // Construct LoadBalanceFactorProvider and call pluggable boot time handlers.
+        Set<LoadMetric> metrics = new HashSet<LoadMetric>();
+        final LoadBalanceFactorProvider loadProvider = getModClusterLoadProvider(metrics, context, modelConfig);
+
+        for (BoottimeHandlerProvider handler : ServiceLoader.load(BoottimeHandlerProvider.class, BoottimeHandlerProvider.class.getClassLoader())) {
+            handler.performBoottime(metrics, context, operation, model, verificationHandler, newControllers);
+        }
+
         final String connector = CONNECTOR.resolveModelAttribute(context, modelConfig).asString();
         InjectedValue<SocketBindingManager> socketBindingManager = new InjectedValue<SocketBindingManager>();
         ContainerEventHandlerService service = new ContainerEventHandlerService(config, loadProvider, socketBindingManager);
@@ -251,7 +254,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
         return config;
     }
 
-    private LoadBalanceFactorProvider getModClusterLoadProvider(final OperationContext context, ModelNode model) throws OperationFailedException {
+    private LoadBalanceFactorProvider getModClusterLoadProvider(final Set<LoadMetric> metrics, final OperationContext context, ModelNode model) throws OperationFailedException {
         LoadBalanceFactorProvider load = null;
         if (model.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR)) {
             // TODO it seems we don't support that stuff.
@@ -261,7 +264,6 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
             load = myload;
         }
 
-        Set<LoadMetric> metrics = new HashSet<LoadMetric>();
         if (model.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair()).isDefined()) {
             final ModelNode node = model.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair());
             int decayFactor = DynamicLoadProviderDefinition.DECAY.resolveModelAttribute(context, model).asInt();

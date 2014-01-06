@@ -24,6 +24,7 @@ package org.wildfly.mod_cluster.undertow.metric;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -31,6 +32,11 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modcluster.load.metric.LoadMetric;
+import org.jboss.modcluster.load.metric.impl.BusyConnectorsLoadMetric;
+import org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric;
+import org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric;
+import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
 import org.wildfly.extension.undertow.deployment.UndertowAttachments;
 
 /**
@@ -49,6 +55,12 @@ import org.wildfly.extension.undertow.deployment.UndertowAttachments;
  */
 class MetricDeploymentProcessor implements DeploymentUnitProcessor {
 
+    private Set<LoadMetric> enabledMetrics;
+
+    MetricDeploymentProcessor(Set<LoadMetric> enabledMetrics) {
+        this.enabledMetrics = enabledMetrics;
+    }
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -61,50 +73,74 @@ class MetricDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         // Request count wrapping
-        handlerAttachment.add(new HandlerWrapper() {
-            @Override
-            public HttpHandler wrap(final HttpHandler handler) {
-                return new RequestCountHttpHandler(handler);
-            }
-        });
-
-        // Bytes Sent wrapping
-        handlerAttachment.add(new HandlerWrapper() {
-            @Override
-            public HttpHandler wrap(final HttpHandler handler) {
-                return new BytesSentHttpHandler(handler);
-            }
-        });
-
-        // Bytes Received wrapping
-        handlerAttachment.add(new HandlerWrapper() {
-            @Override
-            public HttpHandler wrap(final HttpHandler handler) {
-                return new BytesReceivedHttpHandler(handler);
-            }
-        });
-
-        // Busyness thread setup actions
-
-        List<HandlerWrapper> outerHandlerAttachment = deploymentUnit.getAttachment(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS);
-
-        if (outerHandlerAttachment == null) {
-            outerHandlerAttachment = new LinkedList<HandlerWrapper>();
-            deploymentUnit.putAttachment(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS, outerHandlerAttachment);
+        if (isMetricEnabled(RequestCountLoadMetric.class)) {
+            handlerAttachment.add(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(final HttpHandler handler) {
+                    return new RequestCountHttpHandler(handler);
+                }
+            });
         }
 
-        outerHandlerAttachment.add(new HandlerWrapper() {
-            @Override
-            public HttpHandler wrap(final HttpHandler handler) {
-                return new RunningRequestsHttpHandler(handler);
+        // Bytes Sent wrapping
+        if (isMetricEnabled(SendTrafficLoadMetric.class)) {
+            handlerAttachment.add(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(final HttpHandler handler) {
+                    return new BytesSentHttpHandler(handler);
+                }
+            });
+        }
+
+        // Bytes Received wrapping
+        if (isMetricEnabled(ReceiveTrafficLoadMetric.class)) {
+            handlerAttachment.add(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(final HttpHandler handler) {
+                    return new BytesReceivedHttpHandler(handler);
+                }
+            });
+        }
+
+        // Busyness thread setup actions
+        if (isMetricEnabled(BusyConnectorsLoadMetric.class)) {
+
+            List<HandlerWrapper> outerHandlerAttachment = deploymentUnit.getAttachment(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS);
+
+            if (outerHandlerAttachment == null) {
+                outerHandlerAttachment = new LinkedList<HandlerWrapper>();
+                deploymentUnit.putAttachment(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS, outerHandlerAttachment);
             }
-        });
+
+            outerHandlerAttachment.add(new HandlerWrapper() {
+                @Override
+                public HttpHandler wrap(final HttpHandler handler) {
+                    return new RunningRequestsHttpHandler(handler);
+                }
+            });
+        }
 
     }
 
     @Override
     public void undeploy(DeploymentUnit context) {
         // Do nothing.
+    }
+
+    /**
+     * Checks whether this {@link Class} is configured to be used.
+     *
+     * @param metricClass
+     * @return true if any of the enabled metrics is enabled, false otherwise
+     */
+    private boolean isMetricEnabled(Class metricClass) {
+        for (LoadMetric enabledMetric : enabledMetrics) {
+            if (metricClass.isInstance(enabledMetric)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
 }
