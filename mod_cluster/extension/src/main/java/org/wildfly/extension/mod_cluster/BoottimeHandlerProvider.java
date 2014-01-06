@@ -23,18 +23,21 @@
 package org.wildfly.extension.mod_cluster;
 
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.dmr.ModelNode;
+import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.msc.service.ServiceController;
 
 /**
  * Mechanism to plug in {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} on boot time, e.g. Undertow
- * {@link io.undertow.server.HttpHandler}.
+ * {@link io.undertow.server.HttpHandler}. Passes on a reference to Set with enabled {@link LoadMetric}s.
  *
  * @author Radoslav Husar
+ * @version Jan 2014
  * @since 8.0
  */
 public interface BoottimeHandlerProvider {
@@ -42,6 +45,6 @@ public interface BoottimeHandlerProvider {
     /**
      * @see org.jboss.as.controller.AbstractBoottimeAddStepHandler#performBoottime(org.jboss.as.controller.OperationContext, org.jboss.dmr.ModelNode, org.jboss.dmr.ModelNode, org.jboss.as.controller.ServiceVerificationHandler, java.util.List)
      */
-    void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException;
+    void performBoottime(final Set<LoadMetric> enabledMetrics, OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException;
 
 }
