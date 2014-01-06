@@ -27,21 +27,27 @@ import static io.undertow.util.Headers.HOST;
 import static io.undertow.util.Headers.LOCATION;
 import static io.undertow.util.Headers.REFERER;
 import static io.undertow.util.Headers.USER_AGENT;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.List;
-
 import io.undertow.io.IoCallback;
+import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.idm.DigestAlgorithm;
+import io.undertow.security.impl.BasicAuthenticationMechanism;
 import io.undertow.security.impl.DigestAuthenticationMechanism;
 import io.undertow.security.impl.DigestQop;
 import io.undertow.security.impl.SimpleNonceManager;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.FlexBase64;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.StatusCodes;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -54,16 +60,27 @@ public class LogoutHandler implements HttpHandler {
     public static final String CONTEXT = "org.jboss.as.console.logout.context";
     private static final String EXIT = "org.jboss.as.console.logout.exit";
 
+    private static final String HIT_ESCAPE = "HIT THE ESCAPE KEY";
+    private static final String BASIC = "BASIC";
+    private static final String DIGEST = "DIGEST";
+    private static final String MECHANISM = "mechanism";
+
+    private static final Charset UTF_8 = Charset.forName("UTF-8");
+
     private final DigestAuthenticationMechanism digestMechanism;
     private final DigestAuthenticationMechanism fakeRealmdigestMechanism;
+    private final BasicAuthenticationMechanism basicMechanism;
+    private final BasicAuthenticationMechanism fakeRealmBasicMechanism;
 
     public LogoutHandler(final String realmName) {
         List<DigestAlgorithm> digestAlgorithms = Collections.singletonList(DigestAlgorithm.MD5);
         List<DigestQop> digestQops = Collections.emptyList();
         digestMechanism = new DigestAuthenticationMechanism(digestAlgorithms, digestQops, realmName, "/management",
                 new SimpleNonceManager());
-        fakeRealmdigestMechanism = new DigestAuthenticationMechanism(digestAlgorithms, digestQops, "HIT THE ESCAPE KEY",
+        fakeRealmdigestMechanism = new DigestAuthenticationMechanism(digestAlgorithms, digestQops, HIT_ESCAPE,
                 "/management", new SimpleNonceManager());
+        basicMechanism = new BasicAuthenticationMechanism(realmName);
+        fakeRealmBasicMechanism = new BasicAuthenticationMechanism(HIT_ESCAPE);
     }
 
     @Override
@@ -113,6 +130,8 @@ public class LogoutHandler implements HttpHandler {
         String rawQuery = exchange.getQueryString();
         boolean exit = rawQuery != null && rawQuery.contains(EXIT);
 
+
+
         if (win) {
             responseHeaders.add(LOCATION, protocol + "://" + host + "/");
             exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
@@ -120,15 +139,27 @@ public class LogoutHandler implements HttpHandler {
             // Do the redirects to finish the logout
             String authorization = requestHeaders.getFirst(AUTHORIZATION);
 
+            boolean digest = true;
+            Map<String, Deque<String>> parameters = exchange.getQueryParameters();
+            if (parameters.containsKey(MECHANISM)) {
+                digest = !BASIC.equals(parameters.get(MECHANISM).getFirst());
+            }
+            if (authorization != null && authorization.length() > BASIC.length()
+                    && BASIC.equalsIgnoreCase(authorization.substring(0, BASIC.length()))) {
+                digest = false;
+                ByteBuffer decode = FlexBase64.decode(authorization.substring(6));
+                authorization = new String(decode.array(), decode.arrayOffset(), decode.limit(), UTF_8);
+            }
+
             if (authorization == null || !authorization.contains("enter-login-here")) {
                 if (!exit) {
-                    responseHeaders.add(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?" + EXIT);
+                    responseHeaders.add(LOCATION, protocol + "://enter-login-here:blah@" + host + "/logout?" + EXIT + "&"
+                            + MECHANISM + "=" + (digest ? DIGEST : BASIC));
                     exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
                     return;
                 }
 
-                DigestAuthenticationMechanism mech = opera ? fakeRealmdigestMechanism : digestMechanism;
-                mech.sendChallenge(exchange, null);
+                mechanism(opera, digest).sendChallenge(exchange, null);
                 String reply = "<html><script type='text/javascript'>window.location=\"" + protocol + "://" + host
                         + "/\";</script></html>";
                 exchange.setResponseCode(StatusCodes.UNAUTHORIZED);
@@ -139,6 +170,14 @@ public class LogoutHandler implements HttpHandler {
             // Success, now back to the login screen
             responseHeaders.add(LOCATION, protocol + "://" + host + "/");
             exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
+        }
+    }
+
+    private AuthenticationMechanism mechanism(final boolean opera, final boolean digest) {
+        if (digest) {
+            return opera ? fakeRealmdigestMechanism : digestMechanism;
+        } else {
+            return opera ? fakeRealmBasicMechanism : basicMechanism;
         }
     }
 
