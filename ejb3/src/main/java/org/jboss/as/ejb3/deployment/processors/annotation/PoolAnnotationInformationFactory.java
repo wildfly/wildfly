@@ -26,6 +26,7 @@ package org.jboss.as.ejb3.deployment.processors.annotation;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
+import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.ejb3.annotation.Pool;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
@@ -47,6 +48,9 @@ public class PoolAnnotationInformationFactory extends ClassAnnotationInformation
         if (value == null || value.asString().isEmpty()) {
             throw MESSAGES.annotationAttributeMissing("@Pool", "value");
         }
-        return value.asString();
+        if (replacement)
+            return PropertiesValueResolver.replaceProperties(value.asString());
+        else
+            return value.asString();
     }
 }

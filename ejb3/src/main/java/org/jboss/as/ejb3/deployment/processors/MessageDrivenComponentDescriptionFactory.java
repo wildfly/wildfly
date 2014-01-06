@@ -104,13 +104,13 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             if (!assertMDBClassValidity(beanClassInfo)) {
                 continue;
             }
+            final boolean replacement = deploymentUnit.getAttachment(Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
             final String ejbName = beanClassInfo.name().local();
             final AnnotationValue nameValue = messageBeanAnnotation.value("name");
-            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : nameValue.asString();
+            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : (replacement ? PropertiesValueResolver.replaceProperties(nameValue.asString()) : nameValue.asString());
             final MessageDrivenBeanMetaData beanMetaData = getEnterpriseBeanMetaData(deploymentUnit, beanName, MessageDrivenBeanMetaData.class);
             final String beanClassName;
             final String messageListenerInterfaceName;
-            boolean replacement = deploymentUnit.getAttachment(Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
             final Properties activationConfigProperties = getActivationConfigProperties(messageBeanAnnotation, replacement);
             final String messagingType;
             if (beanMetaData != null) {
@@ -256,7 +256,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             String propertyName = propAnnotation.value("propertyName").asString();
             String propertyValue = propAnnotation.value("propertyValue").asString();
             if(replacement)
-                props.put(propertyName, PropertiesValueResolver.replaceProperties(propertyValue));
+                props.put(PropertiesValueResolver.replaceProperties(propertyName), PropertiesValueResolver.replaceProperties(propertyValue));
             else
                 props.put(propertyName, propertyValue);
         }
