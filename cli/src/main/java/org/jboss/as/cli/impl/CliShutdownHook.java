@@ -43,11 +43,14 @@ public class CliShutdownHook {
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                shuttingDown = true;
-                for(Handler h : handlers) {
-                    try {
-                        h.shutdown();
-                    } catch(Throwable t) {}
+                synchronized(handlers) {
+                    shuttingDown = true;
+                    for (Handler h : handlers) {
+                        try {
+                            h.shutdown();
+                        } catch (Throwable t) {
+                        }
+                    }
                 }
             }
         }));
@@ -55,14 +58,18 @@ public class CliShutdownHook {
     }
 
     public static void add(Handler handler) {
-        if(!shuttingDown) {
-            handlers.add(handler);
+        synchronized(handlers) {
+            if (!shuttingDown) {
+                handlers.add(handler);
+            }
         }
     }
 
     public static void remove(Handler handler) {
-        if(!shuttingDown) {
-            handlers.remove(handler);
+        synchronized(handlers) {
+            if (!shuttingDown) {
+                handlers.remove(handler);
+            }
         }
     }
 }
