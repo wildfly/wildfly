@@ -67,7 +67,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
     public static final ServiceName SERVICE_NAME = UndertowService.HANDLER.append("reverse-proxy", "host");
 
 
-    public static final AttributeDefinition NODE_ID = new SimpleAttributeDefinitionBuilder(Constants.NODE_ID, ModelType.STRING)
+    public static final AttributeDefinition INSTANCE_ID = new SimpleAttributeDefinitionBuilder(Constants.INSTANCE_ID, ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
@@ -79,7 +79,7 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.singletonList(NODE_ID);
+        return Collections.singletonList(INSTANCE_ID);
     }
 
 
@@ -115,8 +115,8 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
             final String name = address.getLastElement().getValue();
             final String proxyName = address.getElement(address.size() - 2).getValue();
             final String jvmRoute;
-            if(model.hasDefined(Constants.NODE_ID)) {
-                jvmRoute = NODE_ID.resolveModelAttribute(context, model).asString();
+            if(model.hasDefined(Constants.INSTANCE_ID)) {
+                jvmRoute = INSTANCE_ID.resolveModelAttribute(context, model).asString();
             } else {
                 jvmRoute = null;
             }
@@ -138,18 +138,18 @@ public class ReverseProxyHandlerHost extends PersistentResourceDefinition {
         private final InjectedValue<ProxyHandler> proxyHandler = new InjectedValue<>();
 
         private final String name;
-        private final String nodeId;
+        private final String instanceId;
 
-        private ReverseProxyHostService(String name, String nodeId) {
+        private ReverseProxyHostService(String name, String instanceId) {
             this.name = name;
-            this.nodeId = nodeId;
+            this.instanceId = instanceId;
         }
 
         @Override
         public void start(StartContext startContext) throws StartException {
             final LoadBalancingProxyClient client = (LoadBalancingProxyClient) proxyHandler.getValue().getProxyClient();
             try {
-                client.addHost(new URI(name), nodeId);
+                client.addHost(new URI(name), instanceId);
             } catch (URISyntaxException e) {
                 throw new StartException(e);
             }

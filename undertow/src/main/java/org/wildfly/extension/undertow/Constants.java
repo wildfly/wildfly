@@ -136,5 +136,4 @@ public interface Constants {
     String MAX_REQUEST_TIME = "max-request-time";
     String CERTIFICATE_FORWARDING = "certificate-forwarding";
     String OPTIONS = "options";
-    String NODE_ID = "node-id";
 }
