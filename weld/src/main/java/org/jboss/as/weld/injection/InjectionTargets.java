@@ -16,6 +16,8 @@
  */
 package org.jboss.as.weld.injection;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.enterprise.inject.spi.Bean;
 
 import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
@@ -32,6 +34,8 @@ import org.jboss.weld.util.Beans;
  *
  */
 public class InjectionTargets {
+
+    private static final AtomicInteger conflictResolvingIdSuffix = new AtomicInteger();
 
     private InjectionTargets() {
     }
@@ -50,7 +54,20 @@ public class InjectionTargets {
     public static <T> BasicInjectionTarget<T> createInjectionTarget(Class<?> componentClass, Bean<T> bean, BeanManagerImpl beanManager,
             boolean interceptionSupport) {
         final ClassTransformer transformer = beanManager.getServices().get(ClassTransformer.class);
-        final EnhancedAnnotatedType<T> type = transformer.getEnhancedAnnotatedType((Class<T>) componentClass, beanManager.getId());
+        @SuppressWarnings("unchecked")
+        final Class<T> clazz = (Class<T>) componentClass;
+        EnhancedAnnotatedType<T> type = transformer.getEnhancedAnnotatedType(clazz, beanManager.getId());
+
+        if (!type.getJavaClass().equals(componentClass)) {
+            /*
+             * Jasper loads a class with multiple classloaders which is not supported by Weld.
+             * If this happens, use a combination of a bean archive identifier and an artificial unique integer as the BDA ID.
+             * This breaks AnnotatedType serialization but that does not matter as these are non-contextual components.
+             */
+            final String bdaId = beanManager.getId() + conflictResolvingIdSuffix.incrementAndGet();
+            type = transformer.getEnhancedAnnotatedType(clazz, bdaId);
+        }
+
         if (Beans.getBeanConstructor(type) == null) {
             /*
              * For example, AsyncListeners may be CDI-incompatible as long as the application never calls javax.servletAsyncContext#createListener(Class)
