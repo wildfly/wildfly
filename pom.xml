@@ -104,7 +104,6 @@
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>2.1.8</version.groovy-all>
-        <version.io.netty3>3.6.6.Final</version.io.netty3>
         <version.io.netty>4.0.13.Final</version.io.netty>
         <version.io.undertow>1.0.0.Beta30</version.io.undertow>
         <version.io.undertow.jastow>1.0.0.CR1</version.io.undertow.jastow>
@@ -4880,12 +4879,6 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${version.io.netty}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>io.netty</groupId>
-                <artifactId>netty</artifactId>
-                <version>${version.io.netty3}</version>
             </dependency>
 
             <dependency>
