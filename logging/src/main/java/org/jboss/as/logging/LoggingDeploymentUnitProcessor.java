@@ -26,6 +26,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -45,7 +47,6 @@ import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.PropertyConfigurator;
-import org.jboss.logmanager.ThreadLocalLogContextSelector;
 import org.jboss.modules.Module;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
@@ -87,48 +88,57 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
     @Override
     public void undeploy(final DeploymentUnit context) {
         // OSGi bundles deployments may not have a module attached
-        if (context.hasAttachment(Attachments.MODULE)) {
+        if (hasRegisteredLogContext(context) && context.hasAttachment(Attachments.MODULE)) {
+            // don't process sub-deployments as they are processed by processing methods
+            final ResourceRoot root = context.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            if (SubDeploymentMarker.isSubDeployment(root)) return;
             // Remove any log context selector references
             final Module module = context.getAttachment(Attachments.MODULE);
-            final ClassLoader current = SecurityActions.getThreadContextClassLoader();
-            try {
-                // Unregister the log context
-                SecurityActions.setThreadContextClassLoader(module.getClassLoader());
-                final LogContext logContext = LogContext.getLogContext();
-                LoggingExtension.CONTEXT_SELECTOR.unregisterLogContext(module.getClassLoader(), logContext);
-                LoggingLogger.ROOT_LOGGER.tracef("Removing LogContext '%s' from '%s'", logContext, module);
-                context.removeAttachment(LOG_CONTEXT_KEY);
-            } finally {
-                SecurityActions.setThreadContextClassLoader(current);
+            unregisterLogContext(context, module);
+            // Unregister all sub-deployments
+            final List<DeploymentUnit> subDeployments = getSubDeployments(context);
+            for (DeploymentUnit subDeployment : subDeployments) {
+                final Module subDeploymentModule = subDeployment.getAttachment(Attachments.MODULE);
+                unregisterLogContext(subDeployment, subDeploymentModule);
             }
         }
     }
 
+    /**
+     * Checks the deployment to see if it has a registered {@link org.jboss.logmanager.LogContext log context}.
+     *
+     * @param deploymentUnit the deployment unit to check
+     *
+     * @return {@code true} if the deployment unit has a log context, otherwise {@code false}
+     */
+    public static boolean hasRegisteredLogContext(final DeploymentUnit deploymentUnit) {
+        return deploymentUnit.hasAttachment(LOG_CONTEXT_KEY);
+    }
+
     private boolean processLoggingProfiles(final DeploymentUnit deploymentUnit, final ResourceRoot root) throws DeploymentUnitProcessingException {
-        boolean result = false;
         final List<DeploymentUnit> subDeployments = getSubDeployments(deploymentUnit);
         final String loggingProfile = findLoggingProfile(root);
         if (loggingProfile != null) {
-            result = true;
             // Get the profile logging context
             final LoggingProfileContextSelector loggingProfileContext = LoggingProfileContextSelector.getInstance();
             if (loggingProfileContext.exists(loggingProfile)) {
                 // Get the module
                 final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
                 final LogContext logContext = loggingProfileContext.get(loggingProfile);
-                LoggingExtension.CONTEXT_SELECTOR.registerLogContext(module.getClassLoader(), logContext);
                 LoggingLogger.ROOT_LOGGER.tracef("Registering log context '%s' on '%s' for profile '%s'", logContext, root, loggingProfile);
+                registerLogContext(deploymentUnit, module, logContext);
                 // Process sub-deployments
                 for (DeploymentUnit subDeployment : subDeployments) {
                     // A sub-deployment must have a module to process
                     if (subDeployment.hasAttachment(Attachments.MODULE)) {
                         // Set the result to true if a logging profile was found
-                        if (subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT) && processLoggingProfiles(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT))) {
-                            result = true;
-                        } else {
+                        if (subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
+                            processLoggingProfiles(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT));
+                        }
+                        if (!hasRegisteredLogContext(subDeployment)) {
                             final Module subDeploymentModule = subDeployment.getAttachment(Attachments.MODULE);
-                            LoggingExtension.CONTEXT_SELECTOR.registerLogContext(subDeploymentModule.getClassLoader(), logContext);
                             LoggingLogger.ROOT_LOGGER.tracef("Registering log context '%s' on '%s' for profile '%s'", logContext, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT), loggingProfile);
+                            registerLogContext(subDeployment, subDeploymentModule, logContext);
                         }
                     }
                 }
@@ -136,33 +146,24 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                 LoggingLogger.ROOT_LOGGER.loggingProfileNotFound(loggingProfile, root);
             }
         } else {
-            // Process sub-deployments
+            // No logging profile found, but the sub-deployments should be checked for logging profiles
             for (DeploymentUnit subDeployment : subDeployments) {
                 // A sub-deployment must have a root resource and a module to process
                 if (subDeployment.hasAttachment(Attachments.MODULE) && subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
-                    // Set the result to true if a logging profile was found
-                    if (processLoggingProfiles(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT)))
-                        result = true;
+                    processLoggingProfiles(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT));
                 }
             }
         }
-        return result;
+        return hasRegisteredLogContext(deploymentUnit);
     }
 
     private boolean processDeploymentLogging(final DeploymentUnit deploymentUnit, final ResourceRoot root) throws DeploymentUnitProcessingException {
-        boolean result = false;
         if (Boolean.valueOf(SecurityActions.getSystemProperty(PER_DEPLOYMENT_LOGGING, Boolean.toString(true)))) {
-            // check if we already setup LogContext
-            if (deploymentUnit.hasAttachment(LOG_CONTEXT_KEY)) {
-                return true;
-            }
-
             LoggingLogger.ROOT_LOGGER.trace("Scanning for logging configuration files.");
             final List<DeploymentUnit> subDeployments = getSubDeployments(deploymentUnit);
             // Check for a config file
             final VirtualFile configFile = findConfigFile(root);
             if (configFile != null) {
-                result = true;
                 // Get the module
                 final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
                 // Create the log context and load into the selector for the module and keep a strong reference
@@ -173,30 +174,36 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                     logContext = LogContext.create();
                 }
                 // Configure the deployments logging based on the top-level configuration file
-                configure(configFile, module.getClassLoader(), logContext);
+                if (configure(configFile, module.getClassLoader(), logContext)) {
+                    registerLogContext(deploymentUnit, module, logContext);
+                } else {
+                    // Exit processing if the configuration was not successful, failures should already be logged
+                    return false;
+                }
 
                 // Process the sub-deployments
                 for (DeploymentUnit subDeployment : subDeployments) {
-                    if (subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT) && processDeploymentLogging(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT))) {
-                        result = true;
-                    } else {
-                        // No configuration file found, use the top-level configuration
+                    if (subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
+                        processDeploymentLogging(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT));
+                    }
+                    // No configuration file found, use the top-level configuration
+                    if (subDeployment.hasAttachment(Attachments.MODULE) && !hasRegisteredLogContext(subDeployment)) {
                         final Module subDeploymentModule = subDeployment.getAttachment(Attachments.MODULE);
                         if (subDeploymentModule != null) {
-                            LoggingExtension.CONTEXT_SELECTOR.registerLogContext(subDeploymentModule.getClassLoader(), logContext);
+                            registerLogContext(subDeployment, subDeploymentModule, logContext);
                         }
                     }
                 }
             } else {
-                // No configuration was found, process sub-deployments
+                // No configuration was found, process sub-deployments for configuration files
                 for (DeploymentUnit subDeployment : subDeployments) {
-                    final ResourceRoot subDeploymentRoot = subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT);
-                    // Process the sub-deployment
-                    if (processDeploymentLogging(subDeployment, subDeploymentRoot)) result = true;
+                    if (subDeployment.hasAttachment(Attachments.DEPLOYMENT_ROOT)) {
+                        processDeploymentLogging(subDeployment, subDeployment.getAttachment(Attachments.DEPLOYMENT_ROOT));
+                    }
                 }
             }
         }
-        return result;
+        return hasRegisteredLogContext(deploymentUnit);
     }
 
     /**
@@ -275,11 +282,11 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
         return result;
     }
 
-    private void configure(final VirtualFile configFile, final ClassLoader classLoader, final LogContext logContext) throws DeploymentUnitProcessingException {
+    private boolean configure(final VirtualFile configFile, final ClassLoader classLoader, final LogContext logContext) throws DeploymentUnitProcessingException {
+        boolean result = false;
         InputStream configStream = null;
         try {
             LoggingLogger.ROOT_LOGGER.debugf("Found logging configuration file: %s", configFile);
-            LoggingExtension.CONTEXT_SELECTOR.registerLogContext(classLoader, logContext);
 
             // Get the filname and open the stream
             final String fileName = configFile.getName();
@@ -302,6 +309,8 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                     LoggingExtension.THREAD_LOCAL_CONTEXT_SELECTOR.getAndSet(CONTEXT_LOCK, old);
                     SecurityActions.setThreadContextClassLoader(current);
                 }
+                // Successfully configured
+                result = true;
             } else {
                 // Create a properties file
                 final Properties properties = new Properties();
@@ -313,12 +322,52 @@ public class LoggingDeploymentUnitProcessor implements DeploymentUnitProcessor {
                     // Load non-log4j types
                     final PropertyConfigurator propertyConfigurator = new PropertyConfigurator(logContext);
                     propertyConfigurator.configure(properties);
+                    // Successfully configured
+                    result = true;
                 }
             }
         } catch (Exception e) {
             throw LoggingMessages.MESSAGES.failedToConfigureLogging(e, configFile.getName());
         } finally {
             safeClose(configStream);
+        }
+        return result;
+    }
+
+    private void registerLogContext(final DeploymentUnit deploymentUnit, final Module module, final LogContext logContext) {
+        LoggingLogger.ROOT_LOGGER.tracef("Registering LogContext %s for deployment %s", logContext, deploymentUnit.getName());
+        if (System.getSecurityManager() != null) {
+            AccessController.doPrivileged(new PrivilegedAction<Object>() {
+                @Override
+                public Object run() {
+                    LoggingExtension.CONTEXT_SELECTOR.registerLogContext(module.getClassLoader(), logContext);
+                    return null;
+                }
+            });
+        } else {
+            LoggingExtension.CONTEXT_SELECTOR.registerLogContext(module.getClassLoader(), logContext);
+        }
+        // Add the log context to the sub-deployment unit for later removal
+        deploymentUnit.putAttachment(LOG_CONTEXT_KEY, logContext);
+    }
+
+    private void unregisterLogContext(final DeploymentUnit deploymentUnit, final Module module) {
+        final LogContext logContext = deploymentUnit.removeAttachment(LOG_CONTEXT_KEY);
+        final boolean success;
+        if (System.getSecurityManager() != null) {
+            success = AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+                @Override
+                public Boolean run() {
+                    return LoggingExtension.CONTEXT_SELECTOR.unregisterLogContext(module.getClassLoader(), logContext);
+                }
+            });
+        } else {
+            success = LoggingExtension.CONTEXT_SELECTOR.unregisterLogContext(module.getClassLoader(), logContext);
+        }
+        if (success) {
+            LoggingLogger.ROOT_LOGGER.tracef("Removed LogContext '%s' from '%s'", logContext, module);
+        } else {
+            LoggingLogger.ROOT_LOGGER.logContextNotRemoved(logContext, deploymentUnit.getName());
         }
     }
 
