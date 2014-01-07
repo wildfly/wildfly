@@ -142,7 +142,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RE
 
 
 public class RaOperationUtil {
-    private static final ServiceName RAR_MODULE = ServiceName.of("rarinsidemodule");
+    public static final ServiceName RAR_MODULE = ServiceName.of("rarinsidemodule");
 
 
     public static ModifiableResourceAdapter buildResourceAdaptersObject(final String id, final OperationContext context, ModelNode operation, String archiveOrModule) throws OperationFailedException {
