@@ -52,7 +52,8 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
     ;
     static final SimpleAttributeDefinition DIALECT = new SimpleAttributeDefinitionBuilder(ModelKeys.DIALECT, ModelType.STRING, true)
             .setXmlName(Attribute.DIALECT.getLocalName())
-            .setValidator(new EnumValidator<>(DatabaseType.class, true, false))
+            .setValidator(new EnumValidator<>(DatabaseType.class, true, true))
+            .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build()
     ;
