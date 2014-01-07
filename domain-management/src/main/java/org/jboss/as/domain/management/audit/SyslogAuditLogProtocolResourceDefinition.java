@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -106,7 +107,7 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
     public static void createServerAddOperations(final List<ModelNode> addOps, final PathAddress protocolAddress, final ModelNode protocol) {
         addOps.add(createProtocolAddOperation(protocolAddress, protocol));
 
-        final SyslogAuditLogHandler.Transport transport = SyslogAuditLogHandler.Transport.valueOf(protocolAddress.getLastElement().getValue());
+        final SyslogAuditLogHandler.Transport transport = SyslogAuditLogHandler.Transport.valueOf(protocolAddress.getLastElement().getValue().toUpperCase(Locale.ENGLISH));
         if (transport == SyslogAuditLogHandler.Transport.TLS){
             if (protocol.hasDefined(AUTHENTICATION)){
                 final ModelNode auth = protocol.get(AUTHENTICATION);
@@ -125,7 +126,7 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
         protocolAdd.get(HOST.getName()).set(protocol.get(HOST.getName()));
         protocolAdd.get(PORT.getName()).set(protocol.get(PORT.getName()));
 
-        SyslogAuditLogHandler.Transport transport = SyslogAuditLogHandler.Transport.valueOf(protocolAddress.getLastElement().getValue());
+        SyslogAuditLogHandler.Transport transport = SyslogAuditLogHandler.Transport.valueOf(protocolAddress.getLastElement().getValue().toUpperCase(Locale.ENGLISH));
         if (transport != SyslogAuditLogHandler.Transport.UDP){
             protocolAdd.get(Tcp.MESSAGE_TRANSFER.getName()).set(protocol.get(Tcp.MESSAGE_TRANSFER.getName()));
         }
