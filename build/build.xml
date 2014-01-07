@@ -1230,14 +1230,6 @@
             <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-core"/>
         </module-def>
 
-        <!--
-          Starting with 3.4.x Netty has changed its groupId to io.netty but packages
-          remained with org.jboss.netty
-        -->
-        <module-def name="org.jboss.netty">
-            <maven-resource group="io.netty" artifact="netty"/>
-        </module-def>
-
         <module-def name="org.jboss.remote-naming">
             <maven-resource group="org.jboss" artifact="jboss-remote-naming"/>
         </module-def>
