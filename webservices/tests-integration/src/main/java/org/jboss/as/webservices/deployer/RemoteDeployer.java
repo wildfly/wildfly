@@ -302,7 +302,7 @@ public final class RemoteDeployer implements Deployer {
             op.get("socket-binding").set("https");
             op.get("security-realm").set(JBWS_DEPLOYER_HTTPS_LISTENER_REALM_NAME);
             final String verifyClient = "verify-client";
-            if (options.containsKey(verifyClient)) {
+            if (options != null && options.containsKey(verifyClient)) {
                 op.get(verifyClient).set(options.get(verifyClient));
             }
             steps.add(op);
