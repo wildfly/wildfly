@@ -1,8 +1,10 @@
 package org.wildfly.extension.undertow.security.jaspi;
 
 import io.undertow.security.api.AuthenticationMechanism;
+import io.undertow.security.api.NotificationReceiver;
 import io.undertow.security.api.SecurityContext;
 import io.undertow.security.idm.Account;
+import io.undertow.security.idm.IdentityManager;
 import io.undertow.server.ExchangeCompletionListener;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
@@ -20,6 +22,7 @@ import javax.servlet.ServletRequest;
 
 import java.security.Principal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.security.auth.callback.JASPICallbackHandler;
@@ -40,6 +43,8 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
     private static final String JASPI_HTTP_SERVLET_LAYER = "HttpServlet";
     private static final String MECHANISM_NAME = "JASPI";
+    private static final String JASPI_AUTH_TYPE = "javax.servlet.http.authType";
+    private static final String JASPI_REGISTER_SESSION = "javax.servlet.http.registerSession";
 
     public static final AttachmentKey<HttpServerExchange> HTTP_SERVER_EXCHANGE_ATTACHMENT_KEY = AttachmentKey.create(HttpServerExchange.class);
     public static final AttachmentKey<SecurityContext> SECURITY_CONTEXT_ATTACHMENT_KEY = AttachmentKey.create(SecurityContext.class);
@@ -51,10 +56,11 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
     }
 
     @Override
-    public AuthenticationMechanismOutcome authenticate(final HttpServerExchange exchange, final SecurityContext securityContext) {
+    public AuthenticationMechanismOutcome authenticate(final HttpServerExchange exchange, final SecurityContext sc) {
+        final JASPISecurityContext jaspiSecurityContext = new JASPISecurityContext(sc);
         final ServletRequestContext requestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
         final JASPIServerAuthenticationManager sam = createJASPIAuthenticationManager();
-        final GenericMessageInfo messageInfo = createMessageInfo(exchange, securityContext);
+        final GenericMessageInfo messageInfo = createMessageInfo(exchange, jaspiSecurityContext);
         final String applicationIdentifier = buildApplicationIdentifier(requestContext);
         final JASPICallbackHandler cbh = new JASPICallbackHandler();
 
@@ -73,15 +79,22 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
         if (isValid && account != null) {
             outcome = AuthenticationMechanismOutcome.AUTHENTICATED;
-            securityContext.authenticationComplete(account, MECHANISM_NAME, false);
+
+            String type = (String) messageInfo.getMap().get(JASPI_AUTH_TYPE);
+            Object registerObj = messageInfo.getMap().get(JASPI_REGISTER_SESSION);
+            boolean cache = jaspiSecurityContext.isCachingRequired();
+            if(registerObj != null && (registerObj instanceof String)) {
+                cache = Boolean.valueOf((String)registerObj);
+            }
+            sc.authenticationComplete(account, type != null ? type : jaspiSecurityContext.getAuthType(), cache);
         } else if (isValid && account == null && !isMandatory(requestContext)) {
             outcome = AuthenticationMechanismOutcome.NOT_ATTEMPTED;
         } else {
             outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
-            securityContext.authenticationFailed("JASPI authentication failed.", MECHANISM_NAME);
+            sc.authenticationFailed("JASPI authentication failed.", MECHANISM_NAME);
         }
 
-        secureResponse(exchange, securityContext, sam, messageInfo, cbh);
+        secureResponse(exchange, sc, sam, messageInfo, cbh);
 
         return outcome;
 
@@ -181,5 +194,96 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
                 && attachment.getCurrentServlet().getManagedServlet().getServletInfo().getServletSecurityInfo() != null
                 && attachment.getCurrentServlet().getManagedServlet().getServletInfo().getServletSecurityInfo().getRolesAllowed() != null
                 && !attachment.getCurrentServlet().getManagedServlet().getServletInfo().getServletSecurityInfo().getRolesAllowed().isEmpty();
+    }
+
+    private static final class JASPISecurityContext implements SecurityContext {
+
+        private final SecurityContext delegate;
+        private boolean cachingRequired = false;
+        private String authType;
+
+        private JASPISecurityContext(SecurityContext delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean authenticate() {
+            return delegate.authenticate();
+        }
+
+        @Override
+        public boolean login(String username, String password) {
+            return delegate.login(username, password);
+        }
+
+        @Override
+        public void logout() {
+            delegate.logout();
+        }
+
+        @Override
+        public void setAuthenticationRequired() {
+            delegate.setAuthenticationRequired();
+        }
+
+        @Override
+        public void addAuthenticationMechanism(AuthenticationMechanism mechanism) {
+            delegate.addAuthenticationMechanism(mechanism);
+        }
+
+        @Override
+        public List<AuthenticationMechanism> getAuthenticationMechanisms() {
+            return delegate.getAuthenticationMechanisms();
+        }
+
+        @Override
+        public boolean isAuthenticated() {
+            return delegate.isAuthenticated();
+        }
+
+        @Override
+        public Account getAuthenticatedAccount() {
+            return delegate.getAuthenticatedAccount();
+        }
+
+        @Override
+        public String getMechanismName() {
+            return delegate.getMechanismName();
+        }
+
+        @Override
+        public IdentityManager getIdentityManager() {
+            return delegate.getIdentityManager();
+        }
+
+        @Override
+        public void authenticationComplete(Account account, String mechanismName, boolean cachingRequired) {
+            //noop, we don't want the auth method that we have delegated too to actually call this method
+            this.cachingRequired = cachingRequired;
+            this.authType = mechanismName;
+        }
+
+        @Override
+        public void authenticationFailed(String message, String mechanismName) {
+            delegate.authenticationFailed(message, mechanismName);
+        }
+
+        @Override
+        public void registerNotificationReceiver(NotificationReceiver receiver) {
+            delegate.registerNotificationReceiver(receiver);
+        }
+
+        @Override
+        public void removeNotificationReceiver(NotificationReceiver receiver) {
+            delegate.removeNotificationReceiver(receiver);
+        }
+
+        private boolean isCachingRequired() {
+            return cachingRequired;
+        }
+
+        private String getAuthType() {
+            return authType;
+        }
     }
 }
