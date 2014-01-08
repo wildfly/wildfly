@@ -28,7 +28,10 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.http.HttpServletRequest;
+
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.security.idm.Account;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
@@ -144,14 +147,26 @@ public class SessionAdapterTestCase {
     
     @Test
     public void getAuthenticatedSessionAttribute() {
-        LocalSessionContext context = mock(LocalSessionContext.class);
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
-        AuthenticatedSession expected = new AuthenticatedSession(null, null);
+        SessionAttributes attributes = mock(SessionAttributes.class);
+        Account account = mock(Account.class);
         
+        when(this.session.getAttributes()).thenReturn(attributes);
+        when(attributes.getAttribute(name)).thenReturn(account);
+        
+        AuthenticatedSession result = (AuthenticatedSession) this.adapter.getAttribute(name);
+        
+        assertSame(account, result.getAccount());
+        assertSame(HttpServletRequest.FORM_AUTH, result.getMechanism());
+        
+        LocalSessionContext context = mock(LocalSessionContext.class);
+        AuthenticatedSession expected = new AuthenticatedSession(account, HttpServletRequest.BASIC_AUTH);
+        
+        when(attributes.getAttribute(name)).thenReturn(null);
         when(this.session.getLocalContext()).thenReturn(context);
         when(context.getAuthenticatedSession()).thenReturn(expected);
         
-        Object result = this.adapter.getAttribute(name);
+        result = (AuthenticatedSession) this.adapter.getAttribute(name);
         
         assertSame(expected, result);
     }
@@ -251,17 +266,39 @@ public class SessionAdapterTestCase {
 
     @Test
     public void setAuthenticatedSessionAttribute() {
-        LocalSessionContext context = mock(LocalSessionContext.class);
         String name = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
-        AuthenticatedSession value = new AuthenticatedSession(null, null);
+        SessionAttributes attributes = mock(SessionAttributes.class);
+        Account account = mock(Account.class);
+        AuthenticatedSession session = new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
+        Account oldAccount = mock(Account.class);
+
+        when(this.session.getAttributes()).thenReturn(attributes);
+        when(attributes.setAttribute(name, account)).thenReturn(oldAccount);
+        
+        AuthenticatedSession result = (AuthenticatedSession) this.adapter.setAttribute(name, session);
+        
+        assertSame(oldAccount, result.getAccount());
+        assertSame(HttpServletRequest.FORM_AUTH, result.getMechanism());
+        
+        when(attributes.setAttribute(name, account)).thenReturn(null);
+        
+        result = (AuthenticatedSession) this.adapter.setAttribute(name, session);
+        
+        assertNull(result);
+        
+        session = new AuthenticatedSession(account, HttpServletRequest.BASIC_AUTH);
+        AuthenticatedSession oldSession = new AuthenticatedSession(oldAccount, HttpServletRequest.BASIC_AUTH);
+        
+        LocalSessionContext context = mock(LocalSessionContext.class);
 
         when(this.session.getLocalContext()).thenReturn(context);
+        when(context.getAuthenticatedSession()).thenReturn(oldSession);
+        
+        result = (AuthenticatedSession) this.adapter.setAttribute(name, session);
 
-        Object result = this.adapter.setAttribute(name, value);
+        verify(context).setAuthenticatedSession(same(session));
 
-        verify(context).setAuthenticatedSession(same(value));
-
-        assertNull(result);
+        assertSame(oldSession, result);
     }
 
     @Test

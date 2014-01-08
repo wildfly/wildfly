@@ -25,11 +25,14 @@ import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
 import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
+import io.undertow.security.idm.Account;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener.SessionDestroyedReason;
@@ -77,7 +80,8 @@ public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionC
     @Override
     public Object getAttribute(String name) {
         if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
-            return this.getSession().getLocalContext().getAuthenticatedSession();
+            Account account = (Account) super.getAttribute(name);
+            return (account != null) ? new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH) : this.getSession().getLocalContext().getAuthenticatedSession();
         }
         return super.getAttribute(name);
     }
@@ -88,9 +92,16 @@ public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionC
             return this.removeAttribute(name);
         }
         if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
+            AuthenticatedSession session = (AuthenticatedSession) value;
+            // If using FORM authentication, we store the corresponding Account in a session attribute
+            if (session.getMechanism().equals(HttpServletRequest.FORM_AUTH)) {
+                Account account = (Account) this.getSession().getAttributes().setAttribute(name, session.getAccount());
+                return (account != null) ? new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH) : null;
+            }
+            // Otherwise we store the whole AuthenticatedSession in the local context
             LocalSessionContext context = this.getSession().getLocalContext();
             AuthenticatedSession old = context.getAuthenticatedSession();
-            context.setAuthenticatedSession((AuthenticatedSession) value);
+            context.setAuthenticatedSession(session);
             return old;
         }
         Object old = this.getSession().getAttributes().setAttribute(name, value);
@@ -105,6 +116,10 @@ public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionC
     @Override
     public Object removeAttribute(String name) {
         if (AUTHENTICATED_SESSION_ATTRIBUTE_NAME.equals(name)) {
+            Account account = (Account) this.getSession().getAttributes().removeAttribute(name);
+            if (account != null) {
+                return new AuthenticatedSession(account, HttpServletRequest.FORM_AUTH);
+            }
             LocalSessionContext context = this.getSession().getLocalContext();
             AuthenticatedSession old = context.getAuthenticatedSession();
             context.setAuthenticatedSession(null);
