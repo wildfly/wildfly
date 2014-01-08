@@ -199,14 +199,13 @@ final class LoggerOperations {
 
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            HANDLER_NAME.validateAndSet(operation, model);
             model.get(HANDLERS.getName()).add(operation.get(HANDLER_NAME.getName()));
         }
 
         @Override
         public void performRuntime(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
             // Get the handler name
-            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, model).asString();
+            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, operation).asString();
             final String loggerName = getLogManagerLoggerName(name);
             if (configuration.getHandlerNames().contains(handlerName)) {
                 throw createOperationFailure(LoggingMessages.MESSAGES.handlerAlreadyDefined(handlerName));
@@ -223,8 +222,7 @@ final class LoggerOperations {
 
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            HANDLER_NAME.validateAndSet(operation, model);
-            final String handlerName = model.get(HANDLER_NAME.getName()).asString();
+            final String handlerName = operation.get(HANDLER_NAME.getName()).asString();
             // Create a new handler list for the model
             boolean found = false;
             final List<ModelNode> handlers = model.get(HANDLERS.getName()).asList();
@@ -243,7 +241,7 @@ final class LoggerOperations {
 
         @Override
         public void performRuntime(final OperationContext context, final ModelNode operation, final LoggerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
-            configuration.removeHandlerName(HANDLER_NAME.resolveModelAttribute(context, model).asString());
+            configuration.removeHandlerName(HANDLER_NAME.resolveModelAttribute(context, operation).asString());
         }
     };
 

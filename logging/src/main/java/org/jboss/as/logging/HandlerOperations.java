@@ -139,13 +139,13 @@ final class HandlerOperations {
                     context.reloadRequired();
                 }
             }
-            performRuntime(context, configuration, name, model);
+            performRuntime(context, configuration, operation, name, model);
             // It's important that properties are written in the correct order, reorder the properties if
             // needed before the commit.
             addOrderPropertiesStep(context, propertySorter, configuration);
         }
 
-        public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
+        public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final ModelNode operation, final String name, final ModelNode model) throws OperationFailedException {
             // No-op by default
         }
     }
@@ -430,14 +430,13 @@ final class HandlerOperations {
     static final OperationStepHandler ADD_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            HANDLER_NAME.validateAndSet(operation, model);
             model.get(SUBHANDLERS.getName()).add(operation.get(HANDLER_NAME.getName()));
         }
 
         @Override
-        public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
+        public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final ModelNode operation, final String name, final ModelNode model) throws OperationFailedException {
             // Get the handler name
-            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, model).asString();
+            final String handlerName = HANDLER_NAME.resolveModelAttribute(context, operation).asString();
             if (name.equals(handlerName)) {
                 throw createOperationFailure(LoggingMessages.MESSAGES.cannotAddHandlerToSelf(configuration.getName()));
             }
@@ -454,8 +453,7 @@ final class HandlerOperations {
     static final OperationStepHandler REMOVE_SUBHANDLER = new HandlerUpdateOperationStepHandler() {
         @Override
         public void updateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-            HANDLER_NAME.validateAndSet(operation, model);
-            final String handlerName = model.get(HANDLER_NAME.getName()).asString();
+            final String handlerName = operation.get(HANDLER_NAME.getName()).asString();
             // Create a new handler list for the model
             boolean found = false;
             final List<ModelNode> handlers = model.get(SUBHANDLERS.getName()).asList();
@@ -473,8 +471,8 @@ final class HandlerOperations {
         }
 
         @Override
-        public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final String name, final ModelNode model) throws OperationFailedException {
-            configuration.removeHandlerName(HANDLER_NAME.resolveModelAttribute(context, model).asString());
+        public void performRuntime(final OperationContext context, final HandlerConfiguration configuration, final ModelNode operation, final String name, final ModelNode model) throws OperationFailedException {
+            configuration.removeHandlerName(HANDLER_NAME.resolveModelAttribute(context, operation).asString());
         }
     };
 

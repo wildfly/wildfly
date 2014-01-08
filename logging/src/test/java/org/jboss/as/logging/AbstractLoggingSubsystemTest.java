@@ -22,6 +22,8 @@
 
 package org.jboss.as.logging;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,6 +32,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -45,6 +48,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.config.FormatterConfiguration;
 import org.jboss.logmanager.config.HandlerConfiguration;
@@ -413,6 +417,28 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                 }
             }
         }
+    }
+
+    /**
+     * Validates that there are no extra attributes on the resource.
+     *
+     * @param resource   the resource to check for additional attributes
+     * @param attributes the attributes that should be on the resource
+     */
+    protected void validateResourceAttributes(final ModelNode resource, final AttributeDefinition[] attributes) {
+        final List<String> validAttributes = new ArrayList<String>();
+        for (AttributeDefinition attribute : attributes) {
+            validAttributes.add(attribute.getName());
+        }
+        // Get the attribute names from the resource
+        final List<String> resourceAttributes = new ArrayList<String>();
+        for (Property property : resource.asPropertyList()) {
+            resourceAttributes.add(property.getName());
+        }
+
+        // Remove all the known attributes
+        resourceAttributes.removeAll(validAttributes);
+        assertTrue(String.format("Additional attributes (%s) found on the resource %s", resourceAttributes, resource), resourceAttributes.isEmpty());
     }
 
     protected ModelNode findHandlerModel(final ModelNode model, final String name) {

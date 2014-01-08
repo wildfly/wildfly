@@ -26,6 +26,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
@@ -109,6 +110,14 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
         assertTrue("Subhandler CONSOLE should have been removed: " + result, SubsystemOperations.readResult(result)
                 .asList()
                 .isEmpty());
+
+        // Ensure the model doesn't contain any erroneous attributes
+        op = SubsystemOperations.createReadResourceOperation(address);
+        result = executeOperation(kernelServices, op);
+        final ModelNode asyncHandlerResource = SubsystemOperations.readResult(result);
+        validateResourceAttributes(asyncHandlerResource, Logging.join(AsyncHandlerResourceDefinition.ATTRIBUTES, CommonAttributes.NAME, CommonAttributes.FILTER));
+        // The name attribute should be the same as the last path element of the address
+        assertEquals(asyncHandlerResource.get(CommonAttributes.NAME.getName()).asString(), PathAddress.pathAddress(address).getLastElement().getValue());
 
         // Clean-up
         executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(consoleAddress));
