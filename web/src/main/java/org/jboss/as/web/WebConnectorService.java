@@ -541,7 +541,7 @@ class WebConnectorService implements Service<Connector> {
         }
         public WaitedHostContext(String host, String context) {
             this.host = host;
-            this.context = context;
+            this.context = context.equals("/") ? "" : context;
             this.seen = false;
         }
     }
