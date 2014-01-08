@@ -19,6 +19,8 @@ import org.wildfly.extension.undertow.security.AccountImpl;
 import javax.security.auth.Subject;
 import javax.security.auth.message.AuthException;
 import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import java.security.Principal;
 import java.util.HashSet;
@@ -42,7 +44,7 @@ import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
     private static final String JASPI_HTTP_SERVLET_LAYER = "HttpServlet";
-    private static final String MECHANISM_NAME = "JASPI";
+    private static final String MECHANISM_NAME = "JASPIC";
     private static final String JASPI_AUTH_TYPE = "javax.servlet.http.authType";
     private static final String JASPI_REGISTER_SESSION = "javax.servlet.http.registerSession";
 
@@ -93,6 +95,11 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
             outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
             sc.authenticationFailed("JASPI authentication failed.", MECHANISM_NAME);
         }
+
+        // A SAM can wrap the HTTP request/response objects - update the servlet request context with the values found in the message info.
+        ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+        servletRequestContext.setServletRequest((HttpServletRequest) messageInfo.getRequestMessage());
+        servletRequestContext.setServletResponse((HttpServletResponse) messageInfo.getResponseMessage());
 
         secureResponse(exchange, sc, sam, messageInfo, cbh);
 
@@ -173,6 +180,11 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
                 if (isSecureResponse(requestContext, securityContext)) {
                     ROOT_LOGGER.debugf("secureResponse for layer [%s] and applicationContextIdentifier [%s].", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
                     sam.secureResponse(messageInfo, new Subject(), JASPI_HTTP_SERVLET_LAYER, applicationIdentifier, cbh);
+
+                    // A SAM can unwrap the HTTP request/response objects - update the servlet request context with the values found in the message info.
+                    ServletRequestContext servletRequestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+                    servletRequestContext.setServletRequest((HttpServletRequest) messageInfo.getRequestMessage());
+                    servletRequestContext.setServletResponse((HttpServletResponse) messageInfo.getResponseMessage());
                 }
                 nextListener.proceed();
             }
