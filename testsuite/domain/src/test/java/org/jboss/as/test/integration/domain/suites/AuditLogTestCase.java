@@ -148,6 +148,8 @@ public class AuditLogTestCase {
         masterServerAuditLog.delete();
         slaveAuditLog.delete();
         slaveServerAuditLog.delete();
+        //Start up syslog server
+        server = SimpleSyslogServer.createUdp(SYSLOG_PORT);
     }
 
     @AfterClass
