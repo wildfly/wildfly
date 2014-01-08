@@ -145,7 +145,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
 
             final String[] items = getClassPathEntries(resourceRoot);
             for (final String item : items) {
-                if (item.isEmpty()) {
+                if (item.isEmpty() || item.equals(".")) { //a class path of . causes problems and is unnecessary, see WFLY-2725
                     continue;
                 }
                 //first try and resolve relative to the manifest resource root
