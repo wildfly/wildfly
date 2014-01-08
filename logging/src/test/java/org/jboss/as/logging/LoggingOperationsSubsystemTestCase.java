@@ -25,12 +25,14 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -39,6 +41,7 @@ import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logmanager.LogContext;
 import org.jboss.logmanager.Logger;
 import org.junit.After;
@@ -48,6 +51,7 @@ import org.junit.Test;
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
+// TODO (jrp) all these operations should be tested on loggers as well as root loggers
 public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystemTest {
 
     private static final String PROFILE = "testProfile";
@@ -127,6 +131,12 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
     public void testPatternFormatter() throws Exception {
         testPatternFormatter(null);
         testPatternFormatter(PROFILE);
+    }
+
+    @Test
+    public void testCompositeOperations() throws Exception {
+        testCompositeOperations(null);
+        testCompositeOperations(PROFILE);
     }
 
     @Test
@@ -410,9 +420,16 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         // Add file handler
         addFileHandler(kernelServices, loggingProfile, fileHandlerName, org.jboss.logmanager.Level.INFO, logFile, true);
 
-        // Ensure the handler is listed
         final ModelNode rootLoggerAddress = createRootLoggerAddress(loggingProfile).toModelNode();
-        ModelNode op = SubsystemOperations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
+        // Ensure the model doesn't contain any erroneous attributes
+        ModelNode op = SubsystemOperations.createReadResourceOperation(rootLoggerAddress);
+        ModelNode result = executeOperation(kernelServices, op);
+        final ModelNode rootLoggerResource = SubsystemOperations.readResult(result);
+        validateResourceAttributes(rootLoggerResource, Logging.join(RootLoggerResourceDefinition.ATTRIBUTES, CommonAttributes.FILTER));
+
+
+        // Ensure the handler is listed
+        op = SubsystemOperations.createReadAttributeOperation(rootLoggerAddress, CommonAttributes.HANDLERS);
         ModelNode handlerResult = executeOperation(kernelServices, op);
         List<String> handlerList = SubsystemOperations.readResultAsList(handlerResult);
         assertTrue(String.format("Handler '%s' was not found. Result: %s", fileHandlerName, handlerResult), handlerList.contains(fileHandlerName));
@@ -559,6 +576,57 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
 
     }
 
+    private void testCompositeOperations(final String profileName) throws Exception {
+        final KernelServices kernelServices = boot();
+        final String asyncHandlerName = "async";
+        final String consoleHandlerName = "console";
+
+        final ModelNode asyncHandlerAddress = createAsyncHandlerAddress(profileName, asyncHandlerName).toModelNode();
+        final ModelNode consoleHandlerAddress = createConsoleHandlerAddress(profileName, consoleHandlerName).toModelNode();
+        final ModelNode loggerAddress = createLoggerAddress(profileName, FQCN).toModelNode();
+
+        final ModelNode addAsyncHandlerOp = SubsystemOperations.createAddOperation(asyncHandlerAddress);
+        addAsyncHandlerOp.get(AsyncHandlerResourceDefinition.QUEUE_LENGTH.getName()).set(10);
+
+        // Add the handlers
+        ModelNode op = SubsystemOperations.CompositeOperationBuilder.create()
+                .addStep(addAsyncHandlerOp)
+                .addStep(SubsystemOperations.createAddOperation(consoleHandlerAddress))
+                .addStep(SubsystemOperations.createAddOperation(loggerAddress))
+                .build().getOperation();
+        executeOperation(kernelServices, op);
+
+        // Add the handlers to the logger and the console-handler to the async-handler
+        op = SubsystemOperations.CompositeOperationBuilder.create()
+                .addStep(createAddHandlerOperation(asyncHandlerAddress, consoleHandlerName))
+                .addStep(createAddHandlerOperation(loggerAddress, asyncHandlerName))
+                .addStep(createAddHandlerOperation(loggerAddress, consoleHandlerName))
+                .build().getOperation();
+        executeOperation(kernelServices, op);
+
+        // Check each resource for erroneous attributes
+        op = SubsystemOperations.createReadResourceOperation(asyncHandlerAddress);
+        ModelNode result = executeOperation(kernelServices, op);
+        ModelNode resource = SubsystemOperations.readResult(result);
+        validateResourceAttributes(resource, Logging.join(AsyncHandlerResourceDefinition.ATTRIBUTES, CommonAttributes.NAME, CommonAttributes.FILTER));
+        op = SubsystemOperations.createReadResourceOperation(consoleHandlerAddress);
+        result = executeOperation(kernelServices, op);
+        resource = SubsystemOperations.readResult(result);
+        validateResourceAttributes(resource, Logging.join(ConsoleHandlerResourceDefinition.ATTRIBUTES, CommonAttributes.NAME, CommonAttributes.FILTER));
+        op = SubsystemOperations.createReadResourceOperation(loggerAddress);
+        result = executeOperation(kernelServices, op);
+        resource = SubsystemOperations.readResult(result);
+        validateResourceAttributes(resource, Logging.join(LoggerResourceDefinition.EXPRESSION_ATTRIBUTES, LoggerResourceDefinition.CATEGORY));
+
+        // Remove all the resources
+        op = SubsystemOperations.CompositeOperationBuilder.create()
+                .addStep(SubsystemOperations.createRemoveOperation(loggerAddress))
+                .addStep(SubsystemOperations.createRemoveOperation(asyncHandlerAddress))
+                .addStep(SubsystemOperations.createRemoveOperation(consoleHandlerAddress))
+                .build().getOperation();
+        executeOperation(kernelServices, op);
+    }
+
 
     private ModelNode addFileHandler(final KernelServices kernelServices, final String loggingProfile, final String name,
                                      final Level level, final File file, final boolean assign) throws Exception {
@@ -622,6 +690,12 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
             logContext = LogContext.getSystemLogContext();
         }
         return logContext.getLogger(FQCN);
+    }
+
+    private ModelNode createAddHandlerOperation(final ModelNode address, final String handlerName) {
+        final ModelNode op = SubsystemOperations.createOperation(CommonAttributes.ADD_HANDLER_OPERATION_NAME, address);
+        op.get(CommonAttributes.HANDLER_NAME.getName()).set(handlerName);
+        return op;
     }
 
     private static File createLogFile() {

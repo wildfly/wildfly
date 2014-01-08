@@ -309,6 +309,14 @@ public class HandlerOperationsTestCase extends AbstractOperationsTestCase {
                 .asList()
                 .isEmpty());
 
+        // Ensure the model doesn't contain any erroneous attributes
+        op = SubsystemOperations.createReadResourceOperation(address);
+        result = executeOperation(kernelServices, op);
+        final ModelNode asyncHandlerResource = SubsystemOperations.readResult(result);
+        validateResourceAttributes(asyncHandlerResource, Logging.join(AsyncHandlerResourceDefinition.ATTRIBUTES, CommonAttributes.NAME, CommonAttributes.FILTER));
+        // The name attribute should be the same as the last path element of the address
+        assertEquals(asyncHandlerResource.get(CommonAttributes.NAME.getName()).asString(), PathAddress.pathAddress(address).getLastElement().getValue());
+
         // Clean-up
         executeOperation(kernelServices, SubsystemOperations.createRemoveOperation(consoleAddress));
         verifyRemoved(kernelServices, consoleAddress);
