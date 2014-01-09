@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,28 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.patching.validation;
 
-
 /**
- * @author Alexey Loubyansky
+ * An artifact which has been created by it's parent, but has different child {@code PatchingArtifact}s.
  *
+ * @author Emanuel Muckenhuber
  */
-public abstract class ArtifactCollectionState<S extends Artifact.State> implements Artifact.State {
+class CreatedArtifact<T extends PatchingArtifact.ArtifactState> extends AbstractArtifact<T, T> {
 
-    protected abstract S getState();
-
-    public abstract void resetIndex();
-
-    public abstract boolean hasNext(Context ctx);
-
-    public abstract S next(Context ctx);
+    protected CreatedArtifact(PatchingArtifact<T, ? extends ArtifactState>... artifacts) {
+        super(artifacts);
+    }
 
     @Override
-    public void validate(Context ctx) {
-        final S state = getState();
-        if(state != null) {
-            state.validate(ctx);
-        }
+    public boolean process(T parent, PatchingArtifactProcessor processor) {
+        return true;
     }
+
 }

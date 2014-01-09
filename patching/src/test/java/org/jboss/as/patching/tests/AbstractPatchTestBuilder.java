@@ -37,7 +37,7 @@ import org.jboss.as.patching.runner.TestUtils;
 /**
  * @author Emanuel Muckenhuber
  */
-abstract class AbstractPatchTestBuilder<T> extends ModificationBuilderTarget<T> {
+public abstract class AbstractPatchTestBuilder<T> extends ModificationBuilderTarget<T> {
 
     protected abstract String getPatchId();
     protected abstract File getPatchDir();
