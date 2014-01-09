@@ -39,7 +39,7 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static io.undertow.predicate.Predicates.not;
 import static io.undertow.predicate.Predicates.path;
-import static io.undertow.predicate.Predicates.suffixs;
+import static io.undertow.predicate.Predicates.suffixes;
 
 
 /**
@@ -145,7 +145,7 @@ public enum ConsoleMode {
                     .setAllowed(not(path("META-INF")))
                     .setResourceManager(resource)
                     .setDirectoryListingEnabled(false)
-                    .setCachable(not(suffixs(NOCACHE_JS, APP_HTML, INDEX_HTML)));
+                    .setCachable(not(suffixes(NOCACHE_JS, APP_HTML, INDEX_HTML)));
 
             //we also need to setup the default resource redirect
             PredicateHandler predicateHandler = new PredicateHandler(path(""), new RedirectHandler(CONTEXT + DEFAULT_RESOURCE), handler);

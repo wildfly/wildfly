@@ -51,7 +51,7 @@ public class SessionManagerAdapterTestCase {
     private final SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
     private final SessionListener listener = mock(SessionListener.class);
 
-    private SessionManagerAdapter adapter = new SessionManagerAdapter(this.manager);
+    private SessionManagerAdapter adapter = new SessionManagerAdapter("mydeployment.war", this.manager);
 
     @Before
     public void init() {

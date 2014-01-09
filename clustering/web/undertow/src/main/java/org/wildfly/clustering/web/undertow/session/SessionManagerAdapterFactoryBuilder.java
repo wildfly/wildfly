@@ -53,7 +53,7 @@ public class SessionManagerAdapterFactoryBuilder implements DistributableSession
     }
 
     @Override
-    public ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
+    public ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, final ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
         ServiceName clusteringServiceName = name.append("clustering");
         this.builder.buildDeploymentDependency(target, clusteringServiceName, deploymentServiceName, module, metaData)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -63,7 +63,7 @@ public class SessionManagerAdapterFactoryBuilder implements DistributableSession
         Value<SessionManagerFactory> factoryValue = new Value<SessionManagerFactory>() {
             @Override
             public SessionManagerFactory getValue() throws IllegalStateException, IllegalArgumentException {
-                return new SessionManagerAdapterFactory(factory.getValue());
+                return new SessionManagerAdapterFactory(factory.getValue(), deploymentServiceName.getSimpleName());
             }
         };
         return target.addService(name, new ValueService<>(factoryValue))
