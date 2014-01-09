@@ -36,7 +36,7 @@
                 <client-id>myClientID4</client-id>
                 <property>
                     <name>connector</name>
-                    <value>netty</value>
+                    <value>http-connector</value>
                 </property>
                 <property>
                     <name>initial-connect-attempts</name>

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -38,34 +38,41 @@ import io.undertow.util.HttpString;
  * Utility class to create a server-side HTTP Upgrade handshake.
  *
  * @author Stuart Douglas
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
-public class HandshakeUtil {
+public class SimpleHttpUpgradeHandshake implements HttpUpgradeHandshake {
 
-    public static HttpUpgradeHandshake createHttpUpgradeHandshake(final String magicNumber, final String keyHeader, final String acceptHeader) {
-        return new HttpUpgradeHandshake() {
-            public boolean handleUpgrade(final HttpServerExchange exchange) throws IOException {
-                String secretKey = exchange.getRequestHeaders().getFirst(keyHeader);
-                if (secretKey == null) {
-                    throw RemotingMessages.MESSAGES.upgradeRequestMissingKey();
-                }
-                String response = createExpectedResponse(magicNumber, secretKey);
-                exchange.getResponseHeaders().put(HttpString.tryFromString(acceptHeader), response);
-                return true;
-            }
+    private final String keyHeader;
+    private final String magicNumber;
+    private final String acceptHeader;
 
-            private String createExpectedResponse(final String magicNumber, final String secretKey) throws IOException {
-                try {
-                    final String concat = secretKey + magicNumber;
-                    final MessageDigest digest = MessageDigest.getInstance("SHA1");
+    public SimpleHttpUpgradeHandshake(String magicNumber, String keyHeader, String acceptHeader) {
+        this.keyHeader = keyHeader;
+        this.magicNumber = magicNumber;
+        this.acceptHeader = acceptHeader;
+    }
 
-                    digest.update(concat.getBytes("UTF-8"));
-                    final byte[] bytes = digest.digest();
-                    return FlexBase64.encodeString(bytes, false);
-                } catch (NoSuchAlgorithmException e) {
-                    throw new IOException(e);
-                }
-            }
-        };
+    public boolean handleUpgrade(final HttpServerExchange exchange) throws IOException {
+        String secretKey = exchange.getRequestHeaders().getFirst(keyHeader);
+        if (secretKey == null) {
+            throw RemotingMessages.MESSAGES.upgradeRequestMissingKey();
+        }
+        String response = createExpectedResponse(magicNumber, secretKey);
+        exchange.getResponseHeaders().put(HttpString.tryFromString(acceptHeader), response);
+        return true;
+    }
+
+    private String createExpectedResponse(final String magicNumber, final String secretKey) throws IOException {
+        try {
+            final String concat = secretKey + magicNumber;
+            final MessageDigest digest = MessageDigest.getInstance("SHA1");
+
+            digest.update(concat.getBytes("UTF-8"));
+            final byte[] bytes = digest.digest();
+            return FlexBase64.encodeString(bytes, false);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException(e);
+        }
     }
 
     private static class FlexBase64 {
