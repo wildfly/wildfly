@@ -43,10 +43,14 @@ import org.wildfly.clustering.web.session.SessionManager;
  * @author Paul Ferraro
  */
 public class SessionManagerAdapter implements UndertowSessionManager {
+
+
+    private final String deploymentName;
     private final SessionListeners sessionListeners = new SessionListeners();
     private final SessionManager<LocalSessionContext> manager;
 
-    public SessionManagerAdapter(SessionManager<LocalSessionContext> manager) {
+    public SessionManagerAdapter(String deploymentName, SessionManager<LocalSessionContext> manager) {
+        this.deploymentName = deploymentName;
         this.manager = manager;
     }
 
@@ -74,6 +78,11 @@ public class SessionManagerAdapter implements UndertowSessionManager {
     @Override
     public String locate(String sessionId) {
         return this.manager.locate(sessionId);
+    }
+
+    @Override
+    public String getDeploymentName() {
+        return deploymentName;
     }
 
     @Override

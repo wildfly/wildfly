@@ -99,7 +99,7 @@ public class AccountImpl implements Account, Serializable {
         return credential;
     }
 
-    private final class AccountPrincipal implements Principal {
+    private final class AccountPrincipal implements Principal, Serializable {
 
         @Override
         public String getName() {

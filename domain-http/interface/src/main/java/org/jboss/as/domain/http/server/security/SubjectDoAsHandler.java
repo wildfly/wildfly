@@ -48,7 +48,7 @@ public class SubjectDoAsHandler implements HttpHandler {
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
-        final SecurityContext securityContext = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
+        final SecurityContext securityContext = exchange.getSecurityContext();
         final Subject useSubject;
         if (securityContext != null) {
             final Account account = securityContext.getAuthenticatedAccount();
