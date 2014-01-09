@@ -30,7 +30,7 @@ import org.jboss.as.patching.metadata.PatchElementBuilder;
 /**
  * @author Emanuel Muckenhuber
  */
-class PatchElementTestStepBuilder extends AbstractPatchTestBuilder<PatchElementTestStepBuilder> {
+public class PatchElementTestStepBuilder extends AbstractPatchTestBuilder<PatchElementTestStepBuilder> {
 
     private final String patchId;
     private final PatchElementBuilder builder;
@@ -52,7 +52,7 @@ class PatchElementTestStepBuilder extends AbstractPatchTestBuilder<PatchElementT
         return parent.getPatchDir();
     }
 
-    protected PatchingTestStepBuilder getParent() {
+    public PatchingTestStepBuilder getParent() {
         return parent;
     }
 
