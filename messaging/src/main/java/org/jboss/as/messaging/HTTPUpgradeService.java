@@ -26,13 +26,15 @@ import static org.hornetq.core.remoting.impl.netty.NettyConnector.HORNETQ_REMOTI
 import static org.hornetq.core.remoting.impl.netty.NettyConnector.MAGIC_NUMBER;
 import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_REMOTING_ACCEPT;
 import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_REMOTING_KEY;
+import static org.hornetq.core.remoting.impl.netty.TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CORE;
 import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
-import static org.jboss.as.remoting.HandshakeUtil.createHttpUpgradeHandshake;
 
+import java.io.IOException;
 import java.util.List;
 
 import io.netty.channel.socket.SocketChannel;
+import io.undertow.server.HttpServerExchange;
 import io.undertow.server.ListenerRegistry;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptor;
@@ -40,6 +42,7 @@ import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.remoting.HttpListenerRegistryService;
+import org.jboss.as.remoting.SimpleHttpUpgradeHandshake;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -105,13 +108,33 @@ public class HTTPUpgradeService implements Service<HTTPUpgradeService> {
         httpUpgradeMetadata = new ListenerRegistry.HttpUpgradeMetadata(HORNETQ_REMOTING, CORE);
         listenerInfo.addHttpUpgradeMetadata(httpUpgradeMetadata);
 
-        MESSAGING_LOGGER.registeredHTTPUpgradeHandler(HORNETQ_REMOTING);
+        MESSAGING_LOGGER.registeredHTTPUpgradeHandler(HORNETQ_REMOTING, acceptorName);
         ServiceController<?> hornetqService = context.getController().getServiceContainer().getService(MessagingServices.getHornetQServiceName(hornetQServerName));
         HornetQServer hornetQServer = HornetQServer.class.cast(hornetqService.getValue());
 
         injectedRegistry.getValue().addProtocol(HORNETQ_REMOTING,
                 switchToHornetQProtocol(hornetQServer, acceptorName),
-                createHttpUpgradeHandshake(MAGIC_NUMBER, SEC_HORNETQ_REMOTING_KEY, SEC_HORNETQ_REMOTING_ACCEPT));
+                new SimpleHttpUpgradeHandshake(MAGIC_NUMBER, SEC_HORNETQ_REMOTING_KEY, SEC_HORNETQ_REMOTING_ACCEPT) {
+                    /**
+                     * override the default upgrade handshake to take into account the {@code TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME} header
+                     * to select the correct acceptors among all that are configured in HornetQ.
+                     *
+                     * If the request does not have this header, the first acceptor will be used.
+                     */
+                    @Override
+                    public boolean handleUpgrade(HttpServerExchange exchange) throws IOException {
+                        if (super.handleUpgrade(exchange)) {
+                            final String endpoint = exchange.getRequestHeaders().getFirst(HTTP_UPGRADE_ENDPOINT_PROP_NAME);
+                            if (endpoint == null) {
+                                return true;
+                            } else {
+                                return acceptorName.equals(endpoint);
+                            }
+                        } else {
+                            return false;
+                        }
+                    }
+                });
     }
 
     @Override

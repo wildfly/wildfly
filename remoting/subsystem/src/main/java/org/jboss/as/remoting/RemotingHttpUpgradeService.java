@@ -128,7 +128,7 @@ public class RemotingHttpUpgradeService implements Service<RemotingHttpUpgradeSe
                         adaptor.adapt(new AssembledConnectedStreamChannel(channel, channel.getSourceChannel(), channel.getSinkChannel()));
                     }
                 }
-            }, HandshakeUtil.createHttpUpgradeHandshake(MAGIC_NUMBER, SEC_JBOSS_REMOTING_KEY, SEC_JBOSS_REMOTING_ACCEPT));
+            }, new SimpleHttpUpgradeHandshake(MAGIC_NUMBER, SEC_JBOSS_REMOTING_KEY, SEC_JBOSS_REMOTING_ACCEPT));
 
         } catch (UnknownURISchemeException e) {
             throw new StartException(e);

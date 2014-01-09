@@ -10,21 +10,22 @@
            <journal-min-files>2</journal-min-files>
 
            <connectors>
-               <http-connector name="http" socket-binding="http"/>
-               <netty-connector name="netty" socket-binding="messaging"/>
-               <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
+               <http-connector name="http-connector" socket-binding="http">
+                   <param key="http-upgrade-endpoint" value="http-acceptor"/>
+               </http-connector>
+               <http-connector name="http-connector-throughput" socket-binding="http">
+                   <param key="http-upgrade-endpoint" value="http-acceptor-throughput"/>
                    <param key="batch-delay" value="50"/>
-               </netty-connector>
+               </http-connector>
                <in-vm-connector name="in-vm" server-id="0"/>
            </connectors>
 
            <acceptors>
-               <http-acceptor name="http" http-listener="default"/>
-               <netty-acceptor name="netty" socket-binding="messaging"/>
-               <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
+               <http-acceptor name="http-acceptor" http-listener="default"/>
+               <http-acceptor name="http-acceptor-throughput" http-listener="default">
                    <param key="batch-delay" value="50"/>
                    <param key="direct-deliver" value="false"/>
-               </netty-acceptor>
+               </http-acceptor>
                <in-vm-acceptor name="in-vm" server-id="0"/>
            </acceptors>
 
@@ -68,20 +69,12 @@
                </connection-factory>
                <connection-factory name="RemoteConnectionFactory">
                    <connectors>
-                       <connector-ref connector-name="netty"/>
+                       <connector-ref connector-name="http-connector"/>
                    </connectors>
                    <entries>
                        <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                    </entries>
                    <?HA-REMOTE-CONNECTION-FACTORY?>
-               </connection-factory>
-               <connection-factory name="HTTPConnectionFactory">
-                   <connectors>
-                       <connector-ref connector-name="http"/>
-                   </connectors>
-                   <entries>
-                       <entry name="java:jboss/exported/jms/HTTPConnectionFactory"/>
-                   </entries>
                </connection-factory>
                <pooled-connection-factory name="hornetq-ra">
                    <transaction mode="xa"/>
@@ -106,7 +99,7 @@
                <broadcast-group name="bg-group1">
                    <socket-binding>messaging-group</socket-binding>
                    <broadcast-period>5000</broadcast-period>
-                   <connector-ref>netty</connector-ref>
+                   <connector-ref>http-connector</connector-ref>
                </broadcast-group>
            </broadcast-groups>
        </replacement>
@@ -122,7 +115,7 @@
            <cluster-connections>
                <cluster-connection name="my-cluster">
                    <address>jms</address>
-                   <connector-ref>netty</connector-ref>
+                   <connector-ref>http-connector</connector-ref>
                    <discovery-group-ref discovery-group-name="dg-group1"/>
                </cluster-connection>
            </cluster-connections>
@@ -139,7 +132,5 @@
        </replacement>
    </supplement>
 
-   <socket-binding name="messaging" port="5445"/>
-   <socket-binding name="messaging-throughput" port="5455"/>
    <socket-binding name="messaging-group" port="0" multicast-address="${jboss.messaging.group.address:231.7.7.7}" multicast-port="${jboss.messaging.group.port:9876}"/>
  </config>

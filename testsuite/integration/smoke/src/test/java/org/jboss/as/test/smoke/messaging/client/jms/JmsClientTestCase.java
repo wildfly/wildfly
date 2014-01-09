@@ -35,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -100,13 +101,8 @@ public class JmsClientTestCase {
     }
 
     @Test
-    public void testSendAndReceiveUsingMessagingPort() throws Exception {
+    public void testSendAndReceive() throws Exception {
         doSendAndReceive("jms/RemoteConnectionFactory");
-    }
-
-    @Test
-    public void testSendAndReceiveUsingHTTPPort() throws Exception {
-        doSendAndReceive("jms/HTTPConnectionFactory");
     }
 
     private void doSendAndReceive(String connectionFactoryLookup) throws  Exception {
@@ -119,13 +115,13 @@ public class JmsClientTestCase {
 
             conn = cf.createConnection("guest", "guest");
             conn.start();
-            Session session = conn.createSession(false, AUTO_ACKNOWLEDGE);
+            Session consumerSession = conn.createSession(false, AUTO_ACKNOWLEDGE);
 
             final CountDownLatch latch = new CountDownLatch(10);
             final List<String> result = new ArrayList<String>();
 
             // Set the async listener
-            MessageConsumer consumer = session.createConsumer(destination);
+            MessageConsumer consumer = consumerSession.createConsumer(destination);
             consumer.setMessageListener(new MessageListener() {
 
                 @Override
@@ -140,19 +136,23 @@ public class JmsClientTestCase {
                 }
             });
 
-            MessageProducer producer = session.createProducer(destination);
+            final Session producerSession = conn.createSession(false, AUTO_ACKNOWLEDGE);
+            MessageProducer producer = producerSession.createProducer(destination);
+            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
             for (int i = 0 ; i < 10 ; i++) {
                 String s = "Test" + i;
-                TextMessage msg = session.createTextMessage(s);
+                TextMessage msg = producerSession.createTextMessage(s);
+                System.out.println("sending " + s);
                 producer.send(msg);
             }
+
+            producerSession.close();
 
             assertTrue(latch.await(3, SECONDS));
             assertEquals(10, result.size());
             for (int i = 0 ; i < result.size() ; i++) {
                 assertEquals("Test" + i, result.get(i));
             }
-
         } finally {
             try {
                 conn.close();

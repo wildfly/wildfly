@@ -209,8 +209,8 @@ public interface MessagingLogger extends BasicLogger {
      * @param name the name of the protocol that is handled
      */
     @LogMessage(level = INFO)
-    @Message(id = 11615, value = "Registered HTTP upgrade handler for %s protocol")
-    void registeredHTTPUpgradeHandler(String name);
+    @Message(id = 11615, value = "Registered HTTP upgrade for %s protocol handled by %s acceptor")
+    void registeredHTTPUpgradeHandler(String name, String acceptor);
 
     /**
      * Logs a warning message indicating the XML element with the given {@code name}

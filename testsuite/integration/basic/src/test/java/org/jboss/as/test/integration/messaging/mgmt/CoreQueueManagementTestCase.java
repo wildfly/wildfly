@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.junit.Assert;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.api.core.client.ClientMessage;
@@ -74,6 +75,9 @@ public class CoreQueueManagementTestCase {
 
         HashMap<String, Object> map = new HashMap<String, Object>();
         map.put("host", TestSuiteEnvironment.getServerAddress());
+        map.put("port", 8080);
+        map.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
+        map.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
         TransportConfiguration transportConfiguration =
                 new TransportConfiguration(NettyConnectorFactory.class.getName(), map);
         ServerLocator locator = HornetQClient.createServerLocatorWithoutHA(transportConfiguration);
