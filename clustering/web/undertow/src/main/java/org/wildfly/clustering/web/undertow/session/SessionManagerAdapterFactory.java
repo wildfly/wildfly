@@ -36,9 +36,11 @@ import io.undertow.servlet.api.Deployment;
 public class SessionManagerAdapterFactory implements io.undertow.servlet.api.SessionManagerFactory {
 
     private final SessionManagerFactory factory;
+    private final String deploymentName;
 
-    public SessionManagerAdapterFactory(SessionManagerFactory factory) {
+    public SessionManagerAdapterFactory(SessionManagerFactory factory, String deploymentName) {
         this.factory = factory;
+        this.deploymentName = deploymentName;
     }
 
     @Override
@@ -46,6 +48,6 @@ public class SessionManagerAdapterFactory implements io.undertow.servlet.api.Ses
         SessionContext context = new SessionContextAdapter(deployment);
         SessionIdentifierFactory factory = new SessionIdentifierFactoryAdapter(new SecureRandomSessionIdGenerator());
         SessionManager<LocalSessionContext> manager = this.factory.createSessionManager(context, factory, new LocalSessionContextFactory());
-        return new SessionManagerAdapter(manager);
+        return new SessionManagerAdapter(deploymentName, manager);
     }
 }
