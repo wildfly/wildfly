@@ -296,9 +296,13 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
 
         return new AuthorizingCallbackHandler() {
 
+            private boolean serverHandled = false;
+
             public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                 serverCallbackHandler.handle(callbacks);
-                if (handled(callbacks) == false) {
+                if (handled(callbacks)) {
+                  serverHandled = true;
+                } else {
                     realmCallbackHandler.handle(callbacks);
                 }
             }
@@ -326,6 +330,32 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
             }
 
             public UserInfo createUserInfo(Collection<Principal> remotingPrincipals) throws IOException {
+                if (serverHandled) {
+                    final Subject subject = new Subject();
+                    Collection<Principal> allPrincipals = subject.getPrincipals();
+                    for (Principal userPrincipal : remotingPrincipals) {
+                        allPrincipals.add(userPrincipal);
+                        allPrincipals.add(new RealmUser(userPrincipal.getName()));
+                    }
+
+                    return new RealmSubjectUserInfo(new SubjectUserInfo() {
+
+                        @Override
+                        public String getUserName() {
+                            return subject.getPrincipals(RealmUser.class).iterator().next().getName();
+                        }
+
+                        @Override
+                        public Subject getSubject() {
+                            return subject;
+                        }
+
+                        @Override
+                        public Collection<Principal> getPrincipals() {
+                            return subject.getPrincipals();
+                        }
+                    });
+                }
                 return realmCallbackHandler.createUserInfo(remotingPrincipals);
             }
 
