@@ -47,6 +47,7 @@ import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.Incrementor;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.bean.TimeoutIncrementorBean;
 import org.jboss.as.test.clustering.cluster.ejb.stateful.servlet.StatefulServlet;
 import org.jboss.as.test.clustering.ejb.EJBDirectory;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -106,14 +107,14 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
             assertEquals(3, queryCount(client, uri2));
             assertEquals(4, queryCount(client, uri2));
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(TimeoutUtil.adjust(3));
 
             // SFSB should have timed out
             assertEquals(0, queryCount(client, uri1));
             // Subsequent request will create it again
             assertEquals(1, queryCount(client, uri1));
 
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(TimeoutUtil.adjust(3));
 
             // Make sure timeout applies to other node too
             assertEquals(0, queryCount(client, uri2));
