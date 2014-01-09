@@ -27,7 +27,6 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -61,7 +60,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
-
+    private static final long WAIT_FOR_TIMEOUT = TimeoutUtil.adjust(5000);
     private static final String MODULE_NAME = "stateful-timeout";
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -107,16 +106,16 @@ public class StatefulTimeoutTestCase extends ClusterAbstractTestCase {
             assertEquals(3, queryCount(client, uri2));
             assertEquals(4, queryCount(client, uri2));
 
-            TimeUnit.SECONDS.sleep(TimeoutUtil.adjust(3));
+            Thread.sleep(WAIT_FOR_TIMEOUT);
 
             // SFSB should have timed out
             assertEquals(0, queryCount(client, uri1));
             // Subsequent request will create it again
             assertEquals(1, queryCount(client, uri1));
 
-            TimeUnit.SECONDS.sleep(TimeoutUtil.adjust(3));
+            Thread.sleep(WAIT_FOR_TIMEOUT);
 
-            // Make sure timeout applies to other node too
+            // Make sure SFSB times out on other node too
             assertEquals(0, queryCount(client, uri2));
         } finally {
             client.getConnectionManager().shutdown();
