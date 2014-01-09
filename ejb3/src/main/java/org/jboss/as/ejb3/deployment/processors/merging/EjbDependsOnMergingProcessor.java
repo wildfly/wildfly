@@ -33,7 +33,6 @@ import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
-import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -49,14 +48,14 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  * @author Stuart Douglas
  * @author James R. Perkins Jr. (jrp)
  */
-public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<SessionBeanComponentDescription> {
+public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<EJBComponentDescription> {
 
     public EjbDependsOnMergingProcessor() {
-        super(SessionBeanComponentDescription.class);
+        super(EJBComponentDescription.class);
     }
 
     @Override
-    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
+    protected void handleAnnotations(final DeploymentUnit deploymentUnit, final EEApplicationClasses applicationClasses, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
         final EEModuleClassDescription classDescription = applicationClasses.getClassByName(componentClass.getName());
         if (classDescription == null) {
             return;
@@ -76,7 +75,7 @@ public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<Sessi
     }
 
     @Override
-    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final SessionBeanComponentDescription description) throws DeploymentUnitProcessingException {
+    protected void handleDeploymentDescriptor(final DeploymentUnit deploymentUnit, final DeploymentReflectionIndex deploymentReflectionIndex, final Class<?> componentClass, final EJBComponentDescription description) throws DeploymentUnitProcessingException {
 
         final EEApplicationDescription applicationDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_DESCRIPTION);
         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT);
