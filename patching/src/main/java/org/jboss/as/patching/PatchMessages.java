@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.jboss.as.patching.metadata.ContentItem;
+import org.jboss.as.patching.validation.PatchingArtifact;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
@@ -180,5 +181,14 @@ public interface PatchMessages {
 
     @Message(id = 16858, value = "Patch '%s' not found in history.")
     PatchingException patchNotFoundInHistory(String patchId);
+
+    @Message(id = 16860, value = "missing: '%s'")
+    String missingArtifact(PatchingArtifact.ArtifactState state);
+
+    @Message(id = 16861, value = "inconsistent state: '%s'")
+    String inconsistentArtifact(PatchingArtifact.ArtifactState state);
+
+    @Message(id = 16862, value = "in error: '%s'")
+    String artifactInError(PatchingArtifact.ArtifactState state);
 
 }

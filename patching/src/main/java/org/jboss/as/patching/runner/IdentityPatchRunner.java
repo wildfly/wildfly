@@ -4,6 +4,7 @@ import static org.jboss.as.patching.runner.PatchingTaskContext.Mode.APPLY;
 import static org.jboss.as.patching.runner.PatchingTaskContext.Mode.ROLLBACK;
 import static org.jboss.as.patching.runner.PatchingTasks.ContentTaskDefinition;
 import static org.jboss.as.patching.runner.PatchingTasks.apply;
+import static org.jboss.as.patching.validation.PatchHistoryValidations.validateRollbackState;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
@@ -186,7 +187,14 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
         if (Constants.BASE.equals(patchId)) {
             throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
         }
-
+        try {
+            // Before rolling back the patch, validate that the state until that point is consistent
+            validateRollbackState(patchId, modification.getUnmodifiedInstallationState());
+        } catch (PatchingException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new PatchingException(e);
+        }
         // Figure out what to do
         final List<String> patches = new ArrayList<String>();
         final List<String> oneOffs = modification.getPatchIDs();
@@ -213,14 +221,11 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
             }
         }
+
         final File historyDir = installedImage.getPatchHistoryDir(patchId);
-        if (!historyDir.exists()) {
-            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
-        }
-        final File patchXml = new File(historyDir, Constants.ROLLBACK_XML);
-        if (!patchXml.exists()) {
-            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
-        }
+        assertExists(historyDir);
+        final File rollbackXml = new File(historyDir, Constants.ROLLBACK_XML);
+        assertExists(rollbackXml);
         final File workDir = createTempDir();
         final PatchContentProvider provider = PatchContentProvider.ROLLBACK_PROVIDER;
         final IdentityPatchContext context = new IdentityPatchContext(workDir, provider, contentPolicy, modification, ROLLBACK, installedImage);
@@ -628,6 +633,12 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
             if (target.isApplied(incompatible)) {
                 throw PatchMessages.MESSAGES.incompatiblePatch(incompatible);
             }
+        }
+    }
+
+    static void assertExists(final File file) throws PatchingException {
+        if (!file.exists()) {
+            throw new PatchingException(PatchMessages.MESSAGES.fileDoesNotExist(file.getAbsolutePath()));
         }
     }
 

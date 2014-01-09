@@ -28,33 +28,17 @@ import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 
 import org.jboss.as.patching.PatchingException;
-import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.Layer;
-import org.jboss.as.patching.metadata.Patch.PatchType;
-import org.jboss.as.patching.validation.ArtifactStateHandler;
-import org.jboss.as.patching.validation.PatchingHistoryTree;
-import org.jboss.as.patching.validation.PatchingHistoryTree.Builder;
-import org.jboss.as.patching.validation.Context;
-import org.jboss.as.patching.validation.ErrorHandler;
-import org.jboss.as.patching.validation.PatchArtifact;
-import org.jboss.as.patching.validation.PatchElementProviderArtifact;
-import org.jboss.as.patching.validation.PatchHistoryDir;
 import org.jboss.as.patching.validation.PatchingGarbageLocator;
-import org.jboss.as.patching.validation.PatchingHistoryRoot;
-import org.jboss.as.patching.validation.PatchingHistoryTree.TreeIterator;
 import org.junit.Test;
 
 
@@ -72,154 +56,12 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
     private static final String ONE_OFF_2_ID = "oneOff2";
 
     @Test
-    public void testTreeHandleAll() throws Exception {
-
-        installOneOffCpOneOff();
-        final Context ctx = getContext();
-
-        final List<String> historyDirs = new ArrayList<String>();
-        final List<String> moduleDirs = new ArrayList<String>();
-        final List<String> bundleDirs = new ArrayList<String>();
-        PatchingHistoryTree activeDirsHandler = Builder.getInstance()
-                .addHandler(PatchHistoryDir.getInstance(), new ArtifactStateHandler<PatchHistoryDir.State>(){
-                    @Override
-                    public void handle(Context ctx, PatchHistoryDir.State state) {
-                        historyDirs.add(state.getDirectory().getName());
-                    }})
-                .addHandler(PatchElementProviderArtifact.getInstance(), new ArtifactStateHandler<PatchElementProviderArtifact.State>() {
-                    @Override
-                    public void handle(Context ctx, PatchElementProviderArtifact.State state) {
-                        if(state.getBundlesDir() != null) {
-                            bundleDirs.add(state.getBundlesDir().getName());
-                        }
-                        if(state.getModulesDir() != null) {
-                            moduleDirs.add(state.getModulesDir().getName());
-                        }
-                    }})
-                .build();
-        activeDirsHandler.handleAll(ctx);
-
-        assertEquals(Arrays.asList(new String[]{"oneOff2", "cp1", "oneOff1"}), historyDirs);
-        assertEquals(Arrays.asList(new String[]{"base-oneOff2", "base-cp1", "base-oneOff1"}), moduleDirs);
-        assertTrue(bundleDirs.isEmpty());
-    }
-
-    @Test
-    public void testTreeIterator() throws Exception {
-
-        installOneOffCpOneOff();
-        final Context ctx = getContext();
-
-        final List<String> historyDirs = new ArrayList<String>();
-        final List<String> moduleDirs = new ArrayList<String>();
-        final List<String> bundleDirs = new ArrayList<String>();
-        PatchingHistoryTree activeDirsHandler = Builder.getInstance()
-                .addHandler(PatchHistoryDir.getInstance(), new ArtifactStateHandler<PatchHistoryDir.State>(){
-                    @Override
-                    public void handle(Context ctx, PatchHistoryDir.State state) {
-                        historyDirs.add(state.getDirectory().getName());
-                    }})
-                .addHandler(PatchElementProviderArtifact.getInstance(), new ArtifactStateHandler<PatchElementProviderArtifact.State>() {
-                    @Override
-                    public void handle(Context ctx, PatchElementProviderArtifact.State state) {
-                        if(state.getBundlesDir() != null) {
-                            bundleDirs.add(state.getBundlesDir().getName());
-                        }
-                        if(state.getModulesDir() != null) {
-                            moduleDirs.add(state.getModulesDir().getName());
-                        }
-                    }})
-                .build();
-
-        final TreeIterator tree = activeDirsHandler.treeIterator(ctx);
-
-        assertTrue(tree.hasNext());
-        assertTrue(historyDirs.isEmpty());
-        assertTrue(moduleDirs.isEmpty());
-        assertTrue(bundleDirs.isEmpty());
-
-        tree.handleNext();
-        assertTrue(historyDirs.contains("oneOff2"));
-        assertTrue(moduleDirs.isEmpty());
-        assertTrue(bundleDirs.isEmpty());
-
-        assertTrue(tree.hasNext());
-        tree.handleNext();
-        assertEquals(1, historyDirs.size());
-        assertTrue(moduleDirs.contains("base-oneOff2"));
-        assertTrue(bundleDirs.isEmpty());
-
-        assertTrue(tree.hasNext());
-        tree.handleNext();
-        assertTrue(historyDirs.contains("cp1"));
-        assertEquals(1, moduleDirs.size());
-        assertTrue(bundleDirs.isEmpty());
-
-        assertTrue(tree.hasNext());
-        tree.handleNext();
-        assertEquals(2, historyDirs.size());
-        assertTrue(moduleDirs.contains("base-cp1"));
-        assertTrue(bundleDirs.isEmpty());
-
-        assertTrue(tree.hasNext());
-        tree.handleNext();
-        assertTrue(historyDirs.contains("oneOff1"));
-        assertEquals(2, moduleDirs.size());
-        assertTrue(bundleDirs.isEmpty());
-
-        assertTrue(tree.hasNext());
-        tree.handleNext();
-        assertEquals(3, historyDirs.size());
-        assertTrue(moduleDirs.contains("base-oneOff1"));
-        assertTrue(bundleDirs.isEmpty());
-
-        assertFalse(tree.hasNext());
-    }
-
-    @Test
-    public void testHistoryDirStateIterator() throws Exception {
-
-        installOneOffCpOneOff();
-        final Context ctx = getContext();
-
-        final Iterator<PatchHistoryDir.State> historyDir = PatchingHistoryTree.stateIterator(PatchHistoryDir.getInstance(), ctx);
-
-        assertTrue(historyDir.hasNext());
-        PatchHistoryDir.State hdir = historyDir.next();
-        assertNotNull(hdir);
-        File dir = hdir.getDirectory();
-        assertNotNull(dir);
-        assertEquals("oneOff2", dir.getName());
-
-        assertTrue(historyDir.hasNext());
-        hdir = historyDir.next();
-        assertNotNull(hdir);
-        dir = hdir.getDirectory();
-        assertNotNull(dir);
-        assertEquals("cp1", dir.getName());
-
-        assertTrue(historyDir.hasNext());
-        hdir = historyDir.next();
-        assertNotNull(hdir);
-        dir = hdir.getDirectory();
-        assertNotNull(dir);
-        assertEquals("oneOff1", dir.getName());
-
-        assertFalse(historyDir.hasNext());
-    }
-
-    @Test
     public void testUnpatchedValidation() throws Exception {
-
-        final Context ctx = getContext();
-        PatchingHistoryRoot.State history = PatchingHistoryRoot.getInstance().getState(ctx);
-        final PatchArtifact.State patch = history.getLastAppliedPatch(ctx);
-        assertNull(patch);
-        assertNoGarbage(ctx);
+        assertNoGarbage();
     }
 
     @Test
-    public void testOneCPValidattion() throws Exception {
+    public void testOneCPValidation() throws Exception {
 
         final PatchingTestBuilder builder = createDefaultBuilder();
         final byte[] standaloneHash = new byte[20];
@@ -246,13 +88,7 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
         // Apply CP1
         apply(cp1);
 
-        final Context ctx = getContext();
-        PatchingHistoryRoot.State history = PatchingHistoryRoot.getInstance().getState(ctx);
-        final PatchArtifact.State patch = history.getLastAppliedPatch(ctx);
-        assertPatch(ctx, patch, cp1Id, PatchType.CUMULATIVE);
-
-        assertNoPrevious(ctx, patch);
-        assertNoGarbage(ctx);
+        assertNoGarbage();
     }
 
     @Test
@@ -296,127 +132,52 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
         // Apply oneOff1
         apply(oneOff1);
 
-        final Context ctx = getContext();
-
-        PatchingHistoryRoot.State history = PatchingHistoryRoot.getInstance().getState(ctx);
-        PatchArtifact.State patch = history.getLastAppliedPatch(ctx);
-        assertPatch(ctx, patch, oneOff1Id, PatchType.ONE_OFF);
-
-        assertTrue(patch.hasPrevious(ctx));
-        patch = patch.getPrevious(ctx);
-        assertPatch(ctx, patch, cp1Id, PatchType.CUMULATIVE);
-
-        assertNoPrevious(ctx, patch);
-        assertNoGarbage(ctx);
+        assertNoGarbage();
     }
 
     @Test
     public void testOneOffCPOneOffValidation() throws Exception {
-
         installOneOffCpOneOff();
-
-        final Context ctx = getContext();
-
-        PatchingHistoryRoot.State history = PatchingHistoryRoot.getInstance().getState(ctx);
-        PatchArtifact.State patch = history.getLastAppliedPatch(ctx);
-
-        assertPatch(ctx, patch, ONE_OFF_2_ID, PatchType.ONE_OFF);
-
-        assertTrue(patch.hasPrevious(ctx));
-        patch = patch.getPrevious(ctx);
-        assertPatch(ctx, patch, CP_1_ID, PatchType.CUMULATIVE);
-
-        assertTrue(patch.hasPrevious(ctx));
-        patch = patch.getPrevious(ctx);
-        assertPatch(ctx, patch, ONE_OFF_1_ID, PatchType.ONE_OFF);
-
-        assertNoPrevious(ctx, patch);
-        assertNoGarbage(ctx);
+        assertNoGarbage();
     }
 
     @Test
     public void testRemovedOneOffRollbackXml() throws Exception {
-
         installOneOffCpOneOff();
-
-        final Context ctx = getContext(false);
-        removeRollbackXml(ctx, ONE_OFF_1_ID);
-
-        PatchingHistoryRoot.State history = PatchingHistoryRoot.getInstance().getState(ctx);
-        PatchArtifact.State patch = history.getLastAppliedPatch(ctx);
-        assertPatch(ctx, patch, ONE_OFF_2_ID, PatchType.ONE_OFF);
-
-        assertTrue(patch.hasPrevious(ctx));
-        patch = patch.getPrevious(ctx);
-        assertPatch(ctx, patch, CP_1_ID, PatchType.CUMULATIVE);
-
-        assertTrue(patch.hasPrevious(ctx));
-        patch = patch.getPrevious(ctx);
-        assertNotNull(patch);
-        assertEquals(ONE_OFF_1_ID, patch.getPatchId());
-        assertEquals(PatchType.ONE_OFF, patch.getType());
-        assertHistoryExists(getExpectedHistoryDir(ctx, ONE_OFF_1_ID), ctx, patch, true, true, false);
-
-        assertNoPrevious(ctx, patch);
-        assertNoGarbage(ctx);
+        removeRollbackXml(ONE_OFF_1_ID);
+        assertNoGarbage();
     }
 
     @Test
     public void testRemovedCPRollbackXml() throws Exception {
 
         installOneOffCpOneOff();
+        removeRollbackXml(CP_1_ID);
 
-        final Context ctx = getContext(false);
-        removeRollbackXml(ctx, CP_1_ID);
-
-        PatchingHistoryRoot.State history = PatchingHistoryRoot.getInstance().getState(ctx);
-        PatchArtifact.State patch = history.getLastAppliedPatch(ctx);
-        assertPatch(ctx, patch, ONE_OFF_2_ID, PatchType.ONE_OFF);
-
-        assertTrue(patch.hasPrevious(ctx));
-        patch = patch.getPrevious(ctx);
-        assertNotNull(patch);
-        assertEquals(CP_1_ID, patch.getPatchId());
-        assertEquals(PatchType.CUMULATIVE, patch.getType());
-        assertHistoryExists(getExpectedHistoryDir(ctx, CP_1_ID), ctx, patch, true, true, false);
-
-        assertNoPrevious(ctx, patch);
-
-        final PatchingGarbageLocator garbageLocator = new PatchingGarbageLocator(ctx.getInstallationManager());
+        final PatchingGarbageLocator garbageLocator = PatchingGarbageLocator.getIninitialized(updateInstallationManager());
         final List<File> inactiveHistory = garbageLocator.getInactiveHistory();
         assertEquals(1, inactiveHistory.size());
-        assertEquals(getExpectedHistoryDir(ctx, ONE_OFF_1_ID), inactiveHistory.get(0).getAbsolutePath());
+        assertEquals(getExpectedHistoryDir(ONE_OFF_1_ID), inactiveHistory.get(0).getAbsolutePath());
 
         final List<File> inactiveOverlays = garbageLocator.getInactiveOverlays();
         assertEquals(1, inactiveOverlays.size());
-        assertEquals(getExpectedOverlayDir(ctx, "base", ONE_OFF_1_ID), inactiveOverlays.get(0).getAbsolutePath());
+        assertEquals(getExpectedOverlayDir("base", ONE_OFF_1_ID), inactiveOverlays.get(0).getAbsolutePath());
     }
 
     @Test
     public void testRemovedLastOneOffRollbackXml() throws Exception {
 
         installOneOffCpOneOff();
+        removeRollbackXml(ONE_OFF_2_ID);
 
-        final Context ctx = getContext(false);
-        removeRollbackXml(ctx, ONE_OFF_2_ID);
-
-        PatchingHistoryRoot.State history = PatchingHistoryRoot.getInstance().getState(ctx);
-        PatchArtifact.State patch = history.getLastAppliedPatch(ctx);
-        assertNotNull(patch);
-        assertEquals(ONE_OFF_2_ID, patch.getPatchId());
-        assertEquals(PatchType.ONE_OFF, patch.getType());
-        assertHistoryExists(getExpectedHistoryDir(ctx, ONE_OFF_2_ID), ctx, patch, true, true, false);
-
-        assertNoPrevious(ctx, patch);
-
-        PatchingGarbageLocator garbageLocator = new PatchingGarbageLocator(ctx.getInstallationManager());
+        PatchingGarbageLocator garbageLocator = PatchingGarbageLocator.getIninitialized(updateInstallationManager());
         final List<File> inactiveHistory = garbageLocator.getInactiveHistory();
 
-        List<String> inactivePaths = Arrays.asList(new String[]{getExpectedHistoryDir(ctx, CP_1_ID), getExpectedHistoryDir(ctx, ONE_OFF_1_ID)});
+        List<String> inactivePaths = Arrays.asList(new String[] { getExpectedHistoryDir(ONE_OFF_1_ID) });
         assertEqualPaths(inactivePaths, inactiveHistory);
 
         final List<File> inactiveOverlays = garbageLocator.getInactiveOverlays();
-        inactivePaths = Arrays.asList(new String[]{getExpectedOverlayDir(ctx, "base", CP_1_ID), getExpectedOverlayDir(ctx, "base", ONE_OFF_1_ID)});
+        inactivePaths = Arrays.asList(new String[]{getExpectedOverlayDir("base", ONE_OFF_1_ID)});
         assertEqualPaths(inactivePaths, inactiveOverlays);
 
         // test cleaning
@@ -424,20 +185,11 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
         garbageLocator.reset();
         assertTrue(garbageLocator.getInactiveHistory().isEmpty());
         assertTrue(garbageLocator.getInactiveOverlays().isEmpty());
-
-        // validate active patching content
-        history = PatchingHistoryRoot.getInstance().getState(ctx);
-        patch = history.getLastAppliedPatch(ctx);
-        assertNotNull(patch);
-        assertEquals(ONE_OFF_2_ID, patch.getPatchId());
-        assertEquals(PatchType.ONE_OFF, patch.getType());
-        assertHistoryExists(getExpectedHistoryDir(ctx, ONE_OFF_2_ID), ctx, patch, true, true, false);
-        assertNoPrevious(ctx, patch);
-        assertTrue(new File(getExpectedOverlayDir(ctx, "base", ONE_OFF_2_ID)).exists());
+        assertTrue(new File(getExpectedOverlayDir("base", ONE_OFF_2_ID)).exists());
     }
 
     @Test
-    public void testMaltipleLayers() throws Exception {
+    public void testMultipleLayers() throws Exception {
 
         final PatchingTestBuilder builder = createDefaultBuilder("layer2", "layer1", "base");
 
@@ -474,17 +226,16 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
         // Apply CP3
         apply(cp3);
 
-        final Context ctx = getContext(false);
-        removeRollbackXml(ctx, "CP3");
+        removeRollbackXml("CP3");
 
-        PatchingGarbageLocator garbageLocator = new PatchingGarbageLocator(ctx.getInstallationManager());
+        PatchingGarbageLocator garbageLocator = PatchingGarbageLocator.getIninitialized(updateInstallationManager());
         final List<File> inactiveHistory = garbageLocator.getInactiveHistory();
-        List<String> inactivePaths = Arrays.asList(new String[]{getExpectedHistoryDir(ctx, "CP1"), getExpectedHistoryDir(ctx, "CP2")});
+        List<String> inactivePaths = Arrays.asList(new String[]{getExpectedHistoryDir("CP1"), getExpectedHistoryDir("CP2")});
         assertEqualPaths(inactivePaths, inactiveHistory);
 
         final List<File> inactiveOverlays = garbageLocator.getInactiveOverlays();
-        inactivePaths = Arrays.asList(new String[]{getExpectedOverlayDir(ctx, "layer2", "CP2"),
-                getExpectedOverlayDir(ctx, "layer1", "CP2"), getExpectedOverlayDir(ctx, "base", "CP1")});
+        inactivePaths = Arrays.asList(new String[]{getExpectedOverlayDir("layer2", "CP2"),
+                getExpectedOverlayDir( "layer1", "CP2"), getExpectedOverlayDir("base", "CP1")});
         assertEqualPaths(inactivePaths, inactiveOverlays);
 
         // test cleaning
@@ -493,13 +244,6 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
         assertTrue(garbageLocator.getInactiveHistory().isEmpty());
         assertTrue(garbageLocator.getInactiveOverlays().isEmpty());
 
-        PatchingHistoryRoot.State history = PatchingHistoryRoot.getInstance().getState(ctx);
-        PatchArtifact.State patch = history.getLastAppliedPatch(ctx);
-        assertNotNull(patch);
-        assertEquals("CP3", patch.getPatchId());
-        assertEquals(PatchType.CUMULATIVE, patch.getType());
-        assertHistoryExists(getExpectedHistoryDir(ctx, "CP3"), ctx, patch, true, true, false);
-        assertNoPrevious(ctx, patch);
     }
 
     @Test
@@ -507,19 +251,18 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
 
         createDefaultBuilder("layer2", "layer1", "base");
 
-        final Context ctx = getContext(false);
-        final List<String> historyGarbage = Arrays.asList(new String[]{getExpectedHistoryDir(ctx, "CP1"), getExpectedHistoryDir(ctx, "CP2")});
+        final List<String> historyGarbage = Arrays.asList(new String[]{getExpectedHistoryDir("CP1"), getExpectedHistoryDir("CP2")});
         for(int i = 0; i < historyGarbage.size(); ++i) {
             new File(historyGarbage.get(i)).mkdirs();
         }
 
-        final List<String> overlayGarbage = Arrays.asList(new String[]{getExpectedOverlayDir(ctx, "layer2", "CP2"),
-                getExpectedOverlayDir(ctx, "layer1", "CP2"), getExpectedOverlayDir(ctx, "base", "CP1")});
+        final List<String> overlayGarbage = Arrays.asList(new String[]{getExpectedOverlayDir("layer2", "CP2"),
+                getExpectedOverlayDir("layer1", "CP2"), getExpectedOverlayDir("base", "CP1")});
         for(int i = 0; i < overlayGarbage.size(); ++i) {
             new File(overlayGarbage.get(i)).mkdirs();
         }
 
-        PatchingGarbageLocator garbageLocator = new PatchingGarbageLocator(loadInstallationManager());
+        PatchingGarbageLocator garbageLocator = PatchingGarbageLocator.getIninitialized(loadInstallationManager());
         final List<File> inactiveHistory = garbageLocator.getInactiveHistory();
         assertEqualPaths(historyGarbage, inactiveHistory);
 
@@ -539,8 +282,8 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
         }
     }
 
-    protected void removeRollbackXml(final Context ctx, String patchId) {
-        final File oneOff1History = ctx.getInstallationManager().getInstalledImage().getPatchHistoryDir(patchId);
+    protected void removeRollbackXml(String patchId) throws IOException {
+        final File oneOff1History = updateInstallationManager().getInstalledImage().getPatchHistoryDir(patchId);
         assertTrue(oneOff1History.exists());
         final File oneOff1RollbackXml = new File(oneOff1History, "rollback.xml");
         assertTrue(oneOff1RollbackXml.exists());
@@ -548,16 +291,16 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
         assertFalse(oneOff1RollbackXml.exists());
     }
 
-    protected String getExpectedOverlayDir(final Context ctx, String layerName, final String patchId) {
-        final Layer layer = ctx.getInstallationManager().getLayer(layerName);
+    protected String getExpectedOverlayDir(String layerName, final String patchId) throws IOException {
+        final Layer layer = updateInstallationManager().getLayer(layerName);
         if(layer == null) {
             fail("No layer " + layerName);
         }
         return layer.getDirectoryStructure().getModulePatchDirectory(layerName + "-" + patchId).getAbsolutePath();
     }
 
-    protected String getExpectedHistoryDir(final Context ctx, final String patchId) {
-        return ctx.getInstallationManager().getInstalledImage().getPatchesDir().getAbsolutePath()
+    protected String getExpectedHistoryDir(final String patchId) throws IOException {
+        return updateInstallationManager().getInstalledImage().getPatchesDir().getAbsolutePath()
                 + File.separator + patchId;
     }
 
@@ -612,66 +355,11 @@ public class LocatingUnusedArtifactsUnitTestCase extends AbstractPatchingTest {
         apply(oneOff2);
     }
 
-    protected void assertNoGarbage(final Context ctx) {
-        final PatchingGarbageLocator garbageLocator = new PatchingGarbageLocator(ctx.getInstallationManager());
+    protected void assertNoGarbage() throws Exception {
+        final PatchingGarbageLocator garbageLocator = PatchingGarbageLocator.getIninitialized(loadInstallationManager());
         List<File> inactiveHistory = garbageLocator.getInactiveHistory();
         assertTrue(inactiveHistory.toString(), inactiveHistory.isEmpty());
         assertTrue(garbageLocator.getInactiveOverlays().toString(), garbageLocator.getInactiveOverlays().isEmpty());
     }
 
-    protected void assertNoPrevious(final Context ctx, PatchArtifact.State patch) {
-        assertFalse(patch.hasPrevious(ctx));
-        assertNull(patch.getPrevious(ctx));
-    }
-
-    protected void assertPatch(Context ctx, PatchArtifact.State patch, String patchId, PatchType patchType) {
-        assertNotNull(patch);
-        assertEquals(patchId, patch.getPatchId());
-        assertEquals(patchType, patch.getType());
-
-        assertHistoryExists(getExpectedHistoryDir(ctx, patchId), ctx, patch, true, true, true);
-    }
-
-    protected void assertHistoryExists(String expectedHistoryPath, Context ctx, PatchArtifact.State patch,
-            boolean dirExists, boolean patchXmlExists, boolean rollbackXmlExists) {
-        final PatchHistoryDir.State patchHistoryDir = patch.getHistoryDir(ctx);
-        assertNotNull(patchHistoryDir);
-        assertEquals(expectedHistoryPath, patchHistoryDir.getDirectory().getAbsolutePath());
-        assertEquals(dirExists, patchHistoryDir.getDirectory().exists());
-        assertEquals(patchXmlExists, patchHistoryDir.getPatchXml(ctx).getFile().exists());
-        assertEquals(rollbackXmlExists, patchHistoryDir.getRollbackXml(ctx).getFile().exists());
-    }
-
-    private Context getContext() throws IOException {
-        return getContext(true);
-    }
-
-    private Context getContext(final boolean failOnError) throws IOException {
-        final InstallationManager manager = loadInstallationManager();
-        return new Context() {
-
-            @Override
-            public InstallationManager getInstallationManager() {
-                return manager;
-            }
-
-            @Override
-            public ErrorHandler getErrorHandler() {
-                return new ErrorHandler(){
-                    @Override
-                    public void error(String msg) {
-                        if(failOnError) {
-                            fail(msg);
-                        }
-                    }
-
-                    @Override
-                    public void error(String msg, Throwable t) {
-                        if(failOnError) {
-                            t.printStackTrace();
-                            fail(msg);
-                        }
-                    }};
-            }};
-    }
 }
