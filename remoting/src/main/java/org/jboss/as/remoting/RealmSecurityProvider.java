@@ -335,7 +335,8 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
                     Collection<Principal> allPrincipals = subject.getPrincipals();
                     for (Principal userPrincipal : remotingPrincipals) {
                         allPrincipals.add(userPrincipal);
-                        allPrincipals.add(new RealmUser(userPrincipal.getName()));
+                        // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 use unintentionally exposed legacy RealmUser
+                        allPrincipals.add(new org.jboss.as.domain.management.security.RealmUser(userPrincipal.getName()));
                     }
 
                     return new RealmSubjectUserInfo(new SubjectUserInfo() {

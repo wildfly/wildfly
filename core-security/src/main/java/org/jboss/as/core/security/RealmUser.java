@@ -32,13 +32,13 @@ public class RealmUser extends AbstractRealmPrincipal implements AccountPrincipa
     private static final long serialVersionUID = 5391073820551736954L;
     // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 in EAP 6.x make these protected for force use
     // of legacy RealmUser
-    public RealmUser(String realm, String name) {
+    protected RealmUser(String realm, String name) {
         super(realm, name);
     }
 
     // https://bugzilla.redhat.com/show_bug.cgi?id=1017856 in EAP 6.x make these protected for force use
     // of legacy RealmUser
-    public RealmUser(String name) {
+    protected RealmUser(String name) {
         super(name);
     }
 
