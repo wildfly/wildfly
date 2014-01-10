@@ -21,7 +21,9 @@
  */
 package org.jboss.as.test.integration.auditlog;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.APP_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FACILITY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -37,6 +39,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.logging.syslogserver.BlockedSyslogServerEventHandler;
+import org.jboss.as.test.integration.logging.syslogserver.Rfc5424SyslogEvent;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
@@ -49,7 +52,7 @@ import org.productivity.java.syslog4j.server.SyslogServerIF;
 
 /**
  * Test that syslog-handler logs in Audit Log.
- * 
+ *
  * @author: Ondrej Lukas
  * @author: Josef Cacek
  */
@@ -73,7 +76,7 @@ public abstract class AuditLogToSyslogTestCase {
      * <li>disable and check auditlog (it's auditable event itself) - check the message in syslog</li>
      * <li>check auditable event with auditlog disabled - check no message came to the syslog</li>
      * </ol>
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -90,9 +93,57 @@ public abstract class AuditLogToSyslogTestCase {
             setAuditlogEnabled(true);
             syslogEvent = queue.poll(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
             Assert.assertNotNull("Enabling audit log wasn't logged into the syslog", syslogEvent);
+            Assert.assertEquals(1, syslogEvent.getFacility());
+            assertAppName(AuditLogToSyslogSetup.DEFAULT_APPNAME, syslogEvent);
+
             makeOneLog();
             syslogEvent = queue.poll(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
             Assert.assertNotNull("Auditable event was't logged into the syslog", syslogEvent);
+            Assert.assertEquals(1, syslogEvent.getFacility());
+            assertAppName(AuditLogToSyslogSetup.DEFAULT_APPNAME, syslogEvent);
+
+            //remove handler
+            Utils.applyUpdate(Util.createRemoveOperation(AuditLogToSyslogSetup.AUDIT_LOG_LOGGER_SYSLOG_HANDLER_ADDR), managementClient.getControllerClient());
+            syslogEvent = queue.poll(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
+            Assert.assertNotNull("Auditable event was't logged into the syslog", syslogEvent);
+            Assert.assertEquals(1, syslogEvent.getFacility());
+            assertAppName(AuditLogToSyslogSetup.DEFAULT_APPNAME, syslogEvent);
+
+            //add other handler which has another appname and facility = LINE_PRINTER (6)
+            Utils.applyUpdate(Util.createAddOperation(AuditLogToSyslogSetup.AUDIT_LOG_LOGGER_SYSLOG_HANDLER_ADDR2), managementClient.getControllerClient());
+            syslogEvent = queue.poll(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
+            Assert.assertNotNull("Auditable event was't logged into the syslog", syslogEvent);
+            Assert.assertEquals(6, syslogEvent.getFacility());
+            assertAppName("TestApp", syslogEvent);
+
+            //Change other handler app name
+            Utils.applyUpdate(Util.getWriteAttributeOperation(AuditLogToSyslogSetup.AUDIT_SYSLOG_HANDLER_ADDR2, APP_NAME, new ModelNode("Stuff")), managementClient.getControllerClient());
+            syslogEvent = queue.poll(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
+            Assert.assertNotNull("Auditable event was't logged into the syslog", syslogEvent);
+            Assert.assertEquals(6, syslogEvent.getFacility());
+            assertAppName("Stuff", syslogEvent);
+
+            //Reset other handler app name
+            Utils.applyUpdate(Util.getWriteAttributeOperation(AuditLogToSyslogSetup.AUDIT_SYSLOG_HANDLER_ADDR2, APP_NAME, new ModelNode()), managementClient.getControllerClient());
+            syslogEvent = queue.poll(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
+            Assert.assertNotNull("Auditable event was't logged into the syslog", syslogEvent);
+            Assert.assertEquals(6, syslogEvent.getFacility());
+            assertAppName(AuditLogToSyslogSetup.DEFAULT_APPNAME, syslogEvent);
+
+            //Change other handler facility = LOCAL_USE_0 (16)
+            Utils.applyUpdate(Util.getWriteAttributeOperation(AuditLogToSyslogSetup.AUDIT_SYSLOG_HANDLER_ADDR2, FACILITY, new ModelNode("LOCAL_USE_0")), managementClient.getControllerClient());
+            syslogEvent = queue.poll(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
+            Assert.assertNotNull("Auditable event was't logged into the syslog", syslogEvent);
+            Assert.assertEquals(16, syslogEvent.getFacility());
+            assertAppName(AuditLogToSyslogSetup.DEFAULT_APPNAME, syslogEvent);
+
+            //Reset other handler facility
+            Utils.applyUpdate(Util.getWriteAttributeOperation(AuditLogToSyslogSetup.AUDIT_SYSLOG_HANDLER_ADDR2, FACILITY, new ModelNode()), managementClient.getControllerClient());
+            syslogEvent = queue.poll(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
+            Assert.assertNotNull("Auditable event was't logged into the syslog", syslogEvent);
+            Assert.assertEquals(1, syslogEvent.getFacility());
+            assertAppName(AuditLogToSyslogSetup.DEFAULT_APPNAME, syslogEvent);
+
         } finally {
             setAuditlogEnabled(false);
         }
@@ -110,9 +161,14 @@ public abstract class AuditLogToSyslogTestCase {
         properties.clear();
     }
 
+    void assertAppName(String expected, SyslogServerEventIF syslogEvent) {
+        Rfc5424SyslogEvent event = (Rfc5424SyslogEvent)syslogEvent;
+        Assert.assertEquals(expected, event.getAppName());
+    }
+
     /**
      * Creates a dummy deployment.
-     * 
+     *
      * @return
      */
     @Deployment
@@ -123,7 +179,7 @@ public abstract class AuditLogToSyslogTestCase {
 
     /**
      * Throws auditable event. This implemetation writes a system-property to an AS configuration
-     * 
+     *
      * @throws Exception
      */
     protected void makeOneLog() throws Exception {
@@ -137,7 +193,7 @@ public abstract class AuditLogToSyslogTestCase {
 
     /**
      * Enables/disables the auditlog.
-     * 
+     *
      * @throws Exception
      */
     private void setAuditlogEnabled(boolean value) throws Exception {

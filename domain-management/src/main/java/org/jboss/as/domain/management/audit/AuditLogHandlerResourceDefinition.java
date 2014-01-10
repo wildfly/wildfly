@@ -204,6 +204,7 @@ public class AuditLogHandlerResourceDefinition extends SimpleResourceDefinition 
                 return true;
             } else if (attributeName.equals(MAX_FAILURE_COUNT.getName())) {
                 auditLogger.updateHandlerMaxFailureCount(Util.getNameFromAddress(operation.require(OP_ADDR)), valueToRestore.asInt());
+                return true;
             }
             return false;
         }

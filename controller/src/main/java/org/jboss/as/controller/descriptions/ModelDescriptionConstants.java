@@ -50,6 +50,7 @@ public class ModelDescriptionConstants {
     public static final String ANY_ADDRESS = "any-address";
     public static final String ANY_IPV4_ADDRESS = "any-ipv4-address";
     public static final String ANY_IPV6_ADDRESS = "any-ipv6-address";
+    public static final String APP_NAME = "app-name";
     public static final String APPCLIENT = "appclient";
     public static final String APPLICATION = "application";
     public static final String APPLICATION_CLASSIFICATION = "application-classification";
@@ -134,6 +135,7 @@ public class ModelDescriptionConstants {
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
     public static final String EXTENSION = "extension";
     public static final String FAILED = "failed";
+    public static final String FACILITY = "facility";
     public static final String FAILURE_COUNT = "failure-count";
     public static final String FAILURE_DESCRIPTION = "failure-description";
     public static final String FILE = "file";

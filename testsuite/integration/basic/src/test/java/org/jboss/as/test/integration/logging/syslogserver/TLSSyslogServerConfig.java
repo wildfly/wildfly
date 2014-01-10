@@ -25,7 +25,7 @@ import org.productivity.java.syslog4j.server.impl.net.tcp.ssl.SSLTCPNetSyslogSer
 
 /**
  * Configuration class for {@link TLSSyslogServer}.
- * 
+ *
  * @author Josef Cacek
  */
 public class TLSSyslogServerConfig extends SSLTCPNetSyslogServerConfig {
