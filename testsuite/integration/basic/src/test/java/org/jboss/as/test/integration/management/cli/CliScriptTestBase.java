@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.cli.Util;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
@@ -73,7 +74,15 @@ public class CliScriptTestBase {
         return execute(TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), connect, cmd, logFailure);
     }
 
+    protected int execute(boolean connect, String cmd, boolean logFailure, Map<String,String> props) {
+        return execute(TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), connect, cmd, logFailure, props);
+    }
+
     protected int execute(String host, int port, boolean connect, String cmd, boolean logFailure) {
+        return execute(host, port, connect, cmd, logFailure, null);
+    }
+    
+    protected int execute(String host, int port, boolean connect, String cmd, boolean logFailure, Map<String,String> props) {
         cliOutput = null;
         final String jbossDist = TestSuiteEnvironment.getSystemProperty("jboss.dist");
         if (jbossDist == null) {
@@ -90,6 +99,11 @@ public class CliScriptTestBase {
         command.add(TestSuiteEnvironment.getJavaPath());
         TestSuiteEnvironment.getIpv6Args(command);
         command.add("-Djboss.cli.config=" + jbossDist + File.separator + "bin" + File.separator + "jboss-cli.xml");
+        if(props != null && !props.isEmpty()) {
+            for(String name : props.keySet()) {
+                command.add("-D" + name + "=" + props.get(name));
+            }
+        }
         command.add("-jar");
         command.add(jbossDist + File.separatorChar + "jboss-modules.jar");
         command.add("-mp");
