@@ -25,10 +25,10 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.clustering.infinispan.invoker.Mutator;
+import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.InfinispanWebMessages;
-import org.wildfly.clustering.web.infinispan.Mutator;
-import org.wildfly.clustering.web.infinispan.Remover;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionContext;

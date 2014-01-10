@@ -188,6 +188,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
 
             configuration.addComponentInterceptor(new UserInterceptorFactory(factory(InterceptionType.AROUND_INVOKE, builder, bindingServiceName), factory(InterceptionType.AROUND_TIMEOUT, builder, bindingServiceName)), InterceptorOrder.Component.CDI_INTERCEPTORS, false);
         } else if (!Utils.isComponentWithView(description)) {
+            description.setIgnoreLifecycleInterceptors(true); //otherwise they will be called twice
             // for components with no view register interceptors that delegate to InjectionTarget lifecycle methods to trigger lifecycle interception
             configuration.addPostConstructInterceptor(new ImmediateInterceptorFactory(new AbstractInjectionTargetDelegatingInterceptor() {
                 @Override

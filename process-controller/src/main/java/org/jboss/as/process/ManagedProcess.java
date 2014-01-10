@@ -28,6 +28,7 @@ import static org.jboss.as.process.ProcessMessages.MESSAGES;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,6 +41,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.process.stdin.Base64OutputStream;
 import org.jboss.logging.Logger;
 
 /**
@@ -156,8 +158,11 @@ final class ManagedProcess {
     public void sendStdin(final InputStream msg) throws IOException {
         assert holdsLock(lock); // Call under lock
         try {
-            StreamUtils.copyStream(msg, stdin);
-            stdin.flush();
+            // WFLY-2697 All writing is in Base64
+            Base64OutputStream base64 = getBase64OutputStream(stdin);
+            StreamUtils.copyStream(msg, base64);
+            base64.close(); // not flush(). close() writes extra data to the stream allowing Base64 input stream
+                            // to distinguish end of message
         } catch (IOException e) {
             log.failedToSendDataBytes(e, processName);
             throw e;
@@ -167,11 +172,14 @@ final class ManagedProcess {
     public void reconnect(String hostName, int port, boolean managementSubsystemEndpoint, byte[] asAuthKey) {
         assert holdsLock(lock); // Call under lock
         try {
-            StreamUtils.writeUTFZBytes(stdin, hostName);
-            StreamUtils.writeInt(stdin, port);
-            StreamUtils.writeBoolean(stdin, managementSubsystemEndpoint);
-            stdin.write(asAuthKey);
-            stdin.flush();
+            // WFLY-2697 All writing is in Base64
+            Base64OutputStream base64 = getBase64OutputStream(stdin);
+            StreamUtils.writeUTFZBytes(base64, hostName);
+            StreamUtils.writeInt(base64, port);
+            StreamUtils.writeBoolean(base64, managementSubsystemEndpoint);
+            base64.write(asAuthKey);
+            base64.close(); // not flush(). close() writes extra data to the stream allowing Base64 input stream
+                            // to distinguish end of message
         } catch (IOException e) {
             if(state == State.STARTED) {
                 // Only log in case the process is still running
@@ -218,8 +226,11 @@ final class ManagedProcess {
         joinThread.start();
         boolean ok = false;
         try {
-            stdin.write(authKey);
-            stdin.flush();
+            // WFLY-2697 All writing is in Base64
+            OutputStream base64 = getBase64OutputStream(stdin);
+            base64.write(authKey);
+            base64.close(); // not flush(). close() writes extra data to the stream allowing Base64 input stream
+                            // to distinguish end of message
             ok = true;
         } catch (Exception e) {
             log.failedToSendAuthKey(processName, e);
@@ -308,6 +319,18 @@ final class ManagedProcess {
             }
             doStart(true);
         }
+    }
+
+    private static Base64OutputStream getBase64OutputStream(OutputStream toWrap) {
+        // We'll call close on Base64OutputStream at the end of each message
+        // to serve as a delimiter. Don't let that close the underlying stream.
+        OutputStream nonclosing = new FilterOutputStream(toWrap) {
+            @Override
+            public void close() throws IOException {
+                flush();
+            }
+        };
+        return new Base64OutputStream(nonclosing);
     }
 
     private final class JoinTask implements Runnable {

@@ -22,18 +22,49 @@
 
 package org.jboss.as.mail.extension;
 
-import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RestartParentWriteAttributeHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Tomaz Cerar
  * @created 22.12.11 18:31
  */
-class MailServerWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
-    static final MailServerWriteAttributeHandler INSTANCE = new MailServerWriteAttributeHandler();
+class MailServerWriteAttributeHandler extends RestartParentWriteAttributeHandler {
 
-    private MailServerWriteAttributeHandler() {
-        super(MailServerDefinition.ATTRIBUTES);
+    MailServerWriteAttributeHandler(AttributeDefinition... attributeDefinitions) {
+        super(MailSubsystemModel.MAIL_SESSION, attributeDefinitions);
     }
 
+    MailServerWriteAttributeHandler(Collection<AttributeDefinition> attributeDefinitions) {
+        super(MailSubsystemModel.MAIL_SESSION, attributeDefinitions);
+    }
 
+    @Override
+    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel, verificationHandler, new ArrayList<ServiceController<?>>());
+    }
+
+    @Override
+    protected ServiceName getParentServiceName(PathAddress parentAddress) {
+        return MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append(parentAddress.getLastElement().getValue());
+    }
+
+    @Override
+    protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel) throws OperationFailedException {
+        super.removeServices(context, parentService, parentModel);
+        String jndiName = MailSessionAdd.getJndiName(parentModel, context);
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        context.removeService(bindInfo.getBinderServiceName());
+    }
 }

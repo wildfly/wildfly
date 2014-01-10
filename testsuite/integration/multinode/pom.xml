@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -15,7 +15,7 @@
     <!-- ********************************************************************************** -->
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-multinode</artifactId>
-    <version>8.0.0.Beta2-SNAPSHOT</version>
+    <version>8.0.0.Final-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - Multinode Tests</name>
 
@@ -52,56 +52,41 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
+                        <executions>
                             <execution>
-                                <id>build-multinode.server</id>
                                 <phase>process-test-resources</phase>
                                 <goals>
                                     <goal>run</goal>
                                 </goals>
-                                <configuration>
-                                    <target>
-                                        <!-- Build the UDP server configs in target. -->
-                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/multinode-build.xml">
-                                            <property name="node1" value="${node1}" />
-                                            <property name="node0" value="${node0}" />
-                                            <target name="build-multinode"/>
-                                        </ant>
-                                    </target>
-                                </configuration>
                             </execution>
                         </executions>
+                        <configuration>
+                            <target>
+                                <!-- Build the UDP server configs in target. -->
+                                <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/multinode-build.xml">
+                                    <property name="node1" value="${node1}"/>
+                                    <property name="node0" value="${node0}"/>
+                                    <target name="build-multinode"/>
+                                </ant>
+                            </target>
+                        </configuration>
                     </plugin>
 
                     <!-- Surefire. -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
+                        <configuration>
+                            <includes>
+                                <include>org/jboss/as/test/multinode/**/*TestCase.java</include>
+                            </includes>
 
-                            <!-- Disable default-test execution. -->
-                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
-
-                            <!-- Multi-node tests -->
-                            <execution>
-                                <id>multinode.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <includes>
-                                        <include>org/jboss/as/test/multinode/**/*TestCase.java</include>
-                                    </includes>
-
-                                    <!-- Parameters to test cases. -->
-                                    <systemPropertyVariables combine.children="append">
-                                        <arquillian.launch>multinode</arquillian.launch>
-                                        <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
-                                    </systemPropertyVariables>
-                                </configuration>
-                            </execution>
-
-                        </executions>
-
+                            <!-- Parameters to test cases. -->
+                            <systemPropertyVariables combine.children="append">
+                                <arquillian.launch>multinode</arquillian.launch>
+                                <jboss.server.config.file.name>standalone.xml</jboss.server.config.file.name>
+                            </systemPropertyVariables>
+                        </configuration>
                     </plugin>
 
                 </plugins>

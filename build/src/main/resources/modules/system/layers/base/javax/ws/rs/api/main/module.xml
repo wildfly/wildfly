@@ -29,7 +29,6 @@
 
     <dependencies>
         <module name="org.jboss.resteasy.resteasy-jaxrs" services="export"/>
-        <module name="org.jboss.resteasy.resteasy-client" services="export"/>
         <module name="javax.xml.bind.api" />
         <module name="javax.api" />
     </dependencies>

@@ -49,6 +49,12 @@ public class TempClassLoader extends ConcurrentClassLoader {
     private final ClassLoader delegate;
     private static final String MANIFEST_MF = "META-INF" + File.separatorChar + "MANIFEST.MF";
 
+    static {
+        try {
+            ClassLoader.registerAsParallelCapable();
+        } catch (Throwable ignored) {}
+    }
+
     TempClassLoader(final ClassLoader delegate) {
         super(null);
         this.delegate = delegate;

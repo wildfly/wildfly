@@ -22,10 +22,12 @@
 
 package org.jboss.as.ejb3.clustering;
 
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.metadata.ejb.parser.jboss.ejb3.AbstractEJBBoundMetaDataParser;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
 import org.jboss.metadata.property.PropertyReplacer;
 
 /**
@@ -45,27 +47,23 @@ public class EJBBoundClusteringMetaDataParser extends AbstractEJBBoundMetaDataPa
         if (!ROOT_ELEMENT_CLUSTERING.equals(element)) {
             throw unexpectedElement(xmlStreamReader);
         }
-        final EJBBoundClusteringMetaData clusteringMetaData = new EJBBoundClusteringMetaData();
-        this.processElements(clusteringMetaData, xmlStreamReader, propertyReplacer);
-        return clusteringMetaData;
+        EJBBoundClusteringMetaData metaData = new EJBBoundClusteringMetaData();
+        this.processElements(metaData, xmlStreamReader, propertyReplacer);
+        return metaData;
     }
 
     @Override
-    protected void processElement(final EJBBoundClusteringMetaData clusteringMetaData, final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
+    protected void processElement(final EJBBoundClusteringMetaData metaData, final XMLStreamReader reader, final PropertyReplacer propertyReplacer) throws XMLStreamException {
         if (NAMESPACE_URI.equals(reader.getNamespaceURI())) {
+            EjbLogger.EJB3_LOGGER.deprecatedNamespace(NAMESPACE_URI, ROOT_ELEMENT_CLUSTERING);
             final String localName = reader.getLocalName();
             if (localName.equals("clustered")) {
-                final String text = getElementText(reader, propertyReplacer);
-                if (text != null) {
-                    final boolean isClustered = Boolean.parseBoolean(text.trim());
-                    clusteringMetaData.setClustered(isClustered);
-                }
+                getElementText(reader, propertyReplacer);
             } else {
                 throw unexpectedElement(reader);
             }
         } else {
-            super.processElement(clusteringMetaData, reader, propertyReplacer);
+            super.processElement(metaData, reader, propertyReplacer);
         }
-
     }
 }

@@ -8,6 +8,8 @@ import static org.jboss.as.weld.util.Indices.getAnnotatedClasses;
 
 import java.util.Collection;
 
+import javax.transaction.TransactionScoped;
+
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -29,6 +31,9 @@ import org.jboss.jandex.DotName;
  */
 public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor {
 
+    private static final DotName VIEW_SCOPED_NAME = DotName.createSimple("javax.faces.view.ViewScoped");
+    private static final DotName FLOW_SCOPED_NAME = DotName.createSimple("javax.faces.flow.FlowScoped");
+
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -39,14 +44,23 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         addAnnotations(deploymentUnit, CdiAnnotations.BUILT_IN_SCOPES);
+        // EE7 built-in scopes
+        addAnnotation(deploymentUnit, new AnnotationType(TransactionScoped.class));
+        addAnnotation(deploymentUnit, new AnnotationType(VIEW_SCOPED_NAME, true));
+        addAnnotation(deploymentUnit, new AnnotationType(FLOW_SCOPED_NAME, true));
+
         addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, CdiAnnotations.NORM_SCOPE.getDotName()));
         addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, CdiAnnotations.SCOPE));
     }
 
     private static void addAnnotations(final DeploymentUnit deploymentUnit, Collection<AnnotationType> annotations) {
         for(AnnotationType annotation : annotations){
-            deploymentUnit.addToAttachmentList(WeldAttachments.BEAN_DEFINING_ANNOTATIONS, annotation);
+            addAnnotation(deploymentUnit, annotation);
         }
+    }
+
+    private static void addAnnotation(final DeploymentUnit deploymentUnit, AnnotationType annotation) {
+        deploymentUnit.addToAttachmentList(WeldAttachments.BEAN_DEFINING_ANNOTATIONS, annotation);
     }
 
     private Collection<AnnotationType> getAnnotationsAnnotatedWith(CompositeIndex index, DotName annotationName) {

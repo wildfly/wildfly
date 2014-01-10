@@ -29,7 +29,7 @@
     <parent>
         <artifactId>wildfly-testsuite</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-testsuite-integration-domain</artifactId>
@@ -40,11 +40,14 @@
         <!-- used to provide an absolute location for the distribution under test -->
         <!-- this value is overridden in modules with the correct relative pathname -->
         <jboss.dist>${project.basedir}/../../${wildfly.build.output.dir}</jboss.dist>
+        <!-- This really should be ${project.basedir}/target/jbossas but the parent pom's
+             ts.copy-jbossas.groups execution assumes it's the same as jboss.dist -->
         <jboss.home>${jboss.dist}</jboss.home>
 
         <!-- Used to provide an absolute location for the XSLT scripts. -->
         <!-- This value is overridden in submodules with the correct relative path. -->
         <xslt.scripts.dir>${basedir}/../integration/src/test/xslt</xslt.scripts.dir>
+        <enforcer.skip>true</enforcer.skip>
     </properties>
 
     <!--
@@ -102,10 +105,11 @@
                     <systemPropertyVariables>
                         <jboss.options>${surefire.system.args}</jboss.options>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                        <jboss.home>${jboss.home}</jboss.home>
-                        <module.path>${jboss.home}/modules</module.path>
+                        <jboss.home>${project.basedir}/target/jbossas</jboss.home>
+                        <module.path>${jboss.dist}/modules</module.path>
                         <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
                         <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
+                        <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.security} ${jvm.args.other} ${jvm.args.timeouts}</server.jvm.args>
                     </systemPropertyVariables>
                     <includes>
                          <include>org/jboss/as/test/integration/autoignore/*TestCase.java</include>
@@ -119,6 +123,7 @@
     </build>
 
     <profiles>
+
         <profile>
             <id>rbac-soak</id>
             <activation>
@@ -145,10 +150,11 @@
                             <systemPropertyVariables>
                                 <jboss.options>${surefire.system.args}</jboss.options>
                                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
-                                <jboss.home>${jboss.home}</jboss.home>
-                                <module.path>${jboss.home}/modules</module.path>
+                                <jboss.home>${project.basedir}/target/jbossas</jboss.home>
+                                <module.path>${jboss.dist}/modules</module.path>
                                 <jboss.test.host.master.address>${node0}</jboss.test.host.master.address>
                                 <jboss.test.host.slave.address>${node1}</jboss.test.host.slave.address>
+                                <server.jvm.args>${surefire.system.args} ${jvm.args.ip.server} ${jvm.args.jacoco} ${jvm.args.security} ${jvm.args.other} ${jvm.args.timeouts}</server.jvm.args>
                                 <jboss.test.rbac.soak.clients>${jboss.test.rbac.soak.clients}</jboss.test.rbac.soak.clients>
                                 <jboss.test.rbac.soak.iterations>${jboss.test.rbac.soak.iterations}</jboss.test.rbac.soak.iterations>
                             </systemPropertyVariables>

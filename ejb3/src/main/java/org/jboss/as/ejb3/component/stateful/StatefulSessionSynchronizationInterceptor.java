@@ -133,11 +133,13 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
                     if (!wasTxSyncRegistered && !instance.isSynchronizationRegistered()) {
                         releaseInstance(instance);
                     } else if (!wasTxSyncRegistered) {
-                        //if we don't release the lock here then it will be aquiared multiple times
+                        //if we don't release the lock here then it will be acquired multiple times
                         //and only released once
                         releaseLock(instance);
                         //we also call the cache release to decrease the usage count
-                        instance.getComponent().getCache().release(instance);
+                        if (!instance.isDiscarded()) {
+                            instance.getComponent().getCache().release(instance);
+                        }
                     }
                 }
             }
@@ -166,8 +168,10 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
      */
     void releaseInstance(final StatefulSessionComponentInstance instance) {
         try {
-            // mark the SFSB instance as no longer in use
-            instance.getComponent().getCache().release(instance);
+            if (!instance.isDiscarded()) {
+                // mark the SFSB instance as no longer in use
+                instance.getComponent().getCache().release(instance);
+            }
         } finally {
             instance.setSynchronizationRegistered(false);
             // release the lock on the SFSB instance

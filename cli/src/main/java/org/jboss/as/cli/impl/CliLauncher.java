@@ -198,24 +198,36 @@ public class CliLauncher {
 
             if(file != null) {
                 cmdCtx = initCommandContext(defaultController, username, password, noLocalAuth, false, connect, connectionTimeout);
-                processFile(file, cmdCtx);
+                try {
+                    runcom(cmdCtx);
+                    processFile(file, cmdCtx);
+                } finally {
+                    cmdCtx.terminateSession();
+                }
                 return;
             }
 
             if(commands != null) {
                 cmdCtx = initCommandContext(defaultController, username, password, noLocalAuth, false, connect, connectionTimeout);
-                processCommands(commands, cmdCtx);
+                try {
+                    runcom(cmdCtx);
+                    processCommands(commands, cmdCtx);
+                } finally {
+                    cmdCtx.terminateSession();
+                }
                 return;
             }
 
             if (gui) {
                 cmdCtx = initCommandContext(defaultController, username, password, noLocalAuth, false, true, connectionTimeout);
+                runcom(cmdCtx);
                 processGui(cmdCtx);
                 return;
             }
 
             // Interactive mode
             cmdCtx = initCommandContext(defaultController, username, password, noLocalAuth, true, connect, connectionTimeout);
+            runcom(cmdCtx);
             cmdCtx.interact();
         } catch(Throwable t) {
             t.printStackTrace();
@@ -253,13 +265,9 @@ public class CliLauncher {
 
     private static void processCommands(List<String> commands, CommandContext cmdCtx) {
         int i = 0;
-        try {
-            while (cmdCtx.getExitCode() == 0 && i < commands.size() && !cmdCtx.isTerminated()) {
-                cmdCtx.handleSafe(commands.get(i));
-                ++i;
-            }
-        } finally {
-            cmdCtx.terminateSession();
+        while (cmdCtx.getExitCode() == 0 && i < commands.size() && !cmdCtx.isTerminated()) {
+            cmdCtx.handleSafe(commands.get(i));
+            ++i;
         }
     }
 
@@ -277,7 +285,46 @@ public class CliLauncher {
             throw new IllegalStateException("Failed to process file '" + file.getAbsolutePath() + "'", e);
         } finally {
             StreamUtils.safeClose(reader);
-            cmdCtx.terminateSession();
+        }
+    }
+
+    private static final String JBOSS_CLI_RC_PROPERTY = "jboss.cli.rc";
+    private static final String CURRENT_WORKING_DIRECTORY = "user.dir";
+    private static final String JBOSS_CLI_RC_FILE = ".jbossclirc";
+
+    private static void runcom(CommandContext ctx) throws CliInitializationException {
+        File jbossCliRcFile = null;
+        // system property first
+        String jbossCliRc = WildFlySecurityManager.getPropertyPrivileged(JBOSS_CLI_RC_PROPERTY, null);
+        if(jbossCliRc == null) {
+            // current dir second
+            String dir = WildFlySecurityManager.getPropertyPrivileged(CURRENT_WORKING_DIRECTORY, null);
+            File f = new File(dir, JBOSS_CLI_RC_FILE);
+            if(!f.exists()) {
+                // WildFly home bin dir third
+                dir = WildFlySecurityManager.getEnvPropertyPrivileged("JBOSS_HOME", null);
+                if(dir != null) {
+                    f = new File(dir + File.separatorChar + "bin", JBOSS_CLI_RC_FILE);
+                    if(f.exists()) {
+                        jbossCliRcFile = f;
+                    }
+                }
+            } else {
+                jbossCliRcFile = f;
+            }
+        } else {
+            jbossCliRcFile = new File(jbossCliRc);
+            if(!jbossCliRcFile.exists()) {
+                throw new CliInitializationException("Property " + JBOSS_CLI_RC_PROPERTY +
+                        " points to a file that doesn't exist: " + jbossCliRcFile.getAbsolutePath());
+            }
+        }
+
+        if(jbossCliRcFile != null) {
+            processFile(jbossCliRcFile, ctx);
+            if(ctx.getExitCode() != 0) {
+                throw new CliInitializationException("Failed to process " + jbossCliRcFile.getAbsoluteFile());
+            }
         }
     }
 }

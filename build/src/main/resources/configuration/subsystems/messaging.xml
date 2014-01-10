@@ -10,15 +10,16 @@
            <journal-min-files>2</journal-min-files>
 
            <connectors>
+               <http-connector name="http" socket-binding="http"/>
                <netty-connector name="netty" socket-binding="messaging"/>
                <netty-connector name="netty-throughput" socket-binding="messaging-throughput">
                    <param key="batch-delay" value="50"/>
                </netty-connector>
-               <servlet-connector name="servlet" socket-binding="http" host="default-host" />
                <in-vm-connector name="in-vm" server-id="0"/>
            </connectors>
 
            <acceptors>
+               <http-acceptor name="http" http-listener="default"/>
                <netty-acceptor name="netty" socket-binding="messaging"/>
                <netty-acceptor name="netty-throughput" socket-binding="messaging-throughput">
                    <param key="batch-delay" value="50"/>
@@ -65,14 +66,6 @@
                        <entry name="java:/ConnectionFactory"/>
                    </entries>
                </connection-factory>
-               <connection-factory name="ServletConnectionFactory">
-                   <connectors>
-                       <connector-ref connector-name="servlet"/>
-                   </connectors>
-                   <entries>
-                       <entry name="java:jboss/exported/jms/ServletConnectionFactory"/>
-                   </entries>
-               </connection-factory>
                <connection-factory name="RemoteConnectionFactory">
                    <connectors>
                        <connector-ref connector-name="netty"/>
@@ -81,6 +74,14 @@
                        <entry name="java:jboss/exported/jms/RemoteConnectionFactory"/>
                    </entries>
                    <?HA-REMOTE-CONNECTION-FACTORY?>
+               </connection-factory>
+               <connection-factory name="HTTPConnectionFactory">
+                   <connectors>
+                       <connector-ref connector-name="http"/>
+                   </connectors>
+                   <entries>
+                       <entry name="java:jboss/exported/jms/HTTPConnectionFactory"/>
+                   </entries>
                </connection-factory>
                <pooled-connection-factory name="hornetq-ra">
                    <transaction mode="xa"/>

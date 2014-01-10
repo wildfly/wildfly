@@ -332,6 +332,7 @@ public enum Phase {
     public static final int PARSE_EE_CONCURRENT_DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE  = 0x4803;
     public static final int PARSE_EE_DEFAULT_BINDINGS_CONFIG            = 0x4880;
     public static final int PARSE_JSF_MANAGED_BEANS                     = 0x4900;
+    public static final int PARSE_JSF_METADATA                          = 0x4A00;
 
     // REGISTER
     public static final int REGISTER_BUNDLE_INSTALL                     = 0x0100;
@@ -367,6 +368,8 @@ public enum Phase {
     public static final int DEPENDENCIES_BUNDLE                         = 0x1900;
     public static final int DEPENDENCIES_BUNDLE_CONTEXT_BINDING         = 0x1A00;
     public static final int DEPENDENCIES_BATCH                          = 0x1B00;
+    public static final int DEPENDENCIES_CLUSTERING                     = 0x1C00;
+    public static final int DEPENDENCIES_LOGGING                        = 0x1D00;
     //these must be last, and in this specific order
     public static final int DEPENDENCIES_APPLICATION_CLIENT             = 0x2000;
     public static final int DEPENDENCIES_VISIBLE_MODULES                = 0x2100;
@@ -467,6 +470,7 @@ public enum Phase {
     public static final int POST_MODULE_APP_NAMING_CONTEXT              = 0x2900;
     public static final int POST_MODULE_CACHED_CONNECTION_MANAGER       = 0x2A00;
     public static final int POST_MODULE_LOGGING_CONFIG                  = 0x2B00;
+    public static final int POST_MODULE_LOGGING_PROFILE                 = 0x2B10;
     public static final int POST_MODULE_EL_EXPRESSION_FACTORY           = 0x2C00;
     public static final int POST_MODULE_SAR_SERVICE_COMPONENT           = 0x2D00;
     public static final int POST_MODULE_UNDERTOW_WEBSOCKETS             = 0x2E00;
@@ -474,6 +478,8 @@ public enum Phase {
     public static final int POST_MODULE_EE_CONCURRENT_CONTEXT           = 0x3000;
     public static final int POST_MODULE_BATCH_ENVIRONMENT               = 0x3100;
     public static final int POST_MODULE_WS_SERVICES_DEPS                = 0x3200;
+    public static final int POST_MODULE_RAR_SERVICES_DEPS               = 0x3300;
+    public static final int POST_MODULE_UNDERTOW_MODCLUSTER             = 0x3400;
 
     // INSTALL
     public static final int INSTALL_JACC_POLICY                         = 0x0350;
@@ -518,6 +524,7 @@ public enum Phase {
     public static final int INSTALL_DEPLOYMENT_REPOSITORY               = 0x1F00;
     public static final int INSTALL_EJB_MANAGEMENT_RESOURCES            = 0x2000;
     public static final int INSTALL_APPLICATION_CLIENT                  = 0x2010;
+    public static final int INSTALL_CACHE_DEPENDENCIES                  = 0x2020;
     public static final int INSTALL_MESSAGING_XML_RESOURCES             = 0x2030;
     public static final int INSTALL_BUNDLE_ACTIVATE                     = 0x2040;
     public static final int INSTALL_WAB_SERVLETCONTEXT_SERVICE          = 0x2050;

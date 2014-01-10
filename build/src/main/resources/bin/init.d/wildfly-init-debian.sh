@@ -48,6 +48,15 @@ if [ -n "$JAVA_HOME" ]; then
 	export JAVA_HOME
 fi
 
+# Setup the JVM
+if [ "x$JAVA" = "x" ]; then
+	if [ "x$JAVA_HOME" != "x" ]; then
+		JAVA="$JAVA_HOME/bin/java"
+	else
+		JAVA="java"
+	fi
+fi
+
 # Location of wildfly
 if [ -z "$JBOSS_HOME" ]; then
 	JBOSS_HOME=/opt/wildfly
@@ -132,7 +141,7 @@ export LAUNCH_JBOSS_IN_BACKGROUND
 
 # Helper function to check status of wildfly service
 check_status() {
-	pidofproc -p $JBOSS_PIDFILE >/dev/null 2>&1
+	pidofproc -p $JBOSS_PIDFILE $JAVA >/dev/null 2>&1
 }
 
 case "$1" in

@@ -54,7 +54,7 @@ interface ModClusterLogger extends BasicLogger {
     void errorAddingMetrics(@Cause Throwable cause);
 
     /**
-     * Logs an error messaging indicting a start failure.
+     * Logs an error message indicating a start failure.
      *
      * @param cause the cause of the error.
      * @param name  the name for the service that failed to start.
@@ -64,7 +64,7 @@ interface ModClusterLogger extends BasicLogger {
     void startFailure(@Cause Throwable cause, String name);
 
     /**
-     * Logs an error messaging indicting a stop failure.
+     * Logs an error message indicating a stop failure.
      *
      * @param cause the cause of the error.
      * @param name  the name for the service that failed to stop.
@@ -86,4 +86,11 @@ interface ModClusterLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 11704, value = "Mod_cluster uses default load balancer provider")
     void useDefaultLoadBalancer();
+
+    /**
+     * Logs an error message indicating that metric properties could not be applied on a custom load metric.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 11705, value = "Error applying properties to load metric class '%s'. Metric will not be loaded.")
+    void errorApplyingMetricProperties(@Cause Throwable cause, String metricClass);
 }

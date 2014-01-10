@@ -31,8 +31,8 @@ public class CdiJpaInjectingBean {
     EntityManager em;
 
     public Employee queryEmployeeName(int id) {
-        Query q = em.createQuery("SELECT e FROM Employee e where id=?");
-        q.setParameter(1, new Integer(id));
+        Query q = em.createQuery("SELECT e FROM Employee e where e.id=:employeeId");
+        q.setParameter("employeeId", id);
         return (Employee) q.getSingleResult();
     }
 

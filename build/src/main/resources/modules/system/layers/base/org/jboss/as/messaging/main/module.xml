@@ -32,6 +32,9 @@
     </resources>
 
     <dependencies>
+        <!-- io.undertow.core is required only if http-acceptor are used -->
+        <module name="io.undertow.core" optional="true" />
+        <module name="io.netty" />
         <module name="javax.api"/>
         <module name="javax.enterprise.api"/>
         <module name="javax.jms.api"/>
@@ -40,16 +43,15 @@
         <module name="org.hornetq.ra"/>
         <module name="org.jboss.common-beans"/>
         <module name="org.jboss.as.transactions"/>
-        <module name="org.jboss.netty"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.ee"/>
         <module name="org.jboss.as.naming"/>
         <module name="org.jboss.as.network"/>
+        <!-- required only to access the HttpListenerRegistryService used by http-acceptor -->
+        <module name="org.jboss.as.remoting" optional="true"/>
         <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.server"/>
-        <!-- web-common is required only if servlet-connector are used -->
-        <module name="org.jboss.as.web-common" optional="true"/>
         <module name="org.jboss.as.weld"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.metadata"/>
@@ -72,5 +74,9 @@
         <module name="org.jboss.weld.api" />
         <module name="org.jboss.weld.core"/>
         <module name="org.jboss.weld.spi" />
+        <!-- org.jboss.xnio is required only if http-acceptor are used -->
+        <module name="org.jboss.xnio" optional="true" />
+        <!-- org.jboss.xnio.netty.netty-xnio-transport is required only if http-acceptor are used -->
+        <module name="org.jboss.xnio.netty.netty-xnio-transport" optional="true" />
     </dependencies>
 </module>

@@ -126,11 +126,11 @@ public class StandaloneXml extends CommonXml {
         }
 
         Namespace readerNS = Namespace.forUri(reader.getNamespaceURI());
-
         switch (readerNS) {
-            case DOMAIN_1_0:
+            case DOMAIN_1_0: {
                 readServerElement_1_0(reader, address, operationList);
                 break;
+            }
             case DOMAIN_1_1:
             case DOMAIN_1_2:
             case DOMAIN_1_3:
@@ -254,7 +254,7 @@ public class StandaloneXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, DOMAIN_1_0, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), true);
             element = nextElement(reader, DOMAIN_1_0);
         }
 
@@ -364,7 +364,7 @@ public class StandaloneXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, namespace, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), true);
             element = nextElement(reader, namespace);
         }
         if (element != null) {
@@ -472,7 +472,7 @@ public class StandaloneXml extends CommonXml {
         }
         if (element == Element.DEPLOYMENTS) {
             parseDeployments(reader, address, namespace, list, EnumSet.of(Attribute.NAME, Attribute.RUNTIME_NAME, Attribute.ENABLED),
-                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED));
+                    EnumSet.of(Element.CONTENT, Element.FS_ARCHIVE, Element.FS_EXPLODED), true);
             element = nextElement(reader, namespace);
         }
 
@@ -629,6 +629,7 @@ public class StandaloneXml extends CommonXml {
                         case DOMAIN_1_2:
                         case DOMAIN_1_3:
                         case DOMAIN_1_4:
+                        case DOMAIN_1_5:
                             parseManagementInterface1_1(reader, address, false, expectedNs, list);
                             break;
                         default:
@@ -642,6 +643,7 @@ public class StandaloneXml extends CommonXml {
                         case DOMAIN_1_2:
                         case DOMAIN_1_3:
                         case DOMAIN_1_4:
+                        case DOMAIN_1_5:
                             parseManagementInterface1_1(reader, address, true, expectedNs, list);
                             break;
                         default:

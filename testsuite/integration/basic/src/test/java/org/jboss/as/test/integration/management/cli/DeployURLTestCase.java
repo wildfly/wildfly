@@ -22,6 +22,7 @@
 package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -34,6 +35,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -71,7 +73,7 @@ public class DeployURLTestCase extends AbstractCliTestBase {
         war = ShrinkWrap.create(WebArchive.class, "SimpleServlet.war");
         war.addClass(SimpleServlet.class);
         war.addAsWebResource(new StringAsset("Version1"), "page.html");
-        String tempDir = System.getProperty("java.io.tmpdir");
+        String tempDir = TestSuiteEnvironment.getTmpDir();
         warFile = new File(tempDir + File.separator + "SimpleServlet.war");
         new ZipExporterImpl(war).exportTo(warFile, true);
 

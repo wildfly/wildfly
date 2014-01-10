@@ -50,7 +50,7 @@ public class UndertowConnectorTestCase {
     public void getType() {
         OptionMap options = OptionMap.builder().getMap();
         assertSame(Connector.Type.AJP, new UndertowConnector(new AjpListenerService("", "", options)).getType());
-        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("", "", options, false)).getType());
+        assertSame(Connector.Type.HTTP, new UndertowConnector(new HttpListenerService("", "", options, false, false)).getType());
         assertSame(Connector.Type.HTTPS, new UndertowConnector(new HttpsListenerService("", "", options)).getType());
     }
 

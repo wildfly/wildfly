@@ -27,7 +27,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.Final-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -72,11 +72,11 @@
         </dependency>
         <dependency>
             <groupId>io.undertow</groupId>
-            <artifactId>undertow-jsp</artifactId>
+            <artifactId>undertow-websockets-jsr</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.undertow</groupId>
-            <artifactId>undertow-websockets-jsr</artifactId>
+            <groupId>io.undertow.jastow</groupId>
+            <artifactId>jastow</artifactId>
         </dependency>
         <dependency>
             <groupId>org.wildfly</groupId>

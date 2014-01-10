@@ -216,4 +216,7 @@ public interface InfinispanMessages {
      */
     @Message(id = 10387, value = "Failed to invoke operation: %s")
     OperationFailedException failedToInvokeOperation(@Cause Throwable cause, String operation);
+
+    @Message(id = 10388, value = "Attribute 'virtual nodes' is an expression and therefore cannot be translated to attribute 'segments'.")
+    String segmentsDoesNotSupportExpressions();
 }

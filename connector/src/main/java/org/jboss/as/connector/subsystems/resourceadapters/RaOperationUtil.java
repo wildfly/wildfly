@@ -31,6 +31,7 @@ import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
 import org.jboss.as.connector.services.resourceadapters.deployment.ResourceAdapterXmlDeploymentService;
 import org.jboss.as.connector.util.ConnectorServices;
+import org.jboss.as.connector.util.CopyOnWriteArrayListMultiMap;
 import org.jboss.as.connector.util.ModelNodeUtil;
 import org.jboss.as.connector.util.RaServicesFactory;
 import org.jboss.as.controller.OperationContext;
@@ -141,7 +142,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RE
 
 
 public class RaOperationUtil {
-    private static final ServiceName RAR_MODULE = ServiceName.of("rarinsidemodule");
+    public static final ServiceName RAR_MODULE = ServiceName.of("rarinsidemodule");
 
 
     public static ModifiableResourceAdapter buildResourceAdaptersObject(final String id, final OperationContext context, ModelNode operation, String archiveOrModule) throws OperationFailedException {
@@ -312,9 +313,14 @@ public class RaOperationUtil {
             }
     }
 
-    public static boolean removeIfActive(OperationContext context, String raName ) throws OperationFailedException {
+    public static boolean removeIfActive(OperationContext context, String raName, String id ) throws OperationFailedException {
         boolean wasActive = false;
-        final ServiceName raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName);
+        final ServiceName raDeploymentServiceName;
+        if (raName == null) {
+            raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(id);
+        } else {
+            raDeploymentServiceName = ConnectorServices.getDeploymentServiceName(raName, id);
+        }
 
         if(context.getServiceRegistry(true).getService(raDeploymentServiceName) != null){
             context.removeService(raDeploymentServiceName);
@@ -352,9 +358,10 @@ public class RaOperationUtil {
         ServiceName raServiceName = ServiceName.of(ConnectorServices.RA_SERVICE, name);
         final ServiceController<?> service = context.getServiceRegistry(true).getService(raServiceName);
         if (service == null) {
-            ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter);
+            ResourceAdapterService raService = new ResourceAdapterService(resourceAdapter, name);
             newControllers.add(serviceTarget.addService(raServiceName, raService).setInitialMode(ServiceController.Mode.ACTIVE)
                     .addDependency(ConnectorServices.RESOURCEADAPTERS_SERVICE, ResourceAdaptersService.ModifiableResourceAdaptors.class, raService.getResourceAdaptersInjector())
+                    .addDependency(ConnectorServices.RESOURCEADAPTERS_SUBSYSTEM_SERVICE, CopyOnWriteArrayListMultiMap.class, raService.getResourceAdaptersMapInjector())
                     .addListener(verificationHandler).install());
         }
         return raServiceName;

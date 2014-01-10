@@ -120,11 +120,9 @@ public class ManagementHttpServer {
         try {
             //TODO make this configurable
             worker = xnio.createWorker(OptionMap.builder()
-                    .set(Options.WORKER_IO_THREADS, 4)
-                    .set(Options.CONNECTION_HIGH_WATER, 1000000)
-                    .set(Options.CONNECTION_LOW_WATER, 1000000)
-                    .set(Options.WORKER_TASK_CORE_THREADS, 10)
-                    .set(Options.WORKER_TASK_MAX_THREADS, 12)
+                    .set(Options.WORKER_IO_THREADS, 2)
+                    .set(Options.WORKER_TASK_CORE_THREADS, 5)
+                    .set(Options.WORKER_TASK_MAX_THREADS, 10)
                     .set(Options.TCP_NODELAY, true)
                     .set(Options.CORK, true)
                     .getMap());
@@ -208,25 +206,25 @@ public class ManagementHttpServer {
         }
 
         try {
-            pathHandler.addPath(ErrorContextHandler.ERROR_CONTEXT, ErrorContextHandler.createErrorContext(consoleSlot));
+            pathHandler.addPrefixPath(ErrorContextHandler.ERROR_CONTEXT, ErrorContextHandler.createErrorContext(consoleSlot));
         } catch (ModuleLoadException e) {
             ROOT_LOGGER.error(consoleSlot == null ? "main" : consoleSlot);
         }
 
         ManagementRootConsoleRedirectHandler rootConsoleRedirectHandler = new ManagementRootConsoleRedirectHandler(consoleHandler);
         DomainApiCheckHandler domainApiHandler = new DomainApiCheckHandler(modelController, controlledProcessStateService);
-        pathHandler.addPath("/", rootConsoleRedirectHandler);
+        pathHandler.addPrefixPath("/", rootConsoleRedirectHandler);
         if (consoleHandler != null) {
             HttpHandler readinessHandler = new RedirectReadinessHandler(securityRealm, consoleHandler.getHandler(),
                     ErrorContextHandler.ERROR_CONTEXT);
-            pathHandler.addPath(consoleHandler.getContext(), readinessHandler);
+            pathHandler.addPrefixPath(consoleHandler.getContext(), readinessHandler);
         }
 
         HttpHandler readinessHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(domainApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
-        pathHandler.addPath(DomainApiCheckHandler.PATH, readinessHandler);
+        pathHandler.addPrefixPath(DomainApiCheckHandler.PATH, readinessHandler);
 
         if (securityRealm != null) {
-            pathHandler.addPath(LogoutHandler.PATH, new LogoutHandler(securityRealm.getName()));
+            pathHandler.addPrefixPath(LogoutHandler.PATH, new LogoutHandler(securityRealm.getName()));
         }
     }
 

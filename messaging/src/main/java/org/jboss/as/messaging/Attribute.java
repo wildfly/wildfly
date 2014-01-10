@@ -40,8 +40,9 @@ public enum Attribute {
    @Deprecated
    BACKUP_CONNECTOR_NAME("backup-connector-name"),
    CONNECTOR_NAME(CommonAttributes.CONNECTOR_NAME),
+   CONNECTOR_REF(CommonAttributes.CONNECTOR_REF_STRING),
+   HTTP_LISTENER(CommonAttributes.HTTP_LISTENER),
    KEY(CommonAttributes.KEY),
-   HOST(ServletConnectorDefinition.HOST.getName()),
    MATCH(CommonAttributes.MATCH),
    NAME(CommonAttributes.NAME),
    PATH(ModelDescriptionConstants.PATH),

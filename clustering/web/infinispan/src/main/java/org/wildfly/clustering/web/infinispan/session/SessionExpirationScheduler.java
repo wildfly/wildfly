@@ -24,18 +24,18 @@ package org.wildfly.clustering.web.infinispan.session;
 import java.security.AccessController;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
-import org.wildfly.clustering.web.infinispan.Remover;
-import org.wildfly.clustering.web.infinispan.Scheduler;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.security.manager.GetAccessControlContextAction;
 
@@ -52,11 +52,17 @@ public class SessionExpirationScheduler implements Scheduler<ImmutableSession> {
     private final ScheduledExecutorService executor;
 
     public SessionExpirationScheduler(Batcher batcher, Remover<String> remover) {
-        this(batcher, remover, Executors.newSingleThreadScheduledExecutor(createThreadFactory()));
+        this(batcher, remover, createScheduledExecutor(createThreadFactory()));
     }
 
     private static ThreadFactory createThreadFactory() {
         return new JBossThreadFactory(new ThreadGroup(SessionExpirationScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
+    }
+
+    private static ScheduledExecutorService createScheduledExecutor(ThreadFactory factory) {
+        ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, factory);
+        executor.setRemoveOnCancelPolicy(true);
+        return executor;
     }
 
     public SessionExpirationScheduler(Batcher batcher, Remover<String> remover, ScheduledExecutorService executor) {

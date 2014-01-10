@@ -58,6 +58,8 @@ import org.jboss.msc.service.ServiceName;
  */
 public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement BACKUP_PATH = PathElement.pathElement(ModelKeys.BACKUP);
+
     static final SimpleAttributeDefinition FAILURE_POLICY = new SimpleAttributeDefinitionBuilder(ModelKeys.BACKUP_FAILURE_POLICY, ModelType.STRING, true)
             .setXmlName(Attribute.BACKUP_FAILURE_POLICY.getLocalName())
             .setAllowExpression(true)
@@ -123,7 +125,7 @@ public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
     private final boolean runtimeRegistration;
 
     BackupSiteResourceDefinition(final boolean runtimeRegistration) {
-        super(PathElement.pathElement(ModelKeys.BACKUP), InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP), new CacheConfigAdd(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(BACKUP_PATH, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BACKUP), new CacheConfigAdd(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
         this.runtimeRegistration = runtimeRegistration;
     }
 

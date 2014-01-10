@@ -22,6 +22,8 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.registry.Resource;
@@ -146,7 +148,17 @@ public interface TransformingProxyController extends ProxyController {
 
         @Override
         public OperationTransformer.TransformedOperation transformOperation(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            return transformers.transformOperation(context, operation);
+            //Some transformers don't propagate the headers, back them up here and add them again
+            ModelNode operationHeaders = operation.hasDefined(OPERATION_HEADERS) ? operation.get(OPERATION_HEADERS) : null;
+            OperationTransformer.TransformedOperation transformed = transformers.transformOperation(context, operation);
+
+            if (operationHeaders != null) {
+                ModelNode transformedOp = transformed.getTransformedOperation();
+                if (transformedOp != null && !transformedOp.hasDefined(OPERATION_HEADERS)) {
+                    transformedOp.get(OPERATION_HEADERS).set(operationHeaders);
+                }
+            }
+            return transformed;
         }
 
         @Override

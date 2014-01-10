@@ -167,6 +167,7 @@ public class ManagementModelNode extends DefaultMutableTreeNode {
         element = element.replace("/", "\\/");
         element = element.replace("=", "\\=");
         element = element.replace(" ", "\\ ");
+        element = element.replace("$", "\\$");
         return element;
     }
 

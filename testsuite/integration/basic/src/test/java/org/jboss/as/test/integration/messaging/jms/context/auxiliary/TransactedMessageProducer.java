@@ -36,7 +36,7 @@ import javax.jms.JMSContext;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
  */
-@Stateful
+@Stateful(passivationCapable = false)
 @RequestScoped
 public class TransactedMessageProducer {
     @Inject

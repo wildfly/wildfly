@@ -44,11 +44,11 @@ public class PassivationConfigurationSetup implements ServerSetupTask {
     private static ModelNode getAddress() {
         ModelNode address = new ModelNode();
         address.add("subsystem", "ejb3");
-        address.add("file-passivation-store", "file");
+        address.add("passivation-store", "infinispan");
         address.protect();
         return address;
     }
-    
+
     @Override
     public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
         ModelNode address = getAddress();
@@ -60,14 +60,6 @@ public class PassivationConfigurationSetup implements ServerSetupTask {
         ModelNode result = managementClient.getControllerClient().execute(operation);
         log.info("modelnode operation write attribute max-size=1: " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        operation = new ModelNode();
-        operation.get(OP).set("write-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set("idle-timeout");
-        operation.get("value").set(1);
-        result = managementClient.getControllerClient().execute(operation);
-        log.info("modelnode operation write-attribute idle-timeout=1: " + result);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
     }
 
@@ -78,11 +70,6 @@ public class PassivationConfigurationSetup implements ServerSetupTask {
         operation.get(OP).set("undefine-attribute");
         operation.get(OP_ADDR).set(address);
         operation.get("name").set("max-size");
-        managementClient.getControllerClient().execute(operation);
-        operation = new ModelNode();
-        operation.get(OP).set("undefine-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set("idle-timeout");
         ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }

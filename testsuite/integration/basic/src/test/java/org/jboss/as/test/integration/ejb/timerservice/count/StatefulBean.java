@@ -11,7 +11,7 @@ import javax.ejb.TimerService;
 /**
  * @author: Jaikiran Pai
  */
-@Stateful
+@Stateful(passivationCapable = false)
 @LocalBean
 public class StatefulBean {
 

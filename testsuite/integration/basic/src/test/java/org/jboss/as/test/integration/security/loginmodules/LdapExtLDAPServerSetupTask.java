@@ -34,6 +34,10 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.directory.api.ldap.model.entry.DefaultEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifReader;
+import org.apache.directory.api.ldap.model.schema.SchemaManager;
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.AnnotationUtils;
@@ -46,10 +50,6 @@ import org.apache.directory.server.core.factory.DSAnnotationProcessor;
 import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
 import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.ldap.LdapServer;
-import org.apache.directory.shared.ldap.model.entry.DefaultEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifReader;
-import org.apache.directory.shared.ldap.model.schema.SchemaManager;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
@@ -171,6 +171,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
         fixTransportAddress(createLdapServer, hostname);
         ldapServer1 = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService1);
         ldapServer1.start();
+        System.out.println("ldapServer1 = " + ldapServer1);
     }
 
     //@formatter:off
@@ -219,6 +220,7 @@ public class LdapExtLDAPServerSetupTask implements ServerSetupTask {
         fixTransportAddress(createLdapServer, hostname);
         ldapServer2 = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService2);
         ldapServer2.start();
+        System.out.println("ldapServer2 = " + ldapServer2);
     }
 
     /**

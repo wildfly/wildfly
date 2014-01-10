@@ -34,6 +34,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -354,7 +355,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case CLUSTERED_CACHE_REF: {
-                    EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
+                    // Ignored
                     break;
                 }
                 default: {
@@ -516,7 +517,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         operations.add(operation);
     }
 
-    private void parsePassivationStores(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    @SuppressWarnings("deprecation")
+    protected void parsePassivationStores(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         // no attributes expected
         requireNoAttributes(reader);
 
@@ -537,7 +539,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         }
     }
 
-    private void parseFilePassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    @SuppressWarnings("deprecation")
+    protected void parseFilePassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
         ModelNode operation = Util.createAddOperation();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -553,11 +556,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case IDLE_TIMEOUT: {
-                    PassivationStoreResourceDefinition.IDLE_TIMEOUT.parseAndSetParameter(value, operation, reader);
+                    LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT_UNIT: {
-                    PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
+                    LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case RELATIVE_TO: {
@@ -590,7 +593,8 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
         operations.add(operation);
     }
 
-    private void parseClusterPassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
+    @SuppressWarnings("deprecation")
+    protected void parseClusterPassivationStore(final XMLExtendedStreamReader reader, List<ModelNode> operations) throws XMLStreamException {
         String name = null;
         ModelNode operation = Util.createAddOperation();
         for (int i = 0; i < reader.getAttributeCount(); i++) {
@@ -606,11 +610,11 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case IDLE_TIMEOUT: {
-                    PassivationStoreResourceDefinition.IDLE_TIMEOUT.parseAndSetParameter(value, operation, reader);
+                    LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case IDLE_TIMEOUT_UNIT: {
-                    PassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
+                    LegacyPassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT.parseAndSetParameter(value, operation, reader);
                     break;
                 }
                 case CACHE_CONTAINER: {

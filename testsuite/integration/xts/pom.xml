@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-ts-integ</artifactId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <!-- ********************************************************************************** -->
@@ -15,7 +15,7 @@
     <!-- ********************************************************************************** -->
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-ts-integ-xts</artifactId>
-    <version>8.0.0.Beta2-SNAPSHOT</version>
+    <version>8.0.0.Final-SNAPSHOT</version>
 
     <name>WildFly Test Suite: Integration - XTS</name>
 
@@ -29,7 +29,11 @@
 
         <profile>
             <id>xts.integration.tests.profile</id>
-            <activation><property><name>!ts.noXTS</name></property></activation>
+            <activation>
+                <property>
+                    <name>!ts.noXTS</name>
+                </property>
+            </activation>
             <properties>
             </properties>
             <!--
@@ -58,67 +62,34 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions combine.children="append">
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
                             <execution>
-                                <id>build-xts.server</id>
-                                <phase>process-test-resources</phase>
-                                <goals><goal>run</goal></goals>
+                                <id>copy-dependencies</id>
+                                <phase>test-compile</phase>
+                                <goals>
+                                    <goal>copy-dependencies</goal>
+                                </goals>
                                 <configuration>
-                                    <target>
-                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/xts-build.xml">
-                                            <target name="build-xts"/>
-                                        </ant>
-                                    </target>
+                                    <stripVersion>true</stripVersion>
+                                    <includeGroupIds>org.jboss.byteman</includeGroupIds>
+                                    <outputDirectory>${project.build.directory}/lib</outputDirectory>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
-
-                    <plugin>
-                      <groupId>org.apache.maven.plugins</groupId>
-                      <artifactId>maven-dependency-plugin</artifactId>
-                      <executions>
-                        <execution>
-                          <id>copy-dependencies</id>
-                          <phase>test-compile</phase>
-                          <goals>
-                            <goal>copy-dependencies</goal>
-                          </goals>
-                          <configuration>
-                              <stripVersion>true</stripVersion>
-                              <includeGroupIds>org.jboss.byteman</includeGroupIds>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                          </configuration>
-                        </execution>
-                      </executions>
-                    </plugin>
-
                     <!--
                        Surefire test executions
                     -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <executions combine.children="append">
-
-                            <!-- Disable default-test execution. -->
-                            <execution><id>default-test</id><goals><goal>test</goal></goals><phase>none</phase></execution>
-
-                            <!-- Multi node clustering tests. -->
-                            <execution>
-                                <id>tests-xts.surefire</id>
-                                <phase>test</phase>
-                                <goals><goal>test</goal></goals>
-                                <configuration>
-                                    <!-- Tests to execute. -->
-                                    <includes>
-                                        <include>org/jboss/as/test/xts/**/*TestCase.java</include>
-                                    </includes>
-                                </configuration>
-                            </execution>
-
-                        </executions>
+                        <configuration>
+                            <!-- Tests to execute. -->
+                            <includes>
+                                <include>org/jboss/as/test/xts/**/*TestCase.java</include>
+                            </includes>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

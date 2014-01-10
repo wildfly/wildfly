@@ -100,7 +100,7 @@ public class JBossAllXMLParsingProcessor implements DeploymentUnitProcessor {
         for(Map.Entry<QName, Object> entry : context.getParseResults().entrySet()) {
             final AttachmentKey attachmentKey = namespaceAttachments.get(entry.getKey());
             if(usedNamespaces.containsKey(attachmentKey)) {
-                ServerMessages.MESSAGES.equivilentNamespacesInJBossXml(entry.getKey(), usedNamespaces.get(attachmentKey));
+                throw ServerMessages.MESSAGES.equivalentNamespacesInJBossXml(entry.getKey(), usedNamespaces.get(attachmentKey));
             }
             usedNamespaces.put(attachmentKey, entry.getKey());
             deploymentUnit.putAttachment(attachmentKey, entry.getValue());

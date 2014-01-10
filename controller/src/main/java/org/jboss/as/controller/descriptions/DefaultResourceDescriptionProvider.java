@@ -34,6 +34,7 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.access.management.AccessConstraintDescriptionProviderUtil;
@@ -49,12 +50,20 @@ import org.jboss.dmr.ModelNode;
 public class DefaultResourceDescriptionProvider implements DescriptionProvider {
 
     private final ImmutableManagementResourceRegistration registration;
-    final ResourceDescriptionResolver descriptionResolver;
+    private final ResourceDescriptionResolver descriptionResolver;
+    private final DeprecationData deprecationData;
 
     public DefaultResourceDescriptionProvider(final ImmutableManagementResourceRegistration registration,
                                               final ResourceDescriptionResolver descriptionResolver) {
+        this(registration, descriptionResolver, null);
+    }
+
+    public DefaultResourceDescriptionProvider(final ImmutableManagementResourceRegistration registration,
+                                              final ResourceDescriptionResolver descriptionResolver,
+                                              final DeprecationData deprecationData) {
         this.registration = registration;
         this.descriptionResolver = descriptionResolver;
+        this.deprecationData = deprecationData;
     }
 
     @Override
@@ -63,6 +72,11 @@ public class DefaultResourceDescriptionProvider implements DescriptionProvider {
 
         final ResourceBundle bundle = descriptionResolver.getResourceBundle(locale);
         result.get(DESCRIPTION).set(descriptionResolver.getResourceDescription(locale, bundle));
+
+        if (deprecationData != null) {
+            ModelNode deprecated = addDeprecatedInfo(result);
+            deprecated.get(ModelDescriptionConstants.REASON).set(descriptionResolver.getResourceDeprecatedDescription(locale, bundle));
+        }
 
         AccessConstraintDescriptionProviderUtil.addAccessConstraints(result, registration.getAccessConstraints(), locale);
 
@@ -97,5 +111,12 @@ public class DefaultResourceDescriptionProvider implements DescriptionProvider {
         }
 
         return result;
+    }
+
+    private ModelNode addDeprecatedInfo(final ModelNode model) {
+        ModelNode deprecated = model.get(ModelDescriptionConstants.DEPRECATED);
+        deprecated.get(ModelDescriptionConstants.SINCE).set(deprecationData.getSince().toString());
+        deprecated.get(ModelDescriptionConstants.REASON);
+        return deprecated;
     }
 }

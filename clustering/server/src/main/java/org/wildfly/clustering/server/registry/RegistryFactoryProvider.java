@@ -51,7 +51,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
 import org.wildfly.clustering.server.group.CacheGroupProvider;
 import org.wildfly.clustering.server.group.CacheNodeFactory;
@@ -109,13 +108,7 @@ public class RegistryFactoryProvider implements CacheServiceProvider {
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
 
-        InjectedValue<RegistryFactory> factory = new InjectedValue<>();
-        InjectedValue<RegistryEntryProvider> provider = new InjectedValue<>();
-        ServiceBuilder<?> builder = AsynchronousService.addService(target, getServiceName(containerName, cacheName), new RegistryService<>(factory, provider))
-                .addDependency(name, RegistryFactory.class, factory)
-                .addDependency(getEntryProviderServiceName(containerName, cacheName), RegistryEntryProvider.class, provider)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
+        ServiceBuilder<?> builder = RegistryService.build(target, containerName, cacheName).setInitialMode(ServiceController.Mode.ON_DEMAND);
 
         // Bind just the factory to JNDI
         BinderService binder = new BinderService(bindInfo.getBindName());
@@ -140,24 +133,17 @@ public class RegistryFactoryProvider implements CacheServiceProvider {
         result.add(binderBuilder.install());
 
         if (addDefaultCacheAlias) {
-            InjectedValue<RegistryFactory> defaultFactory = new InjectedValue<>();
-            InjectedValue<RegistryEntryProvider> defaultProvider = new InjectedValue<>();
-            ServiceBuilder<?> defaultBuilder = AsynchronousService.addService(target, getServiceName(containerName, CacheContainer.DEFAULT_CACHE_ALIAS), new RegistryService<>(defaultFactory, defaultProvider))
-                    .addDependency(getFactoryServiceName(containerName, CacheContainer.DEFAULT_CACHE_ALIAS), RegistryFactory.class, defaultFactory)
-                    .addDependency(getEntryProviderServiceName(containerName, CacheContainer.DEFAULT_CACHE_ALIAS), RegistryEntryProvider.class, defaultProvider)
-                    .setInitialMode(ServiceController.Mode.ON_DEMAND)
-            ;
+            ServiceBuilder<?> defaultBuilder = RegistryService.build(target, containerName, CacheContainer.DEFAULT_CACHE_ALIAS).setInitialMode(ServiceController.Mode.ON_DEMAND);
             result.add(defaultBuilder.install());
         }
 
         return result;
     }
 
-    @SuppressWarnings("rawtypes")
     static class RegistryFactoryConfig<K, V> implements RegistryFactoryConfiguration<K, V> {
         private final CacheInvoker invoker = new BatchCacheInvoker();
         private final InjectedValue<Group> group = new InjectedValue<>();
-        private final InjectedValue<Cache> cache = new InjectedValue<>();
+        private final InjectedValue<Cache<Node, Map.Entry<K, V>>> cache = new InjectedValue<>();
         private final InjectedValue<CacheNodeFactory> factory = new InjectedValue<>();
 
         @Override
@@ -184,8 +170,9 @@ public class RegistryFactoryProvider implements CacheServiceProvider {
             return this.group;
         }
 
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         Injector<Cache> getCacheInjector() {
-            return this.cache;
+            return (Injector) this.cache;
         }
 
         Injector<CacheNodeFactory> getNodeFactoryInjector() {

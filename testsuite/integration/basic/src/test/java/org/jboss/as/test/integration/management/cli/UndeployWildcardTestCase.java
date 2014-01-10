@@ -35,6 +35,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
@@ -74,7 +75,7 @@ public class UndeployWildcardTestCase {
 
     @BeforeClass
     public static void before() throws Exception {
-        String tempDir = System.getProperty("java.io.tmpdir");
+        String tempDir = TestSuiteEnvironment.getSystemProperty("java.io.tmpdir");
 
         appFiles = new File[4];
 

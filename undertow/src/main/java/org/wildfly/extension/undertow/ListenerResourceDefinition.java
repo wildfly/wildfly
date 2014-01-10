@@ -33,6 +33,8 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.AccessConstraintDefinition;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -46,10 +48,12 @@ import org.wildfly.extension.io.OptionList;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
+
     protected static final SimpleAttributeDefinition SOCKET_BINDING = new SimpleAttributeDefinitionBuilder(Constants.SOCKET_BINDING, ModelType.STRING)
             .setAllowNull(false)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setValidator(new StringLengthValidator(1))
+            .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
     protected static final SimpleAttributeDefinition WORKER = new SimpleAttributeDefinitionBuilder(Constants.WORKER, ModelType.STRING)
             .setAllowNull(true)
@@ -70,6 +74,13 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
+    protected static final SimpleAttributeDefinition REDIRECT_SOCKET = new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_SOCKET, ModelType.STRING)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setDefaultValue(new ModelNode("https"))
+            .setAllowExpression(false)
+            .build();
+
 
     static final List<OptionAttributeDefinition> OPTIONS = OptionList.builder()
             .addOption(UndertowOptions.MAX_HEADER_SIZE, "max-header-size", new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE))
@@ -81,9 +92,11 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .addOption(UndertowOptions.ALLOW_ENCODED_SLASH, "allow-encoded-slash", new ModelNode(false))
             .addOption(UndertowOptions.DECODE_URL, "decode-url", new ModelNode(true))
             .addOption(UndertowOptions.URL_CHARSET, "url-charset", new ModelNode("UTF-8"))
+            .addOption(UndertowOptions.ALWAYS_SET_KEEP_ALIVE, "always-set-keep-alive", new ModelNode(true))
             .build();
 
     protected static final Collection ATTRIBUTES;
+    protected static final List<AccessConstraintDefinition> CONSTRAINTS = Arrays.asList(UndertowExtension.LISTENER_CONSTRAINT);
 
     static {
         ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED));
@@ -105,6 +118,11 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
         super.registerOperations(resourceRegistration);
         super.registerAddOperation(resourceRegistration, getAddHandler(), OperationEntry.Flag.RESTART_NONE);
         super.registerRemoveOperation(resourceRegistration, new ListenerRemoveHandler(getAddHandler()), OperationEntry.Flag.RESTART_NONE);
+    }
+
+    @Override
+    public List<AccessConstraintDefinition> getAccessConstraints() {
+        return CONSTRAINTS;
     }
 
     protected abstract ListenerAdd getAddHandler();

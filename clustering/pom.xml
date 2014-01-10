@@ -29,7 +29,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <artifactId>wildfly-clustering</artifactId>
@@ -40,7 +40,7 @@
     <modules>
         <module>api</module>
         <module>common</module>
-        <module>ejb3-infinispan</module>
+        <module>ejb</module>
         <module>infinispan</module>
         <module>jgroups</module>
         <module>server</module>
@@ -78,13 +78,6 @@
             <groupId>org.jboss.byteman</groupId>
             <artifactId>byteman-bmunit</artifactId>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
-            <scope>system</scope>
-            <version>${maven.compiler.source}</version>
-            <systemPath>${com.sun.tools.path}</systemPath>
         </dependency>
     </dependencies>
 

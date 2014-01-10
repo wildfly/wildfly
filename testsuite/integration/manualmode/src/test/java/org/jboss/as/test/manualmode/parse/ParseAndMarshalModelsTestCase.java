@@ -22,7 +22,6 @@
 package org.jboss.as.test.manualmode.parse;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
@@ -65,7 +64,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
@@ -80,27 +78,20 @@ import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
-import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.EnvironmentNameReader;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
-import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
-import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationEntry;
+import org.jboss.as.host.controller.model.host.HostResourceDefinition;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
@@ -113,11 +104,9 @@ import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
-import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.security.vault.RuntimeVaultReader;
-import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
@@ -441,6 +430,38 @@ public class ParseAndMarshalModelsTestCase {
         standaloneXmlTest(getLegacyConfigFile("standalone", "7-2-0-xts.xml"));
     }
 
+    @Test
+    public void testEAP620StandaloneFullHaXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-full-ha.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP620StandaloneFullXml() throws Exception {
+        ModelNode model = standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-full.xml"));
+        validateJsfSubsystem(model);
+    }
+
+    @Test
+    public void testEAP620StandaloneHornetQCollocatedXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-hornetq-colocated.xml"));
+    }
+
+    @Test
+    public void testEAP620StandaloneJtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-jts.xml"));
+    }
+
+    @Test
+    public void testEAP620StandaloneMinimalisticXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-minimalistic.xml"));
+    }
+
+    @Test
+    public void testEAP620StandaloneXtsXml() throws Exception {
+        standaloneXmlTest(getLegacyConfigFile("standalone", "eap-6-2-0-xts.xml"));
+    }
+
     private ModelNode standaloneXmlTest(File original) throws Exception {
 
         File file = new File("target/standalone-copy.xml");
@@ -485,6 +506,11 @@ public class ParseAndMarshalModelsTestCase {
     @Test
     public void test720HostXml() throws Exception {
         hostXmlTest(getLegacyConfigFile("host", "7-2-0.xml"));
+    }
+
+    @Test
+    public void testEAP620HostXml() throws Exception {
+        hostXmlTest(getLegacyConfigFile("host", "eap-6-2-0.xml"));
     }
 
     private void hostXmlTest(final File original) throws Exception {
@@ -539,6 +565,13 @@ public class ParseAndMarshalModelsTestCase {
         validateJsfProfiles(model);
     }
 
+    @Test
+    @TargetsContainer("class-jbossas")
+    public void testEAP620DomainXml() throws Exception {
+        ModelNode model = domainXmlTest(getLegacyConfigFile("domain", "eap-6-2-0.xml"));
+        validateJsfProfiles(model);
+    }
+
 
     private ModelNode domainXmlTest(File original) throws Exception {
         File file = new File("target/domain-copy.xml");
@@ -552,23 +585,6 @@ public class ParseAndMarshalModelsTestCase {
         compare(originalModel, reparsedModel);
 
         return reparsedModel;
-    }
-
-    private static String convertToSingleLine(String value) {
-        //Reformat the string so it works better in ParseAndMarshalModelsTestCase
-        String[] values = value.split(",");
-        StringBuilder formattedValue = new StringBuilder();
-        boolean first = true;
-        for (String val : values) {
-            val = val.trim();
-            if (!first) {
-                formattedValue.append(", ");
-            } else {
-                first = false;
-            }
-            formattedValue.append(val);
-        }
-        return formattedValue.toString();
     }
 
     private void compare(ModelNode node1, ModelNode node2) {
@@ -694,8 +710,7 @@ public class ParseAndMarshalModelsTestCase {
                 hostRegistration.registerOperationHandler(XmlMarshallingHandler.DEFINITION, xmh);
                 hostRegistration.registerOperationHandler(NamespaceAddHandler.DEFINITION, NamespaceAddHandler.INSTANCE);
                 hostRegistration.registerOperationHandler(SchemaLocationAddHandler.DEFINITION, SchemaLocationAddHandler.INSTANCE);
-                hostRegistration.registerReadWriteAttribute(NAME, null, new WriteAttributeHandlers.StringLengthValidatingHandler(1), AttributeAccess.Storage.CONFIGURATION);
-                hostRegistration.registerReadOnlyAttribute(MASTER, IsMasterHandler.INSTANCE, AttributeAccess.Storage.RUNTIME);
+                hostRegistration.registerReadOnlyAttribute(HostResourceDefinition.MASTER, IsMasterHandler.INSTANCE);
 
                 // System Properties
                 ManagementResourceRegistration sysProps = hostRegistration.registerSubModel(SystemPropertyResourceDefinition.createForDomainOrHost(Location.HOST));
@@ -1016,82 +1031,6 @@ public class ParseAndMarshalModelsTestCase {
 
         @Override
         public void deleteDeployment(byte[] deploymentHash) {
-        }
-    }
-
-    private static class MockDomainController implements DomainController {
-
-        @Override
-        public RunningMode getCurrentRunningMode() {
-            return RunningMode.ADMIN_ONLY;
-        }
-
-        public LocalHostControllerInfo getLocalHostInfo() {
-            return null;
-        }
-
-        public void registerRemoteHost(final String hostName, final ManagementChannelHandler handler, final Transformers transformers, Long remoteConnectionId, DomainControllerRuntimeIgnoreTransformationEntry runtimeIgnoreTransformation) throws SlaveRegistrationException {
-        }
-
-        public boolean isHostRegistered(String id) {
-            return false;
-        }
-
-        public void unregisterRemoteHost(String id, Long remoteConnectionId) {
-        }
-
-        @Override
-        public void pingRemoteHost(String hostName) {
-        }
-
-        public void registerRunningServer(ProxyController serverControllerClient) {
-        }
-
-        public void unregisterRunningServer(String serverName) {
-        }
-
-        public ModelNode getProfileOperations(String profileName) {
-            return null;
-        }
-
-        public HostFileRepository getLocalFileRepository() {
-            return null;
-        }
-
-        public HostFileRepository getRemoteFileRepository() {
-            return null;
-        }
-
-        public void stopLocalHost() {
-        }
-
-        @Override
-        public void stopLocalHost(int exitCode) {
-            //
-        }
-
-        @Override
-        public ExtensionRegistry getExtensionRegistry() {
-            return null;
-        }
-
-        @Override
-        public ExpressionResolver getExpressionResolver() {
-            return new RuntimeExpressionResolver(new MockVaultReader());
-        }
-
-        @Override
-        public void initializeMasterDomainRegistry(ManagementResourceRegistration root,
-                                                   ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
-                                                   HostFileRepository fileRepository, ExtensionRegistry extensionRegistry, PathManagerService pathManager) {
-        }
-
-        @Override
-        public void initializeSlaveDomainRegistry(ManagementResourceRegistration root,
-                                                  ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
-                                                  HostFileRepository fileRepository, LocalHostControllerInfo hostControllerInfo,
-                                                  ExtensionRegistry extensionRegistry, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                                                  PathManagerService pathManager) {
         }
     }
 

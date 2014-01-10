@@ -28,7 +28,7 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-arquillian</artifactId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.Final-SNAPSHOT</version>
     </parent>
     <artifactId>wildfly-arquillian-container-domain-managed</artifactId>
 
@@ -100,7 +100,6 @@
                                     <directory>${jboss.home}</directory>
                                     <excludes>
                                         <exclude>modules/</exclude>
-                                        <exclude>bundles/</exclude>
                                     </excludes>
                                 </resource>
                             </resources>
@@ -111,6 +110,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>${version.surefire.plugin}</version>
                 <configuration>
                     <systemProperties>
                         <property>

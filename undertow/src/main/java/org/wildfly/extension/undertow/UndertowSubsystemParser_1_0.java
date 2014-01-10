@@ -70,12 +70,12 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                         .addAttributes(ServerDefinition.DEFAULT_HOST, ServerDefinition.SERVLET_CONTAINER)
                         .addChild(
                                 builder(AjpListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER)
+                                        .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET)
                                         .addAttributes(ListenerResourceDefinition.OPTIONS)
                         )
                         .addChild(
                                 builder(HttpListenerResourceDefinition.INSTANCE)
-                                        .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER)
+                                        .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING)
                                         .addAttributes(ListenerResourceDefinition.OPTIONS)
                         ).addChild(
                                 builder(HttpsListenerResourceDefinition.INSTANCE)
@@ -103,6 +103,8 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 .addAttribute(ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS)
                                 .addAttribute(ServletContainerDefinition.DEFAULT_BUFFER_CACHE)
                                 .addAttribute(ServletContainerDefinition.STACK_TRACE_ON_ERROR)
+                                .addAttribute(ServletContainerDefinition.USE_LISTENER_ENCODING)
+                                .addAttribute(ServletContainerDefinition.DEFAULT_ENCODING)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
@@ -166,12 +168,12 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                         builder(ReverseProxyHandler.INSTANCE)
                                                 .addAttributes(
                                                         ReverseProxyHandler.CONNECTIONS_PER_THREAD,
-                                                        ReverseProxyHandler.STICKY_SESSION_LIFETIME,
                                                         ReverseProxyHandler.SESSION_COOKIE_NAMES,
                                                         ReverseProxyHandler.PROBLEM_SERVER_RETRY,
                                                         ReverseProxyHandler.MAX_REQUEST_TIME)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
-                                                        .setXmlElementName(Constants.HOST))
+                                                        .setXmlElementName(Constants.HOST)
+                                                .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID))
                                 )
 
 
@@ -193,6 +195,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 )
 
                 )
+                //todo why do we really need this?
                 .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
                     @Override
                     public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {

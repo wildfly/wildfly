@@ -115,8 +115,10 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 /**
@@ -147,8 +149,17 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
     private final static ObjectName EXPR_SUBSYSTEM_NAME = createObjectName(EXPR_DOMAIN + ":subsystem=jmx");
     private final static ObjectName EXPR_BAD_NAME = createObjectName(LEGACY_DOMAIN + ":type=bad");
 
+    private JMXConnector jmxConnector;
+
     public ModelControllerMBeanTestCase() {
         super(JMXExtension.SUBSYSTEM_NAME, new JMXExtension());
+    }
+
+    @After
+    public void cleanup() throws Exception {
+        super.cleanup();
+        IoUtils.safeClose(jmxConnector);
+        jmxConnector = null;
     }
 
     @Test
@@ -1198,6 +1209,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
     }
 
     private MBeanServerConnection setupAndGetConnection(BaseAdditionalInitialization additionalInitialization) throws Exception {
+        Assert.assertNull(jmxConnector);
 
         // Parse the subsystem xml and install into the controller
         String subsystemXml = "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">"
@@ -1221,6 +1233,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         while (true) {
             try {
                 JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceURL, null);
+                this.jmxConnector = jmxConnector;
                 return jmxConnector.getMBeanServerConnection();
             } catch (Exception e) {
                 if (System.currentTimeMillis() >= end) {

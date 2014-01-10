@@ -22,6 +22,7 @@
 package org.jboss.as.cli.parsing;
 
 
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineFormat;
 import org.jboss.as.cli.operation.CommandLineParser;
@@ -56,6 +57,15 @@ public class ParserUtil {
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
         StateParser.parse(commandLine, callbackHandler, InitialState.INSTANCE, strict);
+    }
+
+    public static void parse(String commandLine, final CommandLineParser.CallbackHandler handler, boolean strict,
+            CommandContext ctx) throws CommandFormatException {
+        if(commandLine == null) {
+            return;
+        }
+        final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
+        StateParser.parse(commandLine, callbackHandler, InitialState.INSTANCE, strict, ctx);
     }
 
     public static void parseOperationRequest(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {

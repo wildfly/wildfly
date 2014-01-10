@@ -22,21 +22,23 @@
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
-import org.jboss.as.ejb3.component.session.ClusteringInfo;
+import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.ejb3.annotation.Clustered;
 import org.jboss.jandex.AnnotationInstance;
 
 /**
  * @author Paul Ferraro
  */
-public class ClusteredAnnotationInformationFactory extends ClassAnnotationInformationFactory<Clustered, ClusteringInfo> {
+@Deprecated
+public class ClusteredAnnotationInformationFactory extends ClassAnnotationInformationFactory<Clustered, Void> {
 
     protected ClusteredAnnotationInformationFactory() {
         super(Clustered.class, null);
     }
 
     @Override
-    protected ClusteringInfo fromAnnotation(AnnotationInstance annotationInstance, boolean replacement) {
-        return new ClusteringInfo();
+    protected Void fromAnnotation(AnnotationInstance annotationInstance, boolean replacement) {
+        EjbLogger.ROOT_LOGGER.deprecatedAnnotation(Clustered.class.getSimpleName());
+        return null;
     }
 }

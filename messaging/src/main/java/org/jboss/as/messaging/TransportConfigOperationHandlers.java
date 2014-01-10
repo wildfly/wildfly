@@ -25,16 +25,13 @@ package org.jboss.as.messaging;
 import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.FACTORY_CLASS;
-import static org.jboss.as.messaging.CommonAttributes.HOST;
-import static org.jboss.as.messaging.CommonAttributes.SERVLET_CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.HTTP_ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.HTTP_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.SERVLET_PATH;
-import static org.jboss.as.messaging.CommonAttributes.USE_INVM;
-import static org.jboss.as.messaging.CommonAttributes.USE_SERVLET;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.HashMap;
@@ -49,6 +46,7 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyAcceptorFactory;
 import org.hornetq.core.remoting.impl.netty.NettyConnectorFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -104,6 +102,15 @@ class TransportConfigOperationHandlers {
                 final Map<String, Object> parameters = getParameters(context, config);
                 parameters.put(InVMTransportDefinition.SERVER_ID.getName(), InVMTransportDefinition.SERVER_ID.resolveModelAttribute(context, config).asInt());
                 acceptors.put(acceptorName, new TransportConfiguration(InVMAcceptorFactory.class.getName(), parameters, acceptorName));
+            }
+        }
+        if (params.hasDefined(HTTP_ACCEPTOR)) {
+            for (final Property property : params.get(HTTP_ACCEPTOR).asPropertyList()) {
+                final String acceptorName = property.getName();
+                final ModelNode config = property.getValue();
+                final Map<String, Object> parameters = getParameters(context, config);
+                parameters.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
+                acceptors.put(acceptorName, new TransportConfiguration(NettyAcceptorFactory.class.getName(), parameters, acceptorName));
             }
         }
         configuration.setAcceptorConfigurations(new HashSet<TransportConfiguration>(acceptors.values()));
@@ -169,27 +176,17 @@ class TransportConfigOperationHandlers {
                 connectors.put(connectorName, new TransportConfiguration(InVMConnectorFactory.class.getName(), parameters, connectorName));
             }
         }
-        if (params.hasDefined(SERVLET_CONNECTOR)) {
-            final String serverName = configuration.getName();
-            for (final Property property : params.get(SERVLET_CONNECTOR).asPropertyList()) {
+        if (params.hasDefined(HTTP_CONNECTOR)) {
+            for (final Property property : params.get(HTTP_CONNECTOR).asPropertyList()) {
                 final String connectorName = property.getName();
                 final ModelNode config = property.getValue();
                 final Map<String, Object> parameters = getParameters(context, config);
-                parameters.put(USE_SERVLET, true);
-                parameters.put(SERVLET_PATH, ServletConnectorService.getServletPath(serverName, connectorName));
-                final String binding = config.get(ServletConnectorDefinition.SOCKET_BINDING.getName()).asString();
-                parameters.put(ServletConnectorDefinition.SOCKET_BINDING.getName(), binding);
+
+                final String binding = HTTPConnectorDefinition.SOCKET_BINDING.resolveModelAttribute(context, config).asString();
                 bindings.add(binding);
+                parameters.put(HTTPConnectorDefinition.SOCKET_BINDING.getName(), binding);
+                parameters.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
                 connectors.put(connectorName, new TransportConfiguration(NettyConnectorFactory.class.getName(), parameters, connectorName));
-
-                // for each http connector added, we must add a corresponding special (use-invm) netty acceptor that will be used by the netty servlet
-                String acceptorName = connectorName + "-" + ACCEPTOR;
-                final Map<String, Object> acceptorParams = new HashMap<String, Object>();
-                acceptorParams.put(USE_INVM, true);
-                acceptorParams.put(HOST, ServletConnectorService.getServletEndpoint(serverName, connectorName));
-                TransportConfiguration httpAcceptor = new TransportConfiguration(NettyAcceptorFactory.class.getName(), acceptorParams, acceptorName);
-                configuration.getAcceptorConfigurations().add(httpAcceptor);
-
             }
         }
         configuration.setConnectorConfigurations(connectors);

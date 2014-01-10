@@ -174,10 +174,14 @@ public class RegistryFactoryService<K, V> implements RegistryFactory<K, V>, Serv
 
     @TopologyChanged
     public void topologyChanged(TopologyChangedEvent<Address, Node> event) {
-        if (event.isPre() && !event.getCache().getCacheManager().isCoordinator()) return;
+        if (event.isPre()) return;
+        List<Address> newAddresses = event.getConsistentHashAtEnd().getMembers();
+        // Only run on the coordinator
+        if (!newAddresses.get(0).equals(event.getCache().getCacheManager().getAddress())) return;
+
         Set<Address> addresses = new HashSet<>(event.getConsistentHashAtStart().getMembers());
         // Determine which nodes have left the cache view
-        addresses.removeAll(event.getConsistentHashAtEnd().getMembers());
+        addresses.removeAll(newAddresses);
         final List<Node> nodes = new ArrayList<>(addresses.size());
         for (Address address: addresses) {
             nodes.add(this.factory.createNode(address));

@@ -90,7 +90,9 @@ public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C
             for (Map.Entry<Address, Rsp<R>> entry: responses.entrySet()) {
                 Address address = entry.getKey();
                 Rsp<R> response = entry.getValue();
-                results.put(this.factory.createNode(address), createCommandResponse(response));
+                if (response.wasReceived()) {
+                    results.put(this.factory.createNode(address), createCommandResponse(response));
+                }
             }
 
             return results;
@@ -200,7 +202,7 @@ public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C
     }
 
     private RequestOptions createRequestOptions() {
-        return new RequestOptions(ResponseMode.GET_ALL, this.timeout, false, FILTER);
+        return new RequestOptions(ResponseMode.GET_ALL, this.timeout, false, FILTER, Message.Flag.DONT_BUNDLE);
     }
 
     static <R> CommandResponse<R> createCommandResponse(Rsp<R> response) {

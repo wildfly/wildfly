@@ -34,6 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
@@ -48,6 +49,7 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -96,7 +98,6 @@ public class DeploymentOperationsTestCase extends ContainerResourceMgmtTestBase 
 
     @Test
     public void testDeploymentRollbackOnRuntimeFailure() throws Exception {
-
         final File deploymentOne = new File(deployDir, "deployment-one.jar");
         final File deploymentTwo = new File(deployDir, "deployment-two.jar");
 
@@ -107,7 +108,11 @@ public class DeploymentOperationsTestCase extends ContainerResourceMgmtTestBase 
         composite.get(OP).set(COMPOSITE);
         composite.get(OPERATION_HEADERS).get(ROLLBACK_ON_RUNTIME_FAILURE).set(false);
 
-        final ModelNode steps = composite.get(STEPS).setEmptyList();
+        final ModelNode nested = composite.get(STEPS).setEmptyList().add();
+        nested.get(OP).set(COMPOSITE);
+        nested.get(OP_ADDR).setEmptyList();
+
+        final ModelNode steps = nested.get(STEPS).setEmptyList();
 
         final ModelNode deployOne = steps.add();
         deployOne.get(OP).set(ADD);
@@ -129,7 +134,10 @@ public class DeploymentOperationsTestCase extends ContainerResourceMgmtTestBase 
         final ModelControllerClient client = getModelControllerClient();
         try {
             // Deploy
-            final ModelNode result = client.execute(operation);
+            final ModelNode overallResult = client.execute(operation);
+            Assert.assertTrue(overallResult.asString(), SUCCESS.equals(overallResult.get(OUTCOME).asString()));
+
+            final ModelNode result = overallResult.get(RESULT, "step-1");
             Assert.assertTrue(result.asString(), SUCCESS.equals(result.get(OUTCOME).asString()));
 
             final ModelNode step1 = result.get(RESULT, "step-1");
@@ -146,6 +154,9 @@ public class DeploymentOperationsTestCase extends ContainerResourceMgmtTestBase 
         executeOperation(Util.createEmptyOperation(READ_RESOURCE_OPERATION, DEPLOYMENT_ONE));
         executeOperation(Util.createEmptyOperation(READ_RESOURCE_OPERATION, DEPLOYMENT_TWO));
 
+        //do cleanup
+        executeOperation(Util.createRemoveOperation(DEPLOYMENT_ONE));
+        executeOperation(Util.createRemoveOperation(DEPLOYMENT_TWO));
     }
 
     protected void createDeployment(final File file, final String dependency) throws IOException {

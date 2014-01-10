@@ -48,10 +48,9 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.logging.logmanager.WildFlyLogContextSelector;
 import org.jboss.as.logging.stdio.LogContextStdioContextSelector;
-import org.jboss.logmanager.ClassLoaderLogContextSelector;
 import org.jboss.logmanager.LogContext;
-import org.jboss.logmanager.ThreadLocalLogContextSelector;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -69,9 +68,7 @@ public class LoggingExtension implements Extension {
 
     static final PathElement LOGGING_PROFILE_PATH = PathElement.pathElement(CommonAttributes.LOGGING_PROFILE);
 
-    static final ClassLoaderLogContextSelector CONTEXT_SELECTOR = new ClassLoaderLogContextSelector();
-
-    static final ThreadLocalLogContextSelector THREAD_LOCAL_CONTEXT_SELECTOR = new ThreadLocalLogContextSelector(CONTEXT_SELECTOR);
+    static final WildFlyLogContextSelector CONTEXT_SELECTOR = WildFlyLogContextSelector.Factory.create();
 
     static final GenericSubsystemDescribeHandler DESCRIBE_HANDLER = GenericSubsystemDescribeHandler.create(LoggingChildResourceComparator.INSTANCE);
 
@@ -105,7 +102,7 @@ public class LoggingExtension implements Extension {
         if (!java.util.logging.LogManager.getLogManager().getClass().getName().equals(org.jboss.logmanager.LogManager.class.getName())) {
             throw LoggingMessages.MESSAGES.extensionNotInitialized();
         }
-        LogContext.setLogContextSelector(THREAD_LOCAL_CONTEXT_SELECTOR);
+        LogContext.setLogContextSelector(CONTEXT_SELECTOR);
         // Install STDIO context selector
         StdioContext.setStdioContextSelector(new LogContextStdioContextSelector(StdioContext.getStdioContext()));
 
@@ -141,7 +138,7 @@ public class LoggingExtension implements Extension {
         final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(rootResource);
         registration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, DESCRIBE_HANDLER);
         // Register root sub-models
-        registerSubModels(registration, resolvePathHandler, true, subsystem, context.isRegisterTransformers());
+        registerSubModels(registration, resolvePathHandler, true, subsystem, rootResource, context.isRegisterTransformers());
         // Register logging profile sub-models
         ApplicationTypeConfig atc = new ApplicationTypeConfig(SUBSYSTEM_NAME, CommonAttributes.LOGGING_PROFILE);
         final List<AccessConstraintDefinition> accessConstraints = new ApplicationTypeAccessConstraintDefinition(atc).wrapAsList();
@@ -170,12 +167,12 @@ public class LoggingExtension implements Extension {
     }
 
     private void registerLoggingProfileSubModels(final ManagementResourceRegistration registration, final ResolvePathHandler resolvePathHandler) {
-        registerSubModels(registration, resolvePathHandler, false, null, false);
+        registerSubModels(registration, resolvePathHandler, false, null, null, false);
     }
 
     private void registerSubModels(final ManagementResourceRegistration registration, final ResolvePathHandler resolvePathHandler,
                                    final boolean includeLegacyAttributes, final SubsystemRegistration subsystem,
-                                   final boolean registerTransformers) {
+                                   final LoggingRootResource subsystemResourceDefinition, final boolean registerTransformers) {
         final RootLoggerResourceDefinition rootLoggerResourceDefinition = new RootLoggerResourceDefinition(includeLegacyAttributes);
         registration.registerSubModel(rootLoggerResourceDefinition);
 
@@ -218,6 +215,7 @@ public class LoggingExtension implements Extension {
                     }
 
                     // Register the transformers
+                    subsystemResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     rootLoggerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     loggerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);
                     asyncHandlerResourceDefinition.registerTransformers(modelVersion, subsystemBuilder, loggingProfileBuilder);

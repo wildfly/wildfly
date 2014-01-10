@@ -129,8 +129,14 @@
                             "allowed" => [
                                 "UNKNOWN",
                                 "FailingConnectionOnly",
+                                "InvalidIdleConnections",
                                 "IdleConnections",
-                                "EntirePool"
+                                "Gracefully",
+                                "EntirePool",
+                                "AllInvalidIdleConnections",
+                                "AllIdleConnections",
+                                "AllGracefully",
+                                "AllConnections"
                             ]
                         },
                         "background-validation" => {

@@ -22,6 +22,7 @@
 package org.jboss.as.controller.operations.global;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -131,47 +132,79 @@ public class GlobalOperationHandlers {
             FAKE_OPERATION = resolve;
         }
 
+        private final FilteredData filteredData;
+
+        protected AbstractMultiTargetHandler() {
+            this(null);
+        }
+
+        protected AbstractMultiTargetHandler(FilteredData filteredData) {
+            this.filteredData = filteredData;
+        }
+
+        protected FilteredData getFilteredData() {
+            return filteredData;
+        }
+
+
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+
             // In case if it's a multiTarget operation, resolve the address first
             // This only works for model resources, which can be resolved into a concrete addresses
             if (address.isMultiTarget()) {
+                final FilteredData localFilteredData = filteredData == null ? new FilteredData(PathAddress.EMPTY_ADDRESS) : filteredData;
                 // The final result should be a list of executed operations
                 final ModelNode result = context.getResult().setEmptyList();
                 // Trick the context to give us the model-root
-                context.addStep(new ModelNode(), FAKE_OPERATION.clone(), new ModelAddressResolver(operation, result, new OperationStepHandler() {
+                context.addStep(new ModelNode(), FAKE_OPERATION.clone(), new ModelAddressResolver(operation, result, localFilteredData,
+                        new OperationStepHandler() {
                     @Override
                     public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                        doExecute(context, operation);
+                        doExecute(context, operation, localFilteredData);
                     }
                 }), OperationContext.Stage.MODEL, true);
-                context.stepCompleted();
+                context.completeStep(new OperationContext.ResultHandler() {
+                    @Override
+                    public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
+                        if (resultAction == OperationContext.ResultAction.KEEP && localFilteredData.hasFilteredData()) {
+                            // Report on filtering
+                            context.getResponseHeaders().get(ACCESS_CONTROL).set(localFilteredData.toModelNode());
+                        }
+                    }
+                });
             } else {
-                doExecute(context, operation);
+                doExecute(context, operation, filteredData);
             }
         }
 
         /**
          * Execute the actual operation if it is not addressed to multiple targets.
          *
-         * @param context   the operation context
-         * @param operation the original operation
+         *
+         * @param context      the operation context
+         * @param operation    the original operation
+         * @param filteredData tracking object for filtered data
          * @throws OperationFailedException
          */
-        abstract void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException;
+        abstract void doExecute(OperationContext context, ModelNode operation, FilteredData filteredData) throws OperationFailedException;
     }
 
     public static final class ModelAddressResolver implements OperationStepHandler {
 
         private final ModelNode operation;
         private final ModelNode result;
+        private final FilteredData filteredData;
         private final OperationStepHandler handler; // handler bypassing further wildcard resolution
 
-        public ModelAddressResolver(final ModelNode operation, final ModelNode result, final OperationStepHandler delegate) {
+        public ModelAddressResolver(final ModelNode operation, final ModelNode result,
+                                    final FilteredData filteredData,
+                                    final OperationStepHandler delegate) {
             this.operation = operation;
             this.result = result;
             this.handler = delegate;
+            this.filteredData = filteredData;
         }
 
         /**
@@ -208,8 +241,11 @@ public class GlobalOperationHandlers {
                 execute(address, base, context);
             } catch (UnauthorizedException e) {
                 // equivalent to the resource not existing
+                // Just report the failure to the filter and complete normally
+                filteredData.addReadRestrictedResource(base);
             } catch (NoSuchResourceException e) {
-                // ignore to ensure we don't leak the resource
+                // Just report the failure to the filter and complete normally
+                filteredData.addAccessRestrictedResource(base);
             }
         }
 

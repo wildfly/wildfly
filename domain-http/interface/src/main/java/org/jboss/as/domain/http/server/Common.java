@@ -78,7 +78,7 @@ public class Common {
                 response.writeBase64(bout);
                 byte[] bytes = bout.toByteArray();
 
-                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, APPLICATION_DMR_ENCODED+ ";" + UTF_8);
+                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, APPLICATION_DMR_ENCODED+ "; charset=" + UTF_8);
                 exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
                 exchange.setResponseCode(errorCode);
 
@@ -103,7 +103,7 @@ public class Common {
 
             String msgString = stringWriter.toString();
             byte[] bytes = msgString.getBytes();
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, TEXT_PLAIN + ";" + UTF_8);
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, TEXT_PLAIN + "; charset=" + UTF_8);
             exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
             exchange.setResponseCode(errorCode);
 

@@ -103,8 +103,12 @@ public class PureTestCase extends ContainerResourceMgmtTestBase {
         Set<String> ids = repository.getResourceAdapters();
 
         assertNotNull(ids);
-        //On a running server it's 3 beacause HornetQResourceAdapter is always present  + ra itself and 1 actrivation from DMR
-        assertEquals(1, ids.size());
+        int pureInflowListener = 0;
+        for (String id : ids) {
+            if (id.indexOf("PureInflow") != -1) 
+                pureInflowListener++;
+        }
+        assertEquals(1, pureInflowListener);
 
         for (String piId : ids) {
             assertNotNull(piId);

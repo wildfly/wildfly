@@ -35,11 +35,11 @@
         <module name="org.jboss.as.controller"/>
         <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.security"/>
+        <module name="org.jboss.as.security" optional="true"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.xnio"/>
         <module name="org.jboss.xnio.nio" services="import"/>
-        <module name="org.picketbox" />
+        <module name="org.picketbox" optional="true"/>
     </dependencies>
 </module>

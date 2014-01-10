@@ -25,7 +25,6 @@ import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.JGroupsMessages;
-import org.jboss.as.clustering.jgroups.MuxChannel;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -85,8 +84,7 @@ public class ChannelService implements Service<Channel>, ChannelListener {
     public void stop(StopContext context) {
         if (this.channel != null) {
             this.channel.removeChannelListener(this);
-            // Fixes WFLY-2458 using a hack to workaround ISPN-3697.
-            ((MuxChannel) this.channel).destroy();
+            this.channel.close();
         }
         this.channel = null;
     }

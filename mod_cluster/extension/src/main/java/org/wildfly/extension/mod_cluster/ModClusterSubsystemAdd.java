@@ -23,6 +23,7 @@
 package org.wildfly.extension.mod_cluster;
 
 import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.CAPACITY;
+import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.PROPERTY;
 import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.TYPE;
 import static org.wildfly.extension.mod_cluster.LoadMetricDefinition.WEIGHT;
 import static org.wildfly.extension.mod_cluster.ModClusterConfigResourceDefinition.ADVERTISE;
@@ -61,12 +62,14 @@ import static org.wildfly.extension.mod_cluster.ModClusterSSLResourceDefinition.
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -91,23 +94,24 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.util.propertyeditor.PropertyEditors;
 
 /**
  * The managed subsystem add update.
  *
  * @author Jean-Frederic Clere
  * @author Tomaz Cerar
+ * @author Radoslav Husar
+ * @version Jan 2014
  */
-class ModClusterSubsystemAdd extends AbstractAddStepHandler {
+class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     private static final OperationContext.AttachmentKey<Boolean> SUBSYSTEM_ADD_KEY = OperationContext.AttachmentKey.create(Boolean.class);
 
     static final ModClusterSubsystemAdd INSTANCE = new ModClusterSubsystemAdd();
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                  ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-
+    public void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         ServiceTarget target = context.getServiceTarget();
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
         final ModelNode modelConfig = fullModel.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair());
@@ -115,15 +119,21 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
 
         newControllers.add(target.addService(ContainerEventHandlerService.CONFIG_SERVICE_NAME, new ValueService<>(new ImmediateValue<>(config))).setInitialMode(Mode.ACTIVE).install());
 
-        final LoadBalanceFactorProvider loadProvider = getModClusterLoadProvider(context, modelConfig);
+        // Construct LoadBalanceFactorProvider and call pluggable boot time handlers.
+        Set<LoadMetric> metrics = new HashSet<LoadMetric>();
+        final LoadBalanceFactorProvider loadProvider = getModClusterLoadProvider(metrics, context, modelConfig);
+
+        for (BoottimeHandlerProvider handler : ServiceLoader.load(BoottimeHandlerProvider.class, BoottimeHandlerProvider.class.getClassLoader())) {
+            handler.performBoottime(metrics, context, operation, model, verificationHandler, newControllers);
+        }
+
         final String connector = CONNECTOR.resolveModelAttribute(context, modelConfig).asString();
         InjectedValue<SocketBindingManager> socketBindingManager = new InjectedValue<SocketBindingManager>();
         ContainerEventHandlerService service = new ContainerEventHandlerService(config, loadProvider, socketBindingManager);
         final ServiceBuilder<?> builder = AsynchronousService.addService(target, ContainerEventHandlerService.SERVICE_NAME, service, true, true)
                 .addDependency(SocketBindingManager.SOCKET_BINDING_MANAGER, SocketBindingManager.class, socketBindingManager)
                 .addListener(verificationHandler)
-                .setInitialMode(Mode.ACTIVE)
-        ;
+                .setInitialMode(Mode.ACTIVE);
         final ModelNode bindingRefNode = ADVERTISE_SOCKET.resolveModelAttribute(context, modelConfig);
         final String bindingRef = bindingRefNode.isDefined() ? bindingRefNode.asString() : null;
         if (bindingRef != null) {
@@ -244,7 +254,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         return config;
     }
 
-    private LoadBalanceFactorProvider getModClusterLoadProvider(final OperationContext context, ModelNode model) throws OperationFailedException {
+    private LoadBalanceFactorProvider getModClusterLoadProvider(final Set<LoadMetric> metrics, final OperationContext context, ModelNode model) throws OperationFailedException {
         LoadBalanceFactorProvider load = null;
         if (model.hasDefined(CommonAttributes.SIMPLE_LOAD_PROVIDER_FACTOR)) {
             // TODO it seems we don't support that stuff.
@@ -254,7 +264,6 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
             load = myload;
         }
 
-        Set<LoadMetric> metrics = new HashSet<LoadMetric>();
         if (model.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair()).isDefined()) {
             final ModelNode node = model.get(ModClusterExtension.DYNAMIC_LOAD_PROVIDER_PATH.getKeyValuePair());
             int decayFactor = DynamicLoadProviderDefinition.DECAY.resolveModelAttribute(context, model).asInt();
@@ -288,6 +297,8 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
             ModelNode node = p.getValue();
             double capacity = CAPACITY.resolveModelAttribute(context, node).asDouble();
             int weight = WEIGHT.resolveModelAttribute(context, node).asInt();
+            Map<String, String> propertyMap = PROPERTY.unwrap(context, node);
+
             Class<? extends LoadMetric> loadMetricClass = null;
             if (node.hasDefined(CommonAttributes.TYPE)) {
                 String type = TYPE.resolveModelAttribute(context, node).asString();
@@ -307,6 +318,22 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
                     LoadMetric metric = loadMetricClass.newInstance();
                     metric.setCapacity(capacity);
                     metric.setWeight(weight);
+
+                    // Apply Java Bean properties if any are set
+                    if (propertyMap != null && !propertyMap.isEmpty()) {
+                        Properties props = new Properties();
+                        props.putAll(propertyMap);
+
+                        try {
+                            PropertyEditors.mapJavaBeanProperties(metric, props, true);
+                        } catch (Exception ex) {
+                            ROOT_LOGGER.errorApplyingMetricProperties(ex, loadMetricClass.getCanonicalName());
+
+                            // Do not add this incomplete metric.
+                            continue;
+                        }
+                    }
+
                     metrics.add(metric);
                 } catch (InstantiationException e) {
                     ROOT_LOGGER.errorAddingMetrics(e);

@@ -830,21 +830,38 @@ public class ServerOperationResolver {
 
     private Map<Set<ServerIdentity>, ModelNode> resolveCoreServiceOperations(ModelNode operation, PathAddress address, ModelNode domain, ModelNode host) {
         if (address.getElement(0).getValue().equals(MANAGEMENT)){
-            ModelNode op = operation.clone();
-            if (address.size() == 3) {
-                if (address.getElement(1).getKey().equals(ACCESS) && address.getElement(1).getValue().equals(AUDIT)) {
-                    String key = address.getElement(2).getKey();
-                    if (key.equals(LOGGER)) {
-                        //logger=>audit-log is only for the HC
-                        return Collections.emptyMap();
-                    } else if (key.equals(SERVER_LOGGER)) {
-                        //server-logger=audit-log gets sent to the servers as logger=>audit-log
-                        PathAddress newAddr = address.subAddress(0, 2);
-                        newAddr = newAddr.append(PathElement.pathElement(LOGGER, address.getElement(2).getValue()));
-                        op.get(OP_ADDR).set(newAddr.toModelNode());
+            if (address.size() >= 2 && address.getElement(1).getKey().equals(ACCESS) && address.getElement(1).getValue().equals(AUDIT)) {
+                ModelNode op = operation.clone();
+                op.get(OP_ADDR).set(address.toModelNode());
+                if (address.size() >= 3) {
+                    PathAddress newAddr = PathAddress.EMPTY_ADDRESS;
+                    for (PathElement element : address) {
+                        if (element.getKey().equals(LOGGER)) {
+                            //logger=>audit-log is only for the HC
+                            return Collections.emptyMap();
+                        } else {
+                            PathElement myElement = element;
+                            if (myElement.getKey().equals(SERVER_LOGGER)) {
+                                //server-logger=audit-log gets sent to the servers as logger=>audit-log
+                                myElement = PathElement.pathElement(LOGGER, element.getValue());
+                            }
+                            newAddr = newAddr.append(myElement);
+                        }
                     }
-                    return Collections.singletonMap(getAllRunningServers(host, localHostName, serverProxies), op);
+                    op.get(OP_ADDR).set(newAddr.toModelNode());
                 }
+//                    String key = address.getElement(2).getKey();
+//                    if (key.equals(LOGGER)) {
+//                        //logger=>audit-log is only for the HC
+//                        return Collections.emptyMap();
+//                    } else if (key.equals(SERVER_LOGGER)) {
+//                        //server-logger=audit-log gets sent to the servers as logger=>audit-log
+//                        PathAddress newAddr = address.subAddress(0, 2);
+//                        newAddr = newAddr.append(PathElement.pathElement(LOGGER, address.getElement(2).getValue()));
+//                        op.get(OP_ADDR).set(newAddr.toModelNode());
+//                    }
+//                }
+                return Collections.singletonMap(getAllRunningServers(host, localHostName, serverProxies), op);
             }
             // TODO does server need to know about other changes?
         }

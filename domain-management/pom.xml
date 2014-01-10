@@ -29,15 +29,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-domain-management</artifactId>
     
-    <properties>
-        <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
-    </properties>
 
     <name>WildFly: Domain Management</name>
 
@@ -47,12 +44,13 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
+                    <!-- todo !-->
                     <includes>
                         <include>**/*TestCase.java</include>
                         <include>**/*TestSuite.java</include>
                     </includes>
                     <enableAssertions>false</enableAssertions>
-                    
+
                     <additionalClasspathElements>
                         <additionalClasspathElement>${project.basedir}/../src/test/resources</additionalClasspathElement>
                     </additionalClasspathElements>                                        
@@ -65,8 +63,7 @@
         <dependency>
             <groupId>org.apache.directory.server</groupId>
             <artifactId>apacheds-all</artifactId>
-            <version>${version.org.apache.ds}</version>
-            <scope>test</scope>                                            
+            <scope>test</scope>
         </dependency>    
     
         <dependency>

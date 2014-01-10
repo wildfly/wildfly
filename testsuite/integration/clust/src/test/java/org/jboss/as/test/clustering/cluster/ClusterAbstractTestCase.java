@@ -21,6 +21,9 @@
  */
 package org.jboss.as.test.clustering.cluster;
 
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -50,6 +53,14 @@ import org.junit.BeforeClass;
 public abstract class ClusterAbstractTestCase implements ClusteringTestConstants {
 
     protected static final Logger log = Logger.getLogger(ClusterAbstractTestCase.class);
+    private static final Map<String, String> NODE_TO_CONTAINER = new TreeMap<>();
+    private static final Map<String, String> NODE_TO_DEPLOYMENT = new TreeMap<>();
+    static {
+        NODE_TO_CONTAINER.put(NODE_1, CONTAINER_1);
+        NODE_TO_CONTAINER.put(NODE_2, CONTAINER_2);
+        NODE_TO_DEPLOYMENT.put(NODE_1, DEPLOYMENT_1);
+        NODE_TO_DEPLOYMENT.put(NODE_2, DEPLOYMENT_2);
+    }
 
     @ArquillianResource
     protected ContainerController controller;
@@ -80,36 +91,28 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
 
     // Node and deployment lifecycle management convenience methods
 
-    protected void start(String container) {
-        NodeUtil.start(controller, container);
-    }
-
-    protected void start(String[] containers) {
+    protected void start(String... containers) {
         NodeUtil.start(controller, containers);
     }
 
-    protected void stop(String container) {
-        NodeUtil.stop(controller, container);
-    }
-
-    protected void stop(String[] containers) {
+    protected void stop(String... containers) {
         NodeUtil.stop(controller, containers);
     }
 
-    protected void deploy(String deployment) {
-        NodeUtil.deploy(deployer, deployment);
-    }
-
-    protected void deploy(String[] deployments) {
+    protected void deploy(String... deployments) {
         NodeUtil.deploy(deployer, deployments);
     }
 
-    protected void undeploy(String deployments) {
+    protected void undeploy(String... deployments) {
         NodeUtil.undeploy(deployer, deployments);
     }
 
-    protected void undeploy(String[] deployments) {
-        NodeUtil.undeploy(deployer, deployments);
+    protected String findDeployment(String node) {
+        return NODE_TO_DEPLOYMENT.get(node);
+    }
+
+    protected String findContainer(String node) {
+        return NODE_TO_CONTAINER.get(node);
     }
 
     /**

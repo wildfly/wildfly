@@ -26,11 +26,15 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
-import static org.jboss.as.messaging.Attribute.HOST;
+import static org.jboss.as.messaging.Attribute.HTTP_LISTENER;
 import static org.jboss.as.messaging.Attribute.SOCKET_BINDING;
+import static org.jboss.as.messaging.CommonAttributes.ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.CONNECTOR;
-import static org.jboss.as.messaging.CommonAttributes.SERVLET_CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.HTTP_ACCEPTOR;
+import static org.jboss.as.messaging.CommonAttributes.HTTP_CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
+import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 
 import java.util.Collections;
@@ -48,7 +52,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a>
  *
  */
-public class Messaging20SubsystemParser extends Messaging13SubsystemParser {
+public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
 
     private static final Messaging20SubsystemParser INSTANCE = new Messaging20SubsystemParser();
 
@@ -56,15 +60,15 @@ public class Messaging20SubsystemParser extends Messaging13SubsystemParser {
         return INSTANCE;
     }
 
-    protected Messaging20SubsystemParser() {
+    private Messaging20SubsystemParser() {
     }
 
+    @Override
     void processConnectors(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             String name = null;
             String socketBinding = null;
             String serverId = null;
-            String host = null;
 
             int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
@@ -74,20 +78,13 @@ public class Messaging20SubsystemParser extends Messaging13SubsystemParser {
                     case NAME: {
                         name = attrValue;
                         break;
-                    }
-                    case SOCKET_BINDING: {
+                    } case SOCKET_BINDING: {
                         socketBinding = attrValue;
                         break;
-                    }
-                    case SERVER_ID: {
+                    } case SERVER_ID: {
                         serverId = attrValue;
                         break;
-                    }
-                    case HOST: {
-                        host = attrValue;
-                        break;
-                    }
-                    default: {
+                    } default: {
                         throw ParseUtils.unexpectedAttribute(reader, i);
                     }
                 }
@@ -117,23 +114,19 @@ public class Messaging20SubsystemParser extends Messaging13SubsystemParser {
                     operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
                     parseTransportConfiguration(reader, operation, false);
                     break;
-                } case SERVLET_CONNECTOR: {
-                    if (socketBinding == null) {
-                        throw missingRequired(reader, Collections.singleton(SOCKET_BINDING));
-                    }
-                    if (host == null) {
-                        throw missingRequired(reader, Collections.singleton(HOST));
-                    }
-                    connectorAddress.add(SERVLET_CONNECTOR, name);
-                    ServletConnectorDefinition.SOCKET_BINDING.parseAndSetParameter(socketBinding, operation, reader);
-                    ServletConnectorDefinition.HOST.parseAndSetParameter(host, operation, reader);
-                    parseTransportConfiguration(reader, operation, false);
-                    break;
                 } case IN_VM_CONNECTOR: {
                     connectorAddress.add(IN_VM_CONNECTOR, name);
                     if (serverId != null) {
                         InVMTransportDefinition.SERVER_ID.parseAndSetParameter(serverId, operation, reader);
                     }
+                    parseTransportConfiguration(reader, operation, false);
+                    break;
+                } case HTTP_CONNECTOR: {
+                    if (socketBinding == null) {
+                        throw missingRequired(reader, Collections.singleton(SOCKET_BINDING));
+                    }
+                    connectorAddress.add(HTTP_CONNECTOR, name);
+                    HTTPConnectorDefinition.SOCKET_BINDING.parseAndSetParameter(socketBinding, operation, reader);
                     parseTransportConfiguration(reader, operation, false);
                     break;
                 } default: {
@@ -142,6 +135,84 @@ public class Messaging20SubsystemParser extends Messaging13SubsystemParser {
             }
 
             operation.get(OP_ADDR).set(connectorAddress);
+            updates.add(operation);
+        }
+    }
+
+    @Override
+    void processAcceptors(XMLExtendedStreamReader reader, ModelNode address, List<ModelNode> updates) throws XMLStreamException {
+        while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            String name = null;
+            String socketBinding = null;
+            String serverId = null;
+            String httpListener = null;
+
+            int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String attrValue = reader.getAttributeValue(i);
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case NAME: {
+                        name = attrValue;
+                        break;
+                    } case SOCKET_BINDING: {
+                        socketBinding = attrValue;
+                        break;
+                    } case SERVER_ID: {
+                        serverId = attrValue;
+                        break;
+                    } case HTTP_LISTENER: {
+                        httpListener = attrValue;
+                        break;
+                    } default: {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+            if(name == null) {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.NAME));
+            }
+
+            final ModelNode acceptorAddress = address.clone();
+            final ModelNode operation = new ModelNode();
+            operation.get(OP).set(ADD);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case ACCEPTOR: {
+                    acceptorAddress.add(ACCEPTOR, name);
+                    if(socketBinding != null) operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
+                    parseTransportConfiguration(reader, operation, true);
+                    break;
+                } case NETTY_ACCEPTOR: {
+                    acceptorAddress.add(REMOTE_ACCEPTOR, name);
+                    if(socketBinding == null) {
+                        throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
+                    }
+                    operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
+                    parseTransportConfiguration(reader, operation, false);
+                    break;
+                } case IN_VM_ACCEPTOR: {
+                    acceptorAddress.add(IN_VM_ACCEPTOR, name);
+                    if (serverId != null) {
+                        InVMTransportDefinition.SERVER_ID.parseAndSetParameter(serverId, operation, reader);
+                    }
+                    parseTransportConfiguration(reader, operation, false);
+                    break;
+                } case HTTP_ACCEPTOR: {
+                    if (httpListener == null) {
+                        throw missingRequired(reader, Collections.singleton(HTTP_LISTENER));
+                    }
+                    acceptorAddress.add(HTTP_ACCEPTOR, name);
+                    HTTPAcceptorDefinition.HTTP_LISTENER.parseAndSetParameter(httpListener, operation, reader);
+                    parseTransportConfiguration(reader, operation, false);
+                    break;
+                } default: {
+                    throw ParseUtils.unexpectedElement(reader);
+                }
+            }
+            //
+            operation.get(OP_ADDR).set(acceptorAddress);
             updates.add(operation);
         }
     }

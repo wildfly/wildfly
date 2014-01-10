@@ -6,7 +6,6 @@ http://wildfly.org
 * Small Footprint
 * Modular Design
 * Unified Configuration and Management
-* OSGi
 
 And of course Java EE!
 
@@ -25,7 +24,7 @@ On Windows use the corresponding batch script
 
 > build.bat
 
-If you already have Maven 3.0.4 (or newer) installed you can use it directly
+If you already have Maven 3.1.0 (or newer) installed you can use it directly
 
 > mvn install
 

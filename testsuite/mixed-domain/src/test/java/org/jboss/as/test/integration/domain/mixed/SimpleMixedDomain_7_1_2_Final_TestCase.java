@@ -35,4 +35,9 @@ public class SimpleMixedDomain_7_1_2_Final_TestCase extends SimpleMixedDomainTes
     public static void beforeClass() {
         MixedDomainTestSuite.getSupport(MixedDomain_7_1_2_Final_TestSuite.class);
     }
+
+    @Override
+    protected String getProfile() {
+        return "full-ha-7.1.x";
+    }
 }

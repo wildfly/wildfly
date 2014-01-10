@@ -22,17 +22,19 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import java.security.AccessController;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 
+import org.jboss.as.clustering.concurrent.Scheduler;
+import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
-import org.wildfly.clustering.web.infinispan.Evictor;
-import org.wildfly.clustering.web.infinispan.Scheduler;
+import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.security.manager.GetAccessControlContextAction;
 
@@ -43,7 +45,7 @@ import org.wildfly.security.manager.GetAccessControlContextAction;
  */
 public class SessionEvictionScheduler implements Scheduler<ImmutableSession> {
 
-    final Queue<String> evictionQueue = new ConcurrentLinkedQueue<>();
+    private final Set<String> evictionQueue = new LinkedHashSet<>();
     final Batcher batcher;
     final Evictor<String> evictor;
     private final ExecutorService executor;
@@ -66,17 +68,20 @@ public class SessionEvictionScheduler implements Scheduler<ImmutableSession> {
 
     @Override
     public void cancel(ImmutableSession session) {
-        this.evictionQueue.remove(session.getId());
+        synchronized (this.evictionQueue) {
+            this.evictionQueue.remove(session.getId());
+        }
     }
 
     @Override
     public void schedule(ImmutableSession session) {
-        this.evictionQueue.add(session.getId());
-        // Trigger eviction of oldest sessions if necessary
-        while (this.evictionQueue.size() > this.maxSize) {
-            String id = this.evictionQueue.poll();
-            if (id != null) {
-                this.executor.submit(new EvictionTask(id));
+        synchronized (this.evictionQueue) {
+            this.evictionQueue.add(session.getId());
+            // Trigger eviction of oldest session if necessary
+            if (this.evictionQueue.size() > this.maxSize) {
+                Iterator<String> sessions = this.evictionQueue.iterator();
+                this.executor.submit(new EvictionTask(sessions.next()));
+                sessions.remove();
             }
         }
     }
@@ -99,6 +104,7 @@ public class SessionEvictionScheduler implements Scheduler<ImmutableSession> {
             Batch batch = SessionEvictionScheduler.this.batcher.startBatch();
             boolean success = false;
             try {
+                InfinispanWebLogger.ROOT_LOGGER.tracef("Passivating session %s", this.id);
                 SessionEvictionScheduler.this.evictor.evict(this.id);
                 success = true;
             } finally {

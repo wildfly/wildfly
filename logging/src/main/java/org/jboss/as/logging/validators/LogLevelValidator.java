@@ -57,6 +57,7 @@ public final class LogLevelValidator extends ModelTypeValidator implements Allow
             org.jboss.logmanager.Level.FINEST,
             org.jboss.logmanager.Level.INFO,
             org.jboss.logmanager.Level.OFF,
+            org.jboss.logmanager.Level.SEVERE,
             org.jboss.logmanager.Level.TRACE,
             org.jboss.logmanager.Level.WARN,
             org.jboss.logmanager.Level.WARNING

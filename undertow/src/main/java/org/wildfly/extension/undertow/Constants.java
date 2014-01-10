@@ -122,8 +122,11 @@ public interface Constants {
     String DEFAULT_BUFFER_CACHE = "default-buffer-cache";
 
     String RELATIVE_TO = "relative-to";
+    String REDIRECT_SOCKET = "redirect-socket";
     String DIRECTORY = "directory";
     String STACK_TRACE_ON_ERROR = "stack-trace-on-error";
+    String DEFAULT_ENCODING = "default-encoding";
+    String USE_LISTENER_ENCODING = "use-listener-encoding";
     String NONE = "none";
     String PROBLEM_SERVER_RETRY = "problem-server-retry";
     String STICKY_SESSION_LIFETIME = "sticky-session-lifetime";

@@ -35,16 +35,22 @@ public class CliShutdownHook {
         void shutdown();
     }
 
+    private static volatile boolean shuttingDown = false;
+
     private static final List<Handler> handlers = new ArrayList<Handler>();
 
     static {
         SecurityActions.addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                for(Handler h : handlers) {
-                    try {
-                        h.shutdown();
-                    } catch(Throwable t) {}
+                synchronized(handlers) {
+                    shuttingDown = true;
+                    for (Handler h : handlers) {
+                        try {
+                            h.shutdown();
+                        } catch (Throwable t) {
+                        }
+                    }
                 }
             }
         }));
@@ -52,6 +58,18 @@ public class CliShutdownHook {
     }
 
     public static void add(Handler handler) {
-        handlers.add(handler);
+        synchronized(handlers) {
+            if (!shuttingDown) {
+                handlers.add(handler);
+            }
+        }
+    }
+
+    public static void remove(Handler handler) {
+        synchronized(handlers) {
+            if (!shuttingDown) {
+                handlers.remove(handler);
+            }
+        }
     }
 }

@@ -45,6 +45,7 @@ import org.jboss.as.process.CommandLineArgumentUsageImpl;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.process.stdin.Base64InputStream;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.logging.MDC;
 import org.jboss.logmanager.Level;
@@ -84,7 +85,7 @@ public final class Main {
 
         final byte[] authKey = new byte[16];
         try {
-            StreamUtils.readFully(System.in, authKey);
+            StreamUtils.readFully(new Base64InputStream(System.in), authKey);
         } catch (IOException e) {
             System.err.println(MESSAGES.failedToReadAuthenticationKey(e));
             fail();
@@ -540,7 +541,21 @@ public final class Main {
                     arg = arg.substring(2);
                     String[] split = arg.split("=");
                     if (!hostSystemProperties.containsKey(split[0])) {
-                        String val = split.length == 2 ? split[1] : null;
+                        String val;
+                        if (split.length == 1) {
+                            val = null;
+                        } else if (split.length == 2) {
+                            val = split[1];
+                        } else {
+                            //Things like -Djava.security.policy==/Users/kabir/tmp/permit.policy will end up here, and the extra '=' needs to be part of the value,
+                            //see http://docs.oracle.com/javase/6/docs/technotes/guides/security/PolicyFiles.html
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 2 ; i < split.length ; i++) {
+                                sb.append("=");
+                            }
+                            sb.append(split[split.length - 1]);
+                            val = sb.toString();
+                        }
                         hostSystemProperties.put(split[0], val);
                     }
                 }

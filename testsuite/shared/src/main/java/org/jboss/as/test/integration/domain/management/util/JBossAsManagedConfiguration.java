@@ -71,7 +71,7 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String modulePath = System.getProperty("module.path");
 
-    private String javaVmArguments = "-Xmx512m -XX:MaxPermSize=128m";
+    private String javaVmArguments = System.getProperty("server.jvm.args", "-Xmx512m -XX:MaxPermSize=128m");
 
     private int startupTimeoutInSeconds = TimeoutUtil.adjust(120);
 
@@ -124,12 +124,12 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
     public void validate() throws ConfigurationException {
         super.validate();
 
-        Validate.configurationDirectoryExists(jbossHome, "jbossHome must exist");
+        Validate.configurationDirectoryExists(jbossHome, "jbossHome must exist at " + jbossHome);
         if (javaHome != null) {
-            Validate.configurationDirectoryExists(javaHome, "javaHome must exist");
+            Validate.configurationDirectoryExists(javaHome, "javaHome must exist at " + javaHome);
         }
         if (controllerJavaHome != null) {
-            Validate.configurationDirectoryExists(javaHome, "controllerJavaHome must exist");
+            Validate.configurationDirectoryExists(controllerJavaHome, "controllerJavaHome must exist at " + controllerJavaHome);
         }
     }
 

@@ -32,19 +32,21 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
+import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 
 /**
  * @author Stefabo Maestri
  */
 public class ConnectionPropertyDefinition extends SimpleResourceDefinition {
-    protected static final PathElement PATH_DRIVER = PathElement.pathElement(CONNECTION_PROPERTIES.getName());
+    protected static final PathElement PATH_CONNECTION_PROPERTY = PathElement.pathElement(CONNECTION_PROPERTIES.getName());
     static final ConnectionPropertyDefinition INSTANCE = new ConnectionPropertyDefinition(false);
     static final ConnectionPropertyDefinition DEPLOYED_INSTANCE = new ConnectionPropertyDefinition(true);
 
     private final boolean deployed;
 
     private ConnectionPropertyDefinition(final boolean deployed) {
-        super(PATH_DRIVER,
+        super(PATH_CONNECTION_PROPERTY,
                 DataSourcesExtension.getResourceDescriptionResolver("data-source", "connection-properties"),
                 deployed ? null : ConnectionPropertyAdd.INSTANCE,
                 deployed ? null : ConnectionPropertyRemove.INSTANCE);
@@ -62,5 +64,13 @@ public class ConnectionPropertyDefinition extends SimpleResourceDefinition {
         }
 
     }
+
+    static void registerTransformers111(ResourceTransformationDescriptionBuilder parentBuilder) {
+            parentBuilder.addChildResource(PATH_CONNECTION_PROPERTY)
+             .getAttributeBuilder()
+                    .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.CONNECTION_PROPERTY_VALUE)
+                    .end();
+
+        }
 
 }

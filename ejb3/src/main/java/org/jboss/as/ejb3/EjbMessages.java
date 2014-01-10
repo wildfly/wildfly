@@ -64,7 +64,6 @@ import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
-import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
@@ -2224,51 +2223,66 @@ public interface EjbMessages {
     @Message(id = 14525, value = "Transaction propagation over IIOP is not supported")
     RemoteException transactionPropagationNotSupported();
 
+    @Deprecated
     @Message(id = 14526, value = "Cannot call method %s in afterCompletion callback")
     IllegalStateException cannotCallMethodInAfterCompletion(String methodName);
 
+    @Deprecated
     @Message(id = 14528, value = "%s is already associated with serialization group %s")
     IllegalStateException existingSerializationGroup(Object key, Object group);
 
+    @Deprecated
     @Message(id = 14529, value = "%s is not compatible with serialization group %s")
     IllegalStateException incompatibleSerializationGroup(Object object, Object group);
 
+    @Deprecated
     @Message(id = 14530, value = "Cache entry %s is in use")
     IllegalStateException cacheEntryInUse(Object entry);
 
+    @Deprecated
     @Message(id = 14531, value = "Cache entry %s is not in use")
     IllegalStateException cacheEntryNotInUse(Object entry);
 
+    @Deprecated
     @Message(id = 14532, value = "Failed to acquire lock on %s")
     RuntimeException lockAcquisitionInterrupted(@Cause Throwable cause, Object id);
 
+    @Deprecated
     @Message(id = 14533, value = "%s is already a member of serialization group %s")
     IllegalStateException duplicateSerializationGroupMember(Object id, Object groupId);
 
+    @Deprecated
     @Message(id = 14534, value = "%s is not a member of serialization group %s")
     IllegalStateException missingSerializationGroupMember(Object id, Object groupId);
 
+    @Deprecated
     @Message(id = 14535, value = "%s already exists in cache")
     IllegalStateException duplicateCacheEntry(Object id);
 
+    @Deprecated
     @Message(id = 14536, value = "%s is missing from cache")
     IllegalStateException missingCacheEntry(Object id);
 
     @Message(id = 14537, value = "Incompatible cache implementations in nested hierarchy")
     IllegalStateException incompatibleCaches();
 
+    @Deprecated
     @Message(id = 14538, value = "Failed to passivate %s")
     RuntimeException passivationFailed(@Cause Throwable cause, Object id);
 
+    @Deprecated
     @Message(id = 14539, value = "Failed to activate %s")
     RuntimeException activationFailed(@Cause Throwable cause, Object id);
 
+    @Deprecated
     @Message(id = 14540, value = "Failed to create passivation directory: %s")
     RuntimeException passivationDirectoryCreationFailed(String path);
 
+    @Deprecated
     @Message(id = 14541, value = "Failed to create passivation directory: %s")
     RuntimeException passivationPathNotADirectory(String path);
 
+    @Deprecated
     @Message(id = 14542, value = "Group creation context already exists")
     IllegalStateException groupCreationContextAlreadyExists();
 
@@ -2293,6 +2307,7 @@ public interface EjbMessages {
      * @param componentClassName The MDB component class name
      * @return
      */
+    @Deprecated
     @Message(id = 14547, value = "@Clustered annotation cannot be used with message driven beans. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForMDB(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
@@ -2305,6 +2320,7 @@ public interface EjbMessages {
      * @param componentClassName The entity bean component class name
      * @return
      */
+    @Deprecated
     @Message(id = 14548, value = "@Clustered annotation cannot be used with entity beans. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForEntityBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
@@ -2317,6 +2333,7 @@ public interface EjbMessages {
      * @param componentClassName The singleton bean component class name
      * @return
      */
+    @Deprecated
     @Message(id = 14549, value = "@Clustered annotation is currently not supported for singleton EJB. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationNotYetImplementedForSingletonBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
@@ -2329,6 +2346,7 @@ public interface EjbMessages {
      * @param componentClassName The component class name
      * @return
      */
+    @Deprecated
     @Message(id = 14550, value = "%s failed since @Clustered annotation cannot be used for %s bean on class %s")
     DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
@@ -2465,8 +2483,8 @@ public interface EjbMessages {
     @Message(id = 14582, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
     String untransformableTimerService(PathAddress address);
 
-    @Message(id = 14583, value = "Stateful bean %s is disabled for passivation, but the cache factory %s has passivation enabled")
-    IllegalStateException requiresNonPassivatingCacheFactory(String ejbName, CacheFactory cacheFactory);
+    @Message(id = 14583, value = "Detected asymmetric usage of cache")
+    IllegalStateException asymmetricCacheUsage();
 
     /**
      * Creates an exception indicating that timer is active.

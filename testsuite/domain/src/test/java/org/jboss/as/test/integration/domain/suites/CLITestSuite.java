@@ -36,6 +36,7 @@ import org.jboss.as.test.integration.domain.management.cli.DomainDeploymentOverl
 import org.jboss.as.test.integration.domain.management.cli.JmsTestCase;
 import org.jboss.as.test.integration.domain.management.cli.RolloutPlanTestCase;
 import org.jboss.as.test.integration.domain.management.cli.UndeployWildcardDomainTestCase;
+import org.jboss.as.test.integration.domain.management.cli.WildCardReadsTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -56,7 +57,8 @@ import org.junit.runners.Suite;
     JmsTestCase.class,
     DataSourceTestCase.class,
     RolloutPlanTestCase.class,
-    DomainDeployWithRuntimeNameTestCase.class
+    DomainDeployWithRuntimeNameTestCase.class,
+    WildCardReadsTestCase.class
 })
 public class CLITestSuite {
 

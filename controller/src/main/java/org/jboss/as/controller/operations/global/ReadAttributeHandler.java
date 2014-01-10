@@ -72,7 +72,6 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
     public static final OperationStepHandler INSTANCE = new ReadAttributeHandler();
 
     private final ParametersValidator validator = new ParametersValidator();
-    private final FilteredData filteredData;
     private final OperationStepHandler overrideHandler;
 
     public ReadAttributeHandler() {
@@ -80,15 +79,15 @@ public class ReadAttributeHandler extends GlobalOperationHandlers.AbstractMultiT
     }
 
     ReadAttributeHandler(FilteredData filteredData, OperationStepHandler overrideHandler) {
+        super(filteredData);
         validator.registerValidator(GlobalOperationAttributes.NAME.getName(), new StringLengthValidator(1));
         validator.registerValidator(GlobalOperationAttributes.INCLUDE_DEFAULTS.getName(), new ModelTypeValidator(ModelType.BOOLEAN, true));
         assert overrideHandler == null || filteredData != null : "overrideHandler only supported with filteredData";
-        this.filteredData = filteredData;
         this.overrideHandler = overrideHandler;
     }
 
     @Override
-    void doExecute(OperationContext context, ModelNode operation) throws OperationFailedException {
+    void doExecute(OperationContext context, ModelNode operation, FilteredData filteredData) throws OperationFailedException {
 
         // Add a step to authorize the attribute read once we determine the value below
         context.addStep(operation, new AuthorizeAttributeReadHandler(filteredData), OperationContext.Stage.MODEL, true);

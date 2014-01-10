@@ -122,7 +122,7 @@
                 <xs:documentation>Defines the module whose class loader should be used when building this cache container.</xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="statistics" type="xs:boolean" default="false">
+        <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>Determines whether or not the cache container should collect statistics.  Keep disabled for optimal performance.</xs:documentation>
             </xs:annotation>
@@ -272,7 +272,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="statistics" type="xs:boolean" default="false">
+        <xs:attribute name="statistics-enabled" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>Determines whether or not the cache should collect statistics.  Keep disabled for optimal performance.</xs:documentation>
             </xs:annotation>
@@ -598,9 +598,26 @@
         </xs:attribute>
     </xs:complexType>
 
-    <xs:complexType name="string-keyed-jdbc-store">
+    <xs:complexType name="jdbc-store">
         <xs:complexContent>
             <xs:extension base="tns:store">
+                <xs:attribute name="datasource" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>Defines the jndi name of the datasource.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="dialect" type="tns:dialect" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>Defines the JDBC dialect.</xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="string-keyed-jdbc-store">
+        <xs:complexContent>
+            <xs:extension base="tns:jdbc-store">
                 <xs:sequence>
                     <xs:element name="string-keyed-table" type="tns:string-keyed-table" minOccurs="0">
                         <xs:annotation>
@@ -610,18 +627,13 @@
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
-                <xs:attribute name="datasource" type="xs:string" use="required">
-                    <xs:annotation>
-                        <xs:documentation>Defines the jndi name of the datasource.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="binary-keyed-jdbc-store">
         <xs:complexContent>
-            <xs:extension base="tns:store">
+            <xs:extension base="tns:jdbc-store">
                 <xs:sequence>
                     <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
                         <xs:annotation>
@@ -631,18 +643,13 @@
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
-                <xs:attribute name="datasource" type="xs:string" use="required">
-                    <xs:annotation>
-                        <xs:documentation>Defines the jndi name of the datasource.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="mixed-keyed-jdbc-store">
         <xs:complexContent>
-            <xs:extension base="tns:store">
+            <xs:extension base="tns:jdbc-store">
                 <xs:sequence>
                     <xs:element name="binary-keyed-table" type="tns:binary-keyed-table" minOccurs="0">
                         <xs:annotation>
@@ -659,11 +666,6 @@
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
-                <xs:attribute name="datasource" type="xs:string" use="required">
-                    <xs:annotation>
-                        <xs:documentation>Defines the jndi name of the datasource.</xs:documentation>
-                    </xs:annotation>
-                </xs:attribute>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -1056,6 +1058,26 @@
                     <xs:documentation></xs:documentation>
                 </xs:annotation>
             </xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="dialect">
+        <xs:restriction base="xs:token">
+            <xs:enumeration value="ACCESS"/>
+            <xs:enumeration value="DB2"/>
+            <xs:enumeration value="DB2_390"/>
+            <xs:enumeration value="DERBY"/>
+            <xs:enumeration value="FIREBIRD"/>
+            <xs:enumeration value="H2"/>
+            <xs:enumeration value="HSQL"/>
+            <xs:enumeration value="INFORMIX"/>
+            <xs:enumeration value="INTERBASE"/>
+            <xs:enumeration value="MYSQL"/>
+            <xs:enumeration value="ORACLE"/>
+            <xs:enumeration value="POSTGRES"/>
+            <xs:enumeration value="SQL_SERVER"/>
+            <xs:enumeration value="SQLITE"/>
+            <xs:enumeration value="SYBASE"/>
         </xs:restriction>
     </xs:simpleType>
 </xs:schema>

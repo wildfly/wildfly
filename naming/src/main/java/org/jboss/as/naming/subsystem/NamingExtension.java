@@ -62,6 +62,7 @@ public class NamingExtension implements Extension {
     private static final String NAMESPACE_1_1 = "urn:jboss:domain:naming:1.1";
     private static final String NAMESPACE_1_2 = "urn:jboss:domain:naming:1.2";
     private static final String NAMESPACE_1_3 = "urn:jboss:domain:naming:1.3";
+    private static final String NAMESPACE_1_4 = "urn:jboss:domain:naming:1.4";
     static final String NAMESPACE_2_0 = "urn:jboss:domain:naming:2.0";
 
     static final int MANAGEMENT_API_MAJOR_VERSION = 2;
@@ -149,6 +150,7 @@ public class NamingExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_1, NamingSubsystem11Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_2, NamingSubsystem12Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_3, NamingSubsystem13Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_1_4, NamingSubsystem14Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, NAMESPACE_2_0, NamingSubsystem20Parser.INSTANCE);
     }
 

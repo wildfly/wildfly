@@ -77,11 +77,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         }
         this.module = module;
         this.deployment = deployment;
-        if (raxml != null && raxml.getArchive() != null && raxml.getArchive().indexOf(".rar") != -1) {
-            this.raName = raxml.getArchive().substring(0, raxml.getArchive().indexOf(".rar"));
-        } else {
-            this.raName = deployment;
-        }
+        this.raName = deployment;
         this.deploymentServiceName = deploymentServiceName;
         this.duServiceName = duServiceName;
     }
@@ -116,7 +112,7 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             } catch (Throwable t) {
                 // To clean up we need to invoke blocking behavior, so do that in another thread
                 // and let this MSC thread return
-                cleanupStartAsync(context, raName, t);
+                cleanupStartAsync(context, raName, deploymentServiceName, t);
                 return;
             }
             String id = ((ModifiableResourceAdapter) raxml).getId();

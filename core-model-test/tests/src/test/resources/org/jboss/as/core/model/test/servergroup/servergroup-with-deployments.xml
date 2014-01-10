@@ -8,6 +8,9 @@
         <deployment name="other-test-deployment" runtime-name="abc.war">
             <content sha1="12345678901234567890"/>
         </deployment>
+        <deployment name="dup-deployment" runtime-name="abc.war">
+            <content sha1="12345678901234567890"/>
+        </deployment>
     </deployments>
 
    <server-groups>
@@ -36,6 +39,7 @@
             <deployments>
                 <deployment name="test-deployment" runtime-name="foo.war" enabled="false" />
                 <deployment name="other-test-deployment" runtime-name="abc.war" enabled="false" />
+                <deployment name="dup-deployment" runtime-name="abc.war" enabled="false" />
             </deployments>
 
         </server-group>

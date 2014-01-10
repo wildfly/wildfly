@@ -422,7 +422,7 @@ final class SubsystemTestDelegate {
         try {
             desc.writeString(pw, false);
             //Leave this println - it only gets executed when people generate the legacy dmr files, and is useful to know where it has been written.
-            System.out.println("Legact resource defintion dmr written to: " + dmrFile.getAbsolutePath());
+            System.out.println("Legacy resource definition dmr written to: " + dmrFile.getAbsolutePath());
         } finally {
             IoUtils.safeClose(pw);
         }
@@ -701,8 +701,10 @@ final class SubsystemTestDelegate {
         }
 
         @Override
-        public LegacyKernelServicesInitializer addMavenResourceURL(String artifactGav) throws IOException, ClassNotFoundException {
-            classLoaderBuilder.addMavenResourceURL(artifactGav);
+        public LegacyKernelServicesInitializer addMavenResourceURL(String...artifactGavs) throws IOException, ClassNotFoundException {
+            for (String artifactGav : artifactGavs) {
+                classLoaderBuilder.addMavenResourceURL(artifactGav);
+            }
             return this;
         }
 
@@ -813,7 +815,7 @@ final class SubsystemTestDelegate {
 
             ModelNode reverseSubsystem = reverseServices.readWholeModel().get(SUBSYSTEM, getMainSubsystemName());
             if (reverseCheckModelFixer != null) {
-                reverseCheckModelFixer.fixModel(reverseSubsystem);
+                reverseSubsystem = reverseCheckModelFixer.fixModel(reverseSubsystem);
             }
             ModelTestUtils.compare(mainServices.readWholeModel().get(SUBSYSTEM, getMainSubsystemName()), reverseSubsystem);
             return reverseServices;

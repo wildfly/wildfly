@@ -55,12 +55,12 @@
                         </password>
                         <reauth-plugin class-name="someClass1">
                         <config-property name="name">Property1</config-property>
-			</reauth-plugin>
+            </reauth-plugin>
                     </security>
                     <validation>
                         <valid-connection-checker class-name="someClass2">
                         <config-property name="name">Property2</config-property>
-			</valid-connection-checker>
+            </valid-connection-checker>
                         <check-valid-connection-sql>
                             select 1
                         </check-valid-connection-sql>
@@ -78,15 +78,15 @@
                         </use-fast-fail>
                         <stale-connection-checker class-name="someClass3">
                         <config-property name="name">Property3</config-property>
-			</stale-connection-checker>
+            </stale-connection-checker>
                         <exception-sorter class-name="someClass4">
                         <config-property name="name">Property4</config-property>
-			</exception-sorter>
+            </exception-sorter>
                     </validation>
                     <timeout>
-			<blocking-timeout-millis>20000</blocking-timeout-millis>
-			<idle-timeout-minutes>4</idle-timeout-minutes>
-			<set-tx-query-timeout/>
+            <blocking-timeout-millis>20000</blocking-timeout-millis>
+            <idle-timeout-minutes>4</idle-timeout-minutes>
+            <set-tx-query-timeout/>
                         <query-timeout>
                             120
                         </query-timeout>
@@ -104,7 +104,7 @@
                         <prepared-statement-cache-size>
                             30
                         </prepared-statement-cache-size>
-			<share-prepared-statements/>
+            <share-prepared-statements/>
                         <track-statements>nowarn</track-statements>
                     </statement>
                 </datasource>
@@ -149,8 +149,8 @@
                         <is-same-rm-override>
                             true
                         </is-same-rm-override>
-			<interleaving/>
-			<no-tx-separate-pools/>
+            <interleaving/>
+            <no-tx-separate-pools/>
                         <pad-xid>
                             true
                         </pad-xid>
@@ -167,7 +167,7 @@
                         </password>
                         <reauth-plugin class-name="someClass1">
                         <config-property name="name">Property1</config-property>
-			</reauth-plugin>
+            </reauth-plugin>
                     </security>
                     <recovery no-recovery="false">
                         <recover-credential>
@@ -181,12 +181,12 @@
                         <recover-plugin class-name="someClass5">
                         <config-property name="name">Property5</config-property>
                         <config-property name="name1">Property6</config-property>
-			</recover-plugin>
+            </recover-plugin>
                     </recovery>
                     <validation>
                         <valid-connection-checker class-name="someClass2">
                         <config-property name="name">Property2</config-property>
-			</valid-connection-checker>
+            </valid-connection-checker>
                         <check-valid-connection-sql>
                             select 1
                         </check-valid-connection-sql>
@@ -204,15 +204,15 @@
                         </use-fast-fail>
                         <stale-connection-checker class-name="someClass3">
                         <config-property name="name">Property3</config-property>
-			</stale-connection-checker>
+            </stale-connection-checker>
                         <exception-sorter class-name="someClass4">
                         <config-property name="name">Property4</config-property>
-			</exception-sorter>
+            </exception-sorter>
                     </validation>
                     <timeout>
-			<blocking-timeout-millis>20000</blocking-timeout-millis>
-			<idle-timeout-minutes>4</idle-timeout-minutes>
-			<set-tx-query-timeout/>
+            <blocking-timeout-millis>20000</blocking-timeout-millis>
+            <idle-timeout-minutes>4</idle-timeout-minutes>
+            <set-tx-query-timeout/>
                         <query-timeout>
                             120
                         </query-timeout>
@@ -233,10 +233,10 @@
                         <prepared-statement-cache-size>
                             30
                         </prepared-statement-cache-size>
-			<share-prepared-statements/>
-			<track-statements>nowarn</track-statements>
+            <share-prepared-statements/>
+            <track-statements>nowarn</track-statements>
                     </statement>
-		  </xa-datasource>
+          </xa-datasource>
                 <drivers>
                     <driver name="h2" module="com.h2database.h2">
                         <xa-datasource-class>

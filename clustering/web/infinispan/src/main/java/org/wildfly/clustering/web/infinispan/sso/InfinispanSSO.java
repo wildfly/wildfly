@@ -23,8 +23,8 @@ package org.wildfly.clustering.web.infinispan.sso;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.Remover;
 import org.wildfly.clustering.web.sso.Credentials;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;

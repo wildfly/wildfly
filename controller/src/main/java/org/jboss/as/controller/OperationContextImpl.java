@@ -538,6 +538,11 @@ final class OperationContextImpl extends AbstractOperationContext {
         OperationId opId = new OperationId(operation);
         AuthorizationResult authResult = authorize(opId, operation, false, READ_CONFIG);
         if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
+            // See if the problem was addressability
+            AuthorizationResult addressResult = authorize(opId, operation, false, ADDRESS);
+            if (addressResult.getDecision() == AuthorizationResult.Decision.DENY) {
+                throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+            }
             throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
         }
         Resource model = this.model;

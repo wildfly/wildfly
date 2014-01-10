@@ -1,14 +1,12 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.Collection;
 
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.Resource;
 import io.undertow.server.handlers.resource.ResourceChangeListener;
 import io.undertow.server.handlers.resource.ResourceManager;
-import io.undertow.server.handlers.resource.URLResource;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -20,8 +18,10 @@ public class ServletResourceManager implements ResourceManager {
 
     private final FileResourceManager deploymentResourceManager;
     private final Collection<VirtualFile> overlays;
+    private final boolean explodedDeployment;
 
-    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays) throws IOException {
+    public ServletResourceManager(final VirtualFile resourcesRoot, final Collection<VirtualFile> overlays, boolean explodedDeployment) throws IOException {
+        this.explodedDeployment = explodedDeployment;
         deploymentResourceManager = new FileResourceManager(resourcesRoot.getPhysicalFile(), 1024 * 1024);
         this.overlays = overlays;
     }
@@ -40,8 +40,7 @@ public class ServletResourceManager implements ResourceManager {
             for (VirtualFile overlay : overlays) {
                 VirtualFile child = overlay.getChild(p);
                 if (child.exists()) {
-                    URL url = child.toURL();
-                    return new URLResource(url, url.openConnection(), path);
+                    return new VirtualFileResource(child, path);
                 }
             }
         }
@@ -50,7 +49,7 @@ public class ServletResourceManager implements ResourceManager {
 
     @Override
     public boolean isResourceChangeListenerSupported() {
-        return true;
+        return explodedDeployment;
     }
 
     @Override

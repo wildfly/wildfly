@@ -26,12 +26,12 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>11</version>
+      <version>12</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-parent</artifactId>
-    <version>8.0.0.Beta2-SNAPSHOT</version>
+    <version>8.0.0.Final-SNAPSHOT</version>
 
     <name>WildFly: Parent Aggregator</name>
     <description>WildFly: Parent Aggregator</description>
@@ -64,7 +64,7 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.1.0</maven.min.version>
-        <version.surefire.plugin>2.11</version.surefire.plugin>
+        <version.surefire.plugin>2.16</version.surefire.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
 
@@ -79,11 +79,11 @@
         <version.ant.junit>1.8.3</version.ant.junit>
         <version.antlr>2.7.7</version.antlr>
         <version.asm>3.3.1</version.asm>
-        <version.ch.qos.cal10n>0.7.3</version.ch.qos.cal10n>
-        <version.com.fasterxml.classmate>0.8.0</version.com.fasterxml.classmate>
+        <version.ch.qos.cal10n>0.8.1</version.ch.qos.cal10n>
+        <version.com.fasterxml.classmate>1.0.0</version.com.fasterxml.classmate>
         <version.com.fasterxml.jackson>2.2.3</version.com.fasterxml.jackson>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
-        <version.com.google.guava>13.0.1</version.com.google.guava>
+        <version.com.google.guava>15.0</version.com.google.guava>
         <version.com.google.protobuf>2.5.0</version.com.google.protobuf>
         <version.com.h2database>1.3.173</version.com.h2database>
         <version.com.sun.codemodel>2.6</version.com.sun.codemodel>
@@ -103,14 +103,15 @@
         <version.commons-pool>1.6</version.commons-pool>
         <version.dom4j>1.6.1</version.dom4j>
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
-        <version.io.netty>3.6.6.Final</version.io.netty>
-        <version.io.undertow>1.0.0.Beta24</version.io.undertow>
-        <version.io.undertow.jastow>1.0.0.Beta1</version.io.undertow.jastow>
+        <version.groovy-all>2.1.8</version.groovy-all>
+        <version.io.netty>4.0.13.Final</version.io.netty>
+        <version.io.undertow>1.0.0.Beta30</version.io.undertow>
+        <version.io.undertow.jastow>1.0.0.CR1</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.1</version.javax.enterprise>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
-        <version.javax.mail>1.5.0</version.javax.mail>
+        <version.javax.mail>1.5.1</version.javax.mail>
         <version.javax.validation>1.1.0.Final</version.javax.validation>
         <version.org.jboss.spec.javax.websockets>1.0.0.Final</version.org.jboss.spec.javax.websockets>
         <version.jaxen>1.1.3</version.jaxen>
@@ -121,17 +122,19 @@
         <version.log4j>1.2.16</version.log4j>
         <version.net.jcip>1.0</version.net.jcip>
         <version.org.apache.ant>1.8.2</version.org.apache.ant>
+        <version.org.apache.avro>1.7.5</version.org.apache.avro>
         <version.org.apache.cxf>2.7.7</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.6.1</version.org.apache.cxf.xjcplugins>
-        <version.org.apache.ds>2.0.0-M7</version.org.apache.ds>
+        <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
         <version.org.apache.httpcomponents.httpclient>4.2.1</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.2.1</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
-        <version.org.apache.maven>3.1.0</version.org.apache.maven>
+        <version.org.apache.maven>3.1.1</version.org.apache.maven>
+        <version.org.apache.lucene>3.6.2</version.org.apache.lucene>
         <version.org.apache.myfaces.core>2.1.8</version.org.apache.myfaces.core>
         <version.org.apache.neethi>3.0.2</version.org.apache.neethi>
         <version.org.apache.qpid.proton>0.4</version.org.apache.qpid.proton>
-        <version.org.apache.santuario>1.5.5</version.org.apache.santuario>
+        <version.org.apache.santuario>1.5.6</version.org.apache.santuario>
         <version.org.apache.velocity>1.7</version.org.apache.velocity>
         <version.org.apache.ws.security>1.6.12</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.0.2</version.org.apache.ws.xmlschema>
@@ -140,7 +143,7 @@
         <version.org.bouncycastle>1.46</version.org.bouncycastle>
         <version.org.codehaus.jackson>1.9.12</version.org.codehaus.jackson>
         <version.org.codehaus.jettison>1.3.1</version.org.codehaus.jettison>
-        <version.org.codehaus.plexus.plexus-utils>3.0.12</version.org.codehaus.plexus.plexus-utils>
+        <version.org.codehaus.plexus.plexus-utils>3.0.15</version.org.codehaus.plexus.plexus-utils>
         <version.org.codehaus.woodstox.stax2-api>3.1.1</version.org.codehaus.woodstox.stax2-api>
         <version.org.codehaus.woodstox.woodstox-core-asl>4.2.0</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.eclipse.jdt.core.compiler>4.2.2</version.org.eclipse.jdt.core.compiler>
@@ -148,23 +151,25 @@
         <version.org.glassfish.javax.el>3.0-b07</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.0.3</version.org.glassfish.javax.json>
-        <version.org.hibernate>4.3.0.Beta4</version.org.hibernate>
+        <version.org.hibernate>4.3.0.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
-        <version.org.hibernate.validator>5.0.1.Final</version.org.hibernate.validator>
+        <version.org.hibernate.validator>5.0.2.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
-        <version.org.hornetq>2.4.0.Beta2</version.org.hornetq>
-        <version.org.infinispan>6.0.0.CR1</version.org.infinispan>
-        <version.org.infinispan.protostream>1.0.0.Alpha7</version.org.infinispan.protostream>
+        <version.org.hibernate.hql>1.0.0.Alpha5</version.org.hibernate.hql>
+        <version.org.hibernate.search>4.5.0.Alpha2</version.org.hibernate.search>
+        <version.org.hornetq>2.4.0.Final</version.org.hornetq>
+        <version.org.infinispan>6.0.1.Final</version.org.infinispan>
+        <version.org.infinispan.protostream>1.0.0.CR1</version.org.infinispan.protostream>
         <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
-        <version.org.jberet>1.0.0.Beta1</version.org.jberet>
+        <version.org.jberet>1.0.0.CR1</version.org.jberet>
         <version.org.jdom>1.1.2</version.org.jdom>
-        <version.org.jboss.aesh>0.33.8</version.org.jboss.aesh>
-        <version.org.jboss.arquillian.core>1.0.3.Final</version.org.jboss.arquillian.core>
-        <version.org.jboss.arquillian.osgi>2.0.0.CR3</version.org.jboss.arquillian.osgi>
-        <version.org.jboss.hal.release-stream>2.0.6.Final</version.org.jboss.hal.release-stream>
-        <version.org.jboss.byteman>2.1.2</version.org.jboss.byteman>
+        <version.org.jboss.aesh>0.33.11</version.org.jboss.aesh>
+        <version.org.jboss.arquillian.core>1.1.2.Final</version.org.jboss.arquillian.core>
+        <version.org.jboss.arquillian.osgi>2.1.0.CR2</version.org.jboss.arquillian.osgi>
+        <version.org.jboss.hal.release-stream>2.1.0.Final</version.org.jboss.hal.release-stream>
+        <version.org.jboss.byteman>2.1.4</version.org.jboss.byteman>
         <version.org.jboss.classfilewriter>1.0.4.Final</version.org.jboss.classfilewriter>
         <version.org.jboss.common.jboss-common-beans>1.1.0.Final</version.org.jboss.common.jboss-common-beans>
         <version.org.jboss.jboss-common-core>2.2.22.GA</version.org.jboss.jboss-common-core>
@@ -174,27 +179,28 @@
         <version.org.jboss.genericjms>1.0.1.Final</version.org.jboss.genericjms>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.invocation>1.2.0.Beta4</version.org.jboss.invocation>
-        <version.org.jboss.ironjacamar>1.1.1.Final</version.org.jboss.ironjacamar>
+        <version.org.jboss.ironjacamar>1.1.2.Final</version.org.jboss.ironjacamar>
         <version.org.jboss.jandex>1.1.0.Final</version.org.jboss.jandex>
         <version.org.jboss.jboss-dmr>1.2.0.Final</version.org.jboss.jboss-dmr>
         <version.org.jboss.jboss-transaction-spi>7.1.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.jboss-vfs>3.2.2.Final</version.org.jboss.jboss-vfs>
-        <version.org.jboss.narayana>5.0.0.CR1</version.org.jboss.narayana>
+        <version.org.jboss.narayana>5.0.0.CR2</version.org.jboss.narayana>
         <version.org.jboss.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit>
         <version.org.jboss.logging.jboss-logging>3.1.3.GA</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.jboss-logging-tools>1.2.0.Beta1</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.logmanager.jboss-logmanager>1.5.0.Final</version.org.jboss.logmanager.jboss-logmanager>
         <version.org.jboss.logmanager.log4j-jboss-logmanager>1.0.2.Final</version.org.jboss.logmanager.log4j-jboss-logmanager>
         <version.org.jboss.marshalling.jboss-marshalling>1.4.2.Final</version.org.jboss.marshalling.jboss-marshalling>
-        <version.org.jboss.metadata>8.0.0.Beta3</version.org.jboss.metadata>
+        <version.org.jboss.metadata>8.0.0.Beta5</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.3.0.Alpha1</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.3.0.Final</version.org.jboss.modules.jboss-modules>
         <version.org.jboss.msc.jboss-msc>1.2.0.CR1</version.org.jboss.msc.jboss-msc>
+        <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.CR2</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.osgi.metadata>3.0.1.Final</version.org.jboss.osgi.metadata>
         <version.org.jboss.remote-naming>2.0.0.Beta2</version.org.jboss.remote-naming>
         <version.org.jboss.remoting>4.0.0.Beta3</version.org.jboss.remoting>
         <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.CR4</version.org.jboss.remotingjmx.remoting-jmx>
-        <version.org.jboss.resteasy>3.0.5.Final</version.org.jboss.resteasy>
+        <version.org.jboss.resteasy>3.0.6.Final</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.4.CR1</version.org.jboss.sasl>
         <version.org.jboss.seam.int>7.0.0.GA</version.org.jboss.seam.int>
         <version.org.jboss.security.jboss-negotiation>2.2.6.Final</version.org.jboss.security.jboss-negotiation>
@@ -229,7 +235,7 @@
         <version.org.jboss.stdio>1.0.2.GA</version.org.jboss.stdio>
         <version.org.jboss.threads>2.1.1.Final</version.org.jboss.threads>
         <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
-        <version.org.jboss.weld.weld>2.1.0.Final</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld>2.1.1.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>2.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.2.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>2.2.2.Final</version.org.jboss.ws.spi>
@@ -238,23 +244,25 @@
         <version.org.jboss.ws.cxf>4.2.3.Final</version.org.jboss.ws.cxf>
         <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
-        <version.org.jboss.xnio>3.2.0.Beta3</version.org.jboss.xnio>
+        <version.org.jboss.xnio>3.2.0.Beta4</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
-        <version.org.jgroups>3.4.1.Final</version.org.jgroups>
-        <version.org.jipijapa>1.0.0.CR2</version.org.jipijapa>
+        <version.org.jgroups>3.4.2.Final</version.org.jgroups>
+        <version.org.jipijapa>1.0.0.Final</version.org.jipijapa>
         <version.org.kohsuke.rngom>201103.jboss-1</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.3</version.org.opensaml.opensaml>
         <version.org.opensaml.openws>1.4.4</version.org.opensaml.openws>
         <version.org.opensaml.xmltooling>1.3.4</version.org.opensaml.xmltooling>
-        <version.org.picketbox>4.0.20.Beta2</version.org.picketbox>
+        <version.org.picketbox>4.0.20.Beta4</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final</version.org.picketbox.picketbox-commons>
         <version.org.picketlink>2.5.1.Final</version.org.picketlink>
         <version.org.powermock>1.5</version.org.powermock>
         <version.org.scannotation>1.0.3</version.org.scannotation>
         <version.org.slf4j>1.7.2.jbossorg-1</version.org.slf4j>
+        <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.eclipse.aether>0.9.0.M3</version.org.eclipse.aether>
+        <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
         <version.org.testng>6.1.1</version.org.testng>
         <version.org.wildfly.security.manager>1.0.0.Beta3</version.org.wildfly.security.manager>
         <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
@@ -267,11 +275,10 @@
         <version.xom>1.2.5</version.xom>
 
         <!-- Non-default maven plugin versions and configuration -->
-        <version.org.zanata.plugin>1.5.0</version.org.zanata.plugin>
+        <version.org.zanata.plugin>3.1.1</version.org.zanata.plugin>
         <version.help.plugin>2.2</version.help.plugin>
-        <version.shade.plugin>1.5</version.shade.plugin>
-        <version.jacoco.plugin>0.5.6.201201232323</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
-        <version.properties.plugin>1.5.3</version.properties.plugin>
+        <version.jacoco.plugin>0.6.3.201306030806</version.jacoco.plugin> <!-- Needs to be set explicitely to match with org.jacoco:org.jacoco.ant - see testsuite. -->
+        <version.properties.plugin>2.0.1</version.properties.plugin>
         <version.xml.plugin>1.0</version.xml.plugin>
 
 
@@ -282,10 +289,9 @@
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
 
-        <!-- tools.jar location, this needs to be overriden on OSX -->
-        <com.sun.tools.path>${java.home}/../lib/tools.jar</com.sun.tools.path>
         <server.output.dir.prefix>wildfly</server.output.dir.prefix>
         <wildfly.build.output.dir>build/target/${server.output.dir.prefix}-${jboss.as.release.version}</wildfly.build.output.dir>
+        <wildfly.core.build.output.dir>build/target/${server.output.dir.prefix}-core-${jboss.as.release.version}</wildfly.core.build.output.dir>
 
         <!--
             See ChildFirstClassLoaderBuilder in model-test for the explanation of the org.jboss.model.test.cache.root and org.jboss.model.test.classpath.cache properties.
@@ -345,6 +351,10 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -362,7 +372,43 @@
                         </archive>
                     </configuration>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${version.surefire.plugin}</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.surefire</groupId>
+                            <artifactId>surefire-junit47</artifactId>
+                            <version>${version.surefire.plugin}</version>
+                        </dependency>
+                    </dependencies>
+                    <configuration>
+                        <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                        <enableAssertions>true</enableAssertions>
+                        <systemPropertyVariables>
+                            <org.jboss.model.test.cache.root>${org.jboss.model.test.cache.root}</org.jboss.model.test.cache.root>
+                            <org.jboss.model.test.classpath.cache>${org.jboss.model.test.classpath.cache}</org.jboss.model.test.classpath.cache>
+                            <org.jboss.model.test.maven.repository.urls>${org.jboss.model.test.maven.repository.urls}</org.jboss.model.test.maven.repository.urls>
+                        </systemPropertyVariables>
+                        <systemProperties>
+                              <property>
+                                  <name>java.util.logging.manager</name>
+                                  <value>org.jboss.logmanager.LogManager</value>
+                              </property>
+                              <property>
+                                  <name>jboss.remoting.leakdebugging</name>
+                                  <value>false</value>
+                              </property>
+                              <property>
+                                  <name>test.level</name>
+                                  <value>${test.level}</value>
+                              </property>
+                          </systemProperties>
+                          <argLine>-Duser.region=US -Duser.language=en</argLine>
+                    </configuration>
 
+                </plugin>
                 <!-- Checkstyle -->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -485,16 +531,6 @@
                             </configuration>
                         </execution>
                     </executions>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-shade-plugin</artifactId>
-                    <version>${version.shade.plugin}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.jboss.maven.surefire.modular</groupId>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                   <version>1.0.0.Alpha3</version>
                 </plugin>
                 <plugin>
                     <!--TODO TEXT. This plugin's configuration is used in m2e only.-->
@@ -675,6 +711,7 @@
                                         <goals>
                                             <goal>clean</goal>
                                             <goal>genkey</goal>
+                                            <goal>generateKeyPair</goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
@@ -690,7 +727,7 @@
                                             properties-maven-plugin
                                         </artifactId>
                                         <versionRange>
-                                            [1.5.3,)
+                                            [2.0.1,)
                                         </versionRange>
                                         <goals>
                                             <goal>
@@ -724,11 +761,15 @@
                         <dependency>
                             <groupId>org.kuali.common</groupId>
                             <artifactId>kuali-util</artifactId>
-                            <version>3.0.11</version>
+                            <version>4.1.0</version>
                             <exclusions>
                                 <exclusion>
                                     <groupId>org.springframework</groupId>
                                     <artifactId>spring-context</artifactId>
+                                </exclusion>
+                                <exclusion>
+                                    <groupId>org.springframework</groupId>
+                                    <artifactId>spring-core</artifactId>
                                 </exclusion>
                                 <exclusion>
                                     <groupId>org.springframework</groupId>
@@ -859,7 +900,13 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-ejb3-infinispan</artifactId>
+                <artifactId>wildfly-clustering-ejb-infinispan</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-ejb-spi</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -884,6 +931,12 @@
             <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-clustering-singleton</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-clustering-web-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1346,7 +1399,7 @@
                         <groupId>org.hibernate.javax.persistence</groupId>
                         <artifactId>hibernate-jpa-2.0-api</artifactId>
                     </exclusion>
-	            <exclusion>
+                    <exclusion>
                         <groupId>org.jboss.weld</groupId>
                         <artifactId>weld-core</artifactId>
                     </exclusion>
@@ -1446,14 +1499,6 @@
                 <groupId>com.h2database</groupId>
                 <artifactId>h2</artifactId>
                 <version>${version.com.h2database}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.sun</groupId>
-                <artifactId>tools</artifactId>
-                <scope>system</scope>
-                <version>${maven.compiler.source}</version>
-                <systemPath>${com.sun.tools.path}</systemPath>
             </dependency>
 
             <dependency>
@@ -1859,6 +1904,13 @@
             </dependency>
 
             <dependency>
+                <groupId>org.codehaus.groovy</groupId>
+                <artifactId>groovy-all</artifactId>
+                <version>${version.groovy-all}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
             <groupId>org.jsoup</groupId>
                 <artifactId>jsoup</artifactId>
                 <version>${version.jsoup}</version>
@@ -1916,6 +1968,26 @@
                        <artifactId>ant-launcher</artifactId>
                    </exclusion>
                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${version.org.apache.avro}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.thoughtworks.paranamer</groupId>
+                        <artifactId>paranamer</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.xerial.snappy</groupId>
+                        <artifactId>snappy-java</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.commons</groupId>
+                        <artifactId>commons-compress</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3203,8 +3275,6 @@
                 </exclusions>
             </dependency>
 
-
-
             <dependency>
                 <groupId>org.apache.james</groupId>
                 <artifactId>apache-mime4j</artifactId>
@@ -3215,6 +3285,27 @@
                         <artifactId>commons-logging</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-facet</artifactId>
+                <version>${version.org.apache.lucene}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-memory</artifactId>
+                <version>${version.org.apache.lucene}</version>
             </dependency>
 
             <dependency>
@@ -3348,6 +3439,13 @@
                    </exclusion>
                </exclusions>
            </dependency>
+
+            <!-- this could probably be removed when new version of maven-aether-provider comes with it-->
+            <dependency>
+                <groupId>org.eclipse.sisu</groupId>
+                <artifactId>org.eclipse.sisu.plexus</artifactId>
+                <version>${version.org.eclipse.sisu.plexus}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.apache.ws.xmlschema</groupId>
@@ -3514,9 +3612,9 @@
             </dependency>
 
             <dependency>
-              <groupId>org.hibernate</groupId>
-              <artifactId>hibernate-infinispan</artifactId>
-              <version>${version.org.hibernate}</version>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-infinispan</artifactId>
+                <version>${version.org.hibernate}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
@@ -3538,10 +3636,10 @@
             </dependency>
 
             <dependency>
-              <groupId>org.hibernate</groupId>
-              <artifactId>hibernate-envers</artifactId>
-              <version>${version.org.hibernate}</version>
-                 <exclusions>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-envers</artifactId>
+                <version>${version.org.hibernate}</version>
+                <exclusions>
                     <exclusion>
                         <groupId>org.hibernate</groupId>
                         <artifactId>ejb3-persistence</artifactId>
@@ -3586,15 +3684,15 @@
             </dependency>
 
             <dependency>
-               <groupId>org.hibernate.common</groupId>
-               <artifactId>hibernate-commons-annotations</artifactId>
-               <version>${version.org.hibernate.commons.annotations}</version>
-	       <exclusions>
-	           <exclusion>
-                       <groupId>org.jboss.logging</groupId>
-                       <artifactId>jboss-logging-annotations</artifactId>
-                   </exclusion>
-               </exclusions>
+                <groupId>org.hibernate.common</groupId>
+                <artifactId>hibernate-commons-annotations</artifactId>
+                <version>${version.org.hibernate.commons.annotations}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.logging</groupId>
+                        <artifactId>jboss-logging-annotations</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3658,14 +3756,69 @@
             </dependency>
 
             <dependency>
+                <groupId>org.hibernate.hql</groupId>
+                <artifactId>hibernate-hql-lucene</artifactId>
+                <version>${version.org.hibernate.hql}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-engine</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate.javax.persistence</groupId>
+                        <artifactId>hibernate-jpa-2.0-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate.hql</groupId>
+                <artifactId>hibernate-hql-parser</artifactId>
+                <version>${version.org.hibernate.hql}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.antlr</groupId>
+                        <artifactId>antlr-runtime</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
                 <groupId>org.hibernate.javax.persistence</groupId>
                 <artifactId>hibernate-jpa-2.1-api</artifactId>
                 <version>${version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api}</version>
             </dependency>
 
             <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-analyzers</artifactId>
+                <version>${version.org.hibernate.search}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-engine</artifactId>
+                <version>${version.org.hibernate.search}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-analyzers</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-search-infinispan</artifactId>
+                <version>${version.org.hibernate.search}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.hornetq</groupId>
                 <artifactId>hornetq-amqp-protocol</artifactId>
+                <version>${version.org.hornetq}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hornetq</groupId>
+                <artifactId>hornetq-tools</artifactId>
                 <version>${version.org.hornetq}</version>
             </dependency>
 
@@ -3808,6 +3961,45 @@
             </dependency>
             <dependency>
                 <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-lucene-directory</artifactId>
+                <version>${version.org.infinispan}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-lucene-v3</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.lucene</groupId>
+                        <artifactId>lucene-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
+                <artifactId>infinispan-query</artifactId>
+                <version>${version.org.infinispan}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.hibernate.hql</groupId>
+                        <artifactId>hibernate-hql-lucene</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate.hql</groupId>
+                        <artifactId>hibernate-hql-parser</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-engine</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-search-infinispan</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.infinispan</groupId>
                 <artifactId>infinispan-query-dsl</artifactId>
                 <version>${version.org.infinispan}</version>
             </dependency>
@@ -3930,6 +4122,12 @@
               <groupId>org.jboss.arquillian.container</groupId>
               <artifactId>arquillian-container-osgi</artifactId>
               <version>${version.org.jboss.arquillian.osgi}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jboss.shrinkwrap.resolver</groupId>
+                        <artifactId>shrinkwrap-resolver-depchain</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -3975,18 +4173,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.arquillian.junit</groupId>
-                <artifactId>arquillian-junit-core</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.arquillian.testng</groupId>
-                <artifactId>arquillian-testng-core</artifactId>
-                <version>${version.org.jboss.arquillian.core}</version>
-            </dependency>
-
-            <dependency>
               <groupId>org.jboss.arquillian.junit</groupId>
               <artifactId>arquillian-junit-container</artifactId>
               <version>${version.org.jboss.arquillian.core}</version>
@@ -3999,19 +4185,9 @@
             </dependency>
 
             <dependency>
-              <groupId>org.jboss.arquillian.testng</groupId>
-              <artifactId>arquillian-testng-container</artifactId>
-              <version>${version.org.jboss.arquillian.core}</version>
-              <exclusions>
-                <exclusion>
-                  <groupId>commons-logging</groupId>
-                  <artifactId>commons-logging</artifactId>
-                </exclusion>
-                  <exclusion>
-                      <groupId>org.jboss.logging</groupId>
-                      <artifactId>jboss-logging-tools</artifactId>
-                  </exclusion>
-              </exclusions>
+                <groupId>org.jboss.arquillian.junit</groupId>
+                <artifactId>arquillian-junit-core</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
             </dependency>
 
             <dependency>
@@ -4066,6 +4242,28 @@
                 <groupId>org.jboss.arquillian.testenricher</groupId>
                 <artifactId>arquillian-testenricher-resource</artifactId>
                 <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.arquillian.testng</groupId>
+                <artifactId>arquillian-testng-core</artifactId>
+                <version>${version.org.jboss.arquillian.core}</version>
+            </dependency>
+
+            <dependency>
+              <groupId>org.jboss.arquillian.testng</groupId>
+              <artifactId>arquillian-testng-container</artifactId>
+              <version>${version.org.jboss.arquillian.core}</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>commons-logging</groupId>
+                  <artifactId>commons-logging</artifactId>
+                </exclusion>
+                  <exclusion>
+                      <groupId>org.jboss.logging</groupId>
+                      <artifactId>jboss-logging-tools</artifactId>
+                  </exclusion>
+              </exclusions>
             </dependency>
 
             <dependency>
@@ -4616,24 +4814,6 @@
              </dependency>
 
             <dependency>
-                <groupId>org.jboss.jsfunit</groupId>
-                <artifactId>jsfunit-arquillian</artifactId>
-                <version>${version.org.jboss.jsfunit}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.jboss.jsfunit</groupId>
-                <artifactId>jboss-jsfunit-core</artifactId>
-                <version>${version.org.jboss.jsfunit}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
                 <version>${version.org.jboss.logging.jboss-logging}</version>
@@ -4697,7 +4877,7 @@
 
             <dependency>
                 <groupId>io.netty</groupId>
-                <artifactId>netty</artifactId>
+                <artifactId>netty-all</artifactId>
                 <version>${version.io.netty}</version>
             </dependency>
 
@@ -4716,22 +4896,6 @@
             <dependency>
                 <groupId>io.undertow</groupId>
                 <artifactId>undertow-servlet</artifactId>
-                <version>${version.io.undertow}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>io.undertow</groupId>
-                        <artifactId>undertow-build-config</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.servlet.jsp</groupId>
-                        <artifactId>jboss-jsp-api_2.2_spec</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>io.undertow</groupId>
-                <artifactId>undertow-jsp</artifactId>
                 <version>${version.io.undertow}</version>
                 <exclusions>
                     <exclusion>
@@ -4812,6 +4976,10 @@
                     <exclusion>
                         <groupId>com.mycila.com.google.inject.extensions</groupId>
                         <artifactId>guice-assisted-inject</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.jboss.as</groupId>
+                        <artifactId>jboss-as-console-dialogs</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.jboss.as</groupId>
@@ -5461,12 +5629,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jbossweb-native</artifactId>
-                <version>${version.org.jboss.as.jbossweb-native}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.jboss.spec.javax.websocket</groupId>
                 <artifactId>jboss-websocket-api_1.0_spec</artifactId>
                 <version>${version.org.jboss.spec.javax.websockets}</version>
@@ -5620,6 +5782,12 @@
                 <groupId>org.jboss.xnio</groupId>
                 <artifactId>xnio-nio</artifactId>
                 <version>${version.org.jboss.xnio.xnio-nio}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.xnio.netty</groupId>
+                <artifactId>netty-xnio-transport</artifactId>
+                <version>${version.org.jboss.xnio.netty.netty-xnio-transport}</version>
             </dependency>
 
             <dependency>
@@ -6053,59 +6221,59 @@
                 <version>${version.org.picketbox.picketbox-commons}</version>
             </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-api</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-api</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-impl</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-impl</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-federation</artifactId>
-				<version>${version.org.picketlink}</version>
-				<exclusions>
-					<exclusion>
-						<groupId>commons-logging</groupId>
-						<artifactId>commons-logging-api</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-federation</artifactId>
+                <version>${version.org.picketlink}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-common</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-common</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-config</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-config</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-idm-api</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-api</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink</groupId>
-				<artifactId>picketlink-idm-impl</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-impl</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
-			<dependency>
-				<groupId>org.picketlink.distribution</groupId>
-				<artifactId>picketlink-jbas7</artifactId>
-				<version>${version.org.picketlink}</version>
-			</dependency>
+            <dependency>
+                <groupId>org.picketlink.distribution</groupId>
+                <artifactId>picketlink-jbas7</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.picketbox</groupId>
@@ -6153,6 +6321,12 @@
                         <artifactId>javassist</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>org.syslog4j</groupId>
+                <artifactId>syslog4j</artifactId>
+                <version>${version.org.syslog4j}</version>
             </dependency>
 
             <dependency>
@@ -6389,16 +6563,6 @@
                 <module>testsuite/shared</module>
                 <module>testsuite</module>
             </modules>
-        </profile>
-
-        <profile>
-            <id>os-x</id>
-            <activation>
-                <file><exists>${java.home}/bundle/Classes/classes.jar</exists></file>
-            </activation>
-            <properties>
-                <com.sun.tools.path>${java.home}/bundle/Classes/classes.jar</com.sun.tools.path>
-            </properties>
         </profile>
 
         <profile>

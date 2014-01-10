@@ -62,7 +62,6 @@ public class CLIWrapper {
      * <code>connect</code> command.
      *
      * @param connect indicates if the CLI should connect to server automatically.
-     * @param cliArgs specifies additional CLI command line arguments
      * @throws Exception
      */
     public CLIWrapper(boolean connect) throws Exception {
@@ -76,24 +75,32 @@ public class CLIWrapper {
      * @param connect indicates if the CLI should connect to server automatically.
      * @param cliAddress The default name of the property containing the cli address. If null the value of the {@code node0} property is
      * used, and if that is absent {@code localhost} is used
-     * @param cliArgs specifies additional CLI command line arguments
      */
     public CLIWrapper(boolean connect, String cliAddress) throws CliInitializationException {
+        this(connect, cliAddress, null);
+    }
+
+    /**
+     * Creates new CLI wrapper. If the connect parameter is set to true the CLI will connect to the server using
+     * <code>connect</code> command.
+     *
+     * @param connect indicates if the CLI should connect to server automatically.
+     * @param cliAddress The default name of the property containing the cli address. If null the value of the {@code node0} property is
+     * used, and if that is absent {@code localhost} is used
+     * @param consoleInput input stream to use for sending to the CLI, or {@code null} if the standard input stream should be used
+     */
+    public CLIWrapper(boolean connect, String cliAddress, InputStream consoleInput) throws CliInitializationException {
 
         consoleOut = new ByteArrayOutputStream();
         System.setProperty("aesh.terminal","org.jboss.aesh.terminal.TestTerminal");
         ctx = CLITestUtil.getCommandContext(
                 TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(),
-                createConsoleInput(), consoleOut);
+                consoleInput, consoleOut);
 
         if (!connect) {
             return;
         }
         Assert.assertTrue(sendConnect(cliAddress));
-    }
-
-    protected InputStream createConsoleInput() {
-        return null;
     }
 
     public boolean isConnected() {
@@ -115,7 +122,7 @@ public class CLIWrapper {
      * property and use that as the address. If the system property is not set {@code localhost} will
      * be used
      */
-    public boolean sendConnect(String cliAddress) {
+    public final boolean sendConnect(String cliAddress) {
         String addr = cliAddress != null ? cliAddress : TestSuiteEnvironment.getServerAddress();
         try {
             ctx.connectController(new URI("http-remoting", null, addr, TestSuiteEnvironment.getServerPort(), null, null, null).toString());
@@ -133,8 +140,9 @@ public class CLIWrapper {
      * Sends command line to CLI.
      *
      * @param line specifies the command line.
-     * @param readEcho if set to true reads the echo response form the CLI.
-     * @throws Exception
+     * @param ignoreError if set to false, asserts that handling the line did not result in a {@link org.jboss.as.cli.CommandLineException}.
+     *
+     * @return true if the CLI is in a non-error state following handling the line
      */
     public boolean sendLine(String line, boolean ignoreError)  {
         consoleOut.reset();
@@ -155,7 +163,6 @@ public class CLIWrapper {
      * Sends command line to CLI.
      *
      * @param line specifies the command line.
-     * @throws Exception
      */
     public void sendLine(String line) {
         sendLine(line, false);
@@ -189,8 +196,6 @@ public class CLIWrapper {
 
     /**
      * Sends quit command to CLI.
-     *
-     * @throws Exception
      */
     public synchronized void quit() {
         ctx.terminateSession();

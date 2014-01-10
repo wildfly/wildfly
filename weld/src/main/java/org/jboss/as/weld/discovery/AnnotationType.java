@@ -16,6 +16,9 @@
  */
 package org.jboss.as.weld.discovery;
 
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Inherited;
+
 import org.jboss.as.weld.util.Indices;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -44,6 +47,11 @@ public class AnnotationType {
     public AnnotationType(DotName name, boolean inherited) {
         this.name = name;
         this.inherited = inherited;
+    }
+
+    public AnnotationType(Class<? extends Annotation> annotation) {
+        this.name = DotName.createSimple(annotation.getName());
+        this.inherited = annotation.isAnnotationPresent(Inherited.class);
     }
 
     public DotName getName() {

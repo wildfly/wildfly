@@ -86,17 +86,20 @@ class DefaultComponentConfigurator extends AbstractComponentConfigurator impleme
 
                 final InterceptorClassDescription interceptorConfig = InterceptorClassDescription.merge(ComponentDescription.mergeInterceptorConfig(clazz, classDescription, description, metadataComplete), moduleDescription.getInterceptorClassOverride(clazz.getName()));
 
-                handleClassMethod(clazz, interceptorConfig.getPostConstruct(), userPostConstruct, true, true);
-                handleClassMethod(clazz, interceptorConfig.getPreDestroy(), userPreDestroy, true, true);
                 handleClassMethod(clazz, interceptorConfig.getAroundInvoke(), componentUserAroundInvoke, false, false);
 
                 if (description.isTimerServiceRequired()) {
                     handleClassMethod(clazz, interceptorConfig.getAroundTimeout(), componentUserAroundTimeout, false, false);
                 }
+                if (!description.isIgnoreLifecycleInterceptors()) {
+                    handleClassMethod(clazz, interceptorConfig.getPostConstruct(), userPostConstruct, true, true);
+                    handleClassMethod(clazz, interceptorConfig.getPreDestroy(), userPreDestroy, true, true);
 
-                if (description.isPassivationApplicable()) {
-                    handleClassMethod(clazz, interceptorConfig.getPrePassivate(), componentUserPrePassivate, false, false);
-                    handleClassMethod(clazz, interceptorConfig.getPostActivate(), componentUserPostActivate, false, false);
+
+                    if (description.isPassivationApplicable()) {
+                        handleClassMethod(clazz, interceptorConfig.getPrePassivate(), componentUserPrePassivate, false, false);
+                        handleClassMethod(clazz, interceptorConfig.getPostActivate(), componentUserPostActivate, false, false);
+                    }
                 }
             }
 

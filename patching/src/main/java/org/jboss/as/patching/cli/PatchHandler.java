@@ -339,14 +339,20 @@ public class PatchHandler extends CommandHandlerWithHelp {
             builder.overrideAll();
         }
         if (override.isPresent(args)) {
-            String overrideList = override.getValue(args);
+            final String overrideList = override.getValue(args);
+            if(overrideList == null || overrideList.isEmpty()) {
+                throw new CommandFormatException(override.getFullName() + " is missing value.");
+            }
             for (String path : overrideList.split(",+")) {
                 builder.overrideItem(path);
             }
         }
         if (preserve.isPresent(args)) {
-            String overrideList = preserve.getValue(args);
-            for (String path : overrideList.split(",+")) {
+            final String preserveList = preserve.getValue(args);
+            if(preserveList == null || preserveList.isEmpty()) {
+                throw new CommandFormatException(preserve.getFullName() + " is missing value.");
+            }
+            for (String path : preserveList.split(",+")) {
                 builder.preserveItem(path);
             }
         }

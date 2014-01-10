@@ -29,14 +29,14 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>11</version>
+      <version>12</version>
       <relativePath></relativePath>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-core-model-test-controller-7.1.2</artifactId>
     <name>WildFly: Core Model Test Controller 7.1.2</name>
-    <version>8.0.0.Beta2-SNAPSHOT</version>
+    <version>8.0.0.Final-SNAPSHOT</version>
 
     <properties>
         <property.old.as.version>7.1.2.Final</property.old.as.version>

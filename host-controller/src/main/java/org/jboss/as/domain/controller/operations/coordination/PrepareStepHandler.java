@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUN
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
@@ -40,9 +41,11 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.ApplyMissingDomainModelResourcesHandler;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
@@ -127,13 +130,20 @@ public class PrepareStepHandler  implements OperationStepHandler {
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
             HOST_CONTROLLER_LOGGER.tracef("%s executing direct", getClass().getSimpleName());
         }
+        executeDirectOperation(context, operation);
+    }
+
+    static void executeDirectOperation(OperationContext context, ModelNode operation) throws OperationFailedException {
         final String operationName =  operation.require(OP).asString();
-        OperationStepHandler stepHandler = null;
+        OperationStepHandler stepHandler;
         final ImmutableManagementResourceRegistration registration = context.getResourceRegistration();
         if (registration != null) {
             stepHandler = registration.getOperationHandler(PathAddress.EMPTY_ADDRESS, operationName);
+        } else {
+            stepHandler = resolveWildcardOperationHandler(PathAddress.pathAddress(operation.get(OP_ADDR)), operationName,
+                    context.getRootResourceRegistration());
         }
-        if(stepHandler != null) {
+        if (stepHandler != null) {
             context.addStep(stepHandler, OperationContext.Stage.MODEL);
         } else {
             PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
@@ -144,6 +154,41 @@ public class PrepareStepHandler  implements OperationStepHandler {
             }
         }
         context.stepCompleted();
+    }
+
+    private static OperationStepHandler resolveWildcardOperationHandler(final PathAddress address, final String operationName,
+                                                                 final ImmutableManagementResourceRegistration rootRegistration) {
+        OperationStepHandler result = null;
+        if (address.size() > 0) {
+            // For wildcard elements, check specific registrations where the same OSH is used
+            // for all such registrations
+            PathElement pe = address.getLastElement();
+            if (pe.isWildcard()) {
+                String type = pe.getKey();
+                PathAddress parent = address.subAddress(0, address.size() - 1);
+                Set<PathElement> children = rootRegistration.getChildAddresses(parent);
+                if (children != null) {
+                    OperationStepHandler found = null;
+                    for (PathElement child : children) {
+                        if (type.equals(child.getKey())) {
+                            OperationEntry oe = rootRegistration.getOperationEntry(parent.append(child), operationName);
+                            OperationStepHandler osh = oe == null ? null : oe.getOperationHandler();
+                            if (osh == null || (found != null && !found.equals(osh))) {
+                                // Not all children have the same handler; give up
+                                found = null;
+                                break;
+                            }
+                            // We have a candidate OSH
+                            found = osh;
+                        }
+                    }
+                    if (found != null) {
+                        result = found;
+                    }
+                }
+            }
+        }
+        return result;
     }
 
 }

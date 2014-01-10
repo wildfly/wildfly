@@ -29,12 +29,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-parent</artifactId>
-        <version>8.0.0.Beta2-SNAPSHOT</version>
+        <version>8.0.0.Final-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-process-controller</artifactId>
-    <version>8.0.0.Beta2-SNAPSHOT</version>
+    <version>8.0.0.Final-SNAPSHOT</version>
 
     <name>WildFly: Process Controller</name>
 
@@ -48,13 +48,6 @@
               <descriptor>src/assembly/spi.xml</descriptor>
               <descriptor>src/assembly/plugins.xml</descriptor>
             </descriptors>
-          </configuration>
-        </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <redirectTestOutputToFile>true</redirectTestOutputToFile>
           </configuration>
         </plugin>
       </plugins>
@@ -107,23 +100,4 @@
            <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>tools</id>
-            <activation>
-                <file><exists>${com.sun.tools.path}</exists></file>
-            </activation>
-            <dependencies>
-                    <dependency>
-                    <groupId>com.sun</groupId>
-                    <artifactId>tools</artifactId>
-                    <scope>system</scope>
-                    <version>${maven.compiler.source}</version>
-                    <systemPath>${com.sun.tools.path}</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
-
 </project>

@@ -37,6 +37,7 @@ import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.ResourceAdapterService;
+import org.jboss.as.connector.subsystems.resourceadapters.RaOperationUtil;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
@@ -103,8 +104,9 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
         deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
         final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s",deploymentName);
+        final boolean fromModule = duServiceName.getParent().equals(RaOperationUtil.RAR_MODULE);
         final AS7RaDeployer raDeployer =
-            new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, classLoader, cmd, ijmd, deploymentServiceName);
+            new AS7RaDeployer(context.getChildTarget(), url, deploymentName, root, classLoader, cmd, ijmd, deploymentServiceName, fromModule);
         raDeployer.setConfiguration(config.getValue());
 
         ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
@@ -208,11 +210,13 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     private class AS7RaDeployer extends AbstractAS7RaDeployer {
 
         private final IronJacamar ijmd;
+        private final boolean fromModule;
 
         public AS7RaDeployer(ServiceTarget serviceContainer, URL url, String deploymentName, File root, ClassLoader cl,
-                Connector cmd, IronJacamar ijmd,  final ServiceName deploymentServiceName) {
+                Connector cmd, IronJacamar ijmd,  final ServiceName deploymentServiceName, final boolean fromModule) {
             super(serviceContainer, url, deploymentName, root, cl, cmd, deploymentServiceName);
             this.ijmd = ijmd;
+            this.fromModule = fromModule;
         }
 
         @Override
@@ -257,8 +261,8 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
                         }
                     }
 
-                    // Pure inflow
-                    if (raMcfClasses.size() == 0 && raAoClasses.size() == 0)
+                    // Pure inflow always active except in case it is deployed as module
+                    if (raMcfClasses.size() == 0 && raAoClasses.size() == 0 && ! fromModule)
                         return true;
                 }
 

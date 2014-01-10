@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.server.deployment.SetupAction;
@@ -45,7 +46,7 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class TransactionRollbackSetupAction implements SetupAction, Service<TransactionRollbackSetupAction> {
 
-    private static final ThreadLocal<Integer> depth = new ThreadLocal<Integer>();
+    private static final ThreadLocal<Holder> depth = new ThreadLocal<Holder>();
 
     private final InjectedValue<TransactionManager> transactionManager = new InjectedValue<TransactionManager>();
 
@@ -62,7 +63,7 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
 
     @Override
     public void teardown(final Map<String, Object> properties) {
-        if (changeDepth(-1) == 0) {
+        if (changeDepth(-1)) {
             checkTransactionStatus();
         }
     }
@@ -96,42 +97,70 @@ public class TransactionRollbackSetupAction implements SetupAction, Service<Tran
         return transactionManager;
     }
 
-    private int changeDepth(int increment) {
-        Integer now = depth.get();
-        int newVal = now == null ? increment : now.intValue() + increment;
-        if (newVal == 0) {
-            depth.set(null);
-        } else {
-            depth.set(Integer.valueOf(newVal));
+    private boolean changeDepth(int increment) {
+        Holder holder = depth.get();
+        if (holder == null) {
+            //if there is a transaction active initially we just track the depth
+            //and don't actually close it, because we don't 'own' the transaction
+            //this can happen when running async listeners outside the context of a request
+            holder = new Holder();
+            try {
+                final TransactionManager tm = transactionManager.getOptionalValue();
+                if (tm != null) {
+                    holder.actuallyCleanUp = !isTransactionActive(tm, tm.getStatus());
+                }
+                depth.set(holder);
+            } catch (Exception e) {
+                TransactionLogger.ROOT_LOGGER.unableToGetTransactionStatus(e);
+            }
         }
-        return newVal;
+
+        holder.depth += increment;
+        if (holder.depth == 0) {
+            depth.set(null);
+            return holder.actuallyCleanUp;
+        }
+        return false;
     }
 
     private void checkTransactionStatus() {
         try {
             final TransactionManager tm = transactionManager.getOptionalValue();
-            if(tm == null) {
+            if (tm == null) {
                 return;
             }
             final int status = tm.getStatus();
-
-            switch (status) {
-                case Status.STATUS_ACTIVE:
-                case Status.STATUS_COMMITTING:
-                case Status.STATUS_MARKED_ROLLBACK:
-                case Status.STATUS_PREPARING:
-                case Status.STATUS_ROLLING_BACK:
-                case Status.STATUS_ROLLEDBACK:
-                case Status.STATUS_PREPARED:
-                    try {
-                        TransactionLogger.ROOT_LOGGER.transactionStillOpen(status);
-                        tm.rollback();
-                    } catch (Exception ex) {
-                        TransactionLogger.ROOT_LOGGER.unableToRollBack(ex);
-                    }
+            final boolean active = isTransactionActive(tm, status);
+            if (active) {
+                try {
+                    TransactionLogger.ROOT_LOGGER.transactionStillOpen(status);
+                    tm.rollback();
+                } catch (Exception ex) {
+                    TransactionLogger.ROOT_LOGGER.unableToRollBack(ex);
+                }
             }
         } catch (Exception e) {
             TransactionLogger.ROOT_LOGGER.unableToGetTransactionStatus(e);
         }
+    }
+
+    private boolean isTransactionActive(TransactionManager tm, int status) throws SystemException {
+
+        switch (status) {
+            case Status.STATUS_ACTIVE:
+            case Status.STATUS_COMMITTING:
+            case Status.STATUS_MARKED_ROLLBACK:
+            case Status.STATUS_PREPARING:
+            case Status.STATUS_ROLLING_BACK:
+            case Status.STATUS_ROLLEDBACK:
+            case Status.STATUS_PREPARED:
+                return true;
+        }
+        return false;
+    }
+
+    private static class Holder {
+        int depth;
+        boolean actuallyCleanUp = true;
     }
 }

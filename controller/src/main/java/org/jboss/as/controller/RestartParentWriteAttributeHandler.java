@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
+import java.util.Collection;
 import java.util.NoSuchElementException;
 
 import org.jboss.as.controller.operations.common.Util;
@@ -42,6 +43,11 @@ public abstract class RestartParentWriteAttributeHandler extends AbstractWriteAt
     private final String parentKeyName;
 
     public RestartParentWriteAttributeHandler(String parentKeyName, AttributeDefinition... definitions) {
+        super(definitions);
+        this.parentKeyName = parentKeyName;
+    }
+
+    public RestartParentWriteAttributeHandler(final String parentKeyName, final Collection<AttributeDefinition> definitions) {
         super(definitions);
         this.parentKeyName = parentKeyName;
     }

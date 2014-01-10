@@ -34,7 +34,7 @@ import org.jboss.msc.service.ServiceName;
 public class MessagingServices {
 
     /** The service name "jboss.messaging". */
-    private static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
+    static final ServiceName JBOSS_MESSAGING = ServiceName.JBOSS.append("messaging");
 
     /** The core queue name base. */
     private static final String CORE_QUEUE_BASE = "queue";

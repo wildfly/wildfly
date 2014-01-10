@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentBuilder;
 import org.jboss.as.web.host.WebDeploymentController;
@@ -35,6 +36,7 @@ import org.jboss.as.web.host.WebHost;
 import org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
 import org.jboss.as.webservices.deployers.deployment.WSDeploymentBuilder;
+import org.jboss.as.webservices.service.EndpointService;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.WSServices;
@@ -42,6 +44,8 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.DeploymentAspectManagerImpl;
 import org.jboss.ws.common.deployment.EndpointHandlerDeploymentAspect;
@@ -67,18 +71,22 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 public final class EndpointPublisherImpl implements EndpointPublisher {
 
-   private WebHost host;
-    private boolean runningInService = false;
+    private final WebHost host;
+    private final boolean runningInService;
     private static List<DeploymentAspect> publisherDepAspects = null;
     private static List<DeploymentAspect> depAspects = null;
 
-    public EndpointPublisherImpl(WebHost host) {
-        this.host = host;
+    protected EndpointPublisherImpl(WebHost host) {
+        this(host, false);
     }
 
-    public EndpointPublisherImpl(WebHost host, boolean runningInService) {
-        this(host);
+    protected EndpointPublisherImpl(WebHost host, boolean runningInService) {
+        this.host = host;
         this.runningInService = runningInService;
+    }
+
+    protected EndpointPublisherImpl(boolean runningInService) {
+        this(null, runningInService);
     }
 
     @Override
@@ -97,11 +105,12 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         return publish(getBaseTarget(), context, loader, urlPatternToClassNameMap, null, metadata, jbwsMetadata);
     }
 
-    public Context publish(ServiceTarget target, String context, ClassLoader loader,
+    protected Context publish(ServiceTarget target, String context, ClassLoader loader,
             Map<String, String> urlPatternToClassNameMap, JBossWebMetaData jbwmd, WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetadata)
             throws Exception {
-        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap, jbwmd, metadata, jbwsMetadata);
-        return new Context(context, publish(target, unit));
+        DeploymentUnit unit = doPrepare(context, loader, urlPatternToClassNameMap, jbwmd, metadata, jbwsMetadata);
+        doDeploy(target, unit);
+        return doPublish(target, unit);
     }
 
     private static ServiceTarget getBaseTarget() {
@@ -109,15 +118,42 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
     }
 
     /**
-     * Publishes the endpoints declared to the provided WSEndpointDeploymentUnit
+     * Prepare the ws Deployment and return a DeploymentUnit containing it
+     *
+     * @param context
+     * @param loader
+     * @param urlPatternToClassNameMap
+     * @param jbwmd
+     * @param metadata
+     * @param jbwsMetadata
+     * @return
      */
-    public List<Endpoint> publish(ServiceTarget target, WSEndpointDeploymentUnit unit) throws Exception {
+    protected DeploymentUnit doPrepare(String context, ClassLoader loader,
+            Map<String, String> urlPatternToClassNameMap, JBossWebMetaData jbwmd, WebservicesMetaData metadata, JBossWebservicesMetaData jbwsMetadata) {
+        ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        WSEndpointDeploymentUnit unit = new WSEndpointDeploymentUnit(loader, context, urlPatternToClassNameMap, jbwmd, metadata, jbwsMetadata);
+        try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
+            WSDeploymentBuilder.getInstance().build(unit);
+            return unit;
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
+        }
+    }
+
+    /**
+     * Triggers the WS deployment aspects, which process the deployment and
+     * install the endpoint services.
+     *
+     * @param target
+     * @param unit
+     */
+    protected void doDeploy(ServiceTarget target, DeploymentUnit unit) {
         List<DeploymentAspect> aspects = getDeploymentAspects();
         ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         Deployment dep = null;
         try {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
-            WSDeploymentBuilder.getInstance().build(unit);
             dep = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
             dep.addAttachment(ServiceTarget.class, target);
             DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
@@ -129,12 +165,33 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
             }
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
         }
-        Deployment deployment = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
-        deployment.addAttachment(WebDeploymentController.class, startWebApp(host, unit)); //TODO simplify and use findChild later in destroy()/stopWebApp()
-        return deployment.getService().getEndpoints();
     }
 
-    private static WebDeploymentController startWebApp(WebHost host, WSEndpointDeploymentUnit unit) throws Exception {
+    /**
+     * Publish the webapp for the WS deployment unit
+     *
+     * @param target
+     * @param unit
+     * @return
+     * @throws Exception
+     */
+    protected Context doPublish(ServiceTarget target, DeploymentUnit unit) throws Exception {
+        Deployment deployment = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
+        List<Endpoint> endpoints = deployment.getService().getEndpoints();
+        //If we're running in a Service, that will already have proper dependencies set on the installed endpoint services,
+        //otherwise we need to explictly wait for the endpoint services to be started before creating the webapp.
+        if (!runningInService) {
+            final ServiceRegistry registry = unit.getServiceRegistry();
+            for (Endpoint ep : endpoints) {
+                final ServiceName serviceName = EndpointService.getServiceName(unit, ep.getShortName());
+                registry.getRequiredService(serviceName).awaitValue();
+            }
+        }
+        deployment.addAttachment(WebDeploymentController.class, startWebApp(host, unit)); //TODO simplify and use findChild later in destroy()/stopWebApp()
+        return new Context(unit.getAttachment(WSAttachmentKeys.JBOSSWEB_METADATA_KEY).getContextRoot(), endpoints);
+    }
+
+    private static WebDeploymentController startWebApp(WebHost host, DeploymentUnit unit) throws Exception {
         WebDeploymentBuilder deployment = new WebDeploymentBuilder();
         WebDeploymentController handle;
         try {
@@ -198,25 +255,48 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         if (eps == null || eps.isEmpty()) {
             return;
         }
-        Deployment deployment = eps.get(0).getService().getDeployment();
-        List<DeploymentAspect> aspects = getDeploymentAspects();
+        Deployment dep = eps.get(0).getService().getDeployment();
         try {
-            stopWebApp(deployment.getAttachment(WebDeploymentController.class));
+            stopWebApp(dep);
         } finally {
-            ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-            try {
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
-                DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
-                dam.setDeploymentAspects(aspects);
-                dam.undeploy(deployment);
-            } finally {
-                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
-            }
+            undeploy(dep);
         }
     }
 
-    private static void stopWebApp(WebDeploymentController context) throws Exception {
+    /**
+     * Triggers the WS deployment aspects, which process
+     * the deployment unit and stop the endpoint services.
+     *
+     * @param context
+     * @throws Exception
+     */
+    protected void undeploy(DeploymentUnit unit) throws Exception {
+        undeploy(unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY));
+    }
+
+    protected void undeploy(Deployment deployment) throws Exception {
+        List<DeploymentAspect> aspects = getDeploymentAspects();
+        ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(ClassLoaderProvider.getDefaultProvider().getServerIntegrationClassLoader());
+            DeploymentAspectManager dam = new DeploymentAspectManagerImpl();
+            dam.setDeploymentAspects(aspects);
+            dam.undeploy(deployment);
+        } finally {
+            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
+        }
+    }
+
+    /**
+     * Stops the webapp serving the provided ws deployment
+     *
+     * @param deployment
+     * @throws Exception
+     */
+    protected void stopWebApp(Deployment deployment) throws Exception {
+        WebDeploymentController context;
+        try {
+            context = deployment.getAttachment(WebDeploymentController.class);
             context.stop();
         } catch (Exception e) {
             throw MESSAGES.stopContextPhaseFailed(e);

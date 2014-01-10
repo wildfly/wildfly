@@ -57,6 +57,7 @@ public abstract class ListenerService<T> implements Service<T> {
             .getMap();
     protected final InjectedValue<XnioWorker> worker = new InjectedValue<>();
     protected final InjectedValue<SocketBinding> binding = new InjectedValue<>();
+    protected final InjectedValue<SocketBinding> redirectSocket = new InjectedValue<>();
     protected final InjectedValue<Pool> bufferPool = new InjectedValue<>();
     protected final InjectedValue<Server> serverService = new InjectedValue<>();
     protected final List<HandlerWrapper> listenerHandlerWrappers = new ArrayList<>();
@@ -77,6 +78,10 @@ public abstract class ListenerService<T> implements Service<T> {
 
     public InjectedValue<SocketBinding> getBinding() {
         return binding;
+    }
+
+    public InjectedValue<SocketBinding> getRedirectSocket() {
+        return redirectSocket;
     }
 
     public InjectedValue<Pool> getBufferPool() {
@@ -134,6 +139,8 @@ public abstract class ListenerService<T> implements Service<T> {
         stopListening();
         unregisterBinding();
     }
+
+
 
     protected abstract OpenListener createOpenListener();
 

@@ -23,10 +23,12 @@ package org.jboss.as.webservices.service;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
+import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.host.WebHost;
-import org.jboss.as.webservices.publish.EndpointPublisherImpl;
+import org.jboss.as.webservices.publish.EndpointPublisherHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.Service;
@@ -39,6 +41,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 import org.jboss.wsf.spi.metadata.webservices.WebservicesMetaData;
 import org.jboss.wsf.spi.publish.Context;
@@ -53,25 +56,13 @@ public final class EndpointPublishService implements Service<Context> {
 
     private final ServiceName name;
     private volatile Context wsctx;
-
-    private final ClassLoader loader;
-    private final String context;
-    private final Map<String,String> urlPatternToClassName;
-    private final JBossWebMetaData jbwmd;
-    private final WebservicesMetaData wsmd;
-    private final JBossWebservicesMetaData jbwsmd;
+    private final DeploymentUnit deploymentUnit;
 
     private final InjectedValue<WebHost> hostInjector = new InjectedValue<WebHost>();
 
-    private EndpointPublishService(final String context, final ClassLoader loader,
-            final Map<String,String> urlPatternToClassName, JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd) {
+    private EndpointPublishService(final String context, final DeploymentUnit deploymentUnit) {
         this.name = WSServices.ENDPOINT_PUBLISH_SERVICE.append(context);
-        this.loader = loader;
-        this.context = context;
-        this.urlPatternToClassName = urlPatternToClassName;
-        this.jbwmd = jbwmd;
-        this.wsmd = wsmd;
-        this.jbwsmd = jbwsmd;
+        this.deploymentUnit = deploymentUnit;
     }
 
     @Override
@@ -91,8 +82,7 @@ public final class EndpointPublishService implements Service<Context> {
     public void start(final StartContext ctx) throws StartException {
         ROOT_LOGGER.starting(name);
         try {
-            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue(), true);
-            wsctx = publisher.publish(ctx.getChildTarget(), context, loader, urlPatternToClassName, jbwmd, wsmd, jbwsmd);
+            wsctx = EndpointPublisherHelper.doPublishStep(hostInjector.getValue(), ctx.getChildTarget(), deploymentUnit);
         } catch (Exception e) {
             throw new StartException(e);
         }
@@ -101,9 +91,12 @@ public final class EndpointPublishService implements Service<Context> {
     @Override
     public void stop(final StopContext ctx) {
         ROOT_LOGGER.stopping(name);
+        List<Endpoint> eps = wsctx.getEndpoints();
+        if (eps == null || eps.isEmpty()) {
+            return;
+        }
         try {
-            EndpointPublisherImpl publisher = new EndpointPublisherImpl(hostInjector.getValue(), true);
-            publisher.destroy(wsctx);
+            EndpointPublisherHelper.undoPublishStep(hostInjector.getValue(), wsctx);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -117,11 +110,14 @@ public final class EndpointPublishService implements Service<Context> {
     public static ServiceBuilder<Context> createServiceBuilder(final ServiceTarget serviceTarget, final String context,
             final ClassLoader loader, final String hostName, final Map<String, String> urlPatternToClassName,
             JBossWebMetaData jbwmd, WebservicesMetaData wsmd, JBossWebservicesMetaData jbwsmd) {
-        final EndpointPublishService service = new EndpointPublishService(context, loader, urlPatternToClassName, jbwmd, wsmd, jbwsmd);
+        final DeploymentUnit unit = EndpointDeployService.install(serviceTarget, context, loader, hostName, urlPatternToClassName, jbwmd, wsmd, jbwsmd);
+        final EndpointPublishService service = new EndpointPublishService(context, unit);
         final ServiceBuilder<Context> builder = serviceTarget.addService(service.getName(), service);
         builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
-        builder.addDependency(WebHost.SERVICE_NAME.append(hostName), WebHost.class,
-                service.getHostInjector());
+        builder.addDependency(WebHost.SERVICE_NAME.append(hostName), WebHost.class, service.getHostInjector());
+        for (ServiceName epServiceName : EndpointService.getServiceNamesFromDeploymentUnit(unit)) {
+            builder.addDependency(DependencyType.REQUIRED, epServiceName);
+        }
         return builder;
     }
 

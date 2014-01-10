@@ -21,15 +21,7 @@
 */
 package org.jboss.as.domain.http.server;
 
-import static io.undertow.util.Headers.HOST;
-import static io.undertow.util.Headers.LOCATION;
-import static io.undertow.util.Headers.REFERER;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import io.undertow.security.api.SecurityContext;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.BlockingHandler;
@@ -39,11 +31,9 @@ import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import io.undertow.util.Methods;
 
-import io.undertow.util.StatusCodes;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
-import org.jboss.as.domain.http.server.security.LogoutHandler;
 import org.jboss.as.domain.http.server.security.SubjectDoAsHandler;
 
 /**
@@ -109,13 +99,6 @@ class DomainApiCheckHandler implements HttpHandler {
     }
 
     private boolean commonChecks(HttpServerExchange exchange) throws Exception {
-
-        // Check for context flag set by LogoutHandler
-        if (exchange.getQueryParameters().containsKey(LogoutHandler.CONTEXT)) {
-            contextLogout(exchange);
-            return false;
-        }
-
         // AS7-2284 If we are starting or stopping, tell caller the service is unavailable and to try again
         // later. If "stopping" it's either a reload, in which case trying again will eventually succeed,
         // or it's a true process stop eventually the server will have stopped.
@@ -163,35 +146,5 @@ class DomainApiCheckHandler implements HttpHandler {
             }
         }
         return true;
-    }
-
-    private void contextLogout(final HttpServerExchange exchange) {
-        SecurityContext context = exchange.getAttachment(SecurityContext.ATTACHMENT_KEY);
-        context.logout();
-
-        final HeaderMap requestHeaders = exchange.getRequestHeaders();
-        final HeaderMap responseHeaders = exchange.getResponseHeaders();
-
-        String host = null;
-        String protocol = "http";
-        String referrer = responseHeaders.getFirst(REFERER);
-        if (referrer != null) {
-            try {
-                URI uri = new URI(referrer);
-                protocol = uri.getScheme();
-                host = uri.getHost() + (uri.getPort() == -1 ? "" : ":" + String.valueOf(uri.getPort()));
-            } catch (URISyntaxException e) {}
-        }
-        if (host == null) {
-            host = requestHeaders.getFirst(HOST);
-            if (host == null) {
-                exchange.setResponseCode(StatusCodes.INTERNAL_SERVER_ERROR);
-                return;
-            }
-        }
-
-        // Back to LogoutHandler to do the rest of the redirect magic...
-        responseHeaders.add(LOCATION, protocol + "://" + host + "/logout?" + LogoutHandler.REDIRECT);
-        exchange.setResponseCode(StatusCodes.TEMPORARY_REDIRECT);
     }
 }

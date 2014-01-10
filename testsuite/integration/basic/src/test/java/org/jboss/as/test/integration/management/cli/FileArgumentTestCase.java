@@ -58,7 +58,7 @@ public class FileArgumentTestCase {
     private static final String FILE_NAME = "jboss-cli-file-arg-test.cli";
     private static final File TMP_FILE;
     static {
-        TMP_FILE = new File(new File(System.getProperty("java.io.tmpdir")), FILE_NAME);
+        TMP_FILE = new File(new File(TestSuiteEnvironment.getTmpDir()), FILE_NAME);
     }
 
     @AfterClass
@@ -157,11 +157,11 @@ public class FileArgumentTestCase {
     }
 
     protected int execute(File f, boolean logFailure) {
-        final String jbossDist = System.getProperty("jboss.dist");
+        final String jbossDist = TestSuiteEnvironment.getSystemProperty("jboss.dist");
         if(jbossDist == null) {
             fail("jboss.dist system property is not set");
         }
-        final String modulePath = System.getProperty("module.path");
+        final String modulePath = TestSuiteEnvironment.getSystemProperty("module.path");
         if(modulePath == null) {
             fail("module.path system property is not set");
         }
@@ -169,7 +169,7 @@ public class FileArgumentTestCase {
         final ProcessBuilder builder = new ProcessBuilder();
         builder.redirectErrorStream(true);
         final List<String> command = new ArrayList<String>();
-        command.add("java");
+        command.add(TestSuiteEnvironment.getJavaPath());
         TestSuiteEnvironment.getIpv6Args(command);
         command.add("-Djboss.cli.config=" + jbossDist + File.separator + "bin" + File.separator + "jboss-cli.xml");
         command.add("-jar");

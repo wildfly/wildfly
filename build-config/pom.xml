@@ -29,14 +29,14 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>11</version>
+      <version>12</version>
       <relativePath></relativePath>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-build-config</artifactId>
     <name>WildFly: Build Configuration</name>
-    <version>8.0.0.Beta2-SNAPSHOT</version>
+    <version>8.0.0.Final-SNAPSHOT</version>
 
     <licenses>
         <license>

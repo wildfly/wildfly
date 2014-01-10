@@ -46,14 +46,14 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
     public static final PathElement BINARY_KEYED_JDBC_STORE_PATH = PathElement.pathElement(ModelKeys.BINARY_KEYED_JDBC_STORE, ModelKeys.BINARY_KEYED_JDBC_STORE_NAME);
 
     // attributes
-    static final AttributeDefinition[] BINARY_KEYED_JDBC_STORE_ATTRIBUTES = {BINARY_KEYED_TABLE};
+    static final AttributeDefinition[] BINARY_KEYED_JDBC_STORE_ATTRIBUTES = { BINARY_KEYED_TABLE };
 
     // operations
     private static final OperationDefinition BINARY_KEYED_JDBC_STORE_ADD_DEFINITION = new SimpleOperationDefinitionBuilder(ADD, InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE))
         .setParameters(COMMON_STORE_PARAMETERS)
         .addParameter(DATA_SOURCE)
+        .addParameter(DIALECT)
         .addParameter(BINARY_KEYED_TABLE)
-//        .setAttributeResolver(InfinispanExtension.getResourceDescriptionResolver(ModelKeys.BINARY_KEYED_JDBC_STORE))
         .build();
 
     public BinaryKeyedJDBCStoreResourceDefinition() {
@@ -74,15 +74,9 @@ public class BinaryKeyedJDBCStoreResourceDefinition extends JDBCStoreResourceDef
         }
     }
 
-    @Override
-    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-        super.registerOperations(resourceRegistration);
-    }
-
     // override the add operation to provide a custom definition (for the optional PROPERTIES parameter to add())
     @Override
     protected void registerAddOperation(final ManagementResourceRegistration registration, final OperationStepHandler handler, OperationEntry.Flag... flags) {
         registration.registerOperationHandler(BINARY_KEYED_JDBC_STORE_ADD_DEFINITION, handler);
     }
-
 }

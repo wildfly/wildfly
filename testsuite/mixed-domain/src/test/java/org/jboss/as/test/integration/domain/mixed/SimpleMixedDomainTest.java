@@ -21,9 +21,11 @@
 */
 package org.jboss.as.test.integration.domain.mixed;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_ALIASES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_CLIENT_CONTENT;
@@ -34,25 +36,38 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROXIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
+import static org.jboss.as.test.integration.domain.management.util.DomainTestSupport.validateResponse;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.security.Constants;
+import org.jboss.as.security.SecurityExtension;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.management.util.DomainTestUtils;
 import org.jboss.as.test.integration.domain.mixed.Version.AsVersion;
 import org.jboss.as.test.integration.domain.mixed.util.MixedDomainTestSupport;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.xnio.IoUtils;
@@ -104,6 +119,87 @@ public abstract class SimpleMixedDomainTest  {
         cleanupKnownDifferencesInModelsForVersioningCheck(masterModel, slaveModel);
         //The version fields should be the same
         assertEquals(masterModel, slaveModel);
+    }
+
+    @Test
+    public void testSecurityTransformers() throws Exception {
+        final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
+        final DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
+        try {
+            PathAddress  subsystem = PathAddress.pathAddress(PathElement.pathElement(PROFILE, getProfile()), PathElement.pathElement(SUBSYSTEM, SecurityExtension.SUBSYSTEM_NAME));
+            PathAddress webPolicy = subsystem.append(Constants.SECURITY_DOMAIN, "jboss-web-policy").append(Constants.AUTHORIZATION, Constants.CLASSIC);
+            ModelNode options = new ModelNode();
+            options.add("a", "b");
+            ModelNode op = Util.getWriteAttributeOperation(webPolicy.append(Constants.POLICY_MODULE, "Delegating"), Constants.MODULE_OPTIONS, options);
+            DomainTestUtils.executeForResult(op, masterClient);
+
+            //TODO check the resources
+            //System.out.println(DomainTestUtils.executeForResult(Util.createOperation(READ_RESOURCE_OPERATION, address), modelControllerClient));
+
+            PathAddress jaspi = subsystem.append(Constants.SECURITY_DOMAIN, "jaspi-test").append(Constants.AUTHENTICATION, Constants.JASPI);
+
+            PathAddress jaspiLoginStack = jaspi.append(Constants.LOGIN_MODULE_STACK, "lm-stack");
+            op = Util.createAddOperation(jaspiLoginStack.append(Constants.LOGIN_MODULE, "test2"));
+            op.get(Constants.CODE).set("UserRoles");
+            op.get(Constants.FLAG).set("required");
+            op.get(Constants.MODULE).set("test-jaspi");
+            DomainTestUtils.executeForResult(op, masterClient);
+
+            op = Util.createAddOperation(jaspi.append(Constants.AUTH_MODULE, "Delegating"));
+            op.get(Constants.CODE).set("Delegating");
+            op.get(Constants.LOGIN_MODULE_STACK_REF).set("lm-stack");
+            op.get(Constants.FLAG).set("optional");
+            DomainTestUtils.executeForResult(op, masterClient);
+
+            op = new ModelNode();
+            op.get(OP).set(READ_RESOURCE_OPERATION);
+            op.get(OP_ADDR).set(jaspi.toModelNode());
+            op.get(INCLUDE_ALIASES).set(false);
+            op.get(RECURSIVE).set(true);
+
+            ModelNode masterResource = DomainTestUtils.executeForResult(op, masterClient);
+            ModelNode slaveResource = DomainTestUtils.executeForResult(op, slaveClient);
+
+            //TODO only check this for 7.1.x
+            if (version == Version.AsVersion.AS_7_1_2_FINAL || version == Version.AsVersion.AS_7_1_3_FINAL) {
+                ModelNode masterModules = masterResource.get(Constants.AUTH_MODULE);
+                Assert.assertFalse(slaveResource.hasDefined(Constants.AUTH_MODULE));
+                List<ModelNode> slaveModules = slaveResource.get(Constants.AUTH_MODULES).asList();
+                Assert.assertEquals(masterModules.keys().size(), slaveModules.size());
+                Set<ModelNode> masterSet = getAllChildren(masterModules);
+                Assert.assertTrue(slaveModules.containsAll(masterSet));
+
+                masterModules = masterResource.get(Constants.LOGIN_MODULE_STACK, "lm-stack", Constants.LOGIN_MODULE);
+                Assert.assertFalse(slaveResource.get(Constants.LOGIN_MODULE_STACK, "lm-stack").hasDefined(Constants.LOGIN_MODULE));
+                slaveModules = slaveResource.get(Constants.LOGIN_MODULE_STACK, "lm-stack", Constants.LOGIN_MODULES).asList();
+                Assert.assertEquals(masterModules.keys().size(), slaveModules.size());
+                masterSet = getAllChildren(masterModules);
+                Assert.assertTrue(slaveModules.containsAll(masterSet));
+            } else {
+                ModelTestUtils.compare(masterResource, slaveResource, true);
+            }
+
+
+        } finally {
+            try {
+                //The server will be in restart-required mode, so restart it to get rid of the changes
+                PathAddress serverAddress = PathAddress.pathAddress(HOST, "slave").append(SERVER_CONFIG, "server-one");
+                ModelNode op = Util.createOperation(RESTART, PathAddress.pathAddress(serverAddress));
+                op.get(BLOCKING).set(true);
+                Assert.assertEquals("STARTED", validateResponse(slaveClient.execute(op), true).asString());
+            } finally {
+                IoUtils.safeClose(slaveClient);
+                IoUtils.safeClose(masterClient);
+            }
+        }
+    }
+
+    private Set<ModelNode> getAllChildren(ModelNode modules) {
+        HashSet<ModelNode> set = new HashSet<ModelNode>();
+        for (Property prop : modules.asPropertyList()) {
+            set.add(prop.getValue());
+        }
+        return set;
     }
 
     private void cleanupKnownDifferencesInModelsForVersioningCheck(ModelNode masterModel, ModelNode slaveModel) {
@@ -158,4 +254,6 @@ public abstract class SimpleMixedDomainTest  {
 
         return model;
     }
+
+    protected abstract String getProfile();
 }

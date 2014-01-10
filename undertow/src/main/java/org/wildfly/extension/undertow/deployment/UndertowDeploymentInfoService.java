@@ -23,7 +23,7 @@
 package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.Handlers;
-import io.undertow.jsp.JspFileWrapper;
+import io.undertow.jsp.JspFileHandler;
 import io.undertow.jsp.JspServletBuilder;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
@@ -32,6 +32,7 @@ import io.undertow.server.handlers.builder.PredicatedHandler;
 import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.ResourceManager;
 import io.undertow.servlet.Servlets;
+import io.undertow.servlet.api.AuthMethodConfig;
 import io.undertow.servlet.api.ClassIntrospecter;
 import io.undertow.servlet.api.ConfidentialPortManager;
 import io.undertow.servlet.api.DefaultServletConfig;
@@ -52,8 +53,9 @@ import io.undertow.servlet.api.ServletSessionConfig;
 import io.undertow.servlet.api.SessionManagerFactory;
 import io.undertow.servlet.api.ThreadSetupAction;
 import io.undertow.servlet.api.WebResourceCollection;
+import io.undertow.servlet.handlers.DefaultServlet;
+import io.undertow.servlet.handlers.ServletPathMatches;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
-
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -114,7 +116,10 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.audit.AuditManager;
 import org.jboss.security.auth.login.JASPIAuthenticationInfo;
+import org.jboss.security.authorization.config.AuthorizationModuleEntry;
+import org.jboss.security.authorization.modules.JACCAuthorizationModule;
 import org.jboss.security.config.ApplicationPolicy;
+import org.jboss.security.config.AuthorizationInfo;
 import org.jboss.security.config.SecurityConfiguration;
 import org.jboss.vfs.VirtualFile;
 import org.wildfly.extension.undertow.Host;
@@ -126,6 +131,8 @@ import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
+import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
+import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
 import org.xnio.IoUtils;
 
@@ -134,7 +141,6 @@ import javax.servlet.Servlet;
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -161,8 +167,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     public static final ServiceName SERVICE_NAME = ServiceName.of("UndertowDeploymentInfoService");
 
     private static final String TEMP_DIR = "jboss.server.temp.dir";
-    private static final String HOME_DIR = "jboss.home.dir";
-    public static final String JAVAX_FACES_PROJECT_STAGE = "javax.faces.PROJECT_STAGE";
 
     private DeploymentInfo deploymentInfo;
 
@@ -173,7 +177,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Module module;
     private final ScisMetaData scisMetaData;
     private final VirtualFile deploymentRoot;
-    private final String securityContextId;
+    private final String jaccContextId;
     private final String securityDomain;
     private final List<ServletContextAttribute> attributes;
     private final String contextPath;
@@ -181,6 +185,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final Set<VirtualFile> overlays;
     private final List<ExpressionFactoryWrapper> expressionFactoryWrappers;
     private final List<PredicatedHandler> predicatedHandlers;
+    private final List<HandlerWrapper> initialHandlerChainWrappers;
+    private final List<HandlerWrapper> innerHandlerChainWrappers;
+    private final List<HandlerWrapper> outerHandlerChainWrappers;
+    private final List<ThreadSetupAction> threadSetupActions;
     private final boolean explodedDeployment;
 
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
@@ -192,7 +200,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String securityContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, boolean explodedDeployment) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -200,7 +208,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.module = module;
         this.scisMetaData = scisMetaData;
         this.deploymentRoot = deploymentRoot;
-        this.securityContextId = securityContextId;
+        this.jaccContextId = jaccContextId;
         this.securityDomain = securityDomain;
         this.attributes = attributes;
         this.contextPath = contextPath;
@@ -208,6 +216,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.overlays = overlays;
         this.expressionFactoryWrappers = expressionFactoryWrappers;
         this.predicatedHandlers = predicatedHandlers;
+        this.initialHandlerChainWrappers = initialHandlerChainWrappers;
+        this.innerHandlerChainWrappers = innerHandlerChainWrappers;
+        this.outerHandlerChainWrappers = outerHandlerChainWrappers;
+        this.threadSetupActions = threadSetupActions;
         this.explodedDeployment = explodedDeployment;
     }
 
@@ -221,6 +233,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleDistributable(deploymentInfo);
             handleIdentityManager(deploymentInfo);
             handleJASPIMechanism(deploymentInfo);
+            handleJACCAuthorization(deploymentInfo);
 
             //TODO: make this configurable
             //in most cases flush just hurts performance for no good reason
@@ -317,6 +330,29 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 });
             }
 
+            if (initialHandlerChainWrappers != null) {
+                for (HandlerWrapper handlerWrapper : initialHandlerChainWrappers) {
+                    deploymentInfo.addInitialHandlerChainWrapper(handlerWrapper);
+                }
+            }
+
+            if (innerHandlerChainWrappers != null) {
+                for (HandlerWrapper handlerWrapper : innerHandlerChainWrappers) {
+                    deploymentInfo.addInnerHandlerChainWrapper(handlerWrapper);
+                }
+            }
+
+            if (outerHandlerChainWrappers != null) {
+                for (HandlerWrapper handlerWrapper : outerHandlerChainWrappers) {
+                    deploymentInfo.addOuterHandlerChainWrapper(handlerWrapper);
+                }
+            }
+
+            if (threadSetupActions != null) {
+                for (ThreadSetupAction threadSetupAction : threadSetupActions) {
+                    deploymentInfo.addThreadSetupAction(threadSetupAction);
+                }
+            }
 
             this.deploymentInfo = deploymentInfo;
         } finally {
@@ -346,9 +382,33 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private void handleJASPIMechanism(final DeploymentInfo deploymentInfo) {
         ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
 
-        if (JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
-            deploymentInfo.addAuthenticationMechanism(new JASPIAuthenticationMechanism(this.securityDomain));
-            deploymentInfo.setIgnoreStandardAuthenticationMechanism(true);
+        if (applicationPolicy!=null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
+            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(this.securityDomain));
+        }
+    }
+
+    /**
+     * <p>
+     * Sets the {@link JACCAuthorizationManager} in the specified {@link DeploymentInfo} if the webapp security domain
+     * has defined a JACC authorization module.
+     * </p>
+     *
+     * @param deploymentInfo the {@link DeploymentInfo} instance.
+     */
+    private void handleJACCAuthorization(final DeploymentInfo deploymentInfo) {
+
+        // TODO make the authorization manager implementation configurable in Undertow or jboss-web.xml
+        ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
+        if (applicationPolicy != null) {
+            AuthorizationInfo authzInfo = applicationPolicy.getAuthorizationInfo();
+            if (authzInfo != null) {
+                for (AuthorizationModuleEntry entry : authzInfo.getModuleEntries()) {
+                    if (JACCAuthorizationModule.class.getName().equals(entry.getPolicyModuleName())) {
+                        deploymentInfo.setAuthorizationManager(new JACCAuthorizationManager());
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -368,7 +428,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             @Override
             public int getConfidentialPort(HttpServerExchange exchange) {
-                return container.getValue().lookupSecurePort("default");
+                int port = exchange.getHostPort();
+                return host.getValue().getServer().getValue().lookupSecurePort(port);
             }
         };
     }
@@ -381,13 +442,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
         }
     }
+
     /*
     This is to address WFLY-1894 but should probably be moved to some other place.
      */
-    private String resolveContextPath(){
-        if (deploymentName.equals(host.getValue().getDefaultWebModule())){
+    private String resolveContextPath() {
+        if (deploymentName.equals(host.getValue().getDefaultWebModule())) {
             return "";
-        }else{
+        } else {
             return contextPath;
         }
     }
@@ -407,7 +469,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             final ServletContainerService servletContainer = container.getValue();
             try {
                 //TODO: make the caching limits configurable
-                ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays);
+                ResourceManager resourceManager = new ServletResourceManager(deploymentRoot, overlays, explodedDeployment);
 
                 resourceManager = new CachingResourceManager(100, 10 * 1024 * 1024, servletContainer.getBufferCache(), resourceManager, explodedDeployment ? 2000 : -1);
                 d.setResourceManager(resourceManager);
@@ -480,7 +542,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             final Map<String, List<ServletMappingMetaData>> servletMappings = new HashMap<>();
 
-            if(mergedMetaData.getExecutorName() != null) {
+            if (mergedMetaData.getExecutorName() != null) {
                 d.setExecutor(executorsByName.get(mergedMetaData.getExecutorName()).getValue());
             }
 
@@ -494,13 +556,18 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 }
             }
 
-            if (mergedMetaData.getServlets() != null) {
+            final List<JBossServletMetaData> servlets = new ArrayList<JBossServletMetaData>();
+            for (JBossServletMetaData servlet : mergedMetaData.getServlets()) {
+                servlets.add(servlet);
+            }
+
+            if (servlets != null) {
                 for (final JBossServletMetaData servlet : mergedMetaData.getServlets()) {
                     final ServletInfo s;
 
                     if (servlet.getJspFile() != null) {
                         s = new ServletInfo(servlet.getName(), JspServlet.class);
-                        s.addHandlerChainWrapper(new JspFileWrapper(servlet.getJspFile()));
+                        s.addHandlerChainWrapper(JspFileHandler.jspFileHandlerWrapper(servlet.getJspFile()));
                     } else {
                         Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
                         ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass);
@@ -521,24 +588,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         s.setLoadOnStartup(servlet.getLoadOnStartupInt());
                     }
 
-                    if(servlet.getExecutorName() != null) {
+                    if (servlet.getExecutorName() != null) {
                         s.setExecutor(executorsByName.get(servlet.getExecutorName()).getValue());
                     }
 
-                    List<ServletMappingMetaData> mappings = servletMappings.get(servlet.getName());
-                    if (mappings != null) {
-                        for (ServletMappingMetaData mapping : mappings) {
-                            for (String pattern : mapping.getUrlPatterns()) {
-                                if (is22OrOlder && !pattern.startsWith("*") && !pattern.startsWith("/")) {
-                                    pattern = "/" + pattern;
-                                }
-                                if (!seenMappings.contains(pattern)) {
-                                    s.addMapping(pattern);
-                                    seenMappings.add(pattern);
-                                }
-                            }
-                        }
-                    }
+                    handleServletMappings(is22OrOlder, seenMappings, servletMappings, s);
                     if (servlet.getInitParam() != null) {
                         for (ParamValueMetaData initParam : servlet.getInitParam()) {
                             if (!s.getInitParams().containsKey(initParam.getParamName())) {
@@ -576,6 +630,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
                     d.addServlet(s);
                 }
+            }
+
+            //we explicitly add the default servlet, to allow it to be mapped
+            if (!mergedMetaData.getServlets().containsKey(ServletPathMatches.DEFAULT_SERVLET_NAME)) {
+                ServletInfo defaultServlet = Servlets.servlet("default", DefaultServlet.class);
+                handleServletMappings(is22OrOlder, seenMappings, servletMappings, defaultServlet);
+
+                d.addServlet(defaultServlet);
             }
 
             if (mergedMetaData.getFilters() != null) {
@@ -716,11 +778,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             }
             final LoginConfigMetaData loginConfig = mergedMetaData.getLoginConfig();
             if (loginConfig != null) {
-                String authMethod = authMethod(loginConfig.getAuthMethod());
+                List<AuthMethodConfig> authMethod = authMethod(loginConfig.getAuthMethod());
                 if (loginConfig.getFormLoginConfig() != null) {
-                    d.setLoginConfig(new LoginConfig(authMethod, loginConfig.getRealmName(), loginConfig.getFormLoginConfig().getLoginPage(), loginConfig.getFormLoginConfig().getErrorPage()));
+                    d.setLoginConfig(new LoginConfig(loginConfig.getRealmName(), loginConfig.getFormLoginConfig().getLoginPage(), loginConfig.getFormLoginConfig().getErrorPage()));
                 } else {
-                    d.setLoginConfig(new LoginConfig(authMethod, loginConfig.getRealmName()));
+                    d.setLoginConfig(new LoginConfig(loginConfig.getRealmName()));
+                }
+                for (AuthMethodConfig method : authMethod) {
+                    d.getLoginConfig().addLastAuthMethod(method);
                 }
             }
 
@@ -729,7 +794,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             Map<String, Set<String>> principalVersusRolesMap = mergedMetaData.getPrincipalVersusRolesMap();
             d.addThreadSetupAction(new SecurityContextThreadSetupAction(securityDomain, securityDomainContextValue.getValue(), principalVersusRolesMap));
-            d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getRunAsIdentity(), securityContextId));
+            d.addInnerHandlerChainWrapper(SecurityContextAssociationHandler.wrapper(mergedMetaData.getRunAsIdentity()));
+            d.addOuterHandlerChainWrapper(JACCContextIdHandler.wrapper(jaccContextId));
 
             if (principalVersusRolesMap != null) {
                 for (Map.Entry<String, Set<String>> entry : principalVersusRolesMap.entrySet()) {
@@ -763,9 +829,32 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 });
             }
 
+            if (mergedMetaData.getDefaultEncoding()!=null){
+                d.setDefaultEncoding(mergedMetaData.getDefaultEncoding());
+            }else if (servletContainer.getDefaultEncoding()!=null){
+                d.setDefaultEncoding(servletContainer.getDefaultEncoding());
+            }
+
             return d;
         } catch (ClassNotFoundException e) {
             throw new StartException(e);
+        }
+    }
+
+    private void handleServletMappings(boolean is22OrOlder, Set<String> seenMappings, Map<String, List<ServletMappingMetaData>> servletMappings, ServletInfo s) {
+        List<ServletMappingMetaData> mappings = servletMappings.get(s.getName());
+        if (mappings != null) {
+            for (ServletMappingMetaData mapping : mappings) {
+                for (String pattern : mapping.getUrlPatterns()) {
+                    if (is22OrOlder && !pattern.startsWith("*") && !pattern.startsWith("/")) {
+                        pattern = "/" + pattern;
+                    }
+                    if (!seenMappings.contains(pattern)) {
+                        s.addMapping(pattern);
+                        seenMappings.add(pattern);
+                    }
+                }
+            }
         }
     }
 
@@ -778,16 +867,11 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
      * @return The converted auth method.
      * @throws NullPointerException if no configuredMethod is supplied.
      */
-    private static String authMethod(String configuredMethod) {
-        // TODO - Feels like a candidate for an enum but will hold off until configuration of custom methods and chaining is
-        // defined.
+    private static List<AuthMethodConfig> authMethod(String configuredMethod) {
         if (configuredMethod == null) {
-            return HttpServletRequest.BASIC_AUTH;
-        } else if ("CLIENT-CERT".equals(configuredMethod)) {
-            return HttpServletRequest.CLIENT_CERT_AUTH;
-        } else {
-            return configuredMethod;
+            return Collections.singletonList(new AuthMethodConfig(HttpServletRequest.BASIC_AUTH));
         }
+        return AuthMethodParser.parse(configuredMethod, Collections.singletonMap("CLIENT-CERT", HttpServletRequest.CLIENT_CERT_AUTH));
     }
 
     private static io.undertow.servlet.api.TransportGuaranteeType transportGuaranteeType(final TransportGuaranteeType type) {
@@ -1141,7 +1225,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private Module module;
         private ScisMetaData scisMetaData;
         private VirtualFile deploymentRoot;
-        private String securityContextId;
+        private String jaccContextId;
         private List<ServletContextAttribute> attributes;
         private String contextPath;
         private String securityDomain;
@@ -1149,6 +1233,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private Set<VirtualFile> overlays;
         private List<ExpressionFactoryWrapper> expressionFactoryWrappers;
         private List<PredicatedHandler> predicatedHandlers;
+        private List<HandlerWrapper> initialHandlerChainWrappers;
+        private List<HandlerWrapper> innerHandlerChainWrappers;
+        private List<HandlerWrapper> outerHandlerChainWrappers;
+        private List<ThreadSetupAction> threadSetupActions;
         private boolean explodedDeployment;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
@@ -1186,8 +1274,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
-        public Builder setSecurityContextId(final String securityContextId) {
-            this.securityContextId = securityContextId;
+        public Builder setJaccContextId(final String jaccContextId) {
+            this.jaccContextId = jaccContextId;
             return this;
         }
 
@@ -1226,13 +1314,33 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
+        public Builder setInitialHandlerChainWrappers(List<HandlerWrapper> initialHandlerChainWrappers) {
+            this.initialHandlerChainWrappers = initialHandlerChainWrappers;
+            return this;
+        }
+
+        public Builder setInnerHandlerChainWrappers(List<HandlerWrapper> innerHandlerChainWrappers) {
+            this.innerHandlerChainWrappers = innerHandlerChainWrappers;
+            return this;
+        }
+
+        public Builder setOuterHandlerChainWrappers(List<HandlerWrapper> outerHandlerChainWrappers) {
+            this.outerHandlerChainWrappers = outerHandlerChainWrappers;
+            return this;
+        }
+
+        public Builder setThreadSetupActions(List<ThreadSetupAction> threadSetupActions) {
+            this.threadSetupActions = threadSetupActions;
+            return this;
+        }
+
         public Builder setExplodedDeployment(boolean explodedDeployment) {
             this.explodedDeployment = explodedDeployment;
             return this;
         }
 
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, securityContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, explodedDeployment);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment);
         }
     }
 }

@@ -37,6 +37,7 @@ enum Namespace {
     WEB_1_2("urn:jboss:domain:web:1.2"),
     WEB_1_3("urn:jboss:domain:web:1.3"),
     WEB_1_4("urn:jboss:domain:web:1.4"),
+    WEB_1_5("urn:jboss:domain:web:1.5"),
     WEB_2_0("urn:jboss:domain:web:2.0");
 
     /**

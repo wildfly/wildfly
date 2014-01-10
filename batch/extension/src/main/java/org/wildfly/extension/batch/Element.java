@@ -31,9 +31,9 @@ import java.util.Map;
 enum Element {
 
     UNKNOWN(null),
-    JDBC("jdbc"),
-    JOB_REPOSITORY("job-repository"),
-    IN_MEMORY("in-memory"),
+    JDBC(BatchConstants.JDBC),
+    JOB_REPOSITORY(BatchConstants.JOB_REPOSITORY),
+    IN_MEMORY(BatchConstants.IN_MEMORY),
     THREAD_FACTORY(BatchConstants.THREAD_FACTORY),
     THREAD_POOL(BatchConstants.THREAD_POOL);
 
@@ -49,6 +49,11 @@ enum Element {
      * @return the local name
      */
     public String getLocalName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
         return name;
     }
 

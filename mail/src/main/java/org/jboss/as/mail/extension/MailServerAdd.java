@@ -22,20 +22,29 @@
 
 package org.jboss.as.mail.extension;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
+import java.util.ArrayList;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.RestartParentResourceAddHandler;
+import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
 
 /**
  * @author Tomaz Cerar
  * @created 8.12.11 0:19
  */
-class MailServerAdd extends AbstractAddStepHandler {
+class MailServerAdd extends RestartParentResourceAddHandler {
 
     private final AttributeDefinition[] attributes;
 
     MailServerAdd(AttributeDefinition[] attributes) {
+        super(MailSubsystemModel.MAIL_SESSION);
         this.attributes = attributes;
     }
 
@@ -54,4 +63,21 @@ class MailServerAdd extends AbstractAddStepHandler {
         }
     }
 
+    @Override
+    protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel, ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        MailSessionAdd.installRuntimeServices(context, parentAddress, parentModel, verificationHandler, new ArrayList<ServiceController<?>>());
+    }
+
+    @Override
+    protected ServiceName getParentServiceName(PathAddress parentAddress) {
+        return MailSessionAdd.MAIL_SESSION_SERVICE_NAME.append(parentAddress.getLastElement().getValue());
+    }
+
+    @Override
+    protected void removeServices(OperationContext context, ServiceName parentService, ModelNode parentModel) throws OperationFailedException {
+        super.removeServices(context,parentService,parentModel);
+        String jndiName = MailSessionAdd.getJndiName(parentModel, context);
+        final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(jndiName);
+        context.removeService(bindInfo.getBinderServiceName());
+    }
 }

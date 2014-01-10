@@ -24,12 +24,13 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.CacheMutator;
-import org.wildfly.clustering.web.infinispan.Mutator;
+import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.session.CacheMutator;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
@@ -112,17 +113,18 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
     public void evict(final String id) {
         final FineSessionCacheEntry<L> entry = this.findValue(id);
         if (entry != null) {
-            Operation<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>, Void> evictOperation = new Operation<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>, Void>() {
-                @Override
-                public Void invoke(Cache<SessionAttributeCacheKey, MarshalledValue<Object, MarshallingContext>> cache) {
-                    for (String attribute: entry.getAttributes()) {
-                        cache.getAdvancedCache().evict(new SessionAttributeCacheKey(id, attribute));
-                    }
-                    return null;
+            for (String attribute: entry.getAttributes()) {
+                try {
+                    this.attributeCache.evict(new SessionAttributeCacheKey(id, attribute));
+                } catch (Throwable e) {
+                    InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSessionAttribute(e, id, attribute);
                 }
-            };
-            this.invoker.invoke(this.attributeCache, evictOperation, Flag.FAIL_SILENTLY, Flag.SKIP_LOCKING);
-            this.invoker.invoke(this.sessionCache, new EvictOperation<String, FineSessionCacheEntry<L>>(id), Flag.FAIL_SILENTLY);
+            }
+            try {
+                this.sessionCache.evict(id);
+            } catch (Throwable e) {
+                InfinispanWebLogger.ROOT_LOGGER.failedToPassivateSession(e, id);
+            }
         }
     }
 }

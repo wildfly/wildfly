@@ -42,12 +42,7 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier[] DEFAULT_MODULES = new ModuleIdentifier[] {
         ModuleIdentifier.create("javax.api"),
-        ModuleIdentifier.create("org.jboss.logging"),
         ModuleIdentifier.create("org.jboss.vfs"),
-        ModuleIdentifier.create("org.apache.commons.logging"),
-        ModuleIdentifier.create("org.apache.log4j"),
-        ModuleIdentifier.create("org.slf4j"),
-        ModuleIdentifier.create("org.jboss.logging.jul-to-slf4j-stub"),
     };
 
     private static ModuleIdentifier[] DEFAULT_MODULES_WITH_SERVICE_IMPORTS = new ModuleIdentifier[] {

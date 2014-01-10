@@ -106,7 +106,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         CacheContainerResourceDefinition.EVICTION_EXECUTOR.validateAndSet(source, target);
         CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.validateAndSet(source, target);
         CacheContainerResourceDefinition.MODULE.validateAndSet(source, target);
-        CacheContainerResourceDefinition.STATISTICS.validateAndSet(source, target);
+        CacheContainerResourceDefinition.STATISTICS_ENABLED.validateAndSet(source, target);
     }
 
     @Override
@@ -136,7 +136,7 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         final String evictionExecutor = (resolvedValue = CacheContainerResourceDefinition.EVICTION_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
         final String replicationQueueExecutor = (resolvedValue = CacheContainerResourceDefinition.REPLICATION_QUEUE_EXECUTOR.resolveModelAttribute(context, containerModel)).isDefined() ? resolvedValue.asString() : null ;
         final ServiceController.Mode initialMode = StartMode.valueOf(CacheContainerResourceDefinition.START.resolveModelAttribute(context, containerModel).asString()).getMode();
-        final boolean statistics = CacheContainerResourceDefinition.STATISTICS.resolveModelAttribute(context, containerModel).asBoolean();
+        final boolean statistics = CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, containerModel).asBoolean();
 
         ServiceName[] aliases = null;
         if (containerModel.hasDefined(ModelKeys.ALIASES)) {

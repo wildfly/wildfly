@@ -1,0 +1,14 @@
+SYNOPSIS
+
+   set (name=value)+ 
+
+DESCRIPTION
+
+   Initializes variables with the given names with the specified values.
+   If a variable already exists, its value will silently be overridden
+   with the new value.
+   If the value is not specified then the variable will be undefined.
+
+ARGUMENTS
+
+   One or more name=value pairs separated with space characters.

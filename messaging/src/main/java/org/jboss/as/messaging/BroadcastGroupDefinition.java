@@ -148,6 +148,7 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
         PathAddress hornetqServer = MessagingServices.getHornetQServerPathAddress(address);
         Resource hornetQServerResource = context.readResourceFromRoot(hornetqServer);
         Set<String> availableConnectors = new HashSet<String>();
+        availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.HTTP_CONNECTOR));
         availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.IN_VM_CONNECTOR));
         availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.REMOTE_CONNECTOR));
         availableConnectors.addAll(hornetQServerResource.getChildrenNames(CommonAttributes.CONNECTOR));

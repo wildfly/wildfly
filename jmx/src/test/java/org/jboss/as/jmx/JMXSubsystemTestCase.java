@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.management.MBeanServerConnection;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.stream.XMLStreamException;
@@ -77,6 +78,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.junit.Assert;
 import org.junit.Test;
+import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 
 /**
@@ -214,18 +216,24 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
             "service:jmx:remoting-jmx://localhost:" + port);
         JMXServiceURL serviceURL = new JMXServiceURL(urlString);
 
-        MBeanServerConnection connection = null;
-        long end = System.currentTimeMillis() + 10000;
-        do {
-            try {
-                connection = JMXConnectorFactory.connect(serviceURL, null).getMBeanServerConnection();
-            } catch (Exception e) {
-                e.printStackTrace();
-                Thread.sleep(500);
-            }
-        } while (connection == null && System.currentTimeMillis() < end);
-        Assert.assertNotNull(connection);
-        connection.getMBeanCount();
+        JMXConnector connector = null;
+        try {
+            MBeanServerConnection connection = null;
+            long end = System.currentTimeMillis() + 10000;
+            do {
+                try {
+                    connector = JMXConnectorFactory.connect(serviceURL, null);
+                    connection = connector.getMBeanServerConnection();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Thread.sleep(500);
+                }
+            } while (connection == null && System.currentTimeMillis() < end);
+            Assert.assertNotNull(connection);
+            connection.getMBeanCount();
+        } finally {
+            IoUtils.safeClose(connector);
+        }
 
         super.assertRemoveSubsystemResources(services);
     }

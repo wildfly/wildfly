@@ -58,7 +58,7 @@ public class DynamicJNDIContextEJBInvocationTestCase {
 
     @Deployment(name = "local-server-deployment")
     @TargetsContainer("multinode-client")
-    public static Archive createLocalDeployment() {
+    public static Archive<?> createLocalDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, LOCAL_DEPLOYMENT_NAME + ".jar");
         jar.addClasses(StatefulBeanA.class, LocalServerStatefulRemote.class,PassivationConfigurationSetup.class, DynamicJNDIContextEJBInvocationTestCase.class, StatefulRemoteOnOtherServer.class, StatelessRemoteOnOtherServer.class);
         jar.addClasses(StatefulRemoteHomeForBeanOnOtherServer.class);
@@ -69,7 +69,7 @@ public class DynamicJNDIContextEJBInvocationTestCase {
 
     @Deployment(name = "remote-server-deployment", testable = false)
     @TargetsContainer("multinode-server")
-    public static Archive createDeploymentForRemoteServer() {
+    public static Archive<?> createDeploymentForRemoteServer() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, REMOTE_SERVER_DEPLOYMENT_NAME + ".jar");
         jar.addClasses(StatefulRemoteOnOtherServer.class, StatelessRemoteOnOtherServer.class, StatefulRemoteHomeForBeanOnOtherServer.class);
         jar.addClasses(StatefulBeanOnOtherServer.class, StatelessBeanOnOtherServer.class);
@@ -133,8 +133,10 @@ public class DynamicJNDIContextEJBInvocationTestCase {
         final CountDownLatch passivationLatch = new CountDownLatch(1);
         sfsbOnLocalServer.registerPassivationNotificationLatch(passivationLatch);
 
-        logger.info("Awaiting passivation of " + StatefulBeanA.class.getSimpleName() + " bean");
-        final boolean passivated = passivationLatch.await(3, TimeUnit.SECONDS);
+        logger.info("Triggering passivation of " + StatefulBeanA.class.getSimpleName() + " bean");
+        InitialContext.doLookup("java:module/" + StatefulBeanA.class.getSimpleName() + "!" + StatefulBeanA.class.getName());
+
+        final boolean passivated = passivationLatch.await(2, TimeUnit.SECONDS);
         if (passivated) {
             logger.info("pre-passivate invoked on " + StatefulBeanA.class.getSimpleName() + " bean");
         } else {

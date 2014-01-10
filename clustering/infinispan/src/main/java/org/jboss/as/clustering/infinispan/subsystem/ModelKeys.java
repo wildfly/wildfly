@@ -52,6 +52,7 @@ public class ModelKeys {
     static final String CONCURRENCY_LEVEL = "concurrency-level";
     static final String DATA_COLUMN = "data-column";
     static final String DATASOURCE = "datasource";
+    static final String DIALECT = "dialect";
     static final String DEFAULT_CACHE = "default-cache";
     static final String DISTRIBUTED_CACHE = "distributed-cache";
     static final String ENABLED = "enabled";
@@ -132,7 +133,7 @@ public class ModelKeys {
     static final String START = "start";
     static final String STATE_TRANSFER = "state-transfer";
     static final String STATE_TRANSFER_NAME = "STATE_TRANSFER";
-    static final String STATISTICS = "statistics";
+    static final String STATISTICS_ENABLED = "statistics-enabled";
     static final String STOP_TIMEOUT = "stop-timeout";
     static final String STORE = "store";
     static final String STORE_NAME = "STORE";

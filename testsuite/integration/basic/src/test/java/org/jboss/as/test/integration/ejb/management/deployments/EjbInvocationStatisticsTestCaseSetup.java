@@ -44,7 +44,7 @@ public class EjbInvocationStatisticsTestCaseSetup implements ServerSetupTask {
     private static ModelNode getAddress() {
         ModelNode address = new ModelNode();
         address.add("subsystem", "ejb3");
-        address.add("file-passivation-store", "file");
+        address.add("passivation-store", "infinispan");
         address.protect();
         return address;
     }
@@ -55,10 +55,10 @@ public class EjbInvocationStatisticsTestCaseSetup implements ServerSetupTask {
         ModelNode operation = new ModelNode();
         operation.get(OP).set("write-attribute");
         operation.get(OP_ADDR).set(address);
-        operation.get("name").set("idle-timeout");
-        operation.get("value").set(2);
+        operation.get("name").set("max-size");
+        operation.get("value").set(1);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        log.info("modelnode operation write-attribute idle-timeout=1: " + result);
+        log.info("modelnode operation write-attribute max-size=1: " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
     }
@@ -69,7 +69,7 @@ public class EjbInvocationStatisticsTestCaseSetup implements ServerSetupTask {
         ModelNode operation = new ModelNode();
         operation.get(OP).set("undefine-attribute");
         operation.get(OP_ADDR).set(address);
-        operation.get("name").set("idle-timeout");
+        operation.get("name").set("max-size");
         ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
     }

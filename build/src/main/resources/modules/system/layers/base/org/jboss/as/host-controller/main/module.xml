@@ -35,13 +35,17 @@
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="org.apache.xalan" services="import"/>
+        <!--
+        Xalan is optional dependancy and would need to be present in cases where runtime code needs xslt transformation otherwise
+        xslt parser will fallback to JDK provided xalan, which can cause issues.
+         -->
+        <module name="org.apache.xalan" services="import" optional="true"/>
         <module name="org.apache.xerces" services="import"/>
         <module name="org.codehaus.woodstox" services="import"/>
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.vfs"/>
         <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.core-security"/>        
+        <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.common-core"/>
         <module name="org.jboss.as.deployment-repository"/>
         <module name="org.jboss.as.domain-management"/>
@@ -56,7 +60,6 @@
         <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.security" optional="true" services="import"/>
         <module name="org.jboss.as.server"/>
-        <module name="org.jboss.as.threads"/>
         <module name="org.jboss.as.version"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager" services="import"/>

@@ -22,6 +22,7 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import org.infinispan.persistence.jdbc.DatabaseType;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationStepHandler;
@@ -30,6 +31,7 @@ import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
@@ -42,14 +44,20 @@ import org.jboss.dmr.ModelType;
  */
 public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
 
-    // attributes
     static final SimpleAttributeDefinition DATA_SOURCE = new SimpleAttributeDefinitionBuilder(ModelKeys.DATASOURCE, ModelType.STRING, false)
             .setXmlName(Attribute.DATASOURCE.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build()
     ;
-    static final AttributeDefinition[] COMMON_JDBC_STORE_ATTRIBUTES = { DATA_SOURCE };
+    static final SimpleAttributeDefinition DIALECT = new SimpleAttributeDefinitionBuilder(ModelKeys.DIALECT, ModelType.STRING, true)
+            .setXmlName(Attribute.DIALECT.getLocalName())
+            .setValidator(new EnumValidator<>(DatabaseType.class, true, true))
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build()
+    ;
+    static final AttributeDefinition[] COMMON_JDBC_STORE_ATTRIBUTES = { DATA_SOURCE, DIALECT };
 
     static final SimpleAttributeDefinition BATCH_SIZE = new SimpleAttributeDefinitionBuilder(ModelKeys.BATCH_SIZE, ModelType.INT, true)
             .setXmlName(Attribute.BATCH_SIZE.getLocalName())
@@ -125,7 +133,7 @@ public class JDBCStoreResourceDefinition extends StoreResourceDefinition {
     ;
 
     static final AttributeDefinition[] COMMON_JDBC_STORE_TABLE_ATTRIBUTES = { PREFIX, BATCH_SIZE, FETCH_SIZE, ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN };
-    static final AttributeDefinition[] COMMON_BASE_JDBC_STORE_ATTRIBUTES = { DATA_SOURCE, BATCH_SIZE, FETCH_SIZE, PREFIX, COLUMN_NAME, COLUMN_TYPE,
+    static final AttributeDefinition[] COMMON_BASE_JDBC_STORE_ATTRIBUTES = { DATA_SOURCE, DIALECT, BATCH_SIZE, FETCH_SIZE, PREFIX, COLUMN_NAME, COLUMN_TYPE,
             ID_COLUMN, DATA_COLUMN, TIMESTAMP_COLUMN, ENTRY_TABLE, BUCKET_TABLE, STRING_KEYED_TABLE, BINARY_KEYED_TABLE };
 
     public JDBCStoreResourceDefinition(PathElement pathElement, ResourceDescriptionResolver descriptionResolver, OperationStepHandler addHandler, OperationStepHandler removeHandler) {

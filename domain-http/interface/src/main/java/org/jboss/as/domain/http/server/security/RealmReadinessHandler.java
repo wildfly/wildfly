@@ -31,6 +31,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 
 import io.undertow.server.SSLSessionInfo;
+import io.undertow.server.RenegotiationRequiredException;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 
@@ -75,8 +76,9 @@ abstract class RealmReadinessHandler implements HttpHandler {
         if (session != null) {
             try {
                 //todo: renegotiation?
-                return session.getPeerCertificates(false)[0] instanceof X509Certificate;
+                return session.getPeerCertificates()[0] instanceof X509Certificate;
             } catch (SSLPeerUnverifiedException e) {
+            } catch (RenegotiationRequiredException e) {
             }
         }
 

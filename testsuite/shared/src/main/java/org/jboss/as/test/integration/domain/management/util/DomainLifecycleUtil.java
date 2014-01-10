@@ -276,6 +276,8 @@ public class DomainLifecycleUtil {
             awaitHostController(start);
             log.info("HostController started in " + (System.currentTimeMillis() - start) + " ms");
 
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("Could not start container", e);
         }

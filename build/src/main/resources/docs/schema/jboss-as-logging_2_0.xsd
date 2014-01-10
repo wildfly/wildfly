@@ -51,6 +51,24 @@
             <xs:element name="custom-handler" type="customHandlerType"/>
             <xs:element name="syslog-handler" type="syslogHandlerType"/>
             <xs:element name="formatter" type="formatterType"/>
+            <xs:element name="add-logging-api-dependencies" type="booleanValueType">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                            Determines whether or not the default logging dependencies should be added to deployments during the deployment process.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="use-deployment-logging-config" type="booleanValueType">
+                <xs:annotation>
+                    <xs:documentation>
+                            Determines whether or not deployments should be scanned for configuration files. If set to
+                            true and a configuration file is found the log manager will be configured based on the
+                            configuration file.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="logging-profiles" type="logging-profilesType" minOccurs="0" maxOccurs="1"/>
         </xs:choice>
     </xs:complexType>
@@ -160,7 +178,6 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
-            <xs:element name="filter" type="valueType" minOccurs="0"/>
             <xs:element name="formatter" type="handlerFormatterType" minOccurs="0"/>
             <xs:element name="target" minOccurs="0">
                 <xs:complexType>

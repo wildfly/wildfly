@@ -76,4 +76,8 @@ public abstract class AttributeMarshaller {
     public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException{
         throw ControllerMessages.MESSAGES.couldNotMarshalAttributeAsElement(attribute.getName());
     }
+
+    public boolean isMarshallableAsElement(){
+        return false;
+    }
 }

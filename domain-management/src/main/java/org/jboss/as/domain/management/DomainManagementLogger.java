@@ -112,7 +112,8 @@ public interface DomainManagementLogger extends BasicLogger {
     /*
      * Logging IDs 15200 to 15299 are reserved for domain management, the file DomainManagementMessages also contains messages
      * in this range commencing 15220.
+     *
+     * (DomainManagement also has range 21000-21099 reserved, a subset of this could be used for logging if needed.)
      */
-
 
 }

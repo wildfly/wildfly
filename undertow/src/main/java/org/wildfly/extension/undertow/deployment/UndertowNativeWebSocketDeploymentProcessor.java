@@ -23,7 +23,7 @@
 package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.servlet.websockets.WebSocketServlet;
-import io.undertow.websockets.core.handler.WebSocketConnectionCallback;
+import io.undertow.websockets.WebSocketConnectionCallback;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;

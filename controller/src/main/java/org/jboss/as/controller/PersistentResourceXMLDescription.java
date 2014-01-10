@@ -39,6 +39,7 @@ public class PersistentResourceXMLDescription {
     protected final boolean useValueAsElementName;
     protected final boolean noAddOperation;
     protected final AdditionalOperationsGenerator additionalOperationsGenerator;
+    private boolean flushRequired = true;
 
     protected PersistentResourceXMLDescription(final PersistentResourceDefinition resourceDefinition, final String xmlElementName, final String xmlWrapperElement, final LinkedHashMap<String, AttributeDefinition> attributes, final List<PersistentResourceXMLDescription> children, final boolean useValueAsElementName, final boolean noAddOperation, final AdditionalOperationsGenerator additionalOperationsGenerator) {
         this.resourceDefinition = resourceDefinition;
@@ -85,6 +86,13 @@ public class PersistentResourceXMLDescription {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
+        for (AttributeDefinition attributeDefinition: attributes.values()){
+            if (attributeDefinition instanceof PropertiesAttributeDefinition){
+                PropertiesAttributeDefinition attribute = (PropertiesAttributeDefinition) attributeDefinition;
+                attribute.parse(reader,op);
+                flushRequired = false;
+            }
+        }
         if (wildcard && name == null) {
             throw MESSAGES.missingRequiredAttributes(new StringBuilder(NAME), reader.getLocation());
         }
@@ -117,7 +125,9 @@ public class PersistentResourceXMLDescription {
 
     public void parseChildren(final XMLExtendedStreamReader reader, PathAddress parentAddress, List<ModelNode> list) throws XMLStreamException {
         if (children.size() == 0) {
-            ParseUtils.requireNoContent(reader);
+            if (flushRequired){
+                ParseUtils.requireNoContent(reader);
+            }
         } else {
             Map<String, PersistentResourceXMLDescription> children = getChildrenMap();
             while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
@@ -205,7 +215,11 @@ public class PersistentResourceXMLDescription {
                 def.getValue().getAttributeMarshaller().marshallAsAttribute(def.getValue(), model, false, writer);
             }
             persistChildren(writer, model);
-            writer.writeEndElement();
+
+            // Do not attempt to write end element if the <subsystem/> has no elements!
+            if (!isSubsystem || !children.isEmpty()) {
+                writer.writeEndElement();
+            }
         }
 
         if (writeWrapper) {

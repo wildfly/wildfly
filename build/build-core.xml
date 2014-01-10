@@ -1,0 +1,387 @@
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2012-2013, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project name="module-repository" basedir="." default="modules">
+    <property name="output.dir" value="../${wildfly.core.build.output.dir}"/>
+
+    <import file="lib.xml"/>
+    <import file="build-configs.xml"/>
+
+
+
+    <target name="base" depends="clean-target, modules-minimalistic, copy-files, make-dirs"/>
+
+    <target name="copy-files" depends="init-configs">
+        <copy todir="${output.dir}">
+            <fileset dir="src/main/resources">
+                <include name="LICENSE.txt"/>
+                <include name="README.txt"/>
+                <include name="copyright.txt"/>
+                <include name="bin/**"/>
+                <include name="docs/**"/>
+                <exclude name="docs/schema/jboss-as-*"/>
+                <include name="domain/**"/>
+                <include name="standalone/configuration/**.properties"/>
+                <include name="standalone/deployments/**"/>
+            </fileset>
+            <fileset dir="${generated.configs}">
+                <include name="domain/**"/>
+                <include name="docs/**"/>
+            </fileset>
+        </copy>
+        <!-- Convert .bat files to DOS line endings -->
+        <fixcrlf srcdir="${output.dir}/bin" includes="**/*.bat" eol="crlf"/>
+        <!-- Convert .sh files to Unix line endings -->
+        <fixcrlf srcdir="${output.dir}/bin" includes="**/*.sh" eol="lf"/>
+        <fixcrlf srcdir="${output.dir}/bin" includes="**/*.conf" eol="lf"/>
+        <!-- These files contain digested passwords, which should not be visible to external users -->
+        <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-users.properties"/>
+        <chmod perm="600" file="${output.dir}/domain/configuration/mgmt-groups.properties"/>
+        <chmod perm="600" file="${output.dir}/domain/configuration/application-users.properties"/>
+        <chmod perm="600" file="${output.dir}/domain/configuration/application-roles.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-users.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/mgmt-groups.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/application-users.properties"/>
+        <chmod perm="600" file="${output.dir}/standalone/configuration/application-roles.properties"/>
+        <chmod perm="755">
+            <fileset dir="${output.dir}/bin">
+                <include name="**/*.sh"/>
+            </fileset>
+        </chmod>
+    </target>
+
+    <target name="copy-standalone" description="Copy all standard configurations">
+        <generate-server-config
+                paramTemplateFile="configuration/standalone/template.xml"
+                paramSubsystemsFile="configuration/standalone/subsystems-core.xml"
+                paramOutputFile="${generated.configs.standalone}/standalone.xml"/>
+        <copy todir="${output.dir}">
+            <fileset dir="${generated.configs}">
+                <include name="standalone/configuration/**.xml"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="make-dirs">
+        <mkdir dir="${output.dir}/domain/data/content"/>
+        <mkdir dir="${output.dir}/standalone/lib/ext"/>
+        <mkdir dir="${output.dir}/domain/tmp/auth"/>
+        <mkdir dir="${output.dir}/standalone/tmp/auth"/>
+        <mkdir dir="${output.dir}/.installation"/>
+        <!-- This is directory is used by the SASL transparent auth mechanism to validate local user access -->
+        <chmod perm="700" dir="${output.dir}/domain/tmp/auth"/>
+        <chmod perm="700" dir="${output.dir}/standalone/tmp/auth"/>
+        <chmod perm="700" dir="${output.dir}/.installation"/>
+    </target>
+
+
+    <target name="copy-client">
+        <!--<copy file="${org.wildfly:wildfly-client-all:jar}" tofile="${output.dir}/bin/client/jboss-client.jar"/>-->
+        <copy file="${org.wildfly:wildfly-cli:jar:client}" tofile="${output.dir}/bin/client/jboss-cli-client.jar"/>
+    </target>
+
+    <target name="modules-minimalistic">
+        <echo message="${wildfly.core.build.output.dir}" />
+        <echo message="${output.dir}" />
+        <copy file="${org.jboss.modules:jboss-modules:jar}" tofile="${output.dir}/jboss-modules.jar"/>
+
+        <!--
+          ~ Minimalistic list of modules to assemble.
+          ~
+          ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          ~ +++++++   KEEP THIS LIST ALPHABETICAL BY MODULE NAME!   +++++++
+          ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          -->
+
+        <module-def name="io.undertow.core">
+            <maven-resource group="io.undertow" artifact="undertow-core"/>
+        </module-def>
+
+        <module-def name="javax.api"/>
+
+        <module-def name="javax.xml.stream.api"/>
+
+        <module-def name="org.apache.log4j"/>
+
+        <module-def name="org.jboss.as.controller">
+            <maven-resource group="org.wildfly" artifact="wildfly-controller"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.controller-client">
+            <maven-resource group="org.wildfly" artifact="wildfly-controller-client"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.core-security">
+            <maven-resource group="org.wildfly" artifact="wildfly-core-security"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.deployment-repository">
+            <maven-resource group="org.wildfly" artifact="wildfly-deployment-repository"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.domain-http-error-context">
+            <maven-resource group="org.wildfly" artifact="wildfly-domain-http-error-context"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.domain-http-interface">
+            <maven-resource group="org.wildfly" artifact="wildfly-domain-http-interface"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.domain-management">
+            <maven-resource group="org.wildfly" artifact="wildfly-domain-management"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.host-controller">
+            <maven-resource group="org.wildfly" artifact="wildfly-host-controller"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.embedded">
+            <maven-resource group="org.wildfly" artifact="wildfly-embedded"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.network">
+            <maven-resource group="org.wildfly" artifact="wildfly-network"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.patching">
+            <maven-resource group="org.wildfly" artifact="wildfly-patching"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.patching.cli"/>
+
+        <module-def name="org.jboss.as.patching.generator"/>
+
+        <module-def name="org.jboss.as.platform-mbean">
+            <maven-resource group="org.wildfly" artifact="wildfly-platform-mbean"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.process-controller">
+            <maven-resource group="org.wildfly" artifact="wildfly-process-controller"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.protocol">
+            <maven-resource group="org.wildfly" artifact="wildfly-protocol"/>
+        </module-def>
+
+        <module-def name="org.wildfly.extension.security.manager">
+            <maven-resource group="org.wildfly" artifact="wildfly-security-manager"/>
+        </module-def>
+
+        <module-def name="org.wildfly.security.manager">
+            <maven-resource group="org.wildfly.security" artifact="wildfly-security-manager"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.server">
+            <maven-resource group="org.wildfly" artifact="wildfly-server"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.jmx">
+            <maven-resource group="org.wildfly" artifact="wildfly-jmx"/>
+        </module-def>
+        <module-def name="org.jboss.as.naming">
+            <maven-resource group="org.wildfly" artifact="wildfly-naming"/>
+        </module-def>
+
+
+        <module-def name="org.jboss.as.remoting">
+            <maven-resource group="org.wildfly" artifact="wildfly-remoting"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.threads">
+            <maven-resource group="org.wildfly" artifact="wildfly-threads"/>
+        </module-def>
+
+
+        <module-def name="org.jboss.as.standalone"/>
+
+        <module-def name="org.jboss.dmr">
+            <maven-resource group="org.jboss" artifact="jboss-dmr"/>
+        </module-def>
+
+        <module-def name="org.jboss.invocation">
+            <maven-resource group="org.jboss.invocation" artifact="jboss-invocation"/>
+        </module-def>
+
+        <!-- TODO: why do we need jandex in minimal? -->
+        <module-def name="org.jboss.jandex">
+            <maven-resource group="org.jboss" artifact="jandex"/>
+        </module-def>
+
+        <module-def name="org.jboss.marshalling">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling"/>
+        </module-def>
+
+        <module-def name="org.jboss.marshalling.river">
+            <maven-resource group="org.jboss.marshalling" artifact="jboss-marshalling-river"/>
+        </module-def>
+
+        <module-def name="org.jboss.modules"/>
+
+        <module-def name="org.jboss.msc">
+            <maven-resource group="org.jboss.msc" artifact="jboss-msc"/>
+        </module-def>
+
+        <module-def name="org.jboss.logging">
+            <maven-resource group="org.jboss.logging" artifact="jboss-logging"/>
+        </module-def>
+
+        <module-def name="org.jboss.logging.jul-to-slf4j-stub">
+            <maven-resource group="org.jboss.logging" artifact="jul-to-slf4j-stub"/>
+        </module-def>
+
+        <module-def name="org.jboss.logmanager">
+            <maven-resource group="org.jboss.logmanager" artifact="jboss-logmanager"/>
+        </module-def>
+
+        <module-def name="org.jboss.log4j.logmanager">
+            <maven-resource group="org.jboss.logmanager" artifact="log4j-jboss-logmanager"/>
+        </module-def>
+
+        <module-def name="org.jboss.remoting">
+            <maven-resource group="org.jboss.remoting" artifact="jboss-remoting"/>
+        </module-def>
+
+        <module-def name="org.jboss.sasl">
+            <maven-resource group="org.jboss.sasl" artifact="jboss-sasl"/>
+        </module-def>
+
+        <module-def name="org.jboss.staxmapper">
+            <maven-resource group="org.jboss" artifact="staxmapper"/>
+        </module-def>
+
+        <module-def name="org.jboss.stdio">
+            <maven-resource group="org.jboss.stdio" artifact="jboss-stdio"/>
+        </module-def>
+
+        <module-def name="org.jboss.threads">
+            <maven-resource group="org.jboss.threads" artifact="jboss-threads"/>
+        </module-def>
+
+        <module-def name="org.jboss.vfs">
+            <maven-resource group="org.jboss" artifact="jboss-vfs"/>
+        </module-def>
+
+        <module-def name="org.jboss.xnio">
+            <maven-resource group="org.jboss.xnio" artifact="xnio-api"/>
+        </module-def>
+
+        <module-def name="org.jboss.xnio.nio">
+            <maven-resource group="org.jboss.xnio" artifact="xnio-nio"/>
+        </module-def>
+
+        <module-def name="org.codehaus.woodstox">
+            <maven-resource group="org.codehaus.woodstox" artifact="woodstox-core-asl"/>
+            <maven-resource group="org.codehaus.woodstox" artifact="stax2-api"/>
+        </module-def>
+
+    </target>
+
+    <target name="modules" depends="modules-minimalistic">
+        <!--
+          ~ Complete list of modules to assemble.
+          ~
+          ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          ~ +++++++   KEEP THIS LIST ALPHABETICAL BY MODULE NAME!   +++++++
+          ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+          -->
+
+
+        <module-def name="javax.activation.api">
+            <maven-resource group="javax.activation" artifact="activation"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.cli">
+            <maven-resource group="org.wildfly" artifact="wildfly-cli"/>
+        </module-def>
+        <module-def name="org.jboss.aesh">
+            <maven-resource group="org.jboss.aesh" artifact="aesh"/>
+        </module-def>
+        <module-def name="org.fusesource.jansi">
+            <maven-resource group="org.fusesource.jansi" artifact="jansi"/>
+        </module-def>
+
+         <module-def name="org.apache.xerces">
+             <maven-resource group="xerces" artifact="xercesImpl"/>
+         </module-def>
+
+        <module-def name="org.apache.xml-resolver">
+            <maven-resource group="xml-resolver" artifact="xml-resolver"/>
+        </module-def>
+
+        <module-def name="org.wildfly.extension.io">
+            <maven-resource group="org.wildfly" artifact="wildfly-io"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.logging">
+            <maven-resource group="org.wildfly" artifact="wildfly-logging"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.management-client-content">
+            <maven-resource group="org.wildfly" artifact="wildfly-management-client-content"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.system-jmx">
+            <maven-resource group="org.wildfly" artifact="wildfly-system-jmx"/>
+        </module-def>
+
+        <module-def name="org.jboss.as.version">
+            <maven-resource group="org.wildfly" artifact="wildfly-version"/>
+        </module-def>
+
+        <module-def name="org.jboss.classfilewriter">
+            <maven-resource group="org.jboss.classfilewriter" artifact="jboss-classfilewriter"/>
+        </module-def>
+
+        <module-def name="org.slf4j">
+            <maven-resource group="org.slf4j" artifact="slf4j-api"/>
+        </module-def>
+
+        <module-def name="org.slf4j.impl">
+            <maven-resource group="org.jboss.slf4j" artifact="slf4j-jboss-logmanager"/>
+        </module-def>
+
+        <module-def name="org.slf4j.ext">
+            <maven-resource group="org.slf4j" artifact="slf4j-ext"/>
+        </module-def>
+
+        <module-def name="sun.jdk"/>
+
+        <module-def name="ibm.jdk"/>
+
+        <!-- todo get rid! WFLY-2557-->
+        <module-def name="org.jboss.common-core">
+            <maven-resource group="org.jboss" artifact="jboss-common-core"/>
+        </module-def>
+
+
+    </target>
+
+    <target name="clean-target">
+        <delete dir="${output.dir}"/>
+    </target>
+
+    <target name="clean" depends="clean-target">
+        <delete file="maven-ant-tasks.jar"/>
+    </target>
+
+    <target name="all" depends="base, copy-standalone, modules"/>
+</project>
