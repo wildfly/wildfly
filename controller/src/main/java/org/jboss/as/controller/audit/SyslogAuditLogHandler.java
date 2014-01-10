@@ -25,9 +25,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.security.KeyStore;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -42,7 +39,6 @@ import org.jboss.logmanager.handlers.SyslogHandler;
 import org.jboss.logmanager.handlers.SyslogHandler.Protocol;
 import org.jboss.logmanager.handlers.SyslogHandler.SyslogType;
 import org.jboss.logmanager.handlers.TcpOutputStream;
-import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoUtils;
 
 /**
@@ -54,7 +50,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
     private final PathManagerService pathManager;
 
     private volatile SyslogHandler handler;
-    private volatile String appName = "WildFly";
+    private volatile String appName;
     private volatile String hostName;
     private volatile SyslogType syslogType = SyslogType.RFC5424;
     private volatile boolean truncate;
@@ -63,6 +59,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
     private volatile int port = 514;
     private volatile Transport transport = Transport.UDP;
     private volatile MessageTransfer messageTransfer = MessageTransfer.NON_TRANSPARENT_FRAMING;
+    private volatile Facility facility;
     private volatile String tlsTrustStorePath;
     private volatile String tlsTrustStoreRelativeTo;
     private volatile String tlsTrustStorePassword;
@@ -77,14 +74,30 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
     }
 
     public void setHostName(String hostName) {
+        assert hostName != null;
         this.hostName = hostName;
     }
 
     public void setAppName(String appName) {
+        assert appName != null;
         this.appName = appName;
+        //This gets updated immediately
+        if (handler != null) {
+            handler.setAppName(appName);
+        }
+    }
+
+    public void setFacility(Facility facility) {
+        assert facility != null;
+        this.facility = facility;
+        //This gets updated immediately
+        if (handler != null) {
+            handler.setFacility(facility.convert());
+        }
     }
 
     public void setSyslogType(SyslogType syslogType) {
+        assert syslogType != null;
         this.syslogType = syslogType;
     }
 
@@ -97,10 +110,12 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
     }
 
     public void setMessageTransfer(MessageTransfer messageTransfer) {
+        assert messageTransfer != null;
         this.messageTransfer = messageTransfer;
     }
 
     public void setSyslogServerAddress(InetAddress syslogServerAddress) {
+        assert syslogServerAddress != null;
         this.syslogServerAddress = syslogServerAddress;
     }
 
@@ -109,6 +124,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
     }
 
     public void setTransport(Transport transport) {
+        assert transport != null;
         this.transport = transport;
     }
 
@@ -162,11 +178,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
                 //i18n not needed, user code will not end up here
                 throw new IllegalStateException("Unknown protocol");
             }
-            String tempHackAppName = tempHackAppNameFromProperty();
-            if (tempHackAppName != null) {
-              appName = tempHackAppName;
-            }
-            handler = new SyslogHandler(syslogServerAddress, port, tempHackFacilityFromProperty(), syslogType, protocol, hostName == null ? InetAddress.getLocalHost().getHostName() : hostName);
+            handler = new SyslogHandler(syslogServerAddress, port, facility.convert(), syslogType, protocol, hostName == null ? InetAddress.getLocalHost().getHostName() : hostName);
             handler.setEscapeEnabled(false); //Escaping is handled by the formatter
             handler.setAppName(appName);
             handler.setTruncate(truncate);
@@ -256,9 +268,6 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         if (!getFormatterName().equals(otherHandler.getFormatterName())) {
             return true;
         }
-        if (!appName.equals(otherHandler.appName)){
-            return true;
-        }
         if (!hostName.equals(otherHandler.hostName)){
             return true;
         }
@@ -332,77 +341,52 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         NON_TRANSPARENT_FRAMING;
     }
 
+    /**
+     * Facility as defined by RFC-5424 (<a href="http://tools.ietf.org/html/rfc5424">http://tools.ietf.org/html/rfc5424</a>)
+     * and RFC-3164 (<a href="http://tools.ietf.org/html/rfc3164">http://tools.ietf.org/html/rfc3164</a>).
+     */
+    public static enum Facility {
+        KERNEL(SyslogHandler.Facility.KERNEL),
+        USER_LEVEL(SyslogHandler.Facility.USER_LEVEL),
+        MAIL_SYSTEM(SyslogHandler.Facility.MAIL_SYSTEM),
+        SYSTEM_DAEMONS(SyslogHandler.Facility.SYSTEM_DAEMONS),
+        SECURITY(SyslogHandler.Facility.SECURITY),
+        SYSLOGD(SyslogHandler.Facility.SYSLOGD),
+        LINE_PRINTER(SyslogHandler.Facility.LINE_PRINTER),
+        NETWORK_NEWS(SyslogHandler.Facility.NETWORK_NEWS),
+        UUCP(SyslogHandler.Facility.UUCP),
+        CLOCK_DAEMON(SyslogHandler.Facility.CLOCK_DAEMON),
+        SECURITY2(SyslogHandler.Facility.SECURITY2),
+        FTP_DAEMON(SyslogHandler.Facility.FTP_DAEMON),
+        NTP(SyslogHandler.Facility.NTP),
+        LOG_AUDIT(SyslogHandler.Facility.LOG_AUDIT),
+        LOG_ALERT(SyslogHandler.Facility.LOG_ALERT),
+        CLOCK_DAEMON2(SyslogHandler.Facility.CLOCK_DAEMON2),
+        LOCAL_USE_0(SyslogHandler.Facility.LOCAL_USE_0),
+        LOCAL_USE_1(SyslogHandler.Facility.LOCAL_USE_1),
+        LOCAL_USE_2(SyslogHandler.Facility.LOCAL_USE_2),
+        LOCAL_USE_3(SyslogHandler.Facility.LOCAL_USE_3),
+        LOCAL_USE_4(SyslogHandler.Facility.LOCAL_USE_4),
+        LOCAL_USE_5(SyslogHandler.Facility.LOCAL_USE_5),
+        LOCAL_USE_6(SyslogHandler.Facility.LOCAL_USE_6),
+        LOCAL_USE_7(SyslogHandler.Facility.LOCAL_USE_7);
+
+        private final SyslogHandler.Facility realFacility;
+
+        private Facility(SyslogHandler.Facility realFacility) {
+            this.realFacility = realFacility;
+        }
+
+        public SyslogHandler.Facility convert(){
+            return realFacility;
+        }
+    }
+
+
     private static class SSLContextOutputStream extends TcpOutputStream {
         protected SSLContextOutputStream(SSLContext sslContext, InetAddress host, int port) throws IOException {
             super(sslContext.getSocketFactory().createSocket(host, port));
         }
-    }
-
-    // Temp hacks for syslog
-
-    private SyslogHandler.Facility tempHackFacilityFromProperty() {
-        //For EAP backport this as a standard privileged block
-        String prop = WildFlySecurityManager.getPropertyPrivileged("org.jboss.TEMP.audit.log.facility", null);
-        if (prop != null) {
-            SyslogHandler.Facility facility = FACILITIES.get(prop);
-            if (facility != null) {
-                return facility;
-            }
-        }
-        return SyslogHandler.DEFAULT_FACILITY;
-    }
-
-    //Temp hack just to be able to test
-    SyslogHandler.Facility getHandlerFacility(){
-        if (handler == null) {
-            return null;
-        }
-        return handler.getFacility();
-    }
-
-    private String tempHackAppNameFromProperty() {
-        //For EAP backport this as a standard privileged block
-        String prop = WildFlySecurityManager.getPropertyPrivileged("org.jboss.TEMP.audit.log.appName", null);
-        return prop;
-    }
-
-    //Temp hack just to be able to test
-    String getHandlerAppName(){
-        if (handler == null) {
-            return null;
-        }
-        return handler.getAppName();
-    }
-
-    //
-    private static final Map<String, SyslogHandler.Facility> FACILITIES;
-    static {
-        Map<String, SyslogHandler.Facility> map = new HashMap<String, SyslogHandler.Facility>();
-        map.put("0", SyslogHandler.Facility.KERNEL);
-        map.put("1", SyslogHandler.Facility.USER_LEVEL);
-        map.put("2", SyslogHandler.Facility.MAIL_SYSTEM);
-        map.put("3", SyslogHandler.Facility.SYSTEM_DAEMONS);
-        map.put("4", SyslogHandler.Facility.SECURITY);
-        map.put("5", SyslogHandler.Facility.SYSLOGD);
-        map.put("6", SyslogHandler.Facility.LINE_PRINTER);
-        map.put("7", SyslogHandler.Facility.NETWORK_NEWS);
-        map.put("8", SyslogHandler.Facility.UUCP);
-        map.put("9", SyslogHandler.Facility.CLOCK_DAEMON);
-        map.put("10", SyslogHandler.Facility.SECURITY2);
-        map.put("11", SyslogHandler.Facility.FTP_DAEMON);
-        map.put("12", SyslogHandler.Facility.NTP);
-        map.put("13", SyslogHandler.Facility.LOG_AUDIT);
-        map.put("14", SyslogHandler.Facility.LOG_ALERT);
-        map.put("15", SyslogHandler.Facility.CLOCK_DAEMON2);
-        map.put("16", SyslogHandler.Facility.LOCAL_USE_0);
-        map.put("17", SyslogHandler.Facility.LOCAL_USE_1);
-        map.put("18", SyslogHandler.Facility.LOCAL_USE_2);
-        map.put("19", SyslogHandler.Facility.LOCAL_USE_3);
-        map.put("20", SyslogHandler.Facility.LOCAL_USE_4);
-        map.put("21", SyslogHandler.Facility.LOCAL_USE_5);
-        map.put("22", SyslogHandler.Facility.LOCAL_USE_6);
-        map.put("23", SyslogHandler.Facility.LOCAL_USE_7);
-        FACILITIES = Collections.unmodifiableMap(map);
     }
 
 }

@@ -9,7 +9,8 @@
             <handlers>
                <file-handler name="file1" formatter="json-one" max-failure-count="${file.max-failure-count:30}" relative-to="jboss.server.data.dir" path="${file.path:audit-log.log}"/>
                <file-handler name="file2" formatter="json-one" path="${file2.path:audit-log.log}"/>
-               <syslog-handler name="syslog-udp" formatter="json-one" max-failure-count="${udp.max-failure-count:30}" syslog-format="${udp.format:RFC3164}" max-length="${udp.max-length:3064}" truncate="${udp.truncate:true}">
+               <syslog-handler name="syslog-udp" formatter="json-one" max-failure-count="${udp.max-failure-count:30}" syslog-format="${udp.format:RFC3164}" 
+                     max-length="${udp.max-length:3064}" truncate="${udp.truncate:true}" facility="${facility:KERNEL}" app-name="${app.name:MyAppName}">
                   <udp host="${udp.host:testhost}" port="${udp.port:1514}"/>
                </syslog-handler>
                <syslog-handler name="syslog-udp-default" formatter="json-one" >
