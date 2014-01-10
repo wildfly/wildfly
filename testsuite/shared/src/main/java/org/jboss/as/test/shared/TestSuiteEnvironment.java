@@ -49,6 +49,14 @@ public class TestSuiteEnvironment {
         return System.getProperty(name);
     }
 
+    public static void setSystemProperty(String name, String value) {
+        System.setProperty(name, value);
+    }
+
+    public static void clearSystemProperty(String name) {
+        System.clearProperty(name);
+    }
+
     public static String getTmpDir() {
         return getSystemProperty("java.io.tmpdir");
     }

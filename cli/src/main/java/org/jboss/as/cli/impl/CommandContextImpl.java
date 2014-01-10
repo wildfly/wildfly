@@ -258,6 +258,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         disableLocalAuth = false;
         initSSLContext();
         addShutdownHook();
+        CliLauncher.runcom(this);
     }
 
     CommandContextImpl(String username, char[] password, boolean disableLocalAuth) throws CliInitializationException {
@@ -298,6 +299,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         }
 
         addShutdownHook();
+        CliLauncher.runcom(this);
     }
 
     CommandContextImpl(String defaultController,
@@ -327,6 +329,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         this.operationCandidatesProvider = new DefaultOperationCandidatesProvider();
 
         addShutdownHook();
+        CliLauncher.runcom(this);
     }
 
     protected void addShutdownHook() {
@@ -661,10 +664,12 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
 
     @Override
     public void terminateSession() {
-        terminate = true;
-        disconnectController();
-        if(shutdownHook != null) {
-            CliShutdownHook.remove(shutdownHook);
+        if(!terminate) {
+            terminate = true;
+            disconnectController();
+            if (shutdownHook != null) {
+                CliShutdownHook.remove(shutdownHook);
+            }
         }
     }
 
