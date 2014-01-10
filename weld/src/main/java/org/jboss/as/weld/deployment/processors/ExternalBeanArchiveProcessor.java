@@ -117,7 +117,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                         if(beans.exists()) {
                             existing.add(beans.toURL());
                         }
-                        for(ResourceRoot root : deploymentUnit.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
+                        for(ResourceRoot root : deployment.getAttachmentList(Attachments.RESOURCE_ROOTS)) {
                             if (root.getRootName().equals("classes")) {
                                 VirtualFile classesBeans = root.getRoot().getChild(META_INF_BEANS_XML);
                                 if (classesBeans.exists()) {
