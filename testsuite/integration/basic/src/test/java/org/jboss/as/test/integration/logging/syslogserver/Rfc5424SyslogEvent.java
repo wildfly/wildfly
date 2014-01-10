@@ -31,7 +31,7 @@ import org.productivity.java.syslog4j.server.SyslogServerEventIF;
 
 /**
  * Simple implementation of rfc5424 syslog message format (c.f. http://tools.ietf.org/html/rfc5424#section-6).
- * 
+ *
  * @author Josef Cacek
  */
 public class Rfc5424SyslogEvent implements SyslogServerEventIF {
@@ -117,8 +117,9 @@ public class Rfc5424SyslogEvent implements SyslogServerEventIF {
         } catch (NumberFormatException nfe) {
             LOGGER.error("Can't parse priority");
         }
-        facility = (priority >> 3) << 3;
-        level = priority - facility;
+
+        level = priority & 7;
+        facility = (priority - level) >> 3;
 
         startPos = endPos + 1;
         int ver = 0;
@@ -144,7 +145,7 @@ public class Rfc5424SyslogEvent implements SyslogServerEventIF {
 
     /**
      * Try to find a character in given byte array, starting from startPos.
-     * 
+     *
      * @param data
      * @param startPos
      * @param c
