@@ -50,8 +50,8 @@ import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.domain.management.DomainManagementMessages;
-import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
+import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.JsonAuditLogFormatterResourceDefinition;
 import org.jboss.as.domain.management.audit.SyslogAuditLogHandlerResourceDefinition;
@@ -284,6 +284,14 @@ public class AuditLogXml {
                 }
                 case TRUNCATE: {
                     SyslogAuditLogHandlerResourceDefinition.TRUNCATE.parseAndSetParameter(value, add, reader);
+                    break;
+                }
+                case FACILITY: {
+                    SyslogAuditLogHandlerResourceDefinition.FACILITY.parseAndSetParameter(value, add, reader);
+                    break;
+                }
+                case APP_NAME: {
+                    SyslogAuditLogHandlerResourceDefinition.APP_NAME.parseAndSetParameter(value, add, reader);
                     break;
                 }
                 case SYSLOG_FORMAT: {
@@ -562,6 +570,8 @@ public class AuditLogXml {
                     SyslogAuditLogHandlerResourceDefinition.SYSLOG_FORMAT.marshallAsAttribute(handler, writer);
                     SyslogAuditLogHandlerResourceDefinition.MAX_LENGTH.marshallAsAttribute(handler, writer);
                     SyslogAuditLogHandlerResourceDefinition.TRUNCATE.marshallAsAttribute(handler, writer);
+                    SyslogAuditLogHandlerResourceDefinition.FACILITY.marshallAsAttribute(handler, writer);
+                    SyslogAuditLogHandlerResourceDefinition.APP_NAME.marshallAsAttribute(handler, writer);
                     if (handler.hasDefined(ModelDescriptionConstants.PROTOCOL)) {
                         writeAuditLogSyslogProtocol(writer, handler.get(ModelDescriptionConstants.PROTOCOL));
                     }
@@ -637,5 +647,4 @@ public class AuditLogXml {
             writer.writeEndElement();
         }
     }
-
 }

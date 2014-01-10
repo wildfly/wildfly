@@ -26,6 +26,7 @@ package org.jboss.as.controller.audit;
 
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
 
 /**
  * Abstract base class for {@link AuditLogger} implementations.
@@ -106,6 +107,7 @@ public interface ManagedAuditLogger extends AuditLogger {
      */
     void addFormatter(AuditLogItemFormatter formatter);
 
+    // Immediate updates - TODO find some better way to do these if we end up adding more handler types!
     /**
      * Update the handler formatter. This will take effect immediately.
      *
@@ -121,6 +123,24 @@ public interface ManagedAuditLogger extends AuditLogger {
      * @param count the max failure count
      */
     void updateHandlerMaxFailureCount(String name, int count);
+
+    /**
+     * Update the syslog handler facility. This will take effect immediately.
+     *
+     * @param name the name of the syslog handler
+     * @param facility the facility
+     */
+    void updateSyslogHandlerFacility(String name, Facility facility);
+
+    /**
+     * Update the handler app-name. This will take effect immediately
+     *
+     * @param name the name of the handler
+     * @param appName the app name
+     */
+    void updateSyslogHandlerAppName(String name, String appName);
+    //ImmeduateUpdates - end
+
 
     /**
      * Remove a formatter

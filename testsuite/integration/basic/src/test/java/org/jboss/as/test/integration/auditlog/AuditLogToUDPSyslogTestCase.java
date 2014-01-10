@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UDP
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.logging.syslogserver.UDPSyslogServerConfig;
 import org.jboss.dmr.ModelNode;
@@ -36,7 +37,7 @@ import org.productivity.java.syslog4j.server.SyslogServerConfigIF;
 
 /**
  * Tests UDP protocol of auditlog-to-syslog handler.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -51,8 +52,8 @@ public class AuditLogToUDPSyslogTestCase extends AuditLogToSyslogTestCase {
     static class AuditLogToUDPSyslogTestCaseSetup extends AuditLogToSyslogSetup {
 
         @Override
-        protected ModelNode addAuditlogSyslogProtocol() {
-            return Util.createAddOperation(AUDIT_SYSLOG_HANDLER_ADDR.append(PROTOCOL, UDP));
+        protected ModelNode addAuditlogSyslogProtocol(PathAddress syslogHandlerAddress) {
+            return Util.createAddOperation(syslogHandlerAddress.append(PROTOCOL, UDP));
         }
 
         @Override
