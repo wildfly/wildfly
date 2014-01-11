@@ -39,6 +39,7 @@ import org.apache.catalina.Wrapper;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.tomcat.InstanceManager;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.web.deployment.WebCtxLoader;
 import org.jboss.as.webservices.deployers.EndpointServiceDeploymentAspect;
 import org.jboss.as.webservices.deployers.deployment.DeploymentAspectsProvider;
@@ -112,7 +113,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
     }
 
     private static ServiceTarget getBaseTarget() {
-        return WSServices.getContainerRegistry().getService(WSServices.CONFIG_SERVICE).getServiceContainer();
+        return CurrentServiceContainer.getServiceContainer().getService(WSServices.CONFIG_SERVICE).getServiceContainer();
     }
 
     /**

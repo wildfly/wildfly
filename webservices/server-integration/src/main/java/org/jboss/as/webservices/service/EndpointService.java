@@ -31,6 +31,7 @@ import javax.management.MBeanServer;
 import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.security.EJBMethodSecurityAttributesAdaptor;
@@ -253,7 +254,7 @@ public final class EndpointService implements Service<Endpoint> {
 
     public static void uninstall(final Endpoint endpoint, final DeploymentUnit unit) {
         final ServiceName serviceName = getServiceName(unit, endpoint.getShortName());
-        final ServiceController<?> endpointService = WSServices.getContainerRegistry().getService(serviceName);
+        final ServiceController<?> endpointService = CurrentServiceContainer.getServiceContainer().getService(serviceName);
         if (endpointService != null) {
             endpointService.setMode(Mode.REMOVE);
         }

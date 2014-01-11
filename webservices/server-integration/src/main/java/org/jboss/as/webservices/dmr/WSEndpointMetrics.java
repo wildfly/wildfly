@@ -34,6 +34,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -123,7 +124,7 @@ final class WSEndpointMetrics implements OperationStepHandler {
         final String webContext = endpointId.substring(0, endpointId.indexOf(":"));
         final String endpointName = endpointId.substring(endpointId.indexOf(":") + 1);
         ServiceName endpointServiceName = WSServices.ENDPOINT_SERVICE.append("context="+webContext).append(endpointName);
-        ServiceController<Endpoint> service = (ServiceController<Endpoint>)WSServices.getContainerRegistry().getService(endpointServiceName);
+        ServiceController<Endpoint> service = (ServiceController<Endpoint>) CurrentServiceContainer.getServiceContainer().getService(endpointServiceName);
         Endpoint endpoint= service.getValue();
         final ModelNode result = new ModelNode();
         if (endpoint != null && endpoint.getEndpointMetrics() != null) {

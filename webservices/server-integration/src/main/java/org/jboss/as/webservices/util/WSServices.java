@@ -23,7 +23,6 @@
 package org.jboss.as.webservices.util;
 
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 
 /**
  * WSServices
@@ -42,20 +41,6 @@ public final class WSServices {
     public static final ServiceName ENDPOINT_SERVICE = WS_SERVICE.append("endpoint");
     public static final ServiceName ENDPOINT_PUBLISH_SERVICE = WS_SERVICE.append("endpoint-publish");
     public static final ServiceName PORT_COMPONENT_LINK_SERVICE = WS_SERVICE.append("port-component-link");
-
-    private static volatile ServiceRegistry registry;
-
-    public static void saveContainerRegistry(ServiceRegistry containerRegistry) {
-        registry = containerRegistry;
-    }
-
-    public static void clearContainerRegistry() {
-        registry = null;
-    }
-
-    public static ServiceRegistry getContainerRegistry() {
-        return registry;
-    }
 
     private WSServices() {
         // forbidden inheritance

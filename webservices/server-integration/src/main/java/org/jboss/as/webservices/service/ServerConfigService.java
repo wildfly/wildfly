@@ -95,7 +95,6 @@ public final class ServerConfigService implements Service<ServerConfig> {
         builder.addListener(listener);
         builder.setInitialMode(Mode.ACTIVE);
         ServiceController<?> sc = builder.install();
-        WSServices.saveContainerRegistry(sc.getServiceContainer());
         return sc;
     }
 

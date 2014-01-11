@@ -268,7 +268,6 @@ public class PooledConnectionFactoryService implements Service<Void> {
                     properties.add(simpleProperty15(GROUP_PORT, INTEGER_TYPE, "" + udpCfg.getGroupPort()));
                     properties.add(simpleProperty15(DISCOVERY_LOCAL_BIND_ADDRESS, STRING_TYPE, "" + udpCfg.getLocalBindAddress()));
                 } else if (bgCfg instanceof JGroupsBroadcastGroupConfiguration) {
-                    JGroupsChannelLocator.container = container;
                     properties.add(simpleProperty15(JGROUPS_CHANNEL_LOCATOR_CLASS, STRING_TYPE, JGroupsChannelLocator.class.getName()));
                     properties.add(simpleProperty15(JGROUPS_CHANNEL_NAME, STRING_TYPE, jgroupsChannelName));
                     properties.add(simpleProperty15(JGROUPS_CHANNEL_REF_NAME, STRING_TYPE, hqServerName + '/' + jgroupsChannelName));
