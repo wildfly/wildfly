@@ -21,6 +21,7 @@
  */
 package org.jboss.as.server;
 
+import java.security.AccessController;
 import java.security.Permission;
 
 import org.jboss.msc.service.ServiceContainer;
@@ -52,7 +53,7 @@ public class CurrentServiceContainer {
     private static void checkPermission(final Permission permission) {
         SecurityManager securityManager = System.getSecurityManager();
         if (securityManager != null) {
-            securityManager.checkPermission(permission);
+            AccessController.checkPermission(permission);
         }
     }
 }

@@ -27,8 +27,8 @@ import java.util.Map;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentUnit;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.common.deployment.ReferenceFactory;
@@ -111,7 +111,7 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
 
         @SuppressWarnings("unchecked")
         private static ServiceController<BasicComponent> getComponentController(final ServiceName componentName) {
-            return (ServiceController<BasicComponent>)WSServices.getContainerRegistry().getService(componentName);
+            return (ServiceController<BasicComponent>) CurrentServiceContainer.getServiceContainer().getService(componentName);
         }
 
     }

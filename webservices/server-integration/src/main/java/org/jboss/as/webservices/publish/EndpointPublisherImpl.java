@@ -28,6 +28,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.host.ServletBuilder;
 import org.jboss.as.web.host.WebDeploymentBuilder;
@@ -114,7 +115,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
     }
 
     private static ServiceTarget getBaseTarget() {
-        return WSServices.getContainerRegistry().getService(WSServices.CONFIG_SERVICE).getServiceContainer();
+        return CurrentServiceContainer.getServiceContainer().getService(WSServices.CONFIG_SERVICE).getServiceContainer();
     }
 
     /**
