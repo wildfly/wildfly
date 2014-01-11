@@ -118,13 +118,22 @@ final class MBeanServices {
         return startStopService;
     }
 
-    void addDependency(final String dependencyMBeanName, final Injector<Object> injector) {
+    void addDependency(final String dependencyMBeanName)  {
         assertState();
         final ServiceName injectedMBeanCreateDestroyServiceName = ServiceNameFactory.newCreateDestroy(dependencyMBeanName);
-        createDestroyServiceBuilder.addDependency(injectedMBeanCreateDestroyServiceName, injector);
+        createDestroyServiceBuilder.addDependency(injectedMBeanCreateDestroyServiceName);
         final ServiceName injectedMBeanStartStopServiceName = ServiceNameFactory.newStartStop(dependencyMBeanName);
         startStopServiceBuilder.addDependency(injectedMBeanStartStopServiceName);
     }
+
+       void addAttribute(final String attributeMBeanName, final Injector<Object> injector) {
+           assertState();
+           final ServiceName injectedMBeanCreateDestroyServiceName = ServiceNameFactory.newCreateDestroy(attributeMBeanName);
+           createDestroyServiceBuilder.addDependency(injectedMBeanCreateDestroyServiceName, injector);
+           final ServiceName injectedMBeanStartStopServiceName = ServiceNameFactory.newStartStop(attributeMBeanName);
+           startStopServiceBuilder.addDependency(injectedMBeanStartStopServiceName);
+       }
+
 
     void addInjectionValue(final Injector<Object> injector, final Value<?> value) {
         assertState();
@@ -151,5 +160,4 @@ final class MBeanServices {
             throw new IllegalStateException();
         }
     }
-
 }
