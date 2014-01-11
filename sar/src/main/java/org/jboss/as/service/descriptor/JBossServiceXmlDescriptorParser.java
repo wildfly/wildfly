@@ -154,6 +154,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
         this.propertyReplacer = propertyReplacer;
     }
 
+    @Override
     public void readElement(final XMLExtendedStreamReader reader, final ParseResult<JBossServiceXmlDescriptor> value) throws XMLStreamException {
         final JBossServiceXmlDescriptor serviceXmlDescriptor = new JBossServiceXmlDescriptor();
         final List<JBossServiceConfig> serviceConfigs = new ArrayList<JBossServiceConfig>();
@@ -224,6 +225,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             throw missingAttributes(reader.getLocation(), required);
         }
         final List<JBossServiceDependencyConfig> dependencyConfigs = new ArrayList<JBossServiceDependencyConfig>();
+        final List<JBossServiceDependencyListConfig> dependencyListConfigs = new ArrayList<JBossServiceDependencyListConfig>();
         final List<JBossServiceAttributeConfig> attributes = new ArrayList<JBossServiceAttributeConfig>();
         final List<String> aliases = new ArrayList<String>();
         final List<String> annotations = new ArrayList<String>();
@@ -232,6 +234,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
             switch (reader.nextTag()) {
                 case END_ELEMENT:
                     serviceConfig.setDependencyConfigs(dependencyConfigs.toArray(new JBossServiceDependencyConfig[dependencyConfigs.size()]));
+                    serviceConfig.setDependencyConfigLists(dependencyListConfigs.toArray(new JBossServiceDependencyListConfig[dependencyListConfigs.size()]));
                     serviceConfig.setAliases(aliases.toArray(new String[aliases.size()]));
                     serviceConfig.setAnnotations(annotations.toArray(new String[annotations.size()]));
                     serviceConfig.setAttributeConfigs(attributes.toArray(new JBossServiceAttributeConfig[attributes.size()]));
@@ -253,7 +256,7 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
                             dependencyConfigs.add(parseDepends(reader));
                             break;
                         case DEPENDS_LIST:
-                            dependencyConfigs.addAll(parseDependsList(reader));
+                            dependencyListConfigs.add(parseDependsList(reader));
                             break;
                         case ALIAS:
                             aliases.add(parseTextElement(reader));
@@ -522,7 +525,8 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
         return dependencyConfig;
     }
 
-    private List<JBossServiceDependencyConfig> parseDependsList(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    private JBossServiceDependencyListConfig parseDependsList(final XMLExtendedStreamReader reader) throws XMLStreamException {
+        final JBossServiceDependencyListConfig dependencyListConfig  = new JBossServiceDependencyListConfig();
         final List<JBossServiceDependencyConfig> dependencyConfigs = new ArrayList<JBossServiceDependencyConfig>();
         String optionalAttributeName = null;
         final int count = reader.getAttributeCount();
@@ -541,8 +545,9 @@ public final class JBossServiceXmlDescriptorParser implements XMLElementReader<P
         while (reader.hasNext()) {
             switch (reader.next()) {
                 case END_ELEMENT:
-                    // If optionalAttributeName is set, we need to create an attribute...
-                    return dependencyConfigs;
+                    dependencyListConfig.setOptionalAttributeName(optionalAttributeName);
+                    dependencyListConfig.setDependencyConfigs(dependencyConfigs.toArray(new JBossServiceDependencyConfig[dependencyConfigs.size()]));
+                    return dependencyListConfig;
                 case START_ELEMENT:
                     switch (Namespace.of(reader.getNamespaceURI())) {
                         case NONE:

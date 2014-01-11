@@ -36,6 +36,7 @@ public class JBossServiceConfig implements Serializable {
     private String[] aliases;
     private String[] annotations;
     private JBossServiceDependencyConfig[] dependencyConfigs;
+    private JBossServiceDependencyListConfig[] dependencyConfigLists;
     private JBossServiceAttributeConfig[] attributeConfigs;
     private JBossServiceConstructorConfig constructorConfig;
 
@@ -93,5 +94,13 @@ public class JBossServiceConfig implements Serializable {
 
     public void setAttributeConfigs(JBossServiceAttributeConfig[] attributeConfigs) {
         this.attributeConfigs = attributeConfigs;
+    }
+
+    public JBossServiceDependencyListConfig[] getDependencyConfigLists() {
+        return dependencyConfigLists;
+    }
+
+    public void setDependencyConfigLists(JBossServiceDependencyListConfig[] dependencyConfigLists) {
+        this.dependencyConfigLists = dependencyConfigLists;
     }
 }
