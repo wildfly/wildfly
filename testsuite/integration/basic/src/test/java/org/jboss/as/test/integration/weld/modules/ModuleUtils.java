@@ -102,7 +102,6 @@ class ModuleUtils {
         } finally {
             IoUtils.safeClose(out);
         }
-        log.trace("copyFile->" + target + "(" + target.length() + ")");
     }
 
     static File getModulePath() {
