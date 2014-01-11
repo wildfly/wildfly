@@ -32,7 +32,9 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceActivatorContext;
 import org.jboss.msc.service.ServiceActivatorContextImpl;
+import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Deployment processor responsible for executing any ServiceActivator instances for a deployment.
@@ -56,7 +58,13 @@ public class ServiceActivatorProcessor implements DeploymentUnitProcessor {
         if (module == null)
             return; // Skip deployments with no module
 
-        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(phaseContext.getServiceTarget(), phaseContext.getServiceRegistry());
+        ServiceRegistry serviceRegistry = phaseContext.getServiceRegistry();
+        if(WildFlySecurityManager.isChecking()) {
+            //service registry allows you to modify internal server state across all deployments
+            //if a security manager is present we use a version that has permission checks
+            serviceRegistry = new SecuredServiceRegistry(serviceRegistry);
+        }
+        final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContextImpl(phaseContext.getServiceTarget(), serviceRegistry);
         for(ServiceActivator serviceActivator : module.loadService(ServiceActivator.class)) {
             try {
                 serviceActivator.activate(serviceActivatorContext);

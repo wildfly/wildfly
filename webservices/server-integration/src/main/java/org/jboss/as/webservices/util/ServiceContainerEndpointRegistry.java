@@ -26,6 +26,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import javax.management.ObjectName;
 
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.common.ObjectNameFactory;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -41,7 +42,7 @@ public class ServiceContainerEndpointRegistry implements EndpointRegistry {
     @Override
     public Set<ObjectName> getEndpoints() {
         Set<ObjectName> endpoints = new CopyOnWriteArraySet<ObjectName>();
-        for (ServiceName sname : WSServices.getContainerRegistry().getServiceNames()) {
+        for (ServiceName sname : CurrentServiceContainer.getServiceContainer().getServiceNames()) {
             if (sname.getCanonicalName().startsWith(endpointPrefix)) {
                 String contextPath = sname.getParent().getSimpleName().substring(8);
                 String endpointName = sname.getSimpleName();
@@ -89,7 +90,7 @@ public class ServiceContainerEndpointRegistry implements EndpointRegistry {
 
     private Set<Endpoint> getRegisteredEndpoints() {
         Set<Endpoint> endpoints = new CopyOnWriteArraySet<Endpoint>();
-        for (ServiceName sname : WSServices.getContainerRegistry().getServiceNames()) {
+        for (ServiceName sname : CurrentServiceContainer.getServiceContainer().getServiceNames()) {
             if (sname.getCanonicalName().startsWith(endpointPrefix)) {
                 Endpoint ep = ASHelper.getMSCService(sname, Endpoint.class);
                 if (ep != null) { //JBWS-3719

@@ -27,12 +27,12 @@ import java.util.StringTokenizer;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.SimpleAttachable;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
-import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.msc.service.ServiceName;
@@ -120,7 +120,7 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
 
     @Override
     public ServiceRegistry getServiceRegistry() {
-        return WSServices.getContainerRegistry();
+        return CurrentServiceContainer.getServiceContainer();
     }
 
     @Override
