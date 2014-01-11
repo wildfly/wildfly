@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -283,7 +284,7 @@ public final class ASHelper {
 
     @SuppressWarnings("unchecked")
     public static <T> T getMSCService(final ServiceName serviceName, final Class<T> clazz) {
-        ServiceController<T> service = (ServiceController<T>)WSServices.getContainerRegistry().getService(serviceName);
+        ServiceController<T> service = (ServiceController<T>) CurrentServiceContainer.getServiceContainer().getService(serviceName);
         return service != null ? service.getValue() : null;
     }
 

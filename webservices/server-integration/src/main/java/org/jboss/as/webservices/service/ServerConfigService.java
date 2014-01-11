@@ -69,8 +69,6 @@ public final class ServerConfigService implements Service<ServerConfig> {
     public void start(final StartContext context) throws StartException {
         try {
             serverConfig.create();
-            // FIXME - This is asymmetric (stop doesn't clean up), and its ugly
-            WSServices.saveContainerRegistry(context.getController().getServiceContainer());
         } catch (final Exception e) {
             ROOT_LOGGER.configServiceCreationFailed();
             throw new StartException(e);
