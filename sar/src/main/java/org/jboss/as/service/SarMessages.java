@@ -26,10 +26,10 @@ import javax.xml.namespace.QName;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.msc.service.StartException;
 import org.jboss.vfs.VirtualFile;
 
@@ -176,4 +176,15 @@ public interface SarMessages {
      */
     @Message(id = 17230, value = "Failed to process SAR child archives for [%s]")
     DeploymentUnitProcessingException failedToProcessSarChild(@Cause Throwable cause, VirtualFile deploymentRoot);
+
+    /**
+     * Creates an exception indicating that dependency of mbean was malformed in service descriptor.
+     *
+     * @param cause MalformedObjectNameException.
+     * @param dependencyName the name of malformed dependency.
+     *
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 17231, value = "Malformed dependency name %s")
+    DeploymentUnitProcessingException malformedDependencyName(@Cause Throwable cause,  String dependencyName);
 }
