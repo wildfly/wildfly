@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:datasources:1.1">
+<subsystem xmlns="urn:jboss:domain:datasources:3.0">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool"
                     use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}" >
@@ -99,7 +99,7 @@
             </statement>
         </datasource>
         <xa-datasource jndi-name="${test.expr:java:jboss/xa-datasources/complexXaDs}" pool-name="complexXaDs_Pool"
-                       use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}">
+                       use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" >
             <xa-datasource-property name="URL">
                 ${test.expr:jdbc:h2:mem:test}
             </xa-datasource-property>
@@ -159,7 +159,7 @@
                     ${test.expr:sa}
                 </password>
                 <reauth-plugin class-name="${test.expr:someClass1}">
-                    <config-property name="name">Property1</config-property>
+                    <config-property name="name">${test.expr:Property1}</config-property>
                 </reauth-plugin>
             </security>
             <recovery no-recovery="${test.expr:false}">
@@ -173,12 +173,12 @@
                 </recover-credential>
                 <recover-plugin class-name="${test.expr:someClass5}">
                     <config-property name="name">Property5</config-property>
-                    <config-property name="name1">Property6</config-property>
+                    <config-property name="name1">${test.expr:Property6}</config-property>
                 </recover-plugin>
             </recovery>
             <validation>
                 <valid-connection-checker class-name="${test.expr:someClass2}">
-                    <config-property name="name">Property2</config-property>
+                    <config-property name="name">${test.expr:Property2}</config-property>
                 </valid-connection-checker>
                 <check-valid-connection-sql>
                     ${test.expr:select 1}
@@ -196,11 +196,11 @@
                     ${test.expr:true}
                 </use-fast-fail>
                 <stale-connection-checker class-name="${test.expr:someClass3}">
-                     <config-property name="name">${test.expr:Property3}</config-property>
-                 </stale-connection-checker>
-                 <exception-sorter class-name="${test.expr:someClass4}">
-                     <config-property name="name">${test.expr:Property4}</config-property>
-                 </exception-sorter>
+                    <config-property name="name">${test.expr:Property3}</config-property>
+                </stale-connection-checker>
+                <exception-sorter class-name="${test.expr:someClass4}">
+                    <config-property name="name">${test.expr:Property4}</config-property>
+                </exception-sorter>
             </validation>
             <timeout>
                 <set-tx-query-timeout>${test.expr:true}</set-tx-query-timeout>
@@ -229,13 +229,13 @@
             </statement>
         </xa-datasource>
         <drivers>
-              <driver major-version="${test.expr:3}" minor-version="${test.expr:3}" module="com.h2database.h2" name="h2">
-                  <driver-class>token</driver-class>
-                  <xa-datasource-class>
-                      org.h2.jdbcx.JdbcDataSource
-                  </xa-datasource-class>
-                  <datasource-class>token</datasource-class>
-              </driver>
-          </drivers>
+            <driver major-version="${test.expr:3}" minor-version="${test.expr:3}" module="com.h2database.h2" name="h2">
+                <driver-class>token</driver-class>
+                <xa-datasource-class>
+                    org.h2.jdbcx.JdbcDataSource
+                </xa-datasource-class>
+                <datasource-class>token</datasource-class>
+            </driver>
+        </drivers>
     </datasources>
 </subsystem>

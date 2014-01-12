@@ -294,4 +294,9 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             return imrr.getOperationHandler(PathAddress.EMPTY_ADDRESS, operation.get(OP).asString());
         }
     }
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new CMResourceResourceDefinition());
+    }
+
 }

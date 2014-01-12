@@ -277,6 +277,15 @@ public final class ResourceAdapterActivatorService extends AbstractResourceAdapt
         protected DeployersLogger getLogger() {
             return DEPLOYERS_LOGGER;
         }
+
+        @Override
+        protected void setRecoveryForResourceAdapterInResourceAdapterRepository(String key, boolean isXA) {
+            try {
+                raRepository.getValue().setRecoveryForResourceAdapter(key, isXA);
+            } catch (Throwable t) {
+                DEPLOYMENT_CONNECTOR_LOGGER.unableToRegisterRecovery(key, isXA);
+            }
+        }
     }
 
 }

@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:2.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:3.0">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->

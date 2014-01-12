@@ -65,9 +65,9 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.jca.common.api.metadata.Defaults;
 import org.jboss.jca.common.api.metadata.ds.DataSources;
-import org.jboss.jca.common.api.metadata.ds.v12.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v13.DataSource;
 import org.jboss.jca.common.api.metadata.ds.v12.DsXaPool;
-import org.jboss.jca.common.api.metadata.ds.v12.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v13.XaDataSource;
 import org.jboss.jca.common.metadata.ds.v12.DsXaPoolImpl;
 import org.jboss.jca.core.api.connectionmanager.ccm.CachedConnectionManager;
 import org.jboss.jca.core.api.management.ManagementRepository;
@@ -231,7 +231,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 ds.getSecurity(), ds.getStatement(), ds.getValidation(),
                 ds.getUrlDelimiter(), ds.getUrlSelectorStrategyClassName(), ds.getNewConnectionSql(),
                 ds.isUseJavaContext(), ds.getPoolName(), ds.isEnabled(), ds.getJndiName(),
-                ds.isSpy(), ds.isUseCcm(), ds.isJTA(), ds.getPool());
+                ds.isSpy(), ds.isUseCcm(), ds.isJTA(), ds.isConnectable(), ds.getPool());
     }
 
     private ModifiableXaDataSource buildXaDataSource(XaDataSource xads) throws org.jboss.jca.common.api.validator.ValidateException {
@@ -254,7 +254,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 xads.getStatement(), xads.getValidation(),
                 xads.getUrlDelimiter(), xads.getUrlProperty(), xads.getUrlSelectorStrategyClassName(),
                 xads.isUseJavaContext(), xads.getPoolName(), xads.isEnabled(), xads.getJndiName(),
-                xads.isSpy(), xads.isUseCcm(),
+                xads.isSpy(), xads.isUseCcm(), xads.isConnectable(),
                 xads.getXaDataSourceProperty(), xads.getXaDataSourceClass(), xads.getDriver(),
                 xads.getNewConnectionSql(), xaPool, xads.getRecovery());
     }

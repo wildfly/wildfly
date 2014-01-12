@@ -70,6 +70,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
@@ -266,6 +267,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         CLASS_NAME.marshallAsAttribute(conDef, streamWriter);
         JNDINAME.marshallAsAttribute(conDef, streamWriter);
         ENABLED.marshallAsAttribute(conDef, streamWriter);
+        CONNECTABLE.marshallAsAttribute(conDef, streamWriter);
         USE_JAVA_CONTEXT.marshallAsAttribute(conDef, streamWriter);
         streamWriter.writeAttribute("pool-name", poolName);
         USE_CCM.marshallAsAttribute(conDef, streamWriter);
@@ -424,7 +426,8 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
             switch (Namespace.forUri(reader.getNamespaceURI())) {
                 case RESOURCEADAPTERS_1_0:
                 case RESOURCEADAPTERS_1_1:
-                case RESOURCEADAPTERS_2_0: {
+                case RESOURCEADAPTERS_2_0:
+                case RESOURCEADAPTERS_3_0:{
                     localName = reader.getLocalName();
                     final Element element = Element.forName(reader.getLocalName());
                     SUBSYSTEM_RA_LOGGER.tracef("%s -> %s", localName, element);

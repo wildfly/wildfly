@@ -167,7 +167,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                 final ModifiableXaDataSource dataSource = new ModifiableXaDataSource(transactionIsolation(),
                         null, dsSecurity, null, null, null,
                         null, null, null, poolName, true,
-                        jndiName, false, false, props,
+                        jndiName, false, false, Defaults.CONNECTABLE, props,
                         className, null, null,
                         xaPool, null);
                 final XaDataSourceService xds = new XaDataSourceService(jndiName, module.getClassLoader());
@@ -179,7 +179,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                                                              maxPoolSize < 1 ? Defaults.MAX_POOL_SIZE : Integer.valueOf(maxPoolSize),
                                                              Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, Boolean.FALSE, null, null);
                 final ModifiableDataSource dataSource = new ModifiableDataSource(url, null, className, null, transactionIsolation(), props,
-                        null, dsSecurity, null, null, null, null, null, false, poolName, true, jndiName, Defaults.SPY, Defaults.USE_CCM, transactional, commonPool);
+                        null, dsSecurity, null, null, null, null, null, false, poolName, true, jndiName, Defaults.SPY, Defaults.USE_CCM, transactional, Defaults.CONNECTABLE, commonPool);
                 final LocalDataSourceService ds = new LocalDataSourceService(jndiName, module.getClassLoader());
                 ds.getDataSourceConfigInjector().inject(dataSource);
                 startDataSource(ds, jndiName, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector);

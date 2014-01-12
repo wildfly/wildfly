@@ -73,7 +73,7 @@ public class TransactionExtension implements Extension {
 
     private static final String RESOURCE_NAME = TransactionExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
@@ -156,6 +156,7 @@ public class TransactionExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_3.getUriString(), TransactionSubsystem13Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_1_4.getUriString(), TransactionSubsystem14Parser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_2_0.getUriString(), TransactionSubsystem20Parser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.TRANSACTIONS_3_0.getUriString(), TransactionSubsystem30Parser.INSTANCE);
     }
 
     // Transformation
@@ -166,6 +167,17 @@ public class TransactionExtension implements Extension {
      * @param subsystem the subsystems registration
      */
     private static void registerTransformers(final SubsystemRegistration subsystem) {
+
+        final ResourceTransformationDescriptionBuilder subsystemRoot200 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        //Versions < 3.0.0 is not able to handle commit-markable-resource
+        subsystemRoot200.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
+
+        final ModelVersion version200 = ModelVersion.create(2, 0, 0);
+        final TransformationDescription description200 = subsystemRoot200.build();
+        TransformationDescription.Tools.register(description200, subsystem, version200);
+
+
 
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         final ResourceTransformationDescriptionBuilder subsystemRoot120 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
@@ -178,9 +190,10 @@ public class TransactionExtension implements Extension {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                // Legacy name for enabling/disabling statistics
+                        // Legacy name for enabling/disabling statistics
                 .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS);
 
+        subsystemRoot120.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
 
         final ModelVersion version120 = ModelVersion.create(1, 2, 0);
         final TransformationDescription description120 = subsystemRoot120.build();
@@ -216,6 +229,7 @@ public class TransactionExtension implements Extension {
         subsystemRoot.getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, TransactionSubsystemRootResourceDefinition.ATTRIBUTES_WITH_EXPRESSIONS_AFTER_1_1_1);
 
+        subsystemRoot.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
         final ModelVersion version111 = ModelVersion.create(1, 1, 1);
         final TransformationDescription description111 = subsystemRoot.build();
         TransformationDescription.Tools.register(description111, subsystem, version111);
