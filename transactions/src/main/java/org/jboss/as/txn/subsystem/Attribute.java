@@ -48,6 +48,10 @@ enum Attribute {
     TABLE_PREFIX("table-prefix"),
     DROP_TABLE("drop-table"),
     ENABLE_ASYNC_IO("enable-async-io"),
+    JNDI_NAME(CommonAttributes.CM_JNDI_NAME),
+    CM_TABLE_IMMEDIATE_CLEANUP(CommonAttributes.CM_IMMEDIATE_CLEANUP),
+    CM_TABLE_BATCH_SIZE(CommonAttributes.CM_BATCH_SIZE),
+    NAME(CommonAttributes.CM_LOCATION_NAME)
     ;
     private final String name;
 

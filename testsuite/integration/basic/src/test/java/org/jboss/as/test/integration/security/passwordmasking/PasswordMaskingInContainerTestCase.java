@@ -87,7 +87,7 @@ public class PasswordMaskingInContainerTestCase {
             server = Server.createTcpServer("-tcpAllowOthers").start();
             Class.forName("org.h2.Driver");
             connection = DriverManager.getConnection("jdbc:h2:mem:masked;DB_CLOSE_DELAY=-1", "sa", DS_CLEAR_TEXT_PASSWORD);
-            executeUpdate(connection, "CREATE TABLE FooBars(ID Varchar(50), Password Varchar(50))");
+            executeUpdate(connection, "CREATE CMR_TABLE FooBars(ID Varchar(50), Password Varchar(50))");
             executeUpdate(connection, "INSERT INTO FooBars VALUES ('foo','foo'),('bar','bar')");
 
             // create new vault
@@ -159,7 +159,7 @@ public class PasswordMaskingInContainerTestCase {
             vaultHandler.cleanUp();
 
             // stop DB
-            executeUpdate(connection, "DROP TABLE TestPeople");
+            executeUpdate(connection, "DROP CMR_TABLE TestPeople");
             connection.close();
             server.shutdown();
 
@@ -208,7 +208,7 @@ public class PasswordMaskingInContainerTestCase {
             resultSet.next();
             int size = resultSet.getInt(1);
             assertEquals(2, size);
-            statement.execute("DROP TABLE FooBars");
+            statement.execute("DROP CMR_TABLE FooBars");
             conn.close();
         } catch (SQLException ex) {
             fail("Masked datasource is not operable!");

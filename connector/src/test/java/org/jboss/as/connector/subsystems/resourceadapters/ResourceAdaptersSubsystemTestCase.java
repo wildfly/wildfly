@@ -21,11 +21,9 @@
 */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
@@ -127,7 +125,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
      *
      * @throws Exception
      */
-    private void testTransformer(String subsystemXml, ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
+    private void testTransformer(String subsystemXml, ModelTestControllerVersion controllerVersion, final ModelVersion modelVersion) throws Exception {
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(subsystemXml);
@@ -174,7 +172,6 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                                     if(! modelNode.get(Constants.RESOURCEADAPTER_NAME).get("myRA").get(Constants.CONNECTIONDEFINITIONS_NAME).get("poolName").hasDefined(Constants.APPLICATION.getName()))
                                         modelNode.get(Constants.RESOURCEADAPTER_NAME).get("myRA").get(Constants.CONNECTIONDEFINITIONS_NAME).get("poolName").get(Constants.APPLICATION.getName()).set(false);
                                 }
-
                                 return modelNode;
 
                             }
@@ -235,8 +232,23 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
 
                         })
+                        .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME), ConnectionDefinitionResourceDefinition.PATH),
+                                new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.CONNECTABLE) {
 
-        );
+                                    @Override
+                                    protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+                                        if (super.checkValue(attrName, attribute, isWriteAttribute)) {
+                                            return true;
+                                        }
+                                        return attribute.asBoolean();
+                                    }
+
+                                    @Override
+                                    protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+                                        return new ModelNode(false);
+                                    }
+
+                        }));
  }
 
     protected AdditionalInitialization createAdditionalInitialization() {

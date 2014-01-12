@@ -32,7 +32,7 @@ import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.v12.DsXaPool;
 import org.jboss.jca.common.api.metadata.ds.v12.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.ds.v12.XADataSourceImpl;
+import org.jboss.jca.common.metadata.ds.v13.XADataSourceImpl;
 import org.jboss.logging.Messages;
 
 import java.util.Map;
@@ -80,11 +80,11 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
      */
     public ModifiableXaDataSource(TransactionIsolation transactionIsolation, TimeOut timeOut, DsSecurity security,
                                   Statement statement, Validation validation, String urlDelimiter, String urlProperty, String urlSelectorStrategyClassName,
-                                  Boolean useJavaContext, String poolName, Boolean enabled, String jndiName, Boolean spy, Boolean useCcm,
+                                  Boolean useJavaContext, String poolName, Boolean enabled, String jndiName, Boolean spy, Boolean useCcm, final Boolean connectable,
                                   Map<String, String> xaDataSourceProperty, String xaDataSourceClass, String driver, String newConnectionSql,
                                   DsXaPool xaPool, Recovery recovery) throws ValidateException {
         super(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
-                urlProperty, urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm,
+                urlProperty, urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useCcm, connectable,
                 xaDataSourceProperty, xaDataSourceClass, driver, newConnectionSql, xaPool, recovery);
     }
 
@@ -107,7 +107,7 @@ public class ModifiableXaDataSource extends XADataSourceImpl implements XaDataSo
 
         return new XADataSourceImpl(transactionIsolation, timeOut, security,
                 statement, validation, urlDelimiter, urlProperty, urlSelectorStrategyClassName,
-                useJavaContext, poolName, enabled, jndiName, spy, useCcm,
+                useJavaContext, poolName, enabled, jndiName, spy, useCcm, connectable,
                 xaDataSourceProperty, xaDataSourceClass, driver, newConnectionSql,
                 getXaPool(), recovery);
 

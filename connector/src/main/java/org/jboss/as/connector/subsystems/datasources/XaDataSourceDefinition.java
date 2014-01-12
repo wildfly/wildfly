@@ -24,6 +24,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
@@ -58,6 +59,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Stefano Maestri
@@ -158,6 +160,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE
                 )
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, CONNECTION_LISTENER_CLASS,
                         CONNECTION_LISTENER_PROPERTIES,
@@ -165,7 +168,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                        Constants.URL_PROPERTY
+                        Constants.URL_PROPERTY, CONNECTABLE
                 )
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
                  /*These are nillable in the old model, but appear as not nillable in CompareModelUtils due to problems in the resource description
@@ -201,6 +204,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE
                 )
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
                 .addRejectCheck(RejectAttributeChecker.DEFINED,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, CONNECTION_LISTENER_CLASS,
                         CONNECTION_LISTENER_PROPERTIES,
@@ -209,7 +213,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         Constants.CONNECTION_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                        Constants.URL_PROPERTY
+                        Constants.URL_PROPERTY, CONNECTABLE
                 )
                 //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
                 //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
@@ -230,4 +234,13 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
 
         ConnectionPropertyDefinition.registerTransformers11x(builder);
     }
+
+    static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CONNECTABLE)
+                .end();
+
+       }
 }
