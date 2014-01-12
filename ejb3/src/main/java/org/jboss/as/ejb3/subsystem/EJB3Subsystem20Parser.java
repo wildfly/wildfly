@@ -118,6 +118,10 @@ public class EJB3Subsystem20Parser extends EJB3Subsystem14Parser {
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     break;
                 }
+                case CLUSTERED_CACHE_REF: {
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
+                    break;
+                }
                 case PASSIVATION_DISABLED_CACHE_REF: {
                     EJB3SubsystemRootResourceDefinition.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     break;
