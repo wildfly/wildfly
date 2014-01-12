@@ -117,7 +117,14 @@
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="cache-ref" type="xs:string"/>
-        <xs:attribute name="clustered-cache-ref" type="xs:string" use="optional"/>
+        <xs:attribute name="clustered-cache-ref" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Deprecated. Not supported on current version servers; only allowed in managed domain profiles for use
+                    on servers running earlier versions.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
         <xs:attribute name="passivation-disabled-cache-ref" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>

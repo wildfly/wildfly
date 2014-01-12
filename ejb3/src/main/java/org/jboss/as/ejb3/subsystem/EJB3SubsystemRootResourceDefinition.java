@@ -106,6 +106,12 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     .setXmlName(EJB3SubsystemXMLAttribute.PASSIVATION_DISABLED_CACHE_REF.getLocalName())
                     .setAllowExpression(true)
                     .build();
+    static final SimpleAttributeDefinition DEFAULT_CLUSTERED_SFSB_CACHE =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.DEFAULT_CLUSTERED_SFSB_CACHE, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .setDeprecated(ModelVersion.create(2))
+                    .build();
 
     static final SimpleAttributeDefinition ENABLE_STATISTICS =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.ENABLE_STATISTICS, ModelType.BOOLEAN, true)
@@ -161,6 +167,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     }
 
     static final SimpleAttributeDefinition[] ATTRIBUTES = {
+            DEFAULT_CLUSTERED_SFSB_CACHE,
             DEFAULT_ENTITY_BEAN_INSTANCE_POOL,
             DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING,
             DEFAULT_MDB_INSTANCE_POOL,
@@ -182,6 +189,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.SFSB_CACHE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.SFSB_PASSIVATION_DISABLED_CACHE);
+        resourceRegistration.registerReadWriteAttribute(DEFAULT_CLUSTERED_SFSB_CACHE, null, EJB3SubsystemDefaultCacheWriteHandler.CLUSTERED_SFSB_CACHE);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_SLSB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.SLSB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_MDB_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.MDB_POOL);
         resourceRegistration.registerReadWriteAttribute(DEFAULT_ENTITY_BEAN_INSTANCE_POOL, null, EJB3SubsystemDefaultPoolWriteHandler.ENTITY_BEAN_POOL);

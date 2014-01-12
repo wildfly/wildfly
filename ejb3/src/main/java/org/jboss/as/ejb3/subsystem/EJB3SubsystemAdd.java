@@ -22,9 +22,24 @@
 
 package org.jboss.as.ejb3.subsystem;
 
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
+import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
+
+import java.util.List;
+
+import javax.transaction.TransactionManager;
+import javax.transaction.TransactionSynchronizationRegistry;
+import javax.transaction.UserTransaction;
+
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBean;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
-
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -32,6 +47,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderRegistryService;
 import org.jboss.as.ejb3.component.EJBUtilities;
@@ -127,29 +143,12 @@ import org.jboss.ejb.client.naming.ejb.ejbURLContextFactory;
 import org.jboss.jca.core.spi.rar.ResourceAdapterRepository;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.remoting3.Endpoint;
 import org.omg.PortableServer.POA;
-
-import javax.transaction.TransactionManager;
-import javax.transaction.TransactionSynchronizationRegistry;
-import javax.transaction.UserTransaction;
-
-import java.util.List;
-
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_MDB_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_RESOURCE_ADAPTER_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SFSB_PASSIVATION_DISABLED_CACHE;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SINGLETON_BEAN_ACCESS_TIMEOUT;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_SLSB_INSTANCE_POOL;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.DEFAULT_STATEFUL_BEAN_ACCESS_TIMEOUT;
 
 /**
  * Add operation handler for the EJB3 subsystem.
@@ -169,9 +168,13 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void populateModel(final OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        ModelNode model = resource.getModel();
         for (SimpleAttributeDefinition attr : EJB3SubsystemRootResourceDefinition.ATTRIBUTES) {
             attr.validateAndSet(operation, model);
+        }
+        if (context.getProcessType().isServer()) {
+            context.addStep(new ValidateClusteredCacheRefHandler(), OperationContext.Stage.MODEL);
         }
     }
 

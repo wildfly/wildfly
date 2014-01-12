@@ -355,7 +355,7 @@ public class EJB3Subsystem12Parser implements XMLElementReader<List<ModelNode>> 
                     break;
                 }
                 case CLUSTERED_CACHE_REF: {
-                    // Ignored
+                    EJB3SubsystemRootResourceDefinition.DEFAULT_CLUSTERED_SFSB_CACHE.parseAndSetParameter(value, ejb3SubsystemAddOperation, reader);
                     break;
                 }
                 default: {

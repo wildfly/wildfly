@@ -58,6 +58,7 @@ import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
@@ -2505,6 +2506,9 @@ public interface EjbMessages {
 
     @Message(id = 14588, value = "CMP Entity Beans are not supported")
     DeploymentUnitProcessingException cmpEntityBeansAreNotSupported();
+
+    @Message(id = 14589, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'")
+    OperationFailedException inconsistentAttributeNotSupported(String attributeName, String mustMatch);
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
