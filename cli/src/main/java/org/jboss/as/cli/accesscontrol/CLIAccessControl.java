@@ -56,7 +56,7 @@ public class CLIAccessControl {
 
         final ModelNode defaults = accessControl.get(Util.DEFAULT);
         if(!defaults.has(Util.OPERATIONS)) {
-            log.warn("access-control/default is missing operations: " + accessControl);
+            log.warn("access-control/default is missing operations: " + defaults);
             return false;
         }
 
