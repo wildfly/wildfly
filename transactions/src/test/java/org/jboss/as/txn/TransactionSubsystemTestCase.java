@@ -63,9 +63,11 @@ import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
+import org.jboss.as.txn.subsystem.CMResourceResourceDefinition;
 import org.jboss.as.txn.subsystem.TransactionExtension;
 import org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -123,6 +125,12 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testParser_1_3() throws Exception {
         standardSubsystemTest("full-1.3.xml");
     }
+
+    @Test
+    public void testParser_3_0() throws Exception {
+        standardSubsystemTest("full-3.0.xml");
+    }
+
 
     @Test
     public void testAsyncIOExpressions() throws Exception {
@@ -185,7 +193,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
-        String subsystemXml = readResource("full-expressions.xml");
+        String subsystemXml = readResource("full-expressions-transform.xml");
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(subsystemXml);
@@ -245,14 +253,20 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                         PROCESS_ID_SOCKET_MAX_PORTS,
                         OBJECT_STORE_PATH,
                         OBJECT_STORE_RELATIVE_TO,
-                        HORNETQ_STORE_ENABLE_ASYNC_IO));
+                        HORNETQ_STORE_ENABLE_ASYNC_IO))
+        .addFailedAttribute(PathAddress.pathAddress(
+                PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
+                FailedOperationTransformationConfig.REJECTED_RESOURCE);
     }
 
     @Test
     public void testRejectTransformersEAP601() throws Exception {
         testRejectTransformers(ModelTestControllerVersion.EAP_6_0_1, ModelVersion.create(1, 1, 1), new FailedOperationTransformationConfig()
             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)));
+                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO))
+            .addFailedAttribute(PathAddress.pathAddress(
+                    PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE));
 
     }
 
@@ -260,14 +274,19 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     public void testRejectTransformersEAP610() throws Exception {
         testRejectTransformers(ModelTestControllerVersion.EAP_6_1_0, ModelVersion.create(1, 2, 0), new FailedOperationTransformationConfig()
             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)));
-    }
+                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO))
+            .addFailedAttribute(PathAddress.pathAddress(
+                    PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE));    }
 
     @Test
     public void testRejectTransformersEAP611() throws Exception {
         testRejectTransformers(ModelTestControllerVersion.EAP_6_1_1, ModelVersion.create(1, 2, 0), new FailedOperationTransformationConfig()
             .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)),
-                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO)));
+                    new ChangeToTrueConfig(HORNETQ_STORE_ENABLE_ASYNC_IO))
+            .addFailedAttribute(PathAddress.pathAddress(
+                    PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
 
     private void testRejectTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
@@ -284,7 +303,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         assertNotNull(legacyServices);
         assertTrue(legacyServices.isSuccessfulBoot());
 
-        List<ModelNode> ops = builder.parseXmlResource("full-expressions-reject.xml");
+        List<ModelNode> ops = builder.parseXmlResource("full-expressions.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, config);
     }
 
@@ -297,7 +316,7 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         }
     };
 
-    private static final class ChangeToTrueConfig extends FailedOperationTransformationConfig.AttributesPathAddressConfig<ChangeToTrueConfig>{
+    private static final class ChangeToTrueConfig extends FailedOperationTransformationConfig.RejectExpressionsConfig{
 
         public ChangeToTrueConfig(AttributeDefinition...attributeDefinitions) {
             super(convert(attributeDefinitions));
@@ -310,11 +329,17 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         @Override
         protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            if (super.checkValue(attrName, attribute, isWriteAttribute)) {
+                return super.checkValue(attrName, attribute, isWriteAttribute);
+            }
             return !attribute.asString().equals("true");
         }
 
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            if (toResolve.getType() == ModelType.EXPRESSION) {
+                return super.correctValue(toResolve, isWriteAttribute);
+            }
             return new ModelNode(true);
         }
 

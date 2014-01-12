@@ -36,6 +36,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ALLOW_MULTIPLE_USERS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CHECK_VALID_CONNECTION_SQL;
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_URL;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
@@ -133,6 +134,7 @@ class DataSourceModelNodeUtil {
                 URL_SELECTOR_STRATEGY_CLASS_NAME);
         final boolean useJavaContext = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_JAVA_CONTEXT);
         final boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENABLED);
+        final boolean connectable = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, CONNECTABLE);
         final boolean jta = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, JTA);
         final Integer maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE);
         final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
@@ -198,7 +200,7 @@ class DataSourceModelNodeUtil {
 
         return new ModifiableDataSource(connectionUrl, driverClass, dataSourceClass, driver, transactionIsolation, connectionProperties, timeOut,
                 security, statement, validation, urlDelimiter, urlSelectorStrategyClassName, newConnectionSql, useJavaContext,
-                poolName, enabled, jndiName, spy, useCcm, jta, pool);
+                poolName, enabled, jndiName, spy, useCcm, jta, connectable, pool);
     }
 
     static ModifiableXaDataSource xaFrom(final OperationContext operationContext, final ModelNode dataSourceNode, final String dsName) throws OperationFailedException, ValidateException {
@@ -215,6 +217,7 @@ class DataSourceModelNodeUtil {
                 URL_SELECTOR_STRATEGY_CLASS_NAME);
         final Boolean useJavaContext = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, USE_JAVA_CONTEXT);
         final Boolean enabled = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, ENABLED);
+        final boolean connectable = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, CONNECTABLE);
         final Integer maxPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MAX_POOL_SIZE);
         final Integer minPoolSize = ModelNodeUtil.getIntIfSetOrGetDefault(operationContext, dataSourceNode, MIN_POOL_SIZE);
         final Boolean prefill = ModelNodeUtil.getBooleanIfSetOrGetDefault(operationContext, dataSourceNode, POOL_PREFILL);

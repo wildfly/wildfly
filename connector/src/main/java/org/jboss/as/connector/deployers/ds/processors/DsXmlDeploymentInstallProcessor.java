@@ -230,7 +230,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                 ds.getSecurity(), ds.getStatement(), ds.getValidation(),
                 ds.getUrlDelimiter(), ds.getUrlSelectorStrategyClassName(), ds.getNewConnectionSql(),
                 ds.isUseJavaContext(), ds.getPoolName(), ds.isEnabled(), ds.getJndiName(),
-                ds.isSpy(), ds.isUseCcm(), ds.isJTA(), ds.getPool());
+                ds.isSpy(), ds.isUseCcm(), ds.isJTA(), ds.isConnectable(), ds.getPool());
     }
 
     private ModifiableXaDataSource buildXaDataSource(XaDataSource xads) throws org.jboss.jca.common.api.validator.ValidateException {

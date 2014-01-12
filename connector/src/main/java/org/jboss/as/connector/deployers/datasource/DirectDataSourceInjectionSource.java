@@ -175,7 +175,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                 final DsPoolImpl commonPool = new DsPoolImpl(minPoolSize < 1 ? Defaults.MIN_POOL_SIZE : minPoolSize, maxPoolSize < 1 ? Defaults.MAX_POOL_SIZE : maxPoolSize,
                         Defaults.PREFILL, Defaults.USE_STRICT_MIN, Defaults.FLUSH_STRATEGY, false);
                 final ModifiableDataSource dataSource = new ModifiableDataSource(url, null, className, null, transactionIsolation(), props,
-                        null, dsSecurity, null, null, null, null, null, false, poolName, true, jndiName, Defaults.SPY, Defaults.USE_CCM, transactional, commonPool);
+                        null, dsSecurity, null, null, null, null, null, false, poolName, true, jndiName, Defaults.SPY, Defaults.USE_CCM, transactional, Defaults.CONNECTABLE, commonPool);
                 final LocalDataSourceService ds = new LocalDataSourceService(jndiName, module.getClassLoader());
                 ds.getDataSourceConfigInjector().inject(dataSource);
                 startDataSource(ds, jndiName, eeModuleDescription, context, phaseContext.getServiceTarget(), serviceBuilder, injector);

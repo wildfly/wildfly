@@ -105,6 +105,8 @@ class Constants {
 
     private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
 
+    private static final String CONNECTABLE_NAME = "connectable";
+
     static final String POOLNAME_NAME = "pool-name";
 
     private static final String ENABLED_NAME = "enabled";
@@ -268,6 +270,13 @@ class Constants {
             .setAllowNull(true)
             .build();
 
+    static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
+                .setXmlName(DataSource.Attribute.CONNECTABLE.getLocalName())
+                .setAllowExpression(true)
+                .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
+                .setAllowNull(true)
+                .build();
+
 
     static SimpleAttributeDefinition JTA = new SimpleAttributeDefinition(JTA_NAME, DataSource.Attribute.JTA.getLocalName(), new ModelNode().set(Defaults.JTA), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
@@ -406,7 +415,7 @@ class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, SPY,
-            USE_CCM, ENABLED};
+            USE_CCM, ENABLED, CONNECTABLE};
 
     static final PropertiesAttributeDefinition[] DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
             REAUTHPLUGIN_PROPERTIES,
@@ -471,7 +480,7 @@ class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, XA_RESOURCE_TIMEOUT,
-            SPY, USE_CCM, ENABLED,
+            SPY, USE_CCM, ENABLED, CONNECTABLE,
             RECOVERY_USERNAME, RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN, RECOVER_PLUGIN_CLASSNAME,
             NO_RECOVERY, JTA};

@@ -257,4 +257,5 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
         }
     }
+
 }

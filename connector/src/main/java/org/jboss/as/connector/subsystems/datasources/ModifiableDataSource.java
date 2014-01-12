@@ -73,6 +73,8 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
 
     private final DsPool pool;
 
+    private final Boolean connectable;
+
     /**
      * Create a new DataSourceImpl.
      *
@@ -105,7 +107,7 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
                                 TimeOut timeOut, DsSecurity security, Statement statement, Validation validation,
                                 String urlDelimiter, String urlSelectorStrategyClassName, String newConnectionSql,
                                 Boolean useJavaContext, String poolName, Boolean enabled, String jndiName,
-                                Boolean spy, Boolean useccm, Boolean jta, DsPool pool)
+                                Boolean spy, Boolean useccm, Boolean jta, final Boolean connectable, DsPool pool)
             throws ValidateException {
         super(transactionIsolation, timeOut, security, statement, validation, urlDelimiter,
                 urlSelectorStrategyClassName, useJavaContext, poolName, enabled, jndiName, spy, useccm);
@@ -122,6 +124,7 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
         }
         this.newConnectionSql = newConnectionSql;
         this.pool = pool;
+        this.connectable = connectable;
         this.validate();
     }
 
@@ -132,6 +135,10 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
         return jta;
     }
 
+    @Override
+    public Boolean isConnectable() {
+        return connectable;
+    }
     /**
      * Get the connectionUrl.
      *
@@ -444,7 +451,7 @@ public class ModifiableDataSource extends DataSourceAbstractImpl implements Data
                 timeOut, security, statement, validation,
                 urlDelimiter, urlSelectorStrategyClassName, newConnectionSql,
                 useJavaContext, poolName, enabled, jndiName,
-                spy, useCcm, jta, pool);
+                spy, useCcm, jta, connectable, pool);
 
     }
 }

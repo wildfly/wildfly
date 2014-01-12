@@ -92,6 +92,8 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         objStoreBrowser = new ObjStoreBrowser();
         objStoreBrowserTypes.put("StateManager/BasicAction/TwoPhaseCoordinator/AtomicAction",
                 "com.arjuna.ats.internal.jta.tools.osb.mbean.jta.JTAActionBean");
+        objStoreBrowserTypes.put("StateManager/AbstractRecord/ConnectableResourceRecord",
+                "com.arjuna.ats.internal.jta.tools.osb.mbean.jta.ConnectableResourceRecordBean");
 
 
         if (!jts) {

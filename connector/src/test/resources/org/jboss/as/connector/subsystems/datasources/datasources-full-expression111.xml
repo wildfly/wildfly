@@ -1,7 +1,7 @@
-<subsystem xmlns="urn:jboss:domain:datasources:1.2">
+<subsystem xmlns="urn:jboss:domain:datasources:3.0">
     <datasources>
-        <datasource enabled="true" jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool"
-                    use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}" connectable="${test.expr:true}">
+        <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool"
+                    use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}" >
             <connection-url>
                 ${test.expr:jdbc:h2:mem:test;DB_CLOSE_DELAY=-1}
             </connection-url>
@@ -44,9 +44,6 @@
                 <password>
                     ${test.expr:sa}
                 </password>
-                <security-domain>
-                    ${test.expr:HsqlDbRealm}
-                </security-domain>
                 <reauth-plugin class-name="${test.expr:someClass1}">
                     <config-property name="name">${test.expr:Property1}</config-property>
                 </reauth-plugin>
@@ -102,7 +99,7 @@
             </statement>
         </datasource>
         <xa-datasource jndi-name="${test.expr:java:jboss/xa-datasources/complexXaDs}" pool-name="complexXaDs_Pool"
-                       use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}">
+                       use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" >
             <xa-datasource-property name="URL">
                 ${test.expr:jdbc:h2:mem:test}
             </xa-datasource-property>
@@ -161,9 +158,6 @@
                 <password>
                     ${test.expr:sa}
                 </password>
-                <security-domain>
-                    ${test.expr:HsqlDbRealm}
-                </security-domain>
                 <reauth-plugin class-name="${test.expr:someClass1}">
                     <config-property name="name">${test.expr:Property1}</config-property>
                 </reauth-plugin>
@@ -176,9 +170,6 @@
                     <password>
                         ${test.expr:sa}
                     </password>
-                    <security-domain>
-                        ${test.expr:HsqlDbRealm}
-                    </security-domain>
                 </recover-credential>
                 <recover-plugin class-name="${test.expr:someClass5}">
                     <config-property name="name">Property5</config-property>

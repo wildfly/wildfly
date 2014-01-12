@@ -78,4 +78,11 @@ public class JdbcDriverDefinition extends SimpleResourceDefinition {
                 .end();
     }
 
+    static void registerTransformers111(ResourceTransformationDescriptionBuilder parenBuilder) {
+
+        parenBuilder.addChildResource(PATH_DRIVER).getAttributeBuilder()
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.DRIVER_DATASOURCE_CLASS_NAME)
+                .end();
+    }
+
 }

@@ -40,6 +40,7 @@ import org.jboss.jca.common.api.metadata.ds.v11.XaDataSource;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.common.metadata.ds.DataSourceAbstractImpl;
 import org.jboss.jca.common.metadata.ds.v11.XADataSourceImpl;
+
 import org.jboss.logging.Messages;
 
 /**

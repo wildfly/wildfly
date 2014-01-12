@@ -33,6 +33,7 @@ import org.jboss.jca.common.api.metadata.common.CommonPool;
 import org.jboss.jca.common.api.metadata.ds.DataSource;
 import org.jboss.jca.common.api.metadata.ds.v11.DsPool;
 
+
 /**
  * Runtime attribute handler for XML datasources
  *

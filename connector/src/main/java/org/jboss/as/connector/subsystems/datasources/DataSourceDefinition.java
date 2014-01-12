@@ -24,6 +24,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
@@ -45,12 +46,16 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.access.constraint.ApplicationTypeConfig;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 /**
+ *
  * @author Stefano Maestri
  */
 public class DataSourceDefinition extends SimpleResourceDefinition {
@@ -137,9 +142,37 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
     }
 
     static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
-        parentBuilder.addChildResource(PATH_DATASOURCE).getAttributeBuilder()
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE)
+                .getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED,
+                        CONNECTABLE
+                )
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
                 .end();
     }
+
+    static void registerTransformers111(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
+                builder.getAttributeBuilder()
+
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CONNECTABLE)
+                //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
+                //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
+                .end();
+    }
+
+
+    static void registerTransformers120(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_DATASOURCE);
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, CONNECTABLE)
+                .end();
+
+    }
+
 
 }

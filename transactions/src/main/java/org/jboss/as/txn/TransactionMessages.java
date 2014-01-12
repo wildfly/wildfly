@@ -22,6 +22,7 @@
 
 package org.jboss.as.txn;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
@@ -105,4 +106,25 @@ public interface TransactionMessages {
 
     @Message(id = 10107, value = "'hornetq-store-enable-async-io' must be true.")
     String transformHornetQStoreEnableAsyncIoMustBeTrue();
+
+    @Message(id = 10108, value = "Attributes %s and %s are alternatives; both cannot be set with conflicting values.")
+    OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);
+
+    /**
+     * A message indicating that jndi-name is missing and it's a required attribute
+     *
+     * @return the message.
+     */
+    @Message(id = 10109, value = "Jndi name is required")
+    OperationFailedException jndiNameRequired();
+
+
+    /**
+     * A message indicating that jndi-name has an invalid format
+     *
+     * @return the message.
+     */
+    @Message(id = 10110, value = "Jndi names have to start with java:/ or java:jboss/")
+    OperationFailedException jndiNameInvalidFormat();
+
 }
