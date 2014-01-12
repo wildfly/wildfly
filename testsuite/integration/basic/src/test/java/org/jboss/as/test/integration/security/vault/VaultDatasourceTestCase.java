@@ -90,7 +90,7 @@ public class VaultDatasourceTestCase {
             server = Server.createTcpServer("-tcpAllowOthers").start();
             Class.forName("org.h2.Driver");
             connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", RIGHT_PASSWORD);
-            executeUpdate(connection, "CREATE TABLE TestPeople(Name Varchar(50), Surname Varchar(50))");
+            executeUpdate(connection, "CREATE CMR_TABLE TestPeople(Name Varchar(50), Surname Varchar(50))");
             executeUpdate(connection, "INSERT INTO TestPeople VALUES ('John','Smith')");
 
             // create new vault
@@ -186,7 +186,7 @@ public class VaultDatasourceTestCase {
             vaultHandler.cleanUp();
 
             // stop DB
-            executeUpdate(connection, "DROP TABLE TestPeople");
+            executeUpdate(connection, "DROP CMR_TABLE TestPeople");
             connection.close();
             server.shutdown();
 

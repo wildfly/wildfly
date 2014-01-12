@@ -35,19 +35,22 @@ enum Element {
     // must be first
     UNKNOWN(null),
 
-    RECOVERY_ENVIRONMENT("recovery-environment"),
-    CORE_ENVIRONMENT("core-environment"),
-    COORDINATOR_ENVIRONMENT("coordinator-environment"),
-    OBJECT_STORE("object-store"),
-    PROCESS_ID("process-id"),
-    SOCKET("socket"),
-    UUID("uuid"),
-    JTS("jts"),
-    USEHORNETQSTORE("use-hornetq-store"),
-    JDBC_STORE("jdbc-store"),
-    JDBC_STATE_STORE("state"),
-    JDBC_COMMUNICATION_STORE("communication"),
-    JDBC_ACTION_STORE("action"),
+    RECOVERY_ENVIRONMENT(CommonAttributes.RECOVERY_ENVIRONMENT),
+    CORE_ENVIRONMENT(CommonAttributes.CORE_ENVIRONMENT),
+    COORDINATOR_ENVIRONMENT(CommonAttributes.COORDINATOR_ENVIRONMENT),
+    OBJECT_STORE(CommonAttributes.OBJECT_STORE),
+    PROCESS_ID(CommonAttributes.PROCESS_ID),
+    SOCKET(CommonAttributes.SOCKET),
+    UUID(CommonAttributes.UUID),
+    JTS(CommonAttributes.JTS),
+    USEHORNETQSTORE(CommonAttributes.USEHORNETQSTORE),
+    JDBC_STORE(CommonAttributes.JDBC_STORE),
+    JDBC_STATE_STORE(CommonAttributes.STATE_STORE),
+    JDBC_COMMUNICATION_STORE(CommonAttributes.COMMUNICATION_STORE),
+    JDBC_ACTION_STORE(CommonAttributes.ACTION_STORE),
+    CM_RESPOURCE(CommonAttributes.CM_RESOURCE),
+    CM_RESOURCES(CommonAttributes.CM_RESOURCES),
+    CM_TABLE(CommonAttributes.CM_LOCATION)
     ;
 
     private final String name;

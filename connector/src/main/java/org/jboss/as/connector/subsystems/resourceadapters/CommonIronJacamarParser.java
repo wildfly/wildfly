@@ -21,6 +21,59 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
+import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
+import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTY_VALUE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.connector.util.AbstractParser;
 import org.jboss.as.connector.util.ParserException;
 import org.jboss.as.controller.parsing.ParseUtils;
@@ -45,57 +98,6 @@ import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.logging.Messages;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.stream.XMLStreamException;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-
-import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.IDLETIMEOUTMINUTES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.MAX_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.MIN_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_FLUSH_STRATEGY;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_PREFILL;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.POOL_USE_STRICT_MIN;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTY_VALUE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NOTXSEPARATEPOOL;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.NO_RECOVERY;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.PAD_XID;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.POOL_NAME_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_CLASSNAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERLUGIN_PROPERTIES;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_PASSWORD;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RECOVERY_USERNAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_RM_OVERRIDE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.XA_RESOURCE_TIMEOUT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 /**
  * A CommonIronJacamarParser.
@@ -132,7 +134,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
      * @throws org.jboss.jca.common.api.validator.ValidateException
      *                         ValidateException
      */
-    protected void parseConnectionDefinitions(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
+    protected void parseConnectionDefinitions_3_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
                                               final Map<String, HashMap<String, ModelNode>> configMap, final boolean isXa)
             throws XMLStreamException, ParserException, ValidateException {
 
@@ -146,11 +148,16 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         boolean poolDefined = Boolean.FALSE;
 
         for (int i = 0; i < attributeSize; i++) {
-            org.jboss.jca.common.api.metadata.common.v11.CommonConnDef.Attribute attribute = org.jboss.jca.common.api.metadata.common.v11.CommonConnDef.Attribute.forName(reader.getAttributeLocalName(i));
+            org.jboss.jca.common.api.metadata.common.v12.CommonConnDef.Attribute attribute = org.jboss.jca.common.api.metadata.common.v12.CommonConnDef.Attribute.forName(reader.getAttributeLocalName(i));
             String value = reader.getAttributeValue(i);
             switch (attribute) {
                 case ENABLED: {
                     ENABLED.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+                case CONNECTABLE: {
+                    CONNECTABLE.parseAndSetParameter(value, connectionDefinitionNode, reader);
 
                     break;
                 }
@@ -276,6 +283,163 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
         throw ParseUtils.unexpectedEndElement(reader);
 
     }
+
+    /**
+         * parse a single connection-definition tag
+         *
+         * @param reader the reader
+         * @throws javax.xml.stream.XMLStreamException
+         *                         XMLStreamException
+         * @throws ParserException ParserException
+         * @throws org.jboss.jca.common.api.validator.ValidateException
+         *                         ValidateException
+         */
+        protected void parseConnectionDefinitions_1_0(final XMLExtendedStreamReader reader, final Map<String, ModelNode> map,
+                                                  final Map<String, HashMap<String, ModelNode>> configMap, final boolean isXa)
+                throws XMLStreamException, ParserException, ValidateException {
+
+
+            final ModelNode connectionDefinitionNode = new ModelNode();
+            connectionDefinitionNode.get(OP).set(ADD);
+
+            String poolName = null;
+            String jndiName = null;
+            int attributeSize = reader.getAttributeCount();
+            boolean poolDefined = Boolean.FALSE;
+
+            for (int i = 0; i < attributeSize; i++) {
+                org.jboss.jca.common.api.metadata.common.v12.CommonConnDef.Attribute attribute = org.jboss.jca.common.api.metadata.common.v12.CommonConnDef.Attribute.forName(reader.getAttributeLocalName(i));
+                String value = reader.getAttributeValue(i);
+                switch (attribute) {
+                    case ENABLED: {
+                        ENABLED.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                        break;
+                    }
+                    case JNDI_NAME: {
+                        jndiName = value;
+                        JNDINAME.parseAndSetParameter(jndiName, connectionDefinitionNode, reader);
+                        break;
+                    }
+                    case POOL_NAME: {
+                        poolName = value;
+                        break;
+                    }
+                    case USE_JAVA_CONTEXT: {
+                        USE_JAVA_CONTEXT.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                        break;
+                    }
+
+                    case USE_CCM: {
+                        USE_CCM.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                        break;
+                    }
+
+                    case SHARABLE: {
+                        SHARABLE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                        break;
+                    }
+
+                    case ENLISTMENT: {
+                        ENLISTMENT.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                        break;
+                    }
+
+                    case CLASS_NAME: {
+                        CLASS_NAME.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                        break;
+                    }
+                    default:
+                        throw ParseUtils.unexpectedAttribute(reader,i);
+                }
+            }
+            if (poolName == null || poolName.trim().equals("")) {
+                if (jndiName != null && jndiName.trim().length() != 0) {
+                    if (jndiName.contains("/")) {
+                        poolName = jndiName.substring(jndiName.lastIndexOf("/") + 1);
+                    } else {
+                        poolName = jndiName.substring(jndiName.lastIndexOf(":") + 1);
+                    }
+                } else {
+                    throw ParseUtils.missingRequired(reader, EnumSet.of(CommonConnDef.Attribute.JNDI_NAME));
+                }
+            }
+
+
+            while (reader.hasNext()) {
+                switch (reader.nextTag()) {
+                    case END_ELEMENT: {
+                        if (ResourceAdapter.Tag.forName(reader.getLocalName()) == ResourceAdapter.Tag.CONNECTION_DEFINITION) {
+
+                            map.put(poolName, connectionDefinitionNode);
+                            return;
+                        } else {
+                            if (CommonConnDef.Tag.forName(reader.getLocalName()) == CommonConnDef.Tag.UNKNOWN) {
+                                throw ParseUtils.unexpectedEndElement(reader);
+                            }
+                        }
+                        break;
+                    }
+                    case START_ELEMENT: {
+                        switch (CommonConnDef.Tag.forName(reader.getLocalName())) {
+                            case CONFIG_PROPERTY: {
+                                if (!configMap.containsKey(poolName)) {
+                                    configMap.put(poolName, new HashMap<String, ModelNode>(0));
+                                }
+                                parseConfigProperties(reader, configMap.get(poolName));
+                                break;
+                            }
+                            case SECURITY: {
+                                parseSecuritySettings(reader, connectionDefinitionNode);
+                                break;
+                            }
+                            case TIMEOUT: {
+                                parseTimeOut(reader, isXa, connectionDefinitionNode);
+                                break;
+                            }
+                            case VALIDATION: {
+                                parseValidation(reader, connectionDefinitionNode);
+                                break;
+                            }
+                            case XA_POOL: {
+                                if (!isXa) {
+                                    throw ParseUtils.unexpectedElement(reader);
+                                }
+                                if (poolDefined) {
+                                    throw new ParserException(bundle.multiplePools());
+                                }
+                                parseXaPool(reader, connectionDefinitionNode);
+                                poolDefined = true;
+                                break;
+                            }
+                            case POOL: {
+                                if (isXa) {
+                                    throw ParseUtils.unexpectedElement(reader);
+                                }
+                                if (poolDefined) {
+                                    throw new ParserException(bundle.multiplePools());
+                                }
+                                parsePool(reader, connectionDefinitionNode);
+                                poolDefined = true;
+                                break;
+                            }
+                            case RECOVERY: {
+                                parseRecovery(reader, connectionDefinitionNode);
+                                break;
+                            }
+                            default:
+                                throw ParseUtils.unexpectedElement(reader);
+                        }
+                        break;
+                    }
+                }
+            }
+            throw ParseUtils.unexpectedEndElement(reader);
+
+        }
+
+
 
     private void parseValidation(XMLExtendedStreamReader reader, ModelNode node) throws XMLStreamException, ParserException {
 
