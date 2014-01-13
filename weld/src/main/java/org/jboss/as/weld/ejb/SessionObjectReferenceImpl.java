@@ -22,7 +22,6 @@
 package org.jboss.as.weld.ejb;
 
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -112,13 +111,10 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
         return false;
     }
 
-
     private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }

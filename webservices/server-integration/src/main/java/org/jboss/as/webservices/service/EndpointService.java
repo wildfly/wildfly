@@ -23,6 +23,7 @@ package org.jboss.as.webservices.service;
 
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
+import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +47,7 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
@@ -229,7 +231,7 @@ public final class EndpointService implements Service<Endpoint> {
 
     public static void uninstall(final Endpoint endpoint, final DeploymentUnit unit) {
         final ServiceName serviceName = getServiceName(unit, endpoint.getShortName());
-        final ServiceController<?> endpointService = CurrentServiceContainer.getServiceContainer().getService(serviceName);
+        final ServiceController<?> endpointService = currentServiceContainer().getService(serviceName);
         if (endpointService != null) {
             endpointService.setMode(Mode.REMOVE);
         }
@@ -264,6 +266,13 @@ public final class EndpointService implements Service<Endpoint> {
             endpointServiceNames.add(EndpointService.getServiceName(unit, ep.getShortName()));
         }
         return endpointServiceNames;
+    }
+
+    private static ServiceContainer currentServiceContainer() {
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 
 }

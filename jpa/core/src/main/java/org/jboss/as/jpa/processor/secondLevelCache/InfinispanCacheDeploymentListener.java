@@ -22,6 +22,7 @@
 
 package org.jboss.as.jpa.processor.secondLevelCache;
 
+import java.security.AccessController;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -83,7 +84,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
             String name = properties.getProperty(NAME);
             serviceName = ServiceName.JBOSS.append(DEFAULT_CACHE_CONTAINER, (name != null) ? name : UUID.randomUUID().toString());
 
-            ServiceContainer target = CurrentServiceContainer.getServiceContainer();
+            ServiceContainer target = currentServiceContainer();
             // Create a mock service that represents this session factory instance
             InjectedValue<EmbeddedCacheManager> manager = new InjectedValue<EmbeddedCacheManager>();
             ServiceBuilder<EmbeddedCacheManager> builder = target.addService(serviceName, new ValueService<EmbeddedCacheManager>(manager))
@@ -95,7 +96,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         } else {
             // need a shared cache for jpa applications
             serviceName = EmbeddedCacheManagerService.getServiceName(container);
-            ServiceRegistry registry = CurrentServiceContainer.getServiceContainer();
+            ServiceRegistry registry = currentServiceContainer();
             embeddedCacheManager = (EmbeddedCacheManager) registry.getRequiredService(serviceName).getValue();
         }
         return new CacheWrapper(embeddedCacheManager, serviceName);
@@ -122,7 +123,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         if (!ignoreStop) {
             // Remove the service created in createCacheManager(...)
             CacheWrapper cacheWrapper = (CacheWrapper) wrapper;
-            ServiceContainerHelper.remove(ServiceContainerHelper.getCurrentServiceContainer().getRequiredService(cacheWrapper.serviceName));
+            ServiceContainerHelper.remove(currentServiceContainer().getRequiredService(cacheWrapper.serviceName));
         }
     }
 
@@ -140,5 +141,12 @@ public class InfinispanCacheDeploymentListener implements EventListener {
         public Object getValue() {
             return embeddedCacheManager;
         }
+    }
+
+    private static ServiceContainer currentServiceContainer() {
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }

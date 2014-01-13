@@ -25,7 +25,6 @@ package org.jboss.as.jpa.container;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
@@ -115,14 +114,11 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         isJPA21 = true;
     }
 
-
     private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 
     @Override

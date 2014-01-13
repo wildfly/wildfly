@@ -22,20 +22,16 @@
 
 package org.jboss.as.clustering.msc;
 
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.EnumMap;
-import java.util.Map;
-
-import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StabilityMonitor;
-import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceController.State;
 import org.jboss.msc.service.StartException;
+
+import java.util.EnumMap;
+import java.util.Map;
 
 /**
  * Helper methods for interacting with a modular service container.
@@ -63,20 +59,6 @@ public class ServiceContainerHelper {
             }
         }
         modeToggle.put(State.REMOVED, map);
-    }
-
-    /**
-     * Returns the current service container.
-     * @return a service container
-     */
-    public static ServiceContainer getCurrentServiceContainer() {
-        PrivilegedAction<ServiceContainer> action = new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        };
-        return AccessController.doPrivileged(action);
     }
 
     /**

@@ -23,6 +23,7 @@ package org.jboss.as.server;
 
 import java.security.AccessController;
 import java.security.Permission;
+import java.security.PrivilegedAction;
 
 import org.jboss.msc.service.ServiceContainer;
 
@@ -37,6 +38,13 @@ import org.jboss.msc.service.ServiceContainer;
 public class CurrentServiceContainer {
     private static final RuntimePermission LOOKUP_CURRENT_SERVICE_CONTAINER = new RuntimePermission("org.jboss.as.server.LOOKUP_CURRENT_SERVICE_CONTAINER");
     private static final RuntimePermission SET_CURRENT_SERVICE_CONTAINER = new RuntimePermission("org.jboss.as.server.SET_CURRENT_SERVICE_CONTAINER");
+
+    public static final PrivilegedAction<ServiceContainer> GET_ACTION = new PrivilegedAction<ServiceContainer>() {
+        @Override
+        public ServiceContainer run() {
+            return getServiceContainer();
+        }
+    };
 
     private static volatile ServiceContainer serviceContainer;
 

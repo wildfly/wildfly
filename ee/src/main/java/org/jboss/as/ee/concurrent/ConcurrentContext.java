@@ -30,6 +30,7 @@ import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -246,7 +247,7 @@ public class ConcurrentContext {
                 in.defaultReadObject();
                 // restore concurrent context from msc
                 final ServiceName serviceName = (ServiceName) in.readObject();
-                final ServiceController<?> serviceController = CurrentServiceContainer.getServiceContainer().getService(serviceName);
+                final ServiceController<?> serviceController = currentServiceContainer().getService(serviceName);
                 if(serviceController == null) {
                     throw EeMessages.MESSAGES.concurrentContextServiceNotInstalled(serviceName);
                 }
@@ -279,4 +280,10 @@ public class ConcurrentContext {
         }
     }
 
+    private static ServiceContainer currentServiceContainer() {
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
+    }
 }
