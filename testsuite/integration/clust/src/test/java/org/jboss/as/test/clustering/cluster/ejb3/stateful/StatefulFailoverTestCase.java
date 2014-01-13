@@ -91,7 +91,7 @@ public class StatefulFailoverTestCase extends ClusterAbstractTestCase {
                 "<decorators><class>" + CounterDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");
         war.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class, ViewChangeListenerServlet.class);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         log.info(war.toString(true));
         return war;
     }

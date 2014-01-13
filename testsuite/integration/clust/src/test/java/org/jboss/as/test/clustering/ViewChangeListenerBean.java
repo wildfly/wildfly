@@ -21,6 +21,7 @@
  */
 package org.jboss.as.test.clustering;
 
+import java.security.AccessController;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -33,6 +34,8 @@ import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
@@ -55,7 +58,7 @@ public class ViewChangeListenerBean implements ViewChangeListener {
                 expectedMembers.add(name + "/" + cluster);
             }
         }
-        ServiceRegistry registry = ServiceContainerHelper.getCurrentServiceContainer();
+        ServiceRegistry registry = currentServiceContainer();
         ServiceController<?> controller = registry.getService(ServiceName.JBOSS.append("infinispan", cluster));
         if (controller == null) {
             throw new IllegalStateException(String.format("Failed to locate service for cluster '%s'", cluster));
@@ -101,5 +104,12 @@ public class ViewChangeListenerBean implements ViewChangeListener {
         synchronized (this) {
             this.notify();
         }
+    }
+
+    private static ServiceContainer currentServiceContainer() {
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }

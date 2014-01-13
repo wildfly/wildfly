@@ -21,6 +21,7 @@
  */
 package org.jboss.as.webservices.publish;
 
+import java.security.AccessController;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -33,6 +34,7 @@ import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
@@ -118,7 +120,7 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
 
     @Override
     public ServiceRegistry getServiceRegistry() {
-        return CurrentServiceContainer.getServiceContainer();
+        return currentServiceContainer();
     }
 
     @Override
@@ -129,5 +131,11 @@ public class WSEndpointDeploymentUnit extends SimpleAttachable implements Deploy
     @Override
     public ModelNode createDeploymentSubModel(String subsystemName, PathElement address) {
         throw new UnsupportedOperationException();
+    }
+    private static ServiceContainer currentServiceContainer() {
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }

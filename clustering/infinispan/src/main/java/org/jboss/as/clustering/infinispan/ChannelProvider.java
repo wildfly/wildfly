@@ -24,12 +24,15 @@ package org.jboss.as.clustering.infinispan;
 
 import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 
+import java.security.AccessController;
 import java.util.Properties;
 
 import org.infinispan.configuration.global.TransportConfigurationBuilder;
 import org.infinispan.remoting.transport.jgroups.JGroupsChannelLookup;
 import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
+import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
@@ -60,7 +63,7 @@ public class ChannelProvider implements JGroupsChannelLookup {
             throw MESSAGES.invalidTransportProperty(CHANNEL, properties);
         }
         ServiceName name = ServiceName.parse(channel);
-        ServiceController<?> service = ServiceContainerHelper.getCurrentServiceContainer().getRequiredService(name);
+        ServiceController<?> service = currentServiceContainer().getRequiredService(name);
         try {
             return ServiceContainerHelper.getValue(service, Channel.class);
         } catch (StartException e) {
@@ -85,4 +88,12 @@ public class ChannelProvider implements JGroupsChannelLookup {
     public boolean shouldStopAndDisconnect() {
         return true;
     }
+
+    private static ServiceContainer currentServiceContainer() {
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
+    }
+
 }

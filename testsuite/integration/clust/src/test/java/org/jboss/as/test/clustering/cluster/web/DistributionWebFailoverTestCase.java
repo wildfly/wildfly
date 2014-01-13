@@ -58,7 +58,7 @@ public class DistributionWebFailoverTestCase extends ClusteredWebFailoverAbstrac
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");
         war.addAsWebInfResource(ClusteredWebSimpleTestCase.class.getPackage(), "jboss-web_dist.xml", "jboss-web.xml");
         war.addClasses(ViewChangeListenerServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         log.info(war.toString(true));
         return war;
     }

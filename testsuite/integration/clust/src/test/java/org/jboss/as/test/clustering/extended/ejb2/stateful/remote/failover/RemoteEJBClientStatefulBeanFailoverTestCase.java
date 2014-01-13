@@ -92,7 +92,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends RemoteEJBClient
         jar.addClass(NodeNameGetter.class);
         jar.addAsManifestResource(new StringAsset("Dependencies: deployment." + ARCHIVE_NAME_SINGLE + ".jar\n"), "MANIFEST.MF");
         jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
-        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         return jar;
     }
     

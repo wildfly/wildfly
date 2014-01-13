@@ -100,7 +100,7 @@ public class CacheInvalidationTestCase {
         JavaArchive archive = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         archive.addClasses(CacheInvalidationTestCase.class, StatefulBean.class, StatefulBeanBase.class, StatefulRemote.class, StatefulRemoteHome.class);
         archive.addClasses(NodeNameGetter.class, NodeInfoServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
-        archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        archive.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         return archive;
     }
 

@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.security.acl.Group;
 import java.util.Collection;
 import java.util.HashSet;
@@ -244,11 +243,9 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
     ;
 
     private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }

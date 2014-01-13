@@ -71,20 +71,6 @@ public class ServiceContainerHelper {
     }
 
     /**
-     * Returns the current service container.
-     * @return a service container
-     */
-    public static ServiceContainer getCurrentServiceContainer() {
-        PrivilegedAction<ServiceContainer> action = new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        };
-        return AccessController.doPrivileged(action);
-    }
-
-    /**
      * Returns the service value of the specified service, starting it if necessary.
      * @param controller a service controller
      * @param targetClass the service value class

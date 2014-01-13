@@ -22,6 +22,7 @@
 package org.jboss.as.jpa.hibernate3.infinispan;
 
 import java.net.URL;
+import java.security.AccessController;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -41,6 +42,7 @@ import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.jpa.hibernate3.HibernateSecondLevelCache;
 import org.jboss.as.jpa.spi.PersistenceUnitMetadata;
 import org.jboss.as.jpa.spi.TempClassLoaderFactory;
+import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.jandex.Index;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -75,7 +77,7 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
         String name = properties.getProperty(Environment.SESSION_FACTORY_NAME);
         this.serviceName = ServiceName.JBOSS.append(DEFAULT_CACHE_CONTAINER, (name != null) ? name : UUID.randomUUID().toString());
         String container = properties.getProperty(CACHE_CONTAINER, DEFAULT_CACHE_CONTAINER);
-        ServiceContainer target = ServiceContainerHelper.getCurrentServiceContainer();
+        ServiceContainer target = currentServiceContainer();
         InjectedValue<EmbeddedCacheManager> manager = new InjectedValue<EmbeddedCacheManager>();
         ServiceBuilder<EmbeddedCacheManager> builder = target.addService(this.serviceName, new ValueService<EmbeddedCacheManager>(manager))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(container), EmbeddedCacheManager.class, manager)
@@ -92,7 +94,7 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
     @Override
     public void stop() {
         // Remove the service created in createCacheManager(...)
-        ServiceContainerHelper.remove(ServiceContainerHelper.getCurrentServiceContainer().getRequiredService(this.serviceName));
+        ServiceContainerHelper.remove(currentServiceContainer().getRequiredService(this.serviceName));
     }
 
     private static class HibernateMetaData implements PersistenceUnitMetadata {
@@ -299,5 +301,13 @@ public class InfinispanRegionFactory extends org.hibernate.cache.infinispan.Infi
         public List<ClassTransformer> getTransformers() {
             return null;
         }
+    }
+
+
+    private static ServiceContainer currentServiceContainer() {
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }

@@ -113,7 +113,7 @@ public class LocalEJBClientFailoverTestCase extends ClusterAbstractTestCase {
     private static Archive<?> createNodeNameApplication() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, NODE_NAME_APP_MODULE_NAME + ".jar");
         jar.addClasses(NodeNameRetriever.class, NodeNameSFSB.class, ViewChangeListener.class, ViewChangeListenerBean.class);
-        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         return jar;
     }
 

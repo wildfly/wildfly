@@ -79,7 +79,7 @@ public class FailoverWithSecurityTestCase extends ClusterAbstractTestCase {
         JavaArchive war = ShrinkWrap.create(JavaArchive.class, ARCHIVE_NAME + ".jar");
         war.addPackage(FailoverWithSecurityTestCase.class.getPackage());
         war.addClasses(NodeNameGetter.class, NodeInfoServlet.class, ViewChangeListener.class, ViewChangeListenerBean.class);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         log.info(war.toString(true));
         return war;
     }

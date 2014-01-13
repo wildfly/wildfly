@@ -25,6 +25,7 @@ import static org.jboss.as.webservices.WSMessages.MESSAGES;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.security.AccessController;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,7 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ServletMappingMetaData;
+import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.ws.common.deployment.DeploymentAspectManagerImpl;
 import org.jboss.ws.common.deployment.EndpointHandlerDeploymentAspect;
@@ -113,7 +115,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
     }
 
     private static ServiceTarget getBaseTarget() {
-        return CurrentServiceContainer.getServiceContainer().getService(WSServices.CONFIG_SERVICE).getServiceContainer();
+        return currentServiceContainer().getService(WSServices.CONFIG_SERVICE).getServiceContainer();
     }
 
     /**
@@ -328,5 +330,12 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         @Override
         public void destroyInstance(Object o) throws IllegalAccessException, InvocationTargetException {
         }
+    }
+
+    private static ServiceContainer currentServiceContainer() {
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }

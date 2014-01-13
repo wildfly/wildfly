@@ -155,7 +155,7 @@ public class RemoteStatelessFailoverTestCase {
         jar.addClasses(StatelessBeanBase.class, StatelessBean.class, StatelessRemote.class, StatelessRemoteHome.class);
         jar.addClass(NodeNameGetter.class);
         jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
-        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         log.info(jar.toString(true));
         return jar;
     }
@@ -167,7 +167,7 @@ public class RemoteStatelessFailoverTestCase {
         jar.addAsManifestResource(RemoteStatelessFailoverTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         jar.addAsManifestResource(RemoteStatelessFailoverTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class);
-        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        jar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         log.info(jar.toString(true));
         return jar;
     }

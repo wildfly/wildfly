@@ -105,7 +105,7 @@ public class StatefulWithXPCFailoverTestCase extends ClusterAbstractTestCase {
         war.setWebXML(StatefulBean.class.getPackage(), "web.xml");
         war.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
         war.addClasses(ViewChangeListener.class, ViewChangeListenerBean.class, ViewChangeListenerServlet.class);
-        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        war.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         log.info(war.toString(true));
         return war;
     }

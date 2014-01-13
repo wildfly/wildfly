@@ -93,7 +93,7 @@ public class RemoteStatelessFailoverTestCase extends ClusterAbstractTestCase {
         final JavaArchive ejbJar = ShrinkWrap.create(JavaArchive.class, MODULE_NAME + ".jar");
         ejbJar.addPackage(StatelessBean.class.getPackage());
         ejbJar.addClasses(NodeNameGetter.class, ViewChangeListener.class, ViewChangeListenerBean.class);
-        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         log.info(ejbJar.toString(true));
         return ejbJar;
     }

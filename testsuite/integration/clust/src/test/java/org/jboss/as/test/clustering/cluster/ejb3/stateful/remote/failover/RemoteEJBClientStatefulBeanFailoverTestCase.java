@@ -95,7 +95,7 @@ public class RemoteEJBClientStatefulBeanFailoverTestCase extends ClusterAbstract
         ejbJar.addAsManifestResource(new StringAsset("<beans>" +
                 "<decorators><class>" + CDIDecorator.class.getName() + "</class></decorators>" +
                 "</beans>"), "beans.xml");
-        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));
+        ejbJar.setManifest(new StringAsset("Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan, org.jboss.as.server\n"));
         return ejbJar;
     }
 

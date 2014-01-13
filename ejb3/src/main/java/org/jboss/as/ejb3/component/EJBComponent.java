@@ -40,7 +40,6 @@ import javax.transaction.UserTransaction;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Map;
 
@@ -178,12 +177,10 @@ public abstract class EJBComponent extends BasicComponent {
     }
 
     private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 
     @Override

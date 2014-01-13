@@ -23,7 +23,6 @@
 package org.jboss.as.naming.context;
 
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
@@ -277,12 +276,10 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
     }
 
     private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 
     private static final class ReferenceUrlContextFactoryWrapper implements ObjectFactory {
