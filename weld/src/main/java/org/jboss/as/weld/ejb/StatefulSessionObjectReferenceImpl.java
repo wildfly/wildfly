@@ -24,7 +24,6 @@ package org.jboss.as.weld.ejb;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -136,14 +135,11 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
         }
     }
 
-
     private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 
     protected Object writeReplace() throws IOException {

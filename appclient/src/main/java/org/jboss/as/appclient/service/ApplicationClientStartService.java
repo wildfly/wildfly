@@ -34,7 +34,6 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.naming.InjectedEENamespaceContextSelector;
 import org.jboss.as.naming.context.NamespaceContextSelector;
-import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientConfiguration;
@@ -94,6 +93,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
     }
     @Override
     public synchronized void start(final StartContext context) throws StartException {
+        final ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
         thread = new Thread(new Runnable() {
 
@@ -144,7 +144,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
                         }
                     }
                 } finally {
-                    CurrentServiceContainer.getServiceContainer().shutdown();
+                    serviceContainer.shutdown();
                 }
             }
         });
@@ -152,7 +152,6 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                final ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
                 if(serviceContainer != null) {
                     serviceContainer.shutdown();
                 }

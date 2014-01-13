@@ -19,7 +19,6 @@ package org.jboss.as.weld.ejb;
 
 import java.io.Serializable;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.weld.WeldBootstrapService;
@@ -100,11 +99,9 @@ public class EjbRequestScopeActivationInterceptor extends AbstractEJBRequestScop
     }
 
     private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }
