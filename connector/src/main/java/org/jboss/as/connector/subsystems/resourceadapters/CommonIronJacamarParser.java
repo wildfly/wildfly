@@ -176,6 +176,7 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
 
                 case SHARABLE: {
                     SHARABLE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+                    break;
                 }
 
                 case ENLISTMENT: {
