@@ -25,6 +25,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.security.KeyStore;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -39,6 +42,7 @@ import org.jboss.logmanager.handlers.SyslogHandler;
 import org.jboss.logmanager.handlers.SyslogHandler.Protocol;
 import org.jboss.logmanager.handlers.SyslogHandler.SyslogType;
 import org.jboss.logmanager.handlers.TcpOutputStream;
+import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.IoUtils;
 
 /**
@@ -136,6 +140,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         this.tlsClientCertStoreKeyPassword = tlsClientCertStoreKeyPassword;
     }
 
+
     @Override
     void initialize() {
         try {
@@ -157,7 +162,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
                 //i18n not needed, user code will not end up here
                 throw new IllegalStateException("Unknown protocol");
             }
-            handler = new SyslogHandler(syslogServerAddress, port, SyslogHandler.DEFAULT_FACILITY, syslogType, protocol, hostName == null ? InetAddress.getLocalHost().getHostName() : hostName);
+            handler = new SyslogHandler(syslogServerAddress, port, tempHackFacilityFromProperty(), syslogType, protocol, hostName == null ? InetAddress.getLocalHost().getHostName() : hostName);
             handler.setEscapeEnabled(false); //Escaping is handled by the formatter
             handler.setAppName(appName);
             handler.setTruncate(truncate);
@@ -328,4 +333,57 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
             super(sslContext.getSocketFactory().createSocket(host, port));
         }
     }
+
+    // Temp hack for syslog
+    private SyslogHandler.Facility tempHackFacilityFromProperty() {
+        //For EAP backport this as a standard privileged block
+        String prop = WildFlySecurityManager.getPropertyPrivileged("org.jboss.TEMP.audit.log.facility", null);
+        if (prop != null) {
+            SyslogHandler.Facility facility = FACILITIES.get(prop);
+            if (facility != null) {
+                return facility;
+            }
+        }
+        return SyslogHandler.DEFAULT_FACILITY;
+    }
+
+   //Temp hack just to be able to test
+    SyslogHandler.Facility getHandlerFacility(){
+        if (handler == null) {
+            return null;
+        }
+        return handler.getFacility();
+    }
+
+    //
+    private static final Map<String, SyslogHandler.Facility> FACILITIES;
+    static {
+        Map<String, SyslogHandler.Facility> map = new HashMap<String, SyslogHandler.Facility>();
+        map.put("0", SyslogHandler.Facility.KERNEL);
+        map.put("1", SyslogHandler.Facility.USER_LEVEL);
+        map.put("2", SyslogHandler.Facility.MAIL_SYSTEM);
+        map.put("3", SyslogHandler.Facility.SYSTEM_DAEMONS);
+        map.put("4", SyslogHandler.Facility.SECURITY);
+        map.put("5", SyslogHandler.Facility.SYSLOGD);
+        map.put("6", SyslogHandler.Facility.LINE_PRINTER);
+        map.put("7", SyslogHandler.Facility.NETWORK_NEWS);
+        map.put("8", SyslogHandler.Facility.UUCP);
+        map.put("9", SyslogHandler.Facility.CLOCK_DAEMON);
+        map.put("10", SyslogHandler.Facility.SECURITY2);
+        map.put("11", SyslogHandler.Facility.FTP_DAEMON);
+        map.put("12", SyslogHandler.Facility.NTP);
+        map.put("13", SyslogHandler.Facility.LOG_AUDIT);
+        map.put("14", SyslogHandler.Facility.LOG_ALERT);
+        map.put("15", SyslogHandler.Facility.CLOCK_DAEMON2);
+        map.put("16", SyslogHandler.Facility.LOCAL_USE_0);
+        map.put("17", SyslogHandler.Facility.LOCAL_USE_1);
+        map.put("18", SyslogHandler.Facility.LOCAL_USE_2);
+        map.put("19", SyslogHandler.Facility.LOCAL_USE_3);
+        map.put("20", SyslogHandler.Facility.LOCAL_USE_4);
+        map.put("21", SyslogHandler.Facility.LOCAL_USE_5);
+        map.put("22", SyslogHandler.Facility.LOCAL_USE_6);
+        map.put("23", SyslogHandler.Facility.LOCAL_USE_7);
+        FACILITIES = Collections.unmodifiableMap(map);
+    }
+
 }
