@@ -143,7 +143,7 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         // Install services for web container integration
         for (ContainerEventHandlerAdapterBuilder adapterBuilder: ServiceLoader.load(ContainerEventHandlerAdapterBuilder.class, ContainerEventHandlerAdapterBuilder.class.getClassLoader())) {
-            newControllers.add(adapterBuilder.build(target, connector).addListener(verificationHandler).setInitialMode(Mode.PASSIVE).install());
+            newControllers.add(adapterBuilder.build(target, connector).addListener(verificationHandler).install());
         }
     }
 
