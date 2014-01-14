@@ -135,6 +135,7 @@ import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
+import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
 import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
@@ -378,8 +379,14 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private void handleJASPIMechanism(final DeploymentInfo deploymentInfo) {
         ApplicationPolicy applicationPolicy = SecurityConfiguration.getApplicationPolicy(this.securityDomain);
 
-        if (applicationPolicy!=null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
-            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(this.securityDomain));
+        if (applicationPolicy != null && JASPIAuthenticationInfo.class.isInstance(applicationPolicy.getAuthenticationInfo())) {
+            String authMethod = null;
+            LoginConfig loginConfig = deploymentInfo.getLoginConfig();
+            if (loginConfig != null && loginConfig.getAuthMethods().size() > 0)
+                authMethod = loginConfig.getAuthMethods().get(0).getName();
+
+            deploymentInfo.setJaspiAuthenticationMechanism(new JASPIAuthenticationMechanism(this.securityDomain, authMethod));
+            deploymentInfo.setSecurityContextFactory(new JASPICSecurityContextFactory(this.securityDomain));
         }
     }
 
