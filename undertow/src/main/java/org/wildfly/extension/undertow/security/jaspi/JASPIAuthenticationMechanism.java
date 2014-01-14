@@ -1,18 +1,42 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package org.wildfly.extension.undertow.security.jaspi;
 
+import io.undertow.security.api.AuthenticatedSessionManager;
 import io.undertow.security.api.AuthenticationMechanism;
-import io.undertow.security.api.NotificationReceiver;
 import io.undertow.security.api.SecurityContext;
 import io.undertow.security.idm.Account;
-import io.undertow.security.idm.IdentityManager;
-import io.undertow.server.ExchangeCompletionListener;
+import io.undertow.server.ConduitWrapper;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
 import io.undertow.util.AttachmentKey;
 
+import io.undertow.util.ConduitFactory;
+import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityContextAssociation;
 import org.jboss.security.auth.callback.JBossCallbackHandler;
 import org.jboss.security.auth.message.GenericMessageInfo;
+import org.jboss.security.identity.plugins.SimpleRole;
+import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.plugins.auth.JASPIServerAuthenticationManager;
 import org.wildfly.extension.undertow.security.AccountImpl;
 
@@ -24,12 +48,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.security.Principal;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.jboss.security.auth.callback.JASPICallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
+import org.xnio.conduits.StreamSinkConduit;
+
 import static org.wildfly.extension.undertow.UndertowLogger.ROOT_LOGGER;
 import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
@@ -52,48 +77,68 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
     public static final AttachmentKey<SecurityContext> SECURITY_CONTEXT_ATTACHMENT_KEY = AttachmentKey.create(SecurityContext.class);
 
     private final String securityDomain;
+    private final String configuredAuthMethod;
 
-    public JASPIAuthenticationMechanism(final String securityDomain) {
+    public JASPIAuthenticationMechanism(final String securityDomain, final String configuredAuthMethod) {
         this.securityDomain = securityDomain;
+        this.configuredAuthMethod = configuredAuthMethod;
     }
 
     @Override
     public AuthenticationMechanismOutcome authenticate(final HttpServerExchange exchange, final SecurityContext sc) {
-        final JASPISecurityContext jaspiSecurityContext = new JASPISecurityContext(sc);
         final ServletRequestContext requestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
         final JASPIServerAuthenticationManager sam = createJASPIAuthenticationManager();
-        final GenericMessageInfo messageInfo = createMessageInfo(exchange, jaspiSecurityContext);
+        final GenericMessageInfo messageInfo = createMessageInfo(exchange, sc);
         final String applicationIdentifier = buildApplicationIdentifier(requestContext);
         final JASPICallbackHandler cbh = new JASPICallbackHandler();
 
         ROOT_LOGGER.debugf("validateRequest for layer [%s] and applicationContextIdentifier [%s]", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
 
+        Account cachedAccount = null;
+        final JASPICSecurityContext jaspicSecurityContext = (JASPICSecurityContext) exchange.getSecurityContext();
+        final AuthenticatedSessionManager sessionManager = exchange.getAttachment(AuthenticatedSessionManager.ATTACHMENT_KEY);
+
+        if (sessionManager != null) {
+            AuthenticatedSessionManager.AuthenticatedSession authSession = sessionManager.lookupSession(exchange);
+            cachedAccount = authSession.getAccount();
+            // if there is a cached account we set it in the security context so that the principal is available to
+            // SAM modules via request.getUserPrincipal().
+            if (cachedAccount !=  null) {
+                jaspicSecurityContext.setCachedAuthenticatedAccount(cachedAccount);
+            }
+        }
+
         AuthenticationMechanismOutcome outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
-        Account account = null;
+        Account authenticatedAccount = null;
 
         boolean isValid = sam.isValid(messageInfo, new Subject(), JASPI_HTTP_SERVLET_LAYER, applicationIdentifier, cbh);
+        jaspicSecurityContext.setCachedAuthenticatedAccount(null);
 
         if (isValid) {
             // The CBH filled in the JBOSS SecurityContext, we need to create an Undertow account based on that
             org.jboss.security.SecurityContext jbossSct = SecurityActions.getSecurityContext();
-            account = createAccount(jbossSct);
+            authenticatedAccount = createAccount(cachedAccount, jbossSct);
         }
 
-        if (isValid && account != null) {
+        // authType resolution (check message info first, then check for the configured auth method, then use mech-specific name).
+        String authType = (String) messageInfo.getMap().get(JASPI_AUTH_TYPE);
+        if (authType == null)
+            authType = this.configuredAuthMethod != null ? this.configuredAuthMethod : MECHANISM_NAME;
+
+        if (isValid && authenticatedAccount != null) {
             outcome = AuthenticationMechanismOutcome.AUTHENTICATED;
 
-            String type = (String) messageInfo.getMap().get(JASPI_AUTH_TYPE);
             Object registerObj = messageInfo.getMap().get(JASPI_REGISTER_SESSION);
-            boolean cache = jaspiSecurityContext.isCachingRequired();
+            boolean cache = false;
             if(registerObj != null && (registerObj instanceof String)) {
                 cache = Boolean.valueOf((String)registerObj);
             }
-            sc.authenticationComplete(account, type != null ? type : jaspiSecurityContext.getAuthType(), cache);
-        } else if (isValid && account == null && !isMandatory(requestContext)) {
+            sc.authenticationComplete(authenticatedAccount, authType, cache);
+        } else if (isValid && authenticatedAccount == null && !isMandatory(requestContext)) {
             outcome = AuthenticationMechanismOutcome.NOT_ATTEMPTED;
         } else {
             outcome = AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
-            sc.authenticationFailed("JASPI authentication failed.", MECHANISM_NAME);
+            sc.authenticationFailed("JASPIC authentication failed.", authType);
         }
 
         // A SAM can wrap the HTTP request/response objects - update the servlet request context with the values found in the message info.
@@ -112,10 +157,6 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         return new ChallengeResult(true);
     }
 
-    private boolean isSecureResponse(final ServletRequestContext attachment, final SecurityContext securityContext) {
-        return !wasAuthExceptionThrown();
-    }
-
     private boolean wasAuthExceptionThrown() {
         return SecurityContextAssociation.getSecurityContext().getData().get(AuthException.class.getName()) != null;
     }
@@ -126,7 +167,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
     private String buildApplicationIdentifier(final ServletRequestContext attachment) {
         ServletRequest servletRequest = attachment.getServletRequest();
-        return servletRequest.getLocalName() + " " + servletRequest.getServletContext().getContextPath();
+        return servletRequest.getServletContext().getVirtualServerName() + " " + servletRequest.getServletContext().getContextPath();
     }
 
     private GenericMessageInfo createMessageInfo(final HttpServerExchange exchange, final SecurityContext securityContext) {
@@ -146,16 +187,29 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         return messageInfo;
     }
 
-    private Account createAccount(final org.jboss.security.SecurityContext jbossSct) {
+    private Account createAccount(final Account cachedAccount, final org.jboss.security.SecurityContext jbossSct) {
         if (jbossSct == null) {
             throw MESSAGES.nullParamter("org.jboss.security.SecurityContext");
         }
 
+        // null principal: SAM has opted out of the authentication process.
         Principal userPrincipal = jbossSct.getUtil().getUserPrincipal();
         if (userPrincipal == null) {
             return null;
         }
 
+        // SAM handled the same principal found in the cached account: indicates we must use the cached account.
+        if (cachedAccount != null && cachedAccount.getPrincipal() == userPrincipal) {
+            // populate the security context using the cached account data.
+            jbossSct.getUtil().createSubjectInfo(userPrincipal, ((AccountImpl) cachedAccount).getCredential(), null);
+            RoleGroup roleGroup = new SimpleRoleGroup(SecurityConstants.ROLES_IDENTIFIER);
+            for (String role : cachedAccount.getRoles())
+                roleGroup.addRole(new SimpleRole(role));
+            jbossSct.getUtil().setRoles(roleGroup);
+            return cachedAccount;
+        }
+
+        // SAM handled a different principal or there is no cached account: build a new account.
         Set<String> stringRoles = new HashSet<String>();
         RoleGroup roleGroup = jbossSct.getUtil().getRoles();
         if (roleGroup != null) {
@@ -163,21 +217,19 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
                 stringRoles.add(role.getRoleName());
             }
         }
-
         Object credential = jbossSct.getUtil().getCredential();
-
         return new AccountImpl(userPrincipal, stringRoles, credential);
     }
 
     private void secureResponse(final HttpServerExchange exchange, final SecurityContext securityContext, final JASPIServerAuthenticationManager sam, final GenericMessageInfo messageInfo, final JASPICallbackHandler cbh) {
-        // we add the a response listener to properly invoke the secureResponse, after processing the destination
-        exchange.addExchangeCompleteListener(new ExchangeCompletionListener() {
+        // we add the a response wrapper to properly invoke the secureResponse, after processing the destination
+        exchange.addResponseWrapper(new ConduitWrapper<StreamSinkConduit>() {
             @Override
-            public void exchangeEvent(final HttpServerExchange exchange, final NextListener nextListener) {
+            public StreamSinkConduit wrap(final ConduitFactory<StreamSinkConduit> factory, final HttpServerExchange exchange) {
                 ServletRequestContext requestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
                 String applicationIdentifier = buildApplicationIdentifier(requestContext);
 
-                if (isSecureResponse(requestContext, securityContext)) {
+                if (!wasAuthExceptionThrown()) {
                     ROOT_LOGGER.debugf("secureResponse for layer [%s] and applicationContextIdentifier [%s].", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
                     sam.secureResponse(messageInfo, new Subject(), JASPI_HTTP_SERVLET_LAYER, applicationIdentifier, cbh);
 
@@ -186,7 +238,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
                     servletRequestContext.setServletRequest((HttpServletRequest) messageInfo.getRequestMessage());
                     servletRequestContext.setServletResponse((HttpServletResponse) messageInfo.getResponseMessage());
                 }
-                nextListener.proceed();
+                return factory.create();
             }
         });
     }
@@ -206,96 +258,5 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
                 && attachment.getCurrentServlet().getManagedServlet().getServletInfo().getServletSecurityInfo() != null
                 && attachment.getCurrentServlet().getManagedServlet().getServletInfo().getServletSecurityInfo().getRolesAllowed() != null
                 && !attachment.getCurrentServlet().getManagedServlet().getServletInfo().getServletSecurityInfo().getRolesAllowed().isEmpty();
-    }
-
-    private static final class JASPISecurityContext implements SecurityContext {
-
-        private final SecurityContext delegate;
-        private boolean cachingRequired = false;
-        private String authType;
-
-        private JASPISecurityContext(SecurityContext delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public boolean authenticate() {
-            return delegate.authenticate();
-        }
-
-        @Override
-        public boolean login(String username, String password) {
-            return delegate.login(username, password);
-        }
-
-        @Override
-        public void logout() {
-            delegate.logout();
-        }
-
-        @Override
-        public void setAuthenticationRequired() {
-            delegate.setAuthenticationRequired();
-        }
-
-        @Override
-        public void addAuthenticationMechanism(AuthenticationMechanism mechanism) {
-            delegate.addAuthenticationMechanism(mechanism);
-        }
-
-        @Override
-        public List<AuthenticationMechanism> getAuthenticationMechanisms() {
-            return delegate.getAuthenticationMechanisms();
-        }
-
-        @Override
-        public boolean isAuthenticated() {
-            return delegate.isAuthenticated();
-        }
-
-        @Override
-        public Account getAuthenticatedAccount() {
-            return delegate.getAuthenticatedAccount();
-        }
-
-        @Override
-        public String getMechanismName() {
-            return delegate.getMechanismName();
-        }
-
-        @Override
-        public IdentityManager getIdentityManager() {
-            return delegate.getIdentityManager();
-        }
-
-        @Override
-        public void authenticationComplete(Account account, String mechanismName, boolean cachingRequired) {
-            //noop, we don't want the auth method that we have delegated too to actually call this method
-            this.cachingRequired = cachingRequired;
-            this.authType = mechanismName;
-        }
-
-        @Override
-        public void authenticationFailed(String message, String mechanismName) {
-            delegate.authenticationFailed(message, mechanismName);
-        }
-
-        @Override
-        public void registerNotificationReceiver(NotificationReceiver receiver) {
-            delegate.registerNotificationReceiver(receiver);
-        }
-
-        @Override
-        public void removeNotificationReceiver(NotificationReceiver receiver) {
-            delegate.removeNotificationReceiver(receiver);
-        }
-
-        private boolean isCachingRequired() {
-            return cachingRequired;
-        }
-
-        private String getAuthType() {
-            return authType;
-        }
     }
 }
