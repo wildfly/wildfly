@@ -25,7 +25,6 @@ package org.jboss.as.ejb3.component.stateful;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -74,13 +73,10 @@ public class SerializedStatefulSessionComponent implements Serializable {
         return component.constructComponentInstance(instance, false, context);
     }
 
-
     private static ServiceContainer currentServiceContainer() {
-        return AccessController.doPrivileged(new PrivilegedAction<ServiceContainer>() {
-            @Override
-            public ServiceContainer run() {
-                return CurrentServiceContainer.getServiceContainer();
-            }
-        });
+        if(System.getSecurityManager() == null) {
+            return CurrentServiceContainer.getServiceContainer();
+        }
+        return AccessController.doPrivileged(CurrentServiceContainer.GET_ACTION);
     }
 }
