@@ -162,6 +162,10 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
                 //i18n not needed, user code will not end up here
                 throw new IllegalStateException("Unknown protocol");
             }
+            String tempHackAppName = tempHackAppNameFromProperty();
+            if (tempHackAppName != null) {
+              appName = tempHackAppName;
+            }
             handler = new SyslogHandler(syslogServerAddress, port, tempHackFacilityFromProperty(), syslogType, protocol, hostName == null ? InetAddress.getLocalHost().getHostName() : hostName);
             handler.setEscapeEnabled(false); //Escaping is handled by the formatter
             handler.setAppName(appName);
@@ -334,7 +338,8 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         }
     }
 
-    // Temp hack for syslog
+    // Temp hacks for syslog
+
     private SyslogHandler.Facility tempHackFacilityFromProperty() {
         //For EAP backport this as a standard privileged block
         String prop = WildFlySecurityManager.getPropertyPrivileged("org.jboss.TEMP.audit.log.facility", null);
@@ -347,12 +352,26 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         return SyslogHandler.DEFAULT_FACILITY;
     }
 
-   //Temp hack just to be able to test
+    //Temp hack just to be able to test
     SyslogHandler.Facility getHandlerFacility(){
         if (handler == null) {
             return null;
         }
         return handler.getFacility();
+    }
+
+    private String tempHackAppNameFromProperty() {
+        //For EAP backport this as a standard privileged block
+        String prop = WildFlySecurityManager.getPropertyPrivileged("org.jboss.TEMP.audit.log.appName", null);
+        return prop;
+    }
+
+    //Temp hack just to be able to test
+    String getHandlerAppName(){
+        if (handler == null) {
+            return null;
+        }
+        return handler.getAppName();
     }
 
     //
