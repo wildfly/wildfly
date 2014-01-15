@@ -64,7 +64,7 @@ public abstract class AbstractBoottimeAddStepHandler extends AbstractAddStepHand
      * else invokes {@link OperationContext#reloadRequired()}.
      */
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected final void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         if (context.isBooting()) {
             performBoottime(context, operation, model, verificationHandler, newControllers);
         } else {
