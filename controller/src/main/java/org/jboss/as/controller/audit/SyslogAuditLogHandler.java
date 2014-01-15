@@ -163,6 +163,10 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
                 //i18n not needed, user code will not end up here
                 throw new IllegalStateException("Unknown protocol");
             }
+            String tempHackAppName = tempHackAppNameFromProperty();
+            if (tempHackAppName != null) {
+              appName = tempHackAppName;
+            }
             handler = new SyslogHandler(syslogServerAddress, port, tempHackFacilityFromProperty(), syslogType, protocol, hostName == null ? InetAddress.getLocalHost().getHostName() : hostName);
             handler.setEscapeEnabled(false); //Escaping is handled by the formatter
             handler.setAppName(appName);
@@ -335,7 +339,8 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         }
     }
 
-    // Temp hack for syslog
+    // Temp hacks for syslog
+
     private SyslogHandler.Facility tempHackFacilityFromProperty() {
         String prop = System.getSecurityManager() == null ? GetPropertyAction.INSTANCE.run() : AccessController.doPrivileged(GetPropertyAction.INSTANCE);
         if (prop != null) {
@@ -355,12 +360,33 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
         }
     }
 
-   //Temp hack just to be able to test
+    //Temp hack just to be able to test
     SyslogHandler.Facility getHandlerFacility(){
         if (handler == null) {
             return null;
         }
         return handler.getFacility();
+    }
+
+    private String tempHackAppNameFromProperty() {
+        String prop = System.getSecurityManager() == null ? GetAppNamePropertyAction.INSTANCE.run() : AccessController.doPrivileged(GetAppNamePropertyAction.INSTANCE);
+        return prop;
+    }
+
+    private static class GetAppNamePropertyAction implements PrivilegedAction<String> {
+        static final GetAppNamePropertyAction INSTANCE = new GetAppNamePropertyAction();
+        @Override
+        public String run() {
+            return System.getProperty("org.jboss.TEMP.audit.log.appName");
+        }
+    }
+
+    //Temp hack just to be able to test
+    String getHandlerAppName(){
+        if (handler == null) {
+            return null;
+        }
+        return handler.getAppName();
     }
 
     //
