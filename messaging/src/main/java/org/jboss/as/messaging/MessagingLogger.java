@@ -221,4 +221,15 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11616, value = "Element %s is deprecated and %s will be used in its place")
     void deprecatedXMLElement(String name, String replacement);
+
+    /**
+     * Logs a warn message when no connectors were specified for a connection factory definition
+     * and one connector was picked up to be used.
+     *
+     * @param name the name of the connection factory definition
+     * @param connectorName the name of the connector that was picked
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11617, value = "No connectors were explicitly defined for the pooled connection factory %s. Using %s as the connector.")
+    void connectorForPooledConnectionFactory(String name, String connectorName);
 }
