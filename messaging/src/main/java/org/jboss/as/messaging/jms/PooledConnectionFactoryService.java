@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hornetq.api.core.BroadcastEndpointFactoryConfiguration;
 import org.hornetq.api.core.DiscoveryGroupConfiguration;
@@ -50,6 +51,7 @@ import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.JGroupsChannelLocator;
+import org.jboss.as.messaging.MessagingLogger;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.NamingService;
@@ -168,6 +170,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
     private Map<String, SocketBinding> socketBindings = new HashMap<String, SocketBinding>();
     private InjectedValue<HornetQServer> hornetQService = new InjectedValue<HornetQServer>();
     private BindInfo bindInfo;
+    private final boolean pickAnyConnectors;
     private List<String> jndiAliases;
     private String txSupport;
     private int minPoolSize;
@@ -188,9 +191,10 @@ public class PooledConnectionFactoryService implements Service<Void> {
         this.txSupport = txSupport;
         this.minPoolSize = minPoolSize;
         this.maxPoolSize = maxPoolSize;
+        this.pickAnyConnectors = false;
     }
 
-    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String hqServerName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize) {
+    public PooledConnectionFactoryService(String name, List<String> connectors, String discoveryGroupName, String hqServerName, String jgroupsChannelName, List<PooledConnectionFactoryConfigProperties> adapterParams, BindInfo bindInfo, String txSupport, int minPoolSize, int maxPoolSize, boolean pickAnyConnectors) {
         this.name = name;
         this.connectors = connectors;
         this.discoveryGroupName = discoveryGroupName;
@@ -203,6 +207,7 @@ public class PooledConnectionFactoryService implements Service<Void> {
         this.txSupport = txSupport;
         this.minPoolSize = minPoolSize;
         this.maxPoolSize = maxPoolSize;
+        this.pickAnyConnectors = pickAnyConnectors;
     }
 
     private void initJNDIBindings(List<String> jndiNames) {
@@ -233,14 +238,15 @@ public class PooledConnectionFactoryService implements Service<Void> {
                                       BindInfo bindInfo,
                                       String txSupport,
                                       int minPoolSize,
-                                      int maxPoolSize) {
+                                      int maxPoolSize,
+                                      boolean pickAnyConnectors) {
 
         ServiceName hqServiceName = MessagingServices.getHornetQServiceName(hqServerName);
         ServiceName serviceName = JMSServices.getPooledConnectionFactoryBaseServiceName(hqServiceName).append(name);
 
         PooledConnectionFactoryService service = new PooledConnectionFactoryService(name,
                 connectors, discoveryGroupName, hqServerName, jgroupsChannelName, adapterParams,
-                bindInfo, txSupport, minPoolSize, maxPoolSize);
+                bindInfo, txSupport, minPoolSize, maxPoolSize, pickAnyConnectors);
 
         installService0(verificationHandler, newControllers, serviceTarget, hqServiceName, serviceName, service);
     }
@@ -319,6 +325,16 @@ public class PooledConnectionFactoryService implements Service<Void> {
         try {
             StringBuilder connectorClassname = new StringBuilder();
             StringBuilder connectorParams = new StringBuilder();
+            // if there is no discovery-group and the connector list is empty,
+            // pick the first connector available if pickAnyConnectors is true
+            if (discoveryGroupName == null && connectors.isEmpty() && pickAnyConnectors) {
+                Set<String> connectorNames = hornetQService.getValue().getConfiguration().getConnectorConfigurations().keySet();
+                if (connectorNames.size() > 0) {
+                    String connectorName = connectorNames.iterator().next();
+                    MessagingLogger.ROOT_LOGGER.connectorForPooledConnectionFactory(name, connectorName);
+                    connectors.add(connectorName);
+                }
+            }
             for (String connector : connectors) {
                 TransportConfiguration tc = hornetQService.getValue().getConfiguration().getConnectorConfigurations().get(connector);
                 if(tc == null) {
