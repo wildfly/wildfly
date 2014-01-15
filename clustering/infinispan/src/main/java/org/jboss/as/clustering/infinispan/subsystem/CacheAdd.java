@@ -407,11 +407,12 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                 .withProperties(indexingProperties)
         ;
 
+        IsolationLevel isolationLevel = getDefaultConfiguration(this.mode).locking().isolationLevel();
         // locking is a child resource
         if (cache.hasDefined(ModelKeys.LOCKING) && cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME).isDefined()) {
             ModelNode locking = cache.get(ModelKeys.LOCKING, ModelKeys.LOCKING_NAME);
 
-            final IsolationLevel isolationLevel = IsolationLevel.valueOf(LockingResourceDefinition.ISOLATION.resolveModelAttribute(context, locking).asString());
+            isolationLevel = IsolationLevel.valueOf(LockingResourceDefinition.ISOLATION.resolveModelAttribute(context, locking).asString());
             final boolean striping = LockingResourceDefinition.STRIPING.resolveModelAttribute(context, locking).asBoolean();
             final long acquireTimeout = LockingResourceDefinition.ACQUIRE_TIMEOUT.resolveModelAttribute(context, locking).asLong();
             final int concurrencyLevel = LockingResourceDefinition.CONCURRENCY_LEVEL.resolveModelAttribute(context, locking).asInt();
@@ -424,13 +425,14 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             ;
         }
 
-        // locking is a child resource
+        LockingMode lockingMode = getDefaultConfiguration(this.mode).transaction().lockingMode();
+        // transaction is a child resource
         if (cache.hasDefined(ModelKeys.TRANSACTION) && cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME).isDefined()) {
             ModelNode transaction = cache.get(ModelKeys.TRANSACTION, ModelKeys.TRANSACTION_NAME);
 
             long stopTimeout = TransactionResourceDefinition.STOP_TIMEOUT.resolveModelAttribute(context, transaction).asLong();
             TransactionMode txMode = TransactionMode.valueOf(TransactionResourceDefinition.MODE.resolveModelAttribute(context, transaction).asString());
-            LockingMode lockingMode = LockingMode.valueOf(TransactionResourceDefinition.LOCKING.resolveModelAttribute(context, transaction).asString());
+            lockingMode = LockingMode.valueOf(TransactionResourceDefinition.LOCKING.resolveModelAttribute(context, transaction).asString());
 
             builder.transaction()
                     .cacheStopTimeout(stopTimeout)
@@ -448,6 +450,10 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             if (txMode.isRecoveryEnabled()) {
                 dependencies.add(new Dependency<>(TxnServices.JBOSS_TXN_ARJUNA_RECOVERY_MANAGER, XAResourceRecoveryRegistry.class, cacheDependencies.getRecoveryRegistryInjector()));
             }
+        }
+
+        if ((lockingMode == LockingMode.OPTIMISTIC) && (isolationLevel == IsolationLevel.REPEATABLE_READ)) {
+            builder.locking().writeSkewCheck(true);
         }
 
         if (batching) {
