@@ -26,6 +26,7 @@ import javax.annotation.security.DeclareRoles;
 import javax.annotation.security.RunAs;
 import javax.ejb.Stateless;
 
+import org.jboss.ejb3.annotation.Pool;
 import org.jboss.ejb3.annotation.SecurityDomain;
 
 /**
@@ -37,6 +38,7 @@ import org.jboss.ejb3.annotation.SecurityDomain;
 @SecurityDomain("other")
 @DeclareRoles(value = {"Role1", "Role2", "Role3"})
 @RunAs("Role3")
+@Pool("slsb-strict-max-pool")
 public class NoTimerStatelessBean implements BusinessInterface {
 
     @Override
