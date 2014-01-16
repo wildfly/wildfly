@@ -1509,7 +1509,7 @@ public class DistributableSessionManager<O extends OutgoingDistributableSessionD
     }
 
     private void bruteForceCleanup(String realId, Exception ex) {
-        log.warn(MESSAGES.bruteForceCleanup(realId, ex.getLocalizedMessage()));
+        log.warn(MESSAGES.bruteForceCleanup(realId, ex));
         try {
             this.distributedCacheManager.removeSessionLocal(realId, null);
         } catch (Exception e) {

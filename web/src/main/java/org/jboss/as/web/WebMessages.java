@@ -291,8 +291,8 @@ public interface WebMessages {
     @Message(id = 18079, value = "Failed to passivate %s session %s")
     String failToPassivate(String unloaded, String id);
 
-    @Message(id = 18080, value = "Standard expiration of session %s failed; switching to a brute force cleanup. Problem is %s")
-    String bruteForceCleanup(String id, String t);
+    @Message(id = 18080, value = "Standard expiration of session %s failed; switching to a brute force cleanup. Problem is:")
+    String bruteForceCleanup(String id, @Cause Throwable t);
 
     @Message(id = 18081, value = "Received notification for inactive session %s")
     String notificationForInactiveSession(String id);
