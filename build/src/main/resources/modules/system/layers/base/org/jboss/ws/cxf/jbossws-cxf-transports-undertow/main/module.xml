@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.3" name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver">
+<module xmlns="urn:jboss:module:1.3" name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow">
 
     <properties>
         <property name="jboss.api" value="private"/>
@@ -37,13 +37,13 @@
         <module name="org.jboss.ws.common" />
         <module name="javax.annotation.api" />
         <module name="javax.xml.ws.api" />
-        <module name="org.jboss.ws.jaxws-jboss-httpserver-httpspi" />
+        <module name="org.jboss.ws.jaxws-undertow-httpspi" />
         <module name="org.apache.cxf.impl" services="import">
           <imports>
             <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
             <include path="META-INF"/>
           </imports>
         </module>
-        <module name="org.jboss.com.sun.httpserver"/>
+        <module name="io.undertow.core"/>
     </dependencies>
 </module>
