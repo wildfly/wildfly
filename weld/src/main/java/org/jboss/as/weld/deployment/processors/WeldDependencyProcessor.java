@@ -22,6 +22,7 @@
 
 package org.jboss.as.weld.deployment.processors;
 
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -29,7 +30,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -76,6 +76,9 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
 
         ModuleDependency dep = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_ID, false, false, false, false);
         dep.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        dep.addImportFilter(PathFilters.is("org/jboss/as/weld/ejb"), true);
+        dep.addImportFilter(PathFilters.is("org/jboss/as/weld/injection"), true);
+        dep.addImportFilter(PathFilters.acceptAll(), false);
         dep.addExportFilter(PathFilters.getMetaInfFilter(), true);
         moduleSpecification.addSystemDependency(dep);
 

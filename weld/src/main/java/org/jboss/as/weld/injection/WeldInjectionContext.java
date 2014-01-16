@@ -13,7 +13,7 @@ import org.jboss.weld.bean.ManagedBean;
 /**
  * @author Stuart Douglas
  */
-public class WeldInjectionContext implements Serializable {
+class WeldInjectionContext implements Serializable {
 
     private final CreationalContext<?> context;
     private final Bean<?> bean;
@@ -24,7 +24,7 @@ public class WeldInjectionContext implements Serializable {
     private final transient InjectionTarget injectionTarget;
     private final transient Map<Class<?>, InjectionTarget> interceptorInjections;
 
-    public WeldInjectionContext(CreationalContext<?> ctx, final Bean<?> bean, final boolean delegateProduce, final InjectionTarget injectionTarget, final Map<Class<?>, InjectionTarget> interceptorInjections) {
+    WeldInjectionContext(CreationalContext<?> ctx, final Bean<?> bean, final boolean delegateProduce, final InjectionTarget injectionTarget, final Map<Class<?>, InjectionTarget> interceptorInjections) {
         this.context = ctx;
         this.bean = bean;
         this.delegateProduce = delegateProduce;
