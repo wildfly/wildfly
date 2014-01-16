@@ -151,6 +151,9 @@
         <surefire.system.args>${surefire.memory.args} ${surefire.jpda.args} -Djboss.dist=${jboss.dist}</surefire.system.args>
         <surefire.forked.process.timeout>1500</surefire.forked.process.timeout>
 
+        <!-- If servers should be killed before the test suite is run-->
+        <org.wildfly.test.kill-servers-before-test>false</org.wildfly.test.kill-servers-before-test>
+
         <!-- Arquillian dependency versions -->
         <version.arquillian_wildfly>${project.parent.version}</version.arquillian_wildfly>
         <version.saxon>8.7</version.saxon>
@@ -355,6 +358,7 @@
                            <jboss.dist>${jboss.dist}</jboss.dist>
                            <jboss.home>${basedir}/target/jbossas</jboss.home>
                            <module.path>${jboss.dist}/modules${path.separator}${basedir}/target/modules</module.path>
+                           <org.wildfly.test.kill-servers-before-test>${org.wildfly.test.kill-servers-before-test}</org.wildfly.test.kill-servers-before-test>
                        </systemPropertyVariables>
                        <!-- Arquillian's config files. -->
                        <additionalClasspathElements combine.children="append">
