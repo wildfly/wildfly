@@ -50,7 +50,7 @@
           </exports>
         </module>
         <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="export" export="true"/>
-        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" export="true">
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow" export="true">
           <imports>
             <include path="META-INF/cxf"/>
             <include path="META-INF"/>

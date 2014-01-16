@@ -49,7 +49,7 @@
             <include path="META-INF"/>
           </imports>
         </module>
-        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" services="import">
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow" services="import">
           <imports>
             <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
             <include path="META-INF"/>
