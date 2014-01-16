@@ -96,6 +96,7 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
         final long retryInterval = ClusterConnectionDefinition.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final boolean duplicateDetection = ClusterConnectionDefinition.USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
         final long connectionTTL = ClusterConnectionDefinition.CONNECTION_TTL.resolveModelAttribute(context, model).asInt();
+        final int initialConnectAttempts = ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
         final int reconnectAttempts = ClusterConnectionDefinition.RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
         final long maxRetryInterval = ClusterConnectionDefinition.MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final double retryIntervalMultiplier = ClusterConnectionDefinition.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
@@ -116,12 +117,12 @@ public class ClusterConnectionAdd extends AbstractAddStepHandler {
 
         if (discoveryGroupName != null) {
             return new ClusterConnectionConfiguration(name, address, connectorName, minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                    retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout, callFailoverTimeout,
+                    retryInterval, retryIntervalMultiplier, maxRetryInterval, initialConnectAttempts, reconnectAttempts, callTimeout, callFailoverTimeout,
                     duplicateDetection, forwardWhenNoConsumers, maxHops, confirmationWindowSize,
                     discoveryGroupName, clusterNotificationInterval, clusterNotificationAttempts);
         } else {
             return new ClusterConnectionConfiguration(name, address, connectorName, minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                    retryInterval, retryIntervalMultiplier, maxRetryInterval, reconnectAttempts, callTimeout, callFailoverTimeout,
+                    retryInterval, retryIntervalMultiplier, maxRetryInterval, initialConnectAttempts, reconnectAttempts, callTimeout, callFailoverTimeout,
                     duplicateDetection, forwardWhenNoConsumers, maxHops, confirmationWindowSize,
                     staticConnectors, allowDirectOnly,clusterNotificationInterval, clusterNotificationAttempts);
         }

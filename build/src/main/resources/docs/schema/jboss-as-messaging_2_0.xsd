@@ -583,6 +583,13 @@
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xs:double" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-retry-interval" type="xs:long"  />
+          <xs:element maxOccurs="1" minOccurs="0" name="initial-connect-attempts" type="xs:int">
+              <xs:annotation>
+                  <xs:documentation>
+                      The number of attempts to connect initially with this bridge.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="reconnect-attempts" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="reconnect-attempts-on-same-node" type="xs:int" />
           <xs:element maxOccurs="1" minOccurs="0" name="failover-on-server-shutdown" type="xs:boolean">
@@ -622,6 +629,13 @@
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="retry-interval-multiplier" type="xs:double" />
           <xs:element maxOccurs="1" minOccurs="0" name="max-retry-interval" type="xs:long" />
+          <xs:element maxOccurs="1" minOccurs="0" name="initial-connect-attempts" type="xs:int">
+              <xs:annotation>
+                  <xs:documentation>
+                      The number of attempts to connect initially with this cluster connection.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:element>
           <xs:element maxOccurs="1" minOccurs="0" name="reconnect-attempts" type="xs:long" />
           <xs:element maxOccurs="1" minOccurs="0" name="use-duplicate-detection" type="xs:boolean" />
           <xs:element maxOccurs="1" minOccurs="0" name="forward-when-no-consumers" type="xs:boolean" />
@@ -643,7 +657,6 @@
        </xs:sequence>
        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
-
     <xs:complexType name="divertType">
        <xs:sequence>
           <xs:element maxOccurs="1" minOccurs="0" name="routing-name" type="xs:string" />
