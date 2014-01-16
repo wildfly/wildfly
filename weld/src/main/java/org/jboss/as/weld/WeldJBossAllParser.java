@@ -38,7 +38,7 @@ import org.jboss.staxmapper.XMLExtendedStreamReader;
  * @author Jozef Hartinger
  *
  */
-public class WeldJBossAllParser implements JBossAllXMLParser<WeldJBossAllConfiguration> {
+class WeldJBossAllParser implements JBossAllXMLParser<WeldJBossAllConfiguration> {
 
     public static final String NAMESPACE = "urn:jboss:weld:1.0";
     public static final QName ROOT_ELEMENT = new QName(NAMESPACE, "weld");
