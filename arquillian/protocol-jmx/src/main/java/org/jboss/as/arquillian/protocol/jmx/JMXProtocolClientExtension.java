@@ -32,5 +32,6 @@ public class JMXProtocolClientExtension implements LoadableExtension {
     public void register(ExtensionBuilder builder) {
         builder.service(Protocol.class, JMXProtocolAS7.class);
         builder.observer(ArquillianServiceDeployer.class);
+        builder.observer(ServerKillerExtension.class);
     }
 }
