@@ -51,14 +51,13 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class JMSQueueAdd extends AbstractAddStepHandler {
 
-    public static final JMSQueueAdd INSTANCE = new JMSQueueAdd();
+    public static final JMSQueueAdd INSTANCE = new JMSQueueAdd(JMSQueueDefinition.ATTRIBUTES);
 
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attributeDefinition : JMSQueueDefinition.ATTRIBUTES) {
-            attributeDefinition.validateAndSet(operation, model);
-        }
+    private JMSQueueAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
+    @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();

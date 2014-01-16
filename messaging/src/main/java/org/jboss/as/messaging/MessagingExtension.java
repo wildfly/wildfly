@@ -22,7 +22,7 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_0;
 import static org.jboss.as.messaging.Namespace.MESSAGING_1_1;
@@ -38,6 +38,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
@@ -106,7 +107,7 @@ public class MessagingExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "messaging";
 
-    static final PathElement SUBSYSTEM_PATH  = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+    static final PathElement SUBSYSTEM_PATH  = pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -204,17 +205,15 @@ public class MessagingExtension implements Extension {
 
         // Messaging paths
         //todo, shouldn't we leverage Path service from AS? see: package org.jboss.as.controller.services.path
-        for (final String path : MessagingPathHandlers.PATHS.keySet()) {
-            ManagementResourceRegistration bindings = serverRegistration.registerSubModel(PathElement.pathElement(PATH, path),
-                    new MessagingSubsystemProviders.PathProvider(path));
-            MessagingPathHandlers.register(bindings, path);
+        for (final String path : PathDefinition.PATHS.keySet()) {
+            ManagementResourceRegistration binding = serverRegistration.registerSubModel(new PathDefinition(pathElement(ModelDescriptionConstants.PATH, path)));
             // Create the path resolver operation
             if (context.getProcessType().isServer()) {
                 final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
-                        .setPathAttribute(MessagingPathHandlers.PATHS.get(path))
-                        .setRelativeToAttribute(MessagingPathHandlers.RELATIVE_TO)
+                        .setPathAttribute(PathDefinition.PATHS.get(path))
+                        .setRelativeToAttribute(PathDefinition.RELATIVE_TO)
                         .build();
-                bindings.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
+                binding.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
             }
         }
 

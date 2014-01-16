@@ -21,13 +21,12 @@
  */
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.MessagingPathHandlers.DEFAULT_LARGE_MESSAGE_DIR;
-import static org.jboss.as.messaging.MessagingPathHandlers.DEFAULT_PAGING_DIR;
-import static org.jboss.as.messaging.MessagingPathHandlers.DEFAULT_RELATIVE_TO;
+import static org.jboss.as.messaging.PathDefinition.DEFAULT_LARGE_MESSAGE_DIR;
+import static org.jboss.as.messaging.PathDefinition.DEFAULT_PAGING_DIR;
+import static org.jboss.as.messaging.PathDefinition.DEFAULT_RELATIVE_TO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.services.path.PathManagerService;

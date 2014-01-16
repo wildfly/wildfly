@@ -46,7 +46,7 @@ public enum Attribute {
    MATCH(CommonAttributes.MATCH),
    NAME(CommonAttributes.NAME),
    PATH(ModelDescriptionConstants.PATH),
-   RELATIVE_TO(MessagingPathHandlers.RELATIVE_TO),
+   RELATIVE_TO(PathDefinition.RELATIVE_TO),
    ROLES_ATTR_NAME(CommonAttributes.ROLES_ATTR_NAME),
    SERVER_ID(InVMTransportDefinition.SERVER_ID),
    SOCKET_BINDING(RemoteTransportDefinition.SOCKET_BINDING),

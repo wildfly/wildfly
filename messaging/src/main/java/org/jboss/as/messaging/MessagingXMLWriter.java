@@ -51,9 +51,9 @@ import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.Element.SOURCE;
 import static org.jboss.as.messaging.Element.TARGET;
-import static org.jboss.as.messaging.MessagingPathHandlers.PATHS;
-import static org.jboss.as.messaging.MessagingPathHandlers.RELATIVE_TO;
 import static org.jboss.as.messaging.Namespace.CURRENT;
+import static org.jboss.as.messaging.PathDefinition.PATHS;
+import static org.jboss.as.messaging.PathDefinition.RELATIVE_TO;
 
 import java.util.ArrayList;
 import java.util.List;

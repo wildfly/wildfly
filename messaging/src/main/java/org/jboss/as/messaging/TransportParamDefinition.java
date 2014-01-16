@@ -25,13 +25,10 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
 import static org.jboss.dmr.ModelType.STRING;
 
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Transport param resource definition.
@@ -47,17 +44,10 @@ public class TransportParamDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    static final OperationStepHandler PARAM_ADD = new HornetQReloadRequiredHandlers.AddStepHandler() {
-        @Override
-        protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-            VALUE.validateAndSet(operation, model);
-        }
-    };
-
     public TransportParamDefinition() {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver("transport-config." + CommonAttributes.PARAM),
-                PARAM_ADD,
+                new HornetQReloadRequiredHandlers.AddStepHandler(VALUE),
                 new HornetQReloadRequiredHandlers.RemoveStepHandler());
     }
 

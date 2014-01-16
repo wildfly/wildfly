@@ -23,6 +23,8 @@
 package org.jboss.as.messaging.jms;
 
 import org.hornetq.jms.server.JMSServerManager;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 
 /**
  * Handler for "add-jndi" and "remove-jndi" operations on a JMS topic resource.
@@ -31,7 +33,7 @@ import org.hornetq.jms.server.JMSServerManager;
  */
 public class JMSTopicUpdateJndiHandler extends AbstractUpdateJndiHandler {
 
-    protected JMSTopicUpdateJndiHandler(boolean addOperation) {
+    private JMSTopicUpdateJndiHandler(boolean addOperation) {
         super(addOperation);
     }
 
@@ -43,5 +45,13 @@ public class JMSTopicUpdateJndiHandler extends AbstractUpdateJndiHandler {
     @Override
     protected void removeJndiName(JMSServerManager jmsServerManager, String resourceName, String jndiName) throws Exception {
         jmsServerManager.removeTopicFromJNDI(resourceName, jndiName);
+    }
+
+    static void registerOperations(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
+        JMSTopicUpdateJndiHandler add = new JMSTopicUpdateJndiHandler(true);
+        add.registerOperation(registry, resolver);
+
+        JMSTopicUpdateJndiHandler remove = new JMSTopicUpdateJndiHandler(false);
+        remove.registerOperation(registry, resolver);
     }
 }

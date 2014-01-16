@@ -40,7 +40,11 @@ import org.jboss.msc.service.ServiceController;
  * @author <a href="http://jmesnil.net">Jeff Mesnil</a> (c) 2012 Red Hat, inc
  */
 interface HornetQReloadRequiredHandlers {
-    abstract static class AddStepHandler extends AbstractAddStepHandler {
+    static class AddStepHandler extends AbstractAddStepHandler {
+
+        public AddStepHandler(AttributeDefinition... attributes) {
+            super(attributes);
+        }
 
         @Override
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {

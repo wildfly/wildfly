@@ -46,11 +46,11 @@ public class ManagementUtil {
         context.getResult().set(converted);
     }
 
-    public static void reportListOfString(OperationContext context, String[] list) {
+    public static void reportListOfStrings(OperationContext context, String[] strings) {
         final ModelNode result = context.getResult();
         result.setEmptyList();
-        for (String tx : list) {
-            result.add(tx);
+        for (String str : strings) {
+            result.add(str);
         }
     }
 

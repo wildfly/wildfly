@@ -7,7 +7,7 @@ import java.util.TreeSet;
 import org.hornetq.core.config.Configuration;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.MessagingPathHandlers;
+import org.jboss.as.messaging.PathDefinition;
 import org.junit.Test;
 
 public class ConfigurationAttributesTestCase extends AttributesTestBase {
@@ -80,7 +80,7 @@ public class ConfigurationAttributesTestCase extends AttributesTestBase {
     @Test
     public void compareAS7ConfigurationHornetQConfigurationProperties() throws Exception {
         SortedSet<String> attributes = findAllConfigurationProperties(CommonAttributes.SIMPLE_ROOT_RESOURCE_ATTRIBUTES);
-        for (String path : MessagingPathHandlers.PATHS.keySet()) {
+        for (String path : PathDefinition.PATHS.keySet()) {
             attributes.add(path);
         }
         convert(attributes);

@@ -46,7 +46,6 @@ import static org.jboss.as.messaging.CommonAttributes.IN_VM_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
 import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
-import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
@@ -881,35 +880,36 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(ADD);
 
+            boolean generic = false;
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case ACCEPTOR: {
-                    acceptorAddress.add(ACCEPTOR, name);
-                    if(socketBinding != null) operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfiguration(reader, operation, true);
+                    operation.get(OP_ADDR).set(acceptorAddress.add(ACCEPTOR, name));
+                    if(socketBinding != null) {
+                        operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
+                    }
+                    generic = true;
                     break;
                 } case NETTY_ACCEPTOR: {
-                    acceptorAddress.add(REMOTE_ACCEPTOR, name);
+                    operation.get(OP_ADDR).set(acceptorAddress.add(REMOTE_ACCEPTOR, name));
                     if(socketBinding == null) {
                         throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
                     operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } case IN_VM_ACCEPTOR: {
-                    acceptorAddress.add(IN_VM_ACCEPTOR, name);
+                    operation.get(OP_ADDR).set(acceptorAddress.add(IN_VM_ACCEPTOR, name));
                     if (serverId != null) {
                         InVMTransportDefinition.SERVER_ID.parseAndSetParameter(serverId, operation, reader);
                     }
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
             }
-            //
-            operation.get(OP_ADDR).set(acceptorAddress);
+
             updates.add(operation);
+            parseTransportConfiguration(reader, operation, generic, updates);
         }
     }
 
@@ -1109,35 +1109,36 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
             final ModelNode operation = new ModelNode();
             operation.get(OP).set(ADD);
 
+            boolean generic = false;
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case CONNECTOR: {
-                    connectorAddress.add(CONNECTOR, name);
-                    if(socketBinding != null) operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfiguration(reader, operation, true);
+                    operation.get(OP_ADDR).set(connectorAddress.add(CONNECTOR, name));
+                    if(socketBinding != null) {
+                        operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
+                    }
+                    generic = true;
                     break;
                 } case NETTY_CONNECTOR: {
-                    connectorAddress.add(REMOTE_CONNECTOR, name);
+                    operation.get(OP_ADDR).set(connectorAddress.add(REMOTE_CONNECTOR, name));
                     if(socketBinding == null) {
                         throw missingRequired(reader, Collections.singleton(Attribute.SOCKET_BINDING));
                     }
                     operation.get(RemoteTransportDefinition.SOCKET_BINDING.getName()).set(socketBinding);
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } case IN_VM_CONNECTOR: {
-                    connectorAddress.add(IN_VM_CONNECTOR, name);
+                    operation.get(OP_ADDR).set(connectorAddress.add(IN_VM_CONNECTOR, name));
                     if (serverId != null) {
                         InVMTransportDefinition.SERVER_ID.parseAndSetParameter(serverId, operation, reader);
                     }
-                    parseTransportConfiguration(reader, operation, false);
                     break;
                 } default: {
                     throw ParseUtils.unexpectedElement(reader);
                 }
             }
 
-            operation.get(OP_ADDR).set(connectorAddress);
             updates.add(operation);
+            parseTransportConfiguration(reader, operation, generic, updates);
         }
     }
 
@@ -1201,7 +1202,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
         // do nothing
     }
 
-    void parseTransportConfiguration(final XMLExtendedStreamReader reader, final ModelNode operation, final boolean generic) throws XMLStreamException {
+    void parseTransportConfiguration(final XMLExtendedStreamReader reader, final ModelNode operation, final boolean generic, List<ModelNode> updates) throws XMLStreamException {
         while(reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             Element element = Element.forName(reader.getLocalName());
             switch(element) {
@@ -1230,7 +1231,12 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                                 throw unexpectedAttribute(reader, n);
                         }
                     }
-                    operation.get(PARAM).add(key, TransportParamDefinition.VALUE.parse(value, reader));
+                    ModelNode addParam = new ModelNode();
+                    addParam.get(OP).set(ADD);
+                    ModelNode transportAddress = operation.get(OP_ADDR).clone();
+                    addParam.get(OP_ADDR).set(transportAddress.add(CommonAttributes.PARAM, key));
+                    TransportParamDefinition.VALUE.parseAndSetParameter(value, addParam, reader);
+                    updates.add(addParam);
                     ParseUtils.requireNoContent(reader);
                     break;
                 } default: {
@@ -1253,7 +1259,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     relativeTo = value;
                     break;
                 case PATH:
-                    path = MessagingPathHandlers.PATHS.get(name).parse(value, reader);
+                    path = PathDefinition.PATHS.get(name).parse(value, reader);
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

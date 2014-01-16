@@ -23,18 +23,13 @@
 package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.messaging.CommonAttributes.POOLED_CONNECTION_FACTORY;
-import static org.jboss.as.messaging.MessagingDescriptions.getDescriptionOnlyOperation;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.ENTRIES;
 
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -46,7 +41,7 @@ import org.jboss.msc.service.ServiceName;
  *         Date: 5/13/11
  *         Time: 3:30 PM
  */
-public class PooledConnectionFactoryRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class PooledConnectionFactoryRemove extends AbstractRemoveStepHandler {
 
     public static final PooledConnectionFactoryRemove INSTANCE = new PooledConnectionFactoryRemove();
 
@@ -65,11 +60,6 @@ public class PooledConnectionFactoryRemove extends AbstractRemoveStepHandler imp
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) {
         // TODO:  RE-ADD SERVICES
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return getDescriptionOnlyOperation(locale, REMOVE, POOLED_CONNECTION_FACTORY);
     }
 
     /**

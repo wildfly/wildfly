@@ -56,9 +56,11 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class QueueAdd extends AbstractAddStepHandler {
 
-    public static final QueueAdd INSTANCE = new QueueAdd();
+    public static final QueueAdd INSTANCE = new QueueAdd(QueueDefinition.ATTRIBUTES);
 
-    private QueueAdd() {}
+    private QueueAdd(AttributeDefinition... attributes) {
+        super(attributes);
+    }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (final AttributeDefinition attributeDefinition : QueueDefinition.ATTRIBUTES) {

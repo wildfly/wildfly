@@ -32,7 +32,7 @@ import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAMES;
 import static org.jboss.as.messaging.CommonAttributes.ROLES_ATTR_NAME;
 import static org.jboss.as.messaging.HornetQActivationService.ignoreOperationIfServerNotActive;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.ManagementUtil.reportListOfString;
+import static org.jboss.as.messaging.ManagementUtil.reportListOfStrings;
 import static org.jboss.as.messaging.ManagementUtil.reportRoles;
 import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
 
@@ -102,7 +102,7 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
                 reportRoles(context, json);
             } else if (QUEUE_NAMES.equals(name)) {
                 String[] queues = addressControl.getQueueNames();
-                reportListOfString(context, queues);
+                reportListOfStrings(context, queues);
             } else if (NUMBER_OF_BYTES_PER_PAGE.equals(name)) {
                 long l = addressControl.getNumberOfBytesPerPage();
                 context.getResult().set(l);
@@ -111,7 +111,7 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult().set(i);
             } else if (BINDING_NAMES.equals(name)) {
                 String[] bindings = addressControl.getBindingNames();
-                reportListOfString(context, bindings);
+                reportListOfStrings(context, bindings);
             } else {
                 // Bug
                 throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);
