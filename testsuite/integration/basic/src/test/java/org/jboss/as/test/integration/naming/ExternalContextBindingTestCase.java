@@ -22,6 +22,8 @@
 
 package org.jboss.as.test.integration.naming;
 
+import java.security.Security;
+
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
@@ -57,6 +59,7 @@ import org.apache.directory.shared.ldap.model.entry.DefaultEntry;
 import org.apache.directory.shared.ldap.model.ldif.LdifEntry;
 import org.apache.directory.shared.ldap.model.ldif.LdifReader;
 import org.apache.directory.shared.ldap.model.schema.SchemaManager;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
@@ -245,6 +248,8 @@ public class ExternalContextBindingTestCase {
         private DirectoryService directoryService;
         private LdapServer ldapServer;
 
+        private boolean removeBouncyCastle = false;
+
         public void fixTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
             final CreateTransport[] createTransports = createLdapServer.transports();
             for (int i = 0; i < createTransports.length; i++) {
@@ -257,6 +262,14 @@ public class ExternalContextBindingTestCase {
 
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            try {
+                if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                    Security.addProvider(new BouncyCastleProvider());
+                    removeBouncyCastle = true;
+                }
+            } catch(SecurityException ex) {
+                LOGGER.warn("Cannot register BouncyCastleProvider", ex);
+            }
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final SchemaManager schemaManager = directoryService.getSchemaManager();
 
@@ -284,6 +297,13 @@ public class ExternalContextBindingTestCase {
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             ldapServer.stop();
             directoryService.shutdown();
+            if(removeBouncyCastle) {
+                try {
+                    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+                } catch(SecurityException ex) {
+                    LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
+                }
+            }
         }
     }
 

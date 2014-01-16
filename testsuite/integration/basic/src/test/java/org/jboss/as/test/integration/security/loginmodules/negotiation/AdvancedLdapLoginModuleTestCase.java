@@ -30,6 +30,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedActionException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -72,6 +73,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -374,6 +376,8 @@ public class AdvancedLdapLoginModuleTestCase {
         private KdcServer kdcServer;
         private LdapServer ldapServer;
 
+        private boolean removeBouncyCastle = false;
+
         /**
          * Creates directory services, starts LDAP server and KDCServer
          *
@@ -384,6 +388,14 @@ public class AdvancedLdapLoginModuleTestCase {
          *      java.lang.String)
          */
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
+            try {
+                if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                    Security.addProvider(new BouncyCastleProvider());
+                    removeBouncyCastle = true;
+                }
+            } catch(SecurityException ex) {
+                LOGGER.warn("Cannot register BouncyCastleProvider", ex);
+            }
             directoryService = DSAnnotationProcessor.getDirectoryService();
             final String hostname = Utils.getCannonicalHost(managementClient);
             final Map<String, String> map = new HashMap<String, String>();
@@ -444,6 +456,13 @@ public class AdvancedLdapLoginModuleTestCase {
             kdcServer.stop();
             directoryService.shutdown();
             FileUtils.deleteDirectory(directoryService.getInstanceLayout().getInstanceDirectory());
+            if(removeBouncyCastle) {
+                try {
+                    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+                } catch(SecurityException ex) {
+                    LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
+                }
+            }
         }
 
     }
