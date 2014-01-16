@@ -48,11 +48,6 @@
         <module>common-domain</module>
         <module>container-remote-domain</module>
         <module>container-managed-domain</module>
-
-        <!--
-        <module>protocol-servlet</module>
-        <module>processor-jsfunit</module>
-        -->
     </modules>
 
     <packaging>pom</packaging>
