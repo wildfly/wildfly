@@ -36,7 +36,7 @@ import org.xml.sax.SAXParseException;
  * @author Jozef Hartinger
  *
  */
-public class PropertyReplacingBeansXmlHandler extends BeansXmlHandler {
+class PropertyReplacingBeansXmlHandler extends BeansXmlHandler {
 
     private final PropertyReplacer replacer;
 

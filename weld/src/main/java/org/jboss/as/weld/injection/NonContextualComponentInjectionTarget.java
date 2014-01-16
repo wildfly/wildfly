@@ -38,7 +38,7 @@ import org.jboss.weld.manager.BeanManagerImpl;
  *
  * @param <T>
  */
-public class NonContextualComponentInjectionTarget<T> extends BasicInjectionTarget<T> {
+class NonContextualComponentInjectionTarget<T> extends BasicInjectionTarget<T> {
 
     public NonContextualComponentInjectionTarget(EnhancedAnnotatedType<T> type, Bean<T> bean, BeanManagerImpl beanManager) {
         super(type, bean, beanManager);
