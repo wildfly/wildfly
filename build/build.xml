@@ -1342,8 +1342,8 @@
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-server"/>
         </module-def>
 
-        <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver">
-            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-httpserver"/>
+        <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow">
+            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-undertow"/>
         </module-def>
 
         <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-udp">
@@ -1354,8 +1354,8 @@
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-client"/>
         </module-def>
 
-        <module-def name="org.jboss.ws.jaxws-jboss-httpserver-httpspi">
-            <maven-resource group="org.jboss.ws.projects" artifact="jaxws-jboss-httpserver-httpspi"/>
+        <module-def name="org.jboss.ws.jaxws-undertow-httpspi">
+            <maven-resource group="org.jboss.ws.projects" artifact="jaxws-undertow-httpspi"/>
         </module-def>
 
         <module-def name="org.jboss.ws.api">
