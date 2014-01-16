@@ -223,6 +223,9 @@ public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
             case RECONNECT_ATTEMPTS_ON_SAME_NODE:
                 handleElementText(reader, element, bridgeAdd);
                 break;
+            case INITIAL_CONNECT_ATTEMPTS:
+                handleElementText(reader, element, "bridge", bridgeAdd);
+                break;
             default:
                 super.handleUnknownBridgeAttribute(reader, element, bridgeAdd);
         }
@@ -236,6 +239,18 @@ public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
                 break;
             default:
                 super.handleUnknownAddressSetting(reader, element, addressSettingsAdd);
+        }
+    }
+
+
+    @Override
+    protected void handleUnknownClusterConnectionAttribute(XMLExtendedStreamReader reader, Element element, ModelNode clusterConnectionAdd) throws XMLStreamException {
+        switch (element) {
+            case INITIAL_CONNECT_ATTEMPTS:
+                handleElementText(reader, element, "cluster", clusterConnectionAdd);
+                break;
+            default:
+                super.handleUnknownClusterConnectionAttribute(reader, element, clusterConnectionAdd);
         }
     }
 }

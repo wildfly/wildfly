@@ -109,11 +109,16 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
                 break;
             case USE_AUTO_RECOVERY:
             case INITIAL_MESSAGE_PACKET_SIZE:
-            case INITIAL_CONNECT_ATTEMPTS:
                 if (!pooled) {
                     throw unexpectedElement(reader);
                 }
                 handleElementText(reader, element, connectionFactory);
+                break;
+            case INITIAL_CONNECT_ATTEMPTS:
+                if (!pooled) {
+                    throw unexpectedElement(reader);
+                }
+                handleElementText(reader, element, "pooled", connectionFactory);
                 break;
             default: {
                 super.handleUnknownConnectionFactoryAttribute(reader, element, connectionFactory, pooled);

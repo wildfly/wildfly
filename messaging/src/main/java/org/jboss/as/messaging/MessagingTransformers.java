@@ -157,11 +157,11 @@ public class MessagingTransformers {
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
         rejectAttributesWithExpression(bridge, BridgeDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
-        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE);
+        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
 
         ResourceTransformationDescriptionBuilder clusterConnection = hornetqServer.addChildResource(ClusterConnectionDefinition.PATH);
         rejectAttributesWithExpression(clusterConnection, ClusterConnectionDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
-        rejectDefinedAttributeWithDefaultValue(clusterConnection, CALL_FAILOVER_TIMEOUT, NOTIFICATION_ATTEMPTS, NOTIFICATION_INTERVAL);
+        rejectDefinedAttributeWithDefaultValue(clusterConnection, CALL_FAILOVER_TIMEOUT, NOTIFICATION_ATTEMPTS, NOTIFICATION_INTERVAL, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
 
         ResourceTransformationDescriptionBuilder groupingHandler = hornetqServer.addChildResource(GroupingHandlerDefinition.PATH);
         rejectAttributesWithExpression(groupingHandler, GroupingHandlerDefinition.TYPE, GroupingHandlerDefinition.GROUPING_HANDLER_ADDRESS, GroupingHandlerDefinition.TIMEOUT);
@@ -252,10 +252,13 @@ public class MessagingTransformers {
         rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE);
+        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
         // the FAILOVER_ON_SERVER_SHUTDOWN attribute has been deprecated in 1.2.0
         // but it was erroneously removed from the model. Discard it always just for 1.2.0
         discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
+
+        ResourceTransformationDescriptionBuilder clusterConnection = hornetqServer.addChildResource(ClusterConnectionDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
 
         ResourceTransformationDescriptionBuilder groupingHandler = hornetqServer.addChildResource(GroupingHandlerDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(groupingHandler, GROUP_TIMEOUT, REAPER_PERIOD);
@@ -284,8 +287,11 @@ public class MessagingTransformers {
         hornetqServer.rejectChildResource(pathElement(CommonAttributes.HTTP_CONNECTOR));
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE);
+        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
         discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
+
+        ResourceTransformationDescriptionBuilder clusterConnection = hornetqServer.addChildResource(ClusterConnectionDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
@@ -304,8 +310,11 @@ public class MessagingTransformers {
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
-        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE);
+        rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
         discardAttribute(bridge, FAILOVER_ON_SERVER_SHUTDOWN);
+
+        ResourceTransformationDescriptionBuilder clusterConnection = hornetqServer.addChildResource(ClusterConnectionDefinition.PATH);
+        rejectDefinedAttributeWithDefaultValue(clusterConnection, ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
 
         ResourceTransformationDescriptionBuilder addressSetting = hornetqServer.addChildResource(AddressSettingDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);

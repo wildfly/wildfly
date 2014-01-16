@@ -188,6 +188,9 @@
                 <retry-interval>${retry.interval:750}</retry-interval>
                 <retry-interval-multiplier>${retry.interval.multiplier:2}</retry-interval-multiplier>
                 <max-retry-interval>${max.retry.interval:3000}</max-retry-interval>
+                <!--
+                <initial-connect-attempts>${initial.connect.attempts:-1}</initial-connect-attempts>
+                -->
                 <reconnect-attempts>${reconnect-attempts:3}</reconnect-attempts>
                 <reconnect-attempts-on-same-node>${reconnect-attempts-on-same-node:5}</reconnect-attempts-on-same-node>
                 <failover-on-server-shutdown>false</failover-on-server-shutdown>
@@ -217,6 +220,9 @@
                 <retry-interval>${retry.interval:987}</retry-interval>
                 <retry-interval-multiplier>${retry.interval.multiplier:3.0}</retry-interval-multiplier>
                 <max-retry-interval>${max.retry.interval:3600}</max-retry-interval>
+                <!--
+                <initial-connect-attempts>${initial.connect.attempts:-1}</initial-connect-attempts>
+                -->
                 <reconnect-attempts>${reconnect.attempts:-1}</reconnect-attempts>
                 <use-duplicate-detection>${use.duplicate.detection:true}</use-duplicate-detection>
                 <forward-when-no-consumers>${forward.when.no.consumers:true}</forward-when-no-consumers>
