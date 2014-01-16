@@ -1125,12 +1125,13 @@
                                                     -->
                                                     <fileset dir="../appclient/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../arquillian/common/src/main/java"><include name="**/*.java"/></fileset>
+                                                    <fileset dir="../arquillian/common-domain/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../arquillian/container-embedded/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../arquillian/container-managed/src/main/java"><include name="**/*.java"/></fileset>
+                                                    <fileset dir="../arquillian/container-managed-domain/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../arquillian/container-remote/src/main/java"><include name="**/*.java"/></fileset>
+                                                    <fileset dir="../arquillian/container-remote-domain/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../arquillian/protocol-jmx/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/protocol-servlet/src/main/java"><include name="**/*.java"/></fileset>
-                                                    <fileset dir="../arquillian/service/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../arquillian/testenricher-msc/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../cli/src/main/java"><include name="**/*.java"/></fileset>
                                                     <fileset dir="../clustering/api/src/main/java"><include name="**/*.java"/></fileset>
