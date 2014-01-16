@@ -239,8 +239,7 @@
         <version.org.jboss.ws.spi>2.2.2.Final</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>2.2.3.Final</version.org.jboss.ws.common>
         <version.org.jboss.ws.common.tools>1.2.0.Final</version.org.jboss.ws.common.tools>
-        <version.org.jboss.ws.cxf>4.2.4.Final</version.org.jboss.ws.cxf>
-        <version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>1.0.1.GA</version.org.jboss.ws.jaxws-jboss-httpserver-httpspi>
+        <version.org.jboss.ws.jaxws-undertow-httpspi>1.0.0.Beta1</version.org.jboss.ws.jaxws-undertow-httpspi>
         <version.org.jboss.xb>2.0.3.GA</version.org.jboss.xb>
         <version.org.jboss.xnio>3.2.0.Final</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
@@ -5870,6 +5869,10 @@
                         <artifactId>stax-api</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>org.jboss.ws.cxf</groupId>
+                        <artifactId>jbossws-cxf-transports-httpserver</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-bindings-soap</artifactId>
                     </exclusion>
@@ -5992,7 +5995,7 @@
 
             <dependency>
                 <groupId>org.jboss.ws.cxf</groupId>
-                <artifactId>jbossws-cxf-transports-httpserver</artifactId>
+                <artifactId>jbossws-cxf-transports-undertow</artifactId>
                 <version>${version.org.jboss.ws.cxf}</version>
                 <exclusions>
                     <exclusion>
@@ -6187,8 +6190,8 @@
 
             <dependency>
                 <groupId>org.jboss.ws.projects</groupId>
-                <artifactId>jaxws-jboss-httpserver-httpspi</artifactId>
-                <version>${version.org.jboss.ws.jaxws-jboss-httpserver-httpspi}</version>
+                <artifactId>jaxws-undertow-httpspi</artifactId>
+                <version>${version.org.jboss.ws.jaxws-undertow-httpspi}</version>
             </dependency>
 
             <dependency>
