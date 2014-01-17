@@ -126,15 +126,15 @@ public class ClientConfigurationImpl implements ModelControllerClientConfigurati
     }
 
     public static ModelControllerClientConfiguration create(final InetAddress address, final int port) {
-        return new ClientConfigurationImpl(address.getHostName(), port, null, null, null, createDefaultExecutor(), true);
+        return new ClientConfigurationImpl(address.getHostAddress(), port, null, null, null, createDefaultExecutor(), true);
     }
 
     public static ModelControllerClientConfiguration create(final InetAddress address, final int port, final CallbackHandler handler){
-        return new ClientConfigurationImpl(address.getHostName(), port, handler, null, null, createDefaultExecutor(), true);
+        return new ClientConfigurationImpl(address.getHostAddress(), port, handler, null, null, createDefaultExecutor(), true);
     }
 
     public static ModelControllerClientConfiguration create(final InetAddress address, final int port, final CallbackHandler handler, final Map<String, String> saslOptions){
-        return new ClientConfigurationImpl(address.getHostName(), port, handler, saslOptions, null, createDefaultExecutor(), true);
+        return new ClientConfigurationImpl(address.getHostAddress(), port, handler, saslOptions, null, createDefaultExecutor(), true);
     }
 
     public static ModelControllerClientConfiguration create(final String hostName, final int port) throws UnknownHostException {
