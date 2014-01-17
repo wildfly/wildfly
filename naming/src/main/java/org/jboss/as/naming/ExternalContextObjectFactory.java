@@ -81,9 +81,15 @@ public class ExternalContextObjectFactory implements ObjectFactory {
         } else {
             Module module = Module.getBootModuleLoader().loadModule(ModuleIdentifier.fromString(initialContextModule));
             loader = module.getClassLoader();
-            initialContextClass = Class.forName(initialContextClassName, true, module.getClassLoader());
-            Constructor ctor = initialContextClass.getConstructor(Hashtable.class);
-            context = (Context) ctor.newInstance(newEnvironment);
+            final ClassLoader currentClassLoader = SecurityActions.getContextClassLoader();
+            try {
+                SecurityActions.setContextClassLoader(loader);
+                initialContextClass = Class.forName(initialContextClassName, true, loader);
+                Constructor ctor = initialContextClass.getConstructor(Hashtable.class);
+                context = (Context) ctor.newInstance(newEnvironment);
+            } finally {
+                SecurityActions.setContextClassLoader(currentClassLoader);
+            }
         }
 
         if (!useProxy) {
