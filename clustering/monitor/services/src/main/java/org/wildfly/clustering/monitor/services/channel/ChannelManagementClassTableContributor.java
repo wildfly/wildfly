@@ -25,12 +25,11 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.jboss.as.clustering.marshalling.ClassTableContributor;
-import org.wildfly.clustering.monitor.services.cache.CacheStateResponse;
 
 public class ChannelManagementClassTableContributor implements ClassTableContributor {
 
     @Override
     public Collection<Class<?>> getKnownClasses() {
-        return Arrays.<Class<?>>asList(ChannelStateCommand.class, CacheStateResponse.class);
+        return Arrays.<Class<?>>asList(ChannelStateCommand.class, ChannelStateResponse.class);
     }
 }
