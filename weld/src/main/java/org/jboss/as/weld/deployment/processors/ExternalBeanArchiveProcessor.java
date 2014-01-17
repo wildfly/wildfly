@@ -63,8 +63,9 @@ import org.jboss.weld.xml.BeansXmlParser;
 /**
  * Deployment processor that builds bean archives from external deployments.
  * <p/>
- * This is only run at the top level, as multiple sub deployments can reference the same beans.xml information, so we have to
- * iterate through all bean deployment archives in this processor, to prevent beans.xml from being potentially parsed twice.
+ * This is only run at the top level, as multiple sub deployments can reference the same
+ * beans.xml information, so we have to iterate through all bean deployment archives in this processor, to prevent
+ * beans.xml from being potentially parsed twice.
  * <p/>
  *
  * @author Stuart Douglas
@@ -100,8 +101,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
 
         for (DeploymentUnit deployment : deploymentUnits) {
             try {
-                final ExplicitBeanArchiveMetadataContainer weldDeploymentMetadata = deployment
-                        .getAttachment(ExplicitBeanArchiveMetadataContainer.ATTACHMENT_KEY);
+                final ExplicitBeanArchiveMetadataContainer weldDeploymentMetadata = deployment.getAttachment(ExplicitBeanArchiveMetadataContainer.ATTACHMENT_KEY);
                 if (weldDeploymentMetadata != null) {
                     for (ExplicitBeanArchiveMetadata md : weldDeploymentMetadata.getBeanArchiveMetadata().values()) {
                         existing.add(md.getBeansXmlFile().toURL());
@@ -114,10 +114,9 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                 throw new DeploymentUnitProcessingException(e);
             }
 
-            EEModuleDescription moduleDesc = deployment
-                    .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-            if (moduleDesc != null) {
-                for (ComponentDescription component : moduleDesc.getComponentDescriptions()) {
+            EEModuleDescription moduleDesc = deployment.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+            if(moduleDesc != null) {
+                for(ComponentDescription component : moduleDesc.getComponentDescriptions()) {
                     componentClassNames.add(component.getComponentClassName());
                 }
             }
@@ -157,13 +156,12 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                     final UrlScanner urlScanner = new UrlScanner();
 
                     final List<String> discoveredClasses = new ArrayList<String>();
-                    if (!urlScanner.handleBeansXml(url, discoveredClasses)) {
+                    if(!urlScanner.handleBeansXml(url, discoveredClasses)) {
                         continue;
                     }
                     discoveredClasses.removeAll(componentClassNames);
 
-                    final BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(new HashSet<String>(discoveredClasses),
-                            beansXml, dependency, beanArchiveIdPrefix + url.toExternalForm(), BeanArchiveType.EXTERNAL);
+                    final BeanDeploymentArchiveImpl bda = new BeanDeploymentArchiveImpl(new HashSet<String>(discoveredClasses), beansXml, dependency, beanArchiveIdPrefix + url.toExternalForm(), BeanArchiveType.EXTERNAL);
                     WeldLogger.DEPLOYMENT_LOGGER.beanArchiveDiscovered(bda);
 
                     final JpaInjectionServices jpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit);
@@ -215,8 +213,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
 
     }
 
-    private BeansXml parseBeansXml(URL beansXmlFile, BeansXmlParser parser, final DeploymentUnit deploymentUnit)
-            throws DeploymentUnitProcessingException {
+    private BeansXml parseBeansXml(URL beansXmlFile, BeansXmlParser parser, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         return parser.parse(beansXmlFile);
     }
 }
