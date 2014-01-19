@@ -51,6 +51,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
 import org.jboss.sasl.util.UsernamePasswordHashUtil;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -93,6 +94,8 @@ public class RespawnTestCase {
 
     static TestControllerUtils utils;
     static TestControllerClient client;
+
+    private static final Logger log = Logger.getLogger(RespawnTestCase.class);
 
     @BeforeClass
     public static void createProcessController() throws IOException, URISyntaxException, NoSuchAlgorithmException {
@@ -165,6 +168,8 @@ public class RespawnTestCase {
         args.add(address);
         args.add("--pc-address");
         args.add(address);
+
+        log.info(args.toString());
 
         processController = Main.start(args.toArray(new String[args.size()]));
     }
