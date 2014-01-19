@@ -72,6 +72,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xnio.IoUtils;
 
+import org.jboss.logging.Logger;
+
 /**
  * RespawnTestCase
  *
@@ -93,6 +95,8 @@ public class RespawnTestCase {
 
     static TestControllerUtils utils;
     static TestControllerClient client;
+
+    private static final Logger log = Logger.getLogger(RespawnTestCase.class);
 
     @BeforeClass
     public static void createProcessController() throws IOException, URISyntaxException, NoSuchAlgorithmException {
@@ -165,6 +169,8 @@ public class RespawnTestCase {
         args.add(address);
         args.add("--pc-address");
         args.add(address);
+
+        log.info(args.toString());
 
         processController = Main.start(args.toArray(new String[args.size()]));
     }
