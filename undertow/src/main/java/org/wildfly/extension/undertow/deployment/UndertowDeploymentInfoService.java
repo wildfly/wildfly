@@ -237,8 +237,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             //TODO: make this configurable
             //in most cases flush just hurts performance for no good reason
-            //TODO: we should also make this smarter, so a read results in a flush
-            deploymentInfo.setIgnoreFlush(false);
+            //deploymentInfo.setIgnoreFlush(false);
 
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             ServletSessionConfig config = null;
