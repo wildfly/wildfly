@@ -88,6 +88,7 @@
         <module name="com.sun.xml.messaging.saaj" services="export" export="true"/>
         <module name="org.apache.ws.security" export="true"/>
         <module name="org.apache.santuario.xmlsec" export="true"/>
+        <module name="org.bouncycastle" export="true"/>
         <module name="org.springframework.spring" optional="true" export="true">
           <imports>
             <include path="META-INF"/>
