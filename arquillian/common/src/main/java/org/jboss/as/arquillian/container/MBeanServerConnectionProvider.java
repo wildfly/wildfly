@@ -16,6 +16,7 @@
  */
 package org.jboss.as.arquillian.container;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -26,6 +27,7 @@ import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 
 import org.jboss.logging.Logger;
+import org.xnio.IoUtils;
 
 /**
  * A provider for the JSR160 connection.
@@ -33,7 +35,7 @@ import org.jboss.logging.Logger;
  * @author Thomas.Diesler@jboss.com
  * @since 03-Dec-2010
  */
-public final class MBeanServerConnectionProvider {
+public final class MBeanServerConnectionProvider implements Closeable {
 
     private static final Logger log = Logger.getLogger(MBeanServerConnectionProvider.class);
     private final InetAddress hostAddr;
@@ -80,5 +82,10 @@ public final class MBeanServerConnectionProvider {
             }
         }
         throw new IllegalStateException("MBeanServerConnection not available");
+    }
+
+    @Override
+    public void close() throws IOException {
+        IoUtils.safeClose(jmxConnector);
     }
 }

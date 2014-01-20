@@ -26,9 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
-import javax.management.MBeanServerConnection;
-import javax.management.ObjectName;
-import javax.management.remote.JMXConnectorFactory;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -43,6 +40,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
+import javax.management.MBeanServerConnection;
+import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
+import javax.management.remote.JMXConnectorFactory;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -61,6 +63,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoUtils;
 
 /**
  * Tests deployment to a standalone server, both via the client API and by the
@@ -551,65 +554,70 @@ public class ServerInModuleDeploymentTestCase {
     }
 
     private void testDeployments(ModelControllerClient client, boolean fromFile, DeploymentExecutor deploymentExecutor) throws Exception {
-        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
-        final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
-
-        // NOTE: Use polling until we have jmx over remoting
-        // final TestNotificationListener listener = new TestNotificationListener(name);
-        // mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener, null, null);
+        final JMXConnector connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL());
         try {
-            // Initial deploy
-            Set<String> initialHashes = null;
-            if (!fromFile) {
-                initialHashes = getAllDeploymentHashesFromContentDir(true);
-            }
-            deploymentExecutor.initialDeploy();
+            final MBeanServerConnection mbeanServer = connector.getMBeanServerConnection();
+            final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
 
-            //listener.await();
-            Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
-
-            Set<String> currentHashes = null;
-            String initialDeploymentHash = null;
-            if (!fromFile) {
-                currentHashes = getAllDeploymentHashesFromContentDir(false);
-                currentHashes.removeAll(initialHashes);
-                Assert.assertEquals(1, currentHashes.size());
-                initialDeploymentHash = currentHashes.iterator().next();
-            }
-
-            // Full replace
-            // listener.reset(2);
-            deploymentExecutor.fullReplace();
-
-            // listener.await();
-            Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
-
-            if (!fromFile) {
-                currentHashes = getAllDeploymentHashesFromContentDir(false);
-                Assert.assertFalse(currentHashes.contains(initialDeploymentHash)); //Should have been deleted when replaced
-                currentHashes.removeAll(initialHashes);
-                Assert.assertEquals(1, currentHashes.size());
-            }
-
-
-            // Undeploy
-            // listener.reset(1);
-            deploymentExecutor.undeploy();
-            // listener.await();
+            // NOTE: Use polling until we have jmx over remoting
+            // final TestNotificationListener listener = new TestNotificationListener(name);
+            // mbeanServer.addNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener, null, null);
             try {
-                long start = System.currentTimeMillis();
-                while (System.currentTimeMillis() - start < 10000) {
-                    mbeanServer.getMBeanInfo(name);
-                    Thread.sleep(100);
+                // Initial deploy
+                Set<String> initialHashes = null;
+                if (!fromFile) {
+                    initialHashes = getAllDeploymentHashesFromContentDir(true);
                 }
-                Assert.fail("Should not have found MBean");
-            } catch (Exception expected) {
-            }
-            if (!fromFile) {
-                Assert.assertEquals(initialHashes, getAllDeploymentHashesFromContentDir(false));
+                deploymentExecutor.initialDeploy();
+
+                //listener.await();
+                Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
+
+                Set<String> currentHashes = null;
+                String initialDeploymentHash = null;
+                if (!fromFile) {
+                    currentHashes = getAllDeploymentHashesFromContentDir(false);
+                    currentHashes.removeAll(initialHashes);
+                    Assert.assertEquals(1, currentHashes.size());
+                    initialDeploymentHash = currentHashes.iterator().next();
+                }
+
+                // Full replace
+                // listener.reset(2);
+                deploymentExecutor.fullReplace();
+
+                // listener.await();
+                Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
+
+                if (!fromFile) {
+                    currentHashes = getAllDeploymentHashesFromContentDir(false);
+                    Assert.assertFalse(currentHashes.contains(initialDeploymentHash)); //Should have been deleted when replaced
+                    currentHashes.removeAll(initialHashes);
+                    Assert.assertEquals(1, currentHashes.size());
+                }
+
+
+                // Undeploy
+                // listener.reset(1);
+                deploymentExecutor.undeploy();
+                // listener.await();
+                try {
+                    long start = System.currentTimeMillis();
+                    while (System.currentTimeMillis() - start < 10000) {
+                        mbeanServer.getMBeanInfo(name);
+                        Thread.sleep(100);
+                    }
+                    Assert.fail("Should not have found MBean");
+                } catch (Exception expected) {
+                }
+                if (!fromFile) {
+                    Assert.assertEquals(initialHashes, getAllDeploymentHashesFromContentDir(false));
+                }
+            } finally {
+                //mbeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener);
             }
         } finally {
-            //mbeanServer.removeNotificationListener(MBeanServerDelegate.DELEGATE_NAME, listener);
+            IoUtils.safeClose(connector);
         }
     }
 
