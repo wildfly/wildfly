@@ -68,7 +68,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="scan-interval" type="xs:int" use="optional" default="0">
+            <xs:attribute name="scan-interval" type="xs:int" use="optional" default="0">
             <xs:annotation>
                 <xs:documentation>Periodic interval, in milliseconds, at which the repository
                     should be scanned for changes. A value of less than 1 indicates the
