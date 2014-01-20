@@ -37,6 +37,7 @@ import java.io.OutputStream;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -54,9 +55,9 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoUtils;
 
 /**
  * Test that the deployment scanner still works even with RBAC enabled.
@@ -196,27 +197,32 @@ public class DeploymentScannerTestCase {
     }
 
     private void testDeployments(DeploymentExecutor deploymentExecutor) throws Exception {
-        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
-        final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
-
-
-        // Initial deploy
-        deploymentExecutor.initialDeploy();
-
-        //listener.await();
-        Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
-
-        // Undeploy
-        deploymentExecutor.undeploy();
-
+        final JMXConnector connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL());
         try {
-            long start = System.currentTimeMillis();
-            while (System.currentTimeMillis() - start < 10000) {
-                mbeanServer.getMBeanInfo(name);
-                Thread.sleep(100);
+            final MBeanServerConnection mbeanServer = connector.getMBeanServerConnection();
+            final ObjectName name = new ObjectName("jboss.test:service=testdeployments");
+
+
+            // Initial deploy
+            deploymentExecutor.initialDeploy();
+
+            //listener.await();
+            Assert.assertNotNull(mbeanServer.getMBeanInfo(name));
+
+            // Undeploy
+            deploymentExecutor.undeploy();
+
+            try {
+                long start = System.currentTimeMillis();
+                while (System.currentTimeMillis() - start < 10000) {
+                    mbeanServer.getMBeanInfo(name);
+                    Thread.sleep(100);
+                }
+                Assert.fail("Should not have found MBean");
+            } catch (Exception expected) {
             }
-            Assert.fail("Should not have found MBean");
-        } catch (Exception expected) {
+        } finally {
+            IoUtils.safeClose(connector);
         }
     }
 

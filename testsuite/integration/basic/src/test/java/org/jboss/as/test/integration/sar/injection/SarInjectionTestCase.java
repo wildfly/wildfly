@@ -24,9 +24,9 @@ package org.jboss.as.test.integration.sar.injection;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 
-import org.junit.Assert;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -35,8 +35,10 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.sar.injection.pojos.A;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoUtils;
 
 
 /**
@@ -61,14 +63,18 @@ public final class SarInjectionTestCase {
 
     @Test
     public void testMBean() throws Exception {
-        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
-        final ObjectName objectName = new ObjectName("jboss:name=POJOService");
-        Assert.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "Count"));
-        Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "CreateCalled"));
-        Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "StartCalled"));
-        Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "StopCalled"));
-        Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "DestroyCalled"));
-
+        final JMXConnector connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL());
+        try {
+            final MBeanServerConnection mbeanServer = connector.getMBeanServerConnection();
+            final ObjectName objectName = new ObjectName("jboss:name=POJOService");
+            Assert.assertTrue(2 == (Integer) mbeanServer.getAttribute(objectName, "Count"));
+            Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "CreateCalled"));
+            Assert.assertTrue((Boolean) mbeanServer.getAttribute(objectName, "StartCalled"));
+            Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "StopCalled"));
+            Assert.assertFalse((Boolean) mbeanServer.getAttribute(objectName, "DestroyCalled"));
+        } finally {
+            IoUtils.safeClose(connector);
+        }
     }
 
 }

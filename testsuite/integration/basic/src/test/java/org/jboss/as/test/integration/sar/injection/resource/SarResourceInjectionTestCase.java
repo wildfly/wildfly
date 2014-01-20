@@ -25,9 +25,8 @@ package org.jboss.as.test.integration.sar.injection.resource;
 import javax.annotation.Resource;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
-
-import org.junit.Assert;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -36,8 +35,10 @@ import org.jboss.as.arquillian.api.ContainerResource;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoUtils;
 
 /**
  * [AS7-1699] Tests {@link Resource} injection on MBeans
@@ -60,10 +61,14 @@ public final class SarResourceInjectionTestCase {
 
     @Test
     public void testMBean() throws Exception {
-        final MBeanServerConnection mbeanServer = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL())
-                .getMBeanServerConnection();
-        final ObjectName objectName = new ObjectName("jboss:name=X");
-        Assert.assertTrue((Boolean) mbeanServer.invoke(objectName, "resourcesInjected", null, null));
+        final JMXConnector connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL());
+        try {
+            final MBeanServerConnection mbeanServer = connector.getMBeanServerConnection();
+            final ObjectName objectName = new ObjectName("jboss:name=X");
+            Assert.assertTrue((Boolean) mbeanServer.invoke(objectName, "resourcesInjected", null, null));
+        } finally {
+            IoUtils.safeClose(connector);
+        }
     }
 
 }
