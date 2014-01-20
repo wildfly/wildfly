@@ -30,13 +30,13 @@
     <server name="default-server" default-host="localhost" servlet-container="myContainer">
         <ajp-listener name="ajp-connector" socket-binding="ajp" redirect-socket="ajps"/>
         <http-listener name="default" socket-binding="http" certificate-forwarding="true" always-set-keep-alive="${prop.smth:false}" redirect-socket="ajp" proxy-address-forwarding="${prop.smth:false}"/>
-        <http-listener name="second" socket-binding="http" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
+        <http-listener name="second" socket-binding="http-2" max-cookies="100" max-parameters="30" url-charset="windows-1250" max-post-size="100000" max-headers="30"/>
         <https-listener name="https" socket-binding="https" security-realm="UndertowRealm" verify-client="REQUESTED"/>
-        <https-listener name="https-2" socket-binding="https" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA"/>
+        <https-listener name="https-2" socket-binding="https-2" security-realm="UndertowRealm" enabled-cipher-suites="ALL:!MD5:!DHA"/>
 
         <host name="default-host" alias="localhost, some.host" default-web-module="something.war">
             <location name="/" handler="welcome-content">
-                <filter-ref name="security-other"/>
+                <!--<filter-ref name="security-other"/>-->
                 <filter-ref name="limit-connections"/>
             </location>
             <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access"/>
@@ -91,7 +91,7 @@
         </reverse-proxy>
     </handlers>
     <filters>
-        <basic-auth name="security-other" security-domain="other"/>
+        <!--<basic-auth name="security-other" security-domain="other"/>-->
         <connection-limit name="limit-connections" max-concurrent-requests="15000"/>
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
     </filters>

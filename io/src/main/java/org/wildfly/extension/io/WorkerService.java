@@ -41,7 +41,7 @@ public class WorkerService implements Service<XnioWorker> {
     private final OptionMap options;
     private volatile XnioWorker worker;
 
-    protected WorkerService(OptionMap options) {
+    public WorkerService(OptionMap options) {
         this.options = options;
     }
 
