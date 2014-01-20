@@ -42,6 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.xml.parsers.DocumentBuilder;
@@ -60,15 +61,14 @@ import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
+import org.xnio.IoUtils;
 
 /**
  * @author baranowb
@@ -88,6 +88,7 @@ public class JMXPropertyEditorsTestCase {
     private ManagementClient managementClient;
 
     private MBeanServerConnection connection;
+    private JMXConnector connector;
     private static final String USER_SYS_PROP = System.getProperty("os.name","linux").contains("indows")?"USERNAME":"USER";
 
     @Before
@@ -99,15 +100,13 @@ public class JMXPropertyEditorsTestCase {
     @After
     public void closeConnection() throws Exception {
         connection = null;
+        IoUtils.safeClose(connector);
     }
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {
         final String address = managementClient.getMgmtAddress()+":"+managementClient.getMgmtPort();
-//        return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://localhost:9999"))
-//                .getMBeanServerConnection();
-        return JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://"+address))
-                .getMBeanServerConnection();
-
+        connector = JMXConnectorFactory.connect(new JMXServiceURL("service:jmx:remoting-jmx://"+address));
+        return connector.getMBeanServerConnection();
     }
 
     private static Asset createServiceAsset(String attributeName, String attributeValue) {

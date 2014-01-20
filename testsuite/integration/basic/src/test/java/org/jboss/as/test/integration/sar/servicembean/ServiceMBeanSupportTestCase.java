@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.sar.servicembean;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 
 import org.jboss.arquillian.container.test.api.Deployer;
@@ -43,7 +44,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test MBeans which implement {@link ServiceMBean} and extend {@link ServiceMBeanSupport}.
- * 
+ *
  * @author Eduardo Martins
  */
 @RunWith(Arquillian.class)
@@ -77,14 +78,14 @@ public class ServiceMBeanSupportTestCase {
 
     /**
      * Tests that invocation on a service deployed within a .sar, inside a .ear without an application.xml, is successful.
-     * 
+     *
      * @throws Exception
      */
-    @Test    
+    @Test
     public void testSarWithServiceMBeanSupport() throws Exception {
         // get mbean server
-        final MBeanServerConnection mBeanServerConnection = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL())
-                .getMBeanServerConnection();
+        final JMXConnector connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL());
+        final MBeanServerConnection mBeanServerConnection = connector.getMBeanServerConnection();
         try {
             // deploy the unmanaged sar
             deployer.deploy(ServiceMBeanSupportTestCase.UNMANAGED_SAR_DEPLOYMENT_NAME);
@@ -112,7 +113,7 @@ public class ServiceMBeanSupportTestCase {
         attribute = "DestroyServiceInvoked";
         result = (Boolean) mBeanServerConnection.getAttribute(new ObjectName("jboss:name=service-mbean-support-test-result"),
                 attribute);
-        Assert.assertTrue("Unexpected result for " + attribute + ": " + result, result);        
+        Assert.assertTrue("Unexpected result for " + attribute + ": " + result, result);
     }
 
 }

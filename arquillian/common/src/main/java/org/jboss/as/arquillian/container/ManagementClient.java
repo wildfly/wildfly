@@ -349,7 +349,8 @@ public class ManagementClient {
                     // Only set this is there is a username as it disabled local authentication.
                     env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
                 }
-                connection = new MBeanConnectionProxy(JMXConnectorFactory.connect(getRemoteJMXURL(), env).getMBeanServerConnection());
+                connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
+                connection = new MBeanConnectionProxy(connector.getMBeanServerConnection());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

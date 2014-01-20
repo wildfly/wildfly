@@ -442,7 +442,8 @@ public class ManagementClient {
             try {
                 final HashMap<String, Object> env = new HashMap<String, Object>();
                 env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
-                connection = JMXConnectorFactory.connect(getRemoteJMXURL(), env).getMBeanServerConnection();
+                connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
+                connection = connector.getMBeanServerConnection();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
