@@ -56,7 +56,20 @@
         <module name="org.apache.santuario.xmlsec" />
         <module name="org.joda.time" />
         <module name="org.opensaml" />
-        <module name="org.springframework.spring" optional="true"/>
-        <module name="org.apache.cxf" export="true"/>
+        <module name="org.springframework.spring" optional="true">
+          <imports>
+            <include path="META-INF"/>
+          </imports>
+        </module>
+        <module name="org.apache.cxf" export="true">
+          <imports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </imports>
+          <exports>
+            <include path="META-INF/cxf"/>
+            <include path="META-INF"/>
+          </exports>
+        </module>
     </dependencies>
 </module>
