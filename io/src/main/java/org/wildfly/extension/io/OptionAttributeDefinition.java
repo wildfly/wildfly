@@ -78,6 +78,8 @@ public class OptionAttributeDefinition extends SimpleAttributeDefinition {
                 builder.set(option, value.asBoolean());
             } else if (optionType.isEnum()) {
                 builder.set(option, option.parseValue(value.asString(), option.getClass().getClassLoader()));
+            }else if (option.getClass().getSimpleName().equals("SequenceOption")) {
+                builder.setSequence(option, value.asString().split(","));
             } else if (getType() == ModelType.STRING) {
                 builder.set(option, value.asString());
             } else {
@@ -116,9 +118,9 @@ public class OptionAttributeDefinition extends SimpleAttributeDefinition {
         private void setType() {
             try {
                 final Field typeField;
-                if (option.getClass().getSimpleName().equals("SequenceOption")){
+                if (option.getClass().getSimpleName().equals("SequenceOption")) {
                     typeField = option.getClass().getDeclaredField("elementType");
-                }else{
+                } else {
                     typeField = option.getClass().getDeclaredField("type");
                 }
 
