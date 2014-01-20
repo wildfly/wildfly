@@ -82,16 +82,6 @@
             <include path="META-INF"/>
           </exports>
         </module>
-        <module name="org.apache.cxf" export="true">
-          <imports>
-            <include path="META-INF/cxf"/>
-            <include path="META-INF"/>
-          </imports>
-          <exports>
-            <include path="META-INF/cxf"/>
-            <include path="META-INF"/>
-          </exports>
-        </module>
         <module name="org.apache.xalan" services="export" export="true"/>
         <module name="org.apache.xerces" services="export" export="true"/>
         <module name="org.jboss.as.webservices" services="export" export="true"/>
