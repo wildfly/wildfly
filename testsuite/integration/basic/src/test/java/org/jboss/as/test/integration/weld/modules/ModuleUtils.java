@@ -37,7 +37,6 @@ import javax.enterprise.inject.spi.Extension;
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexWriter;
 import org.jboss.jandex.Indexer;
-import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -45,11 +44,10 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.xnio.IoUtils;
 
-class ModuleUtils {
+public class ModuleUtils {
 
-    private static final Logger log = Logger.getLogger(ModuleUtils.class.getName());
+    public static void createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
 
-    static void createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
         File testModuleRoot = new File(getModulePath(), "test/" + moduleName);
         if (testModuleRoot.exists()) {
             throw new IllegalArgumentException(testModuleRoot + " already exists");
@@ -59,7 +57,7 @@ class ModuleUtils {
             throw new IllegalArgumentException("Could not create " + file);
         }
 
-        URL url = ModuleUtils.class.getResource(moduleXml);
+        URL url = classes[0].getResource(moduleXml);
         if (url == null) {
             throw new IllegalStateException("Could not find module.xml: " + moduleXml);
         }
@@ -72,7 +70,7 @@ class ModuleUtils {
 
         Indexer indexer = new Indexer();
         for (Class<?> clazz : classes) {
-            try (final InputStream resource = ModuleUtils.class.getResourceAsStream(clazz.getSimpleName() + ".class")) {
+            try (final InputStream resource = clazz.getResourceAsStream(clazz.getSimpleName() + ".class")) {
                 indexer.index(resource);
             }
         }
@@ -104,7 +102,7 @@ class ModuleUtils {
         }
     }
 
-    static File getModulePath() {
+    public static File getModulePath() {
         String modulePath = System.getProperty("module.path", null);
         if (modulePath == null) {
             String jbossHome = System.getProperty("jboss.home", null);
@@ -125,7 +123,7 @@ class ModuleUtils {
         return moduleDir;
     }
 
-    static void deleteRecursively(File file) {
+    public static void deleteRecursively(File file) {
         if (file.exists()) {
             if (file.isDirectory()) {
                 for (String name : file.list()) {
@@ -150,8 +148,7 @@ class ModuleUtils {
                 extensions.add((Class<Extension>) clazz);
             }
         }
-        if (log.isTraceEnabled())
-            log.trace("collected extensions: " + extensions);
+
         if (!extensions.isEmpty()) {
             Class<Extension>[] a = (Class<Extension>[]) Array.newInstance(Extension.class.getClass(), 0);
             jar.addAsServiceProvider(Extension.class, extensions.toArray(a));
