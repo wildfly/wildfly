@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -18,9 +19,11 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoUtils;
 
 /**
  * Tests that the MBean instance lifecycle has the correct TCCL set. The TCCL is expected to be the classloader of the deployment through which the MBean was deployed.
@@ -39,6 +42,8 @@ public class MBeanTCCLTestCase {
 
     @ContainerResource
     private ManagementClient managementClient;
+
+    private JMXConnector connector;
 
     /**
      * .ear
@@ -82,6 +87,11 @@ public class MBeanTCCLTestCase {
         return ear;
     }
 
+    @After
+    public void closeConnector() {
+        IoUtils.safeClose(connector);
+    }
+
     /**
      * Tests the MBean was deployed successfully and can be invoked. The fact that the MBean deployed successfully is a sign that the TCCL access from within the MBean code, worked fine
      *
@@ -99,7 +109,8 @@ public class MBeanTCCLTestCase {
     }
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {
-        return JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
+        connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL());
+        return connector.getMBeanServerConnection();
 
     }
 

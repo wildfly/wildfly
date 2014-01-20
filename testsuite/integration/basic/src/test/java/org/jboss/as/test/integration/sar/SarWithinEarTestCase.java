@@ -26,6 +26,7 @@ import java.io.IOException;
 
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
+import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -37,9 +38,11 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xnio.IoUtils;
 
 /**
  * Test that a service configured in a .sar within a .ear deployment works fine, both when the .ear contains a application.xml
@@ -58,6 +61,12 @@ public class SarWithinEarTestCase {
     @ContainerResource
     private ManagementClient managementClient;
 
+    private JMXConnector connector;
+
+    @After
+    public void closeConnector() {
+        IoUtils.safeClose(connector);
+    }
     /**
      * Create a .ear, without an application.xml, with a nested .sar deployment
      *
@@ -124,7 +133,8 @@ public class SarWithinEarTestCase {
     }
 
     private MBeanServerConnection getMBeanServerConnection() throws IOException {
-        return JMXConnectorFactory.connect(managementClient.getRemoteJMXURL()).getMBeanServerConnection();
+        connector = JMXConnectorFactory.connect(managementClient.getRemoteJMXURL());
+        return connector.getMBeanServerConnection();
 
     }
 }
