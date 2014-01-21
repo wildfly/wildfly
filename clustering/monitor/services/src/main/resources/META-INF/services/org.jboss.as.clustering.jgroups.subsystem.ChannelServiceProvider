@@ -1,4 +1,2 @@
-org.wildfly.clustering.monitor.services.channel.ChannelManagementControllerServiceProvider
 org.wildfly.clustering.monitor.services.channel.ChannelManagementServiceProvider
-org.wildfly.clustering.monitor.services.cache.CacheManagementControllerServiceProvider
 org.wildfly.clustering.monitor.services.cache.CacheManagementServiceProvider

@@ -55,7 +55,7 @@ public class ChannelNodeFactoryProvider implements ChannelServiceProvider {
         ServiceController<?> controller = target.addService(getServiceName(cluster), new ChannelNodeFactoryService(channel))
                 .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
                 .addDependency(ChannelService.getServiceName(cluster), Channel.class, channel)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install()
         ;
         return Collections.<ServiceController<?>>singleton(controller);

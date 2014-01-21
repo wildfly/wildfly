@@ -51,7 +51,7 @@ public class ChannelManagementServiceProvider implements ChannelServiceProvider 
         ServiceController<ChannelManagement> controller = AsynchronousService.addService(target, name, service)
                 // we use this injected reference
                .addDependency(CommandDispatcherFactoryProvider.getServiceName(cluster), CommandDispatcherFactory.class, dispatcherFactory)
-               .setInitialMode(ServiceController.Mode.ON_DEMAND)
+               .setInitialMode(ServiceController.Mode.PASSIVE)
                .install();
         return Collections.<ServiceController<?>>singleton(controller);
     }

@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -46,10 +47,11 @@ public class CacheManagementServiceProvider implements ChannelServiceProvider {
         ServiceName name = CacheManagementService.getServiceName(containerName);
         InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<CommandDispatcherFactory>();
         Service<CacheManagement> service = new CacheManagementService(name, dispatcherFactory, containerName);
-        ServiceController<CacheManagement> controller = target.addService(name, service)
+        // start asynchronously to be safe
+        ServiceController<CacheManagement> controller = AsynchronousService.addService(target, name, service)
                 // we use this injected reference
                 .addDependency(CommandDispatcherFactoryProvider.getServiceName(containerName), CommandDispatcherFactory.class, dispatcherFactory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install()
         ;
         return Collections.<ServiceController<?>>singleton(controller);
