@@ -1,0 +1,40 @@
+<?xml version='1.0' encoding='UTF-8'?>
+
+<!--
+   WildFly Command-line Interface configuration.
+-->
+<jboss-cli xmlns="urn:jboss:cli:1.3">
+
+    <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
+    <default-controller>    	
+        <host>${hostname}</host>
+        <port>9999</port>
+    </default-controller>
+    
+    <validate-operation-requests>true</validate-operation-requests>
+    
+    <!-- whether to resolve system properties specified as command argument or operation parameter values
+         in the CLI VM before sending the operation requests to the controller -->
+    <resolve-parameter-values>false</resolve-parameter-values>
+    
+    <!-- Command and operation history log configuration -->
+    <history>
+        <enabled>true</enabled>
+        <file-name>.jboss-cli-history</file-name>
+        <file-dir>${user.home}</file-dir>
+        <max-size>500</max-size>
+    </history>
+    
+    <!-- Whether to write info and error messages to the terminal output -->
+    <silent>false</silent>
+   
+    <ssl>	
+      ${vaultConfig}  
+	  <key-store>${keystore}</key-store>
+	  <key-store-password>${password}</key-store-password>
+	  <trust-store>${truststore}</trust-store>
+	  <trust-store-password>${password}</trust-store-password>
+	  <modify-trust-store>true</modify-trust-store>
+	</ssl>    
+       
+</jboss-cli>

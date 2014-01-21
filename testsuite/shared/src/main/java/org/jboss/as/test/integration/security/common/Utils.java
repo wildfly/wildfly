@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URI;
@@ -36,9 +37,11 @@ import java.security.MessageDigest;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import javax.security.auth.Subject;
@@ -47,7 +50,9 @@ import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.text.StrSubstitutor;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -820,7 +825,7 @@ public class Utils {
         return sb.toString();
     }
 
-    /**
+     /**
      * Strips square brackets - '[' and ']' from the given string. It can be used for instance to remove the square brackets
      * around IPv6 address in a URL.
      *
@@ -830,6 +835,7 @@ public class Utils {
     public static String stripSquareBrackets(final String str) {
         return StringUtils.strip(str, "[]");
     }
+
 
     /**
      * Fixes/replaces LDAP bind address in the CreateTransport annotation of ApacheDS.
@@ -845,5 +851,108 @@ public class Utils {
             mgCreateTransport.setAddress(address != null ? address : "localhost");
             createTransports[i] = mgCreateTransport;
         }
+    }
+
+    /**
+     * Copies server and clients keystores and truststores from this package to
+     * the given folder.
+     *
+     * @param workingFolder
+     *            folder to which key material should be copied
+     * @throws IOException
+     *             copying of keystores fails
+     * @throws IllegalArgumentException
+     *             workingFolder is null or it's not a directory
+     */
+    public static void createKeyMaterial(final File workingFolder) throws IOException, IllegalArgumentException {
+        if (workingFolder == null || !workingFolder.isDirectory()) {
+            throw new IllegalArgumentException("Provide an existing folder as the method parameter.");
+        }
+        createTestResource(new File(workingFolder, SecurityTestConstants.SERVER_KEYSTORE));
+        createTestResource(new File(workingFolder, SecurityTestConstants.SERVER_TRUSTSTORE));
+        createTestResource(new File(workingFolder, SecurityTestConstants.SERVER_CRT));
+        createTestResource(new File(workingFolder, SecurityTestConstants.CLIENT_KEYSTORE));
+        createTestResource(new File(workingFolder, SecurityTestConstants.CLIENT_TRUSTSTORE));
+        createTestResource(new File(workingFolder, SecurityTestConstants.CLIENT_CRT));
+        createTestResource(new File(workingFolder, SecurityTestConstants.UNTRUSTED_KEYSTORE));
+        createTestResource(new File(workingFolder, SecurityTestConstants.UNTRUSTED_CRT));
+        LOGGER.info("Key material created in " + workingFolder.getAbsolutePath());
+    }
+
+    /**
+     * Copies a resource file from current package to location denoted by given
+     * {@link File} instance.
+     *
+     * @param file
+     *
+     * @throws IOException
+     */
+    private static void createTestResource(File file) throws IOException {
+        FileOutputStream fos = null;
+        LOGGER.info("Creating test file " + file.getAbsolutePath());
+        try {
+            fos = new FileOutputStream(file);
+            IOUtils.copy(Utils.class.getResourceAsStream(file.getName()), fos);
+        } finally {
+            IOUtils.closeQuietly(fos);
+        }
+    }
+
+    public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword) {
+        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword, null);
+    }
+
+    public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword,
+            File vaultConfig) {
+        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword,
+                vaultConfig.getAbsolutePath());
+    }
+
+    /**
+     * Replace keystore paths and passwords variables in original configuration file with given values
+     * and set ${hostname} variable from system property: node0
+     *
+     * @param String originalFile
+     * @param File keystoreFile
+     * @param File trustStoreFile
+     * @param String keystorePassword
+     * @param String vaultConfigPath - path to vault settings
+     * @return String content
+     */
+    public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile, String keystorePassword,
+            String vaultConfigPath) {
+        String hostname = System.getProperty("node0");
+
+        // expand possible IPv6 address
+        try {
+            hostname = NetworkUtils.formatPossibleIpv6Address(InetAddress.getByName(hostname).getHostAddress());
+        } catch (UnknownHostException ex) {
+            String message = "Cannot resolve host address: " + hostname + " , error : " + ex.getMessage();
+            LOGGER.error(message);
+            throw new RuntimeException(ex);
+        }
+
+        final Map<String, String> map = new HashMap<String, String>();
+        String content = "";
+        if (vaultConfigPath == null) {
+            map.put("vaultConfig", "");
+        } else {
+            map.put("vaultConfig", "<vault file=\"" + vaultConfigPath + "\"/>");
+        }
+        map.put("hostname", hostname);
+        map.put("keystore", keystoreFile);
+        map.put("truststore", trustStoreFile);
+        map.put("password", keystorePassword);
+
+        try {
+            content = StrSubstitutor.replace(
+                    IOUtils.toString(Utils.class.getResourceAsStream(originalFile), "UTF-8"), map);
+        } catch (IOException ex) {
+            String message = "Cannot find or modify configuration file " + originalFile + " , error : " + ex.getMessage();
+            LOGGER.error(message);
+            throw new RuntimeException(ex);
+        }
+
+        return content;
     }
 }
