@@ -40,10 +40,10 @@
     <modules>
         <module>api</module>
         <module>common</module>
+        <module>diagnostics</module>
         <module>ejb</module>
         <module>infinispan</module>
         <module>jgroups</module>
-        <module>monitor</module>
         <module>server</module>
         <module>singleton</module>
         <module>web</module>

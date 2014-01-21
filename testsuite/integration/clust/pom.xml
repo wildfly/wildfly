@@ -126,9 +126,9 @@
                                 </configuration>
                             </execution>
 
-                            <!-- Single node clustering-monitor tests -->
+                            <!-- Single node clustering-diagnostics tests -->
                             <execution>
-                                <id>ts.surefire.clust.clusteringmonitor</id>
+                                <id>ts.surefire.clust.clusteringdiagnostics</id>
                                 <phase>test</phase>
                                 <goals>
                                     <goal>test</goal>
@@ -136,7 +136,7 @@
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/clusteringmonitor/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/clusteringdiagnostics/**/*TestCase.java</include>
                                     </includes>
 
                                     <!-- Parameters to test cases. -->

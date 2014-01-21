@@ -1,0 +1,36 @@
+<module xmlns="urn:jboss:module:1.1" name="org.wildfly.clustering.diagnostics.extension">
+    <resources>
+        <!-- Insert resources here -->
+    </resources>
+    
+    <dependencies>
+        <module name="io.undertow.servlet"/>
+
+        <module name="javax.api"/>
+
+        <module name="org.infinispan"/>
+
+        <module name="org.jboss.as.clustering.common"/>
+        <module name="org.jboss.as.clustering.ejb3.infinispan"/>
+        <module name="org.jboss.as.clustering.jgroups"/>
+        <module name="org.jboss.as.clustering.infinispan"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.ee"/>
+        <module name="org.jboss.as.ejb3"/>
+        <module name="org.jboss.as.network"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.as.web-common"/>
+        <module name="org.jboss.metadata"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.staxmapper"/>
+
+        <module name="org.jgroups"/>
+
+        <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.diagnostics.services"/>
+        <module name="org.wildfly.clustering.web.undertow"/>
+        <module name="org.wildfly.extension.undertow"/>
+    </dependencies>
+</module>

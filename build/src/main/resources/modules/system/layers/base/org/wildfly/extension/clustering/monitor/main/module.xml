@@ -1,5 +1,0 @@
-<module xmlns="urn:jboss:module:1.1" name="org.wildfly.extension.clustering.monitor">
-   <dependencies>
-      <module name="org.wildfly.clustering.monitor.extension" export="true" services="export"/>
-   </dependencies>
-</module>

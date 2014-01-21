@@ -922,13 +922,13 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-monitor-extension</artifactId>
+                <artifactId>wildfly-clustering-diagnostics-extension</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-clustering-monitor-services</artifactId>
+                <artifactId>wildfly-clustering-diagnostics-services</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
