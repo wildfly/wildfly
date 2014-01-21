@@ -194,12 +194,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             if (bdm == rootBeanDeploymentModule) {
                 continue; // the root module only has access to itself
             }
-            for (ModuleDependency dependency : bdmSpec.getSystemDependencies()) {
-                BeanDeploymentModule other = bdmsByIdentifier.get(dependency.getIdentifier());
-                if (other != null && other != bdm) {
-                    bdm.addBeanDeploymentModule(other);
-                }
-            }
+            processDependencies(bdmSpec.getSystemDependencies(), bdm, bdmsByIdentifier);
+            processDependencies(bdmSpec.getLocalDependencies(), bdm, bdmsByIdentifier);
+            processDependencies(bdmSpec.getUserDependencies(), bdm, bdmsByIdentifier);
         }
 
         final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
@@ -254,6 +251,15 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
                 .addDependencies(jpaServices)
                 .install();
 
+    }
+
+    private void processDependencies(final List<ModuleDependency> dependencies, final BeanDeploymentModule bdm, final Map<ModuleIdentifier, BeanDeploymentModule> bdmsByIdentifier) {
+        for (ModuleDependency dependency : dependencies) {
+            BeanDeploymentModule other = bdmsByIdentifier.get(dependency.getIdentifier());
+            if (other != null && other != bdm) {
+                bdm.addBeanDeploymentModule(other);
+            }
+        }
     }
 
     private void getJpaDependencies(final DeploymentUnit deploymentUnit, final Set<ServiceName> jpaServices) {
