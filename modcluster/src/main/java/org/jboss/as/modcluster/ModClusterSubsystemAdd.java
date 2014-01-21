@@ -47,13 +47,17 @@ import org.jboss.modcluster.load.metric.LoadMetric;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
+import org.jboss.util.propertyeditor.PropertyEditors;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.jboss.as.modcluster.LoadMetricDefinition.CAPACITY;
+import static org.jboss.as.modcluster.LoadMetricDefinition.PROPERTY;
 import static org.jboss.as.modcluster.LoadMetricDefinition.TYPE;
 import static org.jboss.as.modcluster.LoadMetricDefinition.WEIGHT;
 import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.*;
@@ -254,6 +258,8 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
             ModelNode node = p.getValue();
             double capacity = CAPACITY.resolveModelAttribute(context, node).asDouble();
             int weight = WEIGHT.resolveModelAttribute(context, node).asInt();
+            Map<String, String> propertyMap = PROPERTY.unwrap(context, node);
+
             Class<? extends LoadMetric> loadMetricClass = null;
             if (node.hasDefined(CommonAttributes.TYPE)) {
                 String type = TYPE.resolveModelAttribute(context, node).asString();
@@ -273,6 +279,22 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
                     LoadMetric metric = loadMetricClass.newInstance();
                     metric.setCapacity(capacity);
                     metric.setWeight(weight);
+
+                    // Apply Java Bean properties if any are set
+                    if (propertyMap != null && !propertyMap.isEmpty()) {
+                        Properties props = new Properties();
+                        props.putAll(propertyMap);
+
+                        try {
+                            PropertyEditors.mapJavaBeanProperties(metric, props, true);
+                        } catch (Exception ex) {
+                            ROOT_LOGGER.errorApplyingMetricProperties(ex, loadMetricClass.getCanonicalName());
+
+                            // Do not add this incomplete metric.
+                            continue;
+                        }
+                    }
+
                     metrics.add(metric);
                 } catch (InstantiationException e) {
                     ROOT_LOGGER.errorAddingMetrics(e);
