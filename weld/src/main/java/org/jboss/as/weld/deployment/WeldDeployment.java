@@ -129,7 +129,7 @@ public class WeldDeployment implements CDI11Deployment {
      */
     private void makeTopLevelBdasVisibleFromStaticModules() {
         for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
-            if (bda.getBeanArchiveType().equals(BeanDeploymentArchiveImpl.BeanArchiveType.EXTERNAL)) {
+            if (bda.getBeanArchiveType().equals(BeanDeploymentArchiveImpl.BeanArchiveType.EXTERNAL) || bda.getBeanArchiveType().equals(BeanDeploymentArchiveImpl.BeanArchiveType.SYNTHETIC)) {
                 for (BeanDeploymentArchiveImpl topLevelBda : rootBeanDeploymentModule.getBeanDeploymentArchives()) {
                     bda.addBeanDeploymentArchive(topLevelBda);
                 }
@@ -189,6 +189,9 @@ public class WeldDeployment implements CDI11Deployment {
                 bda.addBeanDeploymentArchive(newBda);
             }
         }
+        // make the top-level deployment BDAs visible from the additional archive
+        newBda.addBeanDeploymentArchives(rootBeanDeploymentModule.getBeanDeploymentArchives());
+
         additionalBeanDeploymentArchivesByClassloader.put(beanClass.getClassLoader(), newBda);
         beanDeploymentArchives.add(newBda);
         return newBda;
