@@ -367,6 +367,14 @@ public class LoggingExtension implements Extension {
                     result = LESS;
                 } else if (CommonAttributes.LOGGING_PROFILE.equals(key2)) {
                     result = GREATER;
+                } else if (PatternFormatterResourceDefinition.PATTERN_FORMATTER.getName().equals(key1)) {
+                    result = LESS;
+                } else if (PatternFormatterResourceDefinition.PATTERN_FORMATTER.getName().equals(key2)) {
+                    result = GREATER;
+                } else if (CustomFormatterResourceDefinition.CUSTOM_FORMATTER.getName().equals(key1)) {
+                    result = LESS;
+                } else if (CustomFormatterResourceDefinition.CUSTOM_FORMATTER.getName().equals(key2)) {
+                    result = GREATER;
                 } else if (RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key1)) {
                     result = GREATER;
                 } else if (RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key2)) {
