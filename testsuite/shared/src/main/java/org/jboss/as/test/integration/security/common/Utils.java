@@ -63,6 +63,7 @@ import org.apache.http.ProtocolException;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.RedirectStrategy;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -378,6 +379,37 @@ public class Utils {
      */
     public static String getSecondaryTestAddress(final ManagementClient mgmtClient) {
         return NetworkUtils.formatPossibleIpv6Address(getSecondaryTestAddress(mgmtClient, false));
+    }
+
+    /**
+     * Requests given URL and checks if the returned HTTP status code is the
+     * expected one. Returns HTTP response body
+     *
+     * @param URL url to which the request should be made
+     * @param DefaultHttpClient httpClient to test multiple access
+     * @param expectedStatusCode expected status code returned from the requested server
+     * @return HTTP response body
+     * @throws ClientProtocolException
+     * @throws IOException
+     * @throws URISyntaxException
+     */
+    public static String makeCallWithHttpClient(URL url, HttpClient httpClient, int expectedStatusCode)
+            throws IOException, URISyntaxException {
+
+        String httpResponseBody = null;
+        HttpGet httpGet = new HttpGet(url.toURI());
+        HttpResponse response = httpClient.execute(httpGet);
+        int statusCode = response.getStatusLine().getStatusCode();
+        LOGGER.info("Request to: " + url + " responds: " + statusCode);
+
+        assertEquals("Unexpected status code", expectedStatusCode, statusCode);
+
+        HttpEntity entity = response.getEntity();
+        if (entity != null) {
+            httpResponseBody = EntityUtils.toString(response.getEntity());
+            EntityUtils.consume(entity);
+        }
+        return httpResponseBody;
     }
 
     /**
