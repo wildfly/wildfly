@@ -264,7 +264,7 @@
         <version.org.eclipse.aether>0.9.0.M3</version.org.eclipse.aether>
         <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
         <version.org.testng>6.1.1</version.org.testng>
-        <version.org.wildfly.security.manager>1.0.0.Beta3</version.org.wildfly.security.manager>
+        <version.org.wildfly.security.manager>1.0.0.Final</version.org.wildfly.security.manager>
         <version.org.yaml.snakeyaml>1.8</version.org.yaml.snakeyaml>
         <version.osgi>5.0.0</version.osgi>
         <version.sun.jaxb>2.2.5.jboss-1</version.sun.jaxb>

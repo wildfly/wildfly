@@ -28,7 +28,7 @@ import java.security.PrivilegedExceptionAction;
 
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.security.remoting.RemotingContext;
-import org.wildfly.security.manager.GetModuleClassLoaderAction;
+import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;

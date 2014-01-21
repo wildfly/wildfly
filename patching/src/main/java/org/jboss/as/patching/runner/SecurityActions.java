@@ -26,7 +26,7 @@ import static java.lang.System.getProperty;
 import static java.lang.System.getSecurityManager;
 import static java.security.AccessController.doPrivileged;
 
-import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.action.ReadPropertyAction;
 
 /**
  * @author Emanuel Muckenhuber

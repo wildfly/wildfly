@@ -45,7 +45,7 @@ import org.wildfly.extension.undertow.ListenerService;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.UndertowEventListener;
 import org.wildfly.extension.undertow.UndertowService;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Service exposing an Undertow subsystem adapter to mod_cluster's ContainerEventHandler.

@@ -34,7 +34,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.threads.JBossThreadFactory;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFSUtils;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 import static java.security.AccessController.doPrivileged;
 

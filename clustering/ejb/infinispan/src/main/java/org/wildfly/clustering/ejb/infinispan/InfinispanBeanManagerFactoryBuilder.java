@@ -43,7 +43,7 @@ import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilder;
 import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Builds an infinispan-based {@link BeanManagerFactory}.

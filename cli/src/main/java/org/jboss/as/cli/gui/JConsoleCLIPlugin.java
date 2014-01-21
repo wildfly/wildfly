@@ -49,7 +49,7 @@ import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.Connection;
 import org.jboss.remotingjmx.RemotingMBeanServerConnection;
 import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
 

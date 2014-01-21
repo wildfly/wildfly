@@ -26,8 +26,8 @@ import static java.security.AccessController.doPrivileged;
 import java.security.PrivilegedAction;
 
 import org.jboss.as.ee.beanvalidation.testutil.WithContextClassLoader.NullClassLoader;
-import org.wildfly.security.manager.GetContextClassLoaderAction;
-import org.wildfly.security.manager.SetContextClassLoaderAction;
+import org.wildfly.security.manager.action.GetContextClassLoaderAction;
+import org.wildfly.security.manager.action.SetContextClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;

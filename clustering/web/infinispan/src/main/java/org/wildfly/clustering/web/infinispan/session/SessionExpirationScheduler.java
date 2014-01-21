@@ -37,7 +37,7 @@ import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Session expiration scheduler that eagerly expires sessions as soon as they are eligible.

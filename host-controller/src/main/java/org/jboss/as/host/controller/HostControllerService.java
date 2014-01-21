@@ -43,7 +43,7 @@ import org.jboss.as.remoting.HttpListenerRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.BootstrapListener;
 import org.jboss.as.server.FutureServiceContainer;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.as.server.Services;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
