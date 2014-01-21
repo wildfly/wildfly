@@ -424,10 +424,6 @@
             <maven-resource group="com.google.guava" artifact="guava" />
         </module-def>
 
-        <module-def name="com.google.protobuf">
-            <maven-resource group="com.google.protobuf" artifact="protobuf-java" />
-        </module-def>
-
         <module-def name="com.h2database.h2">
             <maven-resource group="com.h2database" artifact="h2"/>
         </module-def>
@@ -886,8 +882,6 @@
 
         <module-def name="org.infinispan.client.hotrod">
             <maven-resource group="org.infinispan" artifact="infinispan-client-hotrod"/>
-            <maven-resource group="org.infinispan" artifact="infinispan-remote-query-client"/>
-            <maven-resource group="org.infinispan.protostream" artifact="protostream"/>
         </module-def>
 
         <module-def name="org.infinispan.lucene">
