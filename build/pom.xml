@@ -231,11 +231,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>com.google.protobuf</groupId>
-                    <artifactId>protobuf-java</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>com.h2database</groupId>
                     <artifactId>h2</artifactId>
                 </dependency>
@@ -878,14 +873,6 @@
                 <dependency>
                     <groupId>org.infinispan</groupId>
                     <artifactId>infinispan-query-dsl</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.infinispan</groupId>
-                    <artifactId>infinispan-remote-query-client</artifactId>
-                </dependency>
-                <dependency>
-                    <groupId>org.infinispan.protostream</groupId>
-                    <artifactId>protostream</artifactId>
                 </dependency>
 
                 <dependency>
