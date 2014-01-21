@@ -7,7 +7,7 @@
 
     <servlet>
         <servlet-name>TestServlet</servlet-name>
-        <servlet-class>org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet</servlet-class>
+        <servlet-class>org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 

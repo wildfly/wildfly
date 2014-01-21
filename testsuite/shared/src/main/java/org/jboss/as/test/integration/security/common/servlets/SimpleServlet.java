@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.loginmodules.common.servlets;
+package org.jboss.as.test.integration.security.common.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 
 /**
  * A simple servlet that just writes back a string.
- * 
+ *
  * @author Josef Cacek
  */
 @WebServlet(urlPatterns = { SimpleServlet.SERVLET_PATH })
@@ -45,9 +45,12 @@ public class SimpleServlet extends HttpServlet {
     /** The String returned in the HTTP response body. */
     public static final String RESPONSE_BODY = "GOOD";
 
+    /** Name of a request parameter (parsed as a boolean), which says if a session should be created. */
+    public static final String CREATE_SESSION_PARAM = "createSession";
+
     /**
      * Writes simple text response.
-     * 
+     *
      * @param req
      * @param resp
      * @throws ServletException
@@ -58,6 +61,9 @@ public class SimpleServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("text/plain");
         final PrintWriter writer = resp.getWriter();
+        if (Boolean.parseBoolean(req.getParameter(CREATE_SESSION_PARAM))) {
+            req.getSession();
+        }
         writer.write(RESPONSE_BODY);
         writer.close();
     }
