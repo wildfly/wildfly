@@ -172,7 +172,7 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
                     bda.getServices().add(JaxwsInjectionServices.class, jaxwsInjectionServices);
                     deploymentUnit.addToAttachmentList(WeldAttachments.ADDITIONAL_BEAN_DEPLOYMENT_MODULES, bda);
 
-                    // workaround for duplicate BDA addition
+                    // make sure that if this beans.xml is seen by some other module, it is not processed twice
                     existing.add(url);
                 }
             }
