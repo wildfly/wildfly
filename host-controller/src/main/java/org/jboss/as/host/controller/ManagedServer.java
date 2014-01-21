@@ -28,7 +28,6 @@ import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -777,7 +776,9 @@ class ManagedServer {
         public void execute(ManagedServer server) throws Exception {
             assert Thread.holdsLock(ManagedServer.this); // Call under lock
             // Reconnect
-            final String hostName = InetAddress.getByName(managementSocket.getHostName()).getHostName();
+            final String hostName = managementSocket.toString().indexOf("/") == 0 ?
+                managementSocket.getAddress().getHostAddress() :
+                managementSocket.getHostName();
             final int port = managementSocket.getPort();
             processControllerClient.reconnectProcess(serverProcessName, NetworkUtils.formatPossibleIpv6Address(hostName), port, bootConfiguration.isManagementSubsystemEndpoint(), authKey);
         }
