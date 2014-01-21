@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.naming.Context;
 import javax.security.auth.login.LoginException;
 
@@ -46,7 +47,7 @@ import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServ
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
+import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
 import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.LdapExtLoginModule;
