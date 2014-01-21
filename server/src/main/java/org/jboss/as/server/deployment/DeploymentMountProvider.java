@@ -29,7 +29,7 @@ import java.util.concurrent.Executors;
 
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;

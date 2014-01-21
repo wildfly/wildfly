@@ -40,7 +40,7 @@ import org.jboss.as.ejb3.inflow.JBossMessageEndpointFactory;
 import org.jboss.as.ejb3.inflow.MessageEndpointService;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-import org.wildfly.security.manager.GetClassLoaderAction;
+import org.wildfly.security.manager.action.GetClassLoaderAction;
 import org.jboss.invocation.Interceptor;
 import org.jboss.jca.core.spi.rar.Endpoint;
 import org.wildfly.security.manager.WildFlySecurityManager;

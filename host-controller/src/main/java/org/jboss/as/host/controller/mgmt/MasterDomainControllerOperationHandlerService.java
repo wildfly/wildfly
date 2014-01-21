@@ -54,7 +54,7 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;

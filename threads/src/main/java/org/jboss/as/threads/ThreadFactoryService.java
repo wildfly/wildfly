@@ -23,7 +23,7 @@
 package org.jboss.as.threads;
 
 import java.util.concurrent.ThreadFactory;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;

@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;

@@ -54,8 +54,8 @@ import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.tool.PatchOperationBuilder;
 import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.dmr.ModelNode;
-import org.wildfly.security.manager.ReadEnvironmentPropertyAction;
-import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.action.ReadEnvironmentPropertyAction;
+import org.wildfly.security.manager.action.ReadPropertyAction;
 
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat Inc.

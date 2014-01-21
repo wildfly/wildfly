@@ -83,9 +83,9 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.security.SubjectFactory;
 import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.security.manager.ClearContextClassLoaderAction;
-import org.wildfly.security.manager.GetAccessControlContextAction;
-import org.wildfly.security.manager.SetContextClassLoaderFromClassAction;
+import org.wildfly.security.manager.action.ClearContextClassLoaderAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.SetContextClassLoaderFromClassAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
