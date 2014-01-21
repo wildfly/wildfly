@@ -114,6 +114,16 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
             LoggingLogger.ROOT_LOGGER.tracef("Removing handler configuration for '%s'", name);
             logContextConfiguration.removeHandlerConfiguration(name);
         }
+
+        // Remove formatters
+        final List<String> configuredFormatters = logContextConfiguration.getFormatterNames();
+        configuredFormatters.removeAll(resource.getChildrenNames(PatternFormatterResourceDefinition.PATTERN_FORMATTER.getName()));
+        configuredFormatters.removeAll(resource.getChildrenNames(CustomFormatterResourceDefinition.CUSTOM_FORMATTER.getName()));
+        for (String name : configuredFormatters) {
+            LoggingLogger.ROOT_LOGGER.tracef("Removing formatter configuration for '%s'", name);
+            logContextConfiguration.removeFormatterConfiguration(name);
+        }
+
         LoggingOperations.addCommitStep(context, configurationPersistence);
         LoggingLogger.ROOT_LOGGER.trace("Logging subsystem has been added.");
     }
