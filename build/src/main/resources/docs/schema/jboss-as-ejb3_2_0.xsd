@@ -117,7 +117,6 @@
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="cache-ref" type="xs:string"/>
-        <xs:attribute name="clustered-cache-ref" type="xs:string" use="optional"/>
         <xs:attribute name="passivation-disabled-cache-ref" type="xs:string" use="optional">
             <xs:annotation>
                 <xs:documentation>
