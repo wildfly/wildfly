@@ -47,7 +47,7 @@ public class InterceptedNoProceedSLSB {
         postConstructCalled = true;
     }
 
-    public boolean isPostConstructCalled() {
+    public static boolean isPostConstructCalled() {
         return postConstructCalled;
     }
 }

@@ -66,7 +66,6 @@ public class EjbRemoveUnitTestCase {
 
     private static final String POOL_NAME2 = "CustomConfig2";
     private static final String POOL_NAME3 = "CustomConfig3";
-    private static String DEFAULT_POOL;
     private static final String DEFAULT_POOL_ATTR = "default-slsb-instance-pool";
 
     public static final CountDownLatch CDL = new CountDownLatch(10);
@@ -119,45 +118,6 @@ public class EjbRemoveUnitTestCase {
         return jar;
     }
 
-    private static ModelNode getAddress() {
-        ModelNode address = new ModelNode();
-        address.add("subsystem", "ejb3");
-        address.protect();
-        return address;
-    }
-
-    private void removePoolRef() throws Exception {
-        ModelNode address = getAddress();
-
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set("read-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set(DEFAULT_POOL_ATTR);
-        ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-        DEFAULT_POOL = result.get(RESULT).asString();
-        log.info("Default pool was: " + DEFAULT_POOL + ", " + result);
-
-        operation = new ModelNode();
-        operation.get(OP).set("undefine-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set(DEFAULT_POOL_ATTR);
-        result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-    }
-
-    private void getBackPoolRef() throws Exception {
-        ModelNode address = getAddress();
-
-        ModelNode operation = new ModelNode();
-        operation.get(OP).set("write-attribute");
-        operation.get(OP_ADDR).set(address);
-        operation.get("name").set(DEFAULT_POOL_ATTR);
-        operation.get("value").set(DEFAULT_POOL);
-        ModelNode result = managementClient.getControllerClient().execute(operation);
-        Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
-    }
-
     /**
      * In this test, pooling is disabled so call to the CountedSession bean should create a new instance,
      * (ejbCreate()) use it but then throw it away (ejbRemove()) rather than putting it back to the pool.
@@ -173,7 +133,6 @@ public class EjbRemoveUnitTestCase {
     @Test
     @OperateOnDeployment("beans")
     public void testEjbRemoveCalledForEveryCall() throws Exception {
-        removePoolRef();
 
         CountedSessionHome countedHome = (CountedSessionHome) ctx.lookup("java:module/CountedSession1!"
                 + CountedSessionHome.class.getName());
@@ -186,8 +145,6 @@ public class EjbRemoveUnitTestCase {
         counted.remove();
         Assert.assertEquals("createCounter", 2, CounterSingleton.createCounter1.get());
         Assert.assertEquals("removeCounter", 2, CounterSingleton.removeCounter1.get());
-
-        getBackPoolRef();
     }
 
     /**
