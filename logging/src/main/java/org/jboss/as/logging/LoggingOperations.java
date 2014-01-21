@@ -82,7 +82,7 @@ final class LoggingOperations {
     }
 
     private static final class CommitOperationStepHandler implements OperationStepHandler {
-        private static AttachmentKey<Boolean> WRITTEN_KEY = AttachmentKey.create(Boolean.class);
+        private static final AttachmentKey<Boolean> WRITTEN_KEY = AttachmentKey.create(Boolean.class);
         private final ConfigurationPersistence configurationPersistence;
         private final boolean persistConfig;
 
