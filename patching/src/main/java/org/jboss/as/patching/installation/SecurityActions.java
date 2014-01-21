@@ -27,8 +27,8 @@ import static java.lang.System.getSecurityManager;
 import static java.lang.System.getenv;
 import static java.security.AccessController.doPrivileged;
 
-import org.wildfly.security.manager.ReadEnvironmentPropertyAction;
-import org.wildfly.security.manager.ReadPropertyAction;
+import org.wildfly.security.manager.action.ReadEnvironmentPropertyAction;
+import org.wildfly.security.manager.action.ReadPropertyAction;
 
 /**
  * @author Emanuel Muckenhuber

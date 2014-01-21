@@ -23,7 +23,7 @@
 package org.jboss.as.test.integration.domain.management.util;
 
 import org.jboss.as.protocol.ProtocolChannelClient;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.remote.RemoteConnectionProviderFactory;

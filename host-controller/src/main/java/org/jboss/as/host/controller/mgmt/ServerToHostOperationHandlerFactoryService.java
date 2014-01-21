@@ -32,7 +32,7 @@ import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;

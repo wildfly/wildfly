@@ -36,7 +36,7 @@ import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Session eviction scheduler that eagerly evicts the oldest sessions when

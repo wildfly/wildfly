@@ -48,7 +48,7 @@ import org.jipijapa.plugin.spi.EntityManagerFactoryBuilder;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 import org.jipijapa.plugin.spi.TwoPhaseBootstrapCapable;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

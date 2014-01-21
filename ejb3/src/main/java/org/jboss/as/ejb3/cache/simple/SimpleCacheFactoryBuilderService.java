@@ -36,7 +36,7 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.ejb.BeanContext;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Service that provides a simple {@link CacheFactoryBuilder}.

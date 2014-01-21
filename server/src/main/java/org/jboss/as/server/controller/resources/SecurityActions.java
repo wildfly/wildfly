@@ -21,7 +21,7 @@
 */
 package org.jboss.as.server.controller.resources;
 
-import org.wildfly.security.manager.GetClassLoaderAction;
+import org.wildfly.security.manager.action.GetClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import static java.security.AccessController.doPrivileged;

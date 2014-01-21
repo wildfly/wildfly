@@ -41,7 +41,7 @@ import java.util.logging.Logger;
 import javax.net.ServerSocketFactory;
 
 import org.jboss.as.process.protocol.ProtocolServer;
-import org.wildfly.security.manager.GetAccessControlContextAction;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.as.version.Version;
 import org.jboss.logging.MDC;
