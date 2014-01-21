@@ -37,6 +37,8 @@ import io.undertow.security.idm.Account;
  */
 public class AccountImpl implements Account, Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private final String name;
     private final Set<String> roles = new CopyOnWriteArraySet<>();
     private final Principal principal;
@@ -100,6 +102,8 @@ public class AccountImpl implements Account, Serializable {
     }
 
     private final class AccountPrincipal implements Principal, Serializable {
+
+        private static final long serialVersionUID = 1L;
 
         @Override
         public String getName() {
