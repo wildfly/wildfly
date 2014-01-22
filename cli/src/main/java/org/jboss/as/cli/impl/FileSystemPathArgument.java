@@ -22,6 +22,7 @@
 
 package org.jboss.as.cli.impl;
 
+import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
 import org.jboss.as.cli.handlers.FilenameTabCompleter;
 import org.jboss.as.cli.operation.ParsedCommandLine;
@@ -45,8 +46,11 @@ public class FileSystemPathArgument extends ArgumentWithValue {
     }
 
     @Override
-    public String getValue(ParsedCommandLine args) {
-        String value = super.getValue(args);
+    public String getValue(ParsedCommandLine args, boolean required) throws CommandFormatException {
+        return translatePath(super.getValue(args, required));
+    }
+
+    private String translatePath(String value) {
         if(value != null) {
             if(value.length() >= 0 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"') {
                 value = value.substring(1, value.length() - 1);
@@ -57,5 +61,4 @@ public class FileSystemPathArgument extends ArgumentWithValue {
         }
         return value;
     }
-
 }
