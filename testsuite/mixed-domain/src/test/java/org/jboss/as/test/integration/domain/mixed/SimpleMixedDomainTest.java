@@ -69,13 +69,16 @@ import org.jboss.dmr.Property;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.xnio.IoUtils;
 
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public abstract class SimpleMixedDomainTest  {
 
     MixedDomainTestSupport support;
@@ -93,13 +96,13 @@ public abstract class SimpleMixedDomainTest  {
     }
 
     @Test
-    public void testServerRunning() throws Exception {
+    public void test1ServerRunning() throws Exception {
         URLConnection connection = new URL("http://" + TestSuiteEnvironment.formatPossibleIpv6Address(DomainTestSupport.slaveAddress) + ":8080").openConnection();
         connection.connect();
     }
 
     @Test
-    public void testVersioning() throws Exception {
+    public void test2Versioning() throws Exception {
 
         DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
         ModelNode masterModel;
@@ -122,7 +125,7 @@ public abstract class SimpleMixedDomainTest  {
     }
 
     @Test
-    public void testSecurityTransformers() throws Exception {
+    public void test9SecurityTransformers() throws Exception {
         final DomainClient masterClient = support.getDomainMasterLifecycleUtil().createDomainClient();
         final DomainClient slaveClient = support.getDomainSlaveLifecycleUtil().createDomainClient();
         try {
