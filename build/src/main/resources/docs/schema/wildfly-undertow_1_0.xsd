@@ -81,6 +81,8 @@
         <xs:attribute name="decode-url" type="xs:boolean" default="true"/>
         <xs:attribute name="url-charset" type="xs:string" default="UTF-8"/>
         <xs:attribute name="always-set-keep-alive" type="xs:boolean" default="true"/>
+        <xs:attribute name="max-buffered-request-size" type="xs:long" default="16384"/>
+        <xs:attribute name="record-request-start-time" type="xs:boolean" default="false"/>
     </xs:complexType>
 
     <xs:complexType name="http-listener-type">
