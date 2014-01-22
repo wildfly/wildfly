@@ -229,10 +229,10 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         try {
             response = client.execute(request);
         } catch (Exception e) {
-            throw new CommandFormatException("Failed to perform operation: " + e.getLocalizedMessage());
+            throw new CommandLineException("Failed to perform operation", e);
         }
         if (!Util.isSuccess(response)) {
-            throw new CommandFormatException(Util.getFailureDescription(response));
+            throw new CommandLineException(Util.getFailureDescription(response));
         }
         handleResponse(ctx, response, Util.COMPOSITE.equals(request.get(Util.OPERATION).asString()));
     }
