@@ -202,6 +202,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
+            <xs:element name="vault" type="vaultType" minOccurs="0" />
             <xs:element name="key-store" type="xs:string" minOccurs="0" />
             <xs:element name="key-store-password" type="xs:string" minOccurs="0" />
             <xs:element name="alias" type="xs:string" minOccurs="0" />
@@ -219,4 +220,12 @@
         </xs:sequence>
     </xs:complexType>
 
+    <xs:complexType name="vaultType">
+        <xs:annotation>
+            <xs:documentation>
+                Element of this type points to a file with vault configuration.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="file" type="xs:string" use="required"/>
+    </xs:complexType>
 </xs:schema>

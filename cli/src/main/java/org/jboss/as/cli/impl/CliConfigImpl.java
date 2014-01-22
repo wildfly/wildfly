@@ -43,6 +43,7 @@ import org.jboss.as.cli.ControllerAddress;
 import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.logging.Logger;
+import org.jboss.security.vault.SecurityVaultException;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
@@ -516,7 +517,7 @@ class CliConfigImpl implements CliConfig {
                         }
                     } else if (localName.equals("ssl")) {
                         SslConfig sslConfig = new SslConfig();
-                        readSSLElement_1_1(reader, expectedNs, sslConfig);
+                        readSSLElement_2_0(reader, expectedNs, sslConfig);
                         config.sslConfig = sslConfig;
                     } else if(localName.equals(SILENT)) {
                         config.silent = resolveBoolean(reader.getElementText());
@@ -708,10 +709,68 @@ class CliConfigImpl implements CliConfig {
             }
         }
 
-        private void assertExpectedNamespace(XMLExtendedStreamReader reader, Namespace expectedNs) throws XMLStreamException {
-            if (expectedNs.equals(Namespace.forUri(reader.getNamespaceURI())) == false) {
-                throw new XMLStreamException("Unexpected element: " + reader.getLocalName());
+        public void readSSLElement_2_0(XMLExtendedStreamReader reader, Namespace expectedNs, SslConfig config) throws XMLStreamException {
+
+            final CLIVaultReader vaultReader = new CLIVaultReader();
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                assertExpectedNamespace(reader, expectedNs);
+                final String localName = reader.getLocalName();
+
+                if("vault".equals(localName)) {
+                    final String vaultXml = reader.getAttributeValue(null, "file");
+                    requireNoContent(reader);
+                    if(vaultXml == null) {
+                        throw new XMLStreamException("'file' attribute is missing for element 'vault'");
+                    }
+                    final File vaultFile = new File(vaultXml);
+                    final VaultConfig vaultConfig = VaultConfig.load(vaultFile);
+                    try {
+                        vaultReader.init(vaultConfig.getOptions());
+                    } catch (SecurityVaultException e) {
+                        throw new XMLStreamException("Failed to initialize vault", e);
+                    }
+                } else if ("alias".equals(localName)) {
+                    config.setAlias(reader.getElementText());
+                } else if ("key-store".equals(localName) || "keyStore".equals(localName)) {
+                    config.setKeyStore(reader.getElementText());
+                } else if ("key-store-password".equals(localName) || "keyStorePassword".equals(localName)) {
+                    config.setKeyStorePassword(getPassword(vaultReader, reader.getElementText()));
+                } else if ("key-password".equals(localName) || "keyPassword".equals(localName)) {
+                    config.setKeyPassword(getPassword(vaultReader, reader.getElementText()));
+                } else if ("trust-store".equals(localName) || "trustStore".equals(localName)) {
+                    config.setTrustStore(reader.getElementText());
+                } else if ("trust-store-password".equals(localName) || "trustStorePassword".equals(localName)) {
+                    config.setTrustStorePassword(getPassword(vaultReader, reader.getElementText()));
+                } else if ("modify-trust-store".equals(localName) || "modifyTrustStore".equals(localName)) {
+                    config.setModifyTrustStore(resolveBoolean(reader.getElementText()));
+                } else {
+                    throw new XMLStreamException("Unexpected child of ssl : " + localName);
+                }
             }
+        }
+
+        private String getPassword(CLIVaultReader vaultReader, String str) throws XMLStreamException {
+            try {
+                return vaultReader.retrieve(str);
+            } catch (SecurityVaultException e) {
+                throw new XMLStreamException("Failed to retrieve from vault '" + str + "'", e);
+            }
+        }
+
+        static void assertExpectedNamespace(XMLExtendedStreamReader reader, Namespace expectedNs) throws XMLStreamException {
+            if (expectedNs.equals(Namespace.forUri(reader.getNamespaceURI())) == false) {
+                unexpectedElement(reader);
+            }
+        }
+
+        static void requireNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
+            if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                unexpectedElement(reader);
+            }
+        }
+
+        static void unexpectedElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+            throw new XMLStreamException("Unexpected element " + reader.getName() + " at " + reader.getLocation());
         }
     }
 }
