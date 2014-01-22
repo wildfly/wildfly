@@ -134,6 +134,11 @@
            <artifactId>jboss-vfs</artifactId>
         </dependency>
 
+        <dependency>
+           <groupId>org.picketbox</groupId>
+           <artifactId>picketbox</artifactId>
+        </dependency>
+
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>
