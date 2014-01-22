@@ -72,7 +72,8 @@ public class BatchRunHandler extends BaseOperationCommand {
             super.doHandle(ctx);
         } catch(CommandLineException e) {
             failed = true;
-            throw e;
+            throw new CommandLineException("The batch failed with the following error "
+                    + "(you are remaining in the batch editing mode to have a chance to correct the error)", e);
         } finally{
             if(!failed) {
                 if(ctx.getBatchManager().isBatchActive()) {
