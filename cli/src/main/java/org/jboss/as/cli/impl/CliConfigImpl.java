@@ -38,6 +38,7 @@ import org.jboss.as.cli.CliInitializationException;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.security.vault.SecurityVaultException;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
@@ -329,6 +330,7 @@ class CliConfigImpl implements CliConfig {
                 case CLI_1_0:
                 case CLI_1_1:
                 case CLI_1_2:
+                case CLI_1_3:
                     readCLIElement_1_0(reader, readerNS, config);
                     break;
                 default:
@@ -353,8 +355,12 @@ class CliConfigImpl implements CliConfig {
                             case CLI_1_0:
                                 readSSLElement_1_0(reader, expectedNs, sslConfig);
                                 break;
-                            default:
+                            case CLI_1_1:
+                            case CLI_1_2:
                                 readSSLElement_1_1(reader, expectedNs, sslConfig);
+                                break;
+                            default:
+                                readSSLElement_1_3(reader, expectedNs, sslConfig);
                         }
                         config.sslConfig = sslConfig;
                     } else if(localName.equals(VALIDATE_OPERATION_REQUESTS)) {
@@ -466,10 +472,84 @@ class CliConfigImpl implements CliConfig {
                 } else if ("trust-store-password".equals(localName) || "trustStorePassword".equals(localName)) {
                     config.setTrustStorePassword(reader.getElementText());
                 } else if ("modify-trust-store".equals(localName) || "modifyTrustStore".equals(localName)) {
+                    config.setModifyTrustStore(Boolean.getBoolean(reader.getElementText()));
+                } else {
+                    throw new XMLStreamException("Unexpected child of ssl : " + localName);
+                }
+            }
+        }
+
+        public void readSSLElement_1_3(XMLExtendedStreamReader reader, Namespace expectedNs, SslConfig config) throws XMLStreamException {
+
+            final CLIVaultReader vaultReader = new CLIVaultReader();
+            while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                assertExpectedNamespace(reader, expectedNs);
+                final String localName = reader.getLocalName();
+
+                if("vault".equals(localName)) {
+                    final String vaultXml = reader.getAttributeValue(null, "file");
+                    final String relativeTo = reader.getAttributeValue(null, "relative-to");
+                    requireNoContent(reader);
+                    if(vaultXml == null) {
+                        throw new XMLStreamException("'file' attribute is missing for element 'vault'");
+                    }
+
+                    File parent = null;
+                    if(relativeTo != null) {
+                        if(relativeTo.equals("jboss.home.dir")) {
+                            final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
+                            if(jbossHome == null) {
+                                throw new XMLStreamException("JBOSS_HOME is not set");
+                            }
+                            parent = new File(jbossHome);
+                        } else if(relativeTo.equals("user.home")) {
+                            final String userHome = SecurityActions.getSystemProperty("user.home");
+                            if(userHome == null) {
+                                throw new XMLStreamException("user.home is not set");
+                            }
+                            parent = new File(userHome);
+                        } else if(relativeTo.equals("user.dir")) {
+                            final String userDir = SecurityActions.getSystemProperty("user.dir");
+                            if(userDir == null) {
+                                throw new XMLStreamException("user.dir is not set");
+                            }
+                            parent = new File(userDir);
+                        } else {
+                            throw new XMLStreamException("Unrecognized named path '" + relativeTo + "'");
+                        }
+                    }
+                    final File vaultFile = new File(parent, vaultXml);
+                    final VaultConfig vaultConfig = VaultConfig.load(vaultFile);
+                    try {
+                        vaultReader.init(vaultConfig.getOptions());
+                    } catch (SecurityVaultException e) {
+                        throw new XMLStreamException("Failed to initialize vault", e);
+                    }
+                } else if ("alias".equals(localName)) {
+                    config.setAlias(reader.getElementText());
+                } else if ("key-store".equals(localName) || "keyStore".equals(localName)) {
+                    config.setKeyStore(reader.getElementText());
+                } else if ("key-store-password".equals(localName) || "keyStorePassword".equals(localName)) {
+                    config.setKeyStorePassword(getPassword(vaultReader, reader.getElementText()));
+                } else if ("key-password".equals(localName) || "keyPassword".equals(localName)) {
+                    config.setKeyPassword(getPassword(vaultReader, reader.getElementText()));
+                } else if ("trust-store".equals(localName) || "trustStore".equals(localName)) {
+                    config.setTrustStore(reader.getElementText());
+                } else if ("trust-store-password".equals(localName) || "trustStorePassword".equals(localName)) {
+                    config.setTrustStorePassword(getPassword(vaultReader, reader.getElementText()));
+                } else if ("modify-trust-store".equals(localName) || "modifyTrustStore".equals(localName)) {
                     config.setModifyTrustStore(resolveBoolean(reader.getElementText()));
                 } else {
                     throw new XMLStreamException("Unexpected child of ssl : " + localName);
                 }
+            }
+        }
+
+        private String getPassword(CLIVaultReader vaultReader, String str) throws XMLStreamException {
+            try {
+                return vaultReader.retrieve(str);
+            } catch (SecurityVaultException e) {
+                throw new XMLStreamException("Failed to retrieve from vault '" + str + "'", e);
             }
         }
 
@@ -478,6 +558,15 @@ class CliConfigImpl implements CliConfig {
                 throw new XMLStreamException("Unexpected element: " + reader.getLocalName());
             }
         }
-    }
 
+        static void requireNoContent(final XMLExtendedStreamReader reader) throws XMLStreamException {
+            if (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+                unexpectedElement(reader);
+            }
+        }
+
+        static void unexpectedElement(XMLExtendedStreamReader reader) throws XMLStreamException {
+            throw new XMLStreamException("Unexpected element " + reader.getName() + " at " + reader.getLocation());
+        }
+    }
 }
