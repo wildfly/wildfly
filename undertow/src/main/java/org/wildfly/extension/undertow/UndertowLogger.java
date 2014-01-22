@@ -162,4 +162,8 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = INFO)
     @Message(id = 17536, value = "Skipped SCI for jar: %s.")
     void skippedSCI(String jar, @Cause Exception e);
+
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 17537, value = "Failed to persist session attribute %s with value %s for session %s")
+    void failedToPersistSessionAttribute(String attributeName, Object value, String sessionID, @Cause Exception e);
 }
