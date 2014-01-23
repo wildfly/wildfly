@@ -46,11 +46,6 @@ public class FileSystemPathArgument extends ArgumentWithValue {
     }
 
     @Override
-    public String getValue(ParsedCommandLine args) {
-        return translatePath(super.getValue(args));
-    }
-
-    @Override
     public String getValue(ParsedCommandLine args, boolean required) throws CommandFormatException {
         return translatePath(super.getValue(args, required));
     }
