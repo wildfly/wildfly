@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ONLY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_OPERATION_DESCRIPTION_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_ONLY;
 import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.LOCALE;
 import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.NAME;
 
@@ -101,6 +102,9 @@ public class ReadOperationDescriptionHandler implements OperationStepHandler {
                     result.get(RESTART_REQUIRED).set("jvm");
                 }
             }
+
+            boolean runtimeOnly = flags.contains(OperationEntry.Flag.RUNTIME_ONLY);
+            result.get(RUNTIME_ONLY).set(runtimeOnly);
 
             if (accessControl) {
                 final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
