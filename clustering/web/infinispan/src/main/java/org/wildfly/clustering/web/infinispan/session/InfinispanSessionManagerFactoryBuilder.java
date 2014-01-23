@@ -35,18 +35,11 @@ import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceBuilder.DependencyType;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.jboss.tm.XAResourceRecoveryRegistry;
-import org.wildfly.clustering.group.NodeFactory;
-import org.wildfly.clustering.registry.Registry;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.web.session.SessionManagerFactory;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 
@@ -95,6 +88,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
             }
         };
         AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
+                .addAliases(RouteLocatorService.getCacheServiceName(deploymentServiceName))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -108,8 +102,6 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
         return target.addService(name, factory)
                 .addDependency(cacheServiceName, Cache.class, cache)
                 .addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, affinityFactory)
-                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "registry", DEFAULT_CACHE_CONTAINER, CacheContainer.DEFAULT_CACHE_ALIAS), Registry.class, factory.getRegistryInjector())
-                .addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "nodes", DEFAULT_CACHE_CONTAINER, CacheContainer.DEFAULT_CACHE_ALIAS), NodeFactory.class, factory.getNodeFactoryInjector())
         ;
     }
 
@@ -121,23 +113,5 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
             serviceName = baseServiceName.append(serviceName);
         }
         return (serviceName.length() < 4) ? serviceName.append(CacheContainer.DEFAULT_CACHE_ALIAS) : serviceName;
-    }
-
-    @Override
-    public ServiceBuilder<?> buildServerDependency(ServiceTarget target, final Value<String> instanceId) {
-        RegistryEntryProvider<String, Void> provider = new RegistryEntryProvider<String, Void>() {
-            @Override
-            public String getKey() {
-                return instanceId.getValue();
-            }
-
-            @Override
-            public Void getValue() {
-                return null;
-            }
-        };
-        return target.addService(ServiceName.JBOSS.append("clustering", "registry", DEFAULT_CACHE_CONTAINER, CacheContainer.DEFAULT_CACHE_ALIAS, "entry"), new ValueService<>(new ImmediateValue<>(provider)))
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
     }
 }

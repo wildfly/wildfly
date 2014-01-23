@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,29 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.extension.undertow.session;
+
+package org.wildfly.clustering.web.undertow.session;
 
 import io.undertow.servlet.api.SessionManagerFactory;
 
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.modules.Module;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
 
 /**
- * SPI for building a factory for creating a distributable session manager.
+ * {@link org.jboss.msc.Service} that returns a distributable {@link SessionManagerFactory}.
  * @author Paul Ferraro
  */
-public interface DistributableSessionManagerFactoryBuilder {
-    /**
-     * Builds a {@link SessionManagerFactory} service.
-     * @param target the service target
-     * @param name the service name of the {@link SessionManagerFactory} service
-     * @param deploymentServiceName service name of the web application
-     * @param module the deployment module
-     * @param metaData the web application meta data
-     * @return a session manager factory service builder
-     */
-    ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData);
+public class DistributableSessionManagerFactoryService extends AbstractService<SessionManagerFactory> {
+
+    public static ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName factoryServiceName) {
+        DistributableSessionManagerFactoryService service = new DistributableSessionManagerFactoryService();
+        return target.addService(name, service)
+                .addDependency(factoryServiceName, org.wildfly.clustering.web.session.SessionManagerFactory.class, service.factory)
+        ;
+    }
+
+    private final InjectedValue<org.wildfly.clustering.web.session.SessionManagerFactory> factory = new InjectedValue<>();
+
+    @Override
+    public SessionManagerFactory getValue() {
+        return new DistributableSessionManagerFactory(this.factory.getValue());
+    }
 }

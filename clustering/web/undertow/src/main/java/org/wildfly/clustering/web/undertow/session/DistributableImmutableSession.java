@@ -31,12 +31,12 @@ import io.undertow.server.session.SessionManager;
  * Undertow adapter for an {@link ImmutableSession}.
  * @author Paul Ferraro
  */
-public class ImmutableSessionAdapter extends AbstractSessionAdapter<ImmutableSession> {
+public class DistributableImmutableSession extends AbstractDistributableSession<ImmutableSession> {
 
     private final SessionManager manager;
     private final ImmutableSession session;
 
-    public ImmutableSessionAdapter(SessionManager manager, ImmutableSession session) {
+    public DistributableImmutableSession(SessionManager manager, ImmutableSession session) {
         this.manager = manager;
         this.session = session;
     }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
 
-import org.wildfly.clustering.web.session.SessionManager;
+package org.wildfly.clustering.web.infinispan.session;
 
-import io.undertow.server.session.SessionListeners;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.registry.RegistryEntryProvider;
 
 /**
- * Exposes additional session manager aspects to a session.
+ * Service that provides the {@link RegistryEntryProvider} for the routing {@link Registry}.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
-    /**
-     * Returns the configured session listeners for this web application
-     * @return the session listeners
-     */
-    SessionListeners getSessionListeners();
+public class RouteRegistryEntryProviderService extends AbstractService<RegistryEntryProvider<String, Void>> {
 
-    /**
-     * Returns underlying distributable session manager implementation.
-     * @return a session manager
-     */
-    SessionManager<LocalSessionContext> getSessionManager();
+    public static final ServiceName SERVICE_NAME = RouteLocatorService.REGISTRY_SERVICE_NAME.append("entry");
+
+    private final Value<? extends Value<String>> route;
+
+    public RouteRegistryEntryProviderService(Value<? extends Value<String>> route) {
+        this.route = route;
+    }
+
+    @Override
+    public RegistryEntryProvider<String, Void> getValue() {
+        return new RouteRegistryEntryProvider(this.route.getValue());
+    }
 }

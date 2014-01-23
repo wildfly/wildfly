@@ -27,13 +27,13 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
@@ -58,7 +58,6 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -69,7 +68,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("WFLY-2853")
 public class JSFFailoverTestCase extends ClusterAbstractTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
@@ -114,14 +112,8 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         NumberGuessState state = new NumberGuessState();
         String responseString = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
 
-        Header setCookie = response.getFirstHeader("Set-Cookie");
-        if (setCookie != null) {
-            String setCookieValue = setCookie.getValue();
-            state.sessionId = setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';'));
-        } else if (sessionId != null) {
-            // We don't get a cookie back if we have sent it, so just set it to whatever we had before
-            state.sessionId = sessionId;
-        }
+        Map.Entry<String, String> sessionRouteEntry = parseSessionRoute(response);
+        state.sessionId = (sessionRouteEntry != null) ? sessionRouteEntry.getKey() : sessionId;
 
         matcher = smallestPattern.matcher(responseString);
         if (matcher.find()) {
@@ -452,7 +444,7 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
     /**
      * A simple class representing the client state.
      */
-    private static class NumberGuessState {
+    static class NumberGuessState {
         String smallest;
         String biggest;
         String sessionId;

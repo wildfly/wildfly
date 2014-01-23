@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,27 +21,36 @@
  */
 package org.wildfly.extension.undertow.session;
 
-import io.undertow.servlet.api.SessionManagerFactory;
-
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.modules.Module;
+import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.UndertowService;
 
 /**
- * SPI for building a factory for creating a distributable session manager.
+ * Service that exposes instance id of the server as the route.
  * @author Paul Ferraro
  */
-public interface DistributableSessionManagerFactoryBuilder {
-    /**
-     * Builds a {@link SessionManagerFactory} service.
-     * @param target the service target
-     * @param name the service name of the {@link SessionManagerFactory} service
-     * @param deploymentServiceName service name of the web application
-     * @param module the deployment module
-     * @param metaData the web application meta data
-     * @return a session manager factory service builder
-     */
-    ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData);
+public class RouteValueService extends AbstractService<RouteValue> {
+
+    public static final ServiceName SERVICE_NAME = UndertowService.SERVER.append("route");
+
+    public static ServiceBuilder<RouteValue> build(ServiceTarget target) {
+        RouteValueService service = new RouteValueService();
+        return target.addService(SERVICE_NAME, service)
+                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.service)
+        ;
+    }
+
+    private final InjectedValue<UndertowService> service = new InjectedValue<>();
+
+    private RouteValueService() {
+        // Hide
+    }
+
+    @Override
+    public RouteValue getValue() {
+        return new RouteValue(this.service.getValue());
+    }
 }

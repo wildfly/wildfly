@@ -46,16 +46,16 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionManager;
 import org.wildfly.clustering.web.session.SessionMetaData;
-import org.wildfly.clustering.web.undertow.session.SessionAdapter;
+import org.wildfly.clustering.web.undertow.session.DistributableSession;
 import org.wildfly.clustering.web.undertow.session.UndertowSessionManager;
 
-public class SessionAdapterTestCase {
+public class DistributableSessionTestCase {
     private final UndertowSessionManager manager = mock(UndertowSessionManager.class);
     private final SessionConfig config = mock(SessionConfig.class);
     private final Session<LocalSessionContext> session = mock(Session.class);
     private final Batch batch = mock(Batch.class);
 
-    private final io.undertow.server.session.Session adapter = new SessionAdapter(this.manager, this.session, this.config, this.batch);
+    private final io.undertow.server.session.Session adapter = new DistributableSession(this.manager, this.session, this.config, this.batch);
     
     @Test
     public void getId() {
@@ -348,7 +348,7 @@ public class SessionAdapterTestCase {
         SessionListeners listeners = new SessionListeners();
         listeners.addSessionListener(listener);
         String sessionId = "session";
-        
+
         when(this.manager.getSessionListeners()).thenReturn(listeners);
         when(this.session.getId()).thenReturn(sessionId);
         when(this.manager.getSessionManager()).thenReturn(manager);
@@ -379,8 +379,6 @@ public class SessionAdapterTestCase {
         LocalSessionContext oldContext = mock(LocalSessionContext.class);
         LocalSessionContext newContext = mock(LocalSessionContext.class);
         String sessionId = "session";
-        String route = "route";
-        String routedSessionid = "session:route";
         String name = "name";
         Object value = new Object();
         Date date = new Date();
@@ -401,11 +399,9 @@ public class SessionAdapterTestCase {
         when(oldMetaData.getLastAccessedTime()).thenReturn(date);
         when(oldMetaData.getMaxInactiveInterval(capturedUnit.capture())).thenReturn(interval);
         when(session.getId()).thenReturn(sessionId);
-        when(manager.locate(sessionId)).thenReturn(route);
         when(this.session.getLocalContext()).thenReturn(oldContext);
         when(session.getLocalContext()).thenReturn(newContext);
         when(oldContext.getAuthenticatedSession()).thenReturn(authenticatedSession);
-        when(this.manager.format(sessionId, route)).thenReturn(routedSessionid);
         
         String result = this.adapter.changeSessionId(exchange, config);
         
@@ -413,7 +409,7 @@ public class SessionAdapterTestCase {
         
         verify(newMetaData).setLastAccessedTime(date);
         verify(newMetaData).setMaxInactiveInterval(interval, capturedUnit.getValue());
-        verify(config).setSessionId(exchange, routedSessionid);
+        verify(config).setSessionId(exchange, sessionId);
         verify(newContext).setAuthenticatedSession(same(authenticatedSession));
     }
 }

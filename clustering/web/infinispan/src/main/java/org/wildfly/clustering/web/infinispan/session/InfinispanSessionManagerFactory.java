@@ -34,12 +34,8 @@ import org.jboss.as.clustering.marshalling.SimpleMarshalledValueFactory;
 import org.jboss.as.clustering.marshalling.SimpleMarshallingContextFactory;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
-import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.group.NodeFactory;
-import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.InfinispanWebMessages;
 import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionCacheEntry;
@@ -64,8 +60,6 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
     private final CacheInvoker invoker = new RetryingCacheInvoker(10, 100);
     private final Value<Cache> cache;
     private final Value<KeyAffinityServiceFactory> affinityFactory;
-    private final InjectedValue<NodeFactory> nodeFactory = new InjectedValue<>();
-    private final InjectedValue<Registry> registry = new InjectedValue<>();
 
     public InfinispanSessionManagerFactory(Module module, JBossWebMetaData metaData, Value<Cache> cache, Value<KeyAffinityServiceFactory> affinityFactory) {
         this.module = module;
@@ -81,7 +75,7 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
 
     @Override
     public <L> SessionManager<L> createSessionManager(SessionContext context, SessionIdentifierFactory identifierFactory, LocalContextFactory<L> localContextFactory) {
-        return new InfinispanSessionManager<>(context, identifierFactory, this.cache.getValue(), this.<L>getSessionFactory(context, localContextFactory), this.affinityFactory.getValue(), this.registry.getOptionalValue(), this.nodeFactory.getOptionalValue(), this.metaData);
+        return new InfinispanSessionManager<>(context, identifierFactory, this.cache.getValue(), this.<L>getSessionFactory(context, localContextFactory), this.affinityFactory.getValue(), this.metaData);
     }
 
     private <L> SessionFactory<?, L> getSessionFactory(SessionContext context, LocalContextFactory<L> localContextFactory) {
@@ -105,13 +99,5 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
                 throw InfinispanWebMessages.MESSAGES.unknownReplicationGranularity(this.metaData.getReplicationConfig().getReplicationGranularity());
             }
         }
-    }
-
-    Injector<NodeFactory> getNodeFactoryInjector() {
-        return this.nodeFactory;
-    }
-
-    Injector<Registry> getRegistryInjector() {
-        return this.registry;
     }
 }

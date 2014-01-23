@@ -21,24 +21,24 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
-import org.wildfly.clustering.web.session.SessionManager;
+import io.undertow.server.session.SessionIdGenerator;
 
-import io.undertow.server.session.SessionListeners;
+import org.wildfly.clustering.web.session.SessionIdentifierFactory;
 
 /**
- * Exposes additional session manager aspects to a session.
+ * {@link SessionIdentifierFactory} that delegates to a {@link SessionIdGenerator}.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
-    /**
-     * Returns the configured session listeners for this web application
-     * @return the session listeners
-     */
-    SessionListeners getSessionListeners();
+public class UndertowSessionIdentifierFactory implements SessionIdentifierFactory {
 
-    /**
-     * Returns underlying distributable session manager implementation.
-     * @return a session manager
-     */
-    SessionManager<LocalSessionContext> getSessionManager();
+    private final SessionIdGenerator generator;
+
+    public UndertowSessionIdentifierFactory(SessionIdGenerator generator) {
+        this.generator = generator;
+    }
+
+    @Override
+    public String createSessionId() {
+        return this.generator.createSessionId();
+    }
 }

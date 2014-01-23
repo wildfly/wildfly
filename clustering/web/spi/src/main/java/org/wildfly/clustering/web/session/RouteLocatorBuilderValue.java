@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
+package org.wildfly.clustering.web.session;
 
-import org.wildfly.clustering.web.session.SessionManager;
+import java.util.ServiceLoader;
 
-import io.undertow.server.session.SessionListeners;
+import org.jboss.msc.value.Value;
 
 /**
- * Exposes additional session manager aspects to a session.
+ * Dynamically loads the {@link RouteLocatorBuilder} provider via {@link ServiceLoader}.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
-    /**
-     * Returns the configured session listeners for this web application
-     * @return the session listeners
-     */
-    SessionListeners getSessionListeners();
+public class RouteLocatorBuilderValue implements Value<RouteLocatorBuilder> {
 
-    /**
-     * Returns underlying distributable session manager implementation.
-     * @return a session manager
-     */
-    SessionManager<LocalSessionContext> getSessionManager();
+    private static RouteLocatorBuilder load() {
+        for (RouteLocatorBuilder builder: ServiceLoader.load(RouteLocatorBuilder.class, RouteLocatorBuilder.class.getClassLoader())) {
+            return builder;
+        }
+        return null;
+    }
+
+    private final RouteLocatorBuilder builder;
+
+    public RouteLocatorBuilderValue() {
+        this(load());
+    }
+
+    public RouteLocatorBuilderValue(RouteLocatorBuilder builder) {
+        this.builder = builder;
+    }
+
+    @Override
+    public RouteLocatorBuilder getValue() {
+        return this.builder;
+    }
 }

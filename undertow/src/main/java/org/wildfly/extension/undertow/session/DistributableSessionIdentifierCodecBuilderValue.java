@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -26,31 +26,30 @@ import java.util.ServiceLoader;
 import org.jboss.msc.value.Value;
 
 /**
- * Uses a service loader to load a {@link DistributableSessionManagerFactoryBuilder} implementation.
- * This serves to decouple the undertow subsystem from the clustering modules.
+ * Dynamically loads the {@link DistributableSessionIdentifierCodecBuilder} provider via {@link ServiceLoader}.
  * @author Paul Ferraro
  */
-public class DistributableSessionManagerFactoryBuilderValue implements Value<DistributableSessionManagerFactoryBuilder> {
+public class DistributableSessionIdentifierCodecBuilderValue implements Value<DistributableSessionIdentifierCodecBuilder> {
 
-    private final DistributableSessionManagerFactoryBuilder builder;
+    private final DistributableSessionIdentifierCodecBuilder builder;
 
-    public DistributableSessionManagerFactoryBuilderValue() {
+    public DistributableSessionIdentifierCodecBuilderValue() {
         this(load());
     }
 
-    public DistributableSessionManagerFactoryBuilderValue(DistributableSessionManagerFactoryBuilder builder) {
+    public DistributableSessionIdentifierCodecBuilderValue(DistributableSessionIdentifierCodecBuilder builder) {
         this.builder = builder;
     }
 
-    private static DistributableSessionManagerFactoryBuilder load() {
-        for (DistributableSessionManagerFactoryBuilder builder: ServiceLoader.load(DistributableSessionManagerFactoryBuilder.class, DistributableSessionManagerFactoryBuilder.class.getClassLoader())) {
+    private static DistributableSessionIdentifierCodecBuilder load() {
+        for (DistributableSessionIdentifierCodecBuilder builder: ServiceLoader.load(DistributableSessionIdentifierCodecBuilder.class, DistributableSessionIdentifierCodecBuilder.class.getClassLoader())) {
             return builder;
         }
         return null;
     }
 
     @Override
-    public DistributableSessionManagerFactoryBuilder getValue() {
+    public DistributableSessionIdentifierCodecBuilder getValue() {
         return this.builder;
     }
 }

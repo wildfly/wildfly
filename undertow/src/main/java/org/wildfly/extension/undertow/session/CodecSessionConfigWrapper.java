@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
 
-import java.util.Map;
+package org.wildfly.extension.undertow.session;
+
+import org.jboss.as.web.session.SessionIdentifierCodec;
+
+import io.undertow.server.session.SessionConfig;
+import io.undertow.servlet.api.Deployment;
+import io.undertow.servlet.api.SessionConfigWrapper;
 
 /**
- * Exposes the mechanism for parsing and formation routing information from/into a requested session identifier.
+ * Adds session identifier encoding/decoding to a {@link SessionConfig}.
  * @author Paul Ferraro
  */
-public interface RoutingSupport extends RouteLocator {
-    /**
-     * Parses the routing information from the specified session identifier.
-     * @param requestedSessionId the requested session identifier.
-     * @return a map entry containing the key as the session ID, and value as the routing information.
-     */
-    Map.Entry<String, String> parse(String requestedSessionId);
+public class CodecSessionConfigWrapper implements SessionConfigWrapper {
 
-    /**
-     * Formats the specified session identifier and route identifier into a single identifier.
-     * @param sessionId a session identifier
-     * @param instanceId an instance identifier.
-     * @return a single identifier containing the specified session identifier and routing identifier.
-     */
-    String format(String sessionId, String routeId);
+    private final SessionIdentifierCodec codec;
+
+    public CodecSessionConfigWrapper(SessionIdentifierCodec codec) {
+        this.codec = codec;
+    }
+
+    @Override
+    public SessionConfig wrap(SessionConfig config, Deployment deployment) {
+        return new CodecSessionConfig(config, this.codec);
+    }
 }

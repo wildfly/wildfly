@@ -53,7 +53,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Validate the <distributable/> works for a two-node cluster.
+ * Validate that <distributable/> works for a two-node cluster.
  *
  * @author Paul Ferraro
  * @author Radoslav Husar

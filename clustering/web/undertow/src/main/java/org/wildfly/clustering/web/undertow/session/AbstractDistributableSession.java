@@ -32,7 +32,7 @@ import io.undertow.server.session.Session;
  * Abstract Undertow adapter for a session.
  * @author Paul Ferraro
  */
-public abstract class AbstractSessionAdapter<S extends ImmutableSession> implements Session {
+public abstract class AbstractDistributableSession<S extends ImmutableSession> implements Session {
 
     /**
      * Returns a reference to the delegate session.

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,30 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
+package org.wildfly.clustering.web.infinispan.session;
 
-import io.undertow.server.session.SessionIdGenerator;
-
-import org.wildfly.clustering.web.session.SessionIdentifierFactory;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.registry.RegistryEntryProvider;
 
 /**
- * Adapts a {@link SessionIdGenerator} to a {@link SessionIdentifierFactory}.
+ * Provides the local {@link Registry} entry containing the route identifier.
  * @author Paul Ferraro
  */
-public class SessionIdentifierFactoryAdapter implements SessionIdentifierFactory {
+public class RouteRegistryEntryProvider implements RegistryEntryProvider<String, Void> {
 
-    private final SessionIdGenerator generator;
+    private final Value<String> route;
 
-    public SessionIdentifierFactoryAdapter(SessionIdGenerator generator) {
-        this.generator = generator;
+    public RouteRegistryEntryProvider(Value<String> route) {
+        this.route = route;
     }
 
     @Override
-    public String createSessionId() {
-        return this.generator.createSessionId();
+    public String getKey() {
+        return this.route.getValue();
+    }
+
+    @Override
+    public Void getValue() {
+        return null;
     }
 }

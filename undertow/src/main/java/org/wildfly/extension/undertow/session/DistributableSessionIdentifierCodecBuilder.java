@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
+package org.wildfly.extension.undertow.session;
 
-import org.wildfly.clustering.web.session.SessionManager;
-
-import io.undertow.server.session.SessionListeners;
+import org.jboss.as.web.session.SessionIdentifierCodec;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
- * Exposes additional session manager aspects to a session.
+ * Builds a {@link SessionIdentifierCodec} service.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
+public interface DistributableSessionIdentifierCodecBuilder {
     /**
-     * Returns the configured session listeners for this web application
-     * @return the session listeners
+     * Builds a {@link SessionIdentifierCodec} service.
+     * @param target a service target
+     * @param name a service name
+     * @param deploymentServiceName the service name of the deployment
+     * @return a service builder
      */
-    SessionListeners getSessionListeners();
+    ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName);
 
     /**
-     * Returns underlying distributable session manager implementation.
-     * @return a session manager
+     * Builds cross-deployment dependencies needed for route handling
+     * @param target the service target
+     * @return a service builder
      */
-    SessionManager<LocalSessionContext> getSessionManager();
+    ServiceBuilder<?> buildServerDependency(ServiceTarget target);
 }
