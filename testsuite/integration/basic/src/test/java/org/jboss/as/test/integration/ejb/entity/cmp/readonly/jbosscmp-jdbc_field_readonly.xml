@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE jbosscmp-jdbc PUBLIC "-//JBoss//DTD JBOSSCMP-JDBC 3.2//EN" "http://www.jboss.org/j2ee/dtd/jbosscmp-jdbc_3_2.dtd">
+<jbosscmp-jdbc>
+   <enterprise-beans>
+      <entity>
+         <ejb-name>SimpleEntity</ejb-name>
+         <create-table>true</create-table>
+         <remove-table>true</remove-table>
+         <post-table-create>
+             <sql-statement>INSERT INTO SIMPLE (ID, NAME, LASTNAME) VALUES (1, 'Bart', 'SIMPSONS')</sql-statement>
+             <sql-statement>INSERT INTO SIMPLE (ID, NAME, LASTNAME) VALUES (2, 'Homer', 'SIMPSONS')</sql-statement>
+         </post-table-create>
+         <table-name>SIMPLE</table-name>
+      <cmp-field>
+        <field-name>id</field-name>
+        <column-name>ID</column-name>
+      </cmp-field>
+      <cmp-field>
+        <field-name>name</field-name>
+        <column-name>NAME</column-name>
+      </cmp-field>
+      <cmp-field>
+        <field-name>lastName</field-name>
+        <read-only>true</read-only>
+        <column-name>LASTNAME</column-name>
+      </cmp-field>
+      </entity>
+   </enterprise-beans>
+</jbosscmp-jdbc>
