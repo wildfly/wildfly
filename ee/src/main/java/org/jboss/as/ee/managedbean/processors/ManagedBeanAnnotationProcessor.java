@@ -38,6 +38,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
 import org.jboss.as.ee.managedbean.component.ManagedBeanCreateInterceptor;
 import org.jboss.as.ee.managedbean.component.ManagedBeanResourceReferenceProcessor;
+import org.jboss.as.ee.structure.EJBAnnotationPropertyReplacement;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -49,6 +50,7 @@ import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
+import org.jboss.metadata.property.PropertyReplacer;
 
 import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
 import static org.jboss.as.ee.EeMessages.MESSAGES;
@@ -76,6 +78,8 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        final boolean replacement = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
+        final PropertyReplacer replacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
         if(compositeIndex == null) {
             return;
         }
@@ -98,7 +102,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
 
             // Get the managed bean name from the annotation
             final AnnotationValue nameValue = instance.value();
-            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : nameValue.asString();
+            final String beanName = nameValue == null || nameValue.asString().isEmpty() ? beanClassName : (replacement ? replacer.replaceProperties(nameValue.asString()) : nameValue.asString());
             final ManagedBeanComponentDescription componentDescription = new ManagedBeanComponentDescription(beanName, beanClassName, moduleDescription, deploymentUnit.getServiceName());
 
             // Add the view
