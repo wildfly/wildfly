@@ -26,6 +26,7 @@ import java.util.List;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.servlet.api.ThreadSetupAction;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 
 /**
  * Class defining {@link AttachmentKey}s for Undertow-specific attachments.
@@ -38,11 +39,11 @@ public final class UndertowAttachments {
 
     public static final AttachmentKey<List<HandlerWrapper>> UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS = AttachmentKey.create(List.class);
 
-    public static final AttachmentKey<List<HandlerWrapper>> UNDERTOW_INNER_HANDLER_CHAIN_WRAPPERS = AttachmentKey.create(List.class);
+    public static final AttachmentKey<AttachmentList<HandlerWrapper>> UNDERTOW_INNER_HANDLER_CHAIN_WRAPPERS = AttachmentKey.createList(HandlerWrapper.class);
 
-    public static final AttachmentKey<List<HandlerWrapper>> UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS = AttachmentKey.create(List.class);
+    public static final AttachmentKey<AttachmentList<HandlerWrapper>> UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS = AttachmentKey.createList(HandlerWrapper.class);
 
-    public static final AttachmentKey<List<ThreadSetupAction>> UNDERTOW_THREAD_SETUP_ACTIONS = AttachmentKey.create(List.class);
+    public static final AttachmentKey<AttachmentList<ThreadSetupAction>> UNDERTOW_THREAD_SETUP_ACTIONS = AttachmentKey.createList(ThreadSetupAction.class);
 
     private UndertowAttachments() {
     }

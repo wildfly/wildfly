@@ -171,4 +171,13 @@ public interface UndertowMessages {
 
     @Message(id = 17350, value = "Could not find the port number listening for protocol %s")
     IllegalStateException noPortListeningForProtocol(final String protocol);
+
+    @Message(id = 17351, value = "Failed to configure handler %s")
+    RuntimeException failedToConfigureHandler(Class<?> handlerClass, @Cause Exception e);
+
+    @Message(id = 17352, value = "Handler class %s was not a handler or a wrapper")
+    IllegalArgumentException handlerWasNotAHandlerOrWrapper(Class<?> handlerClass);
+
+    @Message(id = 17353, value = "Failed to configure handler %s")
+    RuntimeException failedToConfigureHandlerClass(String handlerClass, @Cause Exception e);
 }
