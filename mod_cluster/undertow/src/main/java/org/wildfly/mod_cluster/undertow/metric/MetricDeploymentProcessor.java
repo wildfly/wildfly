@@ -104,15 +104,7 @@ class MetricDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Busyness thread setup actions
         if (isMetricEnabled(BusyConnectorsLoadMetric.class)) {
-
-            List<HandlerWrapper> outerHandlerAttachment = deploymentUnit.getAttachment(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS);
-
-            if (outerHandlerAttachment == null) {
-                outerHandlerAttachment = new LinkedList<HandlerWrapper>();
-                deploymentUnit.putAttachment(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS, outerHandlerAttachment);
-            }
-
-            outerHandlerAttachment.add(new HandlerWrapper() {
+            deploymentUnit.addToAttachmentList(UndertowAttachments.UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS, new HandlerWrapper() {
                 @Override
                 public HttpHandler wrap(final HttpHandler handler) {
                     return new RunningRequestsHttpHandler(handler);

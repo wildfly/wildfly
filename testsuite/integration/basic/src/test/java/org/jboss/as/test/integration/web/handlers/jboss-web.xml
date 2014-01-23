@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<jboss-web>
+    <http-handler>
+        <class-name>org.jboss.as.test.integration.web.handlers.SetHeaderHandler</class-name>
+        <param>
+            <param-name>name</param-name>
+            <param-value>MyHeader</param-value>
+        </param>
+        <param>
+            <param-name>value</param-name>
+            <param-value>MyValue</param-value>
+        </param>
+    </http-handler>
+</jboss-web>

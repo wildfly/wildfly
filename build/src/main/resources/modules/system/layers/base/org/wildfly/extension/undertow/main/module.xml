@@ -53,6 +53,7 @@
         <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.server"/>
         <module name="org.jboss.as.threads"/>
+        <module name="org.jboss.common-beans" services="import"/>
         <module name="org.jboss.marshalling"/>
         <module name="org.jboss.marshalling.river" services="import"/>
         <module name="org.jboss.as.web-common"/>
