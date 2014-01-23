@@ -33,6 +33,7 @@ import org.jboss.as.connector.services.transactionintegration.TransactionIntegra
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -60,8 +61,8 @@ class JcaSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-        final RaDeploymentActivator raDeploymentActivator = new RaDeploymentActivator();
-
+        final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
+        final RaDeploymentActivator raDeploymentActivator = new RaDeploymentActivator(appclient);
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
                 raDeploymentActivator.activateProcessors(processorTarget);
