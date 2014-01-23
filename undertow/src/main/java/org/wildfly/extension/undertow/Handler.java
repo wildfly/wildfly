@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import io.undertow.server.HttpHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -36,5 +37,7 @@ public interface Handler {
     String getXmlElementName();
 
     Class<? extends HttpHandler> getHandlerClass();
+
+    HttpHandler createHttpHandler(final ModelNode model, HttpHandler next);
 
 }

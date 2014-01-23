@@ -96,6 +96,13 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull("handler should have been created", result);
 
 
+        ServiceController<FilterService> gzipFilterController = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("static-gzip"));
+        gzipFilterController.setMode(ServiceController.Mode.ACTIVE);
+        FilterService gzipFilter = gzipFilterController.getService().getValue();
+        HttpHandler gzipHandler = gzipFilter.createHttpHandler(new PathHandler());
+        Assert.assertNotNull("handler should have been created", gzipHandler);
+
+
         ServiceController<FilterService> headersFilter = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("headers"));
         headersFilter.setMode(ServiceController.Mode.ACTIVE);
         FilterService headersService = headersFilter.getService().getValue();
