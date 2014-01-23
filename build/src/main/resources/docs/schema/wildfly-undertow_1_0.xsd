@@ -231,6 +231,7 @@
             <xs:element name="basic-auth" type="basic-authType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="connection-limit" type="connection-limitType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="response-header" type="response-headerType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="gzip" type="gzipType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -328,5 +329,28 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="header-name" use="required" type="xs:string"/>
         <xs:attribute name="header-value" use="required" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="gzipType">
+        <xs:attribute name="name" use="required" type="xs:string"/>
+        <xs:attribute name="predicate" use="optional" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                              Predicates provide a simple way of making a true/false decision  based on an exchange. Many handlers have a requirement that they be applied conditionally, and predicates provide a general way to specify a condition. Predicates can be created programatically (they are just java classes that implement the Predicate interface), however there is also a simple language for specifying a predicate. Some examples below:
+
+                              regex['/resources/*.\.css'] - regular expression match of the relative URL
+
+                              regex[pattern='text/.*', value='%{i,Content-Type}, full-match=true] - Matches requests with a text/.* content type
+
+                              equals[{'%{i,Content-Type}', 'text/xml'}] - Matches if the content type header is text/xml
+
+                              contains[search='MSIE', value='%{i,User-Agent}'] and path-suffix['.js'] - User agent contains MSIE and request URL ends with .js
+
+                              regex['/resources/(*.)\.css'] and equals[{'$1', 'myCssFile'}] - regex match, with a reference to match group 1 later in the expression
+                            ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 </xs:schema>
