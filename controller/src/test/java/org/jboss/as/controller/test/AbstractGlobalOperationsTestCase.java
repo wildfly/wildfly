@@ -122,6 +122,15 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 .build();
     }
 
+    private static OperationDefinition createOperationDefinition(String name, boolean runtimeOnly, AttributeDefinition... parameters) {
+        SimpleOperationDefinitionBuilder builder = new SimpleOperationDefinitionBuilder(name, new NonResolvingResourceDescriptionResolver())
+                .setParameters(parameters);
+        if (runtimeOnly) {
+            builder.setRuntimeOnly();
+        }
+        return builder.build();
+    }
+
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
@@ -369,6 +378,28 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
                 new NonResolvingResourceDescriptionResolver())
                 .build();
         ManagementResourceRegistration profileCSub5Type1Reg = profileCSub5Reg.registerSubModel(profileCSub5Type1RegDef);
+
+        ManagementResourceRegistration profileCSub6Reg = profileReg.registerSubModel(PathElement.pathElement("subsystem", "subsystem6"), new DescriptionProvider() {
+
+            @Override
+            public ModelNode getModelDescription(Locale locale) {
+                ModelNode node = new ModelNode();
+                node.get(DESCRIPTION).set("A subsystem");
+                node.get(ATTRIBUTES, "name", TYPE).set(ModelType.STRING);
+                node.get(ATTRIBUTES, "name", DESCRIPTION).set("The name of the thing");
+                node.get(ATTRIBUTES, "name", REQUIRED).set(false);
+                return node;
+            }
+        });
+
+        profileCSub6Reg.registerOperationHandler(createOperationDefinition("testA", true),
+                new OperationStepHandler() {
+
+                    @Override
+                    public void execute(OperationContext context, ModelNode operation) {
+                    }
+                }
+        );
     }
 
     /**
@@ -436,7 +467,7 @@ public abstract class AbstractGlobalOperationsTestCase extends AbstractControlle
             return;
         }
         assertTrue(result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).isDefined());
-        assertEquals(5, result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).keys().size());
+        assertEquals(6, result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).keys().size());
         checkSubsystem1Description(result.require(CHILDREN).require(SUBSYSTEM).require(MODEL_DESCRIPTION).require("subsystem1"), recursive, operations);
     }
 

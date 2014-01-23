@@ -324,6 +324,7 @@ public class ModelDescriptionConstants {
     public static final String RUNNING_MODE = "running-mode";
     public static final String RUNNING_SERVER = "server";
     public static final String RUNTIME_NAME = "runtime-name";
+    public static final String RUNTIME_ONLY = "runtime-only";
     public static final String RUNTIME_UPDATE_SKIPPED = "runtime-update-skipped";
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
