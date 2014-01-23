@@ -1,5 +1,6 @@
 package org.jboss.as.test.integration.web.handlers;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
@@ -34,6 +35,7 @@ public class UndertowHandlersConfigTestCase {
     public static WebArchive deploy() {
         return ShrinkWrap.create(WebArchive.class, "non-blocking-handler.war")
                 .addPackage(UndertowHandlersConfigTestCase.class.getPackage())
+                .addAsWebInfResource(UndertowHandlersConfigTestCase.class.getPackage(), "jboss-web.xml", "jboss-web.xml")
                 .addAsWebResource(new StringAsset("A file"), "file.txt")
                 .addAsWebInfResource(new StringAsset("regex['/rewrite.*'] -> rewrite['/file.txt']"), "undertow-handlers.conf");
     }
@@ -55,6 +57,10 @@ public class UndertowHandlersConfigTestCase {
 
             String result = EntityUtils.toString(entity);
             Assert.assertEquals("A file", result);
+
+            Header[] headers = response.getHeaders("MyHeader");
+            Assert.assertEquals(1, headers.length);
+            Assert.assertEquals("MyValue", headers[0].getValue());
         } finally {
             // When HttpClient instance is no longer needed,
             // shut down the connection manager to ensure
