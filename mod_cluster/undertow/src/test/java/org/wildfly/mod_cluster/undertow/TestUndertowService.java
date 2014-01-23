@@ -27,7 +27,7 @@ import org.wildfly.extension.undertow.UndertowService;
 public class TestUndertowService extends UndertowService {
 
     public TestUndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId, Server server) {
-        super(defaultContainer, defaultServer, defaultVirtualHost, instanceId);
+        super(defaultContainer, defaultServer, defaultVirtualHost, instanceId, true);
         this.registerServer(server);
     }
 }

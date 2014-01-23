@@ -40,7 +40,6 @@ import org.wildfly.extension.undertow.Constants;
  */
 public class ErrorPageDefinition extends AbstractHandlerDefinition {
 
-    public static final ErrorPageDefinition INSTANCE = new ErrorPageDefinition();
     public static final AttributeDefinition CODE = new SimpleAttributeDefinitionBuilder("code", ModelType.INT)
             .setAllowExpression(true)
             .setAllowNull(true)
@@ -50,6 +49,7 @@ public class ErrorPageDefinition extends AbstractHandlerDefinition {
             .setAllowNull(true)
             .build();
     public static final Collection<AttributeDefinition> ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(CODE, PATH));
+    public static final ErrorPageDefinition INSTANCE = new ErrorPageDefinition();
 
     private ErrorPageDefinition() {
         super(Constants.ERROR_PAGE);
@@ -61,7 +61,7 @@ public class ErrorPageDefinition extends AbstractHandlerDefinition {
     }
 
     @Override
-    public Class getHandlerClass() {
+    public Class<? extends HttpHandler> getHandlerClass() {
         return FileErrorPageHandler.class;
     }
 

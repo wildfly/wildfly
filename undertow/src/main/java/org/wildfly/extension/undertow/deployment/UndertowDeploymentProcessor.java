@@ -354,6 +354,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         return pathName;
     }
 
+    //todo move to UndertowDeploymentService and use all registered servlets from Deployment instead of just one found by metadata
     void processManagement(final DeploymentUnit unit, JBossWebMetaData metaData) {
         for (final JBossServletMetaData servlet : metaData.getServlets()) {
             try {

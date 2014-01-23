@@ -81,7 +81,7 @@ class HostAdd extends AbstractAddStepHandler {
 
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
         final ServiceName accessLogServiceName = UndertowService.accessLogServiceName(serverName, name);
-        Host service = new Host(name, aliases == null ? new LinkedList<String>() : aliases, defaultWebModule);
+        final Host service = new Host(name, aliases == null ? new LinkedList<String>() : aliases, defaultWebModule);
         final ServiceBuilder<Host> builder = context.getServiceTarget().addService(virtualHostServiceName, service)
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerInjection())
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService())

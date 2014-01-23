@@ -98,12 +98,13 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final String defaultVirtualHost = UndertowRootDefinition.DEFAULT_VIRTUAL_HOST.resolveModelAttribute(context, model).asString();
         final String defaultContainer = UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER.resolveModelAttribute(context, model).asString();
         final String defaultServer = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, model).asString();
+        final boolean stats = UndertowRootDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, model).asBoolean();
 
         final ModelNode instanceIdModel = UndertowRootDefinition.INSTANCE_ID.resolveModelAttribute(context, model);
         final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
         ServiceTarget target = context.getServiceTarget();
 
-        newControllers.add(target.addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId))
+        newControllers.add(target.addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId, stats))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install());
 

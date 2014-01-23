@@ -140,6 +140,9 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
         return deploymentInfoInjectedValue;
     }
 
+    public Deployment getDeployment(){
+        return deploymentManager.getDeployment();
+    }
 
     /**
      * Provides an API to start/stop the {@link UndertowDeploymentService}.

@@ -22,9 +22,24 @@
 
 package org.wildfly.extension.undertow;
 
+import io.undertow.server.handlers.MetricsHandler;
+import io.undertow.servlet.api.DeploymentInfo;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.msc.service.ServiceController;
+import org.wildfly.extension.undertow.deployment.UndertowDeploymentService;
+import org.wildfly.extension.undertow.deployment.UndertowMetricsCollector;
 
 /**
  * @author Tomaz Cerar
@@ -33,11 +48,10 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 public class DeploymentServletDefinition extends SimpleResourceDefinition {
     public static final DeploymentServletDefinition INSTANCE = new DeploymentServletDefinition();
 
-    /*protected static final SimpleAttributeDefinition LOAD_TIME = new SimpleAttributeDefinitionBuilder(org.jboss.as.web.Constants.LOAD_TIME, ModelType.LONG, true).build();
-    protected static final SimpleAttributeDefinition MAX_TIME = new SimpleAttributeDefinitionBuilder(org.jboss.as.web.Constants.MAX_TIME, ModelType.LONG, true).build();
-    protected static final SimpleAttributeDefinition MIN_TIME = new SimpleAttributeDefinitionBuilder(org.jboss.as.web.Constants.MIN_TIME, ModelType.LONG, true).build();
-    protected static final SimpleAttributeDefinition PROCESSING_TIME = new SimpleAttributeDefinitionBuilder(org.jboss.as.web.Constants.PROCESSING_TIME, ModelType.LONG, true).build();
-    protected static final SimpleAttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder(Constants.REQUEST_COUNT, ModelType.INT, true).build();*/
+    static final SimpleAttributeDefinition MAX_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("max-request-time", ModelType.LONG, true).setStorageRuntime().build();
+    static final SimpleAttributeDefinition MIN_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("min-request-time", ModelType.LONG, true).setStorageRuntime().build();
+    static final SimpleAttributeDefinition TOTAL_REQUEST_TIME = new SimpleAttributeDefinitionBuilder("total-request-time", ModelType.LONG, true).setStorageRuntime().build();
+    static final SimpleAttributeDefinition REQUEST_COUNT = new SimpleAttributeDefinitionBuilder("request-count", ModelType.LONG, true).setStorageRuntime().build();
 
 
     private DeploymentServletDefinition() {
@@ -47,41 +61,35 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration registration) {
-       /* registration.registerMetric(LOAD_TIME, new AbstractMetricsHandler() {
+        registration.registerMetric(MAX_REQUEST_TIME, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, final StandardWrapper wrapper) {
-                response.set(wrapper.getLoadTime());
+            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult) {
+                response.set(metricResult.getMaxRequestTime());
             }
         });
-        registration.registerMetric(MAX_TIME, new AbstractMetricsHandler() {
+        registration.registerMetric(MIN_REQUEST_TIME, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, final StandardWrapper wrapper) {
-                response.set(wrapper.getMinTime());
+            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult) {
+                response.set(metricResult.getMinRequestTime());
             }
         });
-        registration.registerMetric(MIN_TIME, new AbstractMetricsHandler() {
+        registration.registerMetric(TOTAL_REQUEST_TIME, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, final StandardWrapper wrapper) {
-                response.set(wrapper.getLoadTime());
-            }
-        });
-        registration.registerMetric(PROCESSING_TIME, new AbstractMetricsHandler() {
-            @Override
-            void handle(final ModelNode response, final String name, final StandardWrapper wrapper) {
-                response.set(wrapper.getProcessingTime());
+            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult) {
+                response.set(metricResult.getTotalRequestTime());
             }
         });
         registration.registerMetric(REQUEST_COUNT, new AbstractMetricsHandler() {
             @Override
-            void handle(final ModelNode response, final String name, final StandardWrapper wrapper) {
-                response.set(wrapper.getRequestCount());
+            void handle(final ModelNode response, final String name, final MetricsHandler.MetricResult metricResult) {
+                response.set(metricResult.getTotalRequests());
             }
-        });*/
+        });
     }
 
-  /*  abstract static class AbstractMetricsHandler implements OperationStepHandler {
+    abstract static class AbstractMetricsHandler implements OperationStepHandler {
 
-        abstract void handle(ModelNode response, String name, StandardWrapper wrapper);
+        abstract void handle(ModelNode response, String name, MetricsHandler.MetricResult metricResult);
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -90,19 +98,27 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
             final Resource web = context.readResourceFromRoot(address.subAddress(0, address.size() - 1), false);
             final ModelNode subModel = web.getModel();
 
-            final String host = subModel.require("virtual-host").asString();
-            final String path = subModel.require("context-root").asString();
+            final String host = DeploymentDefinition.VIRTUAL_HOST.resolveModelAttribute(context, subModel).asString();
+            final String path = DeploymentDefinition.CONTEXT_ROOT.resolveModelAttribute(context, subModel).asString();
+            final String server = DeploymentDefinition.SERVER.resolveModelAttribute(context, subModel).asString();
 
+            final ServiceController<?> controller = context.getServiceRegistry(false).getService(UndertowService.deploymentServiceName(server, host, path));
+            final UndertowDeploymentService deploymentService = (UndertowDeploymentService) controller.getService();
+            final DeploymentInfo deploymentInfo = deploymentService.getDeploymentInfoInjectedValue().getValue();
+            final UndertowMetricsCollector collector = (UndertowMetricsCollector)deploymentInfo.getMetricsCollector();
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-                    final ServiceController<?> controller = context.getServiceRegistry(false).getService(WebSubsystemServices.deploymentServiceName(host, path));
+
                     if (controller != null) {
                         final String name = address.getLastElement().getValue();
-                        final Context webContext = Context.class.cast(controller.getValue());
-                        final Wrapper wrapper = Wrapper.class.cast(webContext.findChild(name));
                         final ModelNode response = new ModelNode();
-                        handle(response, name, (StandardWrapper) wrapper);
+                        MetricsHandler.MetricResult result = collector != null ? collector.getMetrics(name) : null;
+                        if (result == null) {
+                            response.set(0);
+                        } else {
+                            handle(response, name, result);
+                        }
                         context.getResult().set(response);
                     }
                     context.stepCompleted();
@@ -110,6 +126,6 @@ public class DeploymentServletDefinition extends SimpleResourceDefinition {
             }, OperationContext.Stage.RUNTIME);
             context.stepCompleted();
         }
-    }*/
+    }
 
 }
