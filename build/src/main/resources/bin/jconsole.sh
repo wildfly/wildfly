@@ -66,30 +66,15 @@ if [ "x$JAVA_HOME" = x ]; then
    JAVA_HOME=`dirname "$JAVA_HOME"`
 fi
 
-if [ "x$JBOSS_MODULEPATH" = "x" ]; then
-    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
-fi
-
 # For Cygwin, switch paths to Windows format before running java
 if $cygwin; then
     JBOSS_HOME=`cygpath --path --windows "$JBOSS_HOME"`
     JAVA_HOME=`cygpath --path --windows "$JAVA_HOME"`
-    JBOSS_MODULEPATH=`cygpath --path --windows "$JBOSS_MODULEPATH"`
 fi
 
 CLASSPATH=$JAVA_HOME/lib/jconsole.jar
 CLASSPATH=$CLASSPATH:$JAVA_HOME/lib/tools.jar
-
-MODULES="org/jboss/remoting-jmx org/jboss/remoting org/jboss/logging org/jboss/xnio org/jboss/xnio/nio org/jboss/sasl org/jboss/marshalling org/jboss/marshalling/river org/jboss/as/cli org/jboss/staxmapper org/jboss/as/protocol org/jboss/dmr org/jboss/as/controller-client org/jboss/threads org/wildfly/security/manager" 
-
-for MODULE in $MODULES
-do
-    for JAR in `cd "$JBOSS_MODULEPATH/system/layers/base/$MODULE/main/" && ls -1 *.jar`
-    do
-        CLASSPATH="$CLASSPATH:$JBOSS_MODULEPATH/system/layers/base/$MODULE/main/$JAR"
-    done
-done
-
+CLASSPATH="$CLASSPATH:$JBOSS_HOME/bin/client/jboss-cli-client.jar"
 
 echo CLASSPATH $CLASSPATH
 
