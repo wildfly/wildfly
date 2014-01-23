@@ -32,6 +32,7 @@ import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ValueExpression;
 import org.wildfly.extension.undertow.errorhandler.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.FilterDefinitions;
 import org.wildfly.extension.undertow.handlers.HandlerDefinitions;
@@ -62,8 +63,16 @@ class UndertowRootDefinition extends PersistentResourceDefinition {
             new SimpleAttributeDefinitionBuilder(Constants.INSTANCE_ID, ModelType.STRING, true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode().set(new ValueExpression("${jboss.node.name}")))
                     .build();
-    static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID};
+    protected static final SimpleAttributeDefinition STATISTICS_ENABLED =
+                new SimpleAttributeDefinitionBuilder("statistics-enabled", ModelType.BOOLEAN, true)
+                        .setAllowExpression(true)
+                        .setDefaultValue(new ModelNode(false))
+                        .build();
+
+
+    static final AttributeDefinition[] ATTRIBUTES = {DEFAULT_VIRTUAL_HOST, DEFAULT_SERVLET_CONTAINER, DEFAULT_SERVER, INSTANCE_ID, STATISTICS_ENABLED};
     static final PersistentResourceDefinition[] CHILDREN = {
             BufferCacheDefinition.INSTANCE,
             ServerDefinition.INSTANCE,

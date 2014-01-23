@@ -22,19 +22,13 @@
 
 package org.wildfly.extension.undertow.filters;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.List;
-
 import io.undertow.server.HttpHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.undertow.Handler;
-import org.wildfly.extension.undertow.UndertowMessages;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -59,7 +53,7 @@ public class FilterService implements Service<FilterService> {
     }
 
     public HttpHandler createHttpHandler(HttpHandler next) {
-        return handler.createHttpHandler(model,next);
+        return handler.createHttpHandler(model, next);
 
         /*Class<? extends HttpHandler> handlerClass = handler.getHandlerClass();
         List<AttributeDefinition> attributes = new ArrayList<>(handler.getAttributes());

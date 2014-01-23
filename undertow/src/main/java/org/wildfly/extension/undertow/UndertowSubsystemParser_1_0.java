@@ -61,6 +61,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
     static {
         xmlDescription = builder(UndertowRootDefinition.INSTANCE)
                 .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID)
+                .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
 
                         builder(BufferCacheDefinition.INSTANCE)

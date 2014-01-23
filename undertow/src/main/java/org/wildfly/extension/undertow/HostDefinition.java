@@ -73,6 +73,7 @@ class HostDefinition extends PersistentResourceDefinition {
             .setValidator(new StringLengthValidator(1, true, false))
             .setDefaultValue(new ModelNode("ROOT.war"))
             .build();
+
     static final HostDefinition INSTANCE = new HostDefinition();
     private static final Collection ATTRIBUTES = Collections.unmodifiableCollection(Arrays.asList(ALIAS, DEFAULT_WEB_MODULE));
     private static final List<? extends PersistentResourceDefinition> CHILDREN = Collections.unmodifiableList(Arrays.asList(
