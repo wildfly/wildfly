@@ -59,7 +59,9 @@ public class FilterService implements Service<FilterService> {
     }
 
     public HttpHandler createHttpHandler(HttpHandler next) {
-        Class<? extends HttpHandler> handlerClass = handler.getHandlerClass();
+        return handler.createHttpHandler(model,next);
+
+        /*Class<? extends HttpHandler> handlerClass = handler.getHandlerClass();
         List<AttributeDefinition> attributes = new ArrayList<>(handler.getAttributes());
         int numOfParams = attributes.size() + 1;
         try {
@@ -89,7 +91,7 @@ public class FilterService implements Service<FilterService> {
         } catch (Throwable e) {
             throw UndertowMessages.MESSAGES.cannotCreateHttpHandler(handlerClass, model, e);
         }
-        throw UndertowMessages.MESSAGES.cannotCreateHttpHandler(handlerClass, model, null);
+        throw UndertowMessages.MESSAGES.cannotCreateHttpHandler(handlerClass, model, null);*/
     }
 
     @Override
