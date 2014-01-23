@@ -21,8 +21,6 @@
  */
 package org.wildfly.clustering.web.infinispan.session.coarse;
 
-import org.infinispan.distribution.group.Group;
-
 /**
  * Cache key for session attributes.
  * @author Paul Ferraro
@@ -36,7 +34,6 @@ public class SessionAttributesCacheKey {
     }
 
     @Override
-    @Group
     public String toString() {
         return this.id;
     }

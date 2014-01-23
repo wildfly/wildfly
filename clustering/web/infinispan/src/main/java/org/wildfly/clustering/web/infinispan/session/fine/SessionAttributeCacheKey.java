@@ -48,7 +48,7 @@ public class SessionAttributeCacheKey {
 
     @Override
     public int hashCode() {
-        return this.id.hashCode();
+        return this.id.hashCode() ^ this.attribute.hashCode();
     }
 
     @Override
