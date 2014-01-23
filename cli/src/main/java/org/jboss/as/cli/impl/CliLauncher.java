@@ -113,31 +113,49 @@ public class CliLauncher {
                         break;
                     }
                     if(commands != null) {
-                        argError = "Duplicate argument '--command'/'--commands'.";
+                        argError = "'" + arg +
+                                "' is assumed to be a command(s) but the commands to execute have been specified by another argument: " +
+                                commands;
                         break;
                     }
                     final String value = arg.startsWith("--") ? arg.substring(10) : arg.substring(8);
                     commands = Collections.singletonList(value);
-                } else if (arg.startsWith("--user=")) {
-                    username = arg.startsWith("--") ? arg.substring(7) : arg.substring(5);
-                    noLocalAuth = true;
-                } else if (arg.startsWith("--password=")) {
-                    password = (arg.startsWith("--") ? arg.substring(11) : arg.substring(9)).toCharArray();
+                } else if (arg.startsWith("--user")) {
+                    if(arg.length() > 6 && arg.charAt(6) == '=') {
+                        username = arg.substring(7);
+                        noLocalAuth = true;
+                    } else {
+                        argError = "'=' is missing after --user";
+                        break;
+                    }
+                } else if (arg.startsWith("--password")) {
+                    if(arg.length() > 10 && arg.charAt(10) == '=') {
+                        password = arg.substring(11).toCharArray();
+                    } else {
+                        argError = "'=' is missing after --password";
+                        break;
+                    }
                 } else if (arg.equals("--no-local-auth")) {
                     noLocalAuth = true;
-                } else if (arg.startsWith("--timeout=")) {
+                } else if (arg.startsWith("--timeout")) {
                     if (connectionTimeout > 0) {
                         argError = "Duplicate argument '--timeout'";
                         break;
                     }
-                    final String value = arg.substring(10);
-                    try {
-                        connectionTimeout = Integer.parseInt(value);
-                    } catch (final NumberFormatException e) {
-                        //
-                    }
-                    if (connectionTimeout <= 0) {
-                        argError = "The timeout must be a valid positive integer: '" + value + "'";
+                    if(arg.length() > 9 && arg.charAt(9) == '=') {
+                        final String value = arg.substring(10);
+                        try {
+                            connectionTimeout = Integer.parseInt(value);
+                        } catch (final NumberFormatException e) {
+                            //
+                        }
+                        if (connectionTimeout <= 0) {
+                            argError = "The timeout must be a valid positive integer: '" + value + "'";
+                            break;
+                        }
+                    } else {
+                        argError = "'=' is missing after --timeout";
+                        break;
                     }
                 } else if (arg.equals("--help") || arg.equals("-h")) {
                     commands = Collections.singletonList("help");
@@ -177,7 +195,9 @@ public class CliLauncher {
                         break;
                     }
                     if(commands != null) {
-                        argError = "Duplicate argument '--command'/'--commands'.";
+                        argError = "'" + arg +
+                                "' is assumed to be a command(s) but the commands to execute have been specified by another argument: " +
+                                commands;
                         break;
                     }
                     commands = Util.splitCommands(arg);
