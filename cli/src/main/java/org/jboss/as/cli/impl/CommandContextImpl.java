@@ -157,6 +157,7 @@ import org.jboss.logging.Logger.Level;
 import org.jboss.sasl.callback.DigestHashCallback;
 import org.jboss.sasl.util.HexConverter;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.xnio.http.RedirectException;
 
 /**
  *
@@ -822,6 +823,8 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                     newClient = tempClient;
                 }
                 initNewClient(newClient, address);
+            } catch (RedirectException e) {
+                throw new CommandLineException("Server at " + address.getHost() + ":" + address.getPort() + " does not support " + address.getProtocol());
             } catch (IOException e) {
                 throw new CommandLineException("Failed to resolve host '" + address.getHost() + "'",e);
             }
@@ -959,7 +962,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     /**
      * Used to make a call to the server to verify that it is possible to connect.
      */
-    private boolean tryConnection(final ModelControllerClient client, ControllerAddress address) throws CommandLineException {
+    private boolean tryConnection(final ModelControllerClient client, ControllerAddress address) throws CommandLineException, RedirectException {
         try {
             DefaultOperationRequestBuilder builder = new DefaultOperationRequestBuilder();
             builder.setOperationName(Util.READ_ATTRIBUTE);
@@ -982,6 +985,9 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                         } else {
                             return true;
                         }
+                    }
+                    if (current instanceof RedirectException) {
+                        throw (RedirectException) current;
                     }
                     current = current.getCause();
                 }
