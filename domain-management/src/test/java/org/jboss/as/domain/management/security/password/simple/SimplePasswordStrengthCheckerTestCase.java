@@ -153,7 +153,7 @@ public class SimplePasswordStrengthCheckerTestCase {
         SimplePasswordStrengthChecker checker = new SimplePasswordStrengthChecker(restrictions, this.dictionary, this.keyboard);
         String pwd = "!#*_3x";
         List<PasswordRestriction> adHocRestrictions = new ArrayList<PasswordRestriction>();
-        ValueRestriction restriction = new ValueRestriction(new String[] { pwd });
+        ValueRestriction restriction = new ValueRestriction(new String[] { pwd }, true);
         adHocRestrictions.add(restriction);
 
         PasswordStrengthCheckResult result = checker.check("", pwd, adHocRestrictions);

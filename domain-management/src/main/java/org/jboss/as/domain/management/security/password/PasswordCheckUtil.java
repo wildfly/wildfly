@@ -66,6 +66,8 @@ public class PasswordCheckUtil {
             try {
                 Properties configProperties = new Properties();
                 configProperties.load(new FileInputStream(configFile));
+                // level
+                initRestrictionLevel(configProperties);
                 // strength
                 initDefaultStrength(configProperties);
                 // checker
@@ -82,8 +84,6 @@ public class PasswordCheckUtil {
                 initMinSymbol(configProperties);
                 // match username
                 initMustNotMatchUsername(configProperties);
-                // level
-                initRestrictionLevel(configProperties);
             } catch (IOException e) {
                 simple();
             }
@@ -112,7 +112,7 @@ public class PasswordCheckUtil {
             }
 
             String[] values = forbiddens.split(",");
-            this.passwordValuesRestrictions.add(new ValueRestriction(values));
+            this.passwordValuesRestrictions.add(new ValueRestriction(values, level == RestrictionLevel.REJECT));
         } catch (Exception e) {
             // log?
         }
@@ -202,7 +202,7 @@ public class PasswordCheckUtil {
     private void initMustNotMatchUsername(Properties props) {
         try {
             if (Boolean.parseBoolean(props.getProperty(_PROPERTY_MATCH_USERNAME))) {
-                passwordValuesRestrictions.add(new UsernamePasswordMatch());
+                passwordValuesRestrictions.add(new UsernamePasswordMatch(level == RestrictionLevel.REJECT));
             }
         } catch (Exception e) {
             // log
@@ -289,7 +289,7 @@ public class PasswordCheckUtil {
 
     private void addToCompointRestriction(final PasswordRestriction toWrap) {
         if (compountRestriction == null) {
-            compountRestriction = new CompoundRestriction();
+            compountRestriction = new CompoundRestriction(level == RestrictionLevel.REJECT);
             passwordValuesRestrictions.add(compountRestriction);
         }
         compountRestriction.add(toWrap);

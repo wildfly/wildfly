@@ -909,7 +909,15 @@ public interface DomainManagementMessages {
      * @return an {@link String} for the error.
      */
     @Message(id = Message.NONE, value = "The password must be different from the username")
-    String passwordUsernameMatchInfo();
+    String passwordUsernameMustMatchInfo();
+
+    /**
+     * Information message saying the username and password should be different.
+     *
+     * @return an {@link String} for the error.
+     */
+    @Message(id = Message.NONE, value = "The password should be different from the username")
+    String passwordUsernameShouldMatchInfo();
 
     /**
      * Information message saying the password must not equal any of the restricted values.
@@ -919,6 +927,15 @@ public interface DomainManagementMessages {
      */
     @Message(id = Message.NONE, value = "The password must not be one of the following restricted values {%s}")
     String passwordMustNotEqualInfo(String restricted);
+
+    /**
+     * Information message saying the password should not equal any of the restricted values.
+     *
+     * @param restricted - A list of restricted values.
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "The password should not be one of the following restricted values {%s}")
+    String passwordShouldNotEqualInfo(String restricted);
 
     /**
      * Information message to describe how many characters need to be in the password.
@@ -965,6 +982,16 @@ public interface DomainManagementMessages {
      */
     @Message(id = Message.NONE, value = "The password must contain at least %s")
     String passwordMustContainInfo(String requirements);
+
+    /**
+     * Information message to describe what a password should contain.
+     *
+     * @param requirements - The requirements list to contain in the message.
+     *
+     * @return a {@link String} for the message.
+     */
+    @Message(id = Message.NONE, value = "The password should contain at least %s")
+    String passwordShouldContainInfo(String requirements);
 
     /**
      * A prompt to double check the user is really sure they want to set password.
@@ -1151,6 +1178,12 @@ public interface DomainManagementMessages {
      */
     @Message(id = Message.NONE, value = "Password requirements are listed below. To modify these restrictions edit the add-user.properties configuration file.")
     String passwordRequirements();
+
+    /**
+     * Display password recommendations and the command line argument option to modify these restrictions
+     */
+    @Message(id = Message.NONE, value = "Password recommendations are listed below. To modify these restrictions edit the add-user.properties configuration file.")
+    String passwordRecommendations();
 
     /**
      * Message stating command line supplied realm name in use.

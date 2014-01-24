@@ -30,9 +30,18 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
  */
 public class UsernamePasswordMatch implements PasswordRestriction {
 
+    private final boolean must;
+
+    public UsernamePasswordMatch(final boolean must) {
+        this.must = must;
+    }
+
     @Override
     public String getRequirementMessage() {
-        return MESSAGES.passwordUsernameMatchInfo();
+        if (must) {
+            return MESSAGES.passwordUsernameMustMatchInfo();
+        }
+        return MESSAGES.passwordUsernameShouldMatchInfo();
     }
 
     @Override
