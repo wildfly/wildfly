@@ -248,6 +248,8 @@ public class ExternalContextBindingTestCase {
         private DirectoryService directoryService;
         private LdapServer ldapServer;
 
+        private boolean removeBouncyCastle = false;
+
         public void fixTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
             final CreateTransport[] createTransports = createLdapServer.transports();
             for (int i = 0; i < createTransports.length; i++) {
@@ -261,7 +263,10 @@ public class ExternalContextBindingTestCase {
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             try {
-                Security.addProvider(new BouncyCastleProvider());
+                if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                    Security.addProvider(new BouncyCastleProvider());
+                    removeBouncyCastle = true;
+                }
             } catch(SecurityException ex) {
                 LOGGER.warn("Cannot register BouncyCastleProvider", ex);
             }
@@ -292,11 +297,14 @@ public class ExternalContextBindingTestCase {
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
             ldapServer.stop();
             directoryService.shutdown();
-            try {
-                Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
-            } catch(SecurityException ex) {
-                LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
+            if(removeBouncyCastle) {
+                try {
+                    Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+                } catch(SecurityException ex) {
+                    LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
+                }
             }
+
         }
     }
 
