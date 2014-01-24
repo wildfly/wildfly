@@ -79,13 +79,22 @@ public class ServletContainerDefinition extends PersistentResourceDefinition {
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
+
+    protected static final AttributeDefinition IGNORE_FLUSH =
+            new SimpleAttributeDefinitionBuilder(Constants.IGNORE_FLUSH, ModelType.BOOLEAN, true)
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(false))
+                    .build();
+
     private static final List<? extends PersistentResourceDefinition> CHILDREN;
     private static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(
             ALLOW_NON_STANDARD_WRAPPERS,
             DEFAULT_BUFFER_CACHE,
             STACK_TRACE_ON_ERROR,
             DEFAULT_ENCODING,
-            USE_LISTENER_ENCODING);
+            USE_LISTENER_ENCODING,
+            IGNORE_FLUSH);
 
     static {
         List<PersistentResourceDefinition>  children = new ArrayList<>();

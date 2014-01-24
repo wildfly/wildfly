@@ -51,7 +51,7 @@
     </server>
 
 
-    <servlet-container name="myContainer" default-buffer-cache="default" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8">
+    <servlet-container name="myContainer" default-buffer-cache="default" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8" ignore-flush="true">
         <jsp-config
                 disabled="${prop.disabled:false}"
                 keep-generated="${prop.keep-generated:true}"

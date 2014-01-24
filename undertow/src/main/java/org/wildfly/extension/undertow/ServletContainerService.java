@@ -48,14 +48,16 @@ public class ServletContainerService implements Service<ServletContainerService>
     private final InjectedValue<SessionPersistenceManager> sessionPersistenceManagerInjectedValue = new InjectedValue<>();
     private final String defaultEncoding;
     private final boolean useListenerEncoding;
+    private final boolean ignoreFlush;
 
-    public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig, String defaultEncoding, boolean useListenerEncoding) {
+    public ServletContainerService(boolean allowNonStandardWrappers, ServletStackTraces stackTraces, SessionCookieConfig sessionCookieConfig, JSPConfig jspConfig, String defaultEncoding, boolean useListenerEncoding, boolean ignoreFlush) {
         this.allowNonStandardWrappers = allowNonStandardWrappers;
         this.stackTraces = stackTraces;
         this.sessionCookieConfig = sessionCookieConfig;
         this.jspConfig = jspConfig;
         this.defaultEncoding = defaultEncoding;
         this.useListenerEncoding = useListenerEncoding;
+        this.ignoreFlush = ignoreFlush;
     }
 
     public void start(StartContext context) throws StartException {
@@ -112,5 +114,9 @@ public class ServletContainerService implements Service<ServletContainerService>
 
     public boolean isUseListenerEncoding() {
         return useListenerEncoding;
+    }
+
+    public boolean isIgnoreFlush() {
+        return ignoreFlush;
     }
 }
