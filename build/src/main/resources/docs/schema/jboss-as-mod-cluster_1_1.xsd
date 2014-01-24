@@ -92,7 +92,7 @@
     </xs:attribute>
     <xs:attribute name="flush-wait" type="xs:int" use="optional" default="-1">
       <xs:annotation>
-        <xs:documentation>Time to wait before flushing packets in millseconds.</xs:documentation>
+        <xs:documentation>Time to wait before flushing packets in milliseconds.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ping" type="xs:int" use="optional" default="10">
