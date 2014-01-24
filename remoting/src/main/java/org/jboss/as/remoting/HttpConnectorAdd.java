@@ -72,10 +72,7 @@ public class HttpConnectorAdd extends AbstractAddStepHandler {
 
         final ServiceTarget target = context.getServiceTarget();
         final String connectorRef = HttpConnectorResource.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
+
         RemotingHttpUpgradeService.installServices(target, connectorName, connectorRef, RemotingServices.SUBSYSTEM_ENDPOINT, optionMap, verificationHandler, newControllers);
-
-        //TODO: install upgrade service
-
-
     }
 }
