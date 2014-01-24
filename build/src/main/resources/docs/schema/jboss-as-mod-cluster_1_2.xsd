@@ -92,7 +92,7 @@
     </xs:attribute>
     <xs:attribute name="flush-wait" type="xs:int" use="optional" default="-1">
       <xs:annotation>
-        <xs:documentation>Time to wait before flushing packets in millseconds.</xs:documentation>
+        <xs:documentation>Time to wait before flushing packets in milliseconds.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="ping" type="xs:int" use="optional" default="10">
@@ -117,7 +117,7 @@
     </xs:attribute>
     <xs:attribute name="connector" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>The web connector on which mod_cluster will operate.</xs:documentation>
+        <xs:documentation>The name of Undertow listener that mod_cluster reverse proxy will connect to.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="session-draining-strategy" type="xs:string" use="optional">
