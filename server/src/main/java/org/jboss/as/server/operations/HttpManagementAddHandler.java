@@ -263,11 +263,17 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         if(httpUpgrade) {
             final String hostName = WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.NODE_NAME, null);
 
-
             ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.server.temp.dir");
             RemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, securityRealm, null, tmpDirPath, verificationHandler, newControllers);
             NativeManagementServices.installRemotingServicesIfNotInstalled(serviceTarget, hostName, verificationHandler, null, context.getServiceRegistry(false));
-            RemotingHttpUpgradeService.installServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, ManagementRemotingServices.HTTP_CONNECTOR, ManagementRemotingServices.MANAGEMENT_ENDPOINT, OptionMap.EMPTY, verificationHandler, newControllers);
+            final String httpConnectorName;
+            if (port > -1 || socketBindingServiceName != null || (securePort < 0 && secureSocketBindingServiceName == null)) {
+                httpConnectorName = ManagementRemotingServices.HTTP_CONNECTOR;
+            } else {
+                httpConnectorName = ManagementRemotingServices.HTTPS_CONNECTOR;
+            }
+
+            RemotingHttpUpgradeService.installServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, httpConnectorName, ManagementRemotingServices.MANAGEMENT_ENDPOINT, OptionMap.EMPTY, verificationHandler, newControllers);
         }
 
     }

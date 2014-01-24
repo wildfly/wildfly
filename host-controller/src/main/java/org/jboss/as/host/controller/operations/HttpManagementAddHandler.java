@@ -158,14 +158,19 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
                 .install();
 
         if(httpUpgrade) {
-
-
             ServiceName serverCallbackService = ServiceName.JBOSS.append("host", "controller", "server-inventory", "callback");
             ServiceName tmpDirPath = ServiceName.JBOSS.append("server", "path", "jboss.domain.temp.dir");
             ManagementRemotingServices.installSecurityServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, securityRealm, serverCallbackService, tmpDirPath, verificationHandler, newControllers);
 
             NativeManagementServices.installRemotingServicesIfNotInstalled(serviceTarget, hostControllerInfo.getLocalHostName(), verificationHandler, null, serviceRegistry,onDemand);
-            RemotingHttpUpgradeService.installServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, ManagementRemotingServices.HTTP_CONNECTOR, ManagementRemotingServices.MANAGEMENT_ENDPOINT, OptionMap.EMPTY, verificationHandler, newControllers);
+            final String httpConnectorName;
+            if (port > -1 || securePort < 0) {
+                httpConnectorName = ManagementRemotingServices.HTTP_CONNECTOR;
+            } else {
+                httpConnectorName = ManagementRemotingServices.HTTPS_CONNECTOR;
+            }
+
+            RemotingHttpUpgradeService.installServices(serviceTarget, ManagementRemotingServices.HTTP_CONNECTOR, httpConnectorName, ManagementRemotingServices.MANAGEMENT_ENDPOINT, OptionMap.EMPTY, verificationHandler, newControllers);
         }
 
     }
