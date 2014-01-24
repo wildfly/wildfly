@@ -29,10 +29,18 @@
         <file relative-to="jboss.server.log.dir" path="simple.log"/>
     </file-handler>
 
+    <file-handler name="ignore" autoflush="true">
+        <formatter>
+            <named-formatter name="PATTERN"/>
+        </formatter>
+        <file path="${jboss.server.log.dir}/ignore.log"/>
+    </file-handler>
+
     <logger category="org.jboss.as.logging.test" use-parent-handlers="false">
         <level name="INFO"/>
         <handlers>
             <handler name="FILE"/>
+            <handler name="ignore"/>
         </handlers>
     </logger>
 
@@ -43,4 +51,35 @@
     <formatter name="PATTERN">
         <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
     </formatter>
+
+    <logging-profiles>
+        <logging-profile name="testProfile">
+
+            <file-handler name="FILE" autoflush="true">
+                <formatter>
+                    <named-formatter name="PATTERN"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="profile-simple.log"/>
+            </file-handler>
+
+            <file-handler name="ignore" autoflush="true">
+                <formatter>
+                    <named-formatter name="PATTERN"/>
+                </formatter>
+                <file path="${jboss.server.log.dir}/profile-ignore.log"/>
+            </file-handler>
+
+            <root-logger>
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="FILE"/>
+                    <handler name="ignore"/>
+                </handlers>
+            </root-logger>
+
+            <formatter name="PATTERN">
+                <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+            </formatter>
+        </logging-profile>
+    </logging-profiles>
 </subsystem>

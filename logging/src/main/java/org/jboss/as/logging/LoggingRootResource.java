@@ -33,8 +33,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.RandomAccessFile;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -42,6 +45,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.ResultHandler;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -55,7 +59,9 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.description.AttributeTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
@@ -63,6 +69,7 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -112,9 +119,15 @@ public class LoggingRootResource extends TransformerResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition FILE_NAME = SimpleAttributeDefinitionBuilder.create("file-name", ModelType.STRING, false)
+            .setAllowExpression(false)
             .build();
 
     static final SimpleAttributeDefinition FILE_SIZE = SimpleAttributeDefinitionBuilder.create("file-size", ModelType.LONG, false)
+            .setAllowExpression(false)
+            .build();
+
+    static final SimpleAttributeDefinition LAST_MODIFIED_DATE = SimpleAttributeDefinitionBuilder.create("last-modified-date", ModelType.STRING, false)
+            .setAllowExpression(false)
             .build();
 
     static final SimpleOperationDefinition READ_LOG_FILE = new SimpleOperationDefinitionBuilder("read-log-file", LoggingExtension.getResourceDescriptionResolver())
@@ -129,7 +142,7 @@ public class LoggingRootResource extends TransformerResourceDefinition {
     static final SimpleOperationDefinition LIST_LOG_FILES = new SimpleOperationDefinitionBuilder("list-log-files", LoggingExtension.getResourceDescriptionResolver())
             .addAccessConstraint(VIEW_SERVER_LOGS)
             .setReplyType(ModelType.LIST)
-            .setReplyParameters(FILE_NAME, FILE_SIZE)
+            .setReplyParameters(FILE_NAME, FILE_SIZE, LAST_MODIFIED_DATE)
             .setReadOnly()
             .setRuntimeOnly()
             .build();
@@ -195,24 +208,27 @@ public class LoggingRootResource extends TransformerResourceDefinition {
 
         @Override
         public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-            final String logDir = pathManager.getPathEntry(ServerEnvironment.SERVER_LOG_DIR).resolvePath();
-            final File[] logFiles = new File(logDir).listFiles(new FileFilter() {
-                @Override
-                public boolean accept(final File pathname) {
-                    return pathname.isFile() && pathname.canRead();
-                }
-            });
+            final List<File> logFiles = findFiles(pathManager, context);
+            final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
             final ModelNode result = context.getResult().setEmptyList();
             for (File logFile : logFiles) {
                 final ModelNode fileInfo = new ModelNode();
                 fileInfo.get(FILE_NAME.getName()).set(logFile.getName());
                 fileInfo.get(FILE_SIZE.getName()).set(logFile.length());
+                fileInfo.get(LAST_MODIFIED_DATE.getName()).set(dateFormat.format(new Date(logFile.lastModified())));
                 result.add(fileInfo);
             }
             context.completeStep(ResultHandler.NOOP_RESULT_HANDLER);
         }
     }
 
+
+    /**
+     * Reads a log file and returns the results.
+     * <p/>
+     * <i>Note: </i> If this operation ends up being repeatedly invoked, from the web console for instance, there could
+     * be a performance impact as the model is read and processed for file names during each invocation
+     */
     private static class ReadLogFileOperation implements OperationStepHandler {
 
         private final PathManager pathManager;
@@ -240,9 +256,10 @@ public class LoggingRootResource extends TransformerResourceDefinition {
             if (!path.exists()) {
                 throw LoggingMessages.MESSAGES.logFileNotFound(fileName, ServerEnvironment.SERVER_LOG_DIR);
             }
+            final List<File> logFiles = findFiles(pathManager, context);
             // User must have permissions to read the file
-            if (!path.canRead()) {
-                throw LoggingMessages.MESSAGES.readPermissionDenied(fileName, ServerEnvironment.SERVER_LOG_DIR);
+            if (!path.canRead() || !logFiles.contains(path)) {
+                throw LoggingMessages.MESSAGES.readNotAllowed(fileName);
             }
 
             // Read the contents of the log file
@@ -305,6 +322,83 @@ public class LoggingRootResource extends TransformerResourceDefinition {
             closeable.close();
         } catch (Throwable t) {
             LoggingLogger.ROOT_LOGGER.failedToCloseResource(t, closeable);
+        }
+    }
+
+    /**
+     * Finds all the files in the {@code jboss.server.log.dir} that are defined on a known file handler.
+     *
+     * @param pathManager the path manager used to resolve the {@code jboss.server.log.dir}
+     * @param context     the context used to read the model from
+     *
+     * @return a list of files or an empty list if no files were found
+     */
+    private static List<File> findFiles(final PathManager pathManager, final OperationContext context) {
+        final ModelNode model = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
+        final String logDir = pathManager.getPathEntry(ServerEnvironment.SERVER_LOG_DIR).resolvePath();
+        final File[] logFiles = new File(logDir).listFiles(AllowedFilesFilter.create(model));
+        final List<File> result;
+        if (logFiles == null) {
+            result = Collections.emptyList();
+        } else {
+            result = Arrays.asList(logFiles);
+            Collections.sort(result);
+        }
+        return result;
+    }
+
+    private static class AllowedFilesFilter implements FileFilter {
+        private static final List<String> FILE_HANDLER_TYPES = Arrays.asList(FileHandlerResourceDefinition.FILE_HANDLER,
+                PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER,
+                SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER);
+
+        private final List<String> allowedNames;
+
+        private AllowedFilesFilter(final List<String> allowedNames) {
+            this.allowedNames = allowedNames;
+        }
+
+        static AllowedFilesFilter create(final ModelNode subsystemModel) {
+            final List<String> allowedNames = new ArrayList<String>();
+            findFileNames(subsystemModel, allowedNames);
+            return new AllowedFilesFilter(allowedNames);
+        }
+
+        private static void findFileNames(final ModelNode model, final List<String> names) {
+            // Get all the file names from the model
+            for (Property resource : model.asPropertyList()) {
+                final String name = resource.getName();
+                if (CommonAttributes.LOGGING_PROFILE.equals(name)) {
+                    for (Property profileResource : resource.getValue().asPropertyList()) {
+                        findFileNames(profileResource.getValue(), names);
+                    }
+                } else if (FILE_HANDLER_TYPES.contains(name)) {
+                    for (Property handlerResource : resource.getValue().asPropertyList()) {
+                        final ModelNode handlerModel = handlerResource.getValue();
+                        // This should always exist, but better to be safe
+                        if (handlerModel.hasDefined(CommonAttributes.FILE.getName())) {
+                            final ModelNode fileModel = handlerModel.get(CommonAttributes.FILE.getName());
+                            if (fileModel.hasDefined(PathResourceDefinition.PATH.getName())) {
+                                names.add(fileModel.get(PathResourceDefinition.PATH.getName()).asString());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean accept(final File pathname) {
+            if (pathname.canRead()) {
+                final String name = pathname.getName();
+                // Let's do a best guess on the file
+                for (String allowedName : allowedNames) {
+                    if (name.equals(allowedName) || name.startsWith(allowedName)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 

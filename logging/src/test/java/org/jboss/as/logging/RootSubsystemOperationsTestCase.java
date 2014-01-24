@@ -86,17 +86,28 @@ public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase 
 
         // Should only be one file
         // TODO (jrp) can be tested when LOGMGR-83 is committed and the logmanager is updated
-        // assertEquals("Found: " + logFiles, 1, logFiles.size());
+        // assertEquals("Found: " + logFiles, 2, logFiles.size());
 
-        // Should only be a simple.log file
+        // Should contain simple.log and simple-profile.log
         boolean found = false;
+        boolean foundProfile = false;
         for (ModelNode fileInfo : logFiles) {
-            if ("simple.log".equals(fileInfo.get("file-name").asString())) {
+            final String fileName = fileInfo.get("file-name").asString();
+            if ("simple.log".equals(fileName)) {
                 found = true;
-                break;
+            }
+            if ("profile-simple.log".equals(fileName)) {
+                foundProfile = true;
+            }
+            if ("ignore.log".equals(fileName)) {
+                fail("Found ignore.log, but the file should not be listed.");
+            }
+            if ("profile-ignore.log".equals(fileName)) {
+                fail("Found profile-ignore.log, but the file should not be listed.");
             }
         }
         assertTrue("simple.log file was not found", found);
+        assertTrue("profile-simple.log file was not found", foundProfile);
 
         // Change the permissions on the file so read is not allowed
         final File file = new File(LoggingTestEnvironment.get().getLogDir(), "simple.log");
@@ -107,7 +118,8 @@ public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase 
         if (file.setReadable(false)) {
             result = executeOperation(kernelServices, op);
             logFiles = SubsystemOperations.readResult(result).asList();
-            assertTrue("Read permission was found to be true on the file.", logFiles.isEmpty());
+            // The simple.log should not be in the list
+            assertEquals("Read permission was found to be true on the file.", 1, logFiles.size());
             // Reset the file permissions
             assertTrue("Could not reset file permissions", file.setReadable(true));
         }
@@ -199,6 +211,22 @@ public class RootSubsystemOperationsTestCase extends AbstractOperationsTestCase 
             // Reset the file permissions
             assertTrue("Could not reset file permissions", file.setReadable(true));
         }
+
+        // Should be able to read profile-simple.log, but it should be empty
+        op.get("name").set("profile-simple.log");
+        result = executeOperation(kernelServices, op);
+        logLines = SubsystemOperations.readResultAsList(result);
+        assertEquals(0, logLines.size());
+
+        // Should not be able to read ignore.log even though the file exists
+        op.get("name").set("ignore.log");
+        result = kernelServices.executeOperation(op);
+        assertFalse("Should have failed due to file not be readable.", SubsystemOperations.isSuccessfulOutcome(result));
+
+        // Should not be able to read ignore.log even though the file exists
+        op.get("name").set("profile-ignore.log");
+        result = kernelServices.executeOperation(op);
+        assertFalse("Should have failed due to file not be readable.", SubsystemOperations.isSuccessfulOutcome(result));
 
         // Test an invalid file
         op.get("name").set("invalid");
