@@ -1220,6 +1220,7 @@
 
         <profile>
             <id>help</id>
+            <activation><property><name>ts.help</name></property></activation>
             <build>
                 <plugins>
                     <!-- Testsuite debugging info. -->

@@ -168,6 +168,7 @@ main() {
             ## -s .../settings.xml - don't use our own.
             -s)      MVN_SETTINGS_XML_ARGS="";   ADDIT_PARAMS="$ADDIT_PARAMS $param";;
             -*)      ADDIT_PARAMS="$ADDIT_PARAMS '$param'";;
+            help*)   MVN_GOAL="$MVN_GOAL$param ";;
             clean)   MVN_GOAL="$MVN_GOAL$param ";;
             test)    MVN_GOAL="$MVN_GOAL$param ";;
             install) MVN_GOAL="$MVN_GOAL$param ";;
