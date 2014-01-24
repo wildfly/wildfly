@@ -118,7 +118,7 @@ public class BasicIIOPInvocationTestCase {
     @OperateOnDeployment("client")
     public void testWrappedHandle() throws IOException, NamingException {
         final ClientEjb ejb = client();
-        Assert.assertEquals("hello", ejb.getRemoteViaHandleMessage());
+        Assert.assertEquals("hello", ejb.getRemoteViaWrappedHandle());
     }
 
     @Test
