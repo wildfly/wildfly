@@ -196,7 +196,7 @@
         <version.org.jboss.xnio.netty.netty-xnio-transport>0.1.1.Final</version.org.jboss.xnio.netty.netty-xnio-transport>
         <version.org.jboss.osgi.metadata>3.0.1.Final</version.org.jboss.osgi.metadata>
         <version.org.jboss.remote-naming>2.0.0.Beta2</version.org.jboss.remote-naming>
-        <version.org.jboss.remoting>4.0.0.Beta3</version.org.jboss.remoting>
+        <version.org.jboss.remoting>4.0.0.Final</version.org.jboss.remoting>
         <version.org.jboss.remotingjmx.remoting-jmx>2.0.0.Final</version.org.jboss.remotingjmx.remoting-jmx>
         <version.org.jboss.resteasy>3.0.6.Final</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.4.Final</version.org.jboss.sasl>
