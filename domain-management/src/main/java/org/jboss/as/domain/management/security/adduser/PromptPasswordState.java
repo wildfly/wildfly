@@ -58,10 +58,15 @@ public class PromptPasswordState implements State {
         if (stateValues.isSilentOrNonInteractive() == false) {
             if (rePrompt == false) {
                 // Password requirements.
-                if (!RestrictionLevel.RELAX.equals(stateValues.getOptions().getCheckUtil().getRestrictionLevel())) {
+                RestrictionLevel level = stateValues.getOptions().getCheckUtil().getRestrictionLevel();
+                if (!RestrictionLevel.RELAX.equals(level)) {
                     final List<PasswordRestriction> passwordRestrictions = stateValues.getOptions().getCheckUtil().getPasswordRestrictions();
                     if (passwordRestrictions.size() > 0) {
-                        theConsole.printf(DomainManagementMessages.MESSAGES.passwordRequirements());
+                        if (level == RestrictionLevel.REJECT) {
+                            theConsole.printf(DomainManagementMessages.MESSAGES.passwordRequirements());
+                        } else {
+                            theConsole.printf(DomainManagementMessages.MESSAGES.passwordRecommendations());
+                        }
                         theConsole.printf(NEW_LINE);
                         for (PasswordRestriction passwordRestriction : passwordRestrictions) {
                             final String message = passwordRestriction.getRequirementMessage();

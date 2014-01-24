@@ -35,6 +35,11 @@ import java.util.List;
 public class CompoundRestriction implements PasswordRestriction {
 
     private final List<PasswordRestriction> wrapped = new ArrayList<PasswordRestriction>();
+    private final boolean must;
+
+    public CompoundRestriction(final boolean must) {
+        this.must = must;
+    }
 
     synchronized void add(final PasswordRestriction restriction) {
         wrapped.add(restriction);
@@ -54,7 +59,7 @@ public class CompoundRestriction implements PasswordRestriction {
             }
         }
 
-        return MESSAGES.passwordMustContainInfo(sb.toString());
+        return must ? MESSAGES.passwordMustContainInfo(sb.toString()) : MESSAGES.passwordShouldContainInfo(sb.toString());
     }
 
     @Override

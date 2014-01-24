@@ -40,7 +40,7 @@ public class ValueRestriction implements PasswordRestriction {
 
     private final String requirementsMessage;
 
-    public ValueRestriction(final String[] forbiddenValues) {
+    public ValueRestriction(final String[] forbiddenValues, final boolean must) {
         this.forbiddenValues = new HashSet<String>(Arrays.asList(forbiddenValues));
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < forbiddenValues.length; i++) {
@@ -49,7 +49,7 @@ public class ValueRestriction implements PasswordRestriction {
                 sb.append(", ");
             }
         }
-        requirementsMessage = MESSAGES.passwordMustNotEqualInfo(sb.toString());
+        requirementsMessage = must ? MESSAGES.passwordMustNotEqualInfo(sb.toString()) : MESSAGES.passwordShouldNotEqualInfo(sb.toString());
     }
 
     @Override

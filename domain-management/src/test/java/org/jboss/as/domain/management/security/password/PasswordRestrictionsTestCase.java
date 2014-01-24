@@ -45,13 +45,13 @@ public class PasswordRestrictionsTestCase {
 
     @Test(expected = PasswordValidationException.class)
     public void testValueRestrictionFail() throws PasswordValidationException {
-        ValueRestriction lr = new ValueRestriction(new String[] { "restricted" });
+        ValueRestriction lr = new ValueRestriction(new String[] { "restricted" }, true);
         lr.validate("", "restricted");
     }
 
     @Test
     public void testValueRestrictionPass() throws PasswordValidationException {
-        ValueRestriction lr = new ValueRestriction(new String[] { "restricted" });
+        ValueRestriction lr = new ValueRestriction(new String[] { "restricted" }, true);
         lr.validate("", "12");
     }
 
@@ -69,13 +69,13 @@ public class PasswordRestrictionsTestCase {
 
     @Test(expected = PasswordValidationException.class)
     public void testUsernameMatchFail() throws PasswordValidationException {
-        UsernamePasswordMatch upm = new UsernamePasswordMatch();
+        UsernamePasswordMatch upm = new UsernamePasswordMatch(true);
         upm.validate("darranl", "darranl");
     }
 
     @Test
     public void testUsernameMatchPass() throws PasswordValidationException {
-        UsernamePasswordMatch upm = new UsernamePasswordMatch();
+        UsernamePasswordMatch upm = new UsernamePasswordMatch(true);
         upm.validate("darranl", "password");
     }
 
