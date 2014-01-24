@@ -42,7 +42,7 @@ import org.xnio.IoUtils;
 public class ModuleUtils {
 
     public static void createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
-        File testModuleRoot = new File(getModulePath(), "test/" + moduleName);
+        File testModuleRoot = new File(getModulePath(), "test" + File.separatorChar + moduleName);
         if (testModuleRoot.exists()) {
             throw new IllegalArgumentException(testModuleRoot + " already exists");
         }
