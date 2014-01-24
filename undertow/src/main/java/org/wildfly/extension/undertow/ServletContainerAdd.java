@@ -81,8 +81,9 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode defaultEncodingValue = ServletContainerDefinition.DEFAULT_ENCODING.resolveModelAttribute(context, model);
         final String defaultEncoding = defaultEncodingValue.isDefined()? defaultEncodingValue.asString() : null;
         final boolean useListenerEncoding = ServletContainerDefinition.USE_LISTENER_ENCODING.resolveModelAttribute(context, model).asBoolean();
+        final boolean ignoreFlush = ServletContainerDefinition.IGNORE_FLUSH.resolveModelAttribute(context, model).asBoolean();
 
-        final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers, ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')), config, jspConfig, defaultEncoding, useListenerEncoding);
+        final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers, ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')), config, jspConfig, defaultEncoding, useListenerEncoding, ignoreFlush);
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
         if(bufferCache != null) {

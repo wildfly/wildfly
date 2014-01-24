@@ -235,10 +235,6 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleJASPIMechanism(deploymentInfo);
             handleJACCAuthorization(deploymentInfo);
 
-            //TODO: make this configurable
-            //in most cases flush just hurts performance for no good reason
-            //deploymentInfo.setIgnoreFlush(false);
-
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             ServletSessionConfig config = null;
             //default session config
@@ -489,6 +485,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                 d.setMajorVersion(3);
                 d.setMinorVersion(1);
             }
+
+            //in most cases flush just hurts performance for no good reason
+            d.setIgnoreFlush(servletContainer.isIgnoreFlush());
 
             d.setAllowNonStandardWrappers(servletContainer.isAllowNonStandardWrappers());
             d.setServletStackTraces(servletContainer.getStackTraces());
