@@ -155,8 +155,8 @@
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>5.0.2.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
-        <version.org.hibernate.hql>1.0.0.Alpha5</version.org.hibernate.hql>
-        <version.org.hibernate.search>4.5.0.Alpha2</version.org.hibernate.search>
+        <version.org.hibernate.hql>1.0.0.Alpha6</version.org.hibernate.hql>
+        <version.org.hibernate.search>4.5.0.CR1</version.org.hibernate.search>
         <version.org.hornetq>2.4.0.Final</version.org.hornetq>
         <version.org.infinispan>6.0.1.Final</version.org.infinispan>
         <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
