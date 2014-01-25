@@ -94,47 +94,39 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
             ResourceAdapter localRaXml = getRaxml();
             cmd = (new Merger()).mergeConnectorWithCommonIronJacamar(localRaXml, cmd);
 
+            String id = ((ModifiableResourceAdapter) raxml).getId();
+            final ServiceName raServiceName;
+            if (id == null || id.trim().isEmpty()) {
+                raServiceName = ConnectorServices.getResourceAdapterServiceName(raName);
+                this.connectorServicesRegistrationName = raName;
+            } else {
+                raServiceName = ConnectorServices.getResourceAdapterServiceName(id);
+                this.connectorServicesRegistrationName = id;
+            }
             final AS7RaXmlDeployer raDeployer = new AS7RaXmlDeployer(context.getChildTarget(), connectorXmlDescriptor.getUrl(),
                 raName, root, module.getClassLoader(), cmd, localRaXml, null, deploymentServiceName);
 
             raDeployer.setConfiguration(config.getValue());
 
+            WritableServiceBasedNamingStore.pushOwner(duServiceName);
+            ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
             try {
-                WritableServiceBasedNamingStore.pushOwner(duServiceName);
-                ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-                try {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
-                    raxmlDeployment = raDeployer.doDeploy();
-                } finally {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
-                    WritableServiceBasedNamingStore.popOwner();
-                }
-            } catch (Throwable t) {
-                // To clean up we need to invoke blocking behavior, so do that in another thread
-                // and let this MSC thread return
-                cleanupStartAsync(context, raName, deploymentServiceName, t);
-                return;
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(module.getClassLoader());
+                raxmlDeployment = raDeployer.doDeploy();
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
+                WritableServiceBasedNamingStore.popOwner();
             }
-            String id = ((ModifiableResourceAdapter) raxml).getId();
-            final ServiceName raServiceName;
-            if (id == null || id.trim().isEmpty()) {
-               raServiceName = ConnectorServices.getResourceAdapterServiceName(raName);
-            } else {
-               raServiceName = ConnectorServices.getResourceAdapterServiceName(id);
-            }
-
             value = new ResourceAdapterDeployment(raxmlDeployment, raName, raServiceName);
             managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
-
             registry.getValue().registerResourceAdapterDeployment(value);
-
             context.getChildTarget()
-                    .addService(raServiceName,
-                            new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter()))
-                    .addDependency(deploymentServiceName)
-                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
-        } catch (Exception e) {
-            throw new StartException(e);
+                .addService(raServiceName,
+                        new ResourceAdapterService(raName, raServiceName, value.getDeployment().getResourceAdapter()))
+                .addDependency(deploymentServiceName)
+                .setInitialMode(ServiceController.Mode.ACTIVE).install();
+        } catch (Throwable t) {
+            cleanupStartAsync(context, raName, deploymentServiceName, t);
         }
     }
 
@@ -144,16 +136,6 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
     @Override
     public void stop(StopContext context) {
         stopAsync(context, raName, deploymentServiceName);
-    }
-
-    @Override
-    public void unregisterAll(String deploymentName) {
-
-        if (raName != null) {
-            ConnectorServices.unregisterResourceAdapterIdentifier(raName);
-        }
-
-        super.unregisterAll(deploymentName);
     }
 
     public CommonDeployment getRaxmlDeployment() {
@@ -202,15 +184,6 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         @Override
         protected DeployersLogger getLogger() {
             return DEPLOYERS_LOGGER;
-        }
-
-        @Override
-        protected String registerResourceAdapterToResourceAdapterRepository(javax.resource.spi.ResourceAdapter instance) {
-            final String raIdentifier = raRepository.getValue().registerResourceAdapter(instance);
-            // make a note of this identifier for future use
-            ConnectorServices.registerResourceAdapterIdentifier( ((ModifiableResourceAdapter) raxml).getId(), raIdentifier);
-            return raIdentifier;
-
         }
 
     }

@@ -102,6 +102,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
     public void start(StartContext context) throws StartException {
         final URL url = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getUrl();
         deploymentName = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getDeploymentName();
+        connectorServicesRegistrationName = deploymentName;
         final File root = connectorXmlDescriptor == null ? null : connectorXmlDescriptor.getRoot();
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("DEPLOYMENT name = %s",deploymentName);
         final boolean fromModule = duServiceName.getParent().equals(RaOperationUtil.RAR_MODULE);
@@ -111,36 +112,30 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
 
         ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
-            WritableServiceBasedNamingStore.pushOwner(duServiceName);
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
-            raDeployment = raDeployer.doDeploy();
-            deploymentName = raDeployment.getDeploymentName();
-        } catch (Throwable t) {
-            // To clean up we need to invoke blocking behavior, so do that in another thread
-            // and let this MSC thread return
-            cleanupStartAsync(context, deploymentName, t, duServiceName, classLoader);
-            return;
-        } finally {
-            WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
-            WritableServiceBasedNamingStore.popOwner();
-        }
-
-
-        if (raDeployer.checkActivation(cmd, ijmd)) {
-            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Activating: %s", deploymentName);
-
-            ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(deploymentName);
-            value = new ResourceAdapterDeployment(raDeployment, deploymentName, raServiceName);
-
-            managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
-            registry.getValue().registerResourceAdapterDeployment(value);
-
-            context.getChildTarget()
-                    .addService(raServiceName,
+            try {
+                WritableServiceBasedNamingStore.pushOwner(duServiceName);
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
+                raDeployment = raDeployer.doDeploy();
+                deploymentName = raDeployment.getDeploymentName();
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
+                WritableServiceBasedNamingStore.popOwner();
+            }
+            if (raDeployer.checkActivation(cmd, ijmd)) {
+                DEPLOYMENT_CONNECTOR_LOGGER.debugf("Activating: %s", deploymentName);
+                ServiceName raServiceName = ConnectorServices.getResourceAdapterServiceName(deploymentName);
+                value = new ResourceAdapterDeployment(raDeployment, deploymentName, raServiceName);
+                managementRepository.getValue().getConnectors().add(value.getDeployment().getConnector());
+                registry.getValue().registerResourceAdapterDeployment(value);
+                context.getChildTarget()
+                        .addService(raServiceName,
                                 new ResourceAdapterService(deploymentName, raServiceName, value.getDeployment().getResourceAdapter())).setInitialMode(Mode.ACTIVE)
-                    .install();
-        } else {
-            DEPLOYMENT_CONNECTOR_LOGGER.debugf("Not activating: %s", deploymentName);
+                        .install();
+            } else {
+                DEPLOYMENT_CONNECTOR_LOGGER.debugf("Not activating: %s", deploymentName);
+            }
+        } catch (Throwable t) {
+            cleanupStartAsync(context, deploymentName, t, duServiceName, classLoader);
         }
     }
 
@@ -181,22 +176,7 @@ public final class ResourceAdapterDeploymentService extends AbstractResourceAdap
      */
     @Override
     public void stop(StopContext context) {
-        stopAsync(context, deploymentName, deploymentServiceName);    }
-
-    @Override
-    public void unregisterAll(String deploymentName) {
-
-        ConnectorServices.unregisterResourceAdapterIdentifier(deploymentName);
-
-        super.unregisterAll(deploymentName);
-
-        if (mdr != null && mdr.getValue() != null && deploymentName != null) {
-            try {
-                mdr.getValue().unregisterResourceAdapter(deploymentName);
-            } catch (Throwable t) {
-                DEPLOYMENT_CONNECTOR_LOGGER.debug("Exception during unregistering deployment", t);
-            }
-        }
+        stopAsync(context, deploymentName, deploymentServiceName);
     }
 
     public CommonDeployment getRaDeployment() {
