@@ -48,7 +48,7 @@ Usage:
                    comma-separated list at the end of the argument list will be
                    assumed to be the list of commands and operations.
 
- --user          - if the controller requires user authentication, this argument
+ --user (-u)      - if the controller requires user authentication, this argument
                    can be used to specify the user name as a command line
                    argument. If the argument isn't specified and the
                    authentication is required the user will be prompted to enter
@@ -56,7 +56,7 @@ Usage:
                    authentication is automatically disabled if a user is specified.
                    
 
- --password      - specifies the password for authentication while connecting to
+ --password (-p)  - specifies the password for authentication while connecting to
                    the controller as a command line argument. If the argument
                    isn't specified and the authentication is required the user
                    will be prompted to enter the password when the connect
