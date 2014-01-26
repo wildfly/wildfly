@@ -135,6 +135,21 @@ public class CliLauncher {
                         argError = "'=' is missing after --password";
                         break;
                     }
+                } else if (arg.startsWith("-u")) {
+                    if(arg.length() > 2 && arg.charAt(2) == '=') {
+                        username = arg.substring(3);
+                        noLocalAuth = true;
+                    } else {
+                        argError = "'=' is missing after -u";
+                        break;
+                    }
+                } else if (arg.startsWith("-p")) {
+                    if(arg.length() > 2 && arg.charAt(2) == '=') {
+                        password = arg.substring(3).toCharArray();
+                    } else {
+                        argError = "'=' is missing after -p";
+                        break;
+                    }
                 } else if (arg.equals("--no-local-auth")) {
                     noLocalAuth = true;
                 } else if (arg.startsWith("--timeout")) {
