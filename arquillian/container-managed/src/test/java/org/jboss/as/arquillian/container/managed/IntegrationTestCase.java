@@ -52,4 +52,13 @@ public class IntegrationTestCase {
         Assert.assertNotNull(service);
         Assert.assertEquals("Hello Earthling!", service.greet("Earthling"));
     }
+
+    @Test
+    public void shouldBeAbleToFetchSystemProperties() throws Exception {
+        final String prop1 = System.getProperties().getProperty("org.jboss.as.arquillian.container.managed.prop1");
+        final String prop2 = System.getProperties().getProperty("org.jboss.as.arquillian.container.managed.prop2");
+        Assert.assertEquals("prop1", prop1);
+        Assert.assertEquals("prop2", prop2);
+    }
+
 }

@@ -39,6 +39,8 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
 
     private String javaVmArguments = System.getProperty("jboss.options", "-Xmx512m -XX:MaxPermSize=128m");
 
+    private String jbossArguments;
+
     private int startupTimeoutInSeconds = 60;
 
     private int stopTimeoutInSeconds = 60;
@@ -84,6 +86,14 @@ public class ManagedContainerConfiguration extends DistributionContainerConfigur
      */
     public void setJavaVmArguments(String javaVmArguments) {
         this.javaVmArguments = javaVmArguments;
+    }
+
+    public String getJbossArguments() {
+        return jbossArguments;
+    }
+
+    public void setJbossArguments(String jbossArguments) {
+        this.jbossArguments = jbossArguments;
     }
 
     /**
