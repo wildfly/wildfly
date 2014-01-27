@@ -180,8 +180,14 @@ public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
             model.get(CommonAttributes.CLIENT_ID.getName()).set(clientId);
         }
 
-        String discoveryGroupName = model.hasDefined(DISCOVERY_GROUP_NAME.getName()) ? model.get(DISCOVERY_GROUP_NAME.getName()).asString() : null;
-        String jgroupsChannelName = model.hasDefined(JGROUPS_CHANNEL.getName()) ? model.get(JGROUPS_CHANNEL.getName()).asString() : null;
+        final String discoveryGroupName = properties.containsKey(DISCOVERY_GROUP_NAME.getName()) ? properties.get(DISCOVERY_GROUP_NAME.getName()) : null;
+        if (discoveryGroupName != null) {
+            model.get(DISCOVERY_GROUP_NAME.getName()).set(discoveryGroupName);
+        }
+        final String jgroupsChannelName = properties.containsKey(JGROUPS_CHANNEL.getName()) ? properties.get(JGROUPS_CHANNEL.getName()) : null;
+        if (jgroupsChannelName != null) {
+            model.get(JGROUPS_CHANNEL.getName()).set(jgroupsChannelName);
+        }
 
         List<PooledConnectionFactoryConfigProperties> adapterParams = getAdapterParams(model);
         String txSupport = transactional ? XA_TX : NO_TX;
@@ -191,7 +197,7 @@ public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
         PooledConnectionFactoryService.installService(null, null, serviceTarget, pcfName, getHornetQServerName(), connectors,
                 discoveryGroupName, jgroupsChannelName, adapterParams,
                 bindInfo,
-                txSupport, minPoolSize, maxPoolSize);
+                txSupport, minPoolSize, maxPoolSize, true);
 
         final ServiceName referenceFactoryServiceName = ConnectionFactoryReferenceFactoryService.SERVICE_NAME_BASE
                 .append(bindInfo.getBinderServiceName());
@@ -209,9 +215,7 @@ public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
 
     private List<String> getConnectors(Map<String, String> props) {
         List<String> connectors = new ArrayList<>();
-        if (!props.containsKey(CONNECTOR)) {
-            connectors.add("netty");
-        } else {
+        if (props.containsKey(CONNECTOR)) {
             String connectorsStr = properties.remove(CONNECTOR);
             for (String s : connectorsStr.split(",")) {
                 String connector = s.trim();
@@ -220,7 +224,7 @@ public class DirectJMSConnectionFactoryInjectionSource extends InjectionSource {
                 }
             }
         }
-        return  connectors;
+        return connectors;
     }
 
     void clearUnknownProperties(final Map<String, String> props) {
