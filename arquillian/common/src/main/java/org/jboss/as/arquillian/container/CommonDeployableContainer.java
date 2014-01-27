@@ -68,7 +68,7 @@ public abstract class CommonDeployableContainer<T extends CommonContainerConfigu
 
     @Override
     public ProtocolDescription getDefaultProtocol() {
-        return new ProtocolDescription("jmx-as7");
+        return new ProtocolDescription("Servlet 3.0");
     }
 
     @Override

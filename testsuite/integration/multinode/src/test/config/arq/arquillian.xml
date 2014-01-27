@@ -2,6 +2,8 @@
 <arquillian xmlns="http://www.jboss.org/arquillian-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.jboss.org/arquillian-1.0 http://jboss.org/schema/arquillian/arquillian-1.0.xsd">
 
+    <defaultProtocol type="jmx-as7" />
+
     <group qualifier="multinode">
 
         <!-- The server than invokes the exposed EJB's via remote outbound connection -->

@@ -6,6 +6,8 @@
         <property name="deploymentExportPath">target/</property>
     </engine>
 
+    <defaultProtocol type="jmx-as7" />
+
     <container qualifier="clustering-udp-single">
         <configuration>
             <property name="jbossHome">${basedir}/target/jbossas-clustering-SYNC-tcp-0</property>
