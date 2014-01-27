@@ -50,7 +50,6 @@ import org.junit.Test;
  */
 public class RolloutPlanTestCase extends AbstractCliTestBase {
 
-    private static WebArchive war;
     private static File warFile;
     private static final int TEST_PORT = 8081;
 
@@ -58,12 +57,11 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void before() throws Exception {
-        war = ShrinkWrap.create(WebArchive.class, "RolloutPlanTestCase.war");
+        final WebArchive war = ShrinkWrap.create(WebArchive.class, "RolloutPlanTestCase.war");
         war.addClass(RolloutPlanTestServlet.class);
         String tempDir = System.getProperty("java.io.tmpdir");
         warFile = new File(tempDir + File.separator + "RolloutPlanTestCase.war");
         new ZipExporterImpl(war).exportTo(warFile, true);
-        war = ShrinkWrap.create(WebArchive.class, "RolloutPlanTestCase.war");
 
         AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
 
@@ -90,6 +88,10 @@ public class RolloutPlanTestCase extends AbstractCliTestBase {
 
     @AfterClass
     public static void after() throws Exception {
+
+        if (warFile.exists()){
+            warFile.delete();
+        }
 
         // stop test-one
         cli.sendLine("/host=master/server-config=test-one:stop(blocking=true)");
