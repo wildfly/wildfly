@@ -76,10 +76,10 @@ public class SlaveHostControllerAuthenticationTestCase {
     private static ModelControllerClient domainMasterClient;
     private static ModelControllerClient domainSlaveClient;
     private static DomainTestSupport testSupport;
-    
+
     static final String RESOURCE_LOCATION = SlaveHostControllerAuthenticationTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile()
             + "vault-shcatc/";
-    
+
     @BeforeClass
     public static void setupDomain() throws Exception {
 
@@ -138,27 +138,28 @@ public class SlaveHostControllerAuthenticationTestCase {
         // create new vault
         VaultHandler vaultHandler = new VaultHandler(RESOURCE_LOCATION);
 
-        // create security attributes
-        String attributeName = "value";
-        String vaultPasswordString = vaultHandler.addSecuredAttribute(VAULT_BLOCK, attributeName,
-                RIGHT_PASSWORD.toCharArray());
-
-        // create new vault setting in host
-        ModelNode op = new ModelNode();
-        op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(HOST, "slave").add(CORE_SERVICE, VAULT);
-        ModelNode vaultOption = op.get(VAULT_OPTIONS);
-        vaultOption.get("KEYSTORE_URL").set(vaultHandler.getKeyStore());
-        vaultOption.get("KEYSTORE_PASSWORD").set(vaultHandler.getMaskedKeyStorePassword());
-        vaultOption.get("KEYSTORE_ALIAS").set(vaultHandler.getAlias());
-        vaultOption.get("SALT").set(vaultHandler.getSalt());
-        vaultOption.get("ITERATION_COUNT").set(vaultHandler.getIterationCountAsString());
-        vaultOption.get("ENC_FILE_DIR").set(vaultHandler.getEncodedVaultFileDirectory());
-        domainSlaveClient.execute(new OperationBuilder(op).build());
-
-        setSlaveSecret("${" + vaultPasswordString + "}");
-
         try {
+
+            // create security attributes
+            String attributeName = "value";
+            String vaultPasswordString = vaultHandler.addSecuredAttribute(VAULT_BLOCK, attributeName,
+                    RIGHT_PASSWORD.toCharArray());
+
+            // create new vault setting in host
+            ModelNode op = new ModelNode();
+            op.get(OP).set(ADD);
+            op.get(OP_ADDR).add(HOST, "slave").add(CORE_SERVICE, VAULT);
+            ModelNode vaultOption = op.get(VAULT_OPTIONS);
+            vaultOption.get("KEYSTORE_URL").set(vaultHandler.getKeyStore());
+            vaultOption.get("KEYSTORE_PASSWORD").set(vaultHandler.getMaskedKeyStorePassword());
+            vaultOption.get("KEYSTORE_ALIAS").set(vaultHandler.getAlias());
+            vaultOption.get("SALT").set(vaultHandler.getSalt());
+            vaultOption.get("ITERATION_COUNT").set(vaultHandler.getIterationCountAsString());
+            vaultOption.get("ENC_FILE_DIR").set(vaultHandler.getEncodedVaultFileDirectory());
+            domainSlaveClient.execute(new OperationBuilder(op).build());
+
+            setSlaveSecret("${" + vaultPasswordString + "}");
+
             reloadSlave();
 
             // Validate that it joined the master
