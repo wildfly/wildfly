@@ -22,7 +22,6 @@
 
 package org.jboss.as.weld.deployment.processors;
 
-import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -30,9 +29,11 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.modules.filter.PathFilters;
 
 /**
  * Deployment processor which adds a module dependencies for modules needed for weld deployments.
@@ -42,6 +43,7 @@ import org.jboss.modules.ModuleLoader;
 public class WeldDependencyProcessor implements DeploymentUnitProcessor {
 
     private static ModuleIdentifier JAVAX_PERSISTENCE_API_ID = ModuleIdentifier.create("javax.persistence.api");
+    private static ModuleIdentifier JBOSS_AS_WELD_ID = ModuleIdentifier.create("org.jboss.as.weld");
     private static ModuleIdentifier WELD_CORE_ID = ModuleIdentifier.create("org.jboss.weld.core");
     private static ModuleIdentifier WELD_API_ID = ModuleIdentifier.create("org.jboss.weld.api");
     private static ModuleIdentifier WELD_SPI_ID = ModuleIdentifier.create("org.jboss.weld.spi");
@@ -65,6 +67,11 @@ public class WeldDependencyProcessor implements DeploymentUnitProcessor {
         addDependency(moduleSpecification, moduleLoader, WELD_API_ID);
         addDependency(moduleSpecification, moduleLoader, WELD_SPI_ID);
 
+
+        ModuleDependency dep = new ModuleDependency(moduleLoader, JBOSS_AS_WELD_ID, false, false, false, false);
+        dep.addImportFilter(PathFilters.getMetaInfFilter(), true);
+        dep.addExportFilter(PathFilters.getMetaInfFilter(), true);
+        moduleSpecification.addSystemDependency(dep);
 
         ModuleDependency cdiBeanValidationDep = new ModuleDependency(moduleLoader, CDI_BEAN_VALIDATION_ID, false, false, true, false);
         moduleSpecification.addSystemDependency(cdiBeanValidationDep);
