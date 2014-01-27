@@ -106,6 +106,7 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             }
 
             final String additionalJavaOpts = config.getJavaVmArguments();
+            final String additionalJbossOpts = config.getJbossArguments();
 
             File modulesJar = new File(jbossHome + File.separatorChar + "jboss-modules.jar");
             if (!modulesJar.exists())
@@ -150,6 +151,12 @@ public final class ManagedDeployableContainer extends CommonDeployableContainer<
             cmd.add(config.getServerConfig());
             if (config.isAdminOnly())
                 cmd.add("--admin-only");
+
+            if (additionalJbossOpts != null) {
+                for (String opt : additionalJbossOpts.split("\\s+")) {
+                    cmd.add(opt);
+                }
+            }
 
             // Wait on ports before launching; AS7-4070
             this.waitOnPorts();
