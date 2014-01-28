@@ -166,4 +166,8 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.WARN)
     @Message(id = 17537, value = "Failed to persist session attribute %s with value %s for session %s")
     void failedToPersistSessionAttribute(String attributeName, Object value, String sessionID, @Cause Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 17538, value = "Failed to register policy context handler for key %s")
+    void failedToRegisterPolicyContextHandler(String key, @Cause Exception e);
 }
