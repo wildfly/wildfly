@@ -17,7 +17,7 @@
  *  under the License.
  *
  */
-package org.apache.directory.shared.ldap.model.url;
+package org.apache.directory.api.ldap.model.url;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
