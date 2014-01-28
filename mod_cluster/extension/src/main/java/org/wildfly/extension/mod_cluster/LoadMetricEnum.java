@@ -29,7 +29,6 @@ import org.jboss.modcluster.load.metric.impl.HeapMemoryUsageLoadMetric;
 import org.jboss.modcluster.load.metric.impl.ReceiveTrafficLoadMetric;
 import org.jboss.modcluster.load.metric.impl.RequestCountLoadMetric;
 import org.jboss.modcluster.load.metric.impl.SendTrafficLoadMetric;
-import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
 
 /**
  * Enumeration of mod_cluster load metrics.
@@ -39,7 +38,7 @@ import org.jboss.modcluster.load.metric.impl.SystemMemoryUsageLoadMetric;
 public enum LoadMetricEnum {
 
     CPU("cpu", AverageSystemLoadMetric.class),
-    SYSTEM_MEMORY("mem", SystemMemoryUsageLoadMetric.class),
+    @Deprecated SYSTEM_MEMORY("mem", null),
     HEAP_MEMORY("heap", HeapMemoryUsageLoadMetric.class),
     ACTIVE_SESSIONS("sessions", ActiveSessionsLoadMetric.class),
     RECEIVE_TRAFFIC("receive-traffic", ReceiveTrafficLoadMetric.class),

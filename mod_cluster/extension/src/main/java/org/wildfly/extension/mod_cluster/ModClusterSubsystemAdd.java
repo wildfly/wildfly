@@ -302,6 +302,13 @@ class ModClusterSubsystemAdd extends AbstractBoottimeAddStepHandler {
             Class<? extends LoadMetric> loadMetricClass = null;
             if (node.hasDefined(CommonAttributes.TYPE)) {
                 String type = TYPE.resolveModelAttribute(context, node).asString();
+
+                // MODCLUSTER-288 Metric "mem" has been dropped, keep it in the model for versions prior to 8.0
+                if (type.equals("mem")) {
+                    ROOT_LOGGER.unsupportedMetric(type);
+                    continue;
+                }
+
                 LoadMetricEnum metric = LoadMetricEnum.forType(type);
                 loadMetricClass = (metric != null) ? metric.getLoadMetricClass() : null;
             } else {
