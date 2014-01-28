@@ -718,11 +718,37 @@ class CliConfigImpl implements CliConfig {
 
                 if("vault".equals(localName)) {
                     final String vaultXml = reader.getAttributeValue(null, "file");
+                    final String relativeTo = reader.getAttributeValue(null, "relative-to");
                     requireNoContent(reader);
                     if(vaultXml == null) {
                         throw new XMLStreamException("'file' attribute is missing for element 'vault'");
                     }
-                    final File vaultFile = new File(vaultXml);
+
+                    File parent = null;
+                    if(relativeTo != null) {
+                        if(relativeTo.equals("jboss.home.dir")) {
+                            final String jbossHome = WildFlySecurityManager.getEnvPropertyPrivileged("JBOSS_HOME", null);
+                            if(jbossHome == null) {
+                                throw new XMLStreamException("JBOSS_HOME is not set");
+                            }
+                            parent = new File(jbossHome);
+                        } else if(relativeTo.equals("user.home")) {
+                            final String userHome = WildFlySecurityManager.getPropertyPrivileged("user.home", null);
+                            if(userHome == null) {
+                                throw new XMLStreamException("user.home is not set");
+                            }
+                            parent = new File(userHome);
+                        } else if(relativeTo.equals("user.dir")) {
+                            final String userDir = WildFlySecurityManager.getPropertyPrivileged("user.dir", null);
+                            if(userDir == null) {
+                                throw new XMLStreamException("user.dir is not set");
+                            }
+                            parent = new File(userDir);
+                        } else {
+                            throw new XMLStreamException("Unrecognized named path '" + relativeTo + "'");
+                        }
+                    }
+                    final File vaultFile = new File(parent, vaultXml);
                     final VaultConfig vaultConfig = VaultConfig.load(vaultFile);
                     try {
                         vaultReader.init(vaultConfig.getOptions());
