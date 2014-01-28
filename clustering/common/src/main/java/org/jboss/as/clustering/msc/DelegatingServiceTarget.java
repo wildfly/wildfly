@@ -32,6 +32,7 @@ import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ServiceListener.Inheritance;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.value.Value;
 
 /**
@@ -105,6 +106,29 @@ public class DelegatingServiceTarget implements ServiceTarget {
     @Override
     public Set<ServiceListener<Object>> getListeners() {
         return this.getListeners();
+    }
+
+    @Override
+    public ServiceTarget addMonitor(StabilityMonitor monitor) {
+        this.target.addMonitor(monitor);
+        return this;
+    }
+
+    @Override
+    public ServiceTarget addMonitors(StabilityMonitor... monitors) {
+        this.target.addMonitors(monitors);
+        return this;
+    }
+
+    @Override
+    public ServiceTarget removeMonitor(StabilityMonitor monitor) {
+        this.target.removeMonitor(monitor);
+        return this;
+    }
+
+    @Override
+    public Set<StabilityMonitor> getMonitors() {
+        return target.getMonitors();
     }
 
     @Override

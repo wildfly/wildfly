@@ -238,7 +238,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
                 : ManagementResourceRegistration.Factory.create(rootResourceDefinition, authorizerConfig);
         final ModelControllerImpl controller = new ModelControllerImpl(container, target,
                 rootResourceRegistration,
-                new ContainerStateMonitor(container, serviceController),
+                new ContainerStateMonitor(container),
                 configurationPersister, processType, runningModeControl, prepareStep,
                 processState, executorService, expressionResolver, authorizer, auditLogger);
 

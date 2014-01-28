@@ -24,6 +24,7 @@ package org.jboss.as.clustering.msc;
 
 import java.io.PrintStream;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.jboss.msc.service.ServiceContainer;
@@ -64,6 +65,11 @@ public class DelegatingServiceContainer extends DelegatingServiceTarget implemen
     }
 
     @Override
+    public boolean isShutdown() {
+        return this.container.isShutdown();
+    }
+
+    @Override
     public boolean isShutdownComplete() {
         return this.container.isShutdownComplete();
     }
@@ -96,5 +102,27 @@ public class DelegatingServiceContainer extends DelegatingServiceTarget implemen
     @Override
     public String getName() {
         return this.container.getName();
+    }
+
+    @Override
+    public void awaitStability() throws InterruptedException {
+        this.container.awaitStability();
+    }
+
+    @Override
+    public boolean awaitStability(long timeout, TimeUnit unit) throws InterruptedException {
+        return this.container.awaitStability(timeout, unit);
+    }
+
+    @Override
+    public void awaitStability(Set<? super ServiceController<?>> failed, Set<? super ServiceController<?>> problem)
+            throws InterruptedException {
+        this.container.awaitStability(failed, problem);
+    }
+
+    @Override
+    public boolean awaitStability(long timeout, TimeUnit unit, Set<? super ServiceController<?>> failed,
+            Set<? super ServiceController<?>> problem) throws InterruptedException {
+        return this.container.awaitStability(timeout, unit, failed, problem);
     }
 }

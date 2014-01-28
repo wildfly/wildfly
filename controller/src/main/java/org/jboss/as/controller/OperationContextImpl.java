@@ -50,6 +50,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.Action.ActionEffect;
@@ -93,6 +95,7 @@ import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceRegistryException;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.value.ImmediateValue;
 import org.jboss.msc.value.Value;
@@ -197,7 +200,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             // First wait until any removals we've initiated have begun processing, otherwise
             // the ContainerStateMonitor may not have gotten the notification causing it to untick
             waitForRemovals();
-            ContainerStateMonitor.ContainerStateChangeReport changeReport = modelController.awaitContainerStateChangeReport(1);
+            ContainerStateMonitor.ContainerStateChangeReport changeReport = modelController.awaitContainerStateChangeReport();
             // If any services are missing, add a verification handler to see if we caused it
             if (changeReport != null && !changeReport.getMissingServices().isEmpty()) {
                 ServiceRemovalVerificationHandler removalVerificationHandler = new ServiceRemovalVerificationHandler(changeReport);
@@ -435,7 +438,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     private void awaitContainerMonitor() {
         try {
-            modelController.awaitContainerMonitor(respectInterruption, 1);
+            modelController.awaitContainerMonitor(respectInterruption);
         } catch (InterruptedException e) {
             if (currentStage != Stage.DONE && resultAction != ResultAction.ROLLBACK) {
                 // We're not on the way out, so we've been cancelled on the way in
@@ -762,7 +765,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                 // Any subsequent step that calls getServiceRegistry/getServiceTarget/removeService
                 // is going to have to await the monitor uninterruptibly anyway before proceeding.
                 try {
-                    modelController.awaitContainerMonitor(true, 1);
+                    modelController.awaitContainerMonitor(true);
                 }  catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     MGMT_OP_LOGGER.interruptedWaitingStability();
@@ -1272,6 +1275,22 @@ final class OperationContextImpl extends AbstractOperationContext {
         public BatchServiceTarget batchTarget() {
             throw new UnsupportedOperationException();
         }
+
+        public ServiceTarget addMonitor(final StabilityMonitor monitor) {
+            throw new UnsupportedOperationException();
+        }
+
+        public ServiceTarget addMonitors(final StabilityMonitor... monitors) {
+            throw new UnsupportedOperationException();
+        }
+
+        public ServiceTarget removeMonitor(final StabilityMonitor monitor) {
+            throw new UnsupportedOperationException();
+        }
+
+        public Set<StabilityMonitor> getMonitors() {
+            throw new UnsupportedOperationException();
+        }
     }
 
     class ContextServiceBuilder<T> implements ServiceBuilder<T> {
@@ -1356,6 +1375,16 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         public ServiceBuilder<T> addInjection(final Injector<? super T> target) {
             realBuilder.addInjection(target);
+            return this;
+        }
+
+        public ServiceBuilder<T> addMonitor(StabilityMonitor monitor) {
+            realBuilder.addMonitor(monitor);
+            return this;
+        }
+
+        public ServiceBuilder<T> addMonitors(StabilityMonitor... monitors) {
+            realBuilder.addMonitors(monitors);
             return this;
         }
 
@@ -1591,7 +1620,13 @@ final class OperationContextImpl extends AbstractOperationContext {
             return controller.getImmediateUnavailableDependencies();
         }
 
+        public S awaitValue() throws IllegalStateException, InterruptedException {
+            return controller.awaitValue();
+        }
 
+        public S awaitValue(long time, TimeUnit unit) throws IllegalStateException, InterruptedException, TimeoutException {
+            return controller.awaitValue(time, unit);
+        }
     }
 
     private class AuthorizationResponseImpl implements ResourceAuthorization {

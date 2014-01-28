@@ -73,7 +73,6 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.AsyncFuture;
@@ -124,7 +123,7 @@ class ModelControllerImpl implements ModelController {
         this.runningModeControl = runningModeControl;
         this.prepareStep = prepareStep == null ? new DefaultPrepareStepHandler() : prepareStep;
         this.processState = processState;
-        this.serviceTarget.addListener(ServiceListener.Inheritance.ALL, stateMonitor);
+        this.serviceTarget.addListener(stateMonitor);
         this.executorService = executorService;
         this.expressionResolver = expressionResolver;
         this.authorizer = authorizer;
@@ -564,16 +563,16 @@ class ModelControllerImpl implements ModelController {
         stateMonitor.release();
     }
 
-    void awaitContainerMonitor(final boolean interruptibly, final int count) throws InterruptedException {
+    void awaitContainerMonitor(final boolean interruptibly) throws InterruptedException {
         if (interruptibly) {
-            stateMonitor.await(count);
+            stateMonitor.await();
         } else {
-            stateMonitor.awaitUninterruptibly(count);
+            stateMonitor.awaitUninterruptibly();
         }
     }
 
-    ContainerStateMonitor.ContainerStateChangeReport awaitContainerStateChangeReport(final int count) throws InterruptedException {
-        return stateMonitor.awaitContainerStateChangeReport(count);
+    ContainerStateMonitor.ContainerStateChangeReport awaitContainerStateChangeReport() throws InterruptedException {
+        return stateMonitor.awaitContainerStateChangeReport();
     }
 
     ServiceRegistry getServiceRegistry() {

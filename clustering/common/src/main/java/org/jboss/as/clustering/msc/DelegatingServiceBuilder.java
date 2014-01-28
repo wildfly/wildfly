@@ -31,6 +31,7 @@ import org.jboss.msc.service.ServiceListener;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceListener.Inheritance;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.value.Value;
 
 /**
@@ -132,6 +133,18 @@ public class DelegatingServiceBuilder<T> implements ServiceBuilder<T> {
     @Override
     public ServiceBuilder<T> addInjection(Injector<? super T> target) {
         this.builder.addInjection(target);
+        return this;
+    }
+
+    @Override
+    public ServiceBuilder<T> addMonitor(StabilityMonitor monitor) {
+        this.builder.addMonitor(monitor);
+        return this;
+    }
+
+    @Override
+    public ServiceBuilder<T> addMonitors(StabilityMonitor... monitors) {
+        this.builder.addMonitors(monitors);
         return this;
     }
 

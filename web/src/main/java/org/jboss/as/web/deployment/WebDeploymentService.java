@@ -26,7 +26,6 @@ import static org.jboss.as.web.WebMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -40,12 +39,10 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.as.web.ThreadSetupBindingListener;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
-import org.jboss.msc.service.ServiceController.State;
-import org.jboss.msc.service.ServiceListener;
+import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -56,6 +53,7 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author Emanuel Muckenhuber
  * @author Thomas.Diesler@jboss.com
+ * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public class WebDeploymentService implements Service<StandardContext> {
 
@@ -219,12 +217,21 @@ public class WebDeploymentService implements Service<StandardContext> {
          * This would happen when the OSGi webapp gets explicitly started.
          */
         public synchronized boolean start(long timeout, TimeUnit unit) throws TimeoutException {
-            boolean result = true;
             if (controller.getMode() == Mode.NEVER) {
                 controller.setMode(Mode.ACTIVE);
-                result = awaitStateChange(State.UP, timeout, unit);
+                final StabilityMonitor monitor = new StabilityMonitor();
+                monitor.addController(controller);
+                try {
+                    if (!monitor.awaitStability(timeout, unit)) {
+                        throw MESSAGES.timeoutContextActivation(controller.getName());
+                    }
+                } catch (final InterruptedException e) {
+                    // ignore
+                } finally {
+                    monitor.removeController(controller);
+                }
             }
-            return result;
+            return true;
         }
 
         /**
@@ -236,63 +243,19 @@ public class WebDeploymentService implements Service<StandardContext> {
             boolean result = true;
             if (controller.getMode() == Mode.ACTIVE) {
                 controller.setMode(Mode.NEVER);
+                final StabilityMonitor monitor = new StabilityMonitor();
+                monitor.addController(controller);
                 try {
-                    result = awaitStateChange(State.DOWN, timeout, unit);
-                } catch (TimeoutException ex) {
-                    WEB_LOGGER.debugf("Timeout stopping context: %s", controller.getName());
+                    if (!monitor.awaitStability(timeout, unit)) {
+                        WEB_LOGGER.debugf("Timeout stopping context: %s", controller.getName());
+                    }
+                } catch (final InterruptedException e) {
+                    // ignore
+                } finally {
+                    monitor.removeController(controller);
                 }
             }
             return result;
-        }
-
-        private boolean awaitStateChange(final State expectedState, long timeout, TimeUnit unit) throws TimeoutException {
-            final CountDownLatch latch = new CountDownLatch(1);
-            ServiceListener<StandardContext> listener = new AbstractServiceListener<StandardContext>() {
-
-                @Override
-                public void listenerAdded(ServiceController<? extends StandardContext> controller) {
-                    State state = controller.getState();
-                    if (state == expectedState || state == State.START_FAILED)
-                        listenerDone(controller);
-                }
-
-                @Override
-                public void transition(final ServiceController<? extends StandardContext> controller, final ServiceController.Transition transition) {
-                    if (expectedState == State.UP) {
-                        switch (transition) {
-                            case STARTING_to_UP:
-                            case STARTING_to_START_FAILED:
-                                listenerDone(controller);
-                                break;
-                        }
-                    } else if (expectedState == State.DOWN) {
-                        switch (transition) {
-                            case STOPPING_to_DOWN:
-                            case REMOVING_to_DOWN:
-                            case WAITING_to_DOWN:
-                                listenerDone(controller);
-                                break;
-                        }
-                    }
-                }
-
-                private void listenerDone(ServiceController<? extends StandardContext> controller) {
-                    latch.countDown();
-                }
-            };
-
-            controller.addListener(listener);
-            try {
-                if (latch.await(timeout, unit) == false) {
-                    throw MESSAGES.timeoutContextActivation(controller.getName());
-                }
-            } catch (InterruptedException e) {
-                // ignore
-            } finally {
-                controller.removeListener(listener);
-            }
-
-            return controller.getState() == expectedState;
         }
     }
 }

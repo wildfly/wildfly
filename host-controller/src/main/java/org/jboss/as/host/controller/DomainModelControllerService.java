@@ -561,7 +561,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 try {
                     finishBoot();
                 } finally {
-                    bootstrapListener.tick();
+                    // Trigger the started message
+                    bootstrapListener.printBootStatistics();
                 }
             } else {
                 // Die!
