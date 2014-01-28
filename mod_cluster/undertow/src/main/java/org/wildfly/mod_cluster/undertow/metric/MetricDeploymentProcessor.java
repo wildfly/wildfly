@@ -22,8 +22,6 @@
 
 package org.wildfly.mod_cluster.undertow.metric;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 import io.undertow.server.HandlerWrapper;
@@ -51,6 +49,7 @@ import org.wildfly.extension.undertow.deployment.UndertowAttachments;
  * </ul>
  *
  * @author Radoslav Husar
+ * @version Jan 2014
  * @since 8.0
  */
 class MetricDeploymentProcessor implements DeploymentUnitProcessor {
@@ -65,16 +64,9 @@ class MetricDeploymentProcessor implements DeploymentUnitProcessor {
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
 
-        List<HandlerWrapper> handlerAttachment = deploymentUnit.getAttachment(UndertowAttachments.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS);
-
-        if (handlerAttachment == null) {
-            handlerAttachment = new LinkedList<HandlerWrapper>();
-            deploymentUnit.putAttachment(UndertowAttachments.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS, handlerAttachment);
-        }
-
         // Request count wrapping
         if (isMetricEnabled(RequestCountLoadMetric.class)) {
-            handlerAttachment.add(new HandlerWrapper() {
+            deploymentUnit.addToAttachmentList(UndertowAttachments.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS, new HandlerWrapper() {
                 @Override
                 public HttpHandler wrap(final HttpHandler handler) {
                     return new RequestCountHttpHandler(handler);
@@ -84,7 +76,7 @@ class MetricDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Bytes Sent wrapping
         if (isMetricEnabled(SendTrafficLoadMetric.class)) {
-            handlerAttachment.add(new HandlerWrapper() {
+            deploymentUnit.addToAttachmentList(UndertowAttachments.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS, new HandlerWrapper() {
                 @Override
                 public HttpHandler wrap(final HttpHandler handler) {
                     return new BytesSentHttpHandler(handler);
@@ -94,7 +86,7 @@ class MetricDeploymentProcessor implements DeploymentUnitProcessor {
 
         // Bytes Received wrapping
         if (isMetricEnabled(ReceiveTrafficLoadMetric.class)) {
-            handlerAttachment.add(new HandlerWrapper() {
+            deploymentUnit.addToAttachmentList(UndertowAttachments.UNDERTOW_INITIAL_HANDLER_CHAIN_WRAPPERS, new HandlerWrapper() {
                 @Override
                 public HttpHandler wrap(final HttpHandler handler) {
                     return new BytesReceivedHttpHandler(handler);
