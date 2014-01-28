@@ -41,6 +41,7 @@ import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -68,7 +69,11 @@ public class WriteAttributeHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         nameValidator.validate(operation);
         final String attributeName = operation.require(NAME.getName()).asString();
-        final AttributeAccess attributeAccess = context.getResourceRegistration().getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
+        final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
+        if (registry == null) {
+            throw new OperationFailedException(ControllerMessages.MESSAGES.noSuchResourceType(PathAddress.pathAddress(operation.get(OP_ADDR))));
+        }
+        final AttributeAccess attributeAccess = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
         if (attributeAccess == null) {
             throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(attributeName)));
         } else if (attributeAccess.getAccessType() != AttributeAccess.AccessType.READ_WRITE) {
