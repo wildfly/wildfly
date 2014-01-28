@@ -39,10 +39,10 @@ import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.xnio.IoUtils;
 
-class ModuleUtils {
+public class ModuleUtils {
 
-    static void createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
-        File testModuleRoot = new File(getModulePath(), "test/" + moduleName);
+    public static void createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
+        File testModuleRoot = new File(getModulePath(), "test" + File.separatorChar + moduleName);
         if (testModuleRoot.exists()) {
             throw new IllegalArgumentException(testModuleRoot + " already exists");
         }
@@ -51,7 +51,7 @@ class ModuleUtils {
             throw new IllegalArgumentException("Could not create " + file);
         }
 
-        URL url = ModuleUtils.class.getResource(moduleXml);
+        URL url = classes[0].getResource(moduleXml);
         if (url == null) {
             throw new IllegalStateException("Could not find module.xml: " + moduleXml);
         }
@@ -64,7 +64,7 @@ class ModuleUtils {
 
         Indexer indexer = new Indexer();
         for (Class<?> clazz : classes) {
-            try (final InputStream resource = ModuleUtils.class.getResourceAsStream(clazz.getSimpleName() + ".class")) {
+            try (final InputStream resource = clazz.getResourceAsStream(clazz.getSimpleName() + ".class")) {
                 indexer.index(resource);
             }
         }
@@ -97,7 +97,7 @@ class ModuleUtils {
         }
     }
 
-    static File getModulePath() {
+    public static File getModulePath() {
         String modulePath = System.getProperty("module.path", null);
         if (modulePath == null) {
             String jbossHome = System.getProperty("jboss.home", null);
@@ -118,7 +118,7 @@ class ModuleUtils {
         return moduleDir;
     }
 
-    static void deleteRecursively(File file) {
+    public static void deleteRecursively(File file) {
         if (file.exists()) {
             if (file.isDirectory()) {
                 for (String name : file.list()) {

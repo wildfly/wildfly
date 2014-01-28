@@ -82,14 +82,17 @@ public class WeldDeployment implements CDI11Deployment {
 
     private final Map<ClassLoader, BeanDeploymentArchiveImpl> additionalBeanDeploymentArchivesByClassloader;
 
+    private final BeanDeploymentModule rootBeanDeploymentModule;
+
     public WeldDeployment(Set<BeanDeploymentArchiveImpl> beanDeploymentArchives, Collection<Metadata<Extension>> extensions,
-            Module module, Set<ClassLoader> subDeploymentClassLoaders, DeploymentUnit deploymentUnit) {
+            Module module, Set<ClassLoader> subDeploymentClassLoaders, DeploymentUnit deploymentUnit, BeanDeploymentModule rootBeanDeploymentModule) {
         this.subDeploymentClassLoaders = new HashSet<ClassLoader>(subDeploymentClassLoaders);
         this.beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>(beanDeploymentArchives);
         this.extensions = new HashSet<Metadata<Extension>>(extensions);
         this.serviceRegistry = new SimpleServiceRegistry();
         this.additionalBeanDeploymentArchivesByClassloader = new HashMap<ClassLoader, BeanDeploymentArchiveImpl>();
         this.module = module;
+        this.rootBeanDeploymentModule = rootBeanDeploymentModule;
 
         // add static services
         this.serviceRegistry.add(ProxyServices.class, new ProxyServicesImpl(module));
@@ -101,6 +104,7 @@ public class WeldDeployment implements CDI11Deployment {
         }
 
         calculateAccessibilityGraph(this.beanDeploymentArchives);
+        makeTopLevelBdasVisibleFromStaticModules();
     }
 
     /**
@@ -115,6 +119,19 @@ public class WeldDeployment implements CDI11Deployment {
             for (BeanDeploymentArchiveImpl target : beanDeploymentArchives) {
                 if (from.isAccessible(target)) {
                     from.addBeanDeploymentArchive(target);
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds additional edges to the accessibility graph that allow static CDI-enabled modules to inject beans from top-level deployment units
+     */
+    private void makeTopLevelBdasVisibleFromStaticModules() {
+        for (BeanDeploymentArchiveImpl bda : beanDeploymentArchives) {
+            if (bda.getBeanArchiveType().equals(BeanDeploymentArchiveImpl.BeanArchiveType.EXTERNAL)) {
+                for (BeanDeploymentArchiveImpl topLevelBda : rootBeanDeploymentModule.getBeanDeploymentArchives()) {
+                    bda.addBeanDeploymentArchive(topLevelBda);
                 }
             }
         }

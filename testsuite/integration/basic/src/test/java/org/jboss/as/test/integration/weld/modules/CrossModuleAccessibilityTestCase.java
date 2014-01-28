@@ -37,6 +37,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -79,10 +80,11 @@ public class CrossModuleAccessibilityTestCase {
     @Deployment
     public static Archive<?> getDeployment() throws Exception {
         doSetup();
-        return ShrinkWrap.create(WebArchive.class)
+        WebArchive war = ShrinkWrap.create(WebArchive.class)
                 .addClass(CrossModuleAccessibilityTestCase.class)
                 .addAsWebInfResource(EmptyAsset.INSTANCE, "beans.xml")
                 .addAsManifestResource(new StringAsset("Dependencies: test.alpha meta-inf, test.bravo meta-inf, test.charlie meta-inf, test.delta meta-inf\n"), "MANIFEST.MF");
+        return ShrinkWrap.create(EnterpriseArchive.class).addAsModule(war);
     }
 
     @Test
