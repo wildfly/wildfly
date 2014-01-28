@@ -31,6 +31,7 @@ import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Date: 17.06.2011
@@ -93,4 +94,12 @@ interface ModClusterLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 11705, value = "Error applying properties to load metric class '%s'. Metric will not be loaded.")
     void errorApplyingMetricProperties(@Cause Throwable cause, String metricClass);
+
+    /**
+     * Logs a warning message that this metric type is no longer supported.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11706, value = "Metric of type '%s' is no longer supported and will be ignored.")
+    void unsupportedMetric(String metricType);
+
 }
