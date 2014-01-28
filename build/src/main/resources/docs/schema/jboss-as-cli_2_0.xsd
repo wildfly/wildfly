@@ -226,6 +226,22 @@
                 Element of this type points to a file with vault configuration.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="file" type="xs:string" use="required"/>
+        <xs:attribute name="file" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    Absolute or relative file system path to the XML file
+                    containing the vault configuration.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="relative-to" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    One of the system-provided named paths (such as jboss.home.dir,
+                    user.home, user.dir) relative to which the absolute path
+                    will be calculated for the path specified in the file attribute.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 </xs:schema>
