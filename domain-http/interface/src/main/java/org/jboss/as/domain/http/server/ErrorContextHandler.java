@@ -74,7 +74,7 @@ class ErrorContextHandler {
                 .setCachable(Predicates.<HttpServerExchange>falsePredicate());
 
         //we also need to setup the default resource redirect
-        PredicateHandler predicateHandler = new PredicateHandler(path(""), new RedirectHandler(ERROR_CONTEXT + DEFAULT_RESOURCE), handler);
+        PredicateHandler predicateHandler = new PredicateHandler(path("/"), new RedirectHandler(ERROR_CONTEXT + DEFAULT_RESOURCE), handler);
         return predicateHandler;
     }
 

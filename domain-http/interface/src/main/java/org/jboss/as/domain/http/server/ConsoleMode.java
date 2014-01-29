@@ -148,7 +148,7 @@ public enum ConsoleMode {
                     .setCachable(not(suffixes(NOCACHE_JS, APP_HTML, INDEX_HTML)));
 
             //we also need to setup the default resource redirect
-            PredicateHandler predicateHandler = new PredicateHandler(path(""), new RedirectHandler(CONTEXT + DEFAULT_RESOURCE), handler);
+            PredicateHandler predicateHandler = new PredicateHandler(path("/"), new RedirectHandler(CONTEXT + DEFAULT_RESOURCE), handler);
             return new ResourceHandlerDefinition(CONTEXT, DEFAULT_RESOURCE, predicateHandler);
 
         }
@@ -196,7 +196,7 @@ public enum ConsoleMode {
                     .setCachable(Predicates.<HttpServerExchange>falsePredicate());
 
             //we also need to setup the default resource redirect
-            PredicateHandler predicateHandler = new PredicateHandler(path(""), new RedirectHandler(CONTEXT + resource), handler);
+            PredicateHandler predicateHandler = new PredicateHandler(path("/"), new RedirectHandler(CONTEXT + resource), handler);
             return new ResourceHandlerDefinition(CONTEXT, resource, predicateHandler);
         }
 
