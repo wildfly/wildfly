@@ -505,6 +505,8 @@
                                             <exclude>org.jboss.logging:jboss-logging-tools</exclude>
                                             <!-- replaced by io.netty:netty -->
                                             <exclude>org.jboss.netty:netty</exclude>
+                                            <!-- replaced by io.netty:netty-all -->
+                                            <exclude>io.netty:netty</exclude>
                                             <exclude>org.jboss.remoting3:jboss-remoting</exclude>
                                             <exclude>org.jboss.security:jbosssx</exclude>
                                             <exclude>org.jboss.slf4j:slf4j-jboss-logging</exclude>
@@ -3857,6 +3859,10 @@
                 <artifactId>hornetq-jms-server</artifactId>
                 <version>${version.org.hornetq}</version>
                 <exclusions>
+                    <exclusion>
+                        <groupId>io.netty</groupId>
+                        <artifactId>netty</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>org.jboss.jbossts</groupId>
                         <artifactId>jbossjts</artifactId>
