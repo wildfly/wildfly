@@ -29,6 +29,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_ADD_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_GRACEFULLY_CONNECTION;
@@ -163,7 +164,8 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE
+                        org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
+                        Constants.URL_PROPERTY
                 )
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
                         //These are not nillable in the old model
@@ -172,13 +174,17 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
                 .end()
                 .addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)
-                .inheritResourceAttributeDefinitions()
-                .setCustomOperationTransformer(ENABLE_TRANSFORMER)
-                .end()
+                    .inheritResourceAttributeDefinitions()
+                    .setCustomOperationTransformer(ENABLE_TRANSFORMER)
+                    .end()
                 .addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)
-                .inheritResourceAttributeDefinitions()
-                .setCustomOperationTransformer(ENABLE_TRANSFORMER)
-                .end();
+                    .inheritResourceAttributeDefinitions()
+                    .setCustomOperationTransformer(ENABLE_TRANSFORMER)
+                    .end()
+                .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .inheritResourceAttributeDefinitions()
+                    .setCustomOperationTransformer(ENABLE_ADD_TRANSFORMER)
+                    .end();
         ConnectionPropertyDefinition.registerTransformers11x(builder);
     }
 
@@ -201,19 +207,26 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
                         Constants.CONNECTION_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE
+                        org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
+                        Constants.URL_PROPERTY
                 )
-                        //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
+                //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
+                //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
                 .end()
                 .addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION)
-                .inheritResourceAttributeDefinitions()
-                .setCustomOperationTransformer(ENABLE_TRANSFORMER)
-                .end()
+                    .inheritResourceAttributeDefinitions()
+                    .setCustomOperationTransformer(ENABLE_TRANSFORMER)
+                    .end()
                 .addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION)
-                .inheritResourceAttributeDefinitions()
-                .setCustomOperationTransformer(ENABLE_TRANSFORMER)
-                .end();
+                    .inheritResourceAttributeDefinitions()
+                    .setCustomOperationTransformer(ENABLE_TRANSFORMER)
+                    .end()
+                .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
+                    .inheritResourceAttributeDefinitions()
+                    .setCustomOperationTransformer(ENABLE_ADD_TRANSFORMER)
+                    .end();
+
         ConnectionPropertyDefinition.registerTransformers11x(builder);
     }
 }

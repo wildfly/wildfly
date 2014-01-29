@@ -22,11 +22,13 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import org.jboss.as.controller.ObjectListAttributeDefinition;
@@ -42,6 +44,7 @@ import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.transform.OperationResultTransformer;
@@ -636,6 +639,29 @@ public class Constants {
                 return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
             }
             return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+        }
+    };
+
+    static final OperationTransformer ENABLE_ADD_TRANSFORMER = new OperationTransformer() {
+        @Override
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+            if (operation.hasDefined(ENABLED.getName()) && operation.get(ENABLED.getName()).asBoolean()) {
+                ModelNode add = operation.clone();
+                add.remove(ENABLED.getName());
+
+                ModelNode composite = new ModelNode();
+                composite.get(OP).set(COMPOSITE);
+                composite.get(OP_ADDR).setEmptyList();
+                composite.get(STEPS).add(add);
+
+                ModelNode enable = Util.createEmptyOperation(ENABLE, PathAddress.pathAddress(operation.get(OP_ADDR)));
+                composite.get(STEPS).add(enable);
+
+                return new TransformedOperation(composite, OperationResultTransformer.ORIGINAL_RESULT);
+
+            } else {
+                return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+            }
         }
     };
 }
