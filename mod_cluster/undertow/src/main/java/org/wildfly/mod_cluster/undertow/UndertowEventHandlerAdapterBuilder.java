@@ -22,6 +22,7 @@
 
 package org.wildfly.mod_cluster.undertow;
 
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.modcluster.container.ContainerEventHandler;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -41,10 +42,9 @@ public class UndertowEventHandlerAdapterBuilder implements ContainerEventHandler
         InjectedValue<UndertowService> undertowService = new InjectedValue<>();
         @SuppressWarnings("rawtypes")
         InjectedValue<ListenerService> listener = new InjectedValue<>();
-        return target.addService(SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener))
+        return AsynchronousService.addService(target, SERVICE_NAME, new UndertowEventHandlerAdapter(eventHandler, undertowService, listener))
                 .addDependency(ContainerEventHandlerService.SERVICE_NAME, ContainerEventHandler.class, eventHandler)
                 .addDependency(UndertowService.UNDERTOW, UndertowService.class, undertowService)
-                //todo this is wrong, it should be replaced with injecting server instead of directly listener
                 .addDependency(UndertowService.listenerName(connector), ListenerService.class, listener)
         ;
     }
