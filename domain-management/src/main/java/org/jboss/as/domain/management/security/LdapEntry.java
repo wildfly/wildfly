@@ -69,4 +69,9 @@ final class LdapEntry {
                 && (distinguishedName == null ? obj.distinguishedName == null : distinguishedName.equals(obj.distinguishedName));
     }
 
+    @Override
+    public String toString() {
+        return String.format("LdapEntry simpleName='%s', distinguishedName='%s'", simpleName, distinguishedName);
+    }
+
 }
