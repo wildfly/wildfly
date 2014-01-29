@@ -33,15 +33,29 @@ import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexWriter;
 import org.jboss.jandex.Indexer;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.Asset;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.xnio.IoUtils;
 
 public class ModuleUtils {
 
+    public static void createSimpleTestModule(String moduleName, Class<?>... classes) throws IOException {
+        createTestModule(moduleName, createSimpleModuleDescriptor(moduleName).openStream(), classes);
+    }
+
     public static void createTestModule(String moduleName, String moduleXml, Class<?>... classes) throws IOException {
+        URL url = classes[0].getResource(moduleXml);
+        if (url == null) {
+            throw new IllegalStateException("Could not find module.xml: " + moduleXml);
+        }
+        createTestModule(moduleName, url.openStream(), classes);
+    }
+
+    private static void createTestModule(String moduleName, InputStream moduleXml, Class<?>... classes) throws IOException {
         File testModuleRoot = new File(getModulePath(), "test" + File.separatorChar + moduleName);
         if (testModuleRoot.exists()) {
             throw new IllegalArgumentException(testModuleRoot + " already exists");
@@ -51,11 +65,7 @@ public class ModuleUtils {
             throw new IllegalArgumentException("Could not create " + file);
         }
 
-        URL url = classes[0].getResource(moduleXml);
-        if (url == null) {
-            throw new IllegalStateException("Could not find module.xml: " + moduleXml);
-        }
-        copyFile(new File(file, "module.xml"), url.openStream());
+        copyFile(new File(file, "module.xml"), moduleXml);
 
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, moduleName + ".jar");
         jar.addClasses(classes);
@@ -127,5 +137,18 @@ public class ModuleUtils {
             }
             file.delete();
         }
+    }
+
+    private static Asset createSimpleModuleDescriptor(String moduleName) {
+        return new StringAsset(
+                "<module xmlns=\"urn:jboss:module:1.1\" name=\"test." + moduleName + "\">" +
+                "<resources>" +
+                "<resource-root path=\"" + moduleName + ".jar\"/>" +
+                "</resources>" +
+                "<dependencies>" +
+                "<module name=\"javax.enterprise.api\"/>" +
+                "<module name=\"javax.inject.api\"/>" +
+                "</dependencies>" +
+                "</module>");
     }
 }

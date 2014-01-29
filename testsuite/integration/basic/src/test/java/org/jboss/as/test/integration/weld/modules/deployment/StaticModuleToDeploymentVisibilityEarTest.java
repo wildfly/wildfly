@@ -21,7 +21,6 @@
  */
 package org.jboss.as.test.integration.weld.modules.deployment;
 
-import static org.jboss.as.test.integration.weld.modules.ModuleUtils.createTestModule;
 import static org.jboss.as.test.integration.weld.modules.ModuleUtils.deleteRecursively;
 import static org.jboss.as.test.integration.weld.modules.ModuleUtils.getModulePath;
 
@@ -31,6 +30,7 @@ import javax.inject.Inject;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.test.integration.weld.modules.ModuleUtils;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -53,9 +53,11 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class StaticModuleToDeploymentVisibilityEarTest {
 
+    private static final String MODULE_NAME = "weld-modules-deployment-ear";
+
     public static void doSetup() throws Exception {
         tearDown();
-        createTestModule("foo", "foo-module.xml", ModuleBean.class, Foo.class);
+        ModuleUtils.createSimpleTestModule(MODULE_NAME, ModuleBean.class, Foo.class);
     }
 
     @AfterClass
@@ -78,7 +80,7 @@ public class StaticModuleToDeploymentVisibilityEarTest {
         return ShrinkWrap.create(EnterpriseArchive.class)
                 .addAsModules(war1, war2)
                 .addAsLibrary(library)
-                .addAsManifestResource(new StringAsset("Dependencies: test.foo meta-inf\n"), "MANIFEST.MF");
+                .addAsManifestResource(new StringAsset("Dependencies: test." + MODULE_NAME + " meta-inf\n"), "MANIFEST.MF");
     }
 
     @Inject
