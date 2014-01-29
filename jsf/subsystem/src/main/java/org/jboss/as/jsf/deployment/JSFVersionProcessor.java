@@ -97,6 +97,7 @@ public class JSFVersionProcessor implements DeploymentUnitProcessor {
 
             if (param.getParamName().equals(JSF_CONFIG_NAME_PARAM)) {
                 JsfVersionMarker.setVersion(topLevelDeployment, param.getParamValue());
+                break;
             }
         }
     }
