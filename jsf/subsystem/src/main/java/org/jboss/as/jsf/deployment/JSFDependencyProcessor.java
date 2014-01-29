@@ -59,12 +59,13 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        final DeploymentUnit topLevelDeployment = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
+        final DeploymentUnit tl = deploymentUnit.getParent() == null ? deploymentUnit : deploymentUnit.getParent();
 
-        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit)) {
+        if (!DeploymentTypeMarker.isType(DeploymentType.WAR, deploymentUnit) && !DeploymentTypeMarker.isType(DeploymentType.EAR, deploymentUnit)) {
             return;
         }
-        if (JsfVersionMarker.getVersion(topLevelDeployment).equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
+        String jsfVersion = JsfVersionMarker.getVersion(tl);
+        if (jsfVersion.equals(JsfVersionMarker.WAR_BUNDLES_JSF_IMPL)) {
             //if JSF is provided by the application we leave it alone
             return;
         }
@@ -72,7 +73,6 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         //and only add the dependency if JSF is actually needed
 
         String defaultJsfVersion = JSFModuleIdFactory.getInstance().getDefaultSlot();
-        String jsfVersion = JsfVersionMarker.getVersion(topLevelDeployment);
         if (!moduleIdFactory.isValidJSFSlot(jsfVersion)) {
             JSFLogger.ROOT_LOGGER.unknownJSFVersion(jsfVersion, defaultJsfVersion);
             jsfVersion = defaultJsfVersion;
@@ -88,19 +88,15 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         addJSFAPI(jsfVersion, moduleSpecification, moduleLoader);
         addJSFImpl(jsfVersion, moduleSpecification, moduleLoader);
 
-        if (deploymentUnit != topLevelDeployment) { // add JSF to top level deployment
-            final ModuleSpecification topLevelModuleSpecification = topLevelDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
-            addJSFAPI(jsfVersion, topLevelModuleSpecification, moduleLoader);
-            addJSFImpl(jsfVersion, topLevelModuleSpecification, moduleLoader);
-        }
-
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSTL, false, false, false, false));
         moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, JSF_SUBSYSTEM, false, false, true, false));
 
         addJSFInjection(jsfVersion, moduleSpecification, moduleLoader);
 
         WarMetaData warMetaData = deploymentUnit.getAttachment(WarMetaData.ATTACHMENT_KEY);
-        addCDIFlag(warMetaData, topLevelDeployment);
+        if(warMetaData != null) {
+            addCDIFlag(warMetaData, deploymentUnit);
+        }
     }
 
     @Override
@@ -146,7 +142,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
 
     // Add a flag to the sevlet context so that we know if we need to instantiate
     // a CDI ViewHandler.
-    private void addCDIFlag(WarMetaData warMetaData, DeploymentUnit topLevelDeployment) {
+    private void addCDIFlag(WarMetaData warMetaData, DeploymentUnit deploymentUnit) {
         JBossWebMetaData webMetaData = warMetaData.getMergedJBossWebMetaData();
         if (webMetaData == null) {
             webMetaData = new JBossWebMetaData();
@@ -158,7 +154,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
             contextParams = new ArrayList<ParamValueMetaData>();
         }
 
-        boolean isCDI = WeldDeploymentMarker.isWeldDeployment(topLevelDeployment);
+        boolean isCDI = WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit);
         ParamValueMetaData param = new ParamValueMetaData();
         param.setParamName(IS_CDI_PARAM);
         param.setParamValue(Boolean.toString(isCDI));
