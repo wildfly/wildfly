@@ -17,6 +17,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ValueService;
 import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.clustering.diagnostics.extension.deployment.ClusteredDeploymentRepository;
+import org.wildfly.clustering.diagnostics.extension.deployment.processors.ClusteredDeploymentRepositoryDependenciesProcessor;
 import org.wildfly.clustering.diagnostics.extension.deployment.processors.ClusteredDeploymentRepositoryProcessor;
 
 /**
@@ -76,17 +77,14 @@ class ClusteringDiagnosticsSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 // DUPs which also apply to application clients
                 if (!appclient) {
                     // DUPs which apply only to
-                    processorTarget.addDeploymentProcessor(ClusteringDiagnosticsExtension.SUBSYSTEM_NAME,
-                            Phase.INSTALL,
-                            Phase.INSTALL_CLUSTERED_DEPLOYMENT_REPOSITORY,
-                            new ClusteredDeploymentRepositoryProcessor());
+                    processorTarget.addDeploymentProcessor(ClusteringDiagnosticsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_CLUSTERED_DEPLOYMENT_REPOSITORY_DEPENDENCIES, new ClusteredDeploymentRepositoryDependenciesProcessor());
+                    processorTarget.addDeploymentProcessor(ClusteringDiagnosticsExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_CLUSTERED_DEPLOYMENT_REPOSITORY, new ClusteredDeploymentRepositoryProcessor());
                 }
 
             }
         }, OperationContext.Stage.RUNTIME);
 
         newControllers.add(context.getServiceTarget().addService(ClusteredDeploymentRepository.SERVICE_NAME, new ClusteredDeploymentRepository()).install());
-
         newControllers.add(context.getServiceTarget().addService(ClusteringDiagnosticsExtension.CLUSTER_EXTENSION_SERVICE_NAME, new ValueService<Void>(new ImmediateValue<Void>(null))).install());
     }
 }

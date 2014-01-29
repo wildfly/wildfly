@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.msc.ServiceContainerHelper;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BasicComponent;
@@ -60,17 +59,16 @@ import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.ejb.BeanManager;
-import org.wildfly.clustering.ejb.infinispan.InfinispanBeanManager;
 import org.wildfly.clustering.diagnostics.extension.deployment.ClusteredDeploymentRepository;
 import org.wildfly.clustering.diagnostics.extension.deployment.ClusteredEjbDeploymentInformation;
 import org.wildfly.clustering.diagnostics.extension.deployment.ClusteredModuleDeployment;
 import org.wildfly.clustering.diagnostics.extension.deployment.ClusteredWarDeploymentInformation;
+import org.wildfly.clustering.ejb.BeanManager;
+import org.wildfly.clustering.ejb.infinispan.InfinispanBeanManager;
 
 /**
  * A deployment unit processor which extracts information concerning clustered applications
@@ -96,9 +94,9 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
         }
 
         // if we can't access the repository, nothing to do
-        this.repository = getDeploymentRepository(phaseContext);
+        this.repository = phaseContext.getAttachment(ClusteredDeploymentRepositoryDependenciesProcessor.CLUSTERED_DEPLOYMENT_REPOSITORY_SERVICE_KEY);
         if (repository == null) {
-            // should panic
+            ROOT_LOGGER.clusteredDeploymentRepositoryNotAvailable();
             return;
         }
 
@@ -126,23 +124,12 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
     public void undeploy(DeploymentUnit context) {
 
         if (repository == null) {
-            // should panic?
+            ROOT_LOGGER.clusteredDeploymentRepositoryNotAvailable();
             return;
         }
         String deploymentName = context.getName();
         repository.remove(deploymentName);
         ROOT_LOGGER.removeDeploymentFromClusteredDeploymentRepository(deploymentName);
-    }
-
-    /*
-     * Get a reference to the deployment repository where we store information about clustered deployments.
-     */
-    private ClusteredDeploymentRepository getDeploymentRepository(DeploymentPhaseContext context) {
-        ServiceRegistry registry = context.getServiceRegistry();
-        ServiceController<ClusteredDeploymentRepository> controller = ServiceContainerHelper.findService(registry, ClusteredDeploymentRepository.SERVICE_NAME);
-        if (controller == null)
-            return null;
-        return controller.getValue();
     }
 
     /*
@@ -400,6 +387,22 @@ public class ClusteredDeploymentRepositoryProcessor implements DeploymentUnitPro
 
         @Override
         public void stop(StopContext context) {
+
+            Map<String, ClusteredModuleDeployment> modules = null;
+            ClusteredModuleDeployment deployment = null;
+            Map<String, ClusteredEjbDeploymentInformation> ejbs = null;
+
+            // remove the bean info, if present, from the clustered EJB map
+            modules = repository.getModules();
+            if (modules != null) {
+                deployment = modules.get(deploymentName);
+                if (deployment != null) {
+                    ejbs = deployment.getEjbs();
+                    if (ejbs != null && ejbs.containsKey(beanName)) {
+                        ejbs.remove(beanName);
+                    }
+                }
+            }
         }
 
         @Override

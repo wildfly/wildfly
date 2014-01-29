@@ -33,6 +33,7 @@
         <module name="org.jboss.as.clustering.common"/>
         <module name="org.jboss.as.clustering.infinispan" optional="true"/>
         <module name="org.jboss.as.clustering.jgroups" optional="true"/>
+        <module name="org.jboss.as.server"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.msc"/>
 

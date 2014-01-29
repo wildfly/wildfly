@@ -481,6 +481,7 @@ public enum Phase {
     public static final int POST_MODULE_WS_SERVICES_DEPS                = 0x3200;
     public static final int POST_MODULE_RAR_SERVICES_DEPS               = 0x3300;
     public static final int POST_MODULE_UNDERTOW_MODCLUSTER             = 0x3400;
+    public static final int POST_MODULE_CLUSTERED_DEPLOYMENT_REPOSITORY_DEPENDENCIES = 0x3500;
 
     // INSTALL
     public static final int INSTALL_JACC_POLICY                         = 0x0350;

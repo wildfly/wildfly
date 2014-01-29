@@ -58,51 +58,55 @@ public interface ClusteringDiagnosticsSubsystemLogger extends BasicLogger {
     void activatingSubsystem();
 
     @LogMessage(level = ERROR)
-    @Message(id = 20701, value = "Exception calling deployment added listener")
+    @Message(id = 20701, value = "ClusteredDeploymentRepository service not available - unable to provide diagnostics for clustered deployments")
+    void clusteredDeploymentRepositoryNotAvailable();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 20702, value = "Exception calling deployment added listener")
     void deploymentAddListenerException(@Cause Throwable cause);
 
     @LogMessage(level = ERROR)
-    @Message(id = 20702, value = "Exception calling deployment removal listener")
+    @Message(id = 20703, value = "Exception calling deployment removal listener")
     void deploymentRemoveListenerException(@Cause Throwable cause);
 
     @LogMessage(level = TRACE)
-    @Message(id = 20703, value = "Adding %s deployment %s to ClusteringDeploymentRepository")
+    @Message(id = 20704, value = "Adding %s deployment %s to ClusteringDeploymentRepository")
     void addDeploymentToClusteredDeploymentRepository(String deploymentType, String deploymentName);
 
     @LogMessage(level = TRACE)
-    @Message(id = 20704, value = "Removing deployment %s from ClusteringDeploymentRepository")
+    @Message(id = 20705, value = "Removing deployment %s from ClusteringDeploymentRepository")
     void removeDeploymentFromClusteredDeploymentRepository(String deploymentName);
 
     @LogMessage(level = ERROR)
-    @Message(id = 20705, value = "NoSuchFieldException handled for field %s in class %s")
+    @Message(id = 20706, value = "NoSuchFieldException handled for field %s in class %s")
     void noSuchFieldExceptionHandled(String field, String clazz);
 
     @LogMessage(level = ERROR)
-    @Message(id = 20706, value = "IllegalAccessException handled for field %s in class %s")
+    @Message(id = 20707, value = "IllegalAccessException handled for field %s in class %s")
     void illegalAccessExceptionHandled(String field, String clazz);
 
     @LogMessage(level = TRACE)
-    @Message(id = 20707, value = "Processing cluster metrics request: channel = %s, attribute = %s")
+    @Message(id = 20708, value = "Processing cluster metrics request: channel = %s, attribute = %s")
     void processingClusterMetricsRequest(String channel, String attr);
 
     @LogMessage(level = TRACE)
-    @Message(id = 20708, value = "Processing deployment metrics request: channel = %s, deployment = %s, attribute = %s")
+    @Message(id = 20709, value = "Processing deployment metrics request: channel = %s, deployment = %s, attribute = %s")
     void processingDeploymentMetricsRequest(String channel, String deployment, String attr);
 
     @LogMessage(level = TRACE)
-    @Message(id = 20709, value = "Processing bean metrics request: channel = %s, deployment = %s, attribute = %s")
+    @Message(id = 20710, value = "Processing bean metrics request: channel = %s, deployment = %s, attribute = %s")
     void processingWebMetricsRequest(String channel, String deployment, String attr);
 
     @LogMessage(level = TRACE)
-    @Message(id = 20710, value = "Processing bean metrics request: channel = %s, deployment = %s, bean = %s, attribute = %s")
+    @Message(id = 20711, value = "Processing bean metrics request: channel = %s, deployment = %s, bean = %s, attribute = %s")
     void processingBeanMetricsRequest(String channel, String deployment, String bean, String attr);
 
     @LogMessage(level = TRACE)
-    @Message(id = 20711, value = "Processed request: result = %s")
+    @Message(id = 20712, value = "Processed request: result = %s")
     void processedRequestResult(String result);
 
     @LogMessage(level = TRACE)
-    @Message(id = 20712, value = "Executing channel state command: channel = %s")
+    @Message(id = 20713, value = "Executing channel state command: channel = %s")
     void executingChannelStateCommand(String channel);
 
 }
