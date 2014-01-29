@@ -100,7 +100,7 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
     public void validate() throws ConfigurationException {
         super.validate();
         Validate.configurationDirectoryExists(jbossHome, "jbossHome '" + jbossHome + "' must exist");
-        Validate.configurationDirectoryExists(jbossHome, "modulePath '" + modulePath + "' must exist");
-        Validate.configurationDirectoryExists(jbossHome, "bundlePath '" + bundlePath + "' must exist");
+        Validate.configurationDirectoryExists(modulePath, "modulePath '" + modulePath + "' must exist");
+        Validate.configurationDirectoryExists(bundlePath, "bundlePath '" + bundlePath + "' must exist");
     }
 }
