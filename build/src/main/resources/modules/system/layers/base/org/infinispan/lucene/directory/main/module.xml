@@ -32,7 +32,11 @@
     </resources>
 
     <dependencies>
+        <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
         <module name="org.apache.lucene"/>
         <module name="org.infinispan"/>
+        <module name="org.infinispan.commons"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 </module>

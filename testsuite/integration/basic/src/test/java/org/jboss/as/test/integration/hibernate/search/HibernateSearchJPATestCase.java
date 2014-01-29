@@ -51,10 +51,30 @@ public class HibernateSearchJPATestCase {
          "      <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>" +
          "      <properties>" +
          "         <property name=\"hibernate.hbm2ddl.auto\" value=\"create-drop\" />" +
-         "         <property name=\"hibernate.search.default.directory_provider\" value=\"ram\" />" +
+         "         <property name=\"hibernate.search.default.directory_provider\" value=\"infinispan\" />" +
+         "         <property name=\"hibernate.search.infinispan.configuration_resourcename\" value=\"hsearch-infinispan-local.xml\" />" +
          "      </properties>" +
          "   </persistence-unit>" +
          "</persistence>";
+
+   private static final String infinispan_configuration =
+         "<?xml version=\"1.0\" encoding=\"UTF-8\"?> " +
+         "<infinispan" +
+         "   xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"" +
+         "   xsi:schemaLocation=\"urn:infinispan:config:6.0 http://www.infinispan.org/schemas/infinispan-config-6.0.xsd\"" +
+         "   xmlns=\"urn:infinispan:config:6.0\"> " +
+         "   <global>" +
+         "      <globalJmxStatistics enabled=\"false\" />" +
+         // <!-- Don't enable a JGroups Transport to speedup testing -->
+         // (Which is why we need a custom configuration file: the default starts a UDP based channel to do group discovery)
+         "      <shutdown hookBehavior=\"DONT_REGISTER\" />" +
+         "   </global>" +
+         "   <default>" +
+         "   </default>" +
+         "   <namedCache name=\"LuceneIndexesMetadata\" />" +
+         "   <namedCache name=\"LuceneIndexesData\" />" +
+         "   <namedCache name=\"LuceneIndexesLocking\" />" +
+         "</infinispan>";
 
    @EJB(mappedName = "java:module/SearchBean")
    private SearchBean searchBean;
@@ -77,6 +97,7 @@ public class HibernateSearchJPATestCase {
             new StringAsset("Dependencies: org.hibernate.search.orm services\n"), "MANIFEST.MF");
       // add JPA configuration
       jar.addAsResource(new StringAsset(persistence_xml), "META-INF/persistence.xml");
+      jar.addAsResource(new StringAsset(infinispan_configuration), "hsearch-infinispan-local.xml");
       // add testing Bean and entities
       jar.addClasses(SearchBean.class, Book.class, HibernateSearchJPATestCase.class);
 
