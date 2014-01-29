@@ -1,0 +1,20 @@
+<module xmlns="urn:jboss:module:1.0" name="com.redhat.gss.redhat-support-lib-java">
+    <resources>
+		<!-- Insert resources here -->
+    </resources>
+    
+    <dependencies>
+        <module name="javax.api"/>
+        <module name="org.jboss.staxmapper"/>
+        <module name="org.jboss.as.controller"/>
+        <module name="org.jboss.as.server"/>
+        <module name="org.jboss.modules"/>
+        <module name="org.jboss.msc"/>
+        <module name="org.jboss.logging"/>
+        <module name="org.jboss.vfs"/>
+        <module name="org.apache.commons.io"/>
+        <module name="org.apache.httpcomponents"/>
+        <module name="org.apache.log4j"/>
+        <module name="javax.xml.bind.api"/>
+    </dependencies>
+</module>

@@ -1062,6 +1062,18 @@
                 <artifactId>jboss-as-jdr</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            
+            <dependency>
+                <groupId>com.redhat.gss</groupId>
+                <artifactId>redhat-access-plugin-eap</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.redhat.gss</groupId>
+                <artifactId>redhat-support-lib-java</artifactId>
+                <version>1.0.4</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
@@ -6802,6 +6814,7 @@
                 <module>naming</module>
                 <module>osgi</module>
                 <module>pojo</module>
+                <module>redhat-access-plugin-eap</module>
                 <module>remoting-test</module>
                 <module>system-jmx</module>
                 <module>sar</module>
