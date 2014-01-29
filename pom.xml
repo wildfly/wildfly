@@ -966,12 +966,6 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-configadmin</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-config-assembly</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -6545,7 +6539,6 @@
                 <module>client/jms</module>
                 <module>client/shade</module>
                 <module>clustering</module>
-                <module>configadmin</module>
                 <module>config-assembly</module>
                 <module>connector</module>
                 <module>core-model-test</module>

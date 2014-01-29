@@ -1009,11 +1009,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-configadmin</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss.hal</groupId>
                     <artifactId>release-stream</artifactId>                    
                     <classifier>resources</classifier>

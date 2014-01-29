@@ -65,7 +65,6 @@
                 <exclude>catalog.xml</exclude>
                 <exclude>batch/**</exclude>
                 <exclude>connector/**</exclude>
-                <exclude>configadmin/**</exclude>
                 <exclude>core-security/**</exclude>
                 <exclude>ee/**</exclude>
                 <exclude>ejb3/**</exclude>

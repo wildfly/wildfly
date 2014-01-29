@@ -989,10 +989,6 @@
             <maven-resource group="org.wildfly" artifact="wildfly-cmp"/>
         </module-def>
 
-        <module-def name="org.jboss.as.configadmin">
-            <maven-resource group="org.wildfly" artifact="wildfly-configadmin"/>
-        </module-def>
-
         <module-def name="org.jboss.as.connector">
             <maven-resource group="org.wildfly" artifact="wildfly-connector"/>
         </module-def>
