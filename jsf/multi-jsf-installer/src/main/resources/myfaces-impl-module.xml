@@ -28,7 +28,11 @@
     </properties>
 
     <dependencies>
-        <module name="javax.faces.api" slot="${jsf-impl-name}-${jsf-version}"/>
+        <module name="javax.faces.api" slot="${jsf-impl-name}-${jsf-version}">
+            <imports>
+                <include path="META-INF/**"/>
+            </imports>
+        </module>
         <module name="javaee.api"/>
         <module name="javax.servlet.jstl.api"/>
         <module name="org.apache.xerces" services="import"/>
