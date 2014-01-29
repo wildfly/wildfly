@@ -117,6 +117,7 @@ public class BridgeAdd extends AbstractAddStepHandler {
         final long retryInterval = CommonAttributes.RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
         final double retryIntervalMultiplier = CommonAttributes.RETRY_INTERVAL_MULTIPLIER.resolveModelAttribute(context, model).asDouble();
         final long maxRetryInterval = CommonAttributes.MAX_RETRY_INTERVAL.resolveModelAttribute(context, model).asLong();
+        final int initialConnectAttempts = BridgeDefinition.INITIAL_CONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
         final int reconnectAttempts = BridgeDefinition.RECONNECT_ATTEMPTS.resolveModelAttribute(context, model).asInt();
         final int reconnectAttemptsOnSameNode = BridgeDefinition.RECONNECT_ATTEMPTS_ON_SAME_NODE.resolveModelAttribute(context, model).asInt();
         final boolean useDuplicateDetection = BridgeDefinition.USE_DUPLICATE_DETECTION.resolveModelAttribute(context, model).asBoolean();
@@ -133,8 +134,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
         if (discoveryGroupName != null) {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
                               minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                              retryInterval, maxRetryInterval, retryIntervalMultiplier, reconnectAttempts,
-                              reconnectAttemptsOnSameNode,
+                              retryInterval, maxRetryInterval, retryIntervalMultiplier,
+                              initialConnectAttempts, reconnectAttempts, reconnectAttemptsOnSameNode,
                               useDuplicateDetection, confirmationWindowSize,
                               discoveryGroupName,
                               ha,
@@ -142,8 +143,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
         } else {
             return new BridgeConfiguration(name, queueName, forwardingAddress, filterString, transformerClassName,
                               minLargeMessageSize, clientFailureCheckPeriod, connectionTTL,
-                              retryInterval, maxRetryInterval, retryIntervalMultiplier, reconnectAttempts,
-                              reconnectAttemptsOnSameNode,
+                              retryInterval, maxRetryInterval, retryIntervalMultiplier,
+                              initialConnectAttempts, reconnectAttempts, reconnectAttemptsOnSameNode,
                               useDuplicateDetection, confirmationWindowSize,
                               staticConnectors,
                               ha,
@@ -164,7 +165,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
             if (bridgeConfig.getDiscoveryGroupName() != null) {
                 serverControl.createBridge(name, bridgeConfig.getQueueName(), bridgeConfig.getForwardingAddress(),
                         bridgeConfig.getFilterString(), bridgeConfig.getTransformerClassName(), bridgeConfig.getRetryInterval(),
-                        bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
+                        bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getInitialConnectAttempts(),
+                        bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
                         bridgeConfig.getConfirmationWindowSize(), bridgeConfig.getClientFailureCheckPeriod(),
                         bridgeConfig.getDiscoveryGroupName(), true, bridgeConfig.isHA(), bridgeConfig.getUser(),
                         bridgeConfig.getPassword());
@@ -181,7 +183,8 @@ public class BridgeAdd extends AbstractAddStepHandler {
                 }
                 serverControl.createBridge(name, bridgeConfig.getQueueName(), bridgeConfig.getForwardingAddress(),
                         bridgeConfig.getFilterString(), bridgeConfig.getTransformerClassName(), bridgeConfig.getRetryInterval(),
-                        bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
+                        bridgeConfig.getRetryIntervalMultiplier(), bridgeConfig.getInitialConnectAttempts(),
+                        bridgeConfig.getReconnectAttempts(), bridgeConfig.isUseDuplicateDetection(),
                         bridgeConfig.getConfirmationWindowSize(), bridgeConfig.getClientFailureCheckPeriod(),
                         connectors, false, bridgeConfig.isHA(), bridgeConfig.getUser(),
                         bridgeConfig.getPassword());

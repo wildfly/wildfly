@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.junit.Assert;
 
 import org.eclipse.jdt.internal.compiler.ast.AssertStatement;
@@ -71,7 +72,7 @@ public class SecurityTestCase {
 
     @Test
     public void testFailedAuthenticationBadUserPass() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), managementClient.getWebUri().getPort());
         try {
             sf.createSession("fail", "epicfail", false, true, true, false, 1);
             fail("must not allow to create a session with bad authentication");
@@ -87,7 +88,7 @@ public class SecurityTestCase {
 
     @Test
     public void testFailedAuthenticationBlankUserPass() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), managementClient.getWebUri().getPort());
         try {
             sf.createSession();
             fail("must not allow to create a session without any authentication");
@@ -103,7 +104,7 @@ public class SecurityTestCase {
 
     @Test
     public void testDefaultClusterUser() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), managementClient.getWebUri().getPort());
         try {
             sf.createSession(HornetQDefaultConfiguration.getDefaultClusterUser(), HornetQDefaultConfiguration.getDefaultClusterPassword(), false, true, true, false, 1);
             fail("must not allow to create a session with the default cluster user credentials");
@@ -119,7 +120,7 @@ public class SecurityTestCase {
 
     @Test
     public void testSuccessfulAuthentication() throws Exception {
-        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), managementClient.getWebUri().getPort());
         ClientSession session = null;
         try {
             session = sf.createSession("guest", "guest", false, true, true, false, 1);
@@ -135,7 +136,7 @@ public class SecurityTestCase {
     public void testSuccessfulAuthorization() throws Exception {
         final String queueName = "queue.testSuccessfulAuthorization";
 
-        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), managementClient.getWebUri().getPort());
 
         ClientSession session = null;
         try {
@@ -157,7 +158,7 @@ public class SecurityTestCase {
     @Test
     public void testUnsuccessfulAuthorization() throws Exception {
         final String queueName = "queue.testUnsuccessfulAuthorization";
-        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), 5445);
+        final ClientSessionFactory sf = createClientSessionFactory(managementClient.getMgmtAddress(), managementClient.getWebUri().getPort());
         ClientSession session = null;
         try {
             session = sf.createSession("guest", "guest", false, true, true, false, 1);
@@ -191,6 +192,8 @@ public class SecurityTestCase {
         final Map<String, Object> properties = new HashMap<String, Object>();
         properties.put("host", host);
         properties.put("port", port);
+        properties.put(TransportConstants.HTTP_UPGRADE_ENABLED_PROP_NAME, true);
+        properties.put(TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME, "http-acceptor");
         final TransportConfiguration configuration = new TransportConfiguration(NettyConnectorFactory.class.getName(), properties);
         return HornetQClient.createServerLocatorWithoutHA(configuration).createSessionFactory();
     }

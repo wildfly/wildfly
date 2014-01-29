@@ -127,6 +127,13 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = create("initial-connect-attempts", INT)
+            .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultClusterInitialConnectAttempts()))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition MAX_HOPS = create("max-hops", INT)
             .setDefaultValue(new ModelNode(HornetQDefaultConfiguration.getDefaultClusterMaxHops()))
             .setAllowNull(true)
@@ -195,6 +202,7 @@ public class ClusterConnectionDefinition extends SimpleResourceDefinition {
             CommonAttributes.CALL_TIMEOUT,
             CommonAttributes.CALL_FAILOVER_TIMEOUT,
             RETRY_INTERVAL, RETRY_INTERVAL_MULTIPLIER, MAX_RETRY_INTERVAL,
+            INITIAL_CONNECT_ATTEMPTS,
             RECONNECT_ATTEMPTS, USE_DUPLICATE_DETECTION,
             FORWARD_WHEN_NO_CONSUMERS, MAX_HOPS,
             CommonAttributes.BRIDGE_CONFIRMATION_WINDOW_SIZE,

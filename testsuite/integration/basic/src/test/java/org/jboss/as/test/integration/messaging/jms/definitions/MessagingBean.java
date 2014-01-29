@@ -75,7 +75,7 @@ import javax.jms.TopicConnectionFactory;
                 @JMSConnectionFactoryDefinition(
                         name="java:module/myFactory1",
                         properties = {
-                                "connector=netty",
+                                "connector=http-connector",
                                 "initial-connect-attempts=3"
                         },
                         user = "guest",
@@ -93,7 +93,7 @@ import javax.jms.TopicConnectionFactory;
         name="java:global/myFactory3",
         interfaceName = "javax.jms.QueueConnectionFactory",
         properties = {
-                "connector=netty",
+                "connector=http-connector",
                 "initial-connect-attempts=5"
         },
         user = "guest",

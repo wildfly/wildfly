@@ -69,6 +69,13 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
+    public static final SimpleAttributeDefinition INITIAL_CONNECT_ATTEMPTS = create("initial-connect-attempts", INT)
+            .setAllowNull(true)
+            .setDefaultValue(new ModelNode().set(HornetQDefaultConfiguration.getDefaultBridgeInitialConnectAttempts()))
+            .setAllowExpression(true)
+            .setRestartAllServices()
+            .build();
+
     public static final SimpleAttributeDefinition QUEUE_NAME = create(CommonAttributes.QUEUE_NAME, STRING)
             .setAllowExpression(true)
             .setRestartAllServices()
@@ -124,6 +131,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
             CommonAttributes.FILTER, CommonAttributes.TRANSFORMER_CLASS_NAME,
             CommonAttributes.MIN_LARGE_MESSAGE_SIZE, CommonAttributes.CHECK_PERIOD, CommonAttributes.CONNECTION_TTL,
             CommonAttributes.RETRY_INTERVAL, CommonAttributes.RETRY_INTERVAL_MULTIPLIER, CommonAttributes.MAX_RETRY_INTERVAL,
+            INITIAL_CONNECT_ATTEMPTS,
             RECONNECT_ATTEMPTS,
             RECONNECT_ATTEMPTS_ON_SAME_NODE,
             CommonAttributes.FAILOVER_ON_SERVER_SHUTDOWN,

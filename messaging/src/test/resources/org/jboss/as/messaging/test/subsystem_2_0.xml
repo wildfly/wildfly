@@ -159,6 +159,7 @@
                     <retry-interval>750</retry-interval>
                     <retry-interval-multiplier>2</retry-interval-multiplier>
                     <max-retry-interval>3000</max-retry-interval>
+                    <initial-connect-attempts>-1</initial-connect-attempts>
                     <reconnect-attempts>3</reconnect-attempts>
                     <failover-on-server-shutdown>true</failover-on-server-shutdown>
                     <use-duplicate-detection>true</use-duplicate-detection>
@@ -186,6 +187,7 @@
                     <retry-interval>987</retry-interval>
                     <retry-interval-multiplier>3.0</retry-interval-multiplier>
                     <max-retry-interval>3600</max-retry-interval>
+                    <initial-connect-attempts>-1</initial-connect-attempts>
                     <reconnect-attempts>-1</reconnect-attempts>
                     <use-duplicate-detection>true</use-duplicate-detection>
                     <forward-when-no-consumers>true</forward-when-no-consumers>

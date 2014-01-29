@@ -210,7 +210,7 @@ public enum Element {
    FAILOVER_ON_SERVER_SHUTDOWN(Common.FAILOVER_ON_SERVER_SHUTDOWN),
    GROUP_ID(Common.GROUP_ID),
    HA(CommonAttributes.HA),
-   INITIAL_CONNECT_ATTEMPTS(Pooled.INITIAL_CONNECT_ATTEMPTS),
+   INITIAL_CONNECT_ATTEMPTS(getInitialConnectAttemptsDefinitions()),
    INITIAL_MESSAGE_PACKET_SIZE(Pooled.INITIAL_MESSAGE_PACKET_SIZE),
    JMS_DESTINATIONS(CommonAttributes.JMS_DESTINATIONS),
    JMS_TOPIC(CommonAttributes.JMS_TOPIC),
@@ -495,5 +495,14 @@ public enum Element {
         result.put("target", JMSBridgeDefinition.TARGET_CONTEXT);
         return result;
     }
+
+    private static Map<String, AttributeDefinition>  getInitialConnectAttemptsDefinitions() {
+        final Map<String, AttributeDefinition> result = new HashMap<String, AttributeDefinition>();
+        result.put("bridge", BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
+        result.put("cluster", ClusterConnectionDefinition.INITIAL_CONNECT_ATTEMPTS);
+        result.put("pooled", Pooled.INITIAL_CONNECT_ATTEMPTS);
+        return result;
+    }
+
 
 }
