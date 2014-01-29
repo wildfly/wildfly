@@ -49,6 +49,7 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
+import org.infinispan.configuration.cache.VersioningScheme;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.ParserRegistry;
 import org.infinispan.eviction.EvictionStrategy;
@@ -452,8 +453,9 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             }
         }
 
-        if ((lockingMode == LockingMode.OPTIMISTIC) && (isolationLevel == IsolationLevel.REPEATABLE_READ)) {
+        if ((lockingMode == LockingMode.OPTIMISTIC) && (isolationLevel == IsolationLevel.REPEATABLE_READ) && this.mode.isSynchronous() && !this.mode.isInvalidation()) {
             builder.locking().writeSkewCheck(true);
+            builder.versioning().enable().scheme(VersioningScheme.SIMPLE);
         }
 
         if (batching) {
