@@ -44,6 +44,7 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.ws.common.ResourceLoaderAdapter;
 import org.jboss.wsf.spi.SPIProvider;
 import org.jboss.wsf.spi.SPIProviderResolver;
+import org.jboss.wsf.spi.deployment.AnnotationsInfo;
 import org.jboss.wsf.spi.deployment.ArchiveDeployment;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.DeploymentModelFactory;
@@ -210,6 +211,8 @@ abstract class AbstractDeploymentModelBuilder implements DeploymentModelBuilder 
         }
         dep.setRuntimeClassLoader(classLoader);
         dep.setType(deploymentType);
+        //add an AnnotationInfo attachment that uses composite jandex index
+        dep.addAttachment(AnnotationsInfo.class, new JandexAnnotationsInfo(unit));
 
         return dep;
     }
