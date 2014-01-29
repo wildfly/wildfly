@@ -16,7 +16,7 @@ Usage:
  --controller    - the default controller host and port to connect to when
                    --connect option (described below) is specified or when the
                    connect command is issued w/o the arguments. The default
-                   controller host is localhost and the port is 9999.
+                   controller host is localhost and the port is 9990.
 
  --connect (-c)  - instructs the CLI to connect to the controller on start-up
                    (to avoid issuing a separate connect command later).
