@@ -21,6 +21,8 @@
  */
 package org.jboss.as.webservices.util;
 
+import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
+import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
@@ -34,9 +36,12 @@ import java.util.List;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.AttachmentKey;
+import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.EjbDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
+import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
@@ -303,4 +308,15 @@ public final class ASHelper {
         return refRegistry;
     }
 
+    public static List<ResourceRoot> getResourceRoots(DeploymentUnit unit) {
+        // wars define resource roots
+        AttachmentList<ResourceRoot> resourceRoots = unit.getAttachment(RESOURCE_ROOTS);
+        if (!unit.getName().endsWith(".war") && EjbDeploymentMarker.isEjbDeployment(unit)) {
+            // ejb archives don't define resource roots, using root resource
+            resourceRoots = new AttachmentList<ResourceRoot>(ResourceRoot.class);
+            final ResourceRoot root = unit.getAttachment(DEPLOYMENT_ROOT);
+            resourceRoots.add(root);
+        }
+        return resourceRoots;
+    }
 }
