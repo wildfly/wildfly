@@ -43,7 +43,8 @@ public class FilterDefinitions extends PersistentResourceDefinition {
     private static List<? extends PersistentResourceDefinition> FILTERS = Collections.unmodifiableList(Arrays.asList(
             BasicAuthHandler.INSTANCE,
             ConnectionLimitHandler.INSTANCE,
-            ResponseHeaderHandler.INSTANCE
+            ResponseHeaderFilter.INSTANCE,
+            GzipFilter.INSTANCE
     ));
 
     private FilterDefinitions() {

@@ -26,9 +26,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.error.FileErrorPageHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Constants;
@@ -61,5 +63,10 @@ public class ErrorPageDefinition extends AbstractHandlerDefinition {
     @Override
     public Class getHandlerClass() {
         return FileErrorPageHandler.class;
+    }
+
+    @Override
+    public HttpHandler createHttpHandler(ModelNode model, HttpHandler next) {
+        throw new IllegalStateException("not implemented!");
     }
 }

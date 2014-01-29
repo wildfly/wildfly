@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import io.undertow.Handlers;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.servlet.api.Deployment;
@@ -47,7 +48,7 @@ import org.wildfly.extension.undertow.filters.FilterService;
  */
 public class Host implements Service<Host> {
     private final PathHandler pathHandler = new PathHandler();
-    private volatile HttpHandler rootHandler = pathHandler;
+    private volatile HttpHandler rootHandler;
     private final Set<String> allAliases;
     private final String name;
     private final String defaultWebModule;
@@ -86,6 +87,7 @@ public class Host implements Service<Host> {
         for (InjectedValue<FilterService> injectedFilter : injectedFilters) {
             filters.add(injectedFilter.getValue());
         }
+        rootHandler = Handlers.date(rootHandler);
         Collections.reverse(filters);
         HttpHandler handler = rootHandler;
         for (FilterService filter : filters) {

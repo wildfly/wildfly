@@ -34,7 +34,7 @@ import org.jboss.dmr.ModelType;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-public class ResponseHeaderHandler extends Filter {
+public class ResponseHeaderFilter extends Filter {
 
     private static final AttributeDefinition NAME = new SimpleAttributeDefinitionBuilder("header-name", ModelType.STRING)
             .setAllowNull(false)
@@ -45,9 +45,9 @@ public class ResponseHeaderHandler extends Filter {
             .setAllowExpression(true)
             .build();
 
-    public static final ResponseHeaderHandler INSTANCE = new ResponseHeaderHandler();
+    public static final ResponseHeaderFilter INSTANCE = new ResponseHeaderFilter();
 
-    private ResponseHeaderHandler() {
+    private ResponseHeaderFilter() {
         super("response-header");
     }
 
