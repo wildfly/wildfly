@@ -815,21 +815,51 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
     public void connectController(String controller) throws CommandLineException {
         ControllerAddress address = addressResolver.resolveAddress(controller);
 
-        try {
-            CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
-            if (log.isDebugEnabled()) {
-                log.debug("connecting to " + address.getHost() + ':' + address.getPort() + " as " + username);
+        // In case the alias mappings cause us to enter some form of loop or a badly
+        // configured server does the same,
+        Set<ControllerAddress> visited = new HashSet<ControllerAddress>();
+        visited.add(address);
+        boolean retry;
+        do {
+            try {
+                CallbackHandler cbh = new AuthenticationCallbackHandler(username, password);
+                if (log.isDebugEnabled()) {
+                    log.debug("connecting to " + address.getHost() + ':' + address.getPort() + " as " + username);
+                }
+                ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.getClient(address, cbh,
+                        disableLocalAuth, sslContext, connectionTimeout, this, timeoutHandler);
+                retry = false;
+                tryConnection(tempClient, address);
+                initNewClient(tempClient, address);
+            } catch (RedirectException re) {
+                try {
+                    URI location = new URI(re.getLocation());
+                    if ("http-remoting".equals(address.getProtocol()) && "https".equals(location.getScheme())) {
+                        int port = location.getPort();
+                        if (port < 0) {
+                            port = 443;
+                        }
+                        address = addressResolver.resolveAddress(new URI("https-remoting", null, location.getHost(), port,
+                                null, null, null).toString());
+                        if (visited.add(address) == false) {
+                            throw new CommandLineException("Redirect to address already tried encountered Address="
+                                    + address.toString());
+                        }
+                        retry = true;
+                    } else if (address.getHost().equals(location.getHost()) && address.getPort() == location.getPort()
+                            && location.getPath() != null && location.getPath().length() > 1) {
+                        throw new CommandLineException("Server at " + address.getHost() + ":" + address.getPort()
+                                + " does not support " + address.getProtocol());
+                    } else {
+                        throw new CommandLineException("Unsupported redirect received.", re);
+                    }
+                } catch (URISyntaxException e) {
+                    throw new CommandLineException("Bad redirect location '" + re.getLocation() + "' received.", e);
+                }
+            } catch (IOException e) {
+                throw new CommandLineException("Failed to resolve host '" + address.getHost() + "'", e);
             }
-            ModelControllerClient tempClient = ModelControllerClientFactory.CUSTOM.getClient(address, cbh, disableLocalAuth,
-                    sslContext, connectionTimeout, this, timeoutHandler);
-            tryConnection(tempClient, address);
-            initNewClient(tempClient, address);
-        } catch (RedirectException re) {
-            throw new CommandLineException("Server at " + address.getHost() + ":" + address.getPort() + " does not support "
-                    + address.getProtocol());
-        } catch (IOException e) {
-            throw new CommandLineException("Failed to resolve host '" + address.getHost() + "'", e);
-        }
+        } while (retry);
     }
 
     @Override
