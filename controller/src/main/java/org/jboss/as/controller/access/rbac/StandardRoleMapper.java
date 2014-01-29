@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
@@ -70,8 +71,23 @@ public class StandardRoleMapper implements RoleMapper {
 
     @Override
     public boolean canRunAs(Set<String> mappedRoles, String runAsRole) {
-        return runAsRole != null && mappedRoles.contains(StandardRole.SUPERUSER.toString())
-                && authorizerConfiguration.hasRole(runAsRole);
+        if (runAsRole == null) {
+            return false;
+        }
+
+        boolean hasRole = authorizerConfiguration.hasRole(runAsRole);
+        boolean isSuperUser = mappedRoles.contains(StandardRole.SUPERUSER.toString());
+
+        /*
+         * We only allow users to specify roles to run as if they are SuperUser, if the user is not SuperUser we need to be
+         * careful to not provide a way for the user to test which roles actually exist.
+         */
+
+        if (isSuperUser && hasRole == false) {
+            throw ControllerMessages.MESSAGES.unknownRole(runAsRole);
+        }
+
+        return hasRole && isSuperUser;
     }
 
     private Set<String> mapRoles(final Caller caller) {

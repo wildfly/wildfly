@@ -40,7 +40,7 @@ import org.jboss.dmr.ModelType;
 
 /**
  * A {@link RoleMapper} that allows clients to specify the roles they desire to run as. By default this {@link RoleMapper} Reads
- * the set of roles from a request headers in the operation, allowing the test to completely control the mapping. Roles are
+ * the set of roles from a request headers in the operation, allowing the client to completely control the mapping. Roles are
  * stored as a ModelNode of type ModelType.LIST, elements of ModelType.STRING, under operation.get("operation-headers",
  * "roles"). If no such header is found, the user is SUPERUSER. IF the list is empty, the user has no permissions.
  *
