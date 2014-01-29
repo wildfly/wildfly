@@ -25,6 +25,7 @@ package org.jboss.as.controller.access.rbac;
 import static org.jboss.as.controller.PathAddress.pathAddress;
 import static org.jboss.as.controller.PathElement.pathElement;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 
@@ -431,6 +432,15 @@ public class BasicRbacTestCase extends AbstractRbacTestBase {
         permitted(READWRITE_OPERATION, pathAddress(SENSITIVE_READ_ONLY_RESOURCE, BAR), StandardRole.SUPERUSER);
         permitted(READWRITE_OPERATION, pathAddress(APPLICATION_CONSTRAINED_RESOURCE, BAR), StandardRole.SUPERUSER);
         permitted(READWRITE_OPERATION, ACCESS_AUDIT_ADDR, StandardRole.AUDITOR);
+    }
+
+    // Bad role
+
+    @Test
+    public void testBadRole() throws Exception {
+        ModelNode operation = Util.createOperation(READONLY_OPERATION, pathAddress(UNCONSTRAINED_RESOURCE, FOO));
+        operation.get(OPERATION_HEADERS, "roles").add("Minataur");
+        executeForFailure(operation);
     }
 
     // model definition
