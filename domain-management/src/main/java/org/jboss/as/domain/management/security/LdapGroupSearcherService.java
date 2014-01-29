@@ -21,8 +21,11 @@
  */
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -79,6 +82,9 @@ public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
     }
 
     private static SearchControls createSearchControl(final boolean recursive, final String[] attributes) {
+        if (SECURITY_LOGGER.isTraceEnabled()) {
+            SECURITY_LOGGER.tracef("createSearchControl recursive=%b,  attributes=%s", recursive, Arrays.toString(attributes));
+        }
         // 2 - Search to identify the DN of the user connecting
         SearchControls searchControls = new SearchControls();
         if (recursive) {
@@ -121,21 +127,42 @@ public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
             this.filterString = String.format("(%s={0})", principalAttribute);
             this.recursive = recursive;
             this.searchBy = searchBy;
+
+            if (SECURITY_LOGGER.isTraceEnabled()) {
+                SECURITY_LOGGER.tracef("GroupToPrincipalSearcher baseDn=%s", baseDn);
+                SECURITY_LOGGER.tracef("GroupToPrincipalSearcher groupDnAttribute=%s", groupDnAttribute);
+                SECURITY_LOGGER.tracef("GroupToPrincipalSearcher groupNameAttribute=%s", groupNameAttribute);
+                SECURITY_LOGGER.tracef("GroupToPrincipalSearcher attributeArray=%s", Arrays.toString(attributeArray));
+                SECURITY_LOGGER.tracef("GroupToPrincipalSearcher filterString=%s", filterString);
+                SECURITY_LOGGER.tracef("GroupToPrincipalSearcher recursive=%b", recursive);
+                SECURITY_LOGGER.tracef("GroupToPrincipalSearcher searchBy=%s", searchBy);
+            }
         }
 
         @Override
         public LdapEntry[] groupSearch(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
             SearchControls searchControls = createSearchControl(recursive, attributeArray); // TODO - Can we create this in
                                                                                             // advance?
-
             Set<LdapEntry> foundEntries = new HashSet<LdapEntry>();
-            NamingEnumeration<SearchResult> searchResults = dirContext.search(baseDn, filterString, getSearchParameter(entry),
-                    searchControls);
+            Object[] searchParameter = getSearchParameter(entry);
+            boolean trace = SECURITY_LOGGER.isTraceEnabled();
+            if (trace) {
+                SECURITY_LOGGER.tracef("Performing search baseDn=%s, filterString=%s, searchParameter=%s", baseDn,
+                        filterString, Arrays.toString(searchParameter));
+            }
+            NamingEnumeration<SearchResult> searchResults = dirContext.search(baseDn, filterString, searchParameter, searchControls);
+            if (trace && searchResults.hasMore() == false) {
+                SECURITY_LOGGER.trace("No search results found.");
+            }
             while (searchResults.hasMore()) {
                 SearchResult current = searchResults.next();
                 Attributes attributes = current.getAttributes();
                 if (attributes != null) {
-                    foundEntries.add(convertToLdapEntry(current, attributes));
+                    LdapEntry newEntry = convertToLdapEntry(current, attributes);
+                    SECURITY_LOGGER.tracef("Adding %s", newEntry);
+                    foundEntries.add(newEntry);
+                } else {
+                    SECURITY_LOGGER.tracef("No attributes found for %s", current);
                 }
             }
 
@@ -147,6 +174,7 @@ public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
             String distinguishedName = null;
 
             if (groupNameAttribute != null) {
+                SECURITY_LOGGER.tracef("Getting groupNameAttribute=%s", groupNameAttribute);
                 Attribute groupNameAttr = attributes.get(groupNameAttribute);
                 if (groupNameAttr != null) {
                     simpleName = (String) groupNameAttr.get();
@@ -155,8 +183,10 @@ public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
 
             if (groupDnAttribute != null) {
                 if ("dn".equals(groupDnAttribute)) {
+                    SECURITY_LOGGER.trace("Obtaining dn using getNameInNamespace()");
                     distinguishedName = searchResult.getNameInNamespace();
                 } else {
+                    SECURITY_LOGGER.tracef("Getting groupDnAttribute=%s", groupDnAttribute);
                     Attribute groupDnAttr = attributes.get(groupDnAttribute);
                     if (groupDnAttr != null) {
                         distinguishedName = (String) groupDnAttr.get();
@@ -186,27 +216,39 @@ public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
         private PrincipalToGroupSearcher(final String groupAttribute, final String groupNameAttribute) {
             this.groupAttribute = groupAttribute;
             this.groupNameAttribute = groupNameAttribute;
+
+            if (SECURITY_LOGGER.isTraceEnabled()) {
+                SECURITY_LOGGER.tracef("PrincipalToGroupSearcher groupAttribute=%s", groupAttribute);
+                SECURITY_LOGGER.tracef("PrincipalToGroupSearcher groupNameAttribute=%s", groupNameAttribute);
+            }
         }
 
         @Override
         public LdapEntry[] groupSearch(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
             Set<LdapEntry> foundEntries = new HashSet<LdapEntry>();
             // Load the list of group.
-            Attributes groups = dirContext.getAttributes(entry.getDistinguishedName(), new String[] {groupAttribute});
+            Attributes groups = dirContext.getAttributes(entry.getDistinguishedName(), new String[] { groupAttribute });
             Attribute groupRef = groups.get(groupAttribute);
-            if (groupRef != null) {
+            if (groupRef != null && groupRef.size() > 0) {
                 NamingEnumeration<String> groupRefValues = (NamingEnumeration<String>) groupRef.getAll();
                 while (groupRefValues.hasMore()) {
-                    String current = groupRefValues.next();
-                    String groupName = null;
+                    String distingushedName = groupRefValues.next();
+                    SECURITY_LOGGER.tracef("Group found with distinguishedName=%s", distingushedName);
+                    String simpleName = null;
                     if (groupNameAttribute != null) {
                         // Load the Name
-                        Attributes groupNameAttrs = dirContext.getAttributes(current, new String[] { groupNameAttribute });
+                        Attributes groupNameAttrs = dirContext.getAttributes(distingushedName, new String[] { groupNameAttribute });
                         Attribute groupNameAttr = groupNameAttrs.get(groupNameAttribute);
-                        groupName = (String) groupNameAttr.get();
+                        simpleName = (String) groupNameAttr.get();
+                        SECURITY_LOGGER.tracef("simpleName %s loaded for group with distinguishedName=%s", simpleName,
+                                distingushedName);
+                    } else {
+                        SECURITY_LOGGER.trace("No groupNameAttribute to load simpleName");
                     }
-                    foundEntries.add(new LdapEntry(groupName, current));
+                    foundEntries.add(new LdapEntry(simpleName, distingushedName));
                 }
+            } else {
+                SECURITY_LOGGER.tracef("No groups found for %s", entry);
             }
 
             return foundEntries.toArray(new LdapEntry[foundEntries.size()]);
