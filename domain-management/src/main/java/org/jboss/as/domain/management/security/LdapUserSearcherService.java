@@ -99,6 +99,14 @@ public class LdapUserSearcherService implements Service<LdapUserSearcher> {
             this.userDnAttribute = userDnAttribute;
             this.userNameAttribute = userNameAttribute;
             this.advancedFilter = advancedFilter;
+
+            if (SECURITY_LOGGER.isTraceEnabled()) {
+                SECURITY_LOGGER.tracef("LdapUserSearcherImpl baseDn=%s", baseDn);
+                SECURITY_LOGGER.tracef("LdapUserSearcherImpl recursive=%b", recursive);
+                SECURITY_LOGGER.tracef("LdapUserSearcherImpl userDnAttribute=%s", userDnAttribute);
+                SECURITY_LOGGER.tracef("LdapUserSearcherImpl userNameAttribute=%s", userNameAttribute);
+                SECURITY_LOGGER.tracef("LdapUserSearcherImpl advancedFilter=%s", advancedFilter);
+            }
         }
 
         @Override

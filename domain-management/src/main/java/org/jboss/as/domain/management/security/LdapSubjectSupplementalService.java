@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
+
 import java.io.IOException;
 import java.security.Principal;
 import java.util.HashSet;
@@ -89,10 +91,19 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
     public void start(StartContext context) throws StartException {
         userSearcher = userSearcherInjector.getOptionalValue();
         groupSearcher = groupSearcherInjector.getValue();
+
+        if (SECURITY_LOGGER.isTraceEnabled()) {
+            SECURITY_LOGGER.tracef("LdapSubjectSupplementalService realmName=%s", realmName);
+            SECURITY_LOGGER.tracef("LdapSubjectSupplementalService shareConnection=%b", shareConnection);
+            SECURITY_LOGGER.tracef("LdapSubjectSupplementalService forceUserDnSearch=%b", forceUserDnSearch);
+            SECURITY_LOGGER.tracef("LdapSubjectSupplementalService iterative=%b", iterative);
+            SECURITY_LOGGER.tracef("LdapSubjectSupplementalService groupName=%s", groupName);
+        }
     }
 
     public void stop(StopContext context) {
-
+        groupSearcher = null;
+        userSearcher = null;
     }
 
     /*
@@ -146,10 +157,12 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
                 // In general we expect exactly one RealmUser, however we could cope with multiple
                 // identities so load the groups for them all.
                 for (RealmUser current : users) {
+                    SECURITY_LOGGER.tracef("Loading groups for '%s'", current);
                     principals.addAll(loadGroups(current));
                 }
 
             } catch (Exception e) {
+                SECURITY_LOGGER.trace("Failure supplementing Subject", e);
                 if (e instanceof IOException) {
                     throw (IOException) e;
                 }
@@ -164,9 +177,11 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
             LdapEntry entry = null;
             if (forceUserDnSearch == false && sharedState.containsKey(LdapEntry.class.getName())) {
                 entry = (LdapEntry) sharedState.get(LdapEntry.class.getName());
+                SECURITY_LOGGER.tracef("Loaded from sharedState '%s'", entry);
             }
             if (entry == null || user.getName().equals(entry.getSimpleName())==false) {
                 entry = userSearcher.userSearch(dirContext, user.getName());
+                SECURITY_LOGGER.tracef("Performed userSearch '%s'", entry);
             }
 
             return loadGroups(entry);
@@ -180,10 +195,12 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
             while (entries.isEmpty() == false) {
                 LdapEntry[] found = entries.pop();
                 for (LdapEntry current : found) {
-                    realmGroups.add(new RealmGroup(realmName, groupName == GroupName.SIMPLE ? current.getSimpleName() : current
-                            .getDistinguishedName()));
+                    RealmGroup group = new RealmGroup(realmName, groupName == GroupName.SIMPLE ? current.getSimpleName() : current.getDistinguishedName());
+                    SECURITY_LOGGER.tracef("Adding RealmGroup '%s'", group);
+                    realmGroups.add(group);
                     if (iterative) {
-                     entries.push(loadGroupEntries(current));
+                        SECURITY_LOGGER.tracef("Performing iterative load for %s", current);
+                        entries.push(loadGroupEntries(current));
                     }
                 }
             }
@@ -192,7 +209,8 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
         }
 
         private LdapEntry[] loadGroupEntries(LdapEntry entry) throws IOException, NamingException {
-            if (searchedPerformed.add(entry)==false) {
+            if (searchedPerformed.add(entry) == false) {
+                SECURITY_LOGGER.tracef("A search has already been performed for %s", entry);
                 return new LdapEntry[0];
             }
 
@@ -202,8 +220,10 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
         private DirContext getSearchContext() throws Exception {
             DirContext searchContext;
             if (shareConnection && sharedState.containsKey(DirContext.class.getName())) {
+                SECURITY_LOGGER.trace("Using existing DirContext from shared state.");
                 searchContext = (DirContext) sharedState.remove(DirContext.class.getName());
             } else {
+                SECURITY_LOGGER.trace("Obtaining new DirContext from the ConnectionManager.");
                 ConnectionManager connectionManager = LdapSubjectSupplementalService.this.connectionManager.getValue();
                 searchContext = (DirContext) connectionManager.getConnection();
             }
@@ -233,6 +253,5 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
         }
 
     }
-
 
 }
