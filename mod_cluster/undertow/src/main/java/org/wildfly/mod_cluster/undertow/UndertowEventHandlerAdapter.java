@@ -98,12 +98,12 @@ public class UndertowEventHandlerAdapter implements UndertowEventListener, Servi
 
     @Override
     public void stop(StopContext context) {
+        this.service.getValue().unregisterListener(this);
+
         this.executor.shutdown();
 
         ContainerEventHandler eventHandler = this.eventHandler.getValue();
         eventHandler.stop(this.server);
-
-        this.service.getValue().unregisterListener(this);
     }
 
     private Context createContext(Deployment deployment, Host host) {

@@ -23,9 +23,9 @@
 package org.wildfly.extension.undertow;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import io.undertow.Version;
@@ -57,7 +57,7 @@ public class UndertowService implements Service<UndertowService> {
     private final String defaultServer;
     private final String defaultVirtualHost;
     private final Set<Server> registeredServers = new CopyOnWriteArraySet<>();
-    private final List<UndertowEventListener> listeners = new CopyOnWriteArrayList<>();
+    private final List<UndertowEventListener> listeners = Collections.synchronizedList(new LinkedList<UndertowEventListener>());
     private volatile String instanceId;//todo this should be final and no setter should be exposed, currently mod cluster "wants it", this needs to change
 
     protected UndertowService(String defaultContainer, String defaultServer, String defaultVirtualHost, String instanceId) {
@@ -170,8 +170,10 @@ public class UndertowService implements Service<UndertowService> {
     }
 
     protected void fireEvent(EventInvoker invoker) {
-        for (UndertowEventListener listener : listeners) {
-            invoker.invoke(listener);
+        synchronized (listeners) {
+            for (UndertowEventListener listener : listeners) {
+                invoker.invoke(listener);
+            }
         }
     }
 }
