@@ -21,7 +21,9 @@
  */
 package org.jboss.as.test.integration.security.common;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -357,7 +359,7 @@ public class Utils {
         if (useCannonicalHost) {
             address = getCannonicalHost(address);
         }
-        return address;
+        return stripSquareBrackets(address);
     }
 
     /**
@@ -385,8 +387,8 @@ public class Utils {
      * @throws IOException
      * @throws URISyntaxException
      */
-    public static String makeCallWithBasicAuthn(URL url, String user, String pass, int expectedStatusCode)
-            throws IOException, URISyntaxException {
+    public static String makeCallWithBasicAuthn(URL url, String user, String pass, int expectedStatusCode) throws IOException,
+            URISyntaxException {
         LOGGER.info("Requesting URL " + url);
         final DefaultHttpClient httpClient = new DefaultHttpClient();
         try {
@@ -435,8 +437,7 @@ public class Utils {
      * @throws LoginException
      */
     public static String makeCallWithKerberosAuthn(final URI uri, final String user, final String pass,
-            final int expectedStatusCode) throws IOException, URISyntaxException,
-            PrivilegedActionException, LoginException {
+            final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
         LOGGER.info("Requesting URI: " + uri);
         final DefaultHttpClient httpClient = new DefaultHttpClient();
         try {
@@ -506,8 +507,8 @@ public class Utils {
      * @throws LoginException
      */
     public static String makeHttpCallWithFallback(final String contextUrl, final String page, final String user,
-            final String pass, final int expectedStatusCode) throws IOException, URISyntaxException,
-            PrivilegedActionException, LoginException {
+            final String pass, final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException,
+            LoginException {
         final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
         final String url = strippedContextUrl + page;
         LOGGER.info("Requesting URL: " + url);
@@ -590,8 +591,7 @@ public class Utils {
      * @throws LoginException
      */
     public static String makeHttpCallWoSPNEGO(final String contextUrl, final String page, final String user, final String pass,
-            final int expectedStatusCode) throws IOException, URISyntaxException,
-            PrivilegedActionException, LoginException {
+            final int expectedStatusCode) throws IOException, URISyntaxException, PrivilegedActionException, LoginException {
         final String strippedContextUrl = StringUtils.stripEnd(contextUrl, "/");
         final String url = strippedContextUrl + page;
         LOGGER.info("Requesting URL: " + url);
@@ -659,7 +659,7 @@ public class Utils {
      * @return
      */
     public static final String getHost(final ManagementClient managementClient) {
-        return StringUtils.strip(managementClient.getMgmtAddress(), "[]");
+        return stripSquareBrackets(managementClient.getMgmtAddress());
     }
 
     /**
@@ -679,7 +679,7 @@ public class Utils {
      * @return
      */
     public static final String getCannonicalHost(final String address) {
-        String host = StringUtils.strip(address, "[]");
+        String host = stripSquareBrackets(address);
         try {
             host = InetAddress.getByName(host).getCanonicalHostName();
         } catch (UnknownHostException e) {
@@ -816,5 +816,16 @@ public class Utils {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Strips square brackets - '[' and ']' from the given string. It can be used for instance to remove the square brackets
+     * around IPv6 address in a URL.
+     *
+     * @param str string to strip
+     * @return str without square brackets in it
+     */
+    public static String stripSquareBrackets(final String str) {
+        return StringUtils.strip(str, "[]");
     }
 }
