@@ -22,23 +22,26 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<!-- Represents the Hibernate 4.3.x module-->
-<module xmlns="urn:jboss:module:1.1" name="org.hibernate.search">
+<!-- Hibernate Search Engine: the fulltext indexing and query capabilities
+     without the ORM integration bits. This is reused by several other project
+     outside of the Hibernate group. -->
+<module xmlns="urn:jboss:module:1.1" name="org.hibernate.search.engine">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
         <module name="javax.api"/>
-        <module name="javax.jms.api"/>
+        <module name="javax.jms.api" optional="true"/>
         <module name="javax.persistence.api"/>
         <module name="javax.transaction.api"/>
-        <module name="org.apache.avro"/>
+        <module name="org.apache.avro" optional="true"/>
         <module name="org.apache.lucene"/>
         <module name="org.hibernate.commons-annotations"/>
-        <module name="org.infinispan"/>
-        <module name="org.infinispan.lucene.directory"/>
+        <module name="org.infinispan" optional="true"/>
+        <module name="org.infinispan.commons" optional="true"/>
+        <module name="org.infinispan.lucene.directory" optional="true"/>
         <module name="org.jboss.logging"/>
-        <module name="org.jgroups"/>
+        <module name="org.jgroups" optional="true"/>
     </dependencies>
 </module>

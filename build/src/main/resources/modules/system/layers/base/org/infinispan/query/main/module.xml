@@ -34,11 +34,11 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
-        <module name="org.hibernate.hql"/>
-        <module name="org.hibernate.search"/>
+        <module name="org.hibernate.hql" optional="true"/>
+        <module name="org.hibernate.search.engine"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.commons"/>
-        <module name="org.infinispan.lucene.directory"/>
+        <module name="org.infinispan.lucene.directory" optional="true"/>
         <module name="org.infinispan.query.dsl"/>
         <module name="org.jboss.logging"/>
     </dependencies>

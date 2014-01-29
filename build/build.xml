@@ -804,9 +804,15 @@
         <module-def name="org.hibernate.envers">
         </module-def>
 
-        <module-def name="org.hibernate.search">
+        <!-- Hibernate Search Engine does not depend on Hibernate ORM but is reused by several other projects -->
+        <module-def name="org.hibernate.search.engine">
             <maven-resource group="org.hibernate" artifact="hibernate-search-engine"/>
             <maven-resource group="org.hibernate" artifact="hibernate-search-infinispan"/>
+        </module-def>
+
+        <!-- Hibernate Search ORM is the module user apps will depend on when they indend to use Search with ORM directly -->
+        <module-def name="org.hibernate.search.orm">
+            <maven-resource group="org.hibernate" artifact="hibernate-search-orm"/>
         </module-def>
 
         <!-- create empty slot for Hibernate 3.x jars -->
