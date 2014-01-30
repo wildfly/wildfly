@@ -269,11 +269,24 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final boolean recursive = LdapAuthenticationResourceDefinition.RECURSIVE.resolveModelAttribute(context, ldap).asBoolean();
         final boolean allowEmptyPasswords = LdapAuthenticationResourceDefinition.ALLOW_EMPTY_PASSWORDS.resolveModelAttribute(context, ldap).asBoolean();
         final String userDn = LdapAuthenticationResourceDefinition.USER_DN.resolveModelAttribute(context, ldap).asString();
-        UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(baseDn, usernameAttribute, advancedFilter, recursive, userDn, allowEmptyPasswords, shareConnection);
+        UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(allowEmptyPasswords, shareConnection);
+
+        final Service<LdapUserSearcher> userSearcherService;
+        if (usernameAttribute != null) {
+            userSearcherService = LdapUserSearcherService.createForUsernameFilter(baseDn, recursive, userDn, usernameAttribute);
+        } else {
+            userSearcherService = LdapUserSearcherService.createForAdvancedFilter(baseDn, recursive, userDn, advancedFilter);
+        }
+
+        ServiceName userSearcherName = LdapUserSearcher.ServiceUtil.createServiceName(true, realmName);
+        ServiceController<LdapUserSearcher> userSearcherController = serviceTarget
+                .addService(userSearcherName, userSearcherService).setInitialMode(ON_DEMAND).install();
+        newControllers.add(userSearcherController);
 
         ServiceBuilder<?> ldapBuilder = serviceTarget.addService(ldapServiceName, ldapCallbackHandler);
         String connectionManager = LdapAuthenticationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
         LdapConnectionManagerService.ServiceUtil.addDependency(ldapBuilder, ldapCallbackHandler.getConnectionManagerInjector(), connectionManager, false);
+        LdapUserSearcher.ServiceUtil.addDependency(ldapBuilder, ldapCallbackHandler.getLdapUserSearcherInjector(), true, realmName);
 
         final ServiceController<?> serviceController = ldapBuilder.setInitialMode(ON_DEMAND)
                 .install();
@@ -435,7 +448,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
 
         if (userSearcherService != null) {
-            ServiceName userSearcherName = LdapUserSearcher.ServiceUtil.createServiceName(realmName);
+            ServiceName userSearcherName = LdapUserSearcher.ServiceUtil.createServiceName(false, realmName);
             ServiceController<LdapUserSearcher> userSearcherController = serviceTarget
                     .addService(userSearcherName, userSearcherService).setInitialMode(ON_DEMAND).install();
             controllers.add(userSearcherController);
@@ -481,7 +494,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 .setInitialMode(ON_DEMAND);
         LdapConnectionManagerService.ServiceUtil.addDependency(ldapBuilder, service.getConnectionManagerInjector(), connectionName, false);
         if (userSearcherService != null) {
-            LdapUserSearcher.ServiceUtil.addDependency(ldapBuilder, service.getLdapUserSearcherInjector(), realmName, false);
+            LdapUserSearcher.ServiceUtil.addDependency(ldapBuilder, service.getLdapUserSearcherInjector(), false, realmName);
         }
         LdapGroupSearcher.ServiceUtil.addDependency(ldapBuilder, service.getLdapGroupSearcherInjector(), realmName, false);
 

@@ -44,7 +44,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 
 /**
- * Service for supplying the {@link LdapUserSearcher}
+ * Service for supplying the {@link LdapGroupSearcher}
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
