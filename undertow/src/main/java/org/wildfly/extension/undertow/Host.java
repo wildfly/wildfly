@@ -155,15 +155,15 @@ public class Host implements Service<Host> {
     public void unregisterDeployment(final Deployment deployment) {
         DeploymentInfo deploymentInfo = deployment.getDeploymentInfo();
         String path = getDeployedContextPath(deploymentInfo);
-        unregisterHandler(path);
-        deployments.remove(deployment);
-        UndertowLogger.ROOT_LOGGER.unregisterWebapp(path);
         undertowService.getValue().fireEvent(new EventInvoker() {
             @Override
             public void invoke(UndertowEventListener listener) {
                 listener.onDeploymentStop(deployment, Host.this);
             }
         });
+        unregisterHandler(path);
+        deployments.remove(deployment);
+        UndertowLogger.ROOT_LOGGER.unregisterWebapp(path);
     }
 
     public void registerHandler(String path, HttpHandler handler) {
