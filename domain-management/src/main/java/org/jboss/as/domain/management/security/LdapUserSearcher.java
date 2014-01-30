@@ -42,23 +42,31 @@ public interface LdapUserSearcher {
 
     public static final class ServiceUtil {
 
-        private static final String SERVICE_SUFFIX = "ldap_authorization.user_search";
+        private static final String AUTH_SERVICE_SUFFIX = "ldap_authentication.user_search";
+        private static final String AUTHZ_SERVICE_SUFFIX = "ldap_authorization.user_search";
 
         private ServiceUtil() {
         }
 
-        public static ServiceName createServiceName(final String realmName) {
-            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
+        /**
+         * Utility method to create the ServiceName for services that provide {@code LdapUserSearcher} instances.
+         *
+         * @param realmName - The name of the realm the {@code LdapUserSearcher} is associated with.
+         * @param forAuthentication - Is this for user loading during authentication or during authorization / group loading.
+         * @return The constructed ServiceName.
+         */
+        public static ServiceName createServiceName(final boolean forAuthentication, final String realmName) {
+            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(
+                    forAuthentication ? AUTH_SERVICE_SUFFIX : AUTHZ_SERVICE_SUFFIX);
         }
 
         public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, Injector<LdapUserSearcher> injector,
-                String realmName, boolean optional) {
-            ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
-            sb.addDependency(type, createServiceName(realmName), LdapUserSearcher.class, injector);
+                boolean forAuthentication, String realmName) {
+            ServiceBuilder.DependencyType type = ServiceBuilder.DependencyType.REQUIRED;
+            sb.addDependency(type, createServiceName(forAuthentication, realmName), LdapUserSearcher.class, injector);
 
             return sb;
         }
-
     }
 
 }
