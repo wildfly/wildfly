@@ -71,10 +71,6 @@ public class AccessAuthorizationTransformationTestCase extends AbstractCoreModel
 
         LegacyKernelServicesInitializer initializer = builder.createLegacyKernelServicesBuilder(modelVersion, testControllerVersion)
                 .skipReverseControllerCheck();
-        if (ModelVersion.compare(ModelVersion.create(1, 4, 0), modelVersion) > 0) {
-
-        }
-
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
 

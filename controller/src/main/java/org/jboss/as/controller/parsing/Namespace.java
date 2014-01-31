@@ -51,12 +51,14 @@ public enum Namespace {
 
     DOMAIN_1_4("urn:jboss:domain:1.4"),
 
-    DOMAIN_1_5("urn:jboss:domain:1.5");
+    DOMAIN_1_5("urn:jboss:domain:1.5"),
+
+    DOMAIN_1_6("urn:jboss:domain:1.6");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = DOMAIN_1_5;
+    public static final Namespace CURRENT = DOMAIN_1_6;
 
     public static final Namespace[] ALL_NAMESPACES = domainValues();
 
