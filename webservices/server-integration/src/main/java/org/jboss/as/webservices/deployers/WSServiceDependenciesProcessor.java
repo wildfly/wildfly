@@ -29,7 +29,7 @@ import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.as.webservices.util.WSServices;
 
 /**
- * A DUP that sets the service dependencies to be satisfied before installing any WS deployments
+ * A DUP that sets the service dependencies to be satisfied before installing any deployments
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
