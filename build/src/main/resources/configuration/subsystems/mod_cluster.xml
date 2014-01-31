@@ -5,7 +5,7 @@
     <subsystem xmlns="urn:jboss:domain:modcluster:1.2">
         <mod-cluster-config advertise-socket="modcluster" connector="ajp">
             <dynamic-load-provider>
-                <load-metric type="busyness"/>
+                <load-metric type="cpu"/>
             </dynamic-load-provider>
         </mod-cluster-config>
     </subsystem>
