@@ -168,6 +168,10 @@ public class EJBClientClusterConfigurationTestCase {
                 logger.debug("Exception during container shutdown", e);
             }
             try {
+                if (!this.container.isStarted(DEFAULT_JBOSSAS)) {
+                    //start the default server again so that we can clean up the deployment first
+                    this.container.start(DEFAULT_JBOSSAS);
+                }
                 this.deployer.undeploy(DEFAULT_AS_DEPLOYMENT);
                 this.container.stop(DEFAULT_JBOSSAS);
             } catch (Exception e) {
