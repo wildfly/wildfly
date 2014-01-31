@@ -762,6 +762,10 @@
                     <groupId>org.hibernate</groupId>
                     <artifactId>hibernate-search-infinispan</artifactId>
                 </dependency>
+                <dependency>
+                    <groupId>org.hibernate</groupId>
+                    <artifactId>hibernate-search-orm</artifactId>
+                </dependency>
 
                 <dependency>
                     <groupId>org.hibernate.javax.persistence</groupId>
