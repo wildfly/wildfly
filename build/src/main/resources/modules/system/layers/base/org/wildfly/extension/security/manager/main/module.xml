@@ -43,6 +43,5 @@
         <module name="org.jboss.vfs"/>
         <module name="org.wildfly.security.manager"/>
         <module name="javax.api"/>
-        <module name="javax.xml.ws.api"/>
     </dependencies>
 </module>
