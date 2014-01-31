@@ -40,8 +40,6 @@
         <module name="org.jboss.dmr" export="true"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.logmanager"/>
-        <module name="org.jboss.marshalling"/>
-        <module name="org.jboss.marshalling.river" services="import"/>
         <module name="org.jboss.modules"/>
         <module name="org.jboss.msc"/>
         <module name="org.jboss.remoting"/>
