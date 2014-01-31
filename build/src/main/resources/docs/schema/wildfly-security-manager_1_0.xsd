@@ -95,6 +95,7 @@
         <xs:attribute name="class" type="xs:string" use="required"/>
         <xs:attribute name="name" type="xs:string" use="optional"/>
         <xs:attribute name="actions" type="xs:string" use="optional"/>
+        <xs:attribute name="module" type="xs:string" use="optional"/>
     </xs:complexType>
 
 </xs:schema>

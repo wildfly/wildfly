@@ -23,14 +23,6 @@
 
 package org.wildfly.extension.security.manager;
 
-import static org.wildfly.extension.security.manager.Constants.DEFAULT_VALUE;
-import static org.wildfly.extension.security.manager.Constants.DEPLOYMENT_PERMISSIONS;
-import static org.wildfly.extension.security.manager.Constants.MAXIMUM_SET;
-import static org.wildfly.extension.security.manager.Constants.MINIMUM_SET;
-import static org.wildfly.extension.security.manager.Constants.PERMISSION;
-import static org.wildfly.extension.security.manager.Constants.PERMISSION_ACTIONS;
-import static org.wildfly.extension.security.manager.Constants.PERMISSION_NAME;
-
 import java.security.AllPermission;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +39,9 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.security.ImmediatePermissionFactory;
 import org.jboss.modules.security.LoadedPermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
@@ -54,6 +49,8 @@ import org.jboss.msc.service.ServiceController;
 import org.wildfly.extension.security.manager.deployment.PermissionsParseProcessor;
 import org.wildfly.extension.security.manager.service.SecurityManagerService;
 import org.wildfly.security.manager.WildFlySecurityManager;
+
+import static org.wildfly.extension.security.manager.Constants.*;
 
 /**
  * Handler that adds the security manager subsystem. It instantiates the permissions specified in the subsystem configuration
@@ -153,8 +150,20 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
                 String permissionActions = null;
                 if (permissionNode.hasDefined(PERMISSION_ACTIONS))
                     permissionActions = PermissionResourceDefinition.ACTIONS.resolveModelAttribute(context, permissionNode).asString();
+                String moduleName = null;
+                if(permissionNode.hasDefined(PERMISSION_MODULE)) {
+                    moduleName =  PermissionResourceDefinition.MODULE.resolveModelAttribute(context, permissionNode).asString();
+                }
+                ClassLoader cl = WildFlySecurityManager.getClassLoaderPrivileged(this.getClass());
+                if(moduleName != null) {
+                    try {
+                        cl = Module.getBootModuleLoader().loadModule(ModuleIdentifier.create(moduleName)).getClassLoader();
+                    } catch (ModuleLoadException e) {
+                        throw new OperationFailedException(e);
+                    }
+                }
 
-                permissions.add(new LoadedPermissionFactory(WildFlySecurityManager.getClassLoaderPrivileged(this.getClass()),
+                permissions.add(new LoadedPermissionFactory(cl,
                         permissionClass, permissionName, permissionActions));
             }
         }

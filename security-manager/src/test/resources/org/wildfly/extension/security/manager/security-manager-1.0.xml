@@ -6,7 +6,7 @@
             <permission class="java.lang.RuntimePermission" name="createClassLoader"/>
         </minimum-set>
         <maximum-set>
-            <permission class="java.security.AllPermission"/>
+            <permission class="java.security.AllPermission" module="org.jboss.as.server"/>
         </maximum-set>
     </deployment-permissions>
 </subsystem>

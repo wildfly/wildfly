@@ -63,7 +63,8 @@ class SecurityManagerSubsystemParser implements XMLStreamConstants, XMLElementRe
                                         .addAttributes(
                                                 PermissionResourceDefinition.CLASS,
                                                 PermissionResourceDefinition.NAME,
-                                                PermissionResourceDefinition.ACTIONS
+                                                PermissionResourceDefinition.ACTIONS,
+                                                PermissionResourceDefinition.MODULE
                                         )
                                 )
                         )
@@ -74,7 +75,8 @@ class SecurityManagerSubsystemParser implements XMLStreamConstants, XMLElementRe
                                         .addAttributes(
                                                 PermissionResourceDefinition.CLASS,
                                                 PermissionResourceDefinition.NAME,
-                                                PermissionResourceDefinition.ACTIONS
+                                                PermissionResourceDefinition.ACTIONS,
+                                                PermissionResourceDefinition.MODULE
                                         )
                                 )
                         )

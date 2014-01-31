@@ -39,5 +39,6 @@ public class Constants {
     public static final String PERMISSION_CLASS = "class";
     public static final String PERMISSION_NAME = "name";
     public static final String PERMISSION_ACTIONS = "actions";
+    public static final String PERMISSION_MODULE = "module";
     public static final String DEFAULT_VALUE = "default";
 }
