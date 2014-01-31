@@ -244,8 +244,6 @@
 
         <module-def name="org.jboss.as.patching.cli" />
 
-        <module-def name="org.jboss.as.patching.generator" />
-
         <module-def name="org.jboss.as.platform-mbean">
             <maven-resource group="org.wildfly" artifact="wildfly-platform-mbean"/>
         </module-def>
