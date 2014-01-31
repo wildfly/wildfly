@@ -38,7 +38,6 @@ import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
-import org.jboss.as.ejb3.cache.TransactionAwareObjectFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
 import org.jboss.as.ejb3.component.EJBBusinessMethod;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
@@ -149,7 +148,10 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
     @Override
     public void destroyInstance(StatefulSessionComponentInstance instance) {
-        instance.destroy();
+        instance.setRemoved(true);
+        if(!instance.isSynchronizationRegistered()) {
+            instance.destroy();
+        }
     }
 
     @Override
@@ -297,7 +299,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
 
         super.start();
 
-        this.cache = this.cacheFactory.getValue().createCache(this, new TransactionAwareObjectFactory<>(this, this.getTransactionManager()), this);
+        this.cache = this.cacheFactory.getValue().createCache(this, this, this);
         this.cache.start();
     }
 

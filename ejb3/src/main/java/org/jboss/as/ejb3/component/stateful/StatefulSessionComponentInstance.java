@@ -75,6 +75,7 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
      * The thread based lock for the stateful bean
      */
     private final Object threadLock = new Object();
+    private boolean removed = false;
 
     boolean isSynchronizationRegistered() {
         return synchronizationRegistered;
@@ -145,6 +146,8 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
         this.execute(postActivate, null);
     }
 
+
+
     public void discard() {
         if (!isDiscarded()) {
             super.discard();
@@ -209,5 +212,13 @@ public class StatefulSessionComponentInstance extends SessionBeanComponentInstan
 
     public void setTransaction(Transaction transaction) {
         this.transaction = transaction;
+    }
+
+    void setRemoved(boolean removed) {
+        this.removed = removed;
+    }
+
+    boolean isRemoved() {
+        return removed;
     }
 }

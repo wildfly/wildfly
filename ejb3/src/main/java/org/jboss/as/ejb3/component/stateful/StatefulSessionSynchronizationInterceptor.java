@@ -231,17 +231,26 @@ public class StatefulSessionSynchronizationInterceptor extends AbstractEJBInterc
 
         @Override
         public void afterCompletion(int status) {
+            boolean committed = status == Status.STATUS_COMMITTED;
             try {
                 if (ROOT_LOGGER.isTraceEnabled()) {
                     ROOT_LOGGER.trace("After completion callback invoked on Transaction synchronization: " + this +
                             " of stateful component instance: " + statefulSessionComponentInstance);
                 }
                 if (!statefulSessionComponentInstance.isDiscarded()) {
-                    statefulSessionComponentInstance.afterCompletion(status == Status.STATUS_COMMITTED);
+                    statefulSessionComponentInstance.afterCompletion(committed);
                 }
             } catch (Throwable t) {
                 handleThrowable(t);
             }
+            if(statefulSessionComponentInstance.isRemoved() && !statefulSessionComponentInstance.isDiscarded()) {
+                try {
+                    statefulSessionComponentInstance.destroy();
+                } catch (Throwable t) {
+                    handleThrowable(t);
+                }
+            }
+
             // tx has completed, so mark the SFSB instance as no longer in use
             statefulSessionComponentInstance.getLock().pushOwner(lockOwner);
             try {
