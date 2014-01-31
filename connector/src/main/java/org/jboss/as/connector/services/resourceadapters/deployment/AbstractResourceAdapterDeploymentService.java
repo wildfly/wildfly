@@ -112,6 +112,10 @@ public abstract class AbstractResourceAdapterDeploymentService {
     protected final InjectedValue<CachedConnectionManager> ccmValue = new InjectedValue<CachedConnectionManager>();
     protected final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<ExecutorService>();
 
+    protected String raRepositoryRegistrationId;
+    protected String connectorServicesRegistrationName;
+    protected String mdrRegistrationName;
+
     public ResourceAdapterDeployment getValue() {
         return ConnectorServices.notNull(value);
     }
@@ -177,15 +181,6 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 }
             }
 
-            if (value.getDeployment() != null && value.getDeployment().getResourceAdapterKey() != null &&
-                raRepository != null && raRepository.getValue() != null) {
-                try {
-                    raRepository.getValue().unregisterResourceAdapter(value.getDeployment().getResourceAdapterKey());
-                } catch (Throwable t) {
-                    // Ignore
-                }
-            }
-
             if (value.getDeployment() != null && value.getDeployment().getResourceAdapter() != null) {
                 ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
                 try {
@@ -196,6 +191,27 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 } finally {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                 }
+            }
+        }
+        if (raRepositoryRegistrationId != null  && raRepository != null && raRepository.getValue() != null) {
+            try {
+                raRepository.getValue().unregisterResourceAdapter(raRepositoryRegistrationId);
+            } catch (Throwable e) {
+                DEPLOYMENT_CONNECTOR_LOGGER.debug("Failed to unregister RA from RA Repository", e);
+            }
+        }
+        if (connectorServicesRegistrationName != null) {
+            try {
+                ConnectorServices.unregisterResourceAdapterIdentifier(connectorServicesRegistrationName);
+            } catch (Throwable e) {
+                DEPLOYMENT_CONNECTOR_LOGGER.debug("Failed to unregister RA from ConnectorServices", e);
+            }
+        }
+        if (mdrRegistrationName != null && mdr != null && mdr.getValue() != null) {
+            try {
+                mdr.getValue().unregisterResourceAdapter(mdrRegistrationName);
+            } catch (Throwable e) {
+                DEPLOYMENT_CONNECTOR_LOGGER.debug("Failed to unregister RA from MDR", e);
             }
         }
 
@@ -557,14 +573,17 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 throws AlreadyExistsException {
             DEPLOYMENT_CONNECTOR_LOGGER.debugf("Registering ResourceAdapter %s", deploymentName);
             mdr.getValue().registerResourceAdapter(deploymentName, file, connector, ij);
+            mdrRegistrationName = deploymentName;
         }
 
         @Override
         protected String registerResourceAdapterToResourceAdapterRepository(ResourceAdapter instance) {
-            final String raIdentifier = raRepository.getValue().registerResourceAdapter(instance);
+            raRepositoryRegistrationId = raRepository.getValue().registerResourceAdapter(instance);
             // make a note of this identifier for future use
-            ConnectorServices.registerResourceAdapterIdentifier(this.deploymentName, raIdentifier);
-            return raIdentifier;
+            if (connectorServicesRegistrationName != null) {
+                ConnectorServices.registerResourceAdapterIdentifier(connectorServicesRegistrationName, raRepositoryRegistrationId);
+            }
+            return raRepositoryRegistrationId;
 
         }
 
