@@ -44,11 +44,11 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
             jbossHome = System.getProperty("jboss.home");
         }
 
-        if (modulePath == null || modulePath.isEmpty()) {
+        if ((modulePath == null || modulePath.isEmpty()) && jbossHome != null) {
             modulePath = jbossHome + "/modules";
         }
 
-        if (bundlePath == null || bundlePath.isEmpty()) {
+        if ((bundlePath == null || bundlePath.isEmpty()) && jbossHome != null) {
             bundlePath = jbossHome + "/bundles";
         }
     }
