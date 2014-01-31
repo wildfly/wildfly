@@ -111,7 +111,7 @@
             </xsd:documentation>
         </xsd:annotation>
         <xsd:all>
-            <xsd:element name="module-alias" type="moduleAliasType">
+            <xsd:element name="module-alias" type="moduleAliasType" minOccurs="0">
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
                         Element for a module alias declaration.
@@ -564,7 +564,7 @@
             </documentation>
         </annotation>
         <xsd:all>
-            <xsd:element name="filter" type="filterType">
+            <xsd:element name="filter" type="filterType" minOccurs="0">
                 <annotation xmlns="http://www.w3.org/2001/XMLSchema">
                     <documentation>
                         A path filter specification for this resource root (optional). By default all paths are
