@@ -30,7 +30,9 @@ import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.management.security.LdapAuthorizationResourceDefinition.LdapAuthorizationChildAddHandler;
+import org.jboss.as.domain.management.security.LdapCacheResourceDefinition.CacheFor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -74,6 +76,12 @@ public class GroupToPrincipalResourceDefinition extends BaseLdapGroupSearchResou
         super(GroupSearchType.GROUP_TO_PRINCIPAL,
                 ControllerResolver.getResolver("core.management.security-realm.authorization.ldap.group-search.group-to-principal"),
                 new LdapAuthorizationChildAddHandler(false, ATTRIBUTE_DEFINITIONS), LdapAuthorizationResourceDefinition.REMOVE_INSTANCE);
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(LdapCacheResourceDefinition.createByAccessTime(CacheFor.AuthzGroup));
+        resourceRegistration.registerSubModel(LdapCacheResourceDefinition.createBySearchTime(CacheFor.AuthzGroup));
     }
 
     @Override

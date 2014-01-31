@@ -38,47 +38,24 @@ import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
 import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource.GroupName;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 
 /**
- * Service for supplying the {@link LdapGroupSearcher}
+ * Factory for supplying LDAP searches for groups.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
+public class LdapGroupSearcherFactory {
 
     private static final int searchTimeLimit = 10000;
 
-    private final LdapGroupSearcher groupSearcher;
-
-    private LdapGroupSearcherService(final LdapGroupSearcher groupSearcher) {
-        this.groupSearcher = groupSearcher;
-    }
-
-    @Override
-    public LdapGroupSearcher getValue() throws IllegalStateException, IllegalArgumentException {
-        return groupSearcher;
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-    }
-
-    @Override
-    public void stop(StopContext context) {
-    }
-
-    static Service<LdapGroupSearcher> createForGroupToPrincipal(final String baseDn, final String groupDnAttribute,
+    static LdapSearcher<LdapEntry[], LdapEntry> createForGroupToPrincipal(final String baseDn, final String groupDnAttribute,
             final String groupNameAttribute, final String principalAttribute, final boolean recursive,
             final GroupName searchBy) {
-        return new LdapGroupSearcherService(new GroupToPrincipalSearcher(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy));
+        return new GroupToPrincipalSearcher(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy);
     }
 
-    static Service<LdapGroupSearcher> createForPrincipalToGroup(final String groupAttribute, final String groupNameAttribute) {
-        return new LdapGroupSearcherService(new PrincipalToGroupSearcher(groupAttribute, groupNameAttribute));
+    static LdapSearcher<LdapEntry[], LdapEntry> createForPrincipalToGroup(final String groupAttribute, final String groupNameAttribute) {
+        return new PrincipalToGroupSearcher(groupAttribute, groupNameAttribute);
     }
 
     private static SearchControls createSearchControl(final boolean recursive, final String[] attributes) {
@@ -108,7 +85,7 @@ public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
         return elementList.toArray(new String[elementList.size()]);
     }
 
-    private static class GroupToPrincipalSearcher implements LdapGroupSearcher {
+    private static class GroupToPrincipalSearcher implements LdapSearcher<LdapEntry[], LdapEntry> {
 
         private final String baseDn;
         private final String groupDnAttribute;
@@ -140,7 +117,7 @@ public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
         }
 
         @Override
-        public LdapEntry[] groupSearch(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
+        public LdapEntry[] search(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
             SearchControls searchControls = createSearchControl(recursive, attributeArray); // TODO - Can we create this in
                                                                                             // advance?
             Set<LdapEntry> foundEntries = new HashSet<LdapEntry>();
@@ -208,7 +185,7 @@ public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
 
     }
 
-    private static class PrincipalToGroupSearcher implements LdapGroupSearcher {
+    private static class PrincipalToGroupSearcher implements LdapSearcher<LdapEntry[], LdapEntry> {
 
         private final String groupAttribute; // The attribute on the principal that references the group it is a member of.
         private final String groupNameAttribute; // The attribute on the group that is it's simple name.
@@ -224,7 +201,7 @@ public class LdapGroupSearcherService implements Service<LdapGroupSearcher> {
         }
 
         @Override
-        public LdapEntry[] groupSearch(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
+        public LdapEntry[] search(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
             Set<LdapEntry> foundEntries = new HashSet<LdapEntry>();
             // Load the list of group.
             Attributes groups = dirContext.getAttributes(entry.getDistinguishedName(), new String[] { groupAttribute });

@@ -41,6 +41,7 @@ import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource.GroupName;
+import org.jboss.as.domain.management.security.LdapSearcherCache.DirContextFactory;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -58,11 +59,11 @@ import org.jboss.msc.value.InjectedValue;
 public class LdapSubjectSupplementalService implements Service<SubjectSupplementalService>, SubjectSupplementalService {
 
     private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
-    private final InjectedValue<LdapUserSearcher> userSearcherInjector = new InjectedValue<LdapUserSearcher>();
-    private final InjectedValue<LdapGroupSearcher> groupSearcherInjector = new InjectedValue<LdapGroupSearcher>();
+    private final InjectedValue<LdapSearcherCache<LdapEntry, String>> userSearcherInjector = new InjectedValue<LdapSearcherCache<LdapEntry, String>>();
+    private final InjectedValue<LdapSearcherCache<LdapEntry[], LdapEntry>> groupSearcherInjector = new InjectedValue<LdapSearcherCache<LdapEntry[], LdapEntry>>();
 
-    private LdapUserSearcher userSearcher;
-    private LdapGroupSearcher groupSearcher;
+    private LdapSearcherCache<LdapEntry, String> userSearcher;
+    private LdapSearcherCache<LdapEntry[], LdapEntry> groupSearcher;
 
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
@@ -113,11 +114,11 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
         return connectionManager;
     }
 
-    public Injector<LdapUserSearcher> getLdapUserSearcherInjector() {
+    public Injector<LdapSearcherCache<LdapEntry, String>> getLdapUserSearcherInjector() {
         return userSearcherInjector;
     }
 
-    public Injector<LdapGroupSearcher> getLdapGroupSearcherInjector() {
+    public Injector<LdapSearcherCache<LdapEntry[], LdapEntry>> getLdapGroupSearcherInjector() {
         return groupSearcherInjector;
     }
 
@@ -138,7 +139,27 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
         private final Set<LdapEntry> searchedPerformed = new HashSet<LdapEntry>();
         private final Map<String, Object> sharedState;
 
-        private DirContext dirContext = null;
+        private DirContextFactory dcf = new DirContextFactory() {
+
+            private DirContext context;
+
+            @Override
+            public DirContext getDirContext() throws IOException {
+                if (context != null) {
+                    return context;
+                }
+                return context = getSearchContext();
+            }
+
+            @Override
+            public void close() {
+                safeClose(context);
+                /*
+                 * The cache may have not needed to pull the context from the shared state so if it is there close it as well.
+                 */
+                safeClose((DirContext)sharedState.remove(DirContext.class.getName()));
+            }
+        };
 
         protected LdapSubjectSupplemental(final Map<String, Object> sharedState) {
             this.sharedState = sharedState;
@@ -152,8 +173,6 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
             Set<Principal> principals = subject.getPrincipals();
 
             try {
-                dirContext = getSearchContext();
-
                 // In general we expect exactly one RealmUser, however we could cope with multiple
                 // identities so load the groups for them all.
                 for (RealmUser current : users) {
@@ -168,8 +187,7 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
                 }
                 throw new IOException(e);
             } finally {
-                safeClose(dirContext);
-                dirContext = null;
+                dcf.close();
             }
         }
 
@@ -180,7 +198,7 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
                 SECURITY_LOGGER.tracef("Loaded from sharedState '%s'", entry);
             }
             if (entry == null || user.getName().equals(entry.getSimpleName())==false) {
-                entry = userSearcher.userSearch(dirContext, user.getName());
+                entry = userSearcher.search(dcf, user.getName()).getResult();
                 SECURITY_LOGGER.tracef("Performed userSearch '%s'", entry);
             }
 
@@ -214,10 +232,10 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
                 return new LdapEntry[0];
             }
 
-            return groupSearcher.groupSearch(dirContext, entry);
+            return groupSearcher.search(dcf, entry).getResult();
         }
 
-        private DirContext getSearchContext() throws Exception {
+        private DirContext getSearchContext() throws IOException {
             DirContext searchContext;
             if (shareConnection && sharedState.containsKey(DirContext.class.getName())) {
                 SECURITY_LOGGER.trace("Using existing DirContext from shared state.");
@@ -225,7 +243,14 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
             } else {
                 SECURITY_LOGGER.trace("Obtaining new DirContext from the ConnectionManager.");
                 ConnectionManager connectionManager = LdapSubjectSupplementalService.this.connectionManager.getValue();
-                searchContext = (DirContext) connectionManager.getConnection();
+                try {
+                    searchContext = (DirContext) connectionManager.getConnection();
+                } catch (Exception e) {
+                    if (e instanceof IOException) {
+                        throw (IOException) e;
+                    }
+                    throw new IOException(e);
+                }
             }
             return searchContext;
         }

@@ -34,57 +34,34 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-
 /**
- * Service for supplying the {@link LdapUserSearcher}
+ * Factory to create searchers for user in LDAP.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LdapUserSearcherService implements Service<LdapUserSearcher> {
-
-    private final LdapUserSearcher searcher;
+class LdapUserSearcherFactory {
 
     protected static final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
-    private LdapUserSearcherService(final LdapUserSearcher searcher) {
-        this.searcher = searcher;
-    }
-
-    @Override
-    public LdapUserSearcher getValue() throws IllegalStateException, IllegalArgumentException {
-        return searcher;
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-    }
-
-    @Override
-    public void stop(StopContext context) {
-    }
-
-    static Service<LdapUserSearcher> createForUsernameIsDn() {
-        return new LdapUserSearcherService(new LdapUserSearcher() {
+    static LdapSearcher<LdapEntry, String> createForUsernameIsDn() {
+        return new LdapSearcher<LdapEntry, String>() {
 
             @Override
-            public LdapEntry userSearch(DirContext dirContext, String suppliedName) {
+            public LdapEntry search(DirContext dirContext, String suppliedName) {
                 return new LdapEntry(suppliedName, suppliedName);
-            }});
+            }
+        };
     }
 
-    static Service<LdapUserSearcher> createForUsernameFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String attribute) {
-        return new LdapUserSearcherService(new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, attribute, null));
+    static LdapSearcher<LdapEntry, String> createForUsernameFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String attribute) {
+        return new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, attribute, null);
     }
 
-    static Service<LdapUserSearcher> createForAdvancedFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String filter) {
-        return new LdapUserSearcherService(new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, null, filter));
+    static LdapSearcher<LdapEntry, String> createForAdvancedFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String filter) {
+        return new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, null, filter);
     }
 
-    private static class LdapUserSearcherImpl implements LdapUserSearcher {
+    private static class LdapUserSearcherImpl implements LdapSearcher<LdapEntry, String> {
 
         final String baseDn;
         final boolean recursive;
@@ -110,7 +87,7 @@ public class LdapUserSearcherService implements Service<LdapUserSearcher> {
         }
 
         @Override
-        public LdapEntry userSearch(DirContext dirContext, String suppliedName) throws IOException, NamingException {
+        public LdapEntry search(DirContext dirContext, String suppliedName) throws IOException, NamingException {
             NamingEnumeration<SearchResult> searchEnumeration = null;
 
             try {

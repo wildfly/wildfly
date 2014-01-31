@@ -34,7 +34,6 @@ import java.util.Set;
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.directory.DirContext;
-import javax.naming.directory.SearchResult;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -45,6 +44,9 @@ import javax.security.sasl.RealmCallback;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.security.LdapSearcherCache.AttachmentKey;
+import org.jboss.as.domain.management.security.LdapSearcherCache.DirContextFactory;
+import org.jboss.as.domain.management.security.LdapSearcherCache.SearchResult;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -61,12 +63,14 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  */
 public class UserLdapCallbackHandler implements Service<CallbackHandlerService>, CallbackHandlerService {
 
+    private static final AttachmentKey<PasswordCredential> PASSWORD_KEY = AttachmentKey.create(PasswordCredential.class);
+
     private static final String SERVICE_SUFFIX = "ldap";
 
     public static final String DEFAULT_USER_DN = "dn";
 
     private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
-    private final InjectedValue<LdapUserSearcher> userSearcherInjector = new InjectedValue<LdapUserSearcher>();
+    private final InjectedValue<LdapSearcherCache<LdapEntry, String>> userSearcherInjector = new InjectedValue<LdapSearcherCache<LdapEntry, String>>();
 
     private final boolean allowEmptyPassword;
     private final boolean shareConnection;
@@ -123,7 +127,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
         return connectionManager;
     }
 
-    public Injector<LdapUserSearcher> getLdapUserSearcherInjector() {
+    public Injector<LdapSearcherCache<LdapEntry, String>> getLdapUserSearcherInjector() {
         return userSearcherInjector;
     }
 
@@ -156,7 +160,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                 return;
             }
 
-            ConnectionManager connectionManager = UserLdapCallbackHandler.this.connectionManager.getValue();
+            final ConnectionManager connectionManager = UserLdapCallbackHandler.this.connectionManager.getValue();
             VerifyPasswordCallback verifyPasswordCallback = null;
             String username = null;
 
@@ -186,34 +190,70 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                 throw MESSAGES.noPassword();
             }
 
-            DirContext searchContext = null;
-            DirContext userContext = null;
-            NamingEnumeration<SearchResult> searchEnumeration = null;
-            try {
-                // 1 - Obtain Connection to LDAP
-                searchContext = (DirContext) connectionManager.getConnection();
-                // 2 - Search to identify the DN of the user connecting
-                LdapEntry ldapEntry = userSearcherInjector.getValue().userSearch(searchContext, username);
+            final VerifyPasswordCallback theVpc = verifyPasswordCallback;
+            DirContextFactory dcf = new DirContextFactory() {
 
-                // 3 - Connect as user once their DN is identified
-                try {
-                    userContext = (DirContext) connectionManager.getConnection(ldapEntry.getDistinguishedName(), password);
-                    if (userContext != null) {
-                        SECURITY_LOGGER.tracef("Password verified for user '%s'", username);
-                        verifyPasswordCallback.setVerified(true);
-                        sharedState.put(LdapEntry.class.getName(), ldapEntry);
+                private DirContext context;
+
+                @Override
+                public DirContext getDirContext() throws IOException {
+                    if (context != null) {
+                        return context;
                     }
-                } catch (Exception e) {
-                    SECURITY_LOGGER.tracef("Password verification failed for user '%s'", username);
-                    verifyPasswordCallback.setVerified(false);
+
+                    try {
+                        return context = (DirContext) connectionManager.getConnection();
+                    } catch (Exception e) {
+                        if (e instanceof IOException) {
+                            throw (IOException) e;
+                        }
+                        throw new IOException(e);
+                    }
                 }
 
+                @Override
+                public void close() {
+                    safeClose(theVpc, context);
+                }
+            };
+
+            DirContext userContext = null;
+            try {
+                // 2 - Search to identify the DN of the user connecting
+                SearchResult<LdapEntry> searchResult = userSearcherInjector.getValue().search(dcf, username);
+                LdapEntry ldapEntry = searchResult.getResult();
+
+                // 3 - Connect as user once their DN is identified
+                final PasswordCredential cachedCredential = searchResult.getAttachment(PASSWORD_KEY);
+                if (cachedCredential != null) {
+                    if (cachedCredential.verify(password)) {
+                        SECURITY_LOGGER.tracef("Password verified for user '%s' (using cached password)", username);
+                        verifyPasswordCallback.setVerified(true);
+                        sharedState.put(LdapEntry.class.getName(), ldapEntry);
+                    } else {
+                        SECURITY_LOGGER.tracef("Password verification failed for user (using cached password) '%s'", username);
+                        verifyPasswordCallback.setVerified(false);
+                    }
+                } else {
+                    try {
+                        userContext = (DirContext) connectionManager.getConnection(ldapEntry.getDistinguishedName(), password);
+                        if (userContext != null) {
+                            SECURITY_LOGGER.tracef("Password verified for user '%s' (using connection attempt)", username);
+                            verifyPasswordCallback.setVerified(true);
+                            searchResult.attach(PASSWORD_KEY, new PasswordCredential(password));
+                            sharedState.put(LdapEntry.class.getName(), ldapEntry);
+                        }
+                    } catch (Exception e) {
+                        SECURITY_LOGGER.tracef("Password verification failed for user (using connection attempt) '%s'",
+                                username);
+                        verifyPasswordCallback.setVerified(false);
+                    }
+                }
             } catch (Exception e) {
                 SECURITY_LOGGER.trace("Unable to verify identity.", e);
                 throw MESSAGES.cannotPerformVerification(e);
             } finally {
-                UserLdapCallbackHandler.this.safeClose(searchEnumeration);
-                safeClose(verifyPasswordCallback, searchContext);
+                dcf.close();
                 UserLdapCallbackHandler.this.safeClose(userContext);
             }
         }
@@ -255,6 +295,19 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
             return SecurityRealm.ServiceUtil.createServiceName(realmName).append(SERVICE_SUFFIX);
         }
 
+    }
+
+    private static final class PasswordCredential {
+
+        private final String password;
+
+        private PasswordCredential(final String password) {
+            this.password = password;
+        }
+
+        private boolean verify(final String password) {
+            return this.password.equals(password);
+        }
     }
 
 }
