@@ -135,7 +135,7 @@ public class ModuleUtils {
 
     /**
      * Adds extensions to the specified archive if any available.
-     *
+     * 
      * @param jar to add extensions to
      * @param classes to be evaluated
      */
