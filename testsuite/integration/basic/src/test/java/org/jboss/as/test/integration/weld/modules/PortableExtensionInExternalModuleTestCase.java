@@ -104,7 +104,8 @@ public class PortableExtensionInExternalModuleTestCase {
         log.info(ejbSubdeployment.toString(true));
 
         WebArchive webSubdeployment = ShrinkWrap.create(WebArchive.class, "web-subdeployment.war")
-                .addClass(PortableExtensionInExternalModuleTestCase.class).addAsWebInfResource(newBeans11Descriptor("annotated"), "beans.xml");
+                .addClass(PortableExtensionInExternalModuleTestCase.class)
+                .addAsWebInfResource(newBeans11Descriptor("annotated"), "beans.xml");
 
         return ShrinkWrap.create(EnterpriseArchive.class, "test.ear").addAsLibrary(library).addAsModule(ejbSubdeployment)
                 .addAsModule(webSubdeployment)
