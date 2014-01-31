@@ -50,7 +50,7 @@ public class UndertowConnector implements Connector {
 
     @Override
     public boolean isReverse() {
-        return true;
+        return false;
     }
 
     @Override
