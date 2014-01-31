@@ -25,10 +25,7 @@ package org.wildfly.extension.security.manager;
 
 import static org.jboss.as.controller.PersistentResourceXMLDescription.PersistentResourceXMLBuilder;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.wildfly.extension.security.manager.Constants.PERMISSION;
-import static org.wildfly.extension.security.manager.Constants.PERMISSION_ACTIONS;
-import static org.wildfly.extension.security.manager.Constants.PERMISSION_CLASS;
-import static org.wildfly.extension.security.manager.Constants.PERMISSION_NAME;
+import static org.wildfly.extension.security.manager.Constants.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -83,7 +80,13 @@ class PermissionResourceDefinition extends PersistentResourceDefinition {
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
-    static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(CLASS, NAME, ACTIONS);
+    static final AttributeDefinition MODULE = new SimpleAttributeDefinitionBuilder(PERMISSION_MODULE, ModelType.STRING)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
+    static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(CLASS, NAME, ACTIONS, MODULE);
 
     static final PermissionResourceDefinition INSTANCE = new PermissionResourceDefinition();
 
