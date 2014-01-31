@@ -134,7 +134,7 @@ public class AllowedMethodsInformation {
                 throwException(methodType, invocationType);
             }
         }
-        if (!beanManagedTransaction && methodType == MethodType.GET_USER_TRANSACTION) {
+        if (invocationType != InvocationType.CONCURRENT_CONTEXT && !beanManagedTransaction && methodType == MethodType.GET_USER_TRANSACTION) {
             throw EjbMessages.MESSAGES.unauthorizedAccessToUserTransaction();
         }
     }

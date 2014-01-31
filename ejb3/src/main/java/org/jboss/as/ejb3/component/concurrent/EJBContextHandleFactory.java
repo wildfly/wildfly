@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.component.concurrent;
 
+import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ee.concurrent.handle.ContextHandle;
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
 import org.jboss.as.ejb3.context.CurrentInvocationContext;
@@ -75,7 +76,14 @@ public class EJBContextHandleFactory implements ContextHandleFactory {
         private final transient InterceptorContext interceptorContext;
 
         private EJBContextHandle() {
-            interceptorContext = CurrentInvocationContext.get();
+            final InterceptorContext interceptorContext = CurrentInvocationContext.get();
+            if(interceptorContext != null) {
+                this.interceptorContext = interceptorContext.clone();
+                // overwrite invocation type so EE concurrency tasks have special access to resources such as the user tx
+                this.interceptorContext.putPrivateData(InvocationType.class, InvocationType.CONCURRENT_CONTEXT);
+            } else {
+                this.interceptorContext = null;
+            }
         }
 
         @Override
