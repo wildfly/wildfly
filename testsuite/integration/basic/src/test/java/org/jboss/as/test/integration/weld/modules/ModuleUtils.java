@@ -27,7 +27,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.enterprise.inject.spi.Extension;
 
 import org.jboss.jandex.Index;
 import org.jboss.jandex.IndexWriter;
@@ -60,7 +65,7 @@ public class ModuleUtils {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, moduleName + ".jar");
         jar.addClasses(classes);
         jar.addAsManifestResource(EmptyAsset.INSTANCE, "beans.xml");
-
+        addExtensionsIfAvailable(jar, classes);
 
         Indexer indexer = new Indexer();
         for (Class<?> clazz : classes) {
@@ -81,7 +86,6 @@ public class ModuleUtils {
             jarFile.flush();
             jarFile.close();
         }
-
     }
 
     private static void copyFile(File target, InputStream src) throws IOException {
@@ -126,6 +130,27 @@ public class ModuleUtils {
                 }
             }
             file.delete();
+        }
+    }
+
+    /**
+     * Adds extensions to the specified archive if any available.
+     *
+     * @param jar to add extensions to
+     * @param classes to be evaluated
+     */
+    @SuppressWarnings("unchecked")
+    private static void addExtensionsIfAvailable(JavaArchive jar, final Class<?>... classes) {
+        List<Class<Extension>> extensions = new ArrayList<>(1);
+        for (Class<?> clazz : classes) {
+            if (Extension.class.isAssignableFrom(clazz)) {
+                extensions.add((Class<Extension>) clazz);
+            }
+        }
+
+        if (!extensions.isEmpty()) {
+            Class<Extension>[] a = (Class<Extension>[]) Array.newInstance(Extension.class.getClass(), 0);
+            jar.addAsServiceProvider(Extension.class, extensions.toArray(a));
         }
     }
 }

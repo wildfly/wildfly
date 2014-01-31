@@ -123,15 +123,18 @@ public class ExternalBeanArchiveProcessor implements DeploymentUnitProcessor {
         }
 
         for (DeploymentUnit deployment : deploymentUnits) {
+            WeldLogger.DEPLOYMENT_LOGGER.tracef("Processing DeploymentUnit: %s", deployment.toString());
             final Module module = deployment.getAttachment(Attachments.MODULE);
             if (module == null) {
                 return;
             }
+            WeldLogger.DEPLOYMENT_LOGGER.tracef("Processing dependencies of Module: %s", module.toString());
             for (DependencySpec dep : module.getDependencies()) {
                 final Module dependency = loadModuleDependency(dep);
                 if (dependency == null) {
                     continue;
                 }
+                WeldLogger.DEPLOYMENT_LOGGER.tracef("Processing dependency: %s", dependency.toString());
                 URL url = findExportedLocalBeansXml(dependency);
                 if (url != null && !existing.contains(url)) {
                     /*
