@@ -188,8 +188,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
     // @GuardedBy(this)
     private Future<ServerInventory> inventoryFuture;
     private final AtomicBoolean serverInventoryLock = new AtomicBoolean();
-    // @GuardedBy(serverInventoryLock)
-    private ServerInventory serverInventory;
+    // @GuardedBy(serverInventoryLock), after the HC started reads just use the volatile value
+    private volatile ServerInventory serverInventory;
 
     // TODO look into using the controller executor
     private volatile ExecutorService proxyExecutor;
