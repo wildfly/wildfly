@@ -47,6 +47,7 @@ import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.javaee.spec.MailSessionMetaData;
+import org.jboss.metadata.javaee.spec.PropertiesMetaData;
 import org.jboss.metadata.javaee.spec.PropertyMetaData;
 
 /**
@@ -133,15 +134,16 @@ public class MailSessionDefinitionAnnotationParser implements DeploymentUnitProc
         metaData.setFrom(asString(annotationInstance, "from"));
         metaData.setName(nameValue.asString());
         String jndiName = MailSessionAdd.getJndiName(nameValue.asString());
-
+        PropertiesMetaData properties = new PropertiesMetaData();
 
         for (String fullProp : asArray(annotationInstance, "properties")) {
             PropertyMetaData p = new PropertyMetaData();
             String[] prop = fullProp.split("=", 2);
             p.setName(prop[0]);
             p.setValue(prop[1]);
-            metaData.getProperties().add(p);
+            properties.add(p);
         }
+        metaData.setProperties(properties);
 
 
         SessionProvider provider = SessionProviderFactory.create(metaData);
