@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.bom</groupId>
-        <version>1.0.4.Final</version>
+        <groupId>org.wildfly.bom</groupId>
+        <version>8.0.0-SNAPSHOT</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
@@ -106,21 +106,21 @@
                 <type>pom</type>
             </dependency>
 
-            <!-- Arquillian support for JBoss AS7 container -->
+            <!-- Arquillian support for JBoss WildFly 8 container -->
             <!-- Note: Managed version of container allows Arquillian to 
                 control startup and shutdown of the container -->
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-container-managed</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-container-managed</artifactId>
                 <version>${version.org.jboss.as.arquillian.container}</version>
             </dependency>
 
-            <!-- Arquillian support for JBoss AS7 container -->
-            <!-- Note: Remote version of container allows Arquillian to connect 
+            <!-- Arquillian support for JBoss WildFly 8 container -->
+            <!-- Note: Remote version of container allows Arquillian to connect
                 to already running container -->
             <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-arquillian-container-remote</artifactId>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-arquillian-container-remote</artifactId>
                 <version>${version.org.jboss.as.arquillian.container}</version>
             </dependency>
 

@@ -11,9 +11,9 @@ To use the BOM, import into your dependency management:
     <dependencyManagement>
         <dependencies>
             <dependency>
-               <groupId>org.jboss.bom</groupId>
+               <groupId>org.wildfly.bom</groupId>
                <artifactId>jboss-javaee-6.0-with-logging</artifactId>
-               <version>1.0.4.Final</version>
+               <version>8.0.0-SNAPSHOT</version>
                <type>pom</type>
                <scope>import</scope>
             </dependency>

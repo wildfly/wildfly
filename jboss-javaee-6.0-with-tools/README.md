@@ -3,7 +3,7 @@ JBoss Java EE 6 with tools recommended by JBoss
 
 Java EE lacks any testing APIs, and for this reason JBoss developed the Arquillian project, along with it's various component projects, such as Arquillian Drone, and the sister project Shrinkwrap. This BOM builds on the Java EE full profile BOM, adding Arquillian to the mix. It also provides a version of JUnit and TestNG recommended for use with Arquillian.
  
-Furthermore, this BOM adds the JBoss AS Maven deployment plugin. EAP 6's recommended mode of deployment is via the management APIs, and the Maven plugin is the recommended way to do this, if the customer is using Maven for building.
+Furthermore, this BOM adds the JBoss AS Maven deployment plugin. WildFly 8's recommended mode of deployment is via the management APIs, and the Maven plugin is the recommended way to do this, if the customer is using Maven for building.
  
 Usage
 -----
@@ -13,9 +13,9 @@ To use the BOM, import into your dependency management:
     <dependencyManagement>
         <dependencies>
             <dependency>
-               <groupId>org.jboss.bom</groupId>
+               <groupId>org.wildfly.bom</groupId>
                <artifactId>jboss-javaee-6.0-with-tools</artifactId>
-               <version>1.0.4.Final</version>
+               <version>8.0.0-SNAPSHOT</version>
                <type>pom</type>
                <scope>import</scope>
             </dependency>

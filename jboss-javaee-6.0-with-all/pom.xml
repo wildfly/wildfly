@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.jboss.bom</groupId>
-        <version>1.0.4.Final</version>
+        <groupId>org.wildfly.bom</groupId>
+        <version>8.0.0-SNAPSHOT</version>
         <artifactId>jboss-bom-parent</artifactId>
     </parent>
 
@@ -35,7 +35,7 @@
                 a Bill of Materials (BOM). A BOM specifies the versions of a "stack" (or 
                 a collection) of artifacts. -->
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-deltaspike
                 </artifactId>
@@ -44,7 +44,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-errai
                 </artifactId>
@@ -53,7 +53,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-hibernate
                 </artifactId>
@@ -62,7 +62,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-hibernate3
                 </artifactId>
@@ -71,7 +71,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-infinispan
                 </artifactId>
@@ -80,7 +80,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-logging
                 </artifactId>
@@ -89,7 +89,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-osgi
                 </artifactId>
@@ -98,7 +98,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-resteasy
                 </artifactId>
@@ -107,7 +107,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-richfaces
                 </artifactId>
@@ -116,7 +116,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-security
                 </artifactId>
@@ -125,7 +125,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-tools
                 </artifactId>
@@ -134,7 +134,7 @@
                 <type>pom</type>
             </dependency>
             <dependency>
-                <groupId>org.jboss.bom</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>
                     jboss-javaee-6.0-with-transactions
                 </artifactId>
