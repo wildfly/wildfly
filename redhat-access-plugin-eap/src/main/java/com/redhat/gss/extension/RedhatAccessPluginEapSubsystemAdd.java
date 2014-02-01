@@ -35,35 +35,17 @@ import org.jboss.msc.service.ServiceController;
 import java.util.List;
 import java.util.Locale;
 
-public class RedhatAccessPluginEapSubsystemAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class RedhatAccessPluginEapSubsystemAdd extends AbstractAddStepHandler{
 
     public static final String OPERATION_NAME = ModelDescriptionConstants.ADD;
 
     public static final RedhatAccessPluginEapSubsystemAdd INSTANCE = new RedhatAccessPluginEapSubsystemAdd();
 
-    private final ParametersValidator validator = new ParametersValidator();
 
     private RedhatAccessPluginEapSubsystemAdd() {
-        // Example of registering validators
-        // validator.registerValidator("some-string", new StringLengthValidator(1, Integer.MAX_VALUE, false, false));
-        // validator.registerValidator("some-int", new IntRangeValidator(0, 10, true, false));
-    }
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        validator.validate(operation);
-        model.setEmptyObject();
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-
-        // TODO if there is any configuration data, use it to configure runtime services
-        // TODO add any other runtime services
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return RedhatAccessPluginEapDescriptions.getSubsystemAdd(locale);
     }
 }

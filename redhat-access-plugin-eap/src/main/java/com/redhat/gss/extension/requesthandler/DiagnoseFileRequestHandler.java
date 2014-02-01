@@ -25,41 +25,36 @@ package com.redhat.gss.extension.requesthandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import com.redhat.gss.extension.RedhatAccessPluginEapDescriptions;
 import com.redhat.gss.extension.RedhatAccessPluginEapExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Link;
-import com.redhat.gss.redhat_support_lib.parsers.Product;
-import com.redhat.gss.redhat_support_lib.parsers.Solution;
-
 import java.net.MalformedURLException;
 import java.util.List;
-import java.util.Locale;
 
 
 public class DiagnoseFileRequestHandler extends BaseRequestHandler implements
-		OperationStepHandler, DescriptionProvider {
+		OperationStepHandler{
 
 	public static final String OPERATION_NAME = "diagnose-file";
 	public static final DiagnoseFileRequestHandler INSTANCE = new DiagnoseFileRequestHandler();
 
-	public static final SimpleAttributeDefinition diagnoseFile = new SimpleAttributeDefinitionBuilder(
+	public static final SimpleAttributeDefinition DIAGNOSEFILE = new SimpleAttributeDefinitionBuilder(
 			"diagnose-file", ModelType.STRING).setAllowExpression(true)
 			.setXmlName("diagnose-file")
 			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-	public DiagnoseFileRequestHandler() {
-		super(PathElement.pathElement(OPERATION_NAME), RedhatAccessPluginEapExtension
-				.getResourceDescriptionResolver(OPERATION_NAME), INSTANCE,
-				INSTANCE, OPERATION_NAME, diagnoseFile);
-	}
+	public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+            OPERATION_NAME,
+            RedhatAccessPluginEapExtension
+                    .getResourceDescriptionResolver())
+            .setParameters(getParameters(DIAGNOSEFILE)).build();
 
 	@Override
 	public void execute(OperationContext context, ModelNode operation)
@@ -79,7 +74,7 @@ public class DiagnoseFileRequestHandler extends BaseRequestHandler implements
 					throw new OperationFailedException(e.getLocalizedMessage(),
 							e);
 				}
-				String diagnoseFileString = diagnoseFile.resolveModelAttribute(
+				String diagnoseFileString = DIAGNOSEFILE.resolveModelAttribute(
 						context, operation).asString();
 				List<Link> links = null;
 				try {
@@ -105,15 +100,10 @@ public class DiagnoseFileRequestHandler extends BaseRequestHandler implements
 						i++;
 					}
 				}
-				context.completeStep();
+				context.stepCompleted();
 			}
 		}, OperationContext.Stage.RUNTIME);
 
-		context.completeStep();
-	}
-
-	@Override
-	public ModelNode getModelDescription(Locale locale) {
-		return RedhatAccessPluginEapDescriptions.getRedhatAccessPluginEapRequestDescription(locale);
+		context.stepCompleted();
 	}
 }

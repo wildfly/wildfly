@@ -22,35 +22,20 @@
 
 package com.redhat.gss.extension;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIBE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.EnumSet;
-import java.util.Locale;
-
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SubsystemRegistration;
-import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
-import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
 import com.redhat.gss.extension.requesthandler.AddCommentRequestHandler;
 import com.redhat.gss.extension.requesthandler.DiagnoseFileRequestHandler;
 import com.redhat.gss.extension.requesthandler.DiagnoseStringRequestHandler;
@@ -66,145 +51,84 @@ import com.redhat.gss.extension.requesthandler.OpenCaseRequestHandler;
 import com.redhat.gss.extension.requesthandler.SearchSolutionsRequestHandler;
 import com.redhat.gss.extension.requesthandler.SymptomsFileRequestHandler;
 
-
 public class RedhatAccessPluginEapExtension implements Extension {
 
-	public static final String SUBSYSTEM_NAME = "redhat-access-plugin-eap";
+    public static final String SUBSYSTEM_NAME = "redhat-access-plugin-eap";
+    public static final String RESOURCE_NAME = RedhatAccessPluginEapExtension.class
+            .getPackage().getName() + ".LocalDescriptions";
+    static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(
+            SUBSYSTEM, SUBSYSTEM_NAME);
 
-	public static final String RESOURCE_NAME = RedhatAccessPluginEapExtension.class
-			.getPackage().getName() + ".LocalDescriptions";
-	
-	public static StandardResourceDescriptionResolver getResourceDescriptionResolver(
-			final String keyPrefix) {
-		String prefix = RedhatAccessPluginEapExtension.SUBSYSTEM_NAME;
-		return new StandardResourceDescriptionResolver(prefix, RedhatAccessPluginEapExtension.RESOURCE_NAME,
-				SearchSolutionsRequestHandler.class.getClassLoader(), true, false);
-	}
+    public static StandardResourceDescriptionResolver getResourceDescriptionResolver(
+            final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        for (String kp : keyPrefix) {
+            prefix.append('.').append(kp);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(),
+                RESOURCE_NAME,
+                RedhatAccessPluginEapExtension.class.getClassLoader(), true,
+                false);
+    }
 
-	public void initialize(ExtensionContext context) {
-		final DescriptionProvider subsystemDescription = new DescriptionProvider() {
-			public ModelNode getModelDescription(Locale locale) {
-				return RedhatAccessPluginEapDescriptions.RedhatAccessPluginEapDescription(locale);
-			}
-		};
+    public void initialize(ExtensionContext context) {
+        // TODO:FIX ALL THESE
+        SubsystemRegistration subsystemRegistration = context
+                .registerSubsystem(SUBSYSTEM_NAME, 1, 0);
 
-		SubsystemRegistration subsystemRegistration = context
-				.registerSubsystem(SUBSYSTEM_NAME, 1, 0);
+        ManagementResourceRegistration root = subsystemRegistration
+                .registerSubsystemModel(RedhatAccessPluginEapSubsystemDefinition.INSTANCE);
+        root.registerOperationHandler(
+                GenericSubsystemDescribeHandler.DEFINITION,
+                GenericSubsystemDescribeHandler.INSTANCE);
 
-		ManagementResourceRegistration root = subsystemRegistration
-				.registerSubsystemModel(subsystemDescription);
-		root.registerOperationHandler(RedhatAccessPluginEapSubsystemAdd.OPERATION_NAME,
-				RedhatAccessPluginEapSubsystemAdd.INSTANCE, RedhatAccessPluginEapSubsystemAdd.INSTANCE);
-		root.registerOperationHandler(DESCRIBE,
-				RedhatAccessPluginEapDescribeHandler.INSTANCE,
-				RedhatAccessPluginEapDescribeHandler.INSTANCE, false,
-				OperationEntry.EntryType.PRIVATE);
-		root.registerOperationHandler(RedhatAccessPluginEapSubsystemRemove.OPERATION_NAME,
-				RedhatAccessPluginEapSubsystemRemove.INSTANCE,
-				RedhatAccessPluginEapSubsystemRemove.INSTANCE);
-		if (context.isRuntimeOnlyRegistrationValid()) {
-			root.registerOperationHandler(
-					SearchSolutionsRequestHandler.OPERATION_NAME,
-					SearchSolutionsRequestHandler.INSTANCE,
-					new SearchSolutionsRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					GetSolutionRequestHandler.OPERATION_NAME,
-					GetSolutionRequestHandler.INSTANCE,
-					new GetSolutionRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					DiagnoseStringRequestHandler.OPERATION_NAME,
-					DiagnoseStringRequestHandler.INSTANCE,
-					new DiagnoseStringRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					DiagnoseFileRequestHandler.OPERATION_NAME,
-					DiagnoseFileRequestHandler.INSTANCE,
-					new DiagnoseFileRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					SymptomsFileRequestHandler.OPERATION_NAME,
-					SymptomsFileRequestHandler.INSTANCE,
-					new SymptomsFileRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					OpenCaseRequestHandler.OPERATION_NAME,
-					OpenCaseRequestHandler.INSTANCE,
-					new OpenCaseRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					ModifyCaseRequestHandler.OPERATION_NAME,
-					ModifyCaseRequestHandler.INSTANCE,
-					new ModifyCaseRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					ListProductsRequestHandler.OPERATION_NAME,
-					ListProductsRequestHandler.INSTANCE,
-					new ListProductsRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					GetVersionsRequestHandler.OPERATION_NAME,
-					GetVersionsRequestHandler.INSTANCE,
-					new GetVersionsRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					ListSeveritiesRequestHandler.OPERATION_NAME,
-					ListSeveritiesRequestHandler.INSTANCE,
-					new ListSeveritiesRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					ListCasesRequestHandler.OPERATION_NAME,
-					ListCasesRequestHandler.INSTANCE,
-					new ListCasesRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					GetCaseRequestHandler.OPERATION_NAME,
-					GetCaseRequestHandler.INSTANCE,
-					new GetCaseRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			root.registerOperationHandler(
-					GetCommentsRequestHandler.OPERATION_NAME,
-					GetCommentsRequestHandler.INSTANCE,
-					new GetCommentsRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-			
-			root.registerOperationHandler(
-					AddCommentRequestHandler.OPERATION_NAME,
-					AddCommentRequestHandler.INSTANCE,
-					new AddCommentRequestHandler().getDODP(),
-					EnumSet.of(Flag.RUNTIME_ONLY));
-		}
-		subsystemRegistration
-				.registerXMLElementWriter(RedhatAccessPluginEapSubsystemParser.INSTANCE);
-	}
+        if (context.isRuntimeOnlyRegistrationValid()) {
+            root.registerOperationHandler(
+                    SearchSolutionsRequestHandler.DEFINITION,
+                    SearchSolutionsRequestHandler.INSTANCE);
+            root.registerOperationHandler(GetSolutionRequestHandler.DEFINITION,
+                    GetSolutionRequestHandler.INSTANCE);
+            root.registerOperationHandler(
+                    DiagnoseStringRequestHandler.DEFINITION,
+                    DiagnoseStringRequestHandler.INSTANCE);
+            root.registerOperationHandler(
+                    DiagnoseFileRequestHandler.DEFINITION,
+                    DiagnoseFileRequestHandler.INSTANCE);
+            root.registerOperationHandler(
+                    SymptomsFileRequestHandler.DEFINITION,
+                    SymptomsFileRequestHandler.INSTANCE);
+            root.registerOperationHandler(OpenCaseRequestHandler.DEFINITION,
+                    OpenCaseRequestHandler.INSTANCE);
+            root.registerOperationHandler(ModifyCaseRequestHandler.DEFINITION,
+                    ModifyCaseRequestHandler.INSTANCE);
+            root.registerOperationHandler(
+                    ListProductsRequestHandler.DEFINITION,
+                    ListProductsRequestHandler.INSTANCE);
+            root.registerOperationHandler(GetVersionsRequestHandler.DEFINITION,
+                    GetVersionsRequestHandler.INSTANCE);
+            root.registerOperationHandler(
+                    ListSeveritiesRequestHandler.DEFINITION,
+                    ListSeveritiesRequestHandler.INSTANCE);
+            root.registerOperationHandler(ListCasesRequestHandler.DEFINITION,
+                    ListCasesRequestHandler.INSTANCE);
+            root.registerOperationHandler(GetCaseRequestHandler.DEFINITION,
+                    GetCaseRequestHandler.INSTANCE);
+            root.registerOperationHandler(GetCommentsRequestHandler.DEFINITION,
+                    GetCommentsRequestHandler.INSTANCE);
+            root.registerOperationHandler(AddCommentRequestHandler.DEFINITION,
+                    AddCommentRequestHandler.INSTANCE);
+        }
+        subsystemRegistration
+                .registerXMLElementWriter(RedhatAccessPluginEapSubsystemParser.INSTANCE);
+    }
 
-	public void initializeParsers(ExtensionParsingContext context) {
-		context.setSubsystemXmlMapping(SUBSYSTEM_NAME,
-				Namespace.CURRENT.getUriString(),
-				RedhatAccessPluginEapSubsystemParser.INSTANCE);
-	}
+    public void initializeParsers(ExtensionParsingContext context) {
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,
+                Namespace.CURRENT.getUriString(),
+                RedhatAccessPluginEapSubsystemParser.INSTANCE);
+    }
 
-	private static class RedhatAccessPluginEapDescribeHandler implements
-			OperationStepHandler, DescriptionProvider {
-		static final RedhatAccessPluginEapDescribeHandler INSTANCE = new RedhatAccessPluginEapDescribeHandler();
-
-		public void execute(OperationContext context, ModelNode operation)
-				throws OperationFailedException {
-			ModelNode result = context.getResult();
-
-			result.add(Util.getEmptyOperation(ADD, pathAddress(PathElement
-					.pathElement(SUBSYSTEM, SUBSYSTEM_NAME))));
-
-			context.completeStep();
-		}
-
-		public ModelNode getModelDescription(Locale locale) {
-			return CommonDescriptions.getSubsystemDescribeOperation(locale);
-		}
-	}
-
-	private static ModelNode pathAddress(PathElement... elements) {
-		return PathAddress.pathAddress(elements).toModelNode();
-	}
+    private static ModelNode pathAddress(PathElement... elements) {
+        return PathAddress.pathAddress(elements).toModelNode();
+    }
 }

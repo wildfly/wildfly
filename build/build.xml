@@ -905,9 +905,6 @@
         
         <module-def name="com.redhat.gss.redhat-support-lib-java">
             <maven-resource group="commons-net" artifact="commons-net"/>
-            <maven-resource group="org.apache.httpcomponents" artifact="httpclient"/>
-            <maven-resource group="org.apache.httpcomponents" artifact="httpcore"/>
-            <maven-resource group="commons-codec" artifact="commons-codec"/>
             <maven-resource group="com.sun.jersey" artifact="jersey-client"/>
             <maven-resource group="com.sun.jersey" artifact="jersey-core"/>
             <maven-resource group="com.sun.jersey.contribs" artifact="jersey-multipart"/>

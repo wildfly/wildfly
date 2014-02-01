@@ -31,7 +31,7 @@ import org.jboss.dmr.ModelNode;
 
 import java.util.Locale;
 
-public class RedhatAccessPluginEapSubsystemRemove extends AbstractRemoveStepHandler implements DescriptionProvider {
+public class RedhatAccessPluginEapSubsystemRemove extends AbstractRemoveStepHandler{
 
     public static final String OPERATION_NAME = ModelDescriptionConstants.REMOVE;
 
@@ -39,11 +39,5 @@ public class RedhatAccessPluginEapSubsystemRemove extends AbstractRemoveStepHand
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-    }
-
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return RedhatAccessPluginEapDescriptions.getSubsystemRemove(locale);
     }
 }

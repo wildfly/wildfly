@@ -59,12 +59,6 @@ public final class RedhatAccessPluginEapSubsystemParser implements XMLStreamCons
     public void writeContent(final XMLExtendedStreamWriter writer, final SubsystemMarshallingContext context)
             throws XMLStreamException {
         context.startSubsystemElement(com.redhat.gss.extension.Namespace.CURRENT.getUriString(), false);
-        writer.writeAttribute("username", "username");
         writer.writeEndElement();
-    }
-
-    private void writeRedhatAccessPluginEapElements(final XMLExtendedStreamWriter writer, ModelNode node) throws XMLStreamException {
-        writer.writeAttribute(Attribute.ENABLED.getLocalName(), node.require(CommonAttributes.ENABLED).toString());
-        writer.writeAttribute("username", node.require(CommonAttributes.ENABLED).toString());
     }
 }

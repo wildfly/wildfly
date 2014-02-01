@@ -25,57 +25,52 @@ package com.redhat.gss.extension.requesthandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import com.redhat.gss.extension.RedhatAccessPluginEapDescriptions;
 import com.redhat.gss.extension.RedhatAccessPluginEapExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Case;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
-import java.util.Locale;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Marshaller;
 
 public class OpenCaseRequestHandler extends BaseRequestHandler implements
-		OperationStepHandler, DescriptionProvider {
+		OperationStepHandler{
 
 	public static final String OPERATION_NAME = "open-case";
 	public static final OpenCaseRequestHandler INSTANCE = new OpenCaseRequestHandler();
 
-	public static final SimpleAttributeDefinition summary = new SimpleAttributeDefinitionBuilder(
+	public static final SimpleAttributeDefinition SUMMARY = new SimpleAttributeDefinitionBuilder(
 			"Summary", ModelType.STRING).setAllowExpression(true)
 			.setXmlName("Summary")
 			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
-	public static final SimpleAttributeDefinition description = new SimpleAttributeDefinitionBuilder(
+	public static final SimpleAttributeDefinition DESCRIPTION = new SimpleAttributeDefinitionBuilder(
 			"Description", ModelType.STRING).setAllowExpression(true)
 			.setXmlName("Description")
 			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
-	public static final SimpleAttributeDefinition severity = new SimpleAttributeDefinitionBuilder(
+	public static final SimpleAttributeDefinition SEVERITY = new SimpleAttributeDefinitionBuilder(
 			"Severity", ModelType.STRING, true).setAllowExpression(true)
 			.setXmlName("Severity")
 			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
-	public static final SimpleAttributeDefinition product = new SimpleAttributeDefinitionBuilder(
+	public static final SimpleAttributeDefinition PRODUCT = new SimpleAttributeDefinitionBuilder(
 			"Product", ModelType.STRING).setAllowExpression(true)
 			.setXmlName("Product")
 			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
-	public static final SimpleAttributeDefinition version = new SimpleAttributeDefinitionBuilder(
+	public static final SimpleAttributeDefinition VERSION = new SimpleAttributeDefinitionBuilder(
 			"Version", ModelType.STRING).setAllowExpression(true)
 			.setXmlName("Version")
 			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-	public OpenCaseRequestHandler() {
-		super(PathElement.pathElement(OPERATION_NAME), RedhatAccessPluginEapExtension
-				.getResourceDescriptionResolver(OPERATION_NAME), INSTANCE,
-				INSTANCE, OPERATION_NAME, summary, description, severity,
-				product, version);
-	}
+    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+            OPERATION_NAME,
+            RedhatAccessPluginEapExtension
+                    .getResourceDescriptionResolver())
+            .setParameters(
+                    getParameters(SUMMARY, DESCRIPTION, SEVERITY,
+                            PRODUCT, VERSION)).build();
 
 	@Override
 	public void execute(OperationContext context, ModelNode operation)
@@ -96,18 +91,18 @@ public class OpenCaseRequestHandler extends BaseRequestHandler implements
 							e);
 				}
 				Case cas = new Case();
-				cas.setSummary(summary
+				cas.setSummary(SUMMARY
 						.resolveModelAttribute(context, operation).asString());
-				cas.setDescription(description.resolveModelAttribute(context,
+				cas.setDescription(DESCRIPTION.resolveModelAttribute(context,
 						operation).asString());
-				if (severity.resolveModelAttribute(context, operation)
+				if (SEVERITY.resolveModelAttribute(context, operation)
 						.isDefined()) {
-					cas.setSeverity(severity.resolveModelAttribute(context,
+					cas.setSeverity(SEVERITY.resolveModelAttribute(context,
 							operation).asString());
 				}
-				cas.setProduct(product
+				cas.setProduct(PRODUCT
 						.resolveModelAttribute(context, operation).asString());
-				cas.setVersion(version
+				cas.setVersion(VERSION
 						.resolveModelAttribute(context, operation).asString());
 				try {
 					cas = api.getCases().add(cas);
@@ -125,15 +120,10 @@ public class OpenCaseRequestHandler extends BaseRequestHandler implements
 					response.get("Severity").set(cas.getSeverity());
 				}
 
-				context.completeStep();
+				context.stepCompleted();
 			}
 		}, OperationContext.Stage.RUNTIME);
 
-		context.completeStep();
-	}
-
-	@Override
-	public ModelNode getModelDescription(Locale locale) {
-		return RedhatAccessPluginEapDescriptions.getRedhatAccessPluginEapRequestDescription(locale);
+		context.stepCompleted();
 	}
 }

@@ -25,99 +25,86 @@ package com.redhat.gss.extension.requesthandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
-import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.msc.service.ServiceRegistry;
-
-import com.redhat.gss.extension.RedhatAccessPluginEapDescriptions;
 import com.redhat.gss.extension.RedhatAccessPluginEapExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
-import com.redhat.gss.redhat_support_lib.errors.RequestException;
 import com.redhat.gss.redhat_support_lib.parsers.Solution;
 
 import java.net.MalformedURLException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 public class SearchSolutionsRequestHandler extends BaseRequestHandler implements
-		OperationStepHandler, DescriptionProvider {
+        OperationStepHandler {
 
-	public static final String OPERATION_NAME = "search-solutions";
-	public static final SearchSolutionsRequestHandler INSTANCE = new SearchSolutionsRequestHandler();
+    public static final String OPERATION_NAME = "search-solutions";
+    public static final SearchSolutionsRequestHandler INSTANCE = new SearchSolutionsRequestHandler();
 
-	public static final SimpleAttributeDefinition searchString = new SimpleAttributeDefinitionBuilder(
-			"searchString", ModelType.STRING).setAllowExpression(true)
-			.setXmlName("searchString")
-			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+    public static final SimpleAttributeDefinition SEARCHSTRING = new SimpleAttributeDefinitionBuilder(
+            "searchString", ModelType.STRING).setAllowExpression(true)
+            .setXmlName("searchString")
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-	public SearchSolutionsRequestHandler() {
-		super(PathElement.pathElement(OPERATION_NAME), RedhatAccessPluginEapExtension
-				.getResourceDescriptionResolver(OPERATION_NAME), INSTANCE,
-				INSTANCE, OPERATION_NAME, searchString);
-	}
+    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+            OPERATION_NAME,
+            RedhatAccessPluginEapExtension
+                    .getResourceDescriptionResolver())
+            .setParameters(getParameters(SEARCHSTRING)).build();
 
-	@Override
-	public void execute(OperationContext context, ModelNode operation)
-			throws OperationFailedException {
-		// In MODEL stage, just validate the request. Unnecessary if the request
-		// has no parameters
-		validator.validate(operation);
-		context.addStep(new OperationStepHandler() {
+    @Override
+    public void execute(OperationContext context, ModelNode operation)
+            throws OperationFailedException {
+        // In MODEL stage, just validate the request. Unnecessary if the request
+        // has no parameters
+        validator.validate(operation);
+        context.addStep(new OperationStepHandler() {
 
-			@Override
-			public void execute(OperationContext context, ModelNode operation)
-					throws OperationFailedException {
-				API api = null;
-				try {
-					api = getAPI(context, operation);
-				} catch (MalformedURLException e) {
-					throw new OperationFailedException(e.getLocalizedMessage(),
-							e);
-				}
-				String[] searchStr = { searchString.resolveModelAttribute(
-						context, operation).asString() };
-				List<Solution> solutions = null;
-				try {
-					solutions = api.getSolutions().list(searchStr, null);
-				} catch (Exception e) {
-					throw new OperationFailedException(e.getLocalizedMessage(),
-							e);
-				}
-				ModelNode response = context.getResult();
-				int i = 0;
-				for (Solution solution : solutions) {
-					if (solution.getId() != null) {
-						ModelNode solutionNode = response.get(i);
+            @Override
+            public void execute(OperationContext context, ModelNode operation)
+                    throws OperationFailedException {
+                API api = null;
+                try {
+                    api = getAPI(context, operation);
+                } catch (MalformedURLException e) {
+                    throw new OperationFailedException(e.getLocalizedMessage(),
+                            e);
+                }
+                String[] searchStr = { SEARCHSTRING.resolveModelAttribute(
+                        context, operation).asString() };
+                List<Solution> solutions = null;
+                try {
+                    solutions = api.getSolutions().list(searchStr, null);
+                } catch (Exception e) {
+                    throw new OperationFailedException(e.getLocalizedMessage(),
+                            e);
+                }
+                ModelNode response = context.getResult();
+                int i = 0;
+                for (Solution solution : solutions) {
+                    if (solution.getId() != null) {
+                        ModelNode solutionNode = response.get(i);
 
-						solutionNode.get("ID").set(solution.getId());
+                        solutionNode.get("ID").set(solution.getId());
 
-						if (solution.getTitle() != null) {
-							solutionNode.get("Title").set(solution.getTitle());
-						}
-						i++;
-						if (solution.getViewUri() != null) {
-							solutionNode.get("ViewUri").set(solution.getViewUri());
-						}
-					}
-				}
-				context.completeStep();
-			}
-		}, OperationContext.Stage.RUNTIME);
+                        if (solution.getTitle() != null) {
+                            solutionNode.get("Title").set(solution.getTitle());
+                        }
+                        i++;
+                        if (solution.getViewUri() != null) {
+                            solutionNode.get("ViewUri").set(
+                                    solution.getViewUri());
+                        }
+                    }
+                }
+                context.stepCompleted();
+            }
+        }, OperationContext.Stage.RUNTIME);
 
-		context.completeStep();
-	}
-
-	@Override
-	public ModelNode getModelDescription(Locale locale) {
-		return RedhatAccessPluginEapDescriptions.getRedhatAccessPluginEapRequestDescription(locale);
-	}
+        context.stepCompleted();
+    }
 }

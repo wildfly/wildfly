@@ -25,37 +25,36 @@ package com.redhat.gss.extension.requesthandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import com.redhat.gss.extension.RedhatAccessPluginEapDescriptions;
 import com.redhat.gss.extension.RedhatAccessPluginEapExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.ExtractedSymptom;
 import java.net.MalformedURLException;
 import java.util.List;
-import java.util.Locale;
 
 public class SymptomsFileRequestHandler extends BaseRequestHandler implements
-		OperationStepHandler, DescriptionProvider {
+		OperationStepHandler{
 
 	public static final String OPERATION_NAME = "symptoms";
 	public static final SymptomsFileRequestHandler INSTANCE = new SymptomsFileRequestHandler();
 
-	public static final SimpleAttributeDefinition symptomsFile = new SimpleAttributeDefinitionBuilder(
+	public static final SimpleAttributeDefinition SYMPTIONSFILE = new SimpleAttributeDefinitionBuilder(
 			"symptoms-file", ModelType.STRING).setAllowExpression(true)
 			.setXmlName("symptoms-file")
 			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-	public SymptomsFileRequestHandler() {
-		super(PathElement.pathElement(OPERATION_NAME), RedhatAccessPluginEapExtension
-				.getResourceDescriptionResolver(OPERATION_NAME), INSTANCE,
-				INSTANCE, OPERATION_NAME, symptomsFile);
-	}
+    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+            OPERATION_NAME,
+            RedhatAccessPluginEapExtension
+                    .getResourceDescriptionResolver())
+            .setParameters(
+                    getParameters(SYMPTIONSFILE)).build();
 
 	@Override
 	public void execute(OperationContext context, ModelNode operation)
@@ -75,7 +74,7 @@ public class SymptomsFileRequestHandler extends BaseRequestHandler implements
 					throw new OperationFailedException(e.getLocalizedMessage(),
 							e);
 				}
-				String symptomsFileString = symptomsFile.resolveModelAttribute(
+				String symptomsFileString = SYMPTIONSFILE.resolveModelAttribute(
 						context, operation).asString();
 				List<ExtractedSymptom> symptoms = null;
 				try {
@@ -104,15 +103,10 @@ public class SymptomsFileRequestHandler extends BaseRequestHandler implements
 						i++;
 					}
 				}
-				context.completeStep();
+				context.stepCompleted();
 			}
 		}, OperationContext.Stage.RUNTIME);
 
-		context.completeStep();
-	}
-
-	@Override
-	public ModelNode getModelDescription(Locale locale) {
-		return RedhatAccessPluginEapDescriptions.getRedhatAccessPluginEapRequestDescription(locale);
+		context.stepCompleted();
 	}
 }

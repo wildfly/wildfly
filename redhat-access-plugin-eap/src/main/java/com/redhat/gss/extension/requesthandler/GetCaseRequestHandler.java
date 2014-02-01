@@ -25,43 +25,35 @@ package com.redhat.gss.extension.requesthandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import com.redhat.gss.extension.RedhatAccessPluginEapDescriptions;
 import com.redhat.gss.extension.RedhatAccessPluginEapExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
-import com.redhat.gss.redhat_support_lib.infrastructure.Comments;
 import com.redhat.gss.redhat_support_lib.parsers.Case;
-import com.redhat.gss.redhat_support_lib.parsers.Comment;
-import com.redhat.gss.redhat_support_lib.parsers.Product;
-import com.redhat.gss.redhat_support_lib.parsers.Solution;
-
 import java.net.MalformedURLException;
-import java.util.List;
-import java.util.Locale;
 
 
 public class GetCaseRequestHandler extends BaseRequestHandler implements
-		OperationStepHandler, DescriptionProvider {
+		OperationStepHandler{
 
 	public static final String OPERATION_NAME = "get-case";
 	public static final GetCaseRequestHandler INSTANCE = new GetCaseRequestHandler();
 
-	public static final SimpleAttributeDefinition caseNumber = new SimpleAttributeDefinitionBuilder(
+	public static final SimpleAttributeDefinition CASENUMBER = new SimpleAttributeDefinitionBuilder(
 			"caseNumber", ModelType.STRING).setAllowExpression(true)
 			.setXmlName("caseNumber")
 			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
 
-	public GetCaseRequestHandler() {
-		super(PathElement.pathElement(OPERATION_NAME), RedhatAccessPluginEapExtension
-				.getResourceDescriptionResolver(OPERATION_NAME), INSTANCE,
-				INSTANCE, OPERATION_NAME, caseNumber);
-	}
+	public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+            OPERATION_NAME,
+            RedhatAccessPluginEapExtension
+                    .getResourceDescriptionResolver())
+            .setParameters(getParameters(CASENUMBER)).build();
 
 	@Override
 	public void execute(OperationContext context, ModelNode operation)
@@ -81,7 +73,7 @@ public class GetCaseRequestHandler extends BaseRequestHandler implements
 					throw new OperationFailedException(e.getLocalizedMessage(),
 							e);
 				}
-				String caseNumberString = caseNumber.resolveModelAttribute(
+				String caseNumberString = CASENUMBER.resolveModelAttribute(
 						context, operation).asString();
 				Case cas = null;
 				try {
@@ -113,12 +105,6 @@ public class GetCaseRequestHandler extends BaseRequestHandler implements
 					if (cas.getOwner() != null) {
 						response.get("Owner").set(cas.getOwner());
 					}
-					// if(cas.getContactName() != null){
-					// caseNode.get("Red Hat Owner").set(cas.getCon);
-					// }
-					// if(cas.get!= null){
-					// caseNode.get("Account Name").set(cas.getOwner());
-					// }
 					if (cas.getCreatedDate() != null) {
 						response.get("Opened").set(
 								cas.getCreatedDate().getTime().toString());
@@ -134,42 +120,12 @@ public class GetCaseRequestHandler extends BaseRequestHandler implements
 					if (cas.getDescription() != null) {
 						response.get("Description").set(cas.getDescription());
 					}
-
-					// if (cas.getComments() != null) {
-					// int j = 0;
-					// for (Comment comment : cas.getComments()
-					// .getComment()) {
-					// if (comment.getId() != null) {
-					// ModelNode commentNode = caseNode.get(j)
-					// .set("Comment: " + comment.getId());
-					// if (comment.getCreatedBy() != null) {
-					// commentNode.get("Author").set(
-					// comment.getCreatedBy());
-					// }
-					// if (comment.getCreatedDate() != null) {
-					// commentNode.get("Date").set(
-					// comment.getCreatedDate()
-					// .toString());
-					// }
-					// if (comment.getText() != null) {
-					// commentNode.get("Text").set(
-					// comment.getText());
-					// }
-					// }
-					// }
-					// }
-
 				}
 
-				context.completeStep();
+				context.stepCompleted();
 			}
 		}, OperationContext.Stage.RUNTIME);
 
-		context.completeStep();
-	}
-
-	@Override
-	public ModelNode getModelDescription(Locale locale) {
-		return RedhatAccessPluginEapDescriptions.getRedhatAccessPluginEapRequestDescription(locale);
+		context.stepCompleted();
 	}
 }

@@ -25,94 +25,82 @@ package com.redhat.gss.extension.requesthandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.SimpleOperationDefinition;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import com.redhat.gss.extension.RedhatAccessPluginEapDescriptions;
 import com.redhat.gss.extension.RedhatAccessPluginEapExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Link;
-import com.redhat.gss.redhat_support_lib.parsers.Solution;
-
 import java.net.MalformedURLException;
 import java.util.List;
-import java.util.Locale;
-
 
 public class DiagnoseStringRequestHandler extends BaseRequestHandler implements
-		OperationStepHandler, DescriptionProvider {
+        OperationStepHandler {
 
-	public static final String OPERATION_NAME = "diagnose-string";
-	public static final DiagnoseStringRequestHandler INSTANCE = new DiagnoseStringRequestHandler();
+    public static final String OPERATION_NAME = "diagnose-string";
+    public static final SimpleAttributeDefinition DIAGNOSESTRING = new SimpleAttributeDefinitionBuilder(
+            "diagnose-string", ModelType.STRING).setAllowExpression(true)
+            .setXmlName("diagnose-string")
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+    public static final DiagnoseStringRequestHandler INSTANCE = new DiagnoseStringRequestHandler();
+    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+            OPERATION_NAME,
+            RedhatAccessPluginEapExtension
+                    .getResourceDescriptionResolver())
+            .setParameters(getParameters(DIAGNOSESTRING)).build();
 
-	public static final SimpleAttributeDefinition diagnoseString = new SimpleAttributeDefinitionBuilder(
-			"diagnose-string", ModelType.STRING).setAllowExpression(true)
-			.setXmlName("diagnose-string")
-			.setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+    @Override
+    public void execute(OperationContext context, ModelNode operation)
+            throws OperationFailedException {
+        // In MODEL stage, just validate the request. Unnecessary if the request
+        // has no parameters
+        validator.validate(operation);
+        context.addStep(new OperationStepHandler() {
 
-	public DiagnoseStringRequestHandler() {
-		super(PathElement.pathElement(OPERATION_NAME), RedhatAccessPluginEapExtension
-				.getResourceDescriptionResolver(OPERATION_NAME), INSTANCE,
-				INSTANCE, OPERATION_NAME, diagnoseString);
-	}
+            @Override
+            public void execute(OperationContext context, ModelNode operation)
+                    throws OperationFailedException {
+                API api = null;
+                try {
+                    api = getAPI(context, operation);
+                } catch (MalformedURLException e) {
+                    throw new OperationFailedException(e.getLocalizedMessage(),
+                            e);
+                }
+                String diagnoseStringString = DIAGNOSESTRING
+                        .resolveModelAttribute(context, operation).asString();
+                List<Link> links = null;
+                try {
+                    links = api.getProblems().diagnoseStr(diagnoseStringString);
+                } catch (Exception e) {
+                    throw new OperationFailedException(e.getLocalizedMessage(),
+                            e);
+                }
+                ModelNode response = context.getResult();
+                int i = 0;
+                for (Link link : links) {
+                    if (link.getUri() != null) {
+                        String[] splitUri = link.getUri().split("/");
+                        String id = splitUri[splitUri.length - 1];
+                        ModelNode solutionNode = response.get(i);
 
-	@Override
-	public void execute(OperationContext context, ModelNode operation)
-			throws OperationFailedException {
-		// In MODEL stage, just validate the request. Unnecessary if the request
-		// has no parameters
-		validator.validate(operation);
-		context.addStep(new OperationStepHandler() {
+                        solutionNode.get("ID").set(id);
 
-			@Override
-			public void execute(OperationContext context, ModelNode operation)
-					throws OperationFailedException {
-				API api = null;
-				try {
-					api = getAPI(context, operation);
-				} catch (MalformedURLException e) {
-					throw new OperationFailedException(e.getLocalizedMessage(),
-							e);
-				}
-				String diagnoseStringString = diagnoseString.resolveModelAttribute(
-						context, operation).asString();
-				List<Link> links = null;
-				try {
-					links = api.getProblems().diagnoseStr(diagnoseStringString);
-				} catch (Exception e) {
-					throw new OperationFailedException(e.getLocalizedMessage(),
-							e);
-				}
-				ModelNode response = context.getResult();
-				int i = 0;
-				for (Link link : links) {
-					if (link.getUri() != null) {
-						String[] splitUri = link.getUri().split("/");
-						String id = splitUri[splitUri.length -1];
-						ModelNode solutionNode = response.get(i);
+                        if (link.getValue() != null) {
+                            solutionNode.get("Title").set(link.getValue());
+                        }
+                        solutionNode.get("URI").set(link.getUri());
+                        i++;
+                    }
+                }
+                context.stepCompleted();
+            }
+        }, OperationContext.Stage.RUNTIME);
 
-						solutionNode.get("ID").set(id);
-
-						if (link.getValue() != null) {
-							solutionNode.get("Title").set(link.getValue());
-						}
-						solutionNode.get("URI").set(link.getUri());
-						i++;
-					}
-				}
-				context.completeStep();
-			}
-		}, OperationContext.Stage.RUNTIME);
-
-		context.completeStep();
-	}
-
-	@Override
-	public ModelNode getModelDescription(Locale locale) {
-		return RedhatAccessPluginEapDescriptions.getRedhatAccessPluginEapRequestDescription(locale);
-	}
+        context.stepCompleted();
+    }
 }
