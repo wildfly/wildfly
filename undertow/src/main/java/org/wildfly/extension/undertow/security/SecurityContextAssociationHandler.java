@@ -36,6 +36,8 @@ import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
 import org.wildfly.extension.undertow.UndertowLogger;
 
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Map;
 
 import javax.servlet.ServletRequest;
@@ -44,7 +46,13 @@ public class SecurityContextAssociationHandler implements HttpHandler {
 
     private final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap;
     private final HttpHandler next;
-    private static final ThreadLocal<ServletRequest> activeRequest = new ThreadLocal<ServletRequest>();
+
+    private static final PrivilegedAction<ServletRequestContext> CURRENT_CONTEXT = new PrivilegedAction<ServletRequestContext>() {
+        @Override
+        public ServletRequestContext run() {
+            return ServletRequestContext.current();
+        }
+    };
 
     public SecurityContextAssociationHandler(final Map<String, RunAsIdentityMetaData> runAsIdentityMetaDataMap, final HttpHandler next) {
         this.runAsIdentityMetaDataMap = runAsIdentityMetaDataMap;
@@ -53,8 +61,6 @@ public class SecurityContextAssociationHandler implements HttpHandler {
 
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
-        final ServletRequestContext requestContext = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
-        activeRequest.set(requestContext.getServletRequest());
         SecurityContext sc = exchange.getAttachment(UndertowSecurityAttachments.SECURITY_CONTEXT_ATTACHMENT);
         RunAsIdentityMetaData identity = null;
         RunAs old = null;
@@ -74,7 +80,6 @@ public class SecurityContextAssociationHandler implements HttpHandler {
             if (identity != null) {
                 SecurityActions.setRunAsIdentity(old, sc);
             }
-            activeRequest.set(null);
         }
     }
 
@@ -89,6 +94,15 @@ public class SecurityContextAssociationHandler implements HttpHandler {
     }
 
     public static ServletRequest getActiveRequest() {
-        return activeRequest.get();
+        ServletRequestContext current;
+        if(System.getSecurityManager() == null) {
+            current = ServletRequestContext.current();
+        } else {
+            current = AccessController.doPrivileged(CURRENT_CONTEXT);
+        }
+        if(current == null) {
+            return null;
+        }
+        return current.getServletRequest();
     }
 }
