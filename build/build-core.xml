@@ -69,14 +69,19 @@
         </chmod>
     </target>
 
-    <target name="copy-standalone" description="Copy all standard configurations">
+    <target name="create-configuration" description="Copy all standard configurations">
         <generate-server-config
                 paramTemplateFile="configuration/standalone/template.xml"
                 paramSubsystemsFile="configuration/standalone/subsystems-core.xml"
                 paramOutputFile="${generated.configs.standalone}/standalone.xml"/>
+        <generate-domain-config
+                   paramTemplateFile="configuration/domain/template-core.xml"
+                   paramSubsystemsFile="configuration/domain/subsystems-core.xml"
+                   paramOutputFile="${generated.configs.domain}/domain.xml"/>
         <copy todir="${output.dir}">
             <fileset dir="${generated.configs}">
                 <include name="standalone/configuration/**.xml"/>
+                <include name="domain/configuration/**.xml"/>
             </fileset>
         </copy>
     </target>
@@ -199,9 +204,12 @@
             <maven-resource group="org.wildfly" artifact="wildfly-naming"/>
         </module-def>
 
-
         <module-def name="org.jboss.as.remoting">
             <maven-resource group="org.wildfly" artifact="wildfly-remoting"/>
+        </module-def>
+
+        <module-def name="org.jboss.remoting-jmx">
+            <maven-resource group="org.jboss.remotingjmx" artifact="remoting-jmx"/>
         </module-def>
 
         <module-def name="org.jboss.as.threads">
@@ -381,5 +389,5 @@
         <delete file="maven-ant-tasks.jar"/>
     </target>
 
-    <target name="all" depends="base, copy-standalone, modules"/>
+    <target name="all" depends="base, create-configuration, modules"/>
 </project>
