@@ -26,13 +26,11 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URL;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.directory.api.ldap.model.entry.DefaultEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifEntry;
 import org.apache.directory.api.ldap.model.ldif.LdifReader;
@@ -62,7 +60,6 @@ import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
-import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
@@ -112,7 +109,6 @@ public class LdapLoginModuleTestCase {
      * Creates {@link WebArchive} with the {@link OKServlet}.
      *
      * @return
-     * @throws SQLException
      */
     @Deployment(name = SECURITY_DOMAIN_LDAP)
     public static WebArchive deploymentLdap() {
@@ -123,7 +119,6 @@ public class LdapLoginModuleTestCase {
      * Creates {@link WebArchive} with the {@link OKServlet}.
      *
      * @return
-     * @throws SQLException
      */
     @Deployment(name = SECURITY_DOMAIN_LDAPS)
     public static WebArchive deploymentLdaps() {
@@ -231,59 +226,76 @@ public class LdapLoginModuleTestCase {
         protected SecurityDomain[] getSecurityDomains() throws Exception {
             Map<String, String> moduleOptions = new HashMap<String, String>();
 
-            //InitialContextFactory implementation class name. This defaults to the Sun LDAP provider implementation com.sun.jndi.ldap.LdapCtxFactory.
+            // InitialContextFactory implementation class name. This defaults to the Sun LDAP provider implementation
+            // com.sun.jndi.ldap.LdapCtxFactory.
             moduleOptions.put("java.naming.factory.initial", INITIAL_CONTEXT_FACTORY);
 
-            //LDAP URL for the LDAP server.
+            // LDAP URL for the LDAP server.
             moduleOptions.put("java.naming.provider.url", "ldap://" + Utils.getSecondaryTestAddress(managementClient) + ":"
                     + LDAP_PORT);
 
-            //Security level to use. This defaults to simple.
+            // Security level to use. This defaults to simple.
             moduleOptions.put("java.naming.security.authentication", SECURITY_AUTHENTICATION);
 
-            //Transport protocol to use for secure access, such as, SSL.
-            //            moduleOptions.put("java.naming.security.protocol","");
+            // Transport protocol to use for secure access, such as, SSL.
+            // moduleOptions.put("java.naming.security.protocol","");
 
-            //Principal for authenticating the caller to the service. This is built from other properties as described below.
+            // Principal for authenticating the caller to the service. This is built from other properties as described below.
             moduleOptions.put("java.naming.security.principal", SECURITY_PRINCIPAL);
 
-            //Authentication scheme to use. For example, hashed password, clear-text password, key, certificate, and so on.
+            // Authentication scheme to use. For example, hashed password, clear-text password, key, certificate, and so on.
             moduleOptions.put("java.naming.security.credentials", SECURITY_CREDENTIALS);
 
-            //Prefix added to the username to form the user distinguished name. See principalDNSuffix for more info.
+            // Prefix added to the username to form the user distinguished name. See principalDNSuffix for more info.
             moduleOptions.put("principalDNPrefix", "uid=");
 
-            //Suffix added to the username when forming the user distinguished name. This is useful if you prompt a user for a username and you don't want the user to have to enter the fully distinguished name. Using this property and principalDNSuffix the userDN will be formed as principalDNPrefix + username + principalDNSuffix
+            // Suffix added to the username when forming the user distinguished name. This is useful if you prompt a user for a
+            // username and you don't want the user to have to enter the fully distinguished name. Using this property and
+            // principalDNSuffix the userDN will be formed as principalDNPrefix + username + principalDNSuffix
             moduleOptions.put("principalDNSuffix", ",ou=People,dc=jboss,dc=org");
 
-            //Value that indicates the credential should be obtained as an opaque Object using the org.jboss.security.auth.callback.ObjectCallback type of Callback rather than as a char[] password using a JAAS PasswordCallback. This allows for passing non-char[] credential information to the LDAP server. The available values are true and false.
-            //            moduleOptions.put("useObjectCredential","");
+            // Value that indicates the credential should be obtained as an opaque Object using the
+            // org.jboss.security.auth.callback.ObjectCallback type of Callback rather than as a char[] password using a JAAS
+            // PasswordCallback. This allows for passing non-char[] credential information to the LDAP server. The available
+            // values are true and false.
+            // moduleOptions.put("useObjectCredential","");
 
-            //Fixed, distinguished name to the context to search for user roles.
+            // Fixed, distinguished name to the context to search for user roles.
             moduleOptions.put("rolesCtxDN", "ou=Roles,dc=jboss,dc=org");
 
-            //Name of an attribute in the user object that contains the distinguished name to the context to search for user roles. This differs from rolesCtxDN in that the context to search for a user's roles can be unique for each user.
-            //            moduleOptions.put("userRolesCtxDNAttributeName","");
+            // Name of an attribute in the user object that contains the distinguished name to the context to search for user
+            // roles. This differs from rolesCtxDN in that the context to search for a user's roles can be unique for each user.
+            // moduleOptions.put("userRolesCtxDNAttributeName","");
 
-            //Name of the attribute containing the user roles. If not specified, this defaults to roles.
-            //            moduleOptions.put("roleAttributeID","");
+            // Name of the attribute containing the user roles. If not specified, this defaults to roles.
+            // moduleOptions.put("roleAttributeID","");
 
-            // Flag indicating whether the roleAttributeID contains the fully distinguished name of a role object, or the role name. The role name is taken from the value of the roleNameAttributeId attribute of the context name by the distinguished name.
-            //If true, the role attribute represents the distinguished name of a role object. If false, the role name is taken from the value of roleAttributeID. The default is false.
-            //Note: In certain directory schemas (e.g., MS ActiveDirectory), role attributes in the user object are stored as DNs to role objects instead of simple names. For implementations that use this schema type, roleAttributeIsDN must be set to true.
+            // Flag indicating whether the roleAttributeID contains the fully distinguished name of a role object, or the role
+            // name. The role name is taken from the value of the roleNameAttributeId attribute of the context name by the
+            // distinguished name.
+            // If true, the role attribute represents the distinguished name of a role object. If false, the role name is taken
+            // from the value of roleAttributeID. The default is false.
+            // Note: In certain directory schemas (e.g., MS ActiveDirectory), role attributes in the user object are stored as
+            // DNs to role objects instead of simple names. For implementations that use this schema type, roleAttributeIsDN
+            // must be set to true.
             moduleOptions.put("roleAttributeIsDN", "false");
 
             // Name of the attribute containing the user roles. If not specified, this defaults to roles.
             moduleOptions.put("roleAttributeID", "cn");
 
-            //Name of the attribute in the object containing the user roles that corresponds to the userid. This is used to locate the user roles. If not specified this defaults to uid.
+            // Name of the attribute in the object containing the user roles that corresponds to the userid. This is used to
+            // locate the user roles. If not specified this defaults to uid.
             moduleOptions.put("uidAttributeID", "member");
 
-            //Flag that specifies whether the search for user roles should match on the user's fully distinguished name. If true, the full userDN is used as the match value. If false, only the username is used as the match value against the uidAttributeName attribute. The default value is false.
+            // Flag that specifies whether the search for user roles should match on the user's fully distinguished name. If
+            // true, the full userDN is used as the match value. If false, only the username is used as the match value against
+            // the uidAttributeName attribute. The default value is false.
             moduleOptions.put("matchOnUserDN", "true");
 
-            //A flag indicating if empty (length 0) passwords should be passed to the LDAP server. An empty password is treated as an anonymous login by some LDAP servers and this may not be a desirable feature. To reject empty passwords, set this to false. If set to true, the LDAP server will validate the empty password. The default is true.
-            //            moduleOptions.put("allowEmptyPasswords","");
+            // A flag indicating if empty (length 0) passwords should be passed to the LDAP server. An empty password is treated
+            // as an anonymous login by some LDAP servers and this may not be a desirable feature. To reject empty passwords,
+            // set this to false. If set to true, the LDAP server will validate the empty password. The default is true.
+            // moduleOptions.put("allowEmptyPasswords","");
 
             final SecurityDomain sdLdap = new SecurityDomain.Builder()
                     .name(SECURITY_DOMAIN_LDAP)
@@ -371,23 +383,9 @@ public class LdapLoginModuleTestCase {
             IOUtils.copy(getClass().getResourceAsStream(KEYSTORE_FILENAME), fos);
             fos.close();
             createLdapServer.setKeyStore(KEYSTORE_FILE.getAbsolutePath());
-            fixTransportAddress(createLdapServer, StringUtils.strip(Utils.getSecondaryTestAddress(managementClient), "[]"));
+            Utils.fixApacheDSTransportAddress(createLdapServer, Utils.getSecondaryTestAddress(managementClient, false));
             ldapServer = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService);
             ldapServer.start();
-        }
-
-        /**
-         * Fixes bind address in the CreateTransport annotation.
-         *
-         * @param createLdapServer
-         */
-        private void fixTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
-            final CreateTransport[] createTransports = createLdapServer.transports();
-            for (int i = 0; i < createTransports.length; i++) {
-                final ManagedCreateTransport mgCreateTransport = new ManagedCreateTransport(createTransports[i]);
-                mgCreateTransport.setAddress(address);
-                createTransports[i] = mgCreateTransport;
-            }
         }
 
         /**

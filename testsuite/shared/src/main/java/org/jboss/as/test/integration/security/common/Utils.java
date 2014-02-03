@@ -48,6 +48,7 @@ import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpRequest;
@@ -827,5 +828,21 @@ public class Utils {
      */
     public static String stripSquareBrackets(final String str) {
         return StringUtils.strip(str, "[]");
+    }
+
+    /**
+     * Fixes/replaces LDAP bind address in the CreateTransport annotation of ApacheDS.
+     *
+     * @param createLdapServer
+     * @param address
+     */
+    public static void fixApacheDSTransportAddress(ManagedCreateLdapServer createLdapServer, String address) {
+        final CreateTransport[] createTransports = createLdapServer.transports();
+        for (int i = 0; i < createTransports.length; i++) {
+            final ManagedCreateTransport mgCreateTransport = new ManagedCreateTransport(createTransports[i]);
+            // localhost is a default used in original CreateTransport annotation. We use it as a fallback.
+            mgCreateTransport.setAddress(address != null ? address : "localhost");
+            createTransports[i] = mgCreateTransport;
+        }
     }
 }
