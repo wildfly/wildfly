@@ -1,5 +1,12 @@
 <subsystem xmlns="urn:jboss:domain:remoting:2.0">
-    <endpoint />
+    <worker-thread-pool
+            read-threads="${worker.read.threads:5}"
+            task-core-threads="${worker.task.core.threads:6}"
+            task-keepalive="${worker.task.keepalive:7}"
+            task-limit="${worker.task.limit:8}"
+            task-max-threads="${worker.task.max.threads:9}"
+            write-threads="${worker.write.threads:10}"
+            />
     <connector name="remoting-connector" socket-binding="remoting">
       <properties>
          <property name="c1" value="${connector.prop:connector one}"/>

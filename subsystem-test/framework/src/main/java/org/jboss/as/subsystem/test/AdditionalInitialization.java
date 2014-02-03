@@ -19,6 +19,13 @@ import org.jboss.msc.service.ServiceTarget;
 public class AdditionalInitialization extends AdditionalParsers {
     public static final AdditionalInitialization MANAGEMENT = new ManagementAdditionalInitialization();
 
+    public static final AdditionalInitialization ADMIN_ONLY_HC = new ManagementAdditionalInitialization() {
+        @Override
+        protected ProcessType getProcessType() {
+            return ProcessType.HOST_CONTROLLER;
+        }
+    };
+
     public static class ManagementAdditionalInitialization extends AdditionalInitialization implements Serializable {
         private static final long serialVersionUID = -509444465514822866L;
 

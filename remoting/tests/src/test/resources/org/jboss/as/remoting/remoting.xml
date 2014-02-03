@@ -1,5 +1,24 @@
 <subsystem xmlns="urn:jboss:domain:remoting:2.0">
-    <endpoint worker="default-remoting" />
+    <endpoint
+        worker="default-remoting"
+        send-buffer-size="8191"
+        receive-buffer-size="8191"
+        buffer-region-size="1024"
+        transmit-window-size="131071"
+        receive-window-size="131071"
+        max-outbound-channels="41"
+        max-inbound-channels="41"
+        authorize-id="foo"
+        auth-realm="ApplicationRealm"
+        authentication-retries="4"
+        max-outbound-messages="65534"
+        max-inbound-messages="79"
+        heartbeat-interval="20000"
+        max-inbound-message-size="1000000"
+        max-outbound-message-size="1000000"
+        server-name="test"
+        sasl-protocol="bar"
+    />
     <connector name="remoting-connector" socket-binding="remoting">
         <authentication-provider name="blah"/>
         <properties>

@@ -92,7 +92,6 @@ class RemotingSubsystem11Parser extends RemotingSubsystem10Parser implements XML
                 }
             }
         }
-        list.add(Util.createAddOperation(address.append(RemotingEndpointResource.INSTANCE.getPathElement())));
     }
 
     void parseConnector(final XMLExtendedStreamReader reader, final ModelNode address, final List<ModelNode> list) throws XMLStreamException {

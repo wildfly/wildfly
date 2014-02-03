@@ -104,6 +104,10 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
         standardSubsystemTest(configId, configIdResolvedModel, true);
     }
 
+    protected KernelServices standardSubsystemTest(final String configId, final String configIdResolvedModel, boolean compareXml) throws Exception {
+        return standardSubsystemTest(configId, configIdResolvedModel, compareXml, createAdditionalInitialization());
+    }
+
 
     /**
      * Tests the ability to create a model from an xml configuration, marshal the model back to xml,
@@ -122,12 +126,12 @@ public abstract class AbstractSubsystemBaseTest extends AbstractSubsystemTest {
      * @param compareXml if {@code true} a comparison of xml output to original input is performed. This can be
      *                   set to {@code false} if the original input is from an earlier xsd and the current
      *                   schema has a different output
+     * @param additionalInit service container and model initialization
      *
      * @throws Exception
      */
-    protected KernelServices standardSubsystemTest(final String configId, final String configIdResolvedModel, boolean compareXml) throws Exception {
-        final AdditionalInitialization additionalInit = createAdditionalInitialization();
-
+    protected KernelServices standardSubsystemTest(final String configId, final String configIdResolvedModel,
+                                                   boolean compareXml, final AdditionalInitialization additionalInit) throws Exception {
 
         // Parse the subsystem xml and install into the first controller
         final String subsystemXml = configId == null ? getSubsystemXml() : getSubsystemXml(configId);

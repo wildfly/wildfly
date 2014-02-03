@@ -44,8 +44,22 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="worker-thread-pool" type="workerThreadsType" minOccurs="0"/>
-            <xs:element name="endpoint" type="endpointType" minOccurs="1" maxOccurs="1"/>
+            <xs:choice minOccurs="0" maxOccurs="1">
+                <xs:element name="worker-thread-pool" type="workerThreadsType">
+                    <xs:annotation>
+                        <xs:documentation>
+                            <![CDATA[
+                   Deprecated and replaced with the 'endpoint' configuration that can reference a worker from the IO subsystem.
+                   This is only supported for use in managed domain profiles whose servers are all running on
+                   previous versions that do not support the 'endpoint' configuration. Use in a server
+                   running a version after the introduction of the 'endpoint' configuration will result
+                   in an error.
+               ]]>
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:element>
+                <xs:element name="endpoint" type="endpointType"></xs:element>
+            </xs:choice>
             <xs:element name="connector" type="connector" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="http-connector" type="http-connector" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="outbound-connections" minOccurs="0" type="outbound-connectionsType" />
@@ -56,10 +70,9 @@
            <xs:annotation>
                <xs:documentation>
                    <![CDATA[
-                   The configuration of the worker thread pool.
+                   Deprecated configuration of the worker thread pool.
 
-                   Configuration of worker thread pool was deprecated and replaced with endpoint configuration that can reference worker from IO subsystem.
-                       This is only here to preserve backward compatibility
+                   Only supported for legacy servers in a managed domain.
                ]]>
                </xs:documentation>
            </xs:annotation>
@@ -76,14 +89,19 @@
         <xs:annotation>
             <xs:documentation>
             <![CDATA[
-                Configures endpoint
-
-
+                Configures the remoting endpoint.
             ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="worker" type="xs:string" default="default"/>
-
+        <xs:attribute name="worker" type="xs:string" default="default">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                The name of the IO subsystem worker the endpoint should use.
+            ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
 
         <xs:attribute name="authorize-id" type="xs:string">
             <xs:annotation>

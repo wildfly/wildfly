@@ -113,4 +113,7 @@ public interface RemotingMessages {
 
     @Message(id = 17132, value = "Worker configuration is no longer used, please use endpoint worker configuration")
     OperationFailedException workerConfigurationIgnored();
+
+    @Message(id = 17133, value = "Only one of '%s' configuration or '%s' configuration is allowed")
+    String workerThreadsEndpointConfigurationChoiceRequired(String workerThreads, String endpoint);
 }

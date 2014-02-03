@@ -23,13 +23,13 @@ package org.jboss.as.remoting;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.remoting.SaslPolicyResource.FORWARD_SECRECY;
@@ -42,7 +42,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,17 +50,15 @@ import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
-import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
-import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
@@ -70,7 +67,7 @@ import org.junit.Test;
 /**
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2012 Red Hat, inc
  */
-public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBaseTest {
+public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemTest {
 
     public RemotingSubsystemTransformersTestCase() {
         super(RemotingExtension.SUBSYSTEM_NAME, new RemotingExtension());
@@ -99,7 +96,7 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
 
     private void testExpressionsAreRejectedByVersion_1_1(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("remoting-with-expressions.xml");
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC);
 
         // Add legacy subsystems
         ModelVersion version_1_1 = ModelVersion.create(1, 1);
@@ -183,11 +180,11 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
 
     private void testNonRemotingProtocolRejectedByVersion1_2(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("remoting-with-expressions.xml");
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC);
 
         // Add legacy subsystems
         ModelVersion version_1_1 = ModelVersion.create(1, 2);
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, version_1_1)
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC, controllerVersion, version_1_1)
                 .addMavenResourceURL("org.jboss.as:jboss-as-remoting:" + controllerVersion.getMavenGavVersion());
 
         KernelServices mainServices = builder.build();
@@ -225,12 +222,12 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
     }
 
     private void testTransformers_1_1(ModelTestControllerVersion controllerVersion) throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC)
                 .setSubsystemXmlResource("remoting-without-expressions.xml");
         ModelVersion oldVersion = ModelVersion.create(1, 1);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, oldVersion)
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC, controllerVersion, oldVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-remoting:" + controllerVersion.getMavenGavVersion())
                 .skipReverseControllerCheck();
                 //.configureReverseControllerCheck(createAdditionalInitialization(), null);
@@ -241,7 +238,7 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         assertNotNull(legacyServices);
         assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, oldVersion);
+        checkSubsystemModelTransformation(mainServices, oldVersion, getAS7_6077Fixer(), false);
         checkRejectWorkerThreadAttributes(mainServices, oldVersion);
         checkRejectSASLAttribute(mainServices, oldVersion, CommonAttributes.REUSE_SESSION, "${reuse.session:true}");
         checkRejectSASLAttribute(mainServices, oldVersion, CommonAttributes.SERVER_AUTH, "${server.auth:true}");
@@ -254,6 +251,23 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         checkRejectOutboundConnectionProperty(mainServices, oldVersion, CommonAttributes.OUTBOUND_CONNECTION, "generic-conn1");
         checkRejectOutboundConnectionProtocolNotRemote(mainServices, oldVersion, CommonAttributes.REMOTE_OUTBOUND_CONNECTION, "remote-conn1");
         checkRejectHttpConnector(mainServices, oldVersion);
+        checkRejectEndpointConfiguration(mainServices, oldVersion);
+    }
+
+    private ModelFixer getAS7_6077Fixer() {
+        return new ModelFixer() {
+            @Override
+            public ModelNode fixModel(ModelNode modelNode) {
+                for (AttributeDefinition ad : RemotingSubsystemRootResource.ATTRIBUTES) {
+                    if (modelNode.hasDefined(ad.getName())) {
+                        if (modelNode.get(ad.getName()).equals(ad.getDefaultValue())) {
+                            modelNode.get(ad.getName()).set(new ModelNode());
+                        }
+                    }
+                }
+                return modelNode;
+            }
+        };
     }
 
     @Test
@@ -289,9 +303,10 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         assertNotNull(legacyServices);
         assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, oldVersion);
+        checkSubsystemModelTransformation(mainServices, oldVersion, null, false);
         checkRejectOutboundConnectionProtocolNotRemote(mainServices, oldVersion, CommonAttributes.REMOTE_OUTBOUND_CONNECTION, "remote-conn1");
         checkRejectHttpConnector(mainServices, oldVersion);
+        checkRejectEndpointConfiguration(mainServices, oldVersion);
     }
 
     private void checkRejectOutboundConnectionProperty(KernelServices mainServices, ModelVersion version, String type, String name) throws OperationFailedException {
@@ -435,34 +450,43 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
         checkReject(operation, mainServices, version);
     }
 
+    private void checkRejectEndpointConfiguration(KernelServices mainServices, ModelVersion version) throws OperationFailedException {
+
+        // First clean out any worker-thread-pool stuff from earlier testing
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(UNDEFINE_ATTRIBUTE_OPERATION);
+        ModelNode address = operation.get(OP_ADDR);
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        for (AttributeDefinition ad : RemotingSubsystemRootResource.ATTRIBUTES) {
+            operation.get(NAME).set(ad.getName());
+            ModelNode mainResult = mainServices.executeOperation(operation);
+            assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
+        }
+
+        operation = new ModelNode();
+        operation.get(OP).set(ADD);
+        address = new ModelNode();
+        address.add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
+        address.add(RemotingEndpointResource.ENDPOINT_PATH.getKey(), RemotingEndpointResource.ENDPOINT_PATH.getValue());
+        operation.get(OP_ADDR).set(address);
+        for (AttributeDefinition ad : RemotingEndpointResource.ATTRIBUTES) {
+            ModelNode dflt = ad.getDefaultValue();
+            if (dflt != null) {
+                operation.get(ad.getName()).set(dflt);
+            }
+        }
+
+        checkReject(operation, mainServices, version);
+    }
+
     private void checkReject(ModelNode operation, KernelServices mainServices, ModelVersion version) throws OperationFailedException {
 
         ModelNode mainResult = mainServices.executeOperation(operation);
         assertEquals(mainResult.toJSONString(true), SUCCESS, mainResult.get(OUTCOME).asString());
 
-        ModelNode successResult = new ModelNode();
-        successResult.get(OUTCOME).set(SUCCESS);
-        successResult.protect();
-        ModelNode failedResult = new ModelNode();
-        failedResult.get(OUTCOME).set(FAILED);
-        failedResult.protect();
-        ModelNode ignoreResult = new ModelNode();
-        ignoreResult.get(OUTCOME).set(IGNORED);
-        ignoreResult.protect();
-
         final OperationTransformer.TransformedOperation op = mainServices.transformOperation(version, operation);
         final ModelNode result = mainServices.executeOperation(version, op);
-        assertEquals("should reject the expression", FAILED, result.get(OUTCOME).asString());
-    }
-
-    @Override
-    protected String getSubsystemXml() throws IOException {
-        return readResource("remoting-with-expressions.xml");
-    }
-
-    @Override
-    protected String getSubsystemXml(String resource) throws IOException {
-        return readResource(resource);
+        assertEquals("should reject the operation", FAILED, result.get(OUTCOME).asString());
     }
 
     private List<AttributesPathAddressConfig<?>> toList(AttributesPathAddressConfig<?>...configs){
@@ -494,10 +518,5 @@ public class RemotingSubsystemTransformersTestCase extends AbstractSubsystemBase
             return new ModelNode(Protocol.REMOTE.toString());
         }
 
-    }
-
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
     }
 }
