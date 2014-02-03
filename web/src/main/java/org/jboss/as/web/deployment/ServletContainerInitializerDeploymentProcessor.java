@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2010, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,12 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.jboss.as.web.deployment;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,7 +49,6 @@ import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.web.WebLogger;
-import org.jboss.as.web.WebMessages;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -58,6 +59,8 @@ import org.jboss.jandex.MethodParameterInfo;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.vfs.VirtualFile;
+
+import static org.jboss.as.web.WebMessages.MESSAGES;
 
 /**
  * SCI deployment processor.
@@ -82,7 +85,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
         assert warMetaData != null;
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            throw new DeploymentUnitProcessingException(WebMessages.MESSAGES.failedToResolveModule(deploymentUnit));
+            throw new DeploymentUnitProcessingException(MESSAGES.failedToResolveModule(deploymentUnit));
         }
         final ClassLoader classLoader = module.getClassLoader();
         ScisMetaData scisMetaData = deploymentUnit.getAttachment(ScisMetaData.ATTACHMENT_KEY);
@@ -110,7 +113,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 }
             } catch (ModuleLoadException e) {
                 if (dependency.isOptional() == false) {
-                    throw WebMessages.MESSAGES.errorLoadingSCIFromModule(dependency.getIdentifier(), e);
+                    throw MESSAGES.errorLoadingSCIFromModule(dependency.getIdentifier(), e);
                 }
             }
         }
@@ -121,10 +124,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
             for (String jar : order) {
                 VirtualFile sci = localScis.get(jar);
                 if (sci != null) {
-                    ServletContainerInitializer service = loadSci(classLoader, sci, jar, true);
-                    if (service != null) {
-                        scis.add(service);
-                    }
+                    scis.addAll(loadSci(classLoader, sci, jar, true));
                 }
             }
         }
@@ -151,7 +151,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
 
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (index == null) {
-            throw WebMessages.MESSAGES.unableToResolveAnnotationIndex(deploymentUnit);
+            throw MESSAGES.unableToResolveAnnotationIndex(deploymentUnit);
         }
 
         // Find classes which extend, implement, or are annotated by HandlesTypes
@@ -167,28 +167,45 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
     }
 
     public void undeploy(final DeploymentUnit context) {
+        context.removeAttachment(ScisMetaData.ATTACHMENT_KEY);
     }
 
-    private ServletContainerInitializer loadSci(ClassLoader classLoader, VirtualFile sci, String jar, boolean error) throws DeploymentUnitProcessingException {
-        ServletContainerInitializer service = null;
+    private List<ServletContainerInitializer> loadSci(ClassLoader classLoader, VirtualFile sci, String jar, boolean error) throws DeploymentUnitProcessingException {
+        final List<ServletContainerInitializer> scis = new ArrayList<ServletContainerInitializer>();
         InputStream is = null;
         try {
             // Get the ServletContainerInitializer class name
             is = sci.openStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            String servletContainerInitializerClassName = reader.readLine();
-            int pos = servletContainerInitializerClassName.indexOf('#');
-            if (pos > 0) {
-                servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
+            String servletContainerInitializerClassName = reader.readLine().trim();
+            while (servletContainerInitializerClassName != null) {
+                try {
+                    if(!servletContainerInitializerClassName.isEmpty()) {
+                        int pos = servletContainerInitializerClassName.indexOf('#');
+                        if (pos > 0) {
+                            servletContainerInitializerClassName = servletContainerInitializerClassName.substring(0, pos);
+                        }
+                        servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
+                        // Instantiate the ServletContainerInitializer
+                        ServletContainerInitializer service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
+                        if (service != null) {
+                            scis.add(service);
+                        }
+                    }
+                    servletContainerInitializerClassName = reader.readLine();
+                } catch (Exception e) {
+                    if (error) {
+                        throw MESSAGES.errorProcessingSCI(jar, e);
+                    } else {
+                        WebLogger.ROOT_LOGGER.skippedSCI(jar, e);
+                    }
+                }
             }
-            servletContainerInitializerClassName = servletContainerInitializerClassName.trim();
-            // Instantiate the ServletContainerInitializer
-            service = (ServletContainerInitializer) classLoader.loadClass(servletContainerInitializerClassName).newInstance();
         } catch (Exception e) {
             if (error) {
-                throw WebMessages.MESSAGES.errorProcessingSCI(jar, e);
+                throw MESSAGES.errorProcessingSCI(jar, e);
             } else {
-                WebLogger.WEB_LOGGER.skippedSCI(jar, e);
+                WebLogger.ROOT_LOGGER.skippedSCI(jar, e);
             }
         } finally {
             try {
@@ -198,7 +215,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 // Ignore
             }
         }
-        return service;
+        return scis;
     }
 
     private Set<ClassInfo> processHandlesType(DotName typeName, Class<?> type, CompositeIndex index) throws DeploymentUnitProcessingException {
@@ -232,7 +249,7 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                 type = classLoader.loadClass(classInfo.name().toString());
                 classes.add(type);
             } catch (Exception e) {
-                WebLogger.WEB_LOGGER.cannotLoadDesignatedHandleTypes(classInfo, e);
+                WebLogger.ROOT_LOGGER.cannotLoadDesignatedHandleTypes(classInfo, e);
             }
         }
         return classes;
