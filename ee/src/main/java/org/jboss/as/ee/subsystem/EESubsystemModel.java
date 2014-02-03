@@ -30,5 +30,5 @@ public interface EESubsystemModel {
     String EAR_SUBDEPLOYMENTS_ISOLATED = "ear-subdeployments-isolated";
     String SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT = "spec-descriptor-property-replacement";
     String JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT = "jboss-descriptor-property-replacement";
-    String EJB_ANNOTATION_PROPERTY_REPLACEMENT = "ejb-annotation-property-replacement";
+    String ANNOTATION_PROPERTY_REPLACEMENT = "annotation-property-replacement";
 }

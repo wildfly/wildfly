@@ -92,7 +92,7 @@ public class EeWriteAttributeHandler extends AbstractWriteAttributeHandler<Void>
         } else if (EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getName().equals(attributeName)) {
             boolean enabled = newValue.asBoolean();
             jbossDescriptorPropertyReplacementProcessor.setDescriptorPropertyReplacement(enabled);
-        } else if(EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT.getName().equals(attributeName)){
+        } else if(EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT.getName().equals(attributeName)){
             boolean enabled = newValue.asBoolean();
             annotationPropertyReplacementProcessor.setDescriptorPropertyReplacement(enabled);
         }

@@ -104,7 +104,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
             if (!assertMDBClassValidity(beanClassInfo)) {
                 continue;
             }
-            final boolean replacement = deploymentUnit.getAttachment(Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
+            final boolean replacement = deploymentUnit.getAttachment(Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
             final String ejbName = beanClassInfo.name().local();
             final AnnotationValue nameValue = messageBeanAnnotation.value("name");
             final String beanName = nameValue == null || nameValue.asString().isEmpty() ? ejbName : (replacement ? PropertiesValueResolver.replaceProperties(nameValue.asString()) : nameValue.asString());

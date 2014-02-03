@@ -52,6 +52,7 @@ class EESubsystemXmlPersister implements XMLStreamConstants, XMLElementWriter<Su
         EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
+        EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT.marshallAsElement(eeSubSystem, writer);
         writer.writeEndElement();
 
     }

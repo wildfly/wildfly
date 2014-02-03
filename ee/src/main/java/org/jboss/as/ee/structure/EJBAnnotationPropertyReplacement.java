@@ -33,7 +33,7 @@ import org.jboss.metadata.property.PropertyResolver;
  */
 public class EJBAnnotationPropertyReplacement {
     public static PropertyReplacer propertyReplacer(final DeploymentUnit deploymentUnit) {
-        Boolean replacement = deploymentUnit.getAttachment(Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
+        Boolean replacement = deploymentUnit.getAttachment(Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
         if (replacement == null || replacement) {
             final PropertyResolver propertyResolver = deploymentUnit
                     .getAttachment(org.jboss.as.ee.metadata.property.Attachments.FINAL_PROPERTY_RESOLVER);

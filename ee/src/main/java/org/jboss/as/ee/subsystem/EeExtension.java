@@ -148,8 +148,8 @@ public class EeExtension implements Extension {
                 return false;
             }
         }, EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)), EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT);
 
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
     }

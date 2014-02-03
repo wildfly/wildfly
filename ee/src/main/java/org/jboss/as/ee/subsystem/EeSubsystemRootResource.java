@@ -73,14 +73,14 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
                     .setDefaultValue(new ModelNode(true))
                     .build();
 
-    public static final SimpleAttributeDefinition EJB_ANNOTATION_PROPERTY_REPLACEMENT =
-            new SimpleAttributeDefinitionBuilder(EESubsystemModel.EJB_ANNOTATION_PROPERTY_REPLACEMENT, ModelType.BOOLEAN, true)
+    public static final SimpleAttributeDefinition ANNOTATION_PROPERTY_REPLACEMENT =
+            new SimpleAttributeDefinitionBuilder(EESubsystemModel.ANNOTATION_PROPERTY_REPLACEMENT, ModelType.BOOLEAN, true)
                     .setAllowExpression(true)
                     .setDefaultValue(new ModelNode(false))
                     .build();
 
     static final AttributeDefinition[] ATTRIBUTES = { GlobalModulesDefinition.INSTANCE, EAR_SUBDEPLOYMENTS_ISOLATED,
-            SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT, EJB_ANNOTATION_PROPERTY_REPLACEMENT };
+            SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT, JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT, ANNOTATION_PROPERTY_REPLACEMENT};
 
     public static final EeSubsystemRootResource INSTANCE = new EeSubsystemRootResource();
 
@@ -89,7 +89,7 @@ public class EeSubsystemRootResource extends SimpleResourceDefinition {
     private final GlobalModuleDependencyProcessor moduleDependencyProcessor = new GlobalModuleDependencyProcessor();
     private final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor = new DescriptorPropertyReplacementProcessor(Attachments.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT);
     private final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor = new DescriptorPropertyReplacementProcessor(Attachments.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT);
-    private final AnnotationPropertyReplacementProcessor annotationPropertyReplacementProcessor = new AnnotationPropertyReplacementProcessor(Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
+    private final AnnotationPropertyReplacementProcessor annotationPropertyReplacementProcessor = new AnnotationPropertyReplacementProcessor(Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
 
     private EeSubsystemRootResource() {
         super(EeExtension.PATH_SUBSYSTEM,
