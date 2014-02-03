@@ -188,11 +188,6 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
 
         handler.setAppName(resolveAppName(context, handlerModel.get(APP_NAME.getName()), environmentReader));
 
-        if (environmentReader.getProductName() != null) {
-            handler.setAppName(environmentReader.getProductName());
-        }
-
-
         handler.setSyslogType(SyslogHandler.SyslogType.valueOf(SYSLOG_FORMAT.resolveModelAttribute(context, handlerModel).asString()));
         handler.setTruncate(TRUNCATE.resolveModelAttribute(context, handlerModel).asBoolean());
         if (handlerModel.hasDefined(MAX_LENGTH.getName())) {

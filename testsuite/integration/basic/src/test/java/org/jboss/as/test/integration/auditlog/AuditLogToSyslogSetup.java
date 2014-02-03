@@ -88,8 +88,8 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
     private static final String FORMATTER = "formatter";
     private static final String JSON_FORMATTER = "json-formatter";
 
-    //Will need some tweaking in EAP
-    static final String DEFAULT_APPNAME = "WildFly";
+    //In WildFly this is "WildFly"
+    static final String DEFAULT_APPNAME = "EAP";
 
         /**
      * Returns name of syslog protocol used. It should be one of "tcp", "udp", "tls"
