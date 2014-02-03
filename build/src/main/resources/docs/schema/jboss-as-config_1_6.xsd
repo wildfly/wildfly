@@ -1152,6 +1152,145 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+	             <xs:attribute name="facility" default="USER_LEVEL">
+	                <xs:annotation>
+	                   <xs:documentation>
+	                      The facility to use for syslog logging as defined in section 6.2.1 of RFC-5424, and section 4.1.1 of RFC-3164.
+	                      The numerical values in the enumeration entries, is the numerical value as defined in the RFC.
+	                   </xs:documentation>
+	                </xs:annotation>
+	                <xs:simpleType>                
+	                   <xs:restriction base="xs:token">
+	                      <xs:enumeration value="KERNEL">
+	                         <xs:annotation>
+	                            <xs:documentation>0</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="USER_LEVEL">
+	                         <xs:annotation>
+	                            <xs:documentation>1</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="MAIL_SYSTEM">
+	                         <xs:annotation>
+	                            <xs:documentation>2</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="SYSTEM_DAEMONS">
+	                         <xs:annotation>
+	                            <xs:documentation>3</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="SECURITY">
+	                         <xs:annotation>
+	                            <xs:documentation>4</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="SYSLOGD">
+	                         <xs:annotation>
+	                            <xs:documentation>5</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LINE_PRINTER">
+	                         <xs:annotation>
+	                            <xs:documentation>6</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="NETWORK_NEWS">
+	                         <xs:annotation>
+	                            <xs:documentation>7</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="UUCP">
+	                         <xs:annotation>
+	                            <xs:documentation>8</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="CLOCK_DAEMON">
+	                         <xs:annotation>
+	                            <xs:documentation>9</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="SECURITY2">
+	                         <xs:annotation>
+	                            <xs:documentation>10</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="FTP_DAEMON">
+	                         <xs:annotation>
+	                            <xs:documentation>11</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="NTP">
+	                         <xs:annotation>
+	                            <xs:documentation>12</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOG_AUDIT">
+	                         <xs:annotation>
+	                            <xs:documentation>13</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOG_ALERT">
+	                         <xs:annotation>
+	                            <xs:documentation>14</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="CLOCK_DAEMON2">
+	                         <xs:annotation>
+	                            <xs:documentation>15</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOCAL_USE_0">
+	                         <xs:annotation>
+	                            <xs:documentation>16</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOCAL_USE_1">
+	                         <xs:annotation>
+	                            <xs:documentation>17</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOCAL_USE_2">
+	                         <xs:annotation>
+	                            <xs:documentation>18</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOCAL_USE_3">
+	                         <xs:annotation>
+	                            <xs:documentation>19</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOCAL_USE_4">
+	                         <xs:annotation>
+	                            <xs:documentation>20</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOCAL_USE_5">
+	                         <xs:annotation>
+	                            <xs:documentation>21</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOCAL_USE_6">
+	                         <xs:annotation>
+	                            <xs:documentation>22</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                      <xs:enumeration value="LOCAL_USE_7">
+	                         <xs:annotation>
+	                            <xs:documentation>23</xs:documentation>
+	                         </xs:annotation>
+	                      </xs:enumeration>
+	                   </xs:restriction>
+	                </xs:simpleType>
+	             </xs:attribute>
+	             <xs:attribute name="app-name" type="xs:string">
+	                <xs:annotation>
+	                   <xs:documentation>
+	                      The application name to add to the syslog records as defined in section 6.2.5 of RFC-5424. If not specified it will default to the name of the product.
+	                   </xs:documentation>
+	                </xs:annotation>
+	             </xs:attribute>                
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

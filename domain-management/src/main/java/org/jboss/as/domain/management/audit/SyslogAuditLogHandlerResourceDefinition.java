@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -46,6 +47,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler;
+import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -69,6 +71,9 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
 
     private final EnvironmentNameReader environmentReader;
 
+    private static final String DEFAULT_APP_NAME_IF_NOT_A_PRODUCT = "WildFly";
+
+
     public static final SimpleAttributeDefinition SYSLOG_FORMAT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SYSLOG_FORMAT, ModelType.STRING)
         .setAllowNull(true)
         .setDefaultValue(new ModelNode(SyslogHandler.SyslogType.RFC5424.toString()))
@@ -89,7 +94,21 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
         .setMinSize(0)
         .build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {FORMATTER, MAX_LENGTH, SYSLOG_FORMAT, TRUNCATE, MAX_FAILURE_COUNT};
+    public static final SimpleAttributeDefinition FACILITY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.FACILITY, ModelType.STRING)
+        .setAllowNull(true)
+        .setValidator(new EnumValidator<SyslogAuditLogHandler.Facility>(SyslogAuditLogHandler.Facility.class, true, true))
+        .setDefaultValue(new ModelNode(SyslogAuditLogHandler.Facility.USER_LEVEL.name()))
+        .setAllowExpression(true)
+        .build();
+
+    public static final SimpleAttributeDefinition APP_NAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.APP_NAME, ModelType.STRING)
+        .setAllowNull(true)
+        .setAllowExpression(true)
+        .build();
+
+
+
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {FORMATTER, MAX_LENGTH, SYSLOG_FORMAT, TRUNCATE, MAX_FAILURE_COUNT, APP_NAME, FACILITY};
 
     public SyslogAuditLogHandlerResourceDefinition(ManagedAuditLogger auditLogger, PathManagerService pathManager, EnvironmentNameReader environmentReader) {
         super(auditLogger, pathManager, PathElement.pathElement(SYSLOG_HANDLER), DomainManagementResolver.getResolver("core.management.syslog-handler"),
@@ -159,15 +178,15 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
 
         final SyslogAuditLogHandler handler = new SyslogAuditLogHandler(name, formatterName, maxFailureCount, pathManager);
 
+        handler.setFacility(SyslogAuditLogHandler.Facility.valueOf(FACILITY.resolveModelAttribute(context, handlerModel).asString()));
+
         if (environmentReader.isServer()) {
             handler.setHostName(environmentReader.getHostName() != null ? environmentReader.getHostName() + ":" + environmentReader.getServerName() : environmentReader.getServerName());
         } else {
             handler.setHostName(environmentReader.getHostName());
         }
-        if (environmentReader.getProductName() != null) {
-            handler.setAppName(environmentReader.getProductName());
-        }
 
+        handler.setAppName(resolveAppName(context, handlerModel.get(APP_NAME.getName()), environmentReader));
 
         handler.setSyslogType(SyslogHandler.SyslogType.valueOf(SYSLOG_FORMAT.resolveModelAttribute(context, handlerModel).asString()));
         handler.setTruncate(TRUNCATE.resolveModelAttribute(context, handlerModel).asBoolean());
@@ -234,6 +253,16 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
         return null;
     }
 
+    private static String resolveAppName(OperationContext context, ModelNode appName, EnvironmentNameReader environmentReader) throws OperationFailedException {
+        if (appName.isDefined()) {
+            return context.resolveExpressions(appName).asString();
+        }
+        if (environmentReader.getProductName() != null) {
+            return environmentReader.getProductName();
+        }
+        return DEFAULT_APP_NAME_IF_NOT_A_PRODUCT;
+    }
+
     static class SyslogAuditLogHandlerAddHandler extends AbstractAddStepHandler {
 
         private final PathManagerService pathManager;
@@ -297,7 +326,15 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
 
         @Override
         protected boolean applyUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode resolvedValue, ModelNode currentValue, HandbackHolder<Void> handbackHolder) throws OperationFailedException {
-            if (!super.handleApplyAttributeRuntime(context, operation, attributeName, resolvedValue, currentValue, handbackHolder)) {
+            if (super.handleApplyAttributeRuntime(context, operation, attributeName, resolvedValue, currentValue, handbackHolder)) {
+                return false;
+            }
+
+            if (attributeName.equals(APP_NAME.getName())) {
+                auditLogger.updateSyslogHandlerAppName(Util.getNameFromAddress(operation.require(OP_ADDR)), resolveAppName(context, operation.get(VALUE), environmentReader));
+            } else if (attributeName.equals(FACILITY.getName())) {
+                auditLogger.updateSyslogHandlerFacility(Util.getNameFromAddress(operation.require(OP_ADDR)), Facility.valueOf(resolvedValue.asString()));
+            } else {
                 auditLogger.getUpdater().updateHandler(createHandler(pathManager, context, operation, environmentReader));
             }
             return false;
@@ -305,7 +342,15 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
 
         @Override
         protected void revertUpdateToRuntime(OperationContext context, ModelNode operation, String attributeName, ModelNode valueToRestore, ModelNode valueToRevert, Void handback) throws OperationFailedException {
-            if (!super.handlerRevertUpdateToRuntime(context, operation, attributeName, valueToRestore, valueToRevert, handback)) {
+            if (super.handlerRevertUpdateToRuntime(context, operation, attributeName, valueToRestore, valueToRevert, handback)) {
+                return;
+            }
+
+            if (attributeName.equals(APP_NAME.getName())) {
+                auditLogger.updateSyslogHandlerAppName(Util.getNameFromAddress(operation.require(OP_ADDR)), resolveAppName(context, valueToRestore, environmentReader));
+            } else if (attributeName.equals(FACILITY.getName())) {
+                auditLogger.updateSyslogHandlerFacility(Util.getNameFromAddress(operation.require(OP_ADDR)), Facility.valueOf(valueToRestore.asString()));
+            } else {
                 auditLogger.getUpdater().rollbackChanges();
             }
         }

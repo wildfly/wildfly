@@ -40,6 +40,7 @@ import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -404,7 +405,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     }
 
 
-
+    // Immediate updates - TODO find some better way to do these if we end up adding more handler types!
     @Override
     public void updateHandlerMaxFailureCount(String name, int count) {
         config.lock();
@@ -416,7 +417,6 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         }
     }
 
-
     @Override
     public int getHandlerFailureCount(String name) {
         config.lock();
@@ -427,6 +427,29 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             config.unlock();
         }
     }
+
+    @Override
+    public void updateSyslogHandlerFacility(String name, Facility facility) {
+        config.lock();
+        try {
+            SyslogAuditLogHandler handler = (SyslogAuditLogHandler)config.getConfiguredHandler(name);
+            handler.setFacility(facility);
+        } finally {
+            config.unlock();
+        }
+    }
+
+    @Override
+    public void updateSyslogHandlerAppName(String name, String appName) {
+        config.lock();
+        try {
+            SyslogAuditLogHandler handler = (SyslogAuditLogHandler)config.getConfiguredHandler(name);
+            handler.setAppName(appName);
+        } finally {
+            config.unlock();
+        }
+    }
+    // Immediate updates
 
     @Override
     public boolean getHandlerDisabledDueToFailure(String name) {

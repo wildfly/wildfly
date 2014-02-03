@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -176,6 +177,14 @@ public interface AuditLogger {
 
         @Override
         public void startBoot() {
+        }
+
+        @Override
+        public void updateSyslogHandlerFacility(String name, Facility facility) {
+        }
+
+        @Override
+        public void updateSyslogHandlerAppName(String name, String appName) {
         }
     };
 }

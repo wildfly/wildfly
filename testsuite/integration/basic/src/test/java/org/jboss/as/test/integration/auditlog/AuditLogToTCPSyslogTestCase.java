@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TCP
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.auditlog.AuditLogToTCPSyslogTestCase.AuditLogToTCPSyslogTestCaseSetup;
 import org.jboss.as.test.integration.logging.syslogserver.TCPSyslogServerConfig;
@@ -37,7 +38,7 @@ import org.productivity.java.syslog4j.server.SyslogServerConfigIF;
 
 /**
  * Tests TCP protocol of auditlog-to-syslog handler.
- * 
+ *
  * @author Ondrej Lukas
  * @author Josef Cacek
  */
@@ -63,8 +64,8 @@ public class AuditLogToTCPSyslogTestCase extends AuditLogToSyslogTestCase {
         }
 
         @Override
-        protected ModelNode addAuditlogSyslogProtocol() {
-            ModelNode op = Util.createAddOperation(AUDIT_SYSLOG_HANDLER_ADDR.append(PROTOCOL, TCP));
+        protected ModelNode addAuditlogSyslogProtocol(PathAddress syslogHandlerAddress) {
+            ModelNode op = Util.createAddOperation(syslogHandlerAddress.append(PROTOCOL, TCP));
             op.get("message-transfer").set("OCTET_COUNTING");
             return op;
         }

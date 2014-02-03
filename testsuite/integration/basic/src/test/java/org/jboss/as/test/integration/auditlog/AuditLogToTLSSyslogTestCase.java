@@ -21,14 +21,9 @@
  */
 package org.jboss.as.test.integration.auditlog;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUDIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLIENT_CERT_STORE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSLOG_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TLS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PASSWORD;
@@ -55,7 +50,7 @@ import org.productivity.java.syslog4j.server.SyslogServerConfigIF;
 
 /**
  * Tests TLS protocol of auditlog-to-syslog handler.
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -67,7 +62,7 @@ public class AuditLogToTLSSyslogTestCase extends AuditLogToSyslogTestCase {
      * {@link org.jboss.as.arquillian.api.ServerSetupTask} implementation which configures syslog server and auditlog-to-syslog
      * handler for this test. It creates key material in a temporary folder in addition to actions described in the parent
      * class.
-     * 
+     *
      * @author Josef Cacek
      */
     static class AuditLogToTLSSyslogTestCaseSetup extends AuditLogToSyslogSetup {
@@ -81,17 +76,14 @@ public class AuditLogToTLSSyslogTestCase extends AuditLogToSyslogTestCase {
 
         private static String PASSWORD = "123456";
 
-        private static final PathAddress AUDIT_SYSLOG_TLS_ADDR = PathAddress.pathAddress().append(CORE_SERVICE, MANAGEMENT)
-                .append(ACCESS, AUDIT).append(SYSLOG_HANDLER, SYSLOG_HANDLER_NAME).append(PROTOCOL, TLS);
-
         @Override
         protected String getSyslogProtocol() {
             return TLS;
         }
 
         @Override
-        protected ModelNode addAuditlogSyslogProtocol() {
-            ModelNode op = Util.createAddOperation(AUDIT_SYSLOG_TLS_ADDR);
+        protected ModelNode addAuditlogSyslogProtocol(PathAddress syslogHandlerAddress) {
+            ModelNode op = Util.createAddOperation(syslogHandlerAddress.append(PROTOCOL, TLS));
             op.get("message-transfer").set("OCTET_COUNTING");
             return op;
         }
@@ -107,13 +99,14 @@ public class AuditLogToTLSSyslogTestCase extends AuditLogToSyslogTestCase {
         }
 
         @Override
-        protected List<ModelNode> addProtocolSettings() {
+        protected List<ModelNode> addProtocolSettings(PathAddress syslogHandlerAddress) {
+            PathAddress protocolAddress = syslogHandlerAddress.append(PROTOCOL, TLS);
             List<ModelNode> ops = new ArrayList<ModelNode>();
-            ModelNode op1 = Util.createAddOperation(AUDIT_SYSLOG_TLS_ADDR.append(AUTHENTICATION, TRUSTSTORE));
+            ModelNode op1 = Util.createAddOperation(protocolAddress.append(AUTHENTICATION, TRUSTSTORE));
             op1.get(KEYSTORE_PATH).set(CLIENT_TRUSTSTORE_FILE.getAbsolutePath());
             op1.get(KEYSTORE_PASSWORD).set(PASSWORD);
             ops.add(op1);
-            ModelNode op2 = Util.createAddOperation(AUDIT_SYSLOG_TLS_ADDR.append(AUTHENTICATION, CLIENT_CERT_STORE));
+            ModelNode op2 = Util.createAddOperation(protocolAddress.append(AUTHENTICATION, CLIENT_CERT_STORE));
             op2.get(KEYSTORE_PATH).set(CLIENT_KEYSTORE_FILE.getAbsolutePath());
             op2.get(KEYSTORE_PASSWORD).set(PASSWORD);
             ops.add(op2);
@@ -123,7 +116,7 @@ public class AuditLogToTLSSyslogTestCase extends AuditLogToSyslogTestCase {
         /**
          * Creates {@link #WORK_DIR} folder and copies keystores and truststores to it. Then calls parent
          * {@link AuditLogToSyslogSetup#setup(ManagementClient, String)} method.
-         * 
+         *
          * @see org.jboss.as.test.integration.auditlog.AuditLogToSyslogSetup#setup(org.jboss.as.arquillian.container.ManagementClient,
          *      java.lang.String)
          */
@@ -141,7 +134,7 @@ public class AuditLogToTLSSyslogTestCase extends AuditLogToSyslogTestCase {
         /**
          * Then calls parent {@link AuditLogToSyslogSetup#tearDown(ManagementClient, String)} method and then deletes
          * {@link #WORK_DIR} folder. Creates {@link #WORK_DIR} folder and copies keystores and truststores to it.
-         * 
+         *
          * @see org.jboss.as.test.integration.auditlog.AuditLogToSyslogSetup#tearDown(org.jboss.as.arquillian.container.ManagementClient,
          *      java.lang.String)
          */
@@ -153,7 +146,7 @@ public class AuditLogToTLSSyslogTestCase extends AuditLogToSyslogTestCase {
 
         /**
          * Copies a resource file from current package to location denoted by given {@link File} instance.
-         * 
+         *
          * @param file
          * @throws IOException
          */
