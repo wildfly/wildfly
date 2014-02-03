@@ -125,7 +125,7 @@ public class DefaultHornetQProviderJMSOperations implements JMSOperations {
         final ModelNode enableSubstitutionOp = new ModelNode();
         enableSubstitutionOp.get(OP_ADDR).set(SUBSYSTEM, "ee");
         enableSubstitutionOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        enableSubstitutionOp.get(NAME).set("ejb-annotation-property-replacement");
+        enableSubstitutionOp.get(NAME).set("annotation-property-replacement");
         enableSubstitutionOp.get(VALUE).set(true);
 
         final ModelNode setDestinationOp = new ModelNode();
@@ -158,7 +158,7 @@ public class DefaultHornetQProviderJMSOperations implements JMSOperations {
         final ModelNode disableSubstitutionOp = new ModelNode();
         disableSubstitutionOp.get(OP_ADDR).set(SUBSYSTEM, "ee");
         disableSubstitutionOp.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        disableSubstitutionOp.get(NAME).set("ejb-annotation-property-replacement");
+        disableSubstitutionOp.get(NAME).set("annotation-property-replacement");
         disableSubstitutionOp.get(VALUE).set(false);
 
         try {

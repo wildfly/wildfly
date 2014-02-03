@@ -73,7 +73,7 @@ public final class Attachments {
     /**
      * If this is set to true property replacement will be enabled for EJB annotations
      */
-    public static final AttachmentKey<Boolean> EJB_ANNOTATION_PROPERTY_REPLACEMENT = AttachmentKey.create(Boolean.class);
+    public static final AttachmentKey<Boolean> ANNOTATION_PROPERTY_REPLACEMENT = AttachmentKey.create(Boolean.class);
 
     private Attachments() {
     }
