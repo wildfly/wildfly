@@ -97,11 +97,6 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
                             EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
                             break;
                         }
-                        case EJB_ANNOTATION_PROPERTY_REPLACEMENT: {
-                            final String enabled = parseEJBAnnotationPropertyReplacement(reader);
-                            EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
-                            break;
-                        }
                         default: {
                             throw unexpectedElement(reader);
                         }
@@ -204,14 +199,6 @@ class EESubsystemParser11 implements XMLStreamConstants, XMLElementReader<List<M
         if (value == null || value.trim().isEmpty()) {
             throw MESSAGES.invalidValue(value, Element.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.getLocalName(), reader.getLocation());
         }
-        return value.trim();
-    }
-
-    static String parseEJBAnnotationPropertyReplacement(XMLExtendedStreamReader reader) throws XMLStreamException {
-        // we don't expect any attributes for this element.
-        requireNoAttributes(reader);
-
-        final String value = reader.getElementText();
         return value.trim();
     }
 }

@@ -38,7 +38,6 @@
             <xs:element name="ear-subdeployments-isolated" default="false" type="ear-subdeployments-isolatedType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="spec-descriptor-property-replacement" type="descriptor-property-replacementType" minOccurs="0" maxOccurs="1" />
             <xs:element name="jboss-descriptor-property-replacement" type="descriptor-property-replacementType" minOccurs="0" maxOccurs="1" />
-            <xs:element name="ejb-annotation-property-replacement" type="annotation-property-replacementType" minOccurs="0" maxOccurs="1" />
         </xs:sequence>
     </xs:complexType>
 
@@ -96,21 +95,5 @@
         </xs:annotation>
 
         <xs:restriction base="xs:boolean"/>
-    </xs:simpleType>
-
-    <xs:simpleType name="annotation-property-replacementType">
-        <xs:annotation>
-            <xs:documentation>
-                Flag indicating whether system property replacement will be performed on an annotation. This defaults to
-                true, however it is disabled in the default configurations.
-
-                Security Node: System properties etc are resolved in the security context of the application server
-                itself, not the deployment that contains the file. This means that if you are running with a security
-                manager and enable this property, a deployment can potentially access system properties or environment
-                entries that the security manager would have otherwise prevented.
-            </xs:documentation>
-        </xs:annotation>
-
-        <xs:restriction base="xs:boolean" />
     </xs:simpleType>
 </xs:schema>
