@@ -138,7 +138,7 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final boolean earSubDeploymentsIsolated = EeSubsystemRootResource.EAR_SUBDEPLOYMENTS_ISOLATED.resolveModelAttribute(context, model).asBoolean();
         final boolean specDescriptorPropertyReplacement = EeSubsystemRootResource.SPEC_DESCRIPTOR_PROPERTY_REPLACEMENT.resolveModelAttribute(context, model).asBoolean();
         final boolean jbossDescriptorPropertyReplacement = EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.resolveModelAttribute(context, model).asBoolean();
-        final boolean ejbAnnotationPropertyReplacement = EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT.resolveModelAttribute(context, model).asBoolean();
+        final boolean ejbAnnotationPropertyReplacement = EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT.resolveModelAttribute(context, model).asBoolean();
 
         moduleDependencyProcessor.setGlobalModules(GlobalModulesDefinition.createModuleList(context, globalModules));
         isolationProcessor.setEarSubDeploymentsIsolated(earSubDeploymentsIsolated);

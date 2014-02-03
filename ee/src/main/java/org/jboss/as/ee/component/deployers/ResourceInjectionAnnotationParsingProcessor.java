@@ -123,7 +123,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         final CompositeIndex index = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         final EEApplicationClasses applicationClasses = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final Module module = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.MODULE);
-        final boolean replacement = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.EJB_ANNOTATION_PROPERTY_REPLACEMENT);
+        final boolean replacement = deploymentUnit.getAttachment(org.jboss.as.ee.structure.Attachments.ANNOTATION_PROPERTY_REPLACEMENT);
         final PropertyReplacer replacer = EJBAnnotationPropertyReplacement.propertyReplacer(deploymentUnit);
         if (module == null) {
             return;

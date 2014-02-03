@@ -93,9 +93,9 @@ class EESubsystemParser20 implements XMLStreamConstants, XMLElementReader<List<M
                             EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
                             break;
                         }
-                        case EJB_ANNOTATION_PROPERTY_REPLACEMENT: {
+                        case ANNOTATION_PROPERTY_REPLACEMENT: {
                             final String enabled = parseEJBAnnotationPropertyReplacement(reader);
-                            EeSubsystemRootResource.EJB_ANNOTATION_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
+                            EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT.parseAndSetParameter(enabled, eeSubSystem, reader);
                             break;
                         }
                         case CONCURRENT: {
