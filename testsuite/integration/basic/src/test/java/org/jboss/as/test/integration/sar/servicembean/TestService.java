@@ -23,6 +23,8 @@
 package org.jboss.as.test.integration.sar.servicembean;
 
 import javax.management.Attribute;
+import javax.management.NotificationListener;
+import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
@@ -43,6 +45,8 @@ public class TestService extends ServiceMBeanSupport implements TestServiceMBean
     protected void createService() throws Exception {
         getLog().info("createService()");
         setTestResultMBeanAttribute("CreateServiceInvoked", true);
+        server.addNotificationListener(new ObjectName("jboss:name=service-mbean-support-test"),
+                new ObjectName("jboss:name=service-mbean-support-test-result"), null, new Object());
     }
 
     @Override
