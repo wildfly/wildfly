@@ -82,8 +82,8 @@ import org.jboss.logging.Logger;
 public class RespawnTestCase {
 
     private static final int TIMEOUT = 120000;
-    private static final String HOST_CONTROLLER = "host-controller";
-    private static final String PROCESS_CONTROLLER = "process";
+    private static final String HOST_CONTROLLER = Main.HOST_CONTROLLER_PROCESS_NAME;
+    private static final String PROCESS_CONTROLLER = "Process";
     private static final String SERVER_ONE = "respawn-one";
     private static final String SERVER_TWO = "respawn-two";
     private static final int HC_PORT = 9999;
@@ -577,6 +577,7 @@ public class RespawnTestCase {
         }
 
         String parseProcessId(String proc){
+            proc = proc.trim();
             int i = proc.indexOf(' ');
             return proc.substring(0, i);
         }
@@ -587,12 +588,12 @@ public class RespawnTestCase {
             for (String proc : processes){
                 String id = parseProcessId(proc);
                 if (!initialProcessIds.contains(id)){
-                    if (proc.contains(HOST_CONTROLLER) && !proc.contains(PROCESS_CONTROLLER)){
-                        running.add(new RunningProcess(id, HOST_CONTROLLER));
-                    } else if (proc.contains(SERVER_ONE)){
+                    if (proc.contains(SERVER_ONE)){
                         running.add(new RunningProcess(id, SERVER_ONE));
                     } else if (proc.contains(SERVER_TWO)){
                         running.add(new RunningProcess(id, SERVER_TWO));
+                    } else if (proc.contains(HOST_CONTROLLER) && !proc.contains(PROCESS_CONTROLLER)){
+                        running.add(new RunningProcess(id, HOST_CONTROLLER));
                     }
                 }
             }
@@ -648,7 +649,7 @@ public class RespawnTestCase {
             Assert.fail("Did not kill process " + process + " " + processUtil.getRunningProcesses());
         }
 
-        abstract String getJpsCommand();
+        abstract String[] getJpsCommand();
 
         abstract String getJavaCommand();
 
@@ -691,15 +692,19 @@ public class RespawnTestCase {
 
     private static class UnixProcessUtil extends ProcessUtil {
         @Override
-        String getJpsCommand() {
+        String[] getJpsCommand() {
             final File jreHome = new File(System.getProperty("java.home"));
             Assert.assertTrue("JRE home not found. File: " + jreHome.getAbsoluteFile(), jreHome.exists());
-            File jpsExe = new File(jreHome, "bin/jps");
-            if (!jpsExe.exists()) {
-                jpsExe = new File(jreHome, "../bin/jps");
+            if (System.getProperty("java.vendor.url","whatever").contains("ibm.com")) {
+                return new String[] { "sh", "-c", "ps -ef | awk '{$1=\"\"; print $0}'" };
+            } else {
+                File jpsExe = new File(jreHome, "bin/jps");
+                if (!jpsExe.exists()) {
+                    jpsExe = new File(jreHome, "../bin/jps");
+                }
+                Assert.assertTrue("JPS executable not found. File: " + jpsExe, jpsExe.exists());
+                return new String[] { jpsExe.getAbsolutePath(), "-lv" };
             }
-            Assert.assertTrue("JPS executable not found. File: " + jpsExe, jpsExe.exists());
-            return String.format("%s -vl", jpsExe.getAbsolutePath());
         }
 
         @Override
@@ -716,7 +721,7 @@ public class RespawnTestCase {
     private static class WindowsProcessUtil extends ProcessUtil {
 
         @Override
-        String getJpsCommand() {
+        String[] getJpsCommand() {
             final File jreHome = new File(System.getProperty("java.home"));
             Assert.assertTrue("JRE home not found. File: " + jreHome.getAbsoluteFile(), jreHome.exists());
             File jpsExe = new File(jreHome, "bin/jps.exe");
@@ -724,7 +729,7 @@ public class RespawnTestCase {
                 jpsExe = new File(jreHome, "../bin/jps.exe");
             }
             Assert.assertTrue("JPS executable not found. File: " + jpsExe, jpsExe.exists());
-            return String.format("%s -vl", jpsExe.getAbsolutePath());
+            return new String[] { jpsExe.getAbsolutePath(), "-lv" };
         }
 
         @Override
