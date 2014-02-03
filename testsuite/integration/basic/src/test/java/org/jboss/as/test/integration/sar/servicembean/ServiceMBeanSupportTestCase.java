@@ -97,23 +97,18 @@ public class ServiceMBeanSupportTestCase {
             // undeploy it
             deployer.undeploy(ServiceMBeanSupportTestCase.UNMANAGED_SAR_DEPLOYMENT_NAME);
         }
+
         // check the result of life-cycle methods invocation, using result mbean
-        String attribute = "CreateServiceInvoked";
-        Boolean result = (Boolean) mBeanServerConnection.getAttribute(new ObjectName("jboss:name=service-mbean-support-test-result"),
-                attribute);
-        Assert.assertTrue("Unexpected result for " + attribute + ": " + result, result);
-        attribute = "StartServiceInvoked";
-        result = (Boolean) mBeanServerConnection.getAttribute(new ObjectName("jboss:name=service-mbean-support-test-result"),
-                attribute);
-        Assert.assertTrue("Unexpected result for " + attribute + ": " + result, result);
-        attribute = "StopServiceInvoked";
-        result = (Boolean) mBeanServerConnection.getAttribute(new ObjectName("jboss:name=service-mbean-support-test-result"),
-                attribute);
-        Assert.assertTrue("Unexpected result for " + attribute + ": " + result, result);
-        attribute = "DestroyServiceInvoked";
-        result = (Boolean) mBeanServerConnection.getAttribute(new ObjectName("jboss:name=service-mbean-support-test-result"),
-                attribute);
-        Assert.assertTrue("Unexpected result for " + attribute + ": " + result, result);
+        // also check that the result mbean received lifecycle notifications
+        String[] expectedAttributes = new String[] {"CreateServiceInvoked", "StartServiceInvoked", "StopServiceInvoked", "DestroyServiceInvoked",
+            "StartingNotificationReceived", "StartedNotificationReceived", "StoppingNotificationReceived", "StoppedNotificationReceived"};
+
+        // each of these attributes should be 'true'
+        for(String attribute : expectedAttributes) {
+            Boolean result = (Boolean) mBeanServerConnection.getAttribute(new ObjectName("jboss:name=service-mbean-support-test-result"),
+                    attribute);
+            Assert.assertTrue("Unexpected result for " + attribute + ": " + result, result);
+        }
     }
 
 }
