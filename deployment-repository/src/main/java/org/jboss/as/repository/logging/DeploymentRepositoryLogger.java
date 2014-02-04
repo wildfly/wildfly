@@ -20,25 +20,47 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.repository;
+package org.jboss.as.repository.logging;
 
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * Date: 05.11.2011
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
-interface DeploymentRepositoryMessages {
+@MessageLogger(projectCode = "WFLYDR", length = 4)
+public interface DeploymentRepositoryLogger extends BasicLogger {
 
     /**
-     * The messages
+     * A logger with the category of the package name.
      */
-    DeploymentRepositoryMessages MESSAGES = Messages.getBundle(DeploymentRepositoryMessages.class);
+    DeploymentRepositoryLogger ROOT_LOGGER = Logger.getMessageLogger(DeploymentRepositoryLogger.class, "org.jboss.as.repository");
+
+    /**
+     * Logs an informational message indicating the content was added at the location, represented by the {@code path}
+     * parameter.
+     *
+     * @param path the name of the path.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 1, value = "Content added at location %s")
+    void contentAdded(String path);
+
+    @LogMessage(level = INFO)
+    @Message(id = 2, value = "Content removed from location %s")
+    void contentRemoved(String path);
+
+    @LogMessage(level = WARN)
+    @Message(id = 3, value = "Cannot delete temp file %s, will be deleted on exit")
+    void cannotDeleteTempFile(String path);
 
     /**
      * Creates an exception indicating a failure to create the directory represented by the {@code path} parameter.
@@ -47,7 +69,7 @@ interface DeploymentRepositoryMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14920, value = "Cannot create directory %s")
+    @Message(id = 4, value = "Cannot create directory %s")
     IllegalStateException cannotCreateDirectory(String path);
 
     /**
@@ -58,7 +80,7 @@ interface DeploymentRepositoryMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14921, value = "Cannot obtain SHA-1 %s")
+    @Message(id = 5, value = "Cannot obtain SHA-1 %s")
     IllegalStateException cannotObtainSha1(@Cause Throwable cause, String name);
 
     /**
@@ -68,7 +90,7 @@ interface DeploymentRepositoryMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14922, value = "Directory %s is not writable")
+    @Message(id = 6, value = "Directory %s is not writable")
     IllegalStateException directoryNotWritable(String path);
 
     /**
@@ -78,7 +100,7 @@ interface DeploymentRepositoryMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14923, value = "%s is not a directory")
+    @Message(id = 7, value = "%s is not a directory")
     IllegalStateException notADirectory(String path);
 
     /**
@@ -88,6 +110,6 @@ interface DeploymentRepositoryMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14924, value = "%s is null")
+    @Message(id = 8, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 }
