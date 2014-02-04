@@ -113,7 +113,7 @@ public class InitialContext extends InitialDirContext {
                     final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
                     defaultInitCtx = ((javax.naming.spi.InitialContextFactory)factoryClass.newInstance()).getInitialContext(myProps);
                 } catch (Exception e) {
-                    throw MESSAGES.failedToInstantiate("InitialContextFactory", factoryClassName, classLoader);
+                    throw MESSAGES.failedToInstantiate(e, "InitialContextFactory", factoryClassName, classLoader);
                 }
             }
             gotDefault = true;
