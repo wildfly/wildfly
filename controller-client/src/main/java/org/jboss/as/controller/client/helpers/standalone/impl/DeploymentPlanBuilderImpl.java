@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.io.DataOutput;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.standalone.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
@@ -286,7 +285,7 @@ class DeploymentPlanBuilderImpl
         if (last.getType() != Type.UNDEPLOY) {
             // Someone cast to the impl class instead of using the interface
             cleanup();
-            throw MESSAGES.invalidPrecedingAction(Type.UNDEPLOY);
+            throw ControllerClientLogger.ROOT_LOGGER.invalidPrecedingAction(Type.UNDEPLOY);
         }
         DeploymentActionImpl removeMod = DeploymentActionImpl.getRemoveAction(last.getDeploymentUnitUniqueName());
         return new DeploymentPlanBuilderImpl(this, removeMod);
@@ -304,11 +303,11 @@ class DeploymentPlanBuilderImpl
         if (deploymentActions.size() > 0) {
             // Someone has cast to this impl class
             cleanup();
-            throw MESSAGES.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
+            throw ControllerClientLogger.ROOT_LOGGER.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
         }
         if (shutdown) {
             cleanup();
-            throw MESSAGES.globalRollbackNotCompatible();
+            throw ControllerClientLogger.ROOT_LOGGER.globalRollbackNotCompatible();
         }
         return new DeploymentPlanBuilderImpl(this, true);
     }
@@ -318,7 +317,7 @@ class DeploymentPlanBuilderImpl
         if (deploymentActions.size() > 0) {
             // Someone has cast to this impl class
             cleanup();
-            throw MESSAGES.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
+            throw ControllerClientLogger.ROOT_LOGGER.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
         }
         return new DeploymentPlanBuilderImpl(this, false);
     }
@@ -332,16 +331,16 @@ class DeploymentPlanBuilderImpl
         if (deploymentActions.size() > 0) {
             // Someone has to cast this impl class
             cleanup();
-            throw MESSAGES.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
+            throw ControllerClientLogger.ROOT_LOGGER.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
         }
         if (globalRollback) {
             cleanup();
-            throw MESSAGES.globalRollbackNotCompatible();
+            throw ControllerClientLogger.ROOT_LOGGER.globalRollbackNotCompatible();
         }
         long period = timeUnit.toMillis(timeout);
         if (shutdown && period != gracefulShutdownPeriod) {
             cleanup();
-            throw MESSAGES.gracefulShutdownAlreadyConfigured(gracefulShutdownPeriod);
+            throw ControllerClientLogger.ROOT_LOGGER.gracefulShutdownAlreadyConfigured(gracefulShutdownPeriod);
         }
         return new DeploymentPlanBuilderImpl(this, period);
     }
@@ -355,15 +354,15 @@ class DeploymentPlanBuilderImpl
         if (deploymentActions.size() > 0) {
             // Someone has to cast this impl class
             cleanup();
-            throw MESSAGES.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
+            throw ControllerClientLogger.ROOT_LOGGER.operationsNotAllowed(InitialDeploymentPlanBuilder.class.getSimpleName());
         }
         if (globalRollback) {
             cleanup();
-            throw MESSAGES.globalRollbackNotCompatible();
+            throw ControllerClientLogger.ROOT_LOGGER.globalRollbackNotCompatible();
         }
         if (shutdown && gracefulShutdownPeriod != -1) {
             cleanup();
-            throw MESSAGES.gracefulShutdownAlreadyConfigured(gracefulShutdownPeriod);
+            throw ControllerClientLogger.ROOT_LOGGER.gracefulShutdownAlreadyConfigured(gracefulShutdownPeriod);
         }
         return new DeploymentPlanBuilderImpl(this, -1);
     }
@@ -374,7 +373,7 @@ class DeploymentPlanBuilderImpl
         if (last.getType() != Type.ADD) {
             // Someone cast to the impl class instead of using the interface
             cleanup();
-            throw MESSAGES.invalidPrecedingAction(Type.ADD);
+            throw ControllerClientLogger.ROOT_LOGGER.invalidPrecedingAction(Type.ADD);
         }
         return last.getDeploymentUnitUniqueName();
     }
@@ -386,7 +385,7 @@ class DeploymentPlanBuilderImpl
                 return f.getName();
             } catch (URISyntaxException e) {
                 cleanup();
-                throw MESSAGES.invalidUri(e, url);
+                throw ControllerClientLogger.ROOT_LOGGER.invalidUri(e, url);
             }
         }
 
@@ -398,7 +397,7 @@ class DeploymentPlanBuilderImpl
         }
         if (idx == -1) {
             cleanup();
-            throw MESSAGES.cannotDeriveDeploymentName(url);
+            throw ControllerClientLogger.ROOT_LOGGER.cannotDeriveDeploymentName(url);
         }
 
         return path.substring(idx + 1);

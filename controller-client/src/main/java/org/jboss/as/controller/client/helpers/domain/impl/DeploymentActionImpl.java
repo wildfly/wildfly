@@ -21,11 +21,10 @@
  */
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 
 /**
@@ -57,7 +56,7 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
 
     public static DeploymentActionImpl getReplaceAction(String deploymentName, String replacedName) {
         if (replacedName == null) {
-            throw MESSAGES.nullVar("replacedName");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("replacedName");
         }
         return new DeploymentActionImpl(Type.REPLACE, deploymentName, null, null, replacedName);
     }
@@ -81,10 +80,10 @@ public class DeploymentActionImpl implements DeploymentAction, Serializable {
 
     private DeploymentActionImpl(Type type, String deploymentUnitName, String newContentFileName, byte[] newContentHash, String replacedDeploymentUnitName) {
         if (type == null) {
-            throw MESSAGES.nullVar("type");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("type");
         }
         if (deploymentUnitName == null) {
-            throw MESSAGES.nullVar("deploymentUnitName");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("deploymentUnitName");
         }
         this.type = type;
         this.deploymentUnitName = deploymentUnitName;

@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 
 /**
  * {@link InvalidDeploymentPlanException} thrown when a deployment plan
@@ -37,7 +37,7 @@ public class IncompleteDeploymentReplaceException extends InvalidDeploymentPlanE
     private static final long serialVersionUID = -8322852398826927588L;
 
     public IncompleteDeploymentReplaceException(String deploymentName, String... missingGroups) {
-        super(MESSAGES.incompleteDeploymentReplace(deploymentName, createMissingGroups(missingGroups)));
+        super(ControllerClientLogger.ROOT_LOGGER.incompleteDeploymentReplace(deploymentName, createMissingGroups(missingGroups)));
     }
 
     private static String createMissingGroups(String[] missingGroups) {

@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.io.DataOutput;
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +32,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.domain.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
@@ -59,7 +58,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     DeploymentPlanBuilderImpl(DeploymentContentDistributor deploymentDistributor) {
         super();
         if (deploymentDistributor == null)
-            throw MESSAGES.nullVar("deploymentDistributor");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("deploymentDistributor");
         this.deploymentDistributor = deploymentDistributor;
     }
 
@@ -110,7 +109,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
             InputStream stream) throws IOException, DuplicateDeploymentNameException {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         byte[] hash = deploymentDistributor.distributeDeploymentContent(name, commonName, stream);
         DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, commonName, hash);
@@ -122,7 +121,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     public AddDeploymentPlanBuilder add(String name) throws IOException {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getAddAction(name, null, null);
 
@@ -134,7 +133,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     public DeployDeploymentPlanBuilder deploy(String key) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(key);
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
@@ -145,7 +144,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     public UndeployDeploymentPlanBuilder undeploy(String key) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getUndeployAction(key);
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
@@ -162,7 +161,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     public ReplaceDeploymentPlanBuilder replace(String replacement, String toReplace) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getReplaceAction(replacement, toReplace);
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
@@ -205,7 +204,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     public RemoveDeploymentPlanBuilder replace(String name, String commonName, InputStream stream) throws IOException {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         byte[] hash = deploymentDistributor.distributeReplacementDeploymentContent(name, commonName, stream);
         DeploymentActionImpl mod = DeploymentActionImpl.getFullReplaceAction(name, commonName, hash);
@@ -217,7 +216,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     public RemoveDeploymentPlanBuilder remove(String key) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(key);
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
@@ -257,7 +256,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
     DeploymentPlanBuilderImpl getNewBuilder(DeploymentActionImpl mod) {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);
         return new DeploymentPlanBuilderImpl(this, newSet);
@@ -269,7 +268,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
                 File f = new File(url.toURI());
                 return f.getName();
             } catch (URISyntaxException e) {
-                throw MESSAGES.invalidUri(e, url);
+                throw ControllerClientLogger.ROOT_LOGGER.invalidUri(e, url);
             }
         }
 
@@ -280,7 +279,7 @@ class DeploymentPlanBuilderImpl extends AbstractDeploymentPlanBuilder implements
             idx = path.lastIndexOf('/');
         }
         if (idx == -1) {
-            throw MESSAGES.cannotDeriveDeploymentName(url);
+            throw ControllerClientLogger.ROOT_LOGGER.cannotDeriveDeploymentName(url);
         }
 
         return path.substring(idx + 1);

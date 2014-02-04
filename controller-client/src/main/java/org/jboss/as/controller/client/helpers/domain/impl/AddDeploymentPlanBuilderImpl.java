@@ -22,8 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.domain.AddDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.DeployDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ReplaceDeploymentPlanBuilder;
@@ -49,7 +48,7 @@ class AddDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl implements 
     public DeployDeploymentPlanBuilder andDeploy() {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getDeployAction(newContentKey);
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);

@@ -44,7 +44,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.WRITE_ATTRI
 import java.io.File;
 import java.io.InputStream;
 
-import org.jboss.as.controller.client.ControllerClientMessages;
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -96,7 +96,7 @@ public class Operations {
      */
     public static ModelNode getFailureDescription(final ModelNode result) {
         if (isSuccessfulOutcome(result)) {
-            throw ControllerClientMessages.MESSAGES.noFailureDescription();
+            throw ControllerClientLogger.ROOT_LOGGER.noFailureDescription();
         }
         if (result.hasDefined(FAILURE_DESCRIPTION)) {
             return result.get(FAILURE_DESCRIPTION);
@@ -128,7 +128,7 @@ public class Operations {
         if (op.hasDefined(OP)) {
             return op.get(OP).asString();
         }
-        throw ControllerClientMessages.MESSAGES.operationNameNotFound();
+        throw ControllerClientLogger.ROOT_LOGGER.operationNameNotFound();
     }
 
     /**
@@ -322,7 +322,7 @@ public class Operations {
      */
     public static ModelNode createOperation(final String operation, final ModelNode address) {
         if (address.getType() != ModelType.LIST) {
-            throw ControllerClientMessages.MESSAGES.invalidAddressType();
+            throw ControllerClientLogger.ROOT_LOGGER.invalidAddressType();
         }
         final ModelNode op = createOperation(operation);
         op.get(OP_ADDR).set(address);

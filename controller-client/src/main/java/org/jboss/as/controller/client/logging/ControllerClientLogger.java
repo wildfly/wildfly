@@ -20,39 +20,40 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller.client;
+package org.jboss.as.controller.client.logging;
+
+import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction.Type;
 import org.jboss.as.controller.client.helpers.domain.RollbackCancelledException;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.MessageLogger;
 
 import java.io.IOException;
 import java.net.URL;
 
 /**
- * Date: 05.11.2011
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface ControllerClientMessages {
+@MessageLogger(projectCode = "WFLYCC", length = 4)
+public interface ControllerClientLogger extends BasicLogger {
 
     /**
-     * The messages
+     * A logger with the default package name.
      */
-    ControllerClientMessages MESSAGES = Messages.getBundle(ControllerClientMessages.class);
-
-    // 10620 - 10699
+    ControllerClientLogger ROOT_LOGGER = Logger.getMessageLogger(ControllerClientLogger.class, "org.jboss.as.controller.client");
 
     /**
      * Creates an exception indicating after starting creation of the rollout plan no deployment actions can be added.
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 10620, value = "Cannot add deployment actions after starting creation of a rollout plan")
+    @Message(id = 1, value = "Cannot add deployment actions after starting creation of a rollout plan")
     IllegalStateException cannotAddDeploymentAction();
 
     /**
@@ -61,7 +62,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10621, value = "Cannot add deployment actions after starting creation of a rollout plan")
+    @Message(id = 2, value = "Cannot add deployment actions after starting creation of a rollout plan")
     IllegalStateException cannotAddDeploymentActionsAfterStart();
 
     /**
@@ -72,7 +73,7 @@ public interface ControllerClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 10622, value = "Cannot convert %s to %s")
+    @Message(id = 3, value = "Cannot convert %s to %s")
     String cannotConvert(String first, String second);
 
     /**
@@ -82,7 +83,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10623, value = "Cannot derive a deployment name from %s -- use an overloaded method variant that takes a 'name' parameter")
+    @Message(id = 4, value = "Cannot derive a deployment name from %s -- use an overloaded method variant that takes a 'name' parameter")
     IllegalArgumentException cannotDeriveDeploymentName(URL url);
 
     /**
@@ -91,7 +92,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10624, value = "Cannot use a DeploymentPlan not created by this manager")
+    @Message(id = 5, value = "Cannot use a DeploymentPlan not created by this manager")
     IllegalArgumentException cannotUseDeploymentPlan();
 
     /**
@@ -99,7 +100,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(id = 10625, value = "Channel closed")
+    @Message(id = 6, value = "Channel closed")
     IOException channelClosed(@Cause IOException cause);
 
     /**
@@ -109,7 +110,7 @@ public interface ControllerClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 10626, value = "Deployment with name %s already present in the domain")
+    @Message(id = 7, value = "Deployment with name %s already present in the domain")
     String domainDeploymentAlreadyExists(String name);
 
     /**
@@ -117,7 +118,7 @@ public interface ControllerClientMessages {
      *
      * @return failed.
      */
-    @Message(id = 10627, value = "failed")
+    @Message(id = 8, value = "failed")
     String failed();
 
     /**
@@ -125,7 +126,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10628, value = "Global rollback is not compatible with a server restart")
+    @Message(id = 9, value = "Global rollback is not compatible with a server restart")
     IllegalStateException globalRollbackNotCompatible();
 
     /**
@@ -136,7 +137,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10629, value = "Graceful shutdown already configured with a timeout of %d ms")
+    @Message(id = 10, value = "Graceful shutdown already configured with a timeout of %d ms")
     IllegalStateException gracefulShutdownAlreadyConfigured(long timeout);
 
     /**
@@ -147,7 +148,7 @@ public interface ControllerClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 10630, value = "Only one version of deployment with a given unique name can exist in the domain. The deployment " +
+    @Message(id = 11, value = "Only one version of deployment with a given unique name can exist in the domain. The deployment " +
             "plan specified that a new version of deployment %s replace an existing deployment with the same unique " +
             "name, but did not apply the replacement to all server groups. Missing server groups were: %s")
     String incompleteDeploymentReplace(String deploymentName, String missingGroups);
@@ -159,7 +160,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10631, value = "Invalid action type %s")
+    @Message(id = 12, value = "Invalid action type %s")
     IllegalStateException invalidActionType(Type type);
 
     /**
@@ -170,7 +171,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10632, value = "Preceding action was not a %s")
+    @Message(id = 13, value = "Preceding action was not a %s")
     IllegalStateException invalidPrecedingAction(Object type);
 
     /**
@@ -181,7 +182,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10633, value = "%s is not a valid URI")
+    @Message(id = 14, value = "%s is not a valid URI")
     IllegalArgumentException invalidUri(@Cause Throwable cause, URL url);
 
     /**
@@ -193,7 +194,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10634, value = "Illegal %s value %d -- must be greater than %d")
+    @Message(id = 15, value = "Illegal %s value %d -- must be greater than %d")
     IllegalArgumentException invalidValue(String name, int value, int minValue);
 
     /**
@@ -207,7 +208,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10635, value = "Illegal %s value %d -- must be greater than %d and less than %d")
+    @Message(id = 16, value = "Illegal %s value %d -- must be greater than %d and less than %d")
     IllegalArgumentException invalidValue(String name, int value, int minValue, int maxValue);
 
     /**
@@ -216,7 +217,7 @@ public interface ControllerClientMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 10636, value = "Screen real estate is expensive; displayUnits must be 5 characters or less")
+    @Message(id = 17, value = "Screen real estate is expensive; displayUnits must be 5 characters or less")
     RuntimeException maxDisplayUnitLength();
 
     /**
@@ -226,7 +227,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(id = 10637, value = "No active request found for %d")
+    @Message(id = 18, value = "No active request found for %d")
     IOException noActiveRequest(int batchId);
 
     /**
@@ -234,7 +235,7 @@ public interface ControllerClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 10638, value = "No failure details provided")
+    @Message(id = 19, value = "No failure details provided")
     String noFailureDetails();
 
     /**
@@ -244,7 +245,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10639, value = "No %s is configured")
+    @Message(id = 20, value = "No %s is configured")
     IllegalStateException notConfigured(String name);
 
     /**
@@ -254,7 +255,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 10640, value = "%s is null")
+    @Message(id = 21, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 
     /**
@@ -264,7 +265,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10641, value = "%s is closed")
+    @Message(id = 22, value = "%s is closed")
     IllegalStateException objectIsClosed(String name);
 
     /**
@@ -274,7 +275,7 @@ public interface ControllerClientMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 10642, value = "Operation outcome is %s")
+    @Message(id = 23, value = "Operation outcome is %s")
     RuntimeException operationOutcome(String outcome);
 
     /**
@@ -284,7 +285,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10643, value = "%s operations are not allowed after content and deployment modifications")
+    @Message(id = 24, value = "%s operations are not allowed after content and deployment modifications")
     IllegalStateException operationsNotAllowed(String name);
 
     /**
@@ -292,7 +293,7 @@ public interface ControllerClientMessages {
      *
      * @return a {@link RollbackCancelledException} for the error.
      */
-    @Message(id = 10644, value = "Rollback was cancelled")
+    @Message(id = 25, value = "Rollback was cancelled")
     RollbackCancelledException rollbackCancelled();
 
     /**
@@ -300,7 +301,7 @@ public interface ControllerClientMessages {
      *
      * @return a {@link RollbackCancelledException} for the error.
      */
-    @Message(id = 10645, value = "Rollback was itself rolled back")
+    @Message(id = 26, value = "Rollback was itself rolled back")
     RollbackCancelledException rollbackRolledBack();
 
     /**
@@ -308,7 +309,7 @@ public interface ControllerClientMessages {
      *
      * @return a {@link RollbackCancelledException} for the error.
      */
-    @Message(id = 10646, value = "Rollback timed out")
+    @Message(id = 27, value = "Rollback timed out")
     RollbackCancelledException rollbackTimedOut();
 
     /**
@@ -318,7 +319,7 @@ public interface ControllerClientMessages {
      *
      * @return the message.
      */
-    @Message(id = 10647, value = "Deployment with name %s already present in the server")
+    @Message(id = 28, value = "Deployment with name %s already present in the server")
     String serverDeploymentAlreadyExists(String name);
 
     /**
@@ -328,7 +329,7 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 10648, value = "Unknown action type %s")
+    @Message(id = 29, value = "Unknown action type %s")
     IllegalStateException unknownActionType(Object type);
 
     /**
@@ -337,7 +338,7 @@ public interface ControllerClientMessages {
      *
      * @return the leak description
      */
-    @Message(id = 10649, value = "Allocation stack trace:")
+    @Message(id = 30, value = "Allocation stack trace:")
     LeakDescription controllerClientNotClosed();
 
     /**
@@ -345,7 +346,7 @@ public interface ControllerClientMessages {
      *
      * @return a {@link IllegalArgumentException} for the error
      */
-    @Message(id = 10650, value = "No failure description as the operation was successful.")
+    @Message(id = 31, value = "No failure description as the operation was successful.")
     IllegalArgumentException noFailureDescription();
 
     /**
@@ -353,7 +354,7 @@ public interface ControllerClientMessages {
      *
      * @return a {@link IllegalArgumentException} for the error
      */
-    @Message(id = 10651, value = "The operation name was not defined.")
+    @Message(id = 32, value = "The operation name was not defined.")
     IllegalArgumentException operationNameNotFound();
 
     /**
@@ -361,8 +362,16 @@ public interface ControllerClientMessages {
      *
      * @return an {@link IllegalArgumentException} for the error
      */
-    @Message(id = 10652, value = "The address must be of type ModelType.LIST.")
+    @Message(id = 33, value = "The address must be of type ModelType.LIST.")
     IllegalArgumentException invalidAddressType();
+
+    @LogMessage(level = WARN)
+    @Message(id = 34, value = "Closing leaked controller client")
+    void leakedControllerClient(@Cause Throwable allocationStackTrace);
+
+    @LogMessage(level = WARN)
+    @Message(id = 35, value = "Cannot delete temp file %s, will be deleted on exit")
+    void cannotDeleteTempFile(String name);
 
     class LeakDescription extends Throwable {
         private static final long serialVersionUID = -7193498784746897578L;

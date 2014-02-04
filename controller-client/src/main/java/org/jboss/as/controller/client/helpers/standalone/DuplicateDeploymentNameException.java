@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.standalone;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 
 /**
  * Exception indicating an attempt to add deployment content to a domain or
@@ -41,7 +41,7 @@ public class DuplicateDeploymentNameException extends Exception {
      * @param fullDomain
      */
     public DuplicateDeploymentNameException(String name, boolean fullDomain) {
-        super(fullDomain ? MESSAGES.domainDeploymentAlreadyExists(name) : MESSAGES.serverDeploymentAlreadyExists(name));
+        super(fullDomain ? ControllerClientLogger.ROOT_LOGGER.domainDeploymentAlreadyExists(name) : ControllerClientLogger.ROOT_LOGGER.serverDeploymentAlreadyExists(name));
         this.name = name;
     }
 

@@ -22,12 +22,11 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.io.Serializable;
 import java.util.Map;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentActionResult;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
 
@@ -45,9 +44,9 @@ public class DeploymentPlanResultImpl implements ServerDeploymentPlanResult, Ser
 
     public DeploymentPlanResultImpl(UUID planId, Map<UUID, ServerDeploymentActionResult> actionResults) {
         if (planId == null)
-            throw MESSAGES.nullVar("planId");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("planId");
         if (actionResults == null)
-            throw MESSAGES.nullVar("actionResults");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("actionResults");
         this.planId = planId;
         this.actionResults = actionResults;
     }

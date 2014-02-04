@@ -25,7 +25,7 @@
 <module xmlns="urn:jboss:module:1.3" name="org.jboss.as.controller-client">
 
     <exports>
-        <exclude path="**/impl/*"/>
+        <exclude path="org/jboss/as/controller/client/logging"/>
     </exports>
 
     <resources>
