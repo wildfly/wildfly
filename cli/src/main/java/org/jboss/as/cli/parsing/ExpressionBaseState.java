@@ -36,9 +36,7 @@ public class ExpressionBaseState extends DefaultParsingState {
     private CharacterHandler resolvingEntranceHandler = new CharacterHandler() {
         @Override
         public void handle(ParsingContext ctx) throws CommandFormatException {
-            if(ctx.getCharacter() == '$') {
-                ctx.resolveExpression(resolveSystemProperties, exceptionIfNotResolved);
-            }
+            ctx.resolveExpression(resolveSystemProperties, exceptionIfNotResolved);
             ExpressionBaseState.super.getEnterHandler().handle(ctx);
         }};
 
