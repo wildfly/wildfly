@@ -36,7 +36,7 @@ import javax.naming.NameClassPair;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.InitialDirContext;
+import javax.naming.ldap.InitialLdapContext;
 import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 
@@ -48,7 +48,7 @@ import static org.jboss.as.naming.NamingMessages.MESSAGES;
  * @author Eduardo Martins
  * @author John Bailey
  */
-public class InitialContext extends InitialDirContext {
+public class InitialContext extends InitialLdapContext {
 
     /**
      * Map of any additional naming schemes
@@ -95,7 +95,7 @@ public class InitialContext extends InitialDirContext {
     };
 
     public InitialContext(Hashtable environment) throws NamingException {
-        super(environment);
+        super(environment, null);
     }
 
     @Override
