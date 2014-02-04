@@ -195,7 +195,7 @@ public interface NamingMessages {
      * @return a {@link NamingException} for the error.
      */
     @Message(id = 11843, value = "Failed instantiate %s %s from classloader %s")
-    NamingException failedToInstantiate(String description, String className, ClassLoader classLoader);
+    NamingException failedToInstantiate(@Cause Throwable cause, String description, String className, ClassLoader classLoader);
 
     /**
      * A message indicating the context entries could not be read from the binding name represented by the
