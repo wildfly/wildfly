@@ -25,11 +25,11 @@
  */
 package org.jboss.as.controller.interfaces;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given name matches the
@@ -53,7 +53,7 @@ public class NicInterfaceCriteria extends AbstractInterfaceCriteria {
      */
     public NicInterfaceCriteria(String name) {
         if (name == null)
-            throw MESSAGES.nullVar("name");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("name");
         this.name = name;
     }
 

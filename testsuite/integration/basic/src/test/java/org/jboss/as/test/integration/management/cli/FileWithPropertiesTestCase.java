@@ -206,7 +206,7 @@ public class FileWithPropertiesTestCase {
         assertEquals(1, execute(false, true));
         assertNotNull(cliOutput);
         assertEquals("failed", getValue("outcome"));
-        assertTrue(getValue("failure-description").contains("JBAS014802"));
+        assertTrue(getValue("failure-description").contains("WFLYCTL0211"));
     }
 
     protected String getValue(final String value) {

@@ -20,10 +20,11 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller._private;
 
 import java.util.concurrent.CancellationException;
 
+import org.jboss.as.controller.OperationClientException;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -31,7 +32,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class OperationCancellationException extends CancellationException implements OperationClientException {
+public class OperationCancellationException extends CancellationException implements OperationClientException {
 
     private static final long serialVersionUID = 0;
 

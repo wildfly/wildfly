@@ -20,12 +20,11 @@ package org.jboss.as.controller.operations.validation;
 
 import java.util.List;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Validates parameters of type {@link org.jboss.dmr.ModelType#OBJECT}.
@@ -69,7 +68,7 @@ public class MapValidator extends ModelTypeValidator implements ParameterValidat
     public MapValidator(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
         super(ModelType.OBJECT, nullable, false, false);
         if (elementValidator == null)
-            throw MESSAGES.nullVar("elementValidator");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("elementValidator");
         this.min = minSize;
         this.max = maxSize;
         this.elementValidator = elementValidator;
@@ -82,10 +81,10 @@ public class MapValidator extends ModelTypeValidator implements ParameterValidat
             List<Property> list = value.asPropertyList();
             int size = list.size();
             if (size < min) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMinSize(size, parameterName, min)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidMinSize(size, parameterName, min)));
             }
             else if (size > max) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMaxSize(size, parameterName, max)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidMaxSize(size, parameterName, max)));
             }
             else {
                 for (Property property : list) {

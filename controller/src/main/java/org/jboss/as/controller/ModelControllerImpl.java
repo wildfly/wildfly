@@ -23,9 +23,8 @@
 package org.jboss.as.controller;
 
 import static java.security.AccessController.doPrivileged;
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
@@ -65,6 +64,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.extension.ExtensionAddHandler;
 import org.jboss.as.controller.extension.ParallelExtensionAddHandler;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -166,7 +166,7 @@ class ModelControllerImpl implements ModelController {
         final AbstractOperationContext delegateContext = activeOperations.get(operationId);
         if(delegateContext == null) {
             // TODO we might just allow this case too, but for now it's just wrong (internal) usage
-            throw MESSAGES.noContextToDelegateTo(operationId);
+            throw ControllerLogger.ROOT_LOGGER.noContextToDelegateTo(operationId);
         }
         final ModelNode response = new ModelNode();
         final OperationTransactionControl originalResultTxControl = control == null ? null : new OperationTransactionControl() {
@@ -261,7 +261,7 @@ class ModelControllerImpl implements ModelController {
                     if (attemptLock) {
                         if (!controllerLock.detectDeadlockAndGetLock(operationID)) {
                             response.get(OUTCOME).set(FAILED);
-                            response.get(FAILURE_DESCRIPTION).set(MESSAGES.cannotGetControllerLock());
+                            response.get(FAILURE_DESCRIPTION).set(ControllerLogger.ROOT_LOGGER.cannotGetControllerLock());
                             return response;
                         }
                         shouldUnlock = true;
@@ -501,7 +501,7 @@ class ModelControllerImpl implements ModelController {
 
             private AsyncFuture<ModelNode> executeAsync(final ModelNode operation, final OperationMessageHandler messageHandler, final OperationAttachments attachments) {
                 if (executor == null) {
-                    throw MESSAGES.nullAsynchronousExecutor();
+                    throw ControllerLogger.ROOT_LOGGER.nullAsynchronousExecutor();
                 }
                 final AtomicReference<Thread> opThread = new AtomicReference<Thread>();
                 class OpTask extends AsyncFutureTask<ModelNode> {
@@ -647,9 +647,9 @@ class ModelControllerImpl implements ModelController {
     private void logNoHandler(ParsedBootOp parsedOp) {
         ImmutableManagementResourceRegistration child = rootRegistration.getSubModel(parsedOp.address);
         if (child == null) {
-            ROOT_LOGGER.noSuchResourceType(parsedOp.address);
+            ROOT_LOGGER.error(ROOT_LOGGER.noSuchResourceType(parsedOp.address));
         } else {
-            ROOT_LOGGER.noHandlerForOperation(parsedOp.operationName, parsedOp.address);
+            ROOT_LOGGER.error(ROOT_LOGGER.noHandlerForOperation(parsedOp.operationName, parsedOp.address));
         }
 
     }
@@ -674,9 +674,9 @@ class ModelControllerImpl implements ModelController {
 
                 ImmutableManagementResourceRegistration child = rootRegistration.getSubModel(address);
                 if (child == null) {
-                    context.getFailureDescription().set(MESSAGES.noSuchResourceType(address));
+                    context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.noSuchResourceType(address));
                 } else {
-                    context.getFailureDescription().set(MESSAGES.noHandlerForOperation(operationName, address));
+                    context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.noHandlerForOperation(operationName, address));
                 }
             }
             context.completeStep(OperationContext.ResultHandler.NOOP_RESULT_HANDLER);

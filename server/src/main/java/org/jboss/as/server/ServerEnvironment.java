@@ -33,7 +33,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
@@ -313,7 +313,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public ServerEnvironment(final String hostControllerName, final Properties props, final Map<String, String> env, final String serverConfig, final String initialServerConfig,
                              final LaunchType launchType, final RunningMode initialRunningMode, ProductConfig productConfig) {
         if (props == null) {
-            throw ControllerMessages.MESSAGES.nullVar("props");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("props");
         }
 
         this.launchType = launchType;

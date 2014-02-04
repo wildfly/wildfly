@@ -31,7 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import java.util.Collections;
 import java.util.Iterator;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -113,7 +113,7 @@ public class ValidateAddressOperationHandler implements OperationStepHandler {
             } else {
                 // Invalid
                 context.getResult().get(VALID).set(false);
-                context.getResult().get(PROBLEM).set(ControllerMessages.MESSAGES.childResourceNotFound(next));
+                context.getResult().get(PROBLEM).set(ControllerLogger.ROOT_LOGGER.childResourceNotFound(next));
                 context.stepCompleted();
                 return;
             }
@@ -121,7 +121,7 @@ public class ValidateAddressOperationHandler implements OperationStepHandler {
 
         if (authorize(context, current, operation).getDecision() == Decision.DENY) {
             context.getResult().get(VALID).set(false);
-            context.getResult().get(PROBLEM).set(ControllerMessages.MESSAGES.managementResourceNotFoundMessage(current));
+            context.getResult().get(PROBLEM).set(ControllerLogger.ROOT_LOGGER.managementResourceNotFoundMessage(current));
         } else {
             context.getResult().get(VALID).set(true);
         }

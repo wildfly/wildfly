@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.access.constraint;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.access.Action;
 
 /**

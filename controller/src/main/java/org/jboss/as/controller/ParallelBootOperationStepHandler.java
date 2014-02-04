@@ -22,8 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -35,6 +34,7 @@ import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -100,7 +100,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (!context.isNormalServer()) {
-            throw MESSAGES.fullServerBootRequired(getClass());
+            throw ControllerLogger.ROOT_LOGGER.fullServerBootRequired(getClass());
         }
 
         long start = System.currentTimeMillis();
@@ -119,7 +119,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
         final Thread controllingThread = Thread.currentThread();
 
         if (!(context instanceof AbstractOperationContext)) {
-            throw ControllerMessages.MESSAGES.operationContextIsNotAbstractOperationContext();
+            throw ControllerLogger.ROOT_LOGGER.operationContextIsNotAbstractOperationContext();
         }
 
         for (Map.Entry<String, List<ParsedBootOp>> entry : opsBySubsystem.entrySet()) {
@@ -169,7 +169,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
             context.addStep(getRuntimeStep(runtimeOpsBySubsystem), OperationContext.Stage.RUNTIME);
 
         } catch (InterruptedException e) {
-            context.getFailureDescription().set(new ModelNode().set(MESSAGES.subsystemBootInterrupted()));
+            context.getFailureDescription().set(new ModelNode().set(ControllerLogger.ROOT_LOGGER.subsystemBootInterrupted()));
             Thread.currentThread().interrupt();
         }
 
@@ -206,7 +206,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 if (txControl.response.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION)) {
                     failureDesc = txControl.response.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).toString();
                 } else {
-                    failureDesc = MESSAGES.subsystemBootOperationFailed(entry.getKey());
+                    failureDesc = ControllerLogger.ROOT_LOGGER.subsystemBootOperationFailed(entry.getKey());
                 }
                 MGMT_OP_LOGGER.error(failureDesc);
                 if (!failureRecorded) {
@@ -256,7 +256,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 final Thread controllingThread = Thread.currentThread();
 
                 if (!(context instanceof AbstractOperationContext)) {
-                    throw ControllerMessages.MESSAGES.operationContextIsNotAbstractOperationContext();
+                    throw ControllerLogger.ROOT_LOGGER.operationContextIsNotAbstractOperationContext();
                 }
 
 
@@ -278,7 +278,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     checkForSubsystemFailures(context, transactionControls, OperationContext.Stage.RUNTIME);
 
                 } catch (InterruptedException e) {
-                    context.getFailureDescription().set(new ModelNode().set(MESSAGES.subsystemBootInterrupted()));
+                    context.getFailureDescription().set(new ModelNode().set(ControllerLogger.ROOT_LOGGER.subsystemBootInterrupted()));
                     Thread.currentThread().interrupt();
                 }
 
@@ -373,7 +373,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     if (!transactionControl.signalled) {
                         ModelNode failure = new ModelNode();
                         failure.get(ModelDescriptionConstants.SUCCESS).set(false);
-                        failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(MESSAGES.subsystemBootOperationFailedExecuting(subsystemName));
+                        failure.get(ModelDescriptionConstants.FAILURE_DESCRIPTION).set(ControllerLogger.ROOT_LOGGER.subsystemBootOperationFailedExecuting(subsystemName));
                         transactionControl.operationFailed(failure);
                     }
                 } else {
@@ -428,7 +428,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                     committedLatch.await();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw MESSAGES.transactionInterrupted();
+                    throw ControllerLogger.ROOT_LOGGER.transactionInterrupted();
                 }
             }
         }

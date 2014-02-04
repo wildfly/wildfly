@@ -21,7 +21,7 @@ package org.jboss.as.controller.extension;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -103,11 +103,11 @@ public class ExtensionAddHandler implements OperationStepHandler {
         } catch (ModuleNotFoundException e) {
             // Treat this as a user mistake, e.g. incorrect module name.
             // Throw OFE so post-boot it only gets logged at DEBUG.
-            throw ControllerMessages.MESSAGES.extensionModuleNotFound(e, module);
+            throw ControllerLogger.ROOT_LOGGER.extensionModuleNotFound(e, module);
         } catch (ModuleLoadException e) {
             // The module is there but can't be loaded. Treat this as an internal problem.
             // Throw a runtime exception so it always gets logged at ERROR in the server log with stack trace details.
-            throw ControllerMessages.MESSAGES.extensionModuleLoadingFailure(e, module);
+            throw ControllerLogger.ROOT_LOGGER.extensionModuleLoadingFailure(e, module);
         }
     }
 

@@ -20,10 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller.logging;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.List;
@@ -33,20 +39,35 @@ import java.util.concurrent.CancellationException;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.NoSuchResourceException;
+import org.jboss.as.controller._private.OperationCancellationException;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller._private.OperationFailedRuntimeException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
+import org.jboss.as.controller.UnauthorizedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.registry.AttributeAccess.Storage;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.protocol.mgmt.RequestProcessingException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -55,27 +76,422 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 /**
- * This module is using message IDs in the ranges 14600-14899 and 13400-13499.
- * <p/>
- * This file is using the subsets 14630-14899 and 13450-13499 for non-logger messages.
- * <p/>
- * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
- * list of currently reserved JBAS message id blocks.
- * <p/>
- * Date: 02.11.2011
- *
- * Reserved logging id ranges from: http://community.jboss.org/wiki/LoggingIds: 14600 - 14899
- *
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface ControllerMessages {
+@MessageLogger(projectCode = "WFLYCTL", length = 4)
+public interface ControllerLogger extends BasicLogger {
 
     /**
-     * The messages
+     * Default root logger with category of the package name.
      */
-    ControllerMessages MESSAGES = Messages.getBundle(ControllerMessages.class);
+    ControllerLogger ROOT_LOGGER = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.as.controller");
+
+    /**
+     * Logger for management operation messages.
+     */
+    ControllerLogger MGMT_OP_LOGGER = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.as.controller.management-operation");
+
+    /**
+     * A logger with the category {@code org.jboss.as.server}
+     */
+    ControllerLogger SERVER_LOGGER = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.as.server");
+
+    /**
+     * A logger with the category {@code org.jboss.server.management}
+     */
+    ControllerLogger SERVER_MANAGEMENT_LOGGER = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.server.management");
+
+    /**
+     * A logger for logging deprecated resources usage
+     */
+    ControllerLogger DEPRECATED_LOGGER = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.as.controller.management-deprecated");
+
+    /**
+     * A logger for logging problems in the transformers
+     */
+    ControllerLogger TRANSFORMER_LOGGER = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.as.controller.transformer");
+
+    /**
+     * A logger for access control related messages.
+     */
+    ControllerLogger ACCESS_LOGGER = Logger.getMessageLogger(ControllerLogger.class, "org.jboss.as.controller.access-control");
+
+    /**
+     * Logs a warning message indicating the address, represented by the {@code address} parameter, could not be
+     * resolved, so cannot match it to any InetAddress.
+     *
+     * @param address the address that could not be resolved.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 1, value = "Cannot resolve address %s, so cannot match it to any InetAddress")
+    void cannotResolveAddress(String address);
+
+    /**
+     * Logs an error message indicating there was an error booting the container.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 2, value = "Error booting the container")
+    void errorBootingContainer(@Cause Throwable cause);
+
+    /**
+     * Logs an error message indicating there was an error booting the container.
+     *
+     * @param cause         the cause of the error.
+     * @param bootStackSize the boot stack size.
+     * @param name          the property name to increase the boot stack size.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 3, value = "Error booting the container due to insufficient stack space for the thread used to " +
+            "execute boot operations. The thread was configured with a stack size of [%1$d]. Setting " +
+            "system property %2$s to a value higher than [%1$d] may resolve this problem.")
+    void errorBootingContainer(@Cause Throwable cause, long bootStackSize, String name);
+
+    /**
+     * Logs an error message indicating the class, represented by the {@code className} parameter, caught exception
+     * attempting to revert the operation, represented by the {@code op} parameter, at the address, represented by the
+     * {@code address} parameter.
+     *
+     * @param cause     the cause of the error.
+     * @param className the name of the class that caught the error.
+     * @param op        the operation.
+     * @param address   the address.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 4, value = "%s caught exception attempting to revert operation %s at address %s")
+    void errorRevertingOperation(@Cause Throwable cause, String className, String op, PathAddress address);
+
+    /**
+     * Logs an error message indicating a failure to execute the operation, represented by the {@code op} parameter, at
+     * the address represented by the {@code path} parameter.
+     *
+     * @param cause the cause of the error.
+     * @param op    the operation.
+     * @param path  the path the operation was executed on.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 5, value = "Failed executing operation %s at address %s")
+    void failedExecutingOperation(@Cause Throwable cause, ModelNode op, PathAddress path);
+
+    /**
+     * Logs an error message indicating a failure executing the subsystem, represented by the {@code name} parameter,
+     * boot operations.
+     *
+     * @param cause the cause of the error.
+     * @param name  the name of subsystem.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 6, value = "Failed executing subsystem %s boot operations")
+    void failedSubsystemBootOperations(@Cause Throwable cause, String name);
+
+    /**
+     * Logs an error message indicating to failure to close the resource represented by the {@code closeable} parameter.
+     *
+     * @param cause     the cause of the error.
+     * @param closeable the resource.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 7, value = "Failed to close resource %s")
+    void failedToCloseResource(@Cause Throwable cause, Closeable closeable);
+
+    /**
+     * Logs an error message indicating to failure to close the resource represented by the {@code writer} parameter.
+     *
+     * @param cause  the cause of the error.
+     * @param writer the resource.
+     */
+    @LogMessage(level = ERROR)
+    void failedToCloseResource(@Cause Throwable cause, XMLStreamWriter writer);
+
+    /**
+     * Logs an error message indicating a failure to persist configuration change.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 8, value = "Failed to persist configuration change")
+    void failedToPersistConfigurationChange(@Cause Throwable cause);
+
+    /**
+     * Logs an error message indicating a failure to store the configuration file.
+     *
+     * @param cause the cause of the error.
+     * @param name  the name of the configuration.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 9, value = "Failed to store configuration to %s")
+    void failedToStoreConfiguration(@Cause Throwable cause, String name);
+
+    /**
+     * Logs an error message indicating an invalid value for the system property, represented by the {@code name}
+     * parameter, was found.
+     *
+     * @param value        the invalid value.
+     * @param name         the name of the system property.
+     * @param defaultValue the default value being used.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 10, value = "Invalid value %s for system property %s -- using default value [%d]")
+    void invalidSystemPropertyValue(String value, String name, int defaultValue);
+
+    /**
+     * Logs a warning message indicating the address, represented by the {@code address} parameter, is a wildcard
+     * address and will not match any specific address.
+     *
+     * @param address        the wildcard address.
+     * @param inetAddress    the inet-address tag.
+     * @param anyAddress     the any-address tag.
+     * @param anyIpv4Address the any-ipv4-address tag.
+     * @param anyIpv6Address the any-ipv6-address tag.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11, value = "Address %1$s is a wildcard address, which will not match against any specific address. Do not use " +
+            "the '%2$s' configuration element to specify that an interface should use a wildcard address; " +
+            "use '%3$s', '%4$s', or '%5$s'")
+    void invalidWildcardAddress(String address, String inetAddress, String anyAddress, String anyIpv4Address, String anyIpv6Address);
+
+    /**
+     * Logs an error message indicating no handler for the step operation, represented by the {@code stepOpName}
+     * parameter, at {@code address}.
+     *
+     * @param stepOpName the step operation name.
+     * @param address    the address
+     * @deprecated use {@link #noSuchResourceType(PathAddress)} or {@link #noHandlerForOperation(String, PathAddress)}
+     */
+//    @LogMessage(level = ERROR)
+//    @Message(id = 12, value = "No handler for %s at address %s")
+//    void noHandler(String stepOpName, PathAddress address);
+
+    /**
+     * Logs an error message indicating operation failed.
+     *
+     * @param cause     the cause of the error.
+     * @param op        the operation that failed.
+     * @param opAddress the address the operation failed on.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 13, value = "Operation (%s) failed - address: (%s)")
+    void operationFailed(@Cause Throwable cause, ModelNode op, ModelNode opAddress);
+
+    /**
+     * Logs an error message indicating operation failed.
+     *
+     * @param op                 the operation that failed.
+     * @param opAddress          the address the operation failed on.
+     * @param failureDescription the failure description.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = Message.INHERIT, value = "Operation (%s) failed - address: (%s) - failure description: %s")
+    void operationFailed(ModelNode op, ModelNode opAddress, ModelNode failureDescription);
+
+    /**
+     * Logs an error message indicating operation failed.
+     *
+     * @param cause        the cause of the error.
+     * @param op           the operation that failed.
+     * @param opAddress    the address the operation failed on.
+     * @param propertyName the boot stack size property name.
+     * @param defaultSize  the default boot stack size property size.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 14, value = "Operation (%s) failed - address: (%s) -- due to insufficient stack space for the thread used to " +
+            "execute operations. If this error is occurring during server boot, setting " +
+            "system property %s to a value higher than [%d] may resolve this problem.")
+    void operationFailed(@Cause Throwable cause, ModelNode op, ModelNode opAddress, String propertyName, int defaultSize);
+
+    /**
+     * Logs a warning message indicating a wildcard address was detected and will ignore other interface criteria.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15, value = "Wildcard address detected - will ignore other interface criteria.")
+    void wildcardAddressDetected();
+
+    /**
+     * Logs a warning message indicating an invocation on a {@link org.jboss.as.controller.ProxyController} did not provide a final response.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 16, value = "Received no final outcome response for operation %s with address %s from remote " +
+            "process at address %s. The result of this operation will only include the remote process' preliminary response to" +
+            "the request.")
+    void noFinalProxyOutcomeReceived(ModelNode op, ModelNode opAddress, ModelNode proxyAddress);
+
+    /**
+     * Logs an error message indicating operation failed due to a client error (e.g. an invalid request).
+     *
+     * @param op                 the operation that failed.
+     * @param opAddress          the address the operation failed on.
+     * @param failureDescription the failure description.
+     */
+    @LogMessage(level = Logger.Level.DEBUG)
+    @Message(id = 17, value = "Operation (%s) failed - address: (%s) - failure description: %s")
+    void operationFailedOnClientError(ModelNode op, ModelNode opAddress, ModelNode failureDescription);
+
+    /**
+     * Logs an error indicating that createWrapper should be called
+     *
+     * @param name the subsystem name
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 18, value = "A subsystem '%s' was registered without calling ExtensionContext.createTracker(). The subsystems are registered normally but won't be cleaned up when the extension is removed.")
+    void registerSubsystemNoWrapper(String name);
+
+    /**
+     * Logs a warning message indicating graceful shutdown of native management request handling
+     * communication did not complete within the given timeout period.
+     *
+     * @param timeout the timeout, in ms.
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 19, value = "Graceful shutdown of the handler used for native management requests did not complete within [%d] ms but shutdown of the underlying communication channel is proceeding")
+    void gracefulManagementChannelHandlerShutdownTimedOut(int timeout);
+
+    /**
+     * Logs a warning message indicating graceful shutdown of native management request handling
+     * communication failed.
+     *
+     * @param cause the timeout, in ms.
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 20, value = "Graceful shutdown of the handler used for native management requests failed but shutdown of the underlying communication channel is proceeding")
+    void gracefulManagementChannelHandlerShutdownFailed(@Cause Throwable cause);
+
+    /**
+     * Logs a warning message indicating graceful shutdown of management request handling of slave HC to master HC
+     * communication failed.
+     *
+     * @param cause        the the cause of the failure
+     * @param propertyName the name of the system property
+     * @param propValue    the value provided
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 21, value = "Invalid value '%s' for system property '%s' -- value must be convertible into an int")
+    void invalidChannelCloseTimeout(@Cause NumberFormatException cause, String propertyName, String propValue);
+
+    /**
+     * Logs a warning message indicating multiple addresses or nics matched the selection criteria provided for
+     * an interface
+     *
+     * @param interfaceName    the name of the interface configuration
+     * @param addresses        the matching addresses
+     * @param nis              the matching nics
+     * @param inetAddress      the selected address
+     * @param networkInterface the selected nic
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 22, value = "Multiple addresses or network interfaces matched the selection criteria for interface '%s'. Matching addresses: %s.  Matching network interfaces: %s. The interface will use address %s and network interface %s.")
+    void multipleMatchingAddresses(String interfaceName, Set<InetAddress> addresses, Set<String> nis, InetAddress inetAddress, String networkInterface);
+
+    /**
+     * Logs a warning message indicating multiple addresses or nics matched the selection criteria provided for
+     * an interface
+     *
+     * @param toMatch   the name of the interface configuration
+     * @param addresses the matching addresses
+     * @param nis       the matching nics
+     */
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 23, value = "Value '%s' for interface selection criteria 'inet-address' is ambiguous, as more than one address or network interface available on the machine matches it. Because of this ambiguity, no address will be selected as a match. Matching addresses: %s.  Matching network interfaces: %s.")
+    void multipleMatchingAddresses(String toMatch, Set<InetAddress> addresses, Set<String> nis);
+
+    /**
+     * Logs an error message indicating the target definition could not be read.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 24, value = "Could not read target definition!")
+    void cannotReadTargetDefinition(@Cause Throwable cause);
+
+    /**
+     * Logs an error message indicating a failure to transform.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 25, value = "Could not transform")
+    void cannotTransform(@Cause Throwable cause);
+
+    /**
+     * Logs a warning message indicating the there is not transformer for the subsystem.
+     *
+     * @param subsystemName the subsystem name
+     * @param major         the major version
+     * @param minor         the minor version
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 26, value = "We have no transformer for subsystem: %s-%d.%d model transfer can break!")
+    void transformerNotFound(String subsystemName, int major, int minor);
+
+    /**
+     * Logs a warning message indicating that an operation was interrupted before service stability was reached
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 27, value = "Operation was interrupted before stability could be reached")
+    void interruptedWaitingStability();
+
+    @LogMessage(level = Level.INFO)
+    @Message(id = 28, value = "Attribute %s is deprecated, and it might be removed in future version!")
+    void attributeDeprecated(String name);
+
+    /**
+     * Logs a warning message indicating a temp file could not be deleted.
+     *
+     * @param name temp filename
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id = 29, value = "Cannot delete temp file %s, will be deleted on exit")
+    void cannotDeleteTempFile(String name);
+
+    @Message(id = 30, value = "No resource definition is registered for address %s")
+    String noSuchResourceType(PathAddress address);
+
+    @Message(id = 31, value = "No operation named '%s' exists at address %s")
+    String noHandlerForOperation(String operationName, PathAddress address);
+
+    @Message(id = 32, value = "There were problems during the transformation process for target host: '%s' %nProblems found: %n%s")
+    @LogMessage(level = WARN)
+    void transformationWarnings(String hostName, Set<String> problems);
+
+    @Message(id = 33, value = "Extension '%s' is deprecated and may not be supported in future versions")
+    @LogMessage(level = WARN)
+    void extensionDeprecated(String extensionName);
+
+    @Message(id = 34, value = "Subsystems %s provided by legacy extension '%s' are not supported on servers running this version. " +
+            "The extension is only supported for use by hosts running a previous release in a mixed-version managed domain. " +
+            "On this server the extension will not register any subsystems, and future attempts to create or address " +
+            "subsystem resources on this server will result in failure.")
+    @LogMessage(level = INFO)
+    void ignoringUnsupportedLegacyExtension(List<String> subsystemNames, String extensionName);
+
+    /**
+     * Logs an error message indicating that updating the audit log failed
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 35, value = "Update of the management operation audit log failed")
+    void failedToUpdateAuditLog(@Cause Exception e);
+
+    /**
+     * Logs an error message indicating that audit logging is being disabled due to logging failures.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 36, value = "[%d] consecutive management operation audit logging failures have occurred; disabling audit logging")
+    void disablingLoggingDueToFailures(short failureCount);
+
+    /**
+     * Logs an error message indicating that a handler failed writing a log message
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 37, value = "Update of the management operation audit log failed in handler '%s'")
+    void logHandlerWriteFailed(@Cause Throwable t, String name);
+
+    /**
+     * Logs an error message indicating that audit logging is being disabled due to logging failures.
+     */
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 38, value = "[%d] consecutive management operation audit logging failures have occurred in handler '%s'; disabling this handler for audit logging")
+    void disablingLogHandlerDueToFailures(int failureCount, String name);
 
     /**
      * Creates an exception indicating the {@code name} is already defined.
@@ -85,7 +501,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14630, value = "%s already defined")
+    @Message(id = 39, value = "%s already defined")
     XMLStreamException alreadyDefined(String name, @Param Location location);
 
     /**
@@ -97,7 +513,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14631, value = "%s %s already declared")
+    @Message(id = 40, value = "%s %s already declared")
     XMLStreamException alreadyDeclared(String name, String value, @Param Location location);
 
     /**
@@ -111,7 +527,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14632, value = "A %s %s already declared has already been declared in %s %s")
+    @Message(id = 41, value = "A %s %s already declared has already been declared in %s %s")
     XMLStreamException alreadyDeclared(String name, String value, String parentName, String parentValue, @Param Location location);
 
     /**
@@ -126,7 +542,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14633, value = "A %s or a %s %s already declared has already been declared in %s %s")
+    @Message(id = 42, value = "A %s or a %s %s already declared has already been declared in %s %s")
     XMLStreamException alreadyDeclared(String name1, String name2, String value, String parentName, String parentValue, @Param Location location);
 
     /**
@@ -139,7 +555,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14634, value = "An %s named '%s' is already registered at location '%s'")
+    @Message(id = 43, value = "An %s named '%s' is already registered at location '%s'")
     IllegalArgumentException alreadyRegistered(String type, String name, String location);
 
     /**
@@ -152,7 +568,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14635, value = "Ambiguous configuration file name '%s' as there are multiple files in %s that end in %s")
+    @Message(id = 44, value = "Ambiguous configuration file name '%s' as there are multiple files in %s that end in %s")
     IllegalStateException ambiguousConfigurationFiles(String backupType, File searchDir, String suffix);
 
     /**
@@ -165,7 +581,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14636, value = "Ambiguous name '%s' in %s: %s")
+    @Message(id = 45, value = "Ambiguous name '%s' in %s: %s")
     IllegalArgumentException ambiguousName(String prefix, String dir, Collection<String> files);
 
     /**
@@ -173,7 +589,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RequestProcessingException} for the error.
      */
-    @Message(id = 14637, value = "Thread was interrupted waiting for a response for asynch operation")
+    @Message(id = 46, value = "Thread was interrupted waiting for a response for asynch operation")
     RequestProcessingException asynchOperationThreadInterrupted();
 
     /**
@@ -184,7 +600,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RequestProcessingException} for the error.
      */
-    @Message(id = 14638, value = "No asynch request with batch id %d")
+    @Message(id = 47, value = "No asynch request with batch id %d")
     RequestProcessingException asynchRequestNotFound(int batchId);
 
     /**
@@ -194,7 +610,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14639, value = "Attribute %s is not writable")
+    @Message(id = 48, value = "Attribute %s is not writable")
     String attributeNotWritable(String attributeName);
 
     /**
@@ -206,7 +622,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14640, value = "'%s' is a registered child of resource (%s)")
+    @Message(id = 49, value = "'%s' is a registered child of resource (%s)")
     String attributeRegisteredOnResource(String attributeName, ModelNode resource);
 
     /**
@@ -216,7 +632,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14641, value = "Unable to determine a default name based on the local host name")
+    @Message(id = 50, value = "Unable to determine a default name based on the local host name")
     RuntimeException cannotDetermineDefaultName(@Cause Throwable cause);
 
     /**
@@ -226,7 +642,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14642, value = "Could not create %s")
+    @Message(id = 51, value = "Could not create %s")
     IllegalStateException cannotCreate(String path);
 
     /**
@@ -236,7 +652,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14643, value = "Could not delete %s")
+    @Message(id = 52, value = "Could not delete %s")
     IllegalStateException cannotDelete(File file);
 
     /**
@@ -244,7 +660,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14644, value = "Cannot register submodels with a null PathElement")
+    @Message(id = 53, value = "Cannot register submodels with a null PathElement")
     IllegalArgumentException cannotRegisterSubmodelWithNullPath();
 
     /**
@@ -252,7 +668,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14645, value = "Cannot register non-runtime-only submodels with a runtime-only parent")
+    @Message(id = 54, value = "Cannot register non-runtime-only submodels with a runtime-only parent")
     IllegalArgumentException cannotRegisterSubmodel();
 
     /**
@@ -262,7 +678,7 @@ public interface ControllerMessages {
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14646, value = "Cannot remove %s")
+    @Message(id = 55, value = "Cannot remove %s")
     OperationFailedRuntimeException cannotRemove(String name);
 
     /**
@@ -273,7 +689,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14647, value = "Could not rename %s to %s")
+    @Message(id = 56, value = "Could not rename %s to %s")
     IllegalStateException cannotRename(String fromPath, String toPath);
 
     /**
@@ -283,7 +699,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14648, value = "Cannot write to %s")
+    @Message(id = 57, value = "Cannot write to %s")
     IllegalArgumentException cannotWriteTo(String name);
 
     /**
@@ -296,7 +712,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14649, value = "Child %s of element %s already declared")
+    @Message(id = 58, value = "Child %s of element %s already declared")
     XMLStreamException childAlreadyDeclared(String childName, String parentName, @Param Location location);
 
     /**
@@ -307,7 +723,7 @@ public interface ControllerMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14650, value = "Could not get canonical file for boot file: %s")
+    @Message(id = 59, value = "Could not get canonical file for boot file: %s")
     RuntimeException canonicalBootFileNotFound(@Cause Throwable cause, File file);
 
     /**
@@ -318,7 +734,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14651, value = "Could not get canonical file for main file: %s")
+    @Message(id = 60, value = "Could not get canonical file for main file: %s")
     IllegalStateException canonicalMainFileNotFound(@Cause Throwable cause, File file);
 
     /**
@@ -326,7 +742,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14652, value = "Channel closed")
+    @Message(id = 61, value = "Channel closed")
     String channelClosed();
 
     /**
@@ -334,7 +750,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14653, value = "Composite operation failed and was rolled back. Steps that failed:")
+    @Message(id = 62, value = "Composite operation failed and was rolled back. Steps that failed:")
     String compositeOperationFailed();
 
     /**
@@ -342,7 +758,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14654, value = "Composite operation was rolled back")
+    @Message(id = 63, value = "Composite operation was rolled back")
     String compositeOperationRolledBack();
 
     /**
@@ -353,7 +769,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14655, value = "Configuration files whose complete name is %s are not allowed")
+    @Message(id = 64, value = "Configuration files whose complete name is %s are not allowed")
     IllegalArgumentException configurationFileNameNotAllowed(String backupType);
 
     /**
@@ -365,7 +781,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14656, value = "No configuration file ending in %s found in %s")
+    @Message(id = 65, value = "No configuration file ending in %s found in %s")
     IllegalStateException configurationFileNotFound(String suffix, File dir);
 
     /**
@@ -375,7 +791,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14657, value = "No directory %s was found")
+    @Message(id = 66, value = "No directory %s was found")
     IllegalArgumentException directoryNotFound(String pathName);
 
     /**
@@ -388,7 +804,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14658, value = "Either a %s or %s domain controller configuration must be declared.")
+    @Message(id = 67, value = "Either a %s or %s domain controller configuration must be declared.")
     XMLStreamException domainControllerMustBeDeclared(String remoteName, String localName, @Param Location location);
 
     /**
@@ -400,7 +816,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14659, value = "An attribute named '%s' has already been declared")
+    @Message(id = 68, value = "An attribute named '%s' has already been declared")
     XMLStreamException duplicateAttribute(String name, @Param Location location);
 
     /**
@@ -411,7 +827,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14660, value = "Duplicate %s declaration")
+    @Message(id = 69, value = "Duplicate %s declaration")
     XMLStreamException duplicateDeclaration(String name, @Param Location location);
 
     /**
@@ -423,7 +839,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14661, value = "Duplicate %s declaration %s")
+    @Message(id = 70, value = "Duplicate %s declaration %s")
     XMLStreamException duplicateDeclaration(String name, String value, @Param Location location);
 
     /**
@@ -433,7 +849,7 @@ public interface ControllerMessages {
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14662, value = "Duplicate path element '%s' found")
+    @Message(id = 71, value = "Duplicate path element '%s' found")
     OperationFailedRuntimeException duplicateElement(String name);
 
     /**
@@ -443,7 +859,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14663, value = "Duplicate interface declaration")
+    @Message(id = 72, value = "Duplicate interface declaration")
     XMLStreamException duplicateInterfaceDeclaration(@Param Location location);
 
     /**
@@ -455,7 +871,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14664, value = "An element of this type named '%s' has already been declared")
+    @Message(id = 73, value = "An element of this type named '%s' has already been declared")
     XMLStreamException duplicateNamedElement(String name, @Param Location location);
 
     /**
@@ -465,7 +881,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14665, value = "Duplicate profile included")
+    @Message(id = 74, value = "Duplicate profile included")
     XMLStreamException duplicateProfile(@Param Location location);
 
     /**
@@ -475,7 +891,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14666, value = "Duplicate resource %s")
+    @Message(id = 75, value = "Duplicate resource %s")
     IllegalStateException duplicateResource(String name);
 
     /**
@@ -485,7 +901,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14667, value = "Duplicate resource type %s")
+    @Message(id = 76, value = "Duplicate resource type %s")
     IllegalStateException duplicateResourceType(String type);
 
     /**
@@ -497,7 +913,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14668, value = "Element %s is not supported in a %s file")
+    @Message(id = 77, value = "Element %s is not supported in a %s file")
     String elementNotSupported(String name, String fileName);
 
     /**
@@ -505,7 +921,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14669, value = "Error waiting for Tx commit/rollback")
+    @Message(id = 78, value = "Error waiting for Tx commit/rollback")
     String errorWaitingForTransaction();
 
     /**
@@ -516,7 +932,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14670, value = "Failed initializing module %s")
+    @Message(id = 79, value = "Failed initializing module %s")
     RuntimeException failedInitializingModule(@Cause Throwable cause, String name);
 
     /**
@@ -524,7 +940,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14671, value = "Failed services")
+    @Message(id = 80, value = "Failed services")
     String failedServices();
 
     /**
@@ -535,7 +951,7 @@ public interface ControllerMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 14672, value = "Failed to back up %s")
+    @Message(id = 81, value = "Failed to back up %s")
     ConfigurationPersistenceException failedToBackup(@Cause Throwable cause, File file);
 
     /**
@@ -547,7 +963,7 @@ public interface ControllerMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 14673, value = "Failed to create backup copies of configuration file %s")
+    @Message(id = 82, value = "Failed to create backup copies of configuration file %s")
     ConfigurationPersistenceException failedToCreateConfigurationBackup(@Cause Throwable cause, File file);
 
     /**
@@ -557,7 +973,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14674, value = "Failed to load module")
+    @Message(id = 83, value = "Failed to load module")
     XMLStreamException failedToLoadModule(@Cause Throwable cause);
 
     /**
@@ -578,7 +994,7 @@ public interface ControllerMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 14675, value = "Failed to marshal configuration")
+    @Message(id = 84, value = "Failed to marshal configuration")
     ConfigurationPersistenceException failedToMarshalConfiguration(@Cause Throwable cause);
 
     /**
@@ -588,7 +1004,7 @@ public interface ControllerMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 14676, value = "Failed to parse configuration")
+    @Message(id = 85, value = "Failed to parse configuration")
     ConfigurationPersistenceException failedToParseConfiguration(@Cause Throwable cause);
 
     /**
@@ -598,7 +1014,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14677, value = "Failed to persist configuration change: %s")
+    @Message(id = 86, value = "Failed to persist configuration change: %s")
     String failedToPersistConfigurationChange(String cause);
 
 
@@ -609,7 +1025,7 @@ public interface ControllerMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 14678, value = "Failed to store configuration")
+    @Message(id = 87, value = "Failed to store configuration")
     ConfigurationPersistenceException failedToStoreConfiguration(@Cause Throwable cause);
 
     /**
@@ -622,7 +1038,7 @@ public interface ControllerMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 14679, value = "Failed to take a snapshot of %s to %s")
+    @Message(id = 88, value = "Failed to take a snapshot of %s to %s")
     ConfigurationPersistenceException failedToTakeSnapshot(@Cause Throwable cause, File file, File snapshot);
 
     /**
@@ -632,7 +1048,7 @@ public interface ControllerMessages {
      *
      * @return a {@link ConfigurationPersistenceException} for the error.
      */
-    @Message(id = 14680, value = "Failed to write configuration")
+    @Message(id = 89, value = "Failed to write configuration")
     ConfigurationPersistenceException failedToWriteConfiguration(@Cause Throwable cause);
 
     /**
@@ -642,7 +1058,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14681, value = "%s does not exist")
+    @Message(id = 90, value = "%s does not exist")
     IllegalArgumentException fileNotFound(String path1);
 
     /**
@@ -654,7 +1070,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14682, value = "No files beginning with '%s' found in %s")
+    @Message(id = 91, value = "No files beginning with '%s' found in %s")
     IllegalArgumentException fileNotFoundWithPrefix(String prefix, String dir);
 
     /**
@@ -664,7 +1080,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14683, value = "%s cannot be used except in a full server boot")
+    @Message(id = 92, value = "%s cannot be used except in a full server boot")
     IllegalStateException fullServerBootRequired(Class<?> clazz);
 
     /**
@@ -674,7 +1090,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14684, value = "No included group with name %s found")
+    @Message(id = 93, value = "No included group with name %s found")
     String groupNotFound(String name);
 
     /**
@@ -685,7 +1101,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14685, value = "Illegal interface criteria type %s; must be %s")
+    @Message(id = 94, value = "Illegal interface criteria type %s; must be %s")
     String illegalInterfaceCriteria(ModelType invalidType, ModelType validType);
 
     /**
@@ -698,7 +1114,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14686, value = "Illegal value %s for interface criteria %s; must be %s")
+    @Message(id = 95, value = "Illegal value %s for interface criteria %s; must be %s")
     String illegalValueForInterfaceCriteria(ModelType valueType, String id, ModelType validType);
 
     /**
@@ -706,7 +1122,7 @@ public interface ControllerMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 14687, value = "Resource is immutable")
+    @Message(id = 96, value = "Resource is immutable")
     UnsupportedOperationException immutableResource();
 
     /**
@@ -718,7 +1134,7 @@ public interface ControllerMessages {
      *
      * @return the exception.
      */
-    @Message(id = 14688, value = "Wrong type for %s. Expected %s but was %s")
+    @Message(id = 97, value = "Wrong type for %s. Expected %s but was %s")
     OperationFailedException incorrectType(String name, Collection<ModelType> validTypes, ModelType invalidType);
 
     /**
@@ -726,7 +1142,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14689, value = "Interrupted while waiting for request")
+    @Message(id = 98, value = "Interrupted while waiting for request")
     String interruptedWaitingForRequest();
 
     /**
@@ -736,7 +1152,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14690, value = "%s is invalid")
+    @Message(id = 99, value = "%s is invalid")
     String invalid(String name);
 
     /**
@@ -749,7 +1165,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14691, value = "%d is not a valid %s")
+    @Message(id = 100, value = "%d is not a valid %s")
     XMLStreamException invalid(@Cause Throwable cause, int value, String name, @Param Location location);
 
     /**
@@ -760,7 +1176,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14692, value = "Invalid address %s (%s)")
+    @Message(id = 101, value = "Invalid address %s (%s)")
     String invalidAddress(String address, String msg);
 
     /**
@@ -771,7 +1187,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14693, value = "Invalid 'value' %s -- must be of the form address/mask")
+    @Message(id = 102, value = "Invalid 'value' %s -- must be of the form address/mask")
     String invalidAddressMaskValue(String value);
 
     /**
@@ -782,7 +1198,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14694, value = "Invalid mask %s (%s)")
+    @Message(id = 103, value = "Invalid mask %s (%s)")
     String  invalidAddressMask(String mask, String msg);
 
     /**
@@ -793,7 +1209,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14695, value = "Invalid address %s (%s)")
+    @Message(id = 104, value = "Invalid address %s (%s)")
     String invalidAddressValue(String value, String msg);
 
     /**
@@ -805,7 +1221,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14696, value = "%s is invalid in combination with %s")
+    @Message(id = 105, value = "%s is invalid in combination with %s")
     String invalidAttributeCombo(String attributeName, StringBuilder combos);
 
     /**
@@ -818,7 +1234,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14697, value = "Invalid value '%s' for attribute '%s'")
+    @Message(id = 106, value = "Invalid value '%s' for attribute '%s'")
     XMLStreamException invalidAttributeValue(String value, QName name, @Param Location location);
 
     /**
@@ -834,7 +1250,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14698, value = "Illegal value %d for attribute '%s' must be between %d and %d (inclusive)")
+    @Message(id = 107, value = "Illegal value %d for attribute '%s' must be between %d and %d (inclusive)")
     XMLStreamException invalidAttributeValue(int value, QName name, int minInclusive, int maxInclusive, @Param Location location);
 
     /**
@@ -848,7 +1264,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14699, value = "Illegal value '%s' for attribute '%s' must be an integer")
+    @Message(id = 108, value = "Illegal value '%s' for attribute '%s' must be an integer")
     XMLStreamException invalidAttributeValueInt(@Cause Throwable cause, String value, QName name, @Param Location location);
 
     /**
@@ -860,7 +1276,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14700, value = "Invalid pattern %s for interface criteria %s")
+    @Message(id = 109, value = "Invalid pattern %s for interface criteria %s")
     String invalidInterfaceCriteriaPattern(String pattern, String name);
 
     /**
@@ -871,7 +1287,7 @@ public interface ControllerMessages {
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14701, value = "Invalid resource address element '%s'. The key '%s' is not valid for an element in a resource address.")
+    @Message(id = 110, value = "Invalid resource address element '%s'. The key '%s' is not valid for an element in a resource address.")
     String invalidPathElementKey(String element, String key);
 
     /**
@@ -879,7 +1295,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14702, value = "Load factor must be greater than 0 and less than or equal to 1")
+    @Message(id = 111, value = "Load factor must be greater than 0 and less than or equal to 1")
     IllegalArgumentException invalidLoadFactor();
 
     /**
@@ -892,7 +1308,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14703, value = "'%s' is an invalid value for parameter %s. Values must have a maximum length of %d characters")
+    @Message(id = 112, value = "'%s' is an invalid value for parameter %s. Values must have a maximum length of %d characters")
     String invalidMaxLength(String value, String name, int length);
 
     /**
@@ -905,7 +1321,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14704, value = "'%s' is an invalid value for parameter %s. Values must have a minimum length of %d characters")
+    @Message(id = 113, value = "'%s' is an invalid value for parameter %s. Values must have a minimum length of %d characters")
     String invalidMinLength(String value, String name, int length);
 
     /**
@@ -918,7 +1334,7 @@ public interface ControllerMessages {
      *
      * @return the message
      */
-    @Message(id = 14705, value = "[%d] is an invalid size for parameter %s. A maximum length of [%d] is required")
+    @Message(id = 114, value = "[%d] is an invalid size for parameter %s. A maximum length of [%d] is required")
     String invalidMaxSize(int size, String name, int maxSize);
 
     /**
@@ -931,7 +1347,7 @@ public interface ControllerMessages {
      *
      * @return the message
      */
-    @Message(id = 14706, value = "[%d] is an invalid size for parameter %s. A minimum length of [%d] is required")
+    @Message(id = 115, value = "[%d] is an invalid size for parameter %s. A minimum length of [%d] is required")
     String invalidMinSize(int size, String name, int minSize);
 
     /**
@@ -943,7 +1359,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14707, value = "%d is an invalid value for parameter %s. A maximum value of %d is required")
+    @Message(id = 116, value = "%d is an invalid value for parameter %s. A maximum value of %d is required")
     String invalidMaxValue(int value, String name, int maxValue);
 
     /**
@@ -966,7 +1382,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14708, value = "%d is an invalid value for parameter %s. A minimum value of %d is required")
+    @Message(id = 117, value = "%d is an invalid value for parameter %s. A minimum value of %d is required")
     String invalidMinValue(int value, String name, int minValue);
 
     /**
@@ -985,7 +1401,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14709, value = "Invalid modification after completed step")
+    @Message(id = 118, value = "Invalid modification after completed step")
     IllegalStateException invalidModificationAfterCompletedStep();
 
     /**
@@ -997,7 +1413,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14710, value = "Value %s for attribute %s is not a valid multicast address")
+    @Message(id = 119, value = "Value %s for attribute %s is not a valid multicast address")
     OperationFailedException invalidMulticastAddress(String value, String name);
 
     /**
@@ -1011,7 +1427,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14711, value = "An outbound socket binding: %s cannot have both %s as well as a %s at the same time")
+    @Message(id = 120, value = "An outbound socket binding: %s cannot have both %s as well as a %s at the same time")
     XMLStreamException invalidOutboundSocketBinding(String name, String localTag, String remoteTag, @Param Location location);
 
     /**
@@ -1023,8 +1439,8 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14712, value = "%s is not a valid value for parameter %s -- must be one of %s")
-    IllegalArgumentException invalidParameterValue(Flag flag, String name, Collection<Flag> validFlags);
+    @Message(id = 121, value = "%s is not a valid value for parameter %s -- must be one of %s")
+    IllegalArgumentException invalidParameterValue(OperationEntry.Flag flag, String name, Collection<OperationEntry.Flag> validFlags);
 
     /**
      * Creates an exception indicating the {@code value} for the attribute, represented by the {@code name} parameter,
@@ -1037,7 +1453,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14713, value = "Value %s for attribute %s does not represent a properly hex-encoded SHA1 hash")
+    @Message(id = 122, value = "Value %s for attribute %s does not represent a properly hex-encoded SHA1 hash")
     XMLStreamException invalidSha1Value(@Cause Throwable cause, String value, String name, @Param Location location);
 
     /**
@@ -1048,7 +1464,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14714, value = "Stage %s is not valid for context process type %s")
+    @Message(id = 123, value = "Stage %s is not valid for context process type %s")
     IllegalStateException invalidStage(OperationContext.Stage stage, ProcessType processType);
 
     /**
@@ -1056,7 +1472,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14715, value = "Invalid step stage specified")
+    @Message(id = 124, value = "Invalid step stage specified")
     IllegalArgumentException invalidStepStage();
 
     /**
@@ -1064,7 +1480,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14716, value = "Invalid step stage for this context type")
+    @Message(id = 125, value = "Invalid step stage for this context type")
     IllegalArgumentException invalidStepStageForContext();
 
     /**
@@ -1072,7 +1488,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14717, value = "Can not have a negative size table!")
+    @Message(id = 126, value = "Can not have a negative size table!")
     IllegalArgumentException invalidTableSize();
 
     /**
@@ -1082,7 +1498,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14718, value = "Invalid type %s")
+    @Message(id = 127, value = "Invalid type %s")
     String invalidType(ModelType type);
 
     /**
@@ -1094,7 +1510,7 @@ public interface ControllerMessages {
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14719, value = "Invalid resource address element '%s'. The value '%s' is not valid for an element in a resource address. Character '%s' is not allowed.")
+    @Message(id = 128, value = "Invalid resource address element '%s'. The value '%s' is not valid for an element in a resource address. Character '%s' is not allowed.")
     String invalidPathElementValue(String element, String value, Character character);
 
     /**
@@ -1106,7 +1522,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14720, value = "Invalid value %s for %s; legal values are %s")
+    @Message(id = 129, value = "Invalid value %s for %s; legal values are %s")
     String invalidValue(String value, String name, Collection<?> validValues);
 
     /**
@@ -1120,7 +1536,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14721, value = "Illegal '%s' value %s -- must be greater than %s")
+    @Message(id = 130, value = "Illegal '%s' value %s -- must be greater than %s")
     XMLStreamException invalidValueGreaterThan(String name, int value, int minValue, @Param Location location);
 
     /**
@@ -1132,7 +1548,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14722, value = "Illegal '%s' value %s -- cannot be negative")
+    @Message(id = 131, value = "Illegal '%s' value %s -- cannot be negative")
     XMLStreamException invalidValueNegative(String name, int value, @Param Location location);
 
     /**
@@ -1144,7 +1560,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14723, value = "Must include one of the following elements: %s")
+    @Message(id = 132, value = "Must include one of the following elements: %s")
     XMLStreamException missingOneOf(StringBuilder sb, @Param Location location);
 
     /**
@@ -1155,7 +1571,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14724, value = "Missing required attribute(s): %s")
+    @Message(id = 133, value = "Missing required attribute(s): %s")
     XMLStreamException missingRequiredAttributes(StringBuilder sb, @Param Location location);
 
     /**
@@ -1166,7 +1582,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14725, value = "Missing required element(s): %s")
+    @Message(id = 134, value = "Missing required element(s): %s")
     XMLStreamException missingRequiredElements(StringBuilder sb, @Param Location location);
 
     /**
@@ -1176,7 +1592,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14726, value = "Interrupted awaiting loading of module %s")
+    @Message(id = 135, value = "Interrupted awaiting loading of module %s")
     XMLStreamException moduleLoadingInterrupted(String name);
 
     /**
@@ -1186,7 +1602,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14727, value = "Interrupted awaiting initialization of module %s")
+    @Message(id = 136, value = "Interrupted awaiting initialization of module %s")
     RuntimeException moduleInitializationInterrupted(String name);
 
     /**
@@ -1196,7 +1612,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14728, value = "Model contains multiple %s nodes")
+    @Message(id = 137, value = "Model contains multiple %s nodes")
     IllegalStateException multipleModelNodes(String name);
 
     /**
@@ -1208,7 +1624,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14729, value = "Namespace with prefix %s already registered with schema URI %s")
+    @Message(id = 138, value = "Namespace with prefix %s already registered with schema URI %s")
     String namespaceAlreadyRegistered(String prefix, String uri);
 
     /**
@@ -1218,7 +1634,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14730, value = "No namespace with URI %s found")
+    @Message(id = 139, value = "No namespace with URI %s found")
     String namespaceNotFound(String prefix);
 
     /**
@@ -1228,7 +1644,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14731, value = "Nested %s not allowed")
+    @Message(id = 140, value = "Nested %s not allowed")
     String nestedElementNotAllowed(Element element);
 
     /**
@@ -1239,7 +1655,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RequestProcessingException} for the error.
      */
-    @Message(id = 14732, value = "No active request found for handling report %d")
+    @Message(id = 141, value = "No active request found for handling report %d")
     RequestProcessingException noActiveRequestForHandlingReport(int id);
 
     /**
@@ -1250,7 +1666,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RequestProcessingException} for the error.
      */
-    @Message(id = 14733, value = "No active request found for proxy operation control %d")
+    @Message(id = 142, value = "No active request found for proxy operation control %d")
     RequestProcessingException noActiveRequestForProxyOperation(int id);
 
     /**
@@ -1261,7 +1677,7 @@ public interface ControllerMessages {
      *
      * @return a {@link IOException} for the error.
      */
-    @Message(id = 14734, value = "No active request found for reading inputstream report %d")
+    @Message(id = 143, value = "No active request found for reading inputstream report %d")
     IOException noActiveRequestForReadingInputStreamReport(int id);
 
     /**
@@ -1269,7 +1685,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14735, value = "No active step")
+    @Message(id = 144, value = "No active step")
     IllegalStateException noActiveStep();
 
     /**
@@ -1279,7 +1695,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RequestProcessingException} for the error.
      */
-    @Message(id = 14736, value = "No active tx found for id %d")
+    @Message(id = 145, value = "No active tx found for id %d")
     RuntimeException noActiveTransaction(int id);
 
     /**
@@ -1291,7 +1707,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14737, value = "No child registry for (%s, %s)")
+    @Message(id = 146, value = "No child registry for (%s, %s)")
     String noChildRegistry(String childType, String child);
 
     /**
@@ -1301,7 +1717,7 @@ public interface ControllerMessages {
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14738, value = "No child type %s")
+    @Message(id = 147, value = "No child type %s")
     OperationFailedRuntimeException noChildType(String name);
 
     /**
@@ -1315,7 +1731,7 @@ public interface ControllerMessages {
      *
      * @deprecated use {@link #noSuchResourceType(PathAddress)} or {@link #noHandlerForOperation(String, PathAddress)}
      */
-//    @Message(id = 14739, value = "No handler for %s at address %s")
+//    @Message(id = 148, value = "No handler for %s at address %s")
 //    String noHandler(String stepOpName, PathAddress address);
 
     /**
@@ -1323,7 +1739,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14740, value = "No interface criteria was provided")
+    @Message(id = 149, value = "No interface criteria was provided")
     String noInterfaceCriteria();
 
     /**
@@ -1331,7 +1747,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14741, value = "No operation handler")
+    @Message(id = 150, value = "No operation handler")
     String noOperationHandler();
 
     /**
@@ -1342,7 +1758,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14742, value = "A node is already registered at '%s%s)'")
+    @Message(id = 151, value = "A node is already registered at '%s%s)'")
     IllegalArgumentException nodeAlreadyRegistered(String location, String value);
 
     /**
@@ -1352,7 +1768,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14743, value = "%s is not a directory")
+    @Message(id = 152, value = "%s is not a directory")
     IllegalStateException notADirectory(String path);
 
     /**
@@ -1364,7 +1780,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14744, value = "No %s%s found for %s")
+    @Message(id = 153, value = "No %s%s found for %s")
     IllegalStateException notFound(String path, String className, ModuleIdentifier id);
 
     /**
@@ -1372,7 +1788,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14745, value = "Cannot execute asynchronous operation without an executor")
+    @Message(id = 154, value = "Cannot execute asynchronous operation without an executor")
     IllegalStateException nullAsynchronousExecutor();
 
     /**
@@ -1382,7 +1798,7 @@ public interface ControllerMessages {
      *
      * @return the exception.
      */
-    @Message(id = 14746, value = "%s may not be null")
+    @Message(id = 155, value = "%s may not be null")
     OperationFailedException nullNotAllowed(String name);
 
     /**
@@ -1392,7 +1808,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14747, value = "%s is null")
+    @Message(id = 156, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 
     /**
@@ -1410,7 +1826,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14748, value = "Operation already complete")
+    @Message(id = 157, value = "Operation already complete")
     IllegalStateException operationAlreadyComplete();
 
     /**
@@ -1420,7 +1836,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14749, value = "Operation handler failed: %s")
+    @Message(id = 158, value = "Operation handler failed: %s")
     String operationHandlerFailed(String msg);
 
     /**
@@ -1428,7 +1844,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14750, value = "Operation handler failed to complete")
+    @Message(id = 159, value = "Operation handler failed to complete")
     String operationHandlerFailedToComplete();
 
     /**
@@ -1436,7 +1852,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14751, value = "Operation rolling back")
+    @Message(id = 160, value = "Operation rolling back")
     String operationRollingBack();
 
     /**
@@ -1444,7 +1860,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14752, value = "Operation succeeded, committing")
+    @Message(id = 161, value = "Operation succeeded, committing")
     String operationSucceeded();
 
     /**
@@ -1456,7 +1872,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14753, value = "There is no operation %s registered at address %s")
+    @Message(id = 162, value = "There is no operation %s registered at address %s")
     String operationNotRegistered(String op, PathAddress address);
 
 
@@ -1468,7 +1884,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14754, value = "An operation reply value type description is required but was not implemented for operation %s")
+    @Message(id = 163, value = "An operation reply value type description is required but was not implemented for operation %s")
     IllegalStateException operationReplyValueTypeRequired(String operationName);
 
     /**
@@ -1480,7 +1896,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14755, value = "Parsing problem at [row,col]:[%d ,%d]%nMessage: %s")
+    @Message(id = 164, value = "Parsing problem at [row,col]:[%d ,%d]%nMessage: %s")
     String parsingProblem(int row, int col, String msg);
 
     /**
@@ -1488,7 +1904,7 @@ public interface ControllerMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 14756, value = "No configuration persister was injected")
+    @Message(id = 165, value = "No configuration persister was injected")
     StartException persisterNotInjected();
 
     /**
@@ -1496,7 +1912,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RequestProcessingException} for the error.
      */
-    @Message(id = 14757, value = "Thread was interrupted waiting for the operation to prepare/fail")
+    @Message(id = 166, value = "Thread was interrupted waiting for the operation to prepare/fail")
     RequestProcessingException prepareFailThreadInterrupted();
 
     /**
@@ -1507,7 +1923,7 @@ public interface ControllerMessages {
      * @return a {@link XMLStreamException} for the error.
      */
     //No longer used
-    //@Message(id = 14758, value = "Profile has no subsystem configurations")
+    //@Message(id = 167, value = "Profile has no subsystem configurations")
     //XMLStreamException profileHasNoSubsystems(@Param Location location);
 
     /**
@@ -1517,7 +1933,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14759, value = "No profile found for inclusion")
+    @Message(id = 168, value = "No profile found for inclusion")
     XMLStreamException profileNotFound(@Param Location location);
 
     /**
@@ -1527,7 +1943,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14760, value = "A proxy handler is already registered at location '%s'")
+    @Message(id = 169, value = "A proxy handler is already registered at location '%s'")
     IllegalArgumentException proxyHandlerAlreadyRegistered(String location);
 
     /**
@@ -1536,7 +1952,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14761, value = "Thread was interrupted waiting to read attachment input stream from remote caller")
+    @Message(id = 170, value = "Thread was interrupted waiting to read attachment input stream from remote caller")
     RuntimeException remoteCallerThreadInterrupted();
 
     /**
@@ -1546,7 +1962,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14762, value = "Removing services has lead to unsatisfied dependencies:")
+    @Message(id = 171, value = "Removing services has lead to unsatisfied dependencies:")
     String removingServiceUnsatisfiedDependencies();
 
     /**
@@ -1568,7 +1984,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14763, value = "%s is required")
+    @Message(id = 172, value = "%s is required")
     String required(String name);
 
     /**
@@ -1579,7 +1995,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14764, value = "%s is reserved")
+    @Message(id = 173, value = "%s is reserved")
     XMLStreamException reserved(String name, @Param Location location);
 
     /**
@@ -1589,7 +2005,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14765, value = "Resource does not exist: %s")
+    @Message(id = 174, value = "Resource does not exist: %s")
     String resourceNotFound(ModelNode resource);
 
     /**
@@ -1600,7 +2016,7 @@ public interface ControllerMessages {
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14766, value = "Resource %s does not exist; a resource at address %s cannot be created until all ancestor resources have been added")
+    @Message(id = 175, value = "Resource %s does not exist; a resource at address %s cannot be created until all ancestor resources have been added")
     OperationFailedRuntimeException resourceNotFound(PathAddress ancestor, PathAddress address);
 
     /**
@@ -1608,7 +2024,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14767, value = "rollback() has already been invoked")
+    @Message(id = 176, value = "rollback() has already been invoked")
     IllegalStateException rollbackAlreadyInvoked();
 
     /**
@@ -1620,7 +2036,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14768, value = "Schema with URI %s already registered with location %s")
+    @Message(id = 177, value = "Schema with URI %s already registered with location %s")
     String schemaAlreadyRegistered(String schemaUri, String location);
 
     /**
@@ -1630,7 +2046,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14769, value = "No schema location with URI %s found")
+    @Message(id = 178, value = "No schema location with URI %s found")
     String schemaNotFound(String uri);
 
     /**
@@ -1638,7 +2054,7 @@ public interface ControllerMessages {
      *
      * @return a {@link CancellationException} for the error.
      */
-    @Message(id = 14770, value = "Service install was cancelled")
+    @Message(id = 179, value = "Service install was cancelled")
     CancellationException serviceInstallCancelled();
 
     /**
@@ -1656,7 +2072,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14771, value = "Services with missing/unavailable dependencies")
+    @Message(id = 180, value = "Services with missing/unavailable dependencies")
     String servicesMissingDependencies();
 
     /**
@@ -1664,7 +2080,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14772, value = "Get service registry only supported in runtime operations")
+    @Message(id = 181, value = "Get service registry only supported in runtime operations")
     IllegalStateException serviceRegistryRuntimeOperationsOnly();
 
     /**
@@ -1672,7 +2088,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14773, value = "Service removal only supported in runtime operations")
+    @Message(id = 182, value = "Service removal only supported in runtime operations")
     IllegalStateException serviceRemovalRuntimeOperationsOnly();
 
     /**
@@ -1680,7 +2096,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14774, value = "Service status report%n")
+    @Message(id = 183, value = "Service status report%n")
     String serviceStatusReportHeader();
 
     /**
@@ -1688,7 +2104,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14775, value = "   New missing/unsatisfied dependencies:%n")
+    @Message(id = 184, value = "   New missing/unsatisfied dependencies:%n")
     String serviceStatusReportDependencies();
 
     /**
@@ -1716,7 +2132,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14776, value = "   Newly corrected services:%n")
+    @Message(id = 185, value = "   Newly corrected services:%n")
     String serviceStatusReportCorrected();
 
     /**
@@ -1744,7 +2160,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14777, value = "  Services which failed to start:")
+    @Message(id = 186, value = "  Services which failed to start:")
     String serviceStatusReportFailed();
 
     /**
@@ -1752,7 +2168,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14778, value = "Get service target only supported in runtime operations")
+    @Message(id = 187, value = "Get service target only supported in runtime operations")
     IllegalStateException serviceTargetRuntimeOperationsOnly();
 
     /**
@@ -1762,7 +2178,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14779, value = "Stage %s is already complete")
+    @Message(id = 188, value = "Stage %s is already complete")
     IllegalStateException stageAlreadyComplete(OperationContext.Stage stage);
 
     /**
@@ -1772,7 +2188,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14780, value = "Step handler %s failed after completion")
+    @Message(id = 189, value = "Step handler %s failed after completion")
     String stepHandlerFailed(OperationStepHandler handler);
 
     /**
@@ -1785,7 +2201,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14781, value = "Step handler %s for operation %s at address %s failed handling operation rollback -- %s")
+    @Message(id = 190, value = "Step handler %s for operation %s at address %s failed handling operation rollback -- %s")
     String stepHandlerFailedRollback(OperationStepHandler handler, String op, PathAddress address, Throwable cause);
 
     /**
@@ -1793,7 +2209,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14782, value = "Interrupted awaiting subsystem boot operation execution")
+    @Message(id = 191, value = "Interrupted awaiting subsystem boot operation execution")
     String subsystemBootInterrupted();
 
     /**
@@ -1804,7 +2220,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14783, value = "Boot operations for subsystem %s failed without explanation")
+    @Message(id = 192, value = "Boot operations for subsystem %s failed without explanation")
     String subsystemBootOperationFailed(String name);
 
     /**
@@ -1812,7 +2228,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14784, value = "Failed executing subsystem %s boot operations")
+    @Message(id = 193, value = "Failed executing subsystem %s boot operations")
     String subsystemBootOperationFailedExecuting(String name);
 
     /**
@@ -1820,7 +2236,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14785, value = "Table is full!")
+    @Message(id = 194, value = "Table is full!")
     IllegalStateException tableIsFull();
 
     /**
@@ -1828,7 +2244,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14786, value = "Interrupted awaiting transaction commit or rollback")
+    @Message(id = 195, value = "Interrupted awaiting transaction commit or rollback")
     RuntimeException transactionInterrupted();
 
     /**
@@ -1838,7 +2254,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14787, value = "A timeout occurred waiting for the transaction to %s")
+    @Message(id = 196, value = "A timeout occurred waiting for the transaction to %s")
     RuntimeException transactionTimeout(String type);
 
     /**
@@ -1850,7 +2266,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14788, value = "Unexpected attribute '%s' encountered")
+    @Message(id = 197, value = "Unexpected attribute '%s' encountered")
     XMLStreamException unexpectedAttribute(QName name, @Param Location location);
 
     /**
@@ -1862,7 +2278,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14789, value = "Unexpected element '%s' encountered")
+    @Message(id = 198, value = "Unexpected element '%s' encountered")
     XMLStreamException unexpectedElement(QName name, @Param Location location);
 
     /**
@@ -1874,7 +2290,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14790, value = "Unexpected end of element '%s' encountered")
+    @Message(id = 199, value = "Unexpected end of element '%s' encountered")
     XMLStreamException unexpectedEndElement(QName name, @Param Location location);
 
     /**
@@ -1884,8 +2300,8 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14791, value = "Unexpected storage %s")
-    IllegalStateException unexpectedStorage(Storage storage);
+    @Message(id = 200, value = "Unexpected storage %s")
+    IllegalStateException unexpectedStorage(AttributeAccess.Storage storage);
 
     /**
      * A message indicating the attribute, represented by the {@code name} parameter, is unknown.
@@ -1894,7 +2310,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14792, value = "Unknown attribute %s")
+    @Message(id = 201, value = "Unknown attribute %s")
     String unknownAttribute(String name);
 
     /**
@@ -1904,7 +2320,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14793, value = "No known child type named %s")
+    @Message(id = 202, value = "No known child type named %s")
     String unknownChildType(String name);
 
     /**
@@ -1914,7 +2330,7 @@ public interface ControllerMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14794, value = "Unknown property in interface criteria list: %s")
+    @Message(id = 203, value = "Unknown property in interface criteria list: %s")
     RuntimeException unknownCriteriaInterfaceProperty(String name);
 
     /**
@@ -1924,7 +2340,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14795, value = "Unknown interface criteria type %s")
+    @Message(id = 204, value = "Unknown interface criteria type %s")
     String unknownCriteriaInterfaceType(String type);
 
     /**
@@ -1938,7 +2354,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14796, value = "Unknown interface %s %s must be declared in element %s")
+    @Message(id = 205, value = "Unknown interface %s %s must be declared in element %s")
     XMLStreamException unknownInterface(String value, String attributeName, String elementName, @Param Location location);
 
     /**
@@ -1953,7 +2369,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14797, value = "Unknown %s %s %s must be declared in element %s")
+    @Message(id = 206, value = "Unknown %s %s %s must be declared in element %s")
     XMLStreamException unknownValueForElement(String elementName1, String value, String elementName2, String parentElement, @Param Location location);
 
     /**
@@ -1963,7 +2379,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14798, value = "Validation failed for %s")
+    @Message(id = 207, value = "Validation failed for %s")
     String validationFailed(String name);
 
     /**
@@ -1973,7 +2389,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14799, value = "... and %s more")
+    @Message(id = 208, value = "... and %s more")
     String andNMore(int number);
 
     /**
@@ -1987,7 +2403,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14800, value = "Invalid value '%s' for attribute '%s' -- valid values are %s")
+    @Message(id = 209, value = "Invalid value '%s' for attribute '%s' -- valid values are %s")
     XMLStreamException invalidAttributeValue(String value, QName name, Set<String> validValues, @Param Location location);
 
     /**
@@ -1997,7 +2413,7 @@ public interface ControllerMessages {
      * @param e the SecurityException
      * @return an {@link OperationFailedException} for the caller
      */
-    @Message(id = 14801, value = "Caught SecurityException attempting to resolve expression '%s' -- %s")
+    @Message(id = 210, value = "Caught SecurityException attempting to resolve expression '%s' -- %s")
     String noPermissionToResolveExpression(ModelNode toResolve, SecurityException e);
 
     /**
@@ -2008,7 +2424,7 @@ public interface ControllerMessages {
      * @param e the SecurityException
      * @return an {@link OperationFailedException} for the caller
      */
-    @Message(id = 14802, value = "Cannot resolve expression '%s' -- %s")
+    @Message(id = 211, value = "Cannot resolve expression '%s' -- %s")
     String cannotResolveExpression(ModelNode toResolve, IllegalStateException e);
 
     /**
@@ -2018,7 +2434,7 @@ public interface ControllerMessages {
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14803, value = "Duplicate resource %s")
+    @Message(id = 212, value = "Duplicate resource %s")
     OperationFailedRuntimeException duplicateResourceAddress(PathAddress address);
 
     /**
@@ -2028,7 +2444,7 @@ public interface ControllerMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 14804, value = "Cannot remove resource before removing child resources %s")
+    @Message(id = 213, value = "Cannot remove resource before removing child resources %s")
     OperationFailedException cannotRemoveResourceWithChildren(List<PathElement> children);
 
     /**
@@ -2039,8 +2455,10 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14805, value = "Could not get main file: %s. Specified files must be relative to the configuration dir: %s")
+    @Message(id = 214, value = "Could not get main file: %s. Specified files must be relative to the configuration dir: %s")
     IllegalStateException mainFileNotFound(String name, File configurationDir);
+
+    // 215 free
 
     /**
      * Creates an exception indicating a resource cannot be found.
@@ -2049,7 +2467,7 @@ public interface ControllerMessages {
      *
      * @return an {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14807, value = "Management resource '%s' not found")
+    @Message(id = 216, value = "Management resource '%s' not found")
     NoSuchResourceException managementResourceNotFound(PathAddress pathAddress);
 
     /**
@@ -2059,7 +2477,7 @@ public interface ControllerMessages {
      *
      * @return an message for the error.
      */
-    @Message(id = 14808, value = "Child resource '%s' not found")
+    @Message(id = 217, value = "Child resource '%s' not found")
     String childResourceNotFound(PathElement childAddress);
 
     /**
@@ -2069,7 +2487,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14809, value = "A node is already registered at '%s'")
+    @Message(id = 218, value = "A node is already registered at '%s'")
     IllegalArgumentException nodeAlreadyRegistered(String location);
 
     /**
@@ -2081,7 +2499,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error
      */
-    @Message(id = 14810, value = "An attempt was made to unregister extension %s which still has subsystem %s registered")
+    @Message(id = 219, value = "An attempt was made to unregister extension %s which still has subsystem %s registered")
     IllegalStateException removingExtensionWithRegisteredSubsystem(String moduleName, String subsystem);
 
     /**
@@ -2090,7 +2508,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error
      */
-    @Message(id = 14811, value = "An override model registration is not allowed for the root model registration")
+    @Message(id = 220, value = "An override model registration is not allowed for the root model registration")
     IllegalStateException cannotOverrideRootRegistration();
 
     /**
@@ -2100,7 +2518,7 @@ public interface ControllerMessages {
      * @param valueName the name of the non-wildcard registration that cannot be overridden
      * @return an {@link IllegalStateException} for the error
      */
-    @Message(id = 14812, value = "An override model registration is not allowed for non-wildcard model registrations. This registration is for the non-wildcard name '%s'.")
+    @Message(id = 221, value = "An override model registration is not allowed for non-wildcard model registrations. This registration is for the non-wildcard name '%s'.")
     IllegalStateException cannotOverrideNonWildCardRegistration(String valueName);
 
     /**
@@ -2109,7 +2527,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalArgumentException} for the error
      */
-    @Message(id = 14813, value = "A registration named '*' is not an override model and cannot be unregistered via the unregisterOverrideModel API.")
+    @Message(id = 222, value = "A registration named '*' is not an override model and cannot be unregistered via the unregisterOverrideModel API.")
     IllegalArgumentException wildcardRegistrationIsNotAnOverride();
 
     /**
@@ -2117,7 +2535,7 @@ public interface ControllerMessages {
      *
      * @return an {@link IllegalStateException} for the error
      */
-    @Message(id = 14814, value = "The root resource registration does not support overrides, so no override can be removed.")
+    @Message(id = 223, value = "The root resource registration does not support overrides, so no override can be removed.")
     IllegalStateException rootRegistrationIsNotOverridable();
 
     /**
@@ -2128,7 +2546,7 @@ public interface ControllerMessages {
      * @param address the address.
      * @return the message.
      */
-    @Message(id = 14815, value = "There is no operation %s registered at address %s")
+    @Message(id = 224, value = "There is no operation %s registered at address %s")
     IllegalArgumentException operationNotRegisteredException(String op, PathAddress address);
 
 
@@ -2138,7 +2556,7 @@ public interface ControllerMessages {
      * @param cause the cause of the failure
      * @return the runtime exception.
      */
-    @Message(id = 14816, value = "Failed to recover services during operation rollback")
+    @Message(id = 225, value = "Failed to recover services during operation rollback")
     RuntimeException failedToRecoverServices(@Param OperationFailedException cause);
 
     /**
@@ -2148,7 +2566,7 @@ public interface ControllerMessages {
      * @param subsystemName the cause of the failure
      * @return the runtime exception.
      */
-    @Message(id = 14817, value = "A subsystem named '%s' cannot be registered by extension '%s' -- a subsystem with that name has already been registered by extension '%s'.")
+    @Message(id = 226, value = "A subsystem named '%s' cannot be registered by extension '%s' -- a subsystem with that name has already been registered by extension '%s'.")
     IllegalStateException duplicateSubsystem(String subsystemName, String duplicatingModule, String existingModule);
 
     /**
@@ -2157,16 +2575,15 @@ public interface ControllerMessages {
      * @param field the standard field name
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14818, value = "Operation has no '%s' field. %s")
+    @Message(id = 227, value = "Operation has no '%s' field. %s")
     IllegalArgumentException validationFailedOperationHasNoField(String field, String operation);
 
     /**
      * Creates an exception indicating that the operation has an empty name.
      *
-     * @param operation the operation. May be null
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14819, value = "Operation has a null or empty name. %s")
+    @Message(id = 228, value = "Operation has a null or empty name. %s")
     IllegalArgumentException validationFailedOperationHasANullOrEmptyName(String operation);
 
     /**
@@ -2176,7 +2593,7 @@ public interface ControllerMessages {
      * @param address the operation address
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14820, value = "No operation called '%s' at '%s'. %s")
+    @Message(id = 229, value = "No operation called '%s' at '%s'. %s")
     IllegalArgumentException validationFailedNoOperationFound(String name, PathAddress address, String operation);
 
     /**
@@ -2186,7 +2603,7 @@ public interface ControllerMessages {
      * @param parameterNames the valid parameter names
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14821, value = "Operation contains a parameter '%s' which is not one of the expected parameters %s. %s")
+    @Message(id = 230, value = "Operation contains a parameter '%s' which is not one of the expected parameters %s. %s")
     IllegalArgumentException validationFailedActualParameterNotDescribed(String paramName, Set<String> parameterNames, String operation);
 
     /**
@@ -2195,7 +2612,7 @@ public interface ControllerMessages {
      * @param paramName the name of the required parameter
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14822, value = "Required parameter %s is not present. %s")
+    @Message(id = 231, value = "Required parameter %s is not present. %s")
     IllegalArgumentException validationFailedRequiredParameterNotPresent(String paramName, String operation);
 
     /**
@@ -2205,7 +2622,7 @@ public interface ControllerMessages {
      * @param paramName the name of the required parameter
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14823, value = "Alternative parameter '%s' for required parameter '%s' was used. Please use one or the other. %s")
+    @Message(id = 232, value = "Alternative parameter '%s' for required parameter '%s' was used. Please use one or the other. %s")
     IllegalArgumentException validationFailedRequiredParameterPresentAsWellAsAlternative(String alternative, String paramName, String operation);
 
     /**
@@ -2215,7 +2632,7 @@ public interface ControllerMessages {
      * @param type the required type
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14824, value = "Could not convert the parameter '%s' to a %s. %s")
+    @Message(id = 233, value = "Could not convert the parameter '%s' to a %s. %s")
     IllegalArgumentException validationFailedCouldNotConvertParamToType(String paramName, ModelType type, String operation);
 
     /**
@@ -2226,7 +2643,7 @@ public interface ControllerMessages {
      * @param min the minimum value
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14825, value = "The value '%s' passed in for '%s' is smaller than the minimum value '%s'. %s")
+    @Message(id = 234, value = "The value '%s' passed in for '%s' is smaller than the minimum value '%s'. %s")
     IllegalArgumentException validationFailedValueIsSmallerThanMin(Number value, String paramName, Number min, String operation);
 
     /**
@@ -2237,7 +2654,7 @@ public interface ControllerMessages {
      * @param max the minimum value
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14826, value = "The value '%s' passed in for '%s' is bigger than the maximum value '%s'. %s")
+    @Message(id = 235, value = "The value '%s' passed in for '%s' is bigger than the maximum value '%s'. %s")
     IllegalArgumentException validationFailedValueIsGreaterThanMax(Number value, String paramName, Number max, String operation);
 
     /**
@@ -2248,7 +2665,7 @@ public interface ControllerMessages {
      * @param minLength the minimum value
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14827, value = "The value '%s' passed in for '%s' is shorter than the minimum length '%s'. %s")
+    @Message(id = 236, value = "The value '%s' passed in for '%s' is shorter than the minimum length '%s'. %s")
     IllegalArgumentException validationFailedValueIsShorterThanMinLength(Object value, String paramName, Object minLength, String operation);
 
     /**
@@ -2259,7 +2676,7 @@ public interface ControllerMessages {
      * @param maxLength the minimum value
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14828, value = "The value '%s' passed in for '%s' is longer than the maximum length '%s'. %s")
+    @Message(id = 237, value = "The value '%s' passed in for '%s' is longer than the maximum length '%s'. %s")
     IllegalArgumentException validationFailedValueIsLongerThanMaxLength(Object value, String paramName, Object maxLength, String operation);
 
     /**
@@ -2269,7 +2686,7 @@ public interface ControllerMessages {
      * @param elementType the expected element type
      * @param operation the operation as a string. May be empty
      */
-    @Message(id = 14829, value = "%s is expected to be a list of %s. %s")
+    @Message(id = 238, value = "%s is expected to be a list of %s. %s")
     IllegalArgumentException validationFailedInvalidElementType(String paramName, ModelType elementType, String operation);
 
     /**
@@ -2280,7 +2697,7 @@ public interface ControllerMessages {
      * @param address the address of the operation
      * @param description the operation description
      */
-    @Message(id = 14830, value = "'" + ModelDescriptionConstants.REQUIRED + "' parameter: '%s' must be a boolean in the description of the operation at %s: %s")
+    @Message(id = 239, value = "'" + ModelDescriptionConstants.REQUIRED + "' parameter: '%s' must be a boolean in the description of the operation at %s: %s")
     String invalidDescriptionRequiredFlagIsNotABoolean(String paramName, PathAddress address, ModelNode description);
 
     /**
@@ -2291,7 +2708,7 @@ public interface ControllerMessages {
      * @param address the address of the operation
      * @param description the operation description
      */
-    @Message(id = 14831, value = "Undefined request property '%s' in description of the operation at %s: %s")
+    @Message(id = 240, value = "Undefined request property '%s' in description of the operation at %s: %s")
     String invalidDescriptionUndefinedRequestProperty(String name, PathAddress address, ModelNode description);
 
     /**
@@ -2302,7 +2719,7 @@ public interface ControllerMessages {
      * @param address the address of the operation
      * @param description the operation description
      */
-    @Message(id = 14832, value = "There is no type for parameter '%s' in the description of the operation at %s: %s")
+    @Message(id = 241, value = "There is no type for parameter '%s' in the description of the operation at %s: %s")
     String invalidDescriptionNoParamTypeInDescription(String paramName, PathAddress address, ModelNode description);
 
     /**
@@ -2313,7 +2730,7 @@ public interface ControllerMessages {
      * @param address the address of the operation
      * @param description the operation description
      */
-    @Message(id = 14833, value = "Could not determine the type of parameter '%s' in the description of the operation at %s: %s")
+    @Message(id = 242, value = "Could not determine the type of parameter '%s' in the description of the operation at %s: %s")
     String invalidDescriptionInvalidParamTypeInDescription(String paramName, PathAddress address, ModelNode description);
 
     /**
@@ -2326,7 +2743,7 @@ public interface ControllerMessages {
      * @param address the address of the operation
      * @param description the operation description
      */
-    @Message(id = 14834, value = "The '%s' attribute of the '%s' parameter can not be converted to its type: %s in the description of the operation at %s: %s")
+    @Message(id = 243, value = "The '%s' attribute of the '%s' parameter can not be converted to its type: %s in the description of the operation at %s: %s")
     String invalidDescriptionMinMaxForParameterHasWrongType(String minOrMax, String paramName, ModelType expectedType, PathAddress address, ModelNode description);
 
     /**
@@ -2338,7 +2755,7 @@ public interface ControllerMessages {
      * @param address the address of the operation
      * @param description the operation description
      */
-    @Message(id = 14835, value = "The '%s' attribute of the '%s' parameter can not be converted to an integer in the description of the operation at %s: %s")
+    @Message(id = 244, value = "The '%s' attribute of the '%s' parameter can not be converted to an integer in the description of the operation at %s: %s")
     String invalidDescriptionMinMaxLengthForParameterHasWrongType(String minOrMaxLength, String paramName, PathAddress address, ModelNode description);
 
     /**
@@ -2350,10 +2767,10 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14836, value = "Illegal '%s' value %s -- must be a valid port number")
+    @Message(id = 245, value = "Illegal '%s' value %s -- must be a valid port number")
     XMLStreamException invalidPort(String name, String value, @Param Location location);
 
-    @Message(id = 14837, value = "Cannot resolve the localhost address to create a UUID-based name for this process")
+    @Message(id = 246, value = "Cannot resolve the localhost address to create a UUID-based name for this process")
     RuntimeException cannotResolveProcessUUID(@Cause UnknownHostException cause);
 
     /**
@@ -2361,7 +2778,7 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14838, value = "Do not call ServiceController.setMode(REMOVE), use OperationContext.removeService() instead.")
+    @Message(id = 247, value = "Do not call ServiceController.setMode(REMOVE), use OperationContext.removeService() instead.")
     IllegalStateException useOperationContextRemoveService();
 
     /**
@@ -2373,7 +2790,7 @@ public interface ControllerMessages {
      * @param allowedValues a set containing the allowed values.
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 14839, value="Invalid value %s for %s; legal values are %s")
+    @Message(id = 248, value="Invalid value %s for %s; legal values are %s")
     OperationFailedException invalidEnumValue(String value, String parameterName, Set<?> allowedValues);
 
     /*
@@ -2385,7 +2802,7 @@ public interface ControllerMessages {
      *
      * @return a {@link OperationFailedRuntimeException} for the error.
      */
-    @Message(id = 14840, value = "Operation '%s' targeted at resource '%s' was directly invoked by a user. " +
+    @Message(id = 249, value = "Operation '%s' targeted at resource '%s' was directly invoked by a user. " +
             "User operations are not permitted to directly update the persistent configuration of a server in a managed domain.")
     OperationFailedRuntimeException modelUpdateNotAuthorized(String operation, PathAddress address);
 
@@ -2398,47 +2815,47 @@ public interface ControllerMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14841, value = "An operation handler attempted to access the operation response server results object " +
+    @Message(id = 250, value = "An operation handler attempted to access the operation response server results object " +
             "on a process type other than '%s'. The current process type is '%s'")
     IllegalStateException serverResultsAccessNotAllowed(ProcessType validType, ProcessType processType);
 
-    @Message(id = 14842, value = "Can't have both loopback and inet-address criteria")
+    @Message(id = 251, value = "Can't have both loopback and inet-address criteria")
     String cantHaveBothLoopbackAndInetAddressCriteria();
 
-    @Message(id = 14843, value = "Can't have both link-local and inet-address criteria")
+    @Message(id = 252, value = "Can't have both link-local and inet-address criteria")
     String cantHaveBothLinkLocalAndInetAddressCriteria();
 
-    @Message(id = 14844, value = "Can't have same criteria for both not and inclusion %s")
+    @Message(id = 253, value = "Can't have same criteria for both not and inclusion %s")
     String cantHaveSameCriteriaForBothNotAndInclusion(InterfaceCriteria interfaceCriteria);
 
-    @Message(id = 14845, value = "Invalid value '%s' for attribute '%s' -- no interface configuration with that name exists")
+    @Message(id = 254, value = "Invalid value '%s' for attribute '%s' -- no interface configuration with that name exists")
     OperationFailedException nonexistentInterface(String attributeValue, String attributeName);
 
-    @Message(id = 14846, value = "%s is empty")
+    @Message(id = 255, value = "%s is empty")
     IllegalArgumentException emptyVar(String name);
 
-    @Message(id = 14847, value = "Could not find a path called '%s'")
+    @Message(id = 256, value = "Could not find a path called '%s'")
     IllegalArgumentException pathEntryNotFound(String pathName);
 
-    @Message(id = 14848, value="Path entry is read-only: '%s'")
+    @Message(id = 257, value="Path entry is read-only: '%s'")
     IllegalArgumentException pathEntryIsReadOnly(String pathName);
 
-    @Message(id = 14849, value="There is already a path entry called: '%s'")
+    @Message(id = 258, value="There is already a path entry called: '%s'")
     IllegalArgumentException pathEntryAlreadyExists(String pathName);
 
-    @Message(id = 14850, value="Could not find relativeTo path '%s' for relative path '%s'")
+    @Message(id = 259, value="Could not find relativeTo path '%s' for relative path '%s'")
     IllegalStateException pathEntryNotFoundForRelativePath(String relativePath, String pathName);
 
-    @Message(id = 14851, value="Invalid relativePath value '%s'")
+    @Message(id = 260, value="Invalid relativePath value '%s'")
     IllegalArgumentException invalidRelativePathValue(String relativePath);
 
-    @Message(id = 14852, value="'%s' is a Windows absolute path")
+    @Message(id = 261, value="'%s' is a Windows absolute path")
     IllegalArgumentException pathIsAWindowsAbsolutePath(String path);
 
-    @Message(id = 14853, value="Path '%s' is read-only; it cannot be removed")
+    @Message(id = 262, value="Path '%s' is read-only; it cannot be removed")
     OperationFailedException cannotRemoveReadOnlyPath(String pathName);
 
-    @Message(id = 14854, value="Path '%s' is read-only; it cannot be modified")
+    @Message(id = 263, value="Path '%s' is read-only; it cannot be modified")
     OperationFailedException cannotModifyReadOnlyPath(String pathName);
     /**
      * An exception indicating the {@code name} may not be {@link ModelType#EXPRESSION}.
@@ -2447,10 +2864,10 @@ public interface ControllerMessages {
      *
      * @return the exception.
      */
-    @Message(id = 14855, value = "%s may not be ModelType.EXPRESSION")
+    @Message(id = 264, value = "%s may not be ModelType.EXPRESSION")
     OperationFailedException expressionNotAllowed(String name);
 
-    @Message(id = 14856, value = "PathManager not available on processes of type '%s'")
+    @Message(id = 265, value = "PathManager not available on processes of type '%s'")
     IllegalStateException pathManagerNotAvailable(ProcessType processType);
 
     /**
@@ -2463,20 +2880,20 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14857, value = "Value %s for attribute %s is not a valid multicast address")
+    @Message(id = 266, value = "Value %s for attribute %s is not a valid multicast address")
     OperationFailedException unknownMulticastAddress(@Cause UnknownHostException cause, String value, String name);
 
-    @Message(id = 14858, value="Path '%s' cannot be removed, since the following paths depend on it: %s")
+    @Message(id = 267, value="Path '%s' cannot be removed, since the following paths depend on it: %s")
     OperationFailedException cannotRemovePathWithDependencies(String pathName, Set<String> dependencies);
 
-    @Message(id = 14859, value = "Failed to rename temp file %s to %s")
+    @Message(id = 268, value = "Failed to rename temp file %s to %s")
     ConfigurationPersistenceException failedToRenameTempFile(@Cause Throwable cause, File temp, File file);
 
 
-    @Message(id = 14860, value = "Invalid locale format:  %s")
+    @Message(id = 269, value = "Invalid locale format:  %s")
     String invalidLocaleString(String unparsed);
 
-    @Message(id = 14861, value = "<one or more transitive dependencies>")
+    @Message(id = 270, value = "<one or more transitive dependencies>")
     String transitiveDependencies();
 
     /**
@@ -2484,7 +2901,7 @@ public interface ControllerMessages {
      *
      * @return the message.
      */
-    @Message(id = 14862, value = "Operation cancelled")
+    @Message(id = 271, value = "Operation cancelled")
     String operationCancelled();
 
     /**
@@ -2492,134 +2909,115 @@ public interface ControllerMessages {
      *
      * @return a {@link CancellationException} for the error.
      */
-    @Message(id = 14863, value = "Operation cancelled asynchronously")
+    @Message(id = 272, value = "Operation cancelled asynchronously")
     OperationCancellationException operationCancelledAsynchronously();
 
-    @Message(id = 14864, value = "Stream was killed")
+    @Message(id = 273, value = "Stream was killed")
     IOException streamWasKilled();
 
-    @Message(id = 14865, value = "Stream was closed")
+    @Message(id = 274, value = "Stream was closed")
     IOException streamWasClosed();
 
-    @Message(id = 14866, value = "Cannot define both '%s' and '%s'")
+    @Message(id = 275, value = "Cannot define both '%s' and '%s'")
     OperationFailedException cannotHaveBothParameters(String nameA, String name2);
 
-    @Message(id = 14867, value = "Failed to delete file %s")
+    @Message(id = 276, value = "Failed to delete file %s")
     IllegalStateException couldNotDeleteFile(File file);
 
-    @Message(id = 14868, value = "An alias is already registered at location '%s'")
+    @Message(id = 277, value = "An alias is already registered at location '%s'")
     IllegalArgumentException aliasAlreadyRegistered(String location);
 
-    @Message(id = 14869, value = "Expected an address under '%s', was '%s'")
+    @Message(id = 278, value = "Expected an address under '%s', was '%s'")
     IllegalArgumentException badAliasConvertAddress(PathAddress aliasAddress, PathAddress actual);
 
-    @Message(id = 14870, value = "Alias target address not found: %s")
+    @Message(id = 279, value = "Alias target address not found: %s")
     IllegalArgumentException aliasTargetResourceRegistrationNotFound(PathAddress targetAddress);
 
-    @Message(id = 14871, value = "No operation called '%s' found for alias address '%s' which maps to '%s'")
+    @Message(id = 280, value = "No operation called '%s' found for alias address '%s' which maps to '%s'")
     IllegalArgumentException aliasStepHandlerOperationNotFound(String name, PathAddress aliasAddress, PathAddress targetAddress);
 
-    @Message(id = 14872, value = "Resource registration is not an alias")
+    @Message(id = 281, value = "Resource registration is not an alias")
     IllegalStateException resourceRegistrationIsNotAnAlias();
 
-    @Message(id = 14873, value = "Model contains fields that are not known in definition, fields: %s, path: %s")
+    @Message(id = 282, value = "Model contains fields that are not known in definition, fields: %s, path: %s")
     RuntimeException modelFieldsNotKnown(Set<String> fields, PathAddress address);
 
 
-    @Message(id = 14874, value = "Could not marshal attribute as element: %s")
+    @Message(id = 283, value = "Could not marshal attribute as element: %s")
     UnsupportedOperationException couldNotMarshalAttributeAsElement(String attributeName);
 
-    @Message(id = 14875, value = "Could not marshal attribute as attribute: %s")
+    @Message(id = 284, value = "Could not marshal attribute as attribute: %s")
     UnsupportedOperationException couldNotMarshalAttributeAsAttribute(String attributeName);
 
-    @Message(id = 14876, value = "Operation %s invoked against multiple target addresses failed at address %s with failure description %s")
+    @Message(id = 285, value = "Operation %s invoked against multiple target addresses failed at address %s with failure description %s")
     String wildcardOperationFailedAtSingleAddress(String operation, PathAddress address, String failureMessage);
 
-    @Message(id = 14877, value = "Operation %s invoked against multiple target addresses failed at address %s. See the operation result for details.")
+    @Message(id = 286, value = "Operation %s invoked against multiple target addresses failed at address %s. See the operation result for details.")
     String wildcardOperationFailedAtSingleAddressWithComplexFailure(String operation, PathAddress address);
 
-    @Message(id = 14878, value = "Operation %s invoked against multiple target addresses failed at addresses %s. See the operation result for details.")
+    @Message(id = 287, value = "Operation %s invoked against multiple target addresses failed at addresses %s. See the operation result for details.")
     String wildcardOperationFailedAtMultipleAddresses(String operation, Set<PathAddress> addresses);
 
-    @Message(id = 14879, value = "One or more services were unable to start due to one or more indirect dependencies not being available.")
+    @Message(id = 288, value = "One or more services were unable to start due to one or more indirect dependencies not being available.")
     String missingTransitiveDependencyProblem();
 
     @Message(id = Message.NONE, value = "Services that were unable to start:")
-    String missingTransitiveDependendents();
+    String missingTransitiveDependents();
 
     @Message(id = Message.NONE, value = "Services that may be the cause:")
     String missingTransitiveDependencies();
 
-    @Message(id = 14880, value = "No operation entry called '%s' registered at '%s'")
+    @Message(id = 289, value = "No operation entry called '%s' registered at '%s'")
     String noOperationEntry(String op, PathAddress pathAddress);
 
-    @Message(id = 14881, value = "No operation handler called '%s' registered at '%s'")
+    @Message(id = 290, value = "No operation handler called '%s' registered at '%s'")
     String noOperationHandler(String op, PathAddress pathAddress);
 
-    @Message(id = 14882, value = "There is no registered path to resolve with path attribute '%s' and/or relative-to attribute '%s on: %s")
+    @Message(id = 291, value = "There is no registered path to resolve with path attribute '%s' and/or relative-to attribute '%s on: %s")
     IllegalStateException noPathToResolve(String pathAttributeName, String relativeToAttributeName, ModelNode model);
 
-    /**
-     * Logs an error message indicating the given {@code address} does not match any known
-     * resource registration.
-     *
-     * @param address    the address.
-     */
-    @Message(id = 14883, value = "No resource definition is registered for address %s")
-    String noSuchResourceType(PathAddress address);
-
-    /**
-     * Logs an error message indicating no handler is registered for an operation, represented by the {@code operationName}
-     * parameter, at {@code address}.
-     *
-     * @param operationName the operation name.
-     * @param address    the address.
-     */
-    @Message(id = 14884, value = "No operation named '%s' exists at address %s")
-    String noHandlerForOperation(String operationName, PathAddress address);
-
-    @Message(id = 14885, value = "Attributes do not support expressions in the target model version and this resource will need to be ignored on the target host.")
+    @Message(id = 292, value = "Attributes do not support expressions in the target model version and this resource will need to be ignored on the target host.")
     String attributesDontSupportExpressions();
 
-    @Message(id = 14886, value = "Attributes are not understood in the target model version and this resource will need to be ignored on the target host.")
+    @Message(id = 293, value = "Attributes are not understood in the target model version and this resource will need to be ignored on the target host.")
     String attributesAreNotUnderstoodAndMustBeIgnored();
 
-    @Message(id = 14887, value = "Transforming resource %s to core model version '%s' -- %s %s")
+    @Message(id = 294, value = "Transforming resource %s to core model version '%s' -- %s %s")
     String transformerLoggerCoreModelResourceTransformerAttributes(PathAddress pathAddress, ModelVersion modelVersion, String attributeNames, String message);
 
-    @Message(id = 14888, value = "Transforming operation %s at resource %s to core model version '%s' -- %s %s")
+    @Message(id = 295, value = "Transforming operation %s at resource %s to core model version '%s' -- %s %s")
     String transformerLoggerCoreModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, ModelVersion modelVersion, String attributeNames, String message);
 
-    @Message(id = 14889, value = "Transforming resource %s to subsystem '%s' model version '%s' -- %s %s")
+    @Message(id = 296, value = "Transforming resource %s to subsystem '%s' model version '%s' -- %s %s")
     String transformerLoggerSubsystemModelResourceTransformerAttributes(PathAddress pathAddress, String subsystem, ModelVersion modelVersion, String attributeNames, String message);
 
-    @Message(id = 14890, value = "Transforming operation %s at resource %s to subsystem '%s' model version '%s' -- %s %s")
+    @Message(id = 297, value = "Transforming operation %s at resource %s to subsystem '%s' model version '%s' -- %s %s")
     String transformerLoggerSubsystemModelOperationTransformerAttributes(ModelNode op, PathAddress pathAddress, String subsystem, ModelVersion modelVersion, String attributeNames, String message);
 
-    @Message(id = 14891, value="Node contains an unresolved expression %s -- a resolved model is required")
+    @Message(id = 298, value="Node contains an unresolved expression %s -- a resolved model is required")
     OperationFailedException illegalUnresolvedModel(String expression);
 
     //The 'details' attribute needs to list the rejected attributes and what was wrong with them, an example is message id 14898
-    @Message(id = 14892, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of the problems: %s")
+    @Message(id = 299, value = "Transforming resource %s for host controller '%s' to core model version '%s' -- there were problems with some of the attributes and this resource will need to be ignored on that host. Details of the problems: %s")
     OperationFailedException rejectAttributesCoreModelResourceTransformer(PathAddress pathAddress, String legacyHostName, ModelVersion modelVersion, List<String> details);
 
-    @Message(id = 14893, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' --there were problems with some of the attributes and this resource will need to be ignored on that host. Details of problems: %s")
+    @Message(id = 300, value = "Transforming resource %s for host controller '%s' to subsystem '%s' model version '%s' --there were problems with some of the attributes and this resource will need to be ignored on that host. Details of problems: %s")
     OperationFailedException rejectAttributesSubsystemModelResourceTransformer(PathAddress pathAddress, String legacyHostName, String subsystem, ModelVersion modelVersion, List<String> details);
 
-    @Message(id = 14894, value = "The following attributes do not support expressions: %s")
+    @Message(id = 301, value = "The following attributes do not support expressions: %s")
     String attributesDoNotSupportExpressions(Set<String> attributeNames);
 
     /** The attribute name list fragment to include in the transformation logging messages */
     @Message(id = Message.NONE, value = "attributes %s")
     String attributeNames(Set<String> attributes);
 
-    @Message(id = 14895, value = "The following attributes are not understood in the target model version and this resource will need to be ignored on the target host: %s")
+    @Message(id = 302, value = "The following attributes are not understood in the target model version and this resource will need to be ignored on the target host: %s")
     String attributesAreNotUnderstoodAndMustBeIgnored(Set<String> attributeNames);
 
-    @Message(id = 14896, value = "Resource %s is rejected on the target host, and will need to be ignored on the host")
+    @Message(id = 303, value = "Resource %s is rejected on the target host, and will need to be ignored on the host")
     String rejectedResourceResourceTransformation(PathAddress address);
 
-    @Message(id = 14897, value = "Resource %s is rejected on the target host and will need to be ignored on the host: %s")
+    @Message(id = 304, value = "Resource %s is rejected on the target host and will need to be ignored on the host: %s")
     String rejectResourceOperationTransformation(PathAddress address, ModelNode operation);
 
     /**
@@ -2633,122 +3031,117 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14898, value = "%s must be declared or the %s and the %s need to be provided.")
+    @Message(id = 305, value = "%s must be declared or the %s and the %s need to be provided.")
     XMLStreamException discoveryOptionsMustBeDeclared(String discoveryOptionsName, String hostName, String portName, @Param Location location);
 
-    @Message(id = 14899, value = "read only context")
+    @Message(id = 306, value = "read only context")
     IllegalStateException readOnlyContext();
 
-    // END OF 148xx SERIES USABLE FOR LOGGER MESSAGES
-
-    @Message(id = 13450, value = "We are trying to read data from the master host controller, which is currently busy executing another set of operations. This is a temporary situation, please retry")
+    @Message(id = 307, value = "We are trying to read data from the master host controller, which is currently busy executing another set of operations. This is a temporary situation, please retry")
     String cannotGetControllerLock();
 
-    @Message(id = 13451, value = "Cannot configure an interface to use 'any-ipv6-address' when system property java.net.preferIPv4Stack is true")
+    @Message(id = 308, value = "Cannot configure an interface to use 'any-ipv6-address' when system property java.net.preferIPv4Stack is true")
     String invalidAnyIPv6();
 
-    @Message(id = 13452, value = "Legacy extension '%s' is not supported on servers running this version. The extension " +
+    @Message(id = 309, value = "Legacy extension '%s' is not supported on servers running this version. The extension " +
             "is only supported for use by hosts running a previous release in a mixed-version managed domain")
     String unsupportedLegacyExtension(String extensionName);
 
-    @Message(id = 13453, value = "Extension module %s not found")
+    @Message(id = 310, value = "Extension module %s not found")
     OperationFailedException extensionModuleNotFound(@Cause ModuleNotFoundException cause, String module);
 
-    @Message(id = 13454, value = "Failed to load Extension module %s")
+    @Message(id = 311, value = "Failed to load Extension module %s")
     RuntimeException extensionModuleLoadingFailure(@Cause ModuleLoadException cause, String module);
 
-    @Message(id = 13455, value = "no context to delegate with id: %s")
+    @Message(id = 312, value = "no context to delegate with id: %s")
     IllegalStateException noContextToDelegateTo(int operationId);
 
-    @Message(id = 13456, value = "Unauthorized to execute operation '%s' for resource '%s' -- %s")
+    @Message(id = 313, value = "Unauthorized to execute operation '%s' for resource '%s' -- %s")
     UnauthorizedException unauthorized(String name, PathAddress address, ModelNode explanation);
 
-    @Message(id = 13457, value = "Users with multiple roles are not allowed")
+    @Message(id = 314, value = "Users with multiple roles are not allowed")
     SecurityException illegalMultipleRoles();
 
-    @Message(id = 13458, value = "An unexpected number of AccountPrincipals %d have been found in the current Subject.")
+    @Message(id = 315, value = "An unexpected number of AccountPrincipals %d have been found in the current Subject.")
     IllegalStateException unexpectedAccountPrincipalCount(int count);
 
-    @Message(id = 13459, value = "Different realms '%s' '%s' found in single Subject")
+    @Message(id = 316, value = "Different realms '%s' '%s' found in single Subject")
     IllegalStateException differentRealmsInSubject(String realmOne, String realmTwo);
 
-    @Message(id = 13460, value = "There is no handler called '%s'")
+    @Message(id = 317, value = "There is no handler called '%s'")
     IllegalStateException noHandlerCalled(String name);
 
-    @Message(id = 13461, value = "The operation context is not an AbstractOperationContext")
+    @Message(id = 318, value = "The operation context is not an AbstractOperationContext")
     OperationFailedException operationContextIsNotAbstractOperationContext();
 
-    @Message(id = 13462, value = "The handler is referenced by %s and so cannot be removed")
+    @Message(id = 319, value = "The handler is referenced by %s and so cannot be removed")
     IllegalStateException handlerIsReferencedBy(Set<PathAddress> references);
 
-    @Message(id = 13463, value = "The resolved file %s either does not exist or is a directory")
+    @Message(id = 320, value = "The resolved file %s either does not exist or is a directory")
     IllegalStateException resolvedFileDoesNotExistOrIsDirectory(File file);
 
-    @Message(id = 13464, value = "Could not back up '%s' to '%s'")
+    @Message(id = 321, value = "Could not back up '%s' to '%s'")
     IllegalStateException couldNotBackUp(@Cause IOException cause, String absolutePath, String absolutePath1);
 
-    @Message(id = 13465, value = "Attempt was made to both remove and add a handler from a composite operation - update the handler instead")
+    @Message(id = 322, value = "Attempt was made to both remove and add a handler from a composite operation - update the handler instead")
     IllegalStateException attemptToBothRemoveAndAddHandlerUpdateInstead();
 
-    @Message(id = 13466, value = "Attempt was made to both add and remove a handler from a composite operation")
+    @Message(id = 323, value = "Attempt was made to both add and remove a handler from a composite operation")
     IllegalStateException attemptToBothAddAndRemoveAndHandlerFromCompositeOperation();
 
-    @Message(id = 13467, value = "Attempt was made to both update and remove a handler from a composite operation")
+    @Message(id = 324, value = "Attempt was made to both update and remove a handler from a composite operation")
     IllegalStateException attemptToBothUpdateAndRemoveHandlerFromCompositeOperation();
 
-    @Message(id = 13468, value = "Attempt was made to both remove and add a handler reference from a composite operation")
+    @Message(id = 325, value = "Attempt was made to both remove and add a handler reference from a composite operation")
     IllegalStateException attemptToBothRemoveAndAddHandlerReferenceFromCompositeOperation();
 
     // This Message ID never made it to a Final release although it was close so may be referenced!
 
-    //@Message(id = 13469, value = "Unable to unmarshall Subject received for request.")
+    //@Message(id = 326, value = "Unable to unmarshall Subject received for request.")
     //IOException unableToUnmarshallSubject(@Cause ClassNotFoundException e);
 
-    @Message(id = 13470, value = "Unknown role '%s'")
+    @Message(id = 327, value = "Unknown role '%s'")
     IllegalArgumentException unknownRole(String roleName);
 
-    @Message(id = 13471, value = "Cannot remove standard role '%s'")
+    @Message(id = 328, value = "Cannot remove standard role '%s'")
     IllegalStateException cannotRemoveStandardRole(String roleName);
 
-    @Message(id = 13472, value = "Unknown base role '%s'")
+    @Message(id = 329, value = "Unknown base role '%s'")
     IllegalArgumentException unknownBaseRole(String roleName);
 
-    @Message(id = 13473, value = "Role '%s' is already registered")
+    @Message(id = 330, value = "Role '%s' is already registered")
     IllegalStateException roleIsAlreadyRegistered(String roleName);
 
-    @Message(id = 13474, value = "Can only create child audit logger for main audit logger")
+    @Message(id = 331, value = "Can only create child audit logger for main audit logger")
     IllegalStateException canOnlyCreateChildAuditLoggerForMainAuditLogger();
 
-    @Message(id = 13475, value = "Permission denied")
+    @Message(id = 332, value = "Permission denied")
     String permissionDenied();
 
-    @Message(id = 13476, value = "Cannot add a Permission to a readonly PermissionCollection")
+    @Message(id = 333, value = "Cannot add a Permission to a readonly PermissionCollection")
     SecurityException permissionCollectionIsReadOnly();
 
-    @Message(id = 13477, value = "Incompatible permission type %s")
+    @Message(id = 334, value = "Incompatible permission type %s")
     IllegalArgumentException incompatiblePermissionType(Class<?> clazz);
 
-    @Message(id = 13478, value = "Management resource '%s' not found")
+    @Message(id = 335, value = "Management resource '%s' not found")
     String managementResourceNotFoundMessage(PathAddress pathAddress);
 
-    @Message(id = 13479, value = "The following attributes are nillable in the current model but must be defined in the target model version: %s")
+    @Message(id = 336, value = "The following attributes are nillable in the current model but must be defined in the target model version: %s")
     String attributesMustBeDefined(Set<String> keySet);
 
-    @Message(id = 13480, value = "Unsupported Principal type '%X' received.")
+    @Message(id = 337, value = "Unsupported Principal type '%X' received.")
     IOException unsupportedPrincipalType(byte type);
 
-    @Message(id = 13481, value = "Unsupported Principal parameter '%X' received parsing principal type '%X'.")
+    @Message(id = 338, value = "Unsupported Principal parameter '%X' received parsing principal type '%X'.")
     IOException unsupportedPrincipalParameter(byte parameterType, byte principalType);
 
-    @Message(id = 13482, value = "The following attributes must be defined as %s in the current model: %s")
+    @Message(id = 339, value = "The following attributes must be defined as %s in the current model: %s")
     String attributesMustBeDefinedAs(ModelNode value, Set<String> names);
 
-    @Message(id = 13483, value = "The following attributes must NOT be defined as %s in the current model: %s")
+    @Message(id = 340, value = "The following attributes must NOT be defined as %s in the current model: %s")
     String attributesMustNotBeDefinedAs(ModelNode value, Set<String> names);
 
-
-    @Message(id = 13484, value="A uri with bad syntax '%s' was passed for validation.")
+    @Message(id = 341, value="A uri with bad syntax '%s' was passed for validation.")
     OperationFailedException badUriSyntax(String uri);
-
-    // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

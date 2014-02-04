@@ -24,7 +24,7 @@ import java.util.EnumSet;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -66,9 +66,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
             // Trigger authz
             AuthorizationResult authorizationResult = context.authorize(operation, ACTION_EFFECT_SET);
             if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                throw ControllerMessages.MESSAGES.unauthorized(operation.get(ModelDescriptionConstants.OP).asString(),
-                        PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)),
-                        authorizationResult.getExplanation());
+                throw ControllerLogger.ROOT_LOGGER.unauthorized(operation.get(ModelDescriptionConstants.OP).asString(), PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)), authorizationResult.getExplanation());
             }
 
             InputStream is = getContentInputStream(context, operation);

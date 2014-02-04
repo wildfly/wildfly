@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -109,11 +109,10 @@ class OperationRouting {
             // Throw appropriate exception
             if (validAddress) {
                 // Bad operation name exception
-                throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noHandlerForOperation( operationName,
-                        address)));
+                throw new OperationFailedException(new ModelNode(ControllerLogger.ROOT_LOGGER.noHandlerForOperation(operationName, address)));
             } else {
                 // Bad address exception
-                throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noSuchResourceType(address)));
+                throw new OperationFailedException(new ModelNode(ControllerLogger.ROOT_LOGGER.noSuchResourceType(address)));
             }
         }
 

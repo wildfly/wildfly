@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.extension;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -44,6 +44,6 @@ public class UnsupportedSubsystemDescribeHandler implements OperationStepHandler
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        throw new OperationFailedException(ControllerMessages.MESSAGES.unsupportedLegacyExtension(extensionName));
+        throw new OperationFailedException(ControllerLogger.ROOT_LOGGER.unsupportedLegacyExtension(extensionName));
     }
 }

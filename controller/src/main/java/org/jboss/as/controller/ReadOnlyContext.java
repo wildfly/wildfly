@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.InputStream;
 import java.util.Set;
 
@@ -31,6 +29,7 @@ import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -163,7 +162,7 @@ class ReadOnlyContext extends AbstractOperationContext {
             } catch (InterruptedException e) {
                 cancelled = true;
                 Thread.currentThread().interrupt();
-                throw MESSAGES.operationCancelledAsynchronously();
+                throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
             }
         }
     }
@@ -309,7 +308,7 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     IllegalStateException readOnlyContext() {
-        return ControllerMessages.MESSAGES.readOnlyContext();
+        return ControllerLogger.ROOT_LOGGER.readOnlyContext();
     }
 
     @Override

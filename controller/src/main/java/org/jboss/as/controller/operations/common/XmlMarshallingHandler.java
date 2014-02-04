@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.operations.common;
 
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
@@ -33,7 +33,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -80,8 +80,7 @@ public class XmlMarshallingHandler implements OperationStepHandler{
 
         AuthorizationResult authResult = context.authorize(operation, EFFECTS);
         if (authResult.getDecision() != AuthorizationResult.Decision.PERMIT) {
-            throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
-                    pa, authResult.getExplanation());
+            throw ControllerLogger.ROOT_LOGGER.unauthorized(operation.require(OP).asString(), pa, authResult.getExplanation());
         }
 
         final Resource resource = context.readResourceFromRoot(getBaseAddress());

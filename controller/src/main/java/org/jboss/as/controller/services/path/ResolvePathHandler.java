@@ -26,7 +26,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -121,7 +121,7 @@ public class ResolvePathHandler implements OperationStepHandler {
         } else if (path.isDefined()) {
             result = pathManager.resolveRelativePathEntry(path.asString(), null);
         } else {
-            throw ControllerMessages.MESSAGES.noPathToResolve(relativeToAttribute.getName(), pathAttribute.getName(), model);
+            throw ControllerLogger.ROOT_LOGGER.noPathToResolve(relativeToAttribute.getName(), pathAttribute.getName(), model);
         }
         context.getResult().set(new ModelNode(result));
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -162,7 +162,7 @@ public class ResolvePathHandler implements OperationStepHandler {
          */
         public static Builder of(final PathManager pathManager) {
             if (pathManager == null) {
-                throw ControllerMessages.MESSAGES.nullVar("pathManager");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("pathManager");
             }
             return new Builder(OPERATION_NAME, pathManager);
         }
@@ -183,10 +183,10 @@ public class ResolvePathHandler implements OperationStepHandler {
         @Deprecated
         public static Builder of(final String operationName, final PathManager pathManager) {
             if (pathManager == null) {
-                throw ControllerMessages.MESSAGES.nullVar("pathManager");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("pathManager");
             }
             if (operationName == null) {
-                throw ControllerMessages.MESSAGES.nullVar("operationName");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("operationName");
             }
             return new Builder(operationName, pathManager);
         }

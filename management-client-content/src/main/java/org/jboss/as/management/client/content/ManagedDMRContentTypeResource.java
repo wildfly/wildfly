@@ -22,8 +22,6 @@
 
 package org.jboss.as.management.client.content;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
 import java.io.IOException;
@@ -39,6 +37,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -106,7 +105,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
     @Override
     public void writeModel(ModelNode newModel) {
         if (model.hasDefined(ModelDescriptionConstants.HASH)) {
-            throw MESSAGES.immutableResource();
+            throw ControllerLogger.ROOT_LOGGER.immutableResource();
         } else {
             // ApplyRemoteMasterDomainModelHandler is writing us
             byte[] initialHash = newModel.hasDefined(ModelDescriptionConstants.HASH) ? newModel.get(ModelDescriptionConstants.HASH).asBytes() : null;

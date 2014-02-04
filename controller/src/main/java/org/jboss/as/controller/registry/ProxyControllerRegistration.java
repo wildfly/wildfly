@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller.registry;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -34,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -347,15 +346,15 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     private IllegalArgumentException alreadyRegistered() {
-        return MESSAGES.proxyHandlerAlreadyRegistered(getLocationString());
+        return ControllerLogger.ROOT_LOGGER.proxyHandlerAlreadyRegistered(getLocationString());
     }
 
     private IllegalArgumentException alreadyRegistered(final String type, final String name) {
-        return MESSAGES.alreadyRegistered(type, name, getLocationString());
+        return ControllerLogger.ROOT_LOGGER.alreadyRegistered(type, name, getLocationString());
     }
 
     private IllegalArgumentException operationNotRegisteredException(String op, PathElement address) {
-        return MESSAGES.operationNotRegisteredException(op, PathAddress.pathAddress(address));
+        return ControllerLogger.ROOT_LOGGER.operationNotRegisteredException(op, PathAddress.pathAddress(address));
     }
 
     @Override
@@ -366,6 +365,6 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
 
     @Override
     protected void registerAlias(PathElement address, AliasEntry alias, AbstractResourceRegistration target) {
-        throw MESSAGES.proxyHandlerAlreadyRegistered(getLocationString());
+        throw ControllerLogger.ROOT_LOGGER.proxyHandlerAlreadyRegistered(getLocationString());
     }
 }

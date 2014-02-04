@@ -80,7 +80,7 @@ import org.jboss.dmr.ModelNode;
 public class ModelControllerMBeanHelper {
 
     static final String CLASS_NAME = ModelController.class.getName();
-    private static final String AUTHORIZED_ERROR = "JBAS013456";
+    private static final String AUTHORIZED_ERROR = "WFLYCTL0313";
 
     private final boolean standalone;
     private final ModelController controller;

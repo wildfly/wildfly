@@ -21,10 +21,9 @@
 */
 package org.jboss.as.controller.persistence;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.BufferedOutputStream;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 
@@ -47,14 +46,14 @@ public abstract class AbstractFilePersistenceResource implements ConfigurationPe
                 IoUtils.safeClose(marshalled);
             }
         } catch (Exception e) {
-            throw MESSAGES.failedToMarshalConfiguration(e);
+            throw ControllerLogger.ROOT_LOGGER.failedToMarshalConfiguration(e);
         }
     }
 
     @Override
     public void commit() {
         if (marshalled == null) {
-            throw MESSAGES.rollbackAlreadyInvoked();
+            throw ControllerLogger.ROOT_LOGGER.rollbackAlreadyInvoked();
         }
         doCommit(marshalled);
     }

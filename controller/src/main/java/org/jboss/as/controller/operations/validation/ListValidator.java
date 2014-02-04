@@ -20,11 +20,10 @@ package org.jboss.as.controller.operations.validation;
 
 import java.util.List;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Validates parameters of type {@link ModelType#LIST}.
@@ -64,7 +63,7 @@ public class ListValidator extends ModelTypeValidator implements ParameterValida
     public ListValidator(ParameterValidator elementValidator, boolean nullable, int minSize, int maxSize) {
         super(ModelType.LIST, nullable, false, true);
         if (elementValidator == null)
-            throw MESSAGES.nullVar("elementValidator");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("elementValidator");
         this.min = minSize;
         this.max = maxSize;
         this.elementValidator = elementValidator;
@@ -77,10 +76,10 @@ public class ListValidator extends ModelTypeValidator implements ParameterValida
             List<ModelNode> list = value.asList();
             int size = list.size();
             if (size < min) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMinSize(size, parameterName, min)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidMinSize(size, parameterName, min)));
             }
             else if (size > max) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMaxSize(size, parameterName, max)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidMaxSize(size, parameterName, max)));
             }
             else {
                 for (ModelNode element : list) {

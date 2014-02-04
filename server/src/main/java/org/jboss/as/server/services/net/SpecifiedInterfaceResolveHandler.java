@@ -18,7 +18,6 @@
  */
 package org.jboss.as.server.services.net;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 
 import java.net.SocketException;
@@ -26,6 +25,7 @@ import java.net.UnknownHostException;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -98,11 +98,11 @@ public class SpecifiedInterfaceResolveHandler implements OperationStepHandler {
         final String attributeName = definition.getName();
         final boolean has = operation.has(attributeName);
         if(! has && definition.isRequired(operation)) {
-            throw new OperationFailedException(new ModelNode(MESSAGES.required(attributeName)));
+            throw new OperationFailedException(new ModelNode(ControllerLogger.ROOT_LOGGER.required(attributeName)));
         }
         if(has) {
             if(! definition.isAllowed(operation)) {
-                throw new OperationFailedException(new ModelNode(MESSAGES.invalid(attributeName)));
+                throw new OperationFailedException(new ModelNode(ControllerLogger.ROOT_LOGGER.invalid(attributeName)));
             }
             definition.validateAndSet(operation, subModel);
         } else {

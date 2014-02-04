@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
@@ -94,7 +94,7 @@ public final class TestParser implements  ModelTestParser {
             }
             String namespace = reader.getNamespaceURI();
             if (profileOps.containsKey(namespace)) {
-                throw ControllerMessages.MESSAGES.duplicateDeclaration("subsystem", reader.getLocation());
+                throw ControllerLogger.ROOT_LOGGER.duplicateDeclaration("subsystem", reader.getLocation());
             }
             // parse subsystem
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();

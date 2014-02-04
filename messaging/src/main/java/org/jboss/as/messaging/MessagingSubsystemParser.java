@@ -70,7 +70,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -1025,9 +1025,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     case TYPE_ATTR_NAME:
                         perm = SecurityRoleDefinition.ROLE_ATTRIBUTES_BY_XML_NAME.get(reader.getAttributeValue(i));
                         if (perm == null) {
-                            throw ControllerMessages.MESSAGES.invalidAttributeValue(reader.getAttributeValue(i),
-                                    reader.getAttributeName(i), SecurityRoleDefinition.ROLE_ATTRIBUTES_BY_XML_NAME.keySet(),
-                                    reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.invalidAttributeValue(reader.getAttributeValue(i), reader.getAttributeName(i), SecurityRoleDefinition.ROLE_ATTRIBUTES_BY_XML_NAME.keySet(), reader.getLocation());
                         }
                         break;
                     default:

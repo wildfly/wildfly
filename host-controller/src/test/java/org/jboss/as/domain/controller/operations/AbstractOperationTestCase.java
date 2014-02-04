@@ -21,7 +21,6 @@
 */
 package org.jboss.as.domain.controller.operations;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
@@ -59,6 +58,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.NoopOperationStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -414,11 +414,11 @@ public abstract class AbstractOperationTestCase {
             while (i.hasNext()) {
                 final PathElement element = i.next();
                 if (element.isMultiTarget()) {
-                    throw MESSAGES.cannotWriteTo("*");
+                    throw ControllerLogger.ROOT_LOGGER.cannotWriteTo("*");
                 }
                 if (!i.hasNext()) {
                     if (model.hasChild(element)) {
-                        throw MESSAGES.duplicateResourceAddress(relativeAddress);
+                        throw ControllerLogger.ROOT_LOGGER.duplicateResourceAddress(relativeAddress);
                     } else {
                         model.registerChild(element, toAdd);
                         model = toAdd;
@@ -433,7 +433,7 @@ public abstract class AbstractOperationTestCase {
                                 break;
                             }
                         }
-                        throw MESSAGES.resourceNotFound(ancestor, relativeAddress);
+                        throw ControllerLogger.ROOT_LOGGER.resourceNotFound(ancestor, relativeAddress);
                     }
                 }
             }

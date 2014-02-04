@@ -145,8 +145,8 @@ public class OperationTransformationTestCase {
 
         Assert.assertTrue(otherFailure.hasDefined(HOST_FAILURE_DESCRIPTIONS));
         Assert.assertTrue(otherFailure.get(HOST_FAILURE_DESCRIPTIONS).hasDefined("slave"));
-        // Check that the host-failure contains JBAS014897 rejected
-        Assert.assertTrue(otherFailure.get(HOST_FAILURE_DESCRIPTIONS, "slave").asString().contains("14897"));
+        // Check that the host-failure contains WFLYCTL0304 rejected
+        Assert.assertTrue(otherFailure.get(HOST_FAILURE_DESCRIPTIONS, "slave").asString().contains("WFLYCTL0304"));
 
         // This should work
         final ModelNode addOtherNewIgnored = createAdd(ignored.append(otherNewElementPath));
@@ -160,8 +160,8 @@ public class OperationTransformationTestCase {
         final ModelNode compositeFailure = executeForFailure(cpa, client);
         Assert.assertTrue(compositeFailure.hasDefined(HOST_FAILURE_DESCRIPTIONS));
         Assert.assertTrue(compositeFailure.get(HOST_FAILURE_DESCRIPTIONS).hasDefined("slave"));
-        // Check that the host-failure contains JBAS014897 rejected
-        Assert.assertTrue(compositeFailure.get(HOST_FAILURE_DESCRIPTIONS, "slave").asString().contains("14897"));
+        // Check that the host-failure contains WFLYCTL0304 rejected
+        Assert.assertTrue(compositeFailure.get(HOST_FAILURE_DESCRIPTIONS, "slave").asString().contains("WFLYCTL0304"));
 
         // Successful composite
         executeForResult(createCompositeOperation(

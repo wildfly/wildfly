@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.controller.operations;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
@@ -50,6 +49,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -234,9 +234,9 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
             if (stepHandler == null) {
                 ImmutableManagementResourceRegistration child = registry.getSubModel(stepAddress);
                 if (child == null) {
-                    throw new IllegalStateException(MESSAGES.noSuchResourceType(stepAddress));
+                    throw new IllegalStateException(ControllerLogger.ROOT_LOGGER.noSuchResourceType(stepAddress));
                 } else {
-                    throw new IllegalStateException(MESSAGES.noHandlerForOperation(stepOpName, stepAddress));
+                    throw new IllegalStateException(ControllerLogger.ROOT_LOGGER.noHandlerForOperation(stepOpName, stepAddress));
                 }
             }
             context.addStep(subOperation, stepHandler, OperationContext.Stage.MODEL, true);

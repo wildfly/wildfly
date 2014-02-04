@@ -18,8 +18,6 @@
  */
 package org.jboss.as.controller.persistence;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -33,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.persistence.ConfigurationPersister.SnapshotInfo;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -82,7 +81,7 @@ public class ConfigurationFile {
 
     public ConfigurationFile(final File configurationDir, final String rawName, final String name, final boolean persistOriginal) {
         if (!configurationDir.exists() || !configurationDir.isDirectory()) {
-            throw MESSAGES.directoryNotFound(configurationDir.getAbsolutePath());
+            throw ControllerLogger.ROOT_LOGGER.directoryNotFound(configurationDir.getAbsolutePath());
         }
         this.rawFileName = rawName;
         this.bootFileName = name != null ? name : rawName;
@@ -95,7 +94,7 @@ public class ConfigurationFile {
         try {
             this.mainFile = file.getCanonicalFile();
         } catch (IOException ioe) {
-            throw MESSAGES.canonicalMainFileNotFound(ioe, file);
+            throw ControllerLogger.ROOT_LOGGER.canonicalMainFileNotFound(ioe, file);
         }
         this.mainFileName = mainFile.getName();
     }
@@ -122,7 +121,7 @@ public class ConfigurationFile {
                         try {
                             bootFile = bootFile.getCanonicalFile();
                         } catch (IOException ioe) {
-                            throw MESSAGES.canonicalBootFileNotFound(ioe, bootFile);
+                            throw ControllerLogger.ROOT_LOGGER.canonicalBootFileNotFound(ioe, bootFile);
                         }
                     }
                 }
@@ -164,7 +163,7 @@ public class ConfigurationFile {
             return new File(configurationDir, new File(mainName).getName());
         }
 
-        throw MESSAGES.mainFileNotFound(name != null ? name : rawName, configurationDir);
+        throw ControllerLogger.ROOT_LOGGER.mainFileNotFound(name != null ? name : rawName, configurationDir);
     }
 
     /**
@@ -192,14 +191,14 @@ public class ConfigurationFile {
         }
 
         if (files == null || files.length == 0) {
-            throw MESSAGES.configurationFileNotFound(suffix, searchDir);
+            throw ControllerLogger.ROOT_LOGGER.configurationFileNotFound(suffix, searchDir);
         } else if (files.length > 1) {
-            throw MESSAGES.ambiguousConfigurationFiles(backupType, searchDir, suffix);
+            throw ControllerLogger.ROOT_LOGGER.ambiguousConfigurationFiles(backupType, searchDir, suffix);
         }
 
         String matchName = files[0].getName();
         if (matchName.equals(suffix)) {
-            throw MESSAGES.configurationFileNameNotAllowed(backupType);
+            throw ControllerLogger.ROOT_LOGGER.configurationFileNameNotAllowed(backupType);
         }
         String prefix = matchName.substring(0, matchName.length() - suffix.length());
         return prefix + ".xml";
@@ -229,7 +228,7 @@ public class ConfigurationFile {
         if (files == null || files.length == 0) {
             return null;
         } else if (files.length > 1) {
-            throw MESSAGES.ambiguousConfigurationFiles(prefix, snapshotsDirectory, prefix);
+            throw ControllerLogger.ROOT_LOGGER.ambiguousConfigurationFiles(prefix, snapshotsDirectory, prefix);
         }
 
         String matchName = files[0].getName();
@@ -276,7 +275,7 @@ public class ConfigurationFile {
                 return absoluteFile;
             }
         }
-        throw MESSAGES.fileNotFound(directoryFile.getAbsolutePath());
+        throw ControllerLogger.ROOT_LOGGER.fileNotFound(directoryFile.getAbsolutePath());
     }
 
     File getMainFile() {
@@ -316,7 +315,7 @@ public class ConfigurationFile {
                 FilePersistenceUtils.copyFile(copySource, lastFile);
                 FilePersistenceUtils.copyFile(copySource, boot);
             } catch (IOException e) {
-                throw MESSAGES.failedToCreateConfigurationBackup(e, bootFile);
+                throw ControllerLogger.ROOT_LOGGER.failedToCreateConfigurationBackup(e, bootFile);
             } finally {
                 if (!persistOriginal) {
                     //Delete the temporary file
@@ -356,7 +355,7 @@ public class ConfigurationFile {
                 }
             }
         } catch (IOException e) {
-            throw MESSAGES.failedToBackup(e, mainFile);
+            throw ControllerLogger.ROOT_LOGGER.failedToBackup(e, mainFile);
         }
     }
 
@@ -378,7 +377,7 @@ public class ConfigurationFile {
         try {
             FilePersistenceUtils.copyFile(mainFile, lastFile);
         } catch (IOException e) {
-            throw MESSAGES.failedToBackup(e, mainFile);
+            throw ControllerLogger.ROOT_LOGGER.failedToBackup(e, mainFile);
         }
     }
 
@@ -398,7 +397,7 @@ public class ConfigurationFile {
         try {
             FilePersistenceUtils.copyFile(mainFile, snapshot);
         } catch (IOException e) {
-            throw MESSAGES.failedToTakeSnapshot(e, mainFile, snapshot);
+            throw ControllerLogger.ROOT_LOGGER.failedToTakeSnapshot(e, mainFile, snapshot);
         }
         return snapshot.toString();
     }
@@ -434,10 +433,10 @@ public class ConfigurationFile {
             }
         }
         if (names.size() == 0 && errorIfNoFiles) {
-            throw MESSAGES.fileNotFoundWithPrefix(prefix, snapshotsDirectory.getAbsolutePath());
+            throw ControllerLogger.ROOT_LOGGER.fileNotFoundWithPrefix(prefix, snapshotsDirectory.getAbsolutePath());
         }
         if (names.size() > 1) {
-            throw MESSAGES.ambiguousName(prefix, snapshotsDirectory.getAbsolutePath(), names);
+            throw ControllerLogger.ROOT_LOGGER.ambiguousName(prefix, snapshotsDirectory.getAbsolutePath(), names);
         }
 
         return names.size() > 0 ? new File(snapshotsDirectory, names.get(0)) : null;
@@ -449,7 +448,7 @@ public class ConfigurationFile {
         mkdir(this.snapshotsDirectory);
         if (currentHistory.exists()) {
             if (!currentHistory.isDirectory()) {
-                throw MESSAGES.notADirectory(currentHistory.getAbsolutePath());
+                throw ControllerLogger.ROOT_LOGGER.notADirectory(currentHistory.getAbsolutePath());
             }
 
             //Copy any existing history directory to a timestamped backup directory
@@ -467,10 +466,10 @@ public class ConfigurationFile {
                         backupName = getTimeStamp(date);
                         old = new File(historyRoot, backupName);
                         if (!new File(currentHistory.getAbsolutePath()).renameTo(old)) {
-                            throw MESSAGES.cannotRename(currentHistory.getAbsolutePath(), old.getAbsolutePath());
+                            throw ControllerLogger.ROOT_LOGGER.cannotRename(currentHistory.getAbsolutePath(), old.getAbsolutePath());
                         }
                     } else {
-                        throw MESSAGES.cannotRename(currentHistory.getAbsolutePath(), old.getAbsolutePath());
+                        throw ControllerLogger.ROOT_LOGGER.cannotRename(currentHistory.getAbsolutePath(), old.getAbsolutePath());
                     }
                 }
             }
@@ -488,7 +487,7 @@ public class ConfigurationFile {
         //Create the history directory
         currentHistory.mkdir();
         if (!currentHistory.exists()) {
-            throw MESSAGES.cannotCreate(currentHistory.getAbsolutePath());
+            throw ControllerLogger.ROOT_LOGGER.cannotCreate(currentHistory.getAbsolutePath());
         }
     }
 
@@ -513,7 +512,7 @@ public class ConfigurationFile {
             }
         }
         if (!file.delete()) {
-            throw MESSAGES.cannotDelete(file);
+            throw ControllerLogger.ROOT_LOGGER.cannotDelete(file);
         }
     }
 
@@ -559,10 +558,10 @@ public class ConfigurationFile {
     private File mkdir(final File dir) {
         if (!dir.exists()) {
             if (!dir.mkdir()) {
-                throw MESSAGES.cannotCreate(historyRoot.getAbsolutePath());
+                throw ControllerLogger.ROOT_LOGGER.cannotCreate(historyRoot.getAbsolutePath());
             }
         } else if (!dir.isDirectory()) {
-            throw MESSAGES.notADirectory(dir.getAbsolutePath());
+            throw ControllerLogger.ROOT_LOGGER.notADirectory(dir.getAbsolutePath());
         }
         return dir;
     }

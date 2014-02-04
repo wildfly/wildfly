@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller.access;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.security.Permission;
 import java.security.Principal;
 import java.util.Collections;
@@ -32,6 +30,7 @@ import java.util.Set;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.core.security.AccountPrincipal;
 import org.jboss.as.core.security.GroupPrincipal;
 import org.jboss.as.core.security.RealmPrincipal;
@@ -78,7 +77,7 @@ public final class Caller {
             if (accounts.size() == 1) {
                 name = accounts.iterator().next().getName();
             } else if (accounts.size() >= 1) {
-                throw MESSAGES.unexpectedAccountPrincipalCount(accounts.size());
+                throw ControllerLogger.ROOT_LOGGER.unexpectedAccountPrincipalCount(accounts.size());
             }
         }
 
@@ -101,7 +100,7 @@ public final class Caller {
                     if (foundRealm == null) {
                         foundRealm = current.getRealm();
                     } else if (foundRealm.equals(current.getRealm()) == false) {
-                        throw MESSAGES.differentRealmsInSubject(foundRealm, current.getRealm());
+                        throw ControllerLogger.ROOT_LOGGER.differentRealmsInSubject(foundRealm, current.getRealm());
                     }
                 }
                 realm = foundRealm; // Note: Initialisation may have now set this to null

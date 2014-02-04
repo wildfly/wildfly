@@ -23,8 +23,6 @@
 package org.jboss.as.controller.registry;
 
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -281,7 +280,7 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
     }
 
     private IllegalArgumentException alreadyRegistered() {
-        return MESSAGES.aliasAlreadyRegistered(getLocationString());
+        return ControllerLogger.ROOT_LOGGER.aliasAlreadyRegistered(getLocationString());
     }
 
     @Override

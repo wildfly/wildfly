@@ -22,7 +22,6 @@
 
 package org.jboss.as.host.controller.ignored;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.IGNORED_RESOURCE_TYPE;
 
 import java.util.Collections;
@@ -31,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -157,7 +157,7 @@ class IgnoredDomainResourceRoot implements Resource.ResourceEntry {
         if (!isMaster() && IGNORED_RESOURCE_TYPE.equals(address.getKey())) {
             synchronized (children) {
                 if (children.containsKey(address.getValue())) {
-                    throw MESSAGES.duplicateResource(address.getValue());
+                    throw ControllerLogger.ROOT_LOGGER.duplicateResource(address.getValue());
                 }
                 registerChildInternal(IgnoreDomainResourceTypeResource.class.cast(resource));
             }

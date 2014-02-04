@@ -22,11 +22,10 @@
 
 package org.jboss.as.controller.registry;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -490,7 +489,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
         public static ManagementResourceRegistration create(final DescriptionProvider rootModelDescriptionProvider,
                                                             AccessConstraintUtilizationRegistry constraintUtilizationRegistry) {
             if (rootModelDescriptionProvider == null) {
-                throw MESSAGES.nullVar("rootModelDescriptionProvider");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("rootModelDescriptionProvider");
             }
             ResourceDefinition rootResourceDefinition = new ResourceDefinition() {
 
@@ -547,7 +546,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
         public static ManagementResourceRegistration create(final ResourceDefinition resourceDefinition,
                                                             AccessConstraintUtilizationRegistry constraintUtilizationRegistry) {
             if (resourceDefinition == null) {
-                throw MESSAGES.nullVar("rootModelDescriptionProviderFactory");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("rootModelDescriptionProviderFactory");
             }
             ConcreteResourceRegistration resourceRegistration = new ConcreteResourceRegistration(null, null, resourceDefinition, constraintUtilizationRegistry, false);
             resourceDefinition.registerAttributes(resourceRegistration);

@@ -31,7 +31,7 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.protocol.StreamUtils;
 import org.xnio.IoUtils;
@@ -67,7 +67,7 @@ public class FileAuditLogHandler extends AuditLogHandler {
         }
         File file = new File(pathManager.resolveRelativePathEntry(path, relativeTo));
         if (file.exists() && file.isDirectory()) {
-            throw ControllerMessages.MESSAGES.resolvedFileDoesNotExistOrIsDirectory(file);
+            throw ControllerLogger.ROOT_LOGGER.resolvedFileDoesNotExistOrIsDirectory(file);
         }
         File parent = file.getParentFile();
         if (!parent.exists()) {
@@ -78,7 +78,7 @@ public class FileAuditLogHandler extends AuditLogHandler {
             try {
                 rename(file, backup);
             } catch (IOException e) {
-                throw ControllerMessages.MESSAGES.couldNotBackUp(e, file.getAbsolutePath(), backup.getAbsolutePath());
+                throw ControllerLogger.ROOT_LOGGER.couldNotBackUp(e, file.getAbsolutePath(), backup.getAbsolutePath());
             }
         }
         try {

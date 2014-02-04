@@ -29,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.logging.Logger;

@@ -27,8 +27,7 @@ import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -132,7 +131,7 @@ class TransformationUtils {
             allFields.remove(path.getKey());
         }
         if (!allFields.isEmpty()){
-            throw ControllerMessages.MESSAGES.modelFieldsNotKnown(allFields,startAddress.append(fullPath));
+            throw ControllerLogger.ROOT_LOGGER.modelFieldsNotKnown(allFields, startAddress.append(fullPath));
         }
         return res;
     }

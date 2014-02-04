@@ -25,8 +25,6 @@
  */
 package org.jboss.as.controller.interfaces;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -34,6 +32,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given network interface and
@@ -57,7 +57,7 @@ public class AnyInterfaceCriteria implements InterfaceCriteria {
      */
     public AnyInterfaceCriteria(Set<InterfaceCriteria> criteria) {
         if (criteria == null)
-            throw MESSAGES.nullVar("criteria");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("criteria");
         this.criteria.addAll(criteria);
     }
 

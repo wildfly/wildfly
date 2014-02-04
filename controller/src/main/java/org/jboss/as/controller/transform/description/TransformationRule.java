@@ -22,13 +22,12 @@
 
 package org.jboss.as.controller.transform.description;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -265,7 +264,7 @@ abstract class TransformationRule {
 
        @Override
        public void writeModel(ModelNode newModel) {
-           throw MESSAGES.immutableResource();
+           throw ControllerLogger.ROOT_LOGGER.immutableResource();
        }
 
        @Override
@@ -335,12 +334,12 @@ abstract class TransformationRule {
 
        @Override
        public void registerChild(PathElement address, Resource resource) {
-           throw MESSAGES.immutableResource();
+           throw ControllerLogger.ROOT_LOGGER.immutableResource();
        }
 
        @Override
        public Resource removeChild(PathElement address) {
-           throw MESSAGES.immutableResource();
+           throw ControllerLogger.ROOT_LOGGER.immutableResource();
        }
 
        @Override

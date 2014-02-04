@@ -22,12 +22,11 @@
 
 package org.jboss.as.management.client.content;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -137,7 +136,7 @@ public class ManagedDMRContentResource implements Resource.ResourceEntry {
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        throw MESSAGES.immutableResource();
+        throw ControllerLogger.ROOT_LOGGER.immutableResource();
     }
 
     @Override

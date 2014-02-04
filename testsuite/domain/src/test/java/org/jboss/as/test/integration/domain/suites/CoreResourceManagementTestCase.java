@@ -79,7 +79,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.CompositeOperationHandler;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
@@ -964,7 +964,7 @@ public class CoreResourceManagementTestCase {
 
     private String getNotAuthorizedErrorCode() {
         try {
-            throw ControllerMessages.MESSAGES.modelUpdateNotAuthorized("", PathAddress.EMPTY_ADDRESS);
+            throw ControllerLogger.ROOT_LOGGER.modelUpdateNotAuthorized("", PathAddress.EMPTY_ADDRESS);
         }catch(Exception e) {
             String msg = e.getMessage();
             return msg.substring(0, msg.indexOf(":"));

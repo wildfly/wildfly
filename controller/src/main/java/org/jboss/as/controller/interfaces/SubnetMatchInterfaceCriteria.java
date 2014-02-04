@@ -25,12 +25,12 @@
  */
 package org.jboss.as.controller.interfaces;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Arrays;
+
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  * {@link InterfaceCriteria} that tests whether a given address is on the
@@ -58,7 +58,7 @@ public class SubnetMatchInterfaceCriteria extends AbstractInterfaceCriteria {
      */
     public SubnetMatchInterfaceCriteria(byte[] network, int mask) {
         if (network == null)
-            throw MESSAGES.nullVar("network");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("network");
         this.network = network;
         this.mask = mask;
     }

@@ -22,7 +22,6 @@
 package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
@@ -76,6 +75,7 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -631,8 +631,7 @@ public class DomainXml extends CommonXml {
         SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader);
         if (bindingGroupUpdate.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION
                 && !interfaces.contains(defaultInterface)) {
-            throw MESSAGES.unknownInterface(defaultInterface, Attribute.DEFAULT_INTERFACE.getLocalName(),
-                    Element.INTERFACES.getLocalName(), reader.getLocation());
+            throw ControllerLogger.ROOT_LOGGER.unknownInterface(defaultInterface, Attribute.DEFAULT_INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
         }
 
         final ModelNode includes = bindingGroupUpdate.get(INCLUDES);
@@ -659,8 +658,7 @@ public class DomainXml extends CommonXml {
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), bindingName,
-                                Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -691,8 +689,7 @@ public class DomainXml extends CommonXml {
         SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader);
         if (bindingGroupUpdate.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION
                 && !interfaces.contains(defaultInterface)) {
-            throw MESSAGES.unknownInterface(defaultInterface, Attribute.DEFAULT_INTERFACE.getLocalName(),
-                    Element.INTERFACES.getLocalName(), reader.getLocation());
+            throw ControllerLogger.ROOT_LOGGER.unknownInterface(defaultInterface, Attribute.DEFAULT_INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
         }
 
         /*This will be reintroduced for 7.2.0, leave commented out
@@ -719,16 +716,14 @@ public class DomainXml extends CommonXml {
                 case SOCKET_BINDING: {
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
-                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
                 case OUTBOUND_SOCKET_BINDING: {
                     final String bindingName = parseOutboundSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
-                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -816,7 +811,7 @@ public class DomainXml extends CommonXml {
                     }
                     case DEPLOYMENTS: {
                         if (sawDeployments) {
-                            throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                         }
                         sawDeployments = true;
                         List<ModelNode> deployments = new ArrayList<ModelNode>();
@@ -858,7 +853,7 @@ public class DomainXml extends CommonXml {
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
             final String name = reader.getAttributeValue(0);
             if (!names.add(name)) {
-                throw MESSAGES.duplicateDeclaration("profile", name, reader.getLocation());
+                throw ControllerLogger.ROOT_LOGGER.duplicateDeclaration("profile", name, reader.getLocation());
             }
 
             //final Set<String> includes = new HashSet<String>();  // See commented out section below.
@@ -875,7 +870,7 @@ public class DomainXml extends CommonXml {
                         }
                         String namespace = reader.getNamespaceURI();
                         if (profileOps.containsKey(namespace)) {
-                            throw MESSAGES.duplicateDeclaration("subsystem", name, reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.duplicateDeclaration("subsystem", name, reader.getLocation());
                         }
                         // parse content
                         final List<ModelNode> subsystems = new ArrayList<ModelNode>();
@@ -982,7 +977,7 @@ public class DomainXml extends CommonXml {
         try {
             addOp.get(HASH).set(HashUtil.hexStringToByteArray(hash));
         } catch (final Exception e) {
-            throw MESSAGES.invalidSha1Value(e, hash, Attribute.SHA1.getLocalName(), reader.getLocation());
+            throw ControllerLogger.ROOT_LOGGER.invalidSha1Value(e, hash, Attribute.SHA1.getLocalName(), reader.getLocation());
         }
 
         list.add(addOp);

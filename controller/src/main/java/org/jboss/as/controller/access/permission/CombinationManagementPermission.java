@@ -28,8 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.CombinationPolicy;
 
@@ -61,7 +60,7 @@ public class CombinationManagementPermission extends ManagementPermission {
     public void addUnderlyingPermission(String permissionName, ManagementPermission underlyingPermission) {
         assert underlyingPermission.getActionEffect() == getActionEffect() : "incompatible ActionEffect";
         if (combinationPolicy == CombinationPolicy.REJECTING && underlyingPermissions.size() > 0) {
-            throw ControllerMessages.MESSAGES.illegalMultipleRoles();
+            throw ControllerLogger.ROOT_LOGGER.illegalMultipleRoles();
         }
         underlyingPermissions.put(permissionName, underlyingPermission);
     }

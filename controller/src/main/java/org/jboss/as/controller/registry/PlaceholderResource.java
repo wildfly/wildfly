@@ -25,11 +25,10 @@ package org.jboss.as.controller.registry;
 import java.util.Collections;
 import java.util.Set;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.dmr.ModelNode;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * Resource that solely holds a place in the resource tree and has no model or children. A typically usage
@@ -57,7 +56,7 @@ public class PlaceholderResource implements Resource {
 
     @Override
     public void writeModel(ModelNode newModel) {
-        throw MESSAGES.immutableResource();
+        throw ControllerLogger.ROOT_LOGGER.immutableResource();
     }
 
     @Override
@@ -107,7 +106,7 @@ public class PlaceholderResource implements Resource {
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        throw MESSAGES.immutableResource();
+        throw ControllerLogger.ROOT_LOGGER.immutableResource();
     }
 
     @Override

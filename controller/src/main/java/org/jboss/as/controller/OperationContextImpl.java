@@ -22,8 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
@@ -68,6 +67,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.ReadResourceHandler;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
@@ -243,7 +243,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         final PathAddress address = activeStep.address;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         //if (currentStage != Stage.MODEL) {
         //    throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
@@ -264,7 +264,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null || currentStage == Stage.DONE) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         authorize(false, Collections.<ActionEffect>emptySet());
         ImmutableManagementResourceRegistration delegate = modelController.getRootRegistration().getSubModel(address);
@@ -286,10 +286,10 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (! (!modify || currentStage == Stage.RUNTIME || currentStage == Stage.MODEL || currentStage == Stage.VERIFY || isRollingBack())) {
-            throw MESSAGES.serviceRegistryRuntimeOperationsOnly();
+            throw ControllerLogger.ROOT_LOGGER.serviceRegistryRuntimeOperationsOnly();
         }
         authorize(false, modify ? READ_WRITE_RUNTIME : READ_RUNTIME);
         if (modify && !affectsRuntime) {
@@ -308,10 +308,10 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
-            throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
+            throw ControllerLogger.ROOT_LOGGER.serviceRemovalRuntimeOperationsOnly();
         }
         authorize(false, WRITE_RUNTIME);
         if (!affectsRuntime) {
@@ -359,10 +359,10 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
-            throw MESSAGES.serviceRemovalRuntimeOperationsOnly();
+            throw ControllerLogger.ROOT_LOGGER.serviceRemovalRuntimeOperationsOnly();
         }
         authorize(false, WRITE_RUNTIME);
         if (!affectsRuntime) {
@@ -412,10 +412,10 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.RUNTIME && currentStage != Stage.VERIFY && !isRollingBack()) {
-            throw MESSAGES.serviceTargetRuntimeOperationsOnly();
+            throw ControllerLogger.ROOT_LOGGER.serviceTargetRuntimeOperationsOnly();
         }
         if (!affectsRuntime) {
             takeWriteLock();
@@ -429,7 +429,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     private void takeWriteLock() {
         if (lockStep == null) {
             if (currentStage == Stage.DONE) {
-                throw MESSAGES.invalidModificationAfterCompletedStep();
+                throw ControllerLogger.ROOT_LOGGER.invalidModificationAfterCompletedStep();
             }
             try {
                 modelController.acquireLock(operationId, respectInterruption, this);
@@ -437,7 +437,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             } catch (InterruptedException e) {
                 cancelled = true;
                 Thread.currentThread().interrupt();
-                throw MESSAGES.operationCancelledAsynchronously();
+                throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
             }
         }
     }
@@ -445,7 +445,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     private void acquireContainerMonitor() {
         if (containerMonitorStep == null) {
             if (currentStage == Stage.DONE) {
-                throw MESSAGES.invalidModificationAfterCompletedStep();
+                throw ControllerLogger.ROOT_LOGGER.invalidModificationAfterCompletedStep();
             }
             modelController.acquireContainerMonitor();
             containerMonitorStep = activeStep;
@@ -461,7 +461,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                 cancelled = true;
             }
             Thread.currentThread().interrupt();
-            throw MESSAGES.operationCancelledAsynchronously();
+            throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
         }
     }
 
@@ -471,7 +471,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         Resource model = this.model;
         for (final PathElement element : address) {
@@ -489,10 +489,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
+            throw ControllerLogger.ROOT_LOGGER.stageAlreadyComplete(Stage.MODEL);
         }
         rejectUserDomainServerUpdates();
         checkHostServerGroupTracker(address);
@@ -507,7 +507,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
-                throw MESSAGES.cannotWriteTo("*");
+                throw ControllerLogger.ROOT_LOGGER.cannotWriteTo("*");
             }
             if (! i.hasNext()) {
                 final String key = element.getKey();
@@ -515,7 +515,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     final PathAddress parent = address.subAddress(0, address.size() -1);
                     final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
                     if(!childrenNames.contains(key)) {
-                        throw MESSAGES.noChildType(key);
+                        throw ControllerLogger.ROOT_LOGGER.noChildType(key);
                     }
                     final Resource newModel = Resource.Factory.create();
                     model.registerChild(element, newModel);
@@ -550,7 +550,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         assert isControllingThread();
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         //Clone the operation to preserve all the headers
         ModelNode operation = activeStep.operation.clone();
@@ -562,9 +562,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             // See if the problem was addressability
             AuthorizationResult addressResult = authorize(opId, operation, false, ADDRESS);
             if (addressResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+                throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(activeStep.address);
             }
-            throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
+            throw ControllerLogger.ROOT_LOGGER.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
         }
         Resource model = this.model;
         final Iterator<PathElement> iterator = address.iterator();
@@ -577,7 +577,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     final PathAddress parent = address.subAddress(0, address.size() -1);
                     final Set<String> childrenTypes = modelController.getRootRegistration().getChildNames(parent);
                     if(! childrenTypes.contains(element.getKey())) {
-                        throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
+                        throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
                     }
                     // Return an empty model
                     return Resource.Factory.create();
@@ -612,10 +612,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
+            throw ControllerLogger.ROOT_LOGGER.stageAlreadyComplete(Stage.MODEL);
         }
 
         // WFLY-3017 See if this write means a persistent config change
@@ -638,7 +638,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         Resource resource = this.model;
         for (PathElement element : address) {
             if (element.isMultiTarget()) {
-                throw MESSAGES.cannotWriteTo("*");
+                throw ControllerLogger.ROOT_LOGGER.cannotWriteTo("*");
             }
             resource = requireChild(resource, element, address);
         }
@@ -686,13 +686,13 @@ final class OperationContextImpl extends AbstractOperationContext {
         final PathAddress absoluteAddress = activeStep.address.append(relativeAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
+            throw ControllerLogger.ROOT_LOGGER.stageAlreadyComplete(Stage.MODEL);
         }
         if (absoluteAddress.size() == 0) {
-            throw MESSAGES.duplicateResourceAddress(absoluteAddress);
+            throw ControllerLogger.ROOT_LOGGER.duplicateResourceAddress(absoluteAddress);
         }
 
         boolean runtimeOnly = toAdd.isRuntime();
@@ -716,17 +716,17 @@ final class OperationContextImpl extends AbstractOperationContext {
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
-                throw MESSAGES.cannotWriteTo("*");
+                throw ControllerLogger.ROOT_LOGGER.cannotWriteTo("*");
             }
             if (! i.hasNext()) {
                 final String key = element.getKey();
                 if(model.hasChild(element)) {
-                    throw MESSAGES.duplicateResourceAddress(absoluteAddress);
+                    throw ControllerLogger.ROOT_LOGGER.duplicateResourceAddress(absoluteAddress);
                 } else {
                     final PathAddress parent = absoluteAddress.subAddress(0, absoluteAddress.size() -1);
                     final Set<String> childrenNames = modelController.getRootRegistration().getChildNames(parent);
                     if(!childrenNames.contains(key)) {
-                        throw MESSAGES.noChildType(key);
+                        throw ControllerLogger.ROOT_LOGGER.noChildType(key);
                     }
                     model.registerChild(element, toAdd);
                     model = toAdd;
@@ -741,7 +741,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             break;
                         }
                     }
-                    throw MESSAGES.resourceNotFound(ancestor, absoluteAddress);
+                    throw ControllerLogger.ROOT_LOGGER.resourceNotFound(ancestor, absoluteAddress);
                 }
             }
         }
@@ -756,10 +756,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
-            throw MESSAGES.operationAlreadyComplete();
+            throw ControllerLogger.ROOT_LOGGER.operationAlreadyComplete();
         }
         if (currentStage != Stage.MODEL) {
-            throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
+            throw ControllerLogger.ROOT_LOGGER.stageAlreadyComplete(Stage.MODEL);
         }
 
         // WFLY-3017 See if this write means a persistent config change
@@ -783,7 +783,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         while (i.hasNext()) {
             final PathElement element = i.next();
             if (element.isMultiTarget()) {
-                throw MESSAGES.cannotRemove("*");
+                throw ControllerLogger.ROOT_LOGGER.cannotRemove("*");
             }
             if (! i.hasNext()) {
                 model = model.removeChild(element);
@@ -884,7 +884,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                     break;
                 }
             }
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(missing);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(missing);
         }
     }
 
@@ -897,7 +897,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @SuppressWarnings("unchecked")
     public <V> V getAttachment(final AttachmentKey<V> key) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         return key.cast(valueAttachments.get(key));
     }
@@ -910,7 +910,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public <V> V attach(final AttachmentKey<V> key, final V value) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         return key.cast(valueAttachments.put(key, value));
     }
@@ -918,7 +918,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public <V> V attachIfAbsent(final AttachmentKey<V> key, final V value) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         return key.cast(valueAttachments.putIfAbsent(key, value));
     }
@@ -926,7 +926,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     public <V> V detach(final AttachmentKey<V> key) {
         if (key == null) {
-            throw MESSAGES.nullVar("key");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("key");
         }
         return key.cast(valueAttachments.remove(key));
     }
@@ -1090,7 +1090,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (isModelUpdateRejectionRequired()) {
             ModelNode op = activeStep.operation;
             if (op.hasDefined(OPERATION_HEADERS) && op.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && USER.equals(op.get(OPERATION_HEADERS, CALLER_TYPE).asString())) {
-                throw ControllerMessages.MESSAGES.modelUpdateNotAuthorized(op.require(OP).asString(), PathAddress.pathAddress(op.get(OP_ADDR)));
+                throw ControllerLogger.ROOT_LOGGER.modelUpdateNotAuthorized(op.require(OP).asString(), PathAddress.pathAddress(op.get(OP_ADDR)));
             }
         }
     }
@@ -1107,22 +1107,22 @@ final class OperationContextImpl extends AbstractOperationContext {
         AuthorizationResult accessResult = authorize(activeStep.operationId, activeStep.operation, false, ADDRESS);
         if (accessResult.getDecision() == AuthorizationResult.Decision.DENY) {
             if (activeStep.address.size() > 0) {
-                throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+                throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(activeStep.address);
             } else {
                 // WFLY-2037 -- the root resource isn't hidden; if we hit this it means the user isn't authorized
-                throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, accessResult.getExplanation());
+                throw ControllerLogger.ROOT_LOGGER.unauthorized(activeStep.operationId.name, activeStep.address, accessResult.getExplanation());
             }
         }
         AuthorizationResult authResult = authorize(activeStep.operationId, activeStep.operation, allAttributes, actionEffects);
         if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
-            throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
+            throw ControllerLogger.ROOT_LOGGER.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
         }
     }
 
     private void authorizeAdd(boolean runtimeOnly) {
         AuthorizationResult accessResult = authorize(activeStep.operationId, activeStep.operation, false, ADDRESS);
         if (accessResult.getDecision() == AuthorizationResult.Decision.DENY) {
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(activeStep.address);
         }
         final Set<Action.ActionEffect> writeEffect = runtimeOnly ? WRITE_RUNTIME : WRITE_CONFIG;
         AuthorizationResult authResult = authorize(activeStep.operationId, activeStep.operation, true, writeEffect);
@@ -1134,7 +1134,7 @@ final class OperationContextImpl extends AbstractOperationContext {
             authResult = authResp.validateAddAttributeEffects(opName, writeEffect);
             authResp.addOperationResult(opName, authResult);
             if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
+                throw ControllerLogger.ROOT_LOGGER.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());
             }
         }
     }
@@ -1499,7 +1499,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             intr = true;
                             if (respectInterruption) {
                                 cancelled = true;
-                                throw MESSAGES.serviceInstallCancelled();
+                                throw ControllerLogger.ROOT_LOGGER.serviceInstallCancelled();
                             } // else keep waiting and mark the thread interrupted at the end
                         }
                     }
@@ -1551,9 +1551,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             for (Map.Entry<Step, Map<ServiceName, Set<ServiceName>>> entry : missingByStep.entrySet()) {
                 Step step = entry.getKey();
                 if (!step.response.hasDefined(ModelDescriptionConstants.FAILURE_DESCRIPTION)) {
-                    StringBuilder sb = new StringBuilder(MESSAGES.removingServiceUnsatisfiedDependencies());
+                    StringBuilder sb = new StringBuilder(ControllerLogger.ROOT_LOGGER.removingServiceUnsatisfiedDependencies());
                     for (Map.Entry<ServiceName, Set<ServiceName>> removed : entry.getValue().entrySet()) {
-                        sb.append(MESSAGES.removingServiceUnsatisfiedDependencies(removed.getKey().getCanonicalName()));
+                        sb.append(ControllerLogger.ROOT_LOGGER.removingServiceUnsatisfiedDependencies(removed.getKey().getCanonicalName()));
                         boolean first = true;
                         for (ServiceName dependent : removed.getValue()) {
                             if (!first) {
@@ -1637,7 +1637,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
         private void checkModeTransition(Mode mode) {
             if (mode == Mode.REMOVE) {
-                throw MESSAGES.useOperationContextRemoveService();
+                throw ControllerLogger.ROOT_LOGGER.useOperationContextRemoveService();
             }
         }
 

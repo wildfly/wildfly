@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -145,9 +145,9 @@ public class PrepareStepHandler  implements OperationStepHandler {
         } else {
             PathAddress pathAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
             if (registration == null) {
-                context.getFailureDescription().set(ControllerMessages.MESSAGES.noSuchResourceType(pathAddress));
+                context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.noSuchResourceType(pathAddress));
             } else {
-                context.getFailureDescription().set(ControllerMessages.MESSAGES.noHandlerForOperation(operationName, pathAddress));
+                context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.noHandlerForOperation(operationName, pathAddress));
             }
         }
         context.stepCompleted();

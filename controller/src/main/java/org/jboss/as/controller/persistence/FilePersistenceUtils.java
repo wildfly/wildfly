@@ -21,8 +21,6 @@
 */
 package org.jboss.as.controller.persistence;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -31,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
@@ -57,7 +56,7 @@ class FilePersistenceUtils {
                 IoUtils.safeClose(marshalled);
             }
         } catch (Exception e) {
-            throw MESSAGES.failedToMarshalConfiguration(e);
+            throw ControllerLogger.ROOT_LOGGER.failedToMarshalConfiguration(e);
         }
         return marshalled;
     }
@@ -93,7 +92,7 @@ class FilePersistenceUtils {
             //Only delete the temp file if all went well, to give people the chance to manually recover it if something really weird happened
             deleteFile(tempFileName);
         } catch (Exception e) {
-            throw MESSAGES.failedToRenameTempFile(e, tempFileName, fileName);
+            throw ControllerLogger.ROOT_LOGGER.failedToRenameTempFile(e, tempFileName, fileName);
         }
     }
 
@@ -101,7 +100,7 @@ class FilePersistenceUtils {
         if (file.exists()) {
             if (!file.delete() && file.exists()) {
                 file.deleteOnExit();
-                throw new IllegalStateException(MESSAGES.couldNotDeleteFile(file));
+                throw new IllegalStateException(ControllerLogger.ROOT_LOGGER.couldNotDeleteFile(file));
             }
         }
     }

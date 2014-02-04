@@ -118,7 +118,7 @@ public class RbacUtil {
                 if (!FAILED.equals(outcome)) {
                     fail("Didn't fail: " + result.asString());
                 }
-                if (!result.get(FAILURE_DESCRIPTION).asString().contains("13456") && !result.asString().contains("11360")
+                if (!result.get(FAILURE_DESCRIPTION).asString().contains("WFLYCTL0313") && !result.asString().contains("11360")
                         && !result.asString().contains("11361")  && !result.asString().contains("11362")  && !result.asString().contains("11363")) {
                     fail("Incorrect failure type: " + result.asString());
                 }
@@ -129,7 +129,7 @@ public class RbacUtil {
                     fail("Didn't fail: " + result.asString());
                 }
                 String failureDesc = result.get(FAILURE_DESCRIPTION).asString();
-                if (!failureDesc.contains("14807") && !failureDesc.contains("14883") && !failureDesc.contains("11340")) {
+                if (!failureDesc.contains("WFLYCTL0216") && !failureDesc.contains("WFLYCTL0030") && !failureDesc.contains("11340")) {
                     fail("Incorrect failure type: " + result.asString());
                 }
                 break;
@@ -139,8 +139,8 @@ public class RbacUtil {
                     fail("Didn't fail: " + result.asString());
                 }
                 String failureDesc = result.get(FAILURE_DESCRIPTION).asString();
-                if (failureDesc.contains("14807") || failureDesc.contains("14883")
-                        || failureDesc.contains("13456") || failureDesc.contains("11340")) {
+                if (failureDesc.contains("WFLYCTL0216") || failureDesc.contains("WFLYCTL0030")
+                        || failureDesc.contains("WFLYCTL0313") || failureDesc.contains("11340")) {
                     fail("Incorrect failure type: " + result.asString());
                 }
                 break;

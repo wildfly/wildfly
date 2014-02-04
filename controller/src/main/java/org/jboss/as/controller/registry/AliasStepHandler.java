@@ -24,7 +24,7 @@ package org.jboss.as.controller.registry;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationContext.Stage;
 import org.jboss.as.controller.OperationFailedException;
@@ -55,7 +55,7 @@ public class AliasStepHandler implements OperationStepHandler {
 
         OperationStepHandler targetHandler = context.getRootResourceRegistration().getOperationHandler(mapped, op);
         if (op == null) {
-            throw ControllerMessages.MESSAGES.aliasStepHandlerOperationNotFound(op, addr, mapped);
+            throw ControllerLogger.ROOT_LOGGER.aliasStepHandlerOperationNotFound(op, addr, mapped);
         }
 
         ModelNode copy = operation.clone();

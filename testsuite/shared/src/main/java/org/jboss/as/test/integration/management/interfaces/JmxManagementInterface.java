@@ -201,9 +201,9 @@ public class JmxManagementInterface implements ManagementInterface {
                 // see RbacUtil.checkOperationResult for error codes
                 // TODO could possibly use MBeanAttributeInfo#isReadable instead of error codes, but it's currently broken
                 String message = e.getMessage();
-                if (message.contains("14807") || message.contains("14883")) {
+                if (message.contains("WFLYCTL0216") || message.contains("WFLYCTL0030")) {
                     throw e;
-                } else if (message.contains("13456") || message.contains("11362")) {
+                } else if (message.contains("WFLYCTL0313") || message.contains("11362")) {
                     filtered.add(JmxInterfaceStringUtils.toDashCase(attributeName));
                 } else {
                     throw new RuntimeException(e);

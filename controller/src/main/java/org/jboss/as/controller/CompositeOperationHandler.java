@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -37,6 +36,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
@@ -89,9 +89,9 @@ public final class CompositeOperationHandler implements OperationStepHandler {
             if (stepHandler == null) {
                 ImmutableManagementResourceRegistration child = registry.getSubModel(stepAddress);
                 if (child == null) {
-                   context.getFailureDescription().set(MESSAGES.noSuchResourceType(stepAddress));
+                   context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.noSuchResourceType(stepAddress));
                 } else {
-                    context.getFailureDescription().set(MESSAGES.noHandlerForOperation(stepOpName, stepAddress));
+                    context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.noHandlerForOperation(stepOpName, stepAddress));
                 }
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 return;
@@ -118,11 +118,11 @@ public final class CompositeOperationHandler implements OperationStepHandler {
                     String stepName = "step-" + (i+1);
                     ModelNode stepResponse = responseMap.get(stepName);
                     if (stepResponse.hasDefined(FAILURE_DESCRIPTION)) {
-                        failureMsg.get(MESSAGES.compositeOperationFailed(), MESSAGES.operation(stepName)).set(stepResponse.get(FAILURE_DESCRIPTION));
+                        failureMsg.get(ControllerLogger.ROOT_LOGGER.compositeOperationFailed(), ControllerLogger.ROOT_LOGGER.operation(stepName)).set(stepResponse.get(FAILURE_DESCRIPTION));
                     }
                 }
                 if (!failureMsg.isDefined()) {
-                    failureMsg.set(MESSAGES.compositeOperationRolledBack());
+                    failureMsg.set(ControllerLogger.ROOT_LOGGER.compositeOperationRolledBack());
                 }
                 context.getFailureDescription().set(failureMsg);
             }

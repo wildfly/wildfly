@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -76,7 +76,7 @@ class JSFSubsystemTransformers {
                 }
                 attributes.remove(SLOT_ATTRIBUTE_NAME);
                 if (!attributes.isEmpty()) {
-                    context.getLogger().logAttributeWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributes);
+                    context.getLogger().logAttributeWarning(address, ControllerLogger.ROOT_LOGGER.attributesAreNotUnderstoodAndMustBeIgnored(), attributes);
                 }
             }
         });
@@ -141,7 +141,7 @@ class JSFSubsystemTransformers {
                 if (!SLOT_ATTRIBUTE_NAME.equals(attributeName)) {
                     return DEFAULT.transformOperation(context, address, operation);
                 } else {
-                    context.getLogger().logAttributeWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributeName);
+                    context.getLogger().logAttributeWarning(address, ControllerLogger.ROOT_LOGGER.attributesAreNotUnderstoodAndMustBeIgnored(), attributeName);
                     return DISCARD.transformOperation(context, address, operation);
                 }
             }

@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
@@ -127,11 +127,11 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         Map<Action.ActionEffect, CombinationManagementPermission> combined = null;
         for (String roleName : roles) {
             if (combinationPolicy == CombinationPolicy.REJECTING && simple != null) {
-                throw ControllerMessages.MESSAGES.illegalMultipleRoles();
+                throw ControllerLogger.ROOT_LOGGER.illegalMultipleRoles();
             }
             ManagementPermissionCollection role = currentPerms.permsByRole.get(getOfficialForm(roleName));
             if (role == null) {
-                throw ControllerMessages.MESSAGES.unknownRole(roleName);
+                throw ControllerLogger.ROOT_LOGGER.unknownRole(roleName);
             }
             if (simple == null) {
                 simple = role;
@@ -220,12 +220,12 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
         String roleName = added.getName();
         String officialForm = getOfficialForm(roleName);
         if (permissionsByRole.containsKey(officialForm)) {
-            throw ControllerMessages.MESSAGES.roleIsAlreadyRegistered(roleName);
+            throw ControllerLogger.ROOT_LOGGER.roleIsAlreadyRegistered(roleName);
         }
         String baseName = added.getBaseRoleName();
         String officialBase = getOfficialForm(baseName);
         if (rolePermissionsConfigured && !permissionsByRole.containsKey(officialBase)) {
-            throw ControllerMessages.MESSAGES.unknownBaseRole(baseName);
+            throw ControllerLogger.ROOT_LOGGER.unknownBaseRole(baseName);
         }
         ScopingConstraint constraint = added.getScopingConstraint();
         addConstraintFactory(constraint.getFactory());
@@ -244,7 +244,7 @@ public class DefaultPermissionFactory implements PermissionFactory, JmxPermissio
             standard = null;
         }
         if (standard != null) {
-            throw ControllerMessages.MESSAGES.cannotRemoveStandardRole(standard.toString());
+            throw ControllerLogger.ROOT_LOGGER.cannotRemoveStandardRole(standard.toString());
         }
         synchronized (this) {
             scopedBaseMap.remove(officialForm);

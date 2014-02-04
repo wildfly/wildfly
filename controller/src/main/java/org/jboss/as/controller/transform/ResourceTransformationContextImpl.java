@@ -22,12 +22,12 @@
 
 package org.jboss.as.controller.transform;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.Iterator;
 import java.util.Set;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -135,11 +135,11 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
             while (i.hasNext()) {
                 final PathElement element = i.next();
                 if (element.isMultiTarget()) {
-                    throw MESSAGES.cannotWriteTo("*");
+                    throw ControllerLogger.ROOT_LOGGER.cannotWriteTo("*");
                 }
                 if (!i.hasNext()) {
                     if (model.hasChild(element)) {
-                        throw MESSAGES.duplicateResourceAddress(absoluteAddress);
+                        throw ControllerLogger.ROOT_LOGGER.duplicateResourceAddress(absoluteAddress);
                     } else {
                         model.registerChild(element, toAdd);
                         model = toAdd;
@@ -154,7 +154,7 @@ class ResourceTransformationContextImpl implements ResourceTransformationContext
                                 break;
                             }
                         }
-                        throw MESSAGES.resourceNotFound(ancestor, absoluteAddress);
+                        throw ControllerLogger.ROOT_LOGGER.resourceNotFound(ancestor, absoluteAddress);
                     }
                 }
             }

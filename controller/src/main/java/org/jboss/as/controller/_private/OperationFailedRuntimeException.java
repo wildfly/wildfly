@@ -20,22 +20,23 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.controller;
+package org.jboss.as.controller._private;
 
+import org.jboss.as.controller.OperationClientException;
 import org.jboss.dmr.ModelNode;
 
 /**
  * Runtime exception indicating an operation has failed due to a client mistake (e.g. an operation with
  * invalid parameters was invoked.) Should not be used to report server failures.
  * <p>
- * This is a {@link RuntimeException} variant of {@link OperationFailedException} and is intended
- * for use in cases where the semantics of {@link OperationFailedException} are desired but an
+ * This is a {@link RuntimeException} variant of {@link org.jboss.as.controller.OperationFailedException} and is intended
+ * for use in cases where the semantics of {@link org.jboss.as.controller.OperationFailedException} are desired but an
  * API does not allow a checked exception to be thrown. See https://issues.jboss.org/browse/AS7-2905 .
  * </p>
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-class OperationFailedRuntimeException extends RuntimeException implements OperationClientException {
+public class OperationFailedRuntimeException extends RuntimeException implements OperationClientException {
 
     private final ModelNode failureDescription;
 

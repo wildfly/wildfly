@@ -28,11 +28,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
  * {@link ParameterValidator} that validates the value is a string matching one of the {@link TimeUnit} names.
@@ -72,8 +71,7 @@ public class TimeUnitValidator extends ModelTypeValidator implements AllowedValu
             String tuString = value.asString();
             TimeUnit tu = TimeUnit.valueOf(tuString.toUpperCase(Locale.ENGLISH));
             if (tu == null || !allowedValues.contains(tu)) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidValue(tuString, parameterName,
-                        allowedValues)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidValue(tuString, parameterName, allowedValues)));
             }
         }
     }

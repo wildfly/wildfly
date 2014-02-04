@@ -21,8 +21,7 @@
 */
 package org.jboss.as.controller.operations.validation;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -45,7 +44,7 @@ public class PropertyValidator extends ModelTypeValidator {
         super.validateParameter(parameterName, value);
         if (value.isDefined()) {
             if (value.asProperty().getName().length() < 1) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidMinLength(value.asProperty().getName(), parameterName, 1)));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidMinLength(value.asProperty().getName(), parameterName, 1)));
             }
             if (valueValidator != null) {
                 valueValidator.validateParameter(parameterName, value.asProperty().getValue());

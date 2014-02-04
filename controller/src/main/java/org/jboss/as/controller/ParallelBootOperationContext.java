@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +31,7 @@ import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -79,7 +78,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public void addStep(OperationStepHandler step, Stage stage) throws IllegalArgumentException {
         if (activeStep == null) {
-            throw MESSAGES.noActiveStep();
+            throw ControllerLogger.ROOT_LOGGER.noActiveStep();
         }
         addStep(activeStep.response, activeStep.operation, step, stage);
     }
@@ -87,7 +86,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public void addStep(ModelNode operation, OperationStepHandler step, Stage stage) throws IllegalArgumentException {
         if (activeStep == null) {
-            throw MESSAGES.noActiveStep();
+            throw ControllerLogger.ROOT_LOGGER.noActiveStep();
         }
         addStep(activeStep.response, operation, step, stage);
     }
@@ -95,7 +94,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     @Override
     public void addStep(ModelNode operation, OperationStepHandler step, Stage stage, final boolean addFirst) throws IllegalArgumentException {
         if (activeStep == null) {
-            throw MESSAGES.noActiveStep();
+            throw ControllerLogger.ROOT_LOGGER.noActiveStep();
         }
         addStep(activeStep.response, operation, step, stage, addFirst);
     }
@@ -210,7 +209,7 @@ class ParallelBootOperationContext extends AbstractOperationContext {
             } catch (InterruptedException e) {
                 cancelled = true;
                 Thread.currentThread().interrupt();
-                throw MESSAGES.operationCancelledAsynchronously();
+                throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
             }
         }
     }

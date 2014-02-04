@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequiredElement;
@@ -40,6 +39,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
@@ -87,7 +87,7 @@ public class JvmXml {
                             throw ParseUtils.duplicateAttribute(reader, attribute.getLocalName());
 
                         if (!jvmNames.add(value)) {
-                            throw MESSAGES.duplicateDeclaration("JVM", value, reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.duplicateDeclaration("JVM", value, reader.getLocation());
                         }
                         name = value;
                         break;
@@ -179,7 +179,7 @@ public class JvmXml {
                 }
                 case ENVIRONMENT_VARIABLES: {
                     if (hasEnvironmentVariables) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseEnvironmentVariables(reader, expectedNs, addOp);
                     hasEnvironmentVariables = true;
@@ -187,7 +187,7 @@ public class JvmXml {
                 }
                 case JVM_OPTIONS: {
                     if (hasJvmOptions) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseJvmOptions(reader, expectedNs, addOp);
                     hasJvmOptions = true;

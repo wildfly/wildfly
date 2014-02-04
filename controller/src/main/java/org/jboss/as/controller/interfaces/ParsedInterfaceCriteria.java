@@ -23,8 +23,7 @@
 package org.jboss.as.controller.interfaces;
 
 
-import static org.jboss.as.controller.ControllerLogger.SERVER_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.SERVER_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV4_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY_IPV6_ADDRESS;
@@ -37,6 +36,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -105,7 +105,7 @@ public final class ParsedInterfaceCriteria {
 
     public static ParsedInterfaceCriteria parse(final ModelNode model, final boolean specified, final ExpressionResolver expressionResolver) {
         if (model.getType() != ModelType.OBJECT) {
-            return new ParsedInterfaceCriteria(MESSAGES.illegalInterfaceCriteria(model.getType(), ModelType.OBJECT));
+            return new ParsedInterfaceCriteria(ControllerLogger.ROOT_LOGGER.illegalInterfaceCriteria(model.getType(), ModelType.OBJECT));
         }
         // Remove operation params
         final ModelNode subModel = model.clone();
@@ -120,7 +120,7 @@ public final class ParsedInterfaceCriteria {
         } else if(subModel.hasDefined(ANY_IPV6_ADDRESS) && subModel.get(ANY_IPV6_ADDRESS).asBoolean(false)) {
             // AS7-5360 Reject this setting if java.net.preferIPv4Stack=true
             if (Boolean.parseBoolean(WildFlySecurityManager.getEnvPropertyPrivileged("java.net.preferIPv4Stack", "false"))) {
-                parsed = new ParsedInterfaceCriteria(MESSAGES.invalidAnyIPv6());
+                parsed = new ParsedInterfaceCriteria(ControllerLogger.ROOT_LOGGER.invalidAnyIPv6());
             } else {
                 parsed = ParsedInterfaceCriteria.V6;
             }
@@ -156,7 +156,7 @@ public final class ParsedInterfaceCriteria {
         }
         if (specified && parsed.getFailureMessage() == null && ! parsed.isAnyLocal() && ! parsed.isAnyLocalV4()
                 && ! parsed.isAnyLocalV6() && parsed.getCriteria().size() == 0) {
-            return new ParsedInterfaceCriteria(MESSAGES.noInterfaceCriteria());
+            return new ParsedInterfaceCriteria(ControllerLogger.ROOT_LOGGER.noInterfaceCriteria());
         }
         return parsed;
     }
@@ -208,11 +208,11 @@ public final class ParsedInterfaceCriteria {
             case ANY:
             case NOT:
                 if(nested) {
-                    throw new ParsingException(MESSAGES.nestedElementNotAllowed(element));
+                    throw new ParsingException(ControllerLogger.ROOT_LOGGER.nestedElementNotAllowed(element));
                 }
                 return parseNested(property.getValue(), element == Element.ANY, expressionResolver);
             default:
-                throw new ParsingException(MESSAGES.unknownCriteriaInterfaceType(property.getName()));
+                throw new ParsingException(ControllerLogger.ROOT_LOGGER.unknownCriteriaInterfaceType(property.getName()));
         }
     }
 
@@ -273,8 +273,7 @@ public final class ParsedInterfaceCriteria {
             Pattern pattern = Pattern.compile(model.asString());
             return new NicMatchInterfaceCriteria(pattern);
         } catch (PatternSyntaxException e) {
-            throw new ParsingException(MESSAGES.invalidInterfaceCriteriaPattern(model.asString(),
-                    Element.NIC_MATCH.getLocalName()));
+            throw new ParsingException(ControllerLogger.ROOT_LOGGER.invalidInterfaceCriteriaPattern(model.asString(), Element.NIC_MATCH.getLocalName()));
         }
     }
 
@@ -285,7 +284,7 @@ public final class ParsedInterfaceCriteria {
             value = model.asString();
             split = value.split("/");
             if (split.length != 2) {
-                throw new ParsingException(MESSAGES.invalidAddressMaskValue(value));
+                throw new ParsingException(ControllerLogger.ROOT_LOGGER.invalidAddressMaskValue(value));
             }
             // todo - possible DNS hit here
             final InetAddress addr = InetAddress.getByName(split[0]);
@@ -294,9 +293,9 @@ public final class ParsedInterfaceCriteria {
             final int mask = Integer.parseInt(split[1]);
             return new SubnetMatchInterfaceCriteria(net, mask);
         } catch (final NumberFormatException e) {
-            throw new ParsingException(MESSAGES.invalidAddressMask(split[1], e.getLocalizedMessage()));
+            throw new ParsingException(ControllerLogger.ROOT_LOGGER.invalidAddressMask(split[1], e.getLocalizedMessage()));
         } catch (final UnknownHostException e) {
-            throw new ParsingException(MESSAGES.invalidAddressValue(split[0], e.getLocalizedMessage()));
+            throw new ParsingException(ControllerLogger.ROOT_LOGGER.invalidAddressValue(split[0], e.getLocalizedMessage()));
         }
     }
 
@@ -305,8 +304,7 @@ public final class ParsedInterfaceCriteria {
         try {
             return InetAddress.getByName(rawAddress);
         } catch (UnknownHostException e) {
-            throw new ParsingException(MESSAGES.invalidAddress(model.asString(),
-                    e.getLocalizedMessage()));
+            throw new ParsingException(ControllerLogger.ROOT_LOGGER.invalidAddress(model.asString(), e.getLocalizedMessage()));
         }
     }
 
@@ -316,7 +314,7 @@ public final class ParsedInterfaceCriteria {
 
     private static void checkStringType(ModelNode node, String id, boolean allowExpressions) {
         if (node.getType() != ModelType.STRING && (!allowExpressions || node.getType() != ModelType.EXPRESSION)) {
-            throw new ParsingException(MESSAGES.illegalValueForInterfaceCriteria(node.getType(), id, ModelType.STRING));
+            throw new ParsingException(ControllerLogger.ROOT_LOGGER.illegalValueForInterfaceCriteria(node.getType(), id, ModelType.STRING));
         }
     }
     private static ModelNode parsePossibleExpression(final ModelNode node) {

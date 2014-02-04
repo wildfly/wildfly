@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.services.net;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -96,7 +96,7 @@ public class SocketBindingResourceDefinition extends AbstractSocketBindingResour
             try {
                 context.readResourceFromRoot(interfaceAddress, false);
             } catch (RuntimeException e) {
-                throw ControllerMessages.MESSAGES.nonexistentInterface(interfaceName, INTERFACE.getName());
+                throw ControllerLogger.ROOT_LOGGER.nonexistentInterface(interfaceName, INTERFACE.getName());
             }
         }
 

@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 
 /**

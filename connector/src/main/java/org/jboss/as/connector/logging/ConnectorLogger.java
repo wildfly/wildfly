@@ -56,7 +56,7 @@ public interface ConnectorLogger extends BasicLogger {
     /**
      * The root logger with a category of the default package.
      */
-    ConnectorLogger ROOT_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, ConnectorLogger.class.getPackage().getName());
+    ConnectorLogger ROOT_LOGGER = Logger.getMessageLogger(ConnectorLogger.class, "org.jboss.as.connector");
 
     /**
      * A logger with the category {@code org.jboss.as.connector.deployers.jdbc}.

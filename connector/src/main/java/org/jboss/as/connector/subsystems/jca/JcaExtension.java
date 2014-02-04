@@ -33,7 +33,6 @@ import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_LONG_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.Constants.WORKMANAGER_SHORT_RUNNING;
 import static org.jboss.as.connector.subsystems.jca.JcaArchiveValidationDefinition.ArchiveValidationParameters;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -50,6 +49,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
@@ -535,7 +535,7 @@ public class JcaExtension implements Extension {
                     }
 
                     if (name == null) {
-                        throw MESSAGES.missingRequiredAttributes(new StringBuilder(name), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.missingRequiredAttributes(new StringBuilder(name), reader.getLocation());
                     }
 
                     final ModelNode distributedWorkManagerAddress = parentAddress.clone();
