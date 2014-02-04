@@ -30,7 +30,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
+import org.jboss.as.server.deployment.scanner.logging.DeploymentScannerLogger;
 
 /**
  * Scans a zip file to check whether the complete end of directory record is
@@ -433,11 +433,11 @@ public class ZipCompletionScanner {
         }
 
         private static String getNonStandardMessage(final File file) {
-            return MESSAGES.invalidZipFileFormat(file.getAbsolutePath());
+            return DeploymentScannerLogger.ROOT_LOGGER.invalidZipFileFormat(file.getAbsolutePath());
         }
 
         private static String getZip64Message(final File file) {
-            return MESSAGES.invalidZip64FileFormat(file.getAbsolutePath());
+            return DeploymentScannerLogger.ROOT_LOGGER.invalidZip64FileFormat(file.getAbsolutePath());
         }
     }
 }

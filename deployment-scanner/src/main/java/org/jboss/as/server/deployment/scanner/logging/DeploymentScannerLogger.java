@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.server.deployment.scanner;
+package org.jboss.as.server.deployment.scanner.logging;
 
 import java.io.File;
 import java.util.Set;
@@ -37,17 +37,16 @@ import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 /**
- * Date: 05.11.2011
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageLogger(projectCode = "JBAS")
+@MessageLogger(projectCode = "WFLYDS", length = 4)
 public interface DeploymentScannerLogger extends BasicLogger {
 
     /**
      * A logger with the category of the package name.
      */
-    DeploymentScannerLogger ROOT_LOGGER = Logger.getMessageLogger(DeploymentScannerLogger.class, DeploymentScannerLogger.class.getPackage().getName());
+    DeploymentScannerLogger ROOT_LOGGER = Logger.getMessageLogger(DeploymentScannerLogger.class, "org.jboss.as.server.deployment.scanner");
 
     /**
      * Logs a warning message indicating the extraneous deployment marker file could not be removed.
@@ -55,7 +54,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param file the file that could not be removed.
      */
     @LogMessage(level = WARN)
-    @Message(id = 15000, value = "Cannot delete deployment progress marker file %s")
+    @Message(id = 1, value = "Cannot delete deployment progress marker file %s")
     void cannotDeleteDeploymentProgressMarker(File file);
 
     /**
@@ -64,7 +63,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param fileName the file that could not be removed.
      */
     @LogMessage(level = WARN)
-    @Message(id = 15001, value = "Cannot remove extraneous deployment marker file %s")
+    @Message(id = 2, value = "Cannot remove extraneous deployment marker file %s")
     void cannotRemoveDeploymentMarker(String fileName);
 
     /**
@@ -82,7 +81,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param deploymentName the name of the deployment.
      */
     @LogMessage(level = WARN)
-    @Message(id = 15002, value = "Deployment of '%s' requested, but the deployment is not present")
+    @Message(id = 3, value = "Deployment of '%s' requested, but the deployment is not present")
     void deploymentNotFound(String deploymentName);
 
     /**
@@ -92,7 +91,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param marker   the marker.
      */
     @LogMessage(level = INFO)
-    @Message(id = 15003, value = "Found %1$s in deployment directory. To trigger deployment create a file called %1$s%2$s")
+    @Message(id = 4, value = "Found %1$s in deployment directory. To trigger deployment create a file called %1$s%2$s")
     void deploymentTriggered(String fileName, String marker);
 
     /**
@@ -102,7 +101,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param markerFile the marker file.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 15004, value = "Caught exception writing deployment marker file %s")
+    @Message(id = 5, value = "Caught exception writing deployment marker file %s")
     void errorWritingDeploymentMarker(@Cause Throwable cause, String markerFile);
 
     /**
@@ -113,7 +112,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param elementName the element name.
      */
     @LogMessage(level = WARN)
-    @Message(id = 15005, value = "Reliable deployment behaviour is not possible when auto-deployment of exploded content is enabled " +
+    @Message(id = 6, value = "Reliable deployment behaviour is not possible when auto-deployment of exploded content is enabled " +
             "(i.e. deployment without use of \"%s\"' marker files). Configuration of auto-deployment of exploded content " +
             "is not recommended in any situation where reliability is desired. Configuring the deployment " +
             "scanner's %s setting to \"false\" is recommended.")
@@ -128,7 +127,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param marker   the marker.
      */
     @LogMessage(level = WARN)
-    @Message(id = 15006, value = "The deployment scanner found that the content for exploded deployment %1$s has been " +
+    @Message(id = 7, value = "The deployment scanner found that the content for exploded deployment %1$s has been " +
             "deleted, but auto-deploy/undeploy for exploded deployments is not enabled and the %1$s%2$s " +
             "marker file for this deployment has not been removed. As a result, the deployment is " +
             "not being undeployed, but resources needed by the deployment may have been deleted " +
@@ -143,7 +142,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param fileName the file name.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 15007, value = "Failed checking whether %s was a complete zip")
+    @Message(id = 8, value = "Failed checking whether %s was a complete zip")
     void failedCheckingZipFile(@Cause Throwable cause, String fileName);
 
     /**
@@ -152,7 +151,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 15008, value = "File system deployment service failed")
+    @Message(id = 9, value = "File system deployment service failed")
     void fileSystemDeploymentFailed(@Cause Throwable cause);
 
     /**
@@ -161,7 +160,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param name the name of the deployment.
      */
     @LogMessage(level = INFO)
-    @Message(id = 15009, value = "Scan found incompletely copied file content for deployment %s. Deployment changes will not be " +
+    @Message(id = 10, value = "Scan found incompletely copied file content for deployment %s. Deployment changes will not be " +
             "processed until all content is complete.")
     void incompleteContent(String name);
 
@@ -173,7 +172,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param deploymentDir the deployment directory.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 15010, value = "The deployment scanner found a directory named %1$s that was not inside a directory whose " +
+    @Message(id = 11, value = "The deployment scanner found a directory named %1$s that was not inside a directory whose " +
             "name ends with .ear, .jar, .rar, .sar or .war. This is likely the result of unzipping an " +
             "archive directly inside the %2$s directory, which is a user error. " +
             "The %1$s directory will not be scanned for deployments, but it is possible that the scanner may " +
@@ -188,7 +187,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param fileName the name of the file scanned that threw an exception.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 15011, value = "Scan of %s threw Exception")
+    @Message(id = 12, value = "Scan of %s threw Exception")
     void scanException(@Cause Throwable cause, String fileName);
 
     /**
@@ -198,7 +197,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param deploymentPath the deployment path.
      */
     @LogMessage(level = INFO)
-    @Message(id = 15012, value = "Started %s for directory %s")
+    @Message(id = 13, value = "Started %s for directory %s")
     void started(String className, String deploymentPath);
 
     /**
@@ -210,7 +209,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param problems the problems.
      */
     @LogMessage(level = WARN)
-    @Message(id = 15013, value = "Scan found content configured for auto-deploy that could not be safely auto-deployed. See details above. " +
+    @Message(id = 14, value = "Scan found content configured for auto-deploy that could not be safely auto-deployed. See details above. " +
             "Deployment changes will not be processed until all problematic content is either removed or whether to " +
             "deploy the content or not is indicated via a %s or %s marker file. Problematic deployments are %s")
     void unsafeAutoDeploy(String marker1, String marker2, Set<String> problems);
@@ -220,7 +219,7 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param deploymentName The name of the failed deployment.
      */
     @LogMessage(level = INFO)
-    @Message(id = 15014, value = "Re-attempting failed deployment %s")
+    @Message(id = 15, value = "Re-attempting failed deployment %s")
     void reattemptingFailedDeployment(String deploymentName);
 
     /**
@@ -231,20 +230,150 @@ public interface DeploymentScannerLogger extends BasicLogger {
      * @param fileName the file name.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 15015, value = "Failed checking whether %s was a complete XML")
+    @Message(id = 16, value = "Failed checking whether %s was a complete XML")
     void failedCheckingXMLFile(@Cause Throwable cause, String fileName);
 
     @LogMessage(level = ERROR)
-    @Message(id = 15016, value = "Initial deployment scan failed")
+    @Message(id = 17, value = "Initial deployment scan failed")
     void initialScanFailed(@Cause Throwable t);
 
     @LogMessage(level = INFO)
-    @Message(id = 15017, value = "Deployment %s was previously deployed by this scanner but has been undeployed by " +
+    @Message(id = 18, value = "Deployment %s was previously deployed by this scanner but has been undeployed by " +
             "another management tool. Marker file %s is being added to record this fact.")
     void scannerDeploymentUndeployedButNotByScanner(String deploymentName, File marker);
 
     @LogMessage(level = INFO)
-    @Message(id = 15018, value = "Deployment %s was previously deployed by this scanner but has been removed from the " +
+    @Message(id = 19, value = "Deployment %s was previously deployed by this scanner but has been removed from the " +
             "server deployment list by another management tool. Marker file %s is being added to record this fact.")
     void scannerDeploymentRemovedButNotByScanner(String deploymentName, File marker);
+
+    /**
+     * A message indicating the subsystem cannot be removed while there are still scanners configured.
+     *
+     * @return the message.
+     */
+    @Message(id = 20, value = "Cannot remove subsystem while it still has scanners configured. Remove all scanners first.")
+    String cannotRemoveSubsystem();
+
+    /**
+     * A message indicating the deployment content, represented by the {@code file} parameter, appears to be incomplete
+     * and is not progressing toward completion.
+     *
+     * @param file   the content.
+     * @param suffix the suffix.
+     *
+     * @return the message.
+     */
+    @Message(id = 21, value = "Deployment content %s appears to be incomplete and is not progressing toward completion. This" +
+            " content cannot be auto-deployed.%s")
+    String deploymentContentIncomplete(File file, String suffix);
+
+    /**
+     * A message indicating the deployment operation was not received with the timeout period.
+     *
+     * @param timeout the timeout period.
+     *
+     * @return the message.
+     */
+    @Message(id = 22, value = "Did not receive a response to the deployment operation within the allowed timeout period " +
+            "[%d seconds]. Check the server configuration file and the server logs to find more about the status of " +
+            "the deployment.")
+    String deploymentTimeout(long timeout);
+
+    /**
+     * Creates an exception indicating the directory, represented by the {@code path} parameter, does not exist.
+     *
+     * @param path the path of the directory.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 23, value = "%s does not exist")
+    IllegalArgumentException directoryDoesNotExist(String path);
+
+    /**
+     * Creates an exception indicating the directory, represented by the {@code path} parameter, is not writable.
+     *
+     * @param path the path of the directory.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 24, value = "%s is not writable")
+    IllegalArgumentException directoryNotWritable(String path);
+
+    /**
+     * A message indicating the file, represented by the {@code fileName} parameter, cannot be scanned because it does
+     * not begin with a ZIP file format local file header signature.
+     *
+     * @param fileName the name of the invalid file.
+     *
+     * @return the messages.
+     */
+    @Message(id = 25, value = "File %s cannot be scanned because it does not begin with a ZIP file format local file header signature")
+    String invalidZipFileFormat(String fileName);
+
+    /**
+     * A message indicating the file, represented by the {@code fileName} parameter, cannot be scanned because it uses
+     * the currently unsupported ZIP64 format.
+     *
+     * @param fileName the name of the invalid file.
+     *
+     * @return the messages.
+     */
+    @Message(id = 26, value = "File %s cannot be scanned because it uses the currently unsupported ZIP64 format")
+    String invalidZip64FileFormat(String fileName);
+
+    /**
+     * Creates an exception indicating the {@code path} is not a directory.
+     *
+     * @param path the path name.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 27, value = "%s is not a directory")
+    IllegalArgumentException notADirectory(String path);
+
+    /**
+     * Creates an exception indicating the variable, represented by the {@code name} parameter, is {@code null}.
+     *
+     * @param name the name of the {@code null} variable.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 28, value = "%s is null")
+    IllegalArgumentException nullVar(String name);
+
+    /**
+     * A message indicating a previous version of this content was deployed and remains deployed.
+     *
+     * @return the message.
+     */
+    @Message(id = Message.NONE, value = " A previous version of this content was deployed and remains deployed.")
+    String previousContentDeployed();
+
+    /**
+     * A message indicating the scanner has not been configured.
+     *
+     * @return the message.
+     */
+    @Message(id = 29, value = "scanner not configured")
+    String scannerNotConfigured();
+
+    /**
+     * A message indicating the file was configured for auto-deploy but could not be safely auto-deployed.
+     *
+     * @param errorMsg the error message.
+     * @param fileName the file name.
+     * @param marker   the marker.
+     *
+     * @return the message.
+     */
+    @Message(id = 30, value = "File %2$s was configured for auto-deploy but could not be safely auto-deployed. The reason the file " +
+            "could not be auto-deployed was: %1$s.  To enable deployment of this file create a file called %2$s%3$s")
+    String unsafeAutoDeploy2(String errorMsg, String fileName, String marker);
+
+    @Message(id = 31, value = "Extension with module 'org.jboss.as.deployment-scanner' cannot be installed in a managed domain. Please remove it and any subsystem referencing it")
+    IllegalStateException deploymentScannerNotForDomainMode();
+
+    @Message(id = 32, value = "Failed to list files in directory %s. Check that the contents of the directory are readable.")
+    RuntimeException cannotListDirectoryFiles(File directory);
 }

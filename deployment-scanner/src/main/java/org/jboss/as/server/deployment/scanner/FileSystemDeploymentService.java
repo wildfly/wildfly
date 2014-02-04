@@ -52,6 +52,7 @@ import org.jboss.as.server.deployment.DeploymentRemoveHandler;
 import org.jboss.as.server.deployment.DeploymentUndeployHandler;
 import org.jboss.as.server.deployment.scanner.ZipCompletionScanner.NonScannableZipException;
 import org.jboss.as.server.deployment.scanner.api.DeploymentScanner;
+import org.jboss.as.server.deployment.scanner.logging.DeploymentScannerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -72,8 +73,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerMessages.MESSAGES;
+import static org.jboss.as.server.deployment.scanner.logging.DeploymentScannerLogger.ROOT_LOGGER;
 
 /**
  * Service that monitors the filesystem for deployment content and if found deploys it.
@@ -157,19 +157,19 @@ class FileSystemDeploymentService implements DeploymentScanner {
                                 final DeploymentOperations.Factory deploymentOperationsFactory, final ScheduledExecutorService scheduledExecutor)
             throws OperationFailedException {
         if (scheduledExecutor == null) {
-            throw MESSAGES.nullVar("scheduledExecutor");
+            throw DeploymentScannerLogger.ROOT_LOGGER.nullVar("scheduledExecutor");
         }
         if (deploymentDir == null) {
-            throw MESSAGES.nullVar("deploymentDir");
+            throw DeploymentScannerLogger.ROOT_LOGGER.nullVar("deploymentDir");
         }
         if (!deploymentDir.exists()) {
-            throw MESSAGES.directoryDoesNotExist(deploymentDir.getAbsolutePath());
+            throw DeploymentScannerLogger.ROOT_LOGGER.directoryDoesNotExist(deploymentDir.getAbsolutePath());
         }
         if (!deploymentDir.isDirectory()) {
-            throw MESSAGES.notADirectory(deploymentDir.getAbsolutePath());
+            throw DeploymentScannerLogger.ROOT_LOGGER.notADirectory(deploymentDir.getAbsolutePath());
         }
         if (!deploymentDir.canWrite()) {
-            throw MESSAGES.directoryNotWritable(deploymentDir.getAbsolutePath());
+            throw DeploymentScannerLogger.ROOT_LOGGER.directoryNotWritable(deploymentDir.getAbsolutePath());
         }
         this.relativeTo = relativeTo;
         this.deploymentDir = deploymentDir;
@@ -448,7 +448,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                             futureResults.cancel(true);
                             final ModelNode failure = new ModelNode();
                             failure.get(OUTCOME).set(FAILED);
-                            failure.get(FAILURE_DESCRIPTION).set(MESSAGES.deploymentTimeout(deploymentTimeout));
+                            failure.get(FAILURE_DESCRIPTION).set(DeploymentScannerLogger.ROOT_LOGGER.deploymentTimeout(deploymentTimeout));
                             for (ScannerTask task : scannerTasks) {
                                 task.handleFailureResult(failure);
                             }
@@ -847,8 +847,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (now - status.timestamp > maxNoProgress) {
                     if (!status.warned) {
                         // Treat no progress for an extended period as a failed deployment
-                        String suffix = deployed.containsKey(deploymentName) ? MESSAGES.previousContentDeployed() : "";
-                        String msg = MESSAGES.deploymentContentIncomplete(incompleteFile, suffix);
+                        String suffix = deployed.containsKey(deploymentName) ? DeploymentScannerLogger.ROOT_LOGGER.previousContentDeployed() : "";
+                        String msg = DeploymentScannerLogger.ROOT_LOGGER.deploymentContentIncomplete(incompleteFile, suffix);
                         writeFailedMarker(incompleteFile, msg, status.timestamp);
                         ROOT_LOGGER.error(msg);
                         status.warned = true;
@@ -893,7 +893,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (nonscannableLogged.add(nonScannable) || logAll) {
                     NonScannableStatus nonScannableStatus = entry.getValue();
                     NonScannableZipException e = nonScannableStatus.exception;
-                    String msg = MESSAGES.unsafeAutoDeploy(e.getLocalizedMessage(), fileName, DO_DEPLOY);
+                    String msg = DeploymentScannerLogger.ROOT_LOGGER.unsafeAutoDeploy2(e.getLocalizedMessage(), fileName, DO_DEPLOY);
                     writeFailedMarker(nonScannable, msg, nonScannableStatus.timestamp);
                     ROOT_LOGGER.error(msg);
                     warnLogged = true;
@@ -1019,7 +1019,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
     private static File[] listDirectoryChildren(File directory) {
         File[] result = directory.listFiles();
         if (result == null) {
-            throw MESSAGES.cannotListDirectoryFiles(directory);
+            throw DeploymentScannerLogger.ROOT_LOGGER.cannotListDirectoryFiles(directory);
         }
         return result;
     }
