@@ -117,7 +117,9 @@ public class JSFFailoverTestCase extends ClusterAbstractTestCase {
         Header setCookie = response.getFirstHeader("Set-Cookie");
         if (setCookie != null) {
             String setCookieValue = setCookie.getValue();
-            state.sessionId = setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';'));
+            String encodedSessionId = setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';'));
+            int index = encodedSessionId.indexOf('.');
+            state.sessionId = (index > 0) ? encodedSessionId.substring(0, index) : encodedSessionId;
         } else if (sessionId != null) {
             // We don't get a cookie back if we have sent it, so just set it to whatever we had before
             state.sessionId = sessionId;
