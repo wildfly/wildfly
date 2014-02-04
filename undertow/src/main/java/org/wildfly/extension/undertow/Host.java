@@ -88,6 +88,8 @@ public class Host implements Service<Host> {
             filters.add(injectedFilter.getValue());
         }
 
+        //handle requests that use the Expect: 100-continue header
+        rootHandler = Handlers.httpContinueRead(rootHandler);
         //we always need to add date header
         rootHandler = Handlers.date(rootHandler);
         Collections.reverse(filters);
