@@ -33,7 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.List;
 
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -121,7 +121,7 @@ public class CacheConfigOperationHandlers {
             // need to check that the parent does not contain some other cache store ModelNode
             if (isCacheStoreDefined(context, operation)) {
                 String storeName = getDefinedCacheStore(context, operation);
-                throw InfinispanMessages.MESSAGES.cacheStoreAlreadyDefined(storeName);
+                throw InfinispanLogger.ROOT_LOGGER.cacheStoreAlreadyDefined(storeName);
             }
 
             // Process attributes
@@ -143,7 +143,7 @@ public class CacheConfigOperationHandlers {
                     final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
                     final ModelNode value = property.getValue();
                     if(! value.isDefined()) {
-                        throw InfinispanMessages.MESSAGES.propertyValueNotDefined(property.getName());
+                        throw InfinispanLogger.ROOT_LOGGER.propertyValueNotDefined(property.getName());
                     }
                     // set the value of the property
                     StorePropertyResourceDefinition.VALUE.validateAndSet(value, param.getModel());

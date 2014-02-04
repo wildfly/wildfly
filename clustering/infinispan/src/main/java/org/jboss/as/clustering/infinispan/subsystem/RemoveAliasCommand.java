@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 
 import java.util.List;
 
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -107,7 +107,7 @@ public class RemoveAliasCommand implements OperationStepHandler {
 
         // check for undefined list (AS7-3476)
         if (!list.isDefined()) {
-            throw InfinispanMessages.MESSAGES.cannotRemoveAliasFromEmptyList(alias);
+            throw InfinispanLogger.ROOT_LOGGER.cannotRemoveAliasFromEmptyList(alias);
         }
 
         ModelNode newList = new ModelNode() ;

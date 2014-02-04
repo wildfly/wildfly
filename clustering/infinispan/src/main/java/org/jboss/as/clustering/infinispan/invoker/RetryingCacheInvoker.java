@@ -22,7 +22,6 @@
 package org.jboss.as.clustering.infinispan.invoker;
 
 import static org.jboss.as.clustering.infinispan.InfinispanLogger.ROOT_LOGGER;
-import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -32,6 +31,7 @@ import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.infinispan.remoting.transport.jgroups.SuspectException;
 import org.infinispan.util.concurrent.TimeoutException;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 
 /**
  * A cache invoker implementation that retries after a specified set of intervals upon timeout or suspect.
@@ -106,6 +106,6 @@ public class RetryingCacheInvoker implements CacheInvoker {
             }
         }
 
-        throw MESSAGES.abortingCacheOperation(exception, this.backOffIntervals.length);
+        throw InfinispanLogger.ROOT_LOGGER.abortingCacheOperation(exception, this.backOffIntervals.length);
     }
 }
