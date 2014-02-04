@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,34 +22,35 @@
 
 package org.jboss.as.cli.parsing;
 
-import org.jboss.as.cli.CommandFormatException;
-
-
 /**
  * @author Alexey Loubyansky
  *
  */
-public class UnresolvedExpressionException extends CommandFormatException {
+public class CommandSubstitutionException extends UnresolvedExpressionException {
 
     private static final long serialVersionUID = 1L;
 
-    private final String expr;
-
-    public UnresolvedExpressionException(String variable) {
-        this(variable, "Unrecognized expression " + variable);
+    /**
+     * @param expr  expression which failed
+     */
+    public CommandSubstitutionException(String expr) {
+        super(expr);
     }
 
-    public UnresolvedExpressionException(String expr, String msg) {
-        super(msg);
-        this.expr = expr;
+    /**
+     * @param expr  expression which failed
+     * @param msg  error message
+     */
+    public CommandSubstitutionException(String expr, String msg) {
+        super(expr, msg);
     }
 
-    public UnresolvedExpressionException(String expr, String msg, Throwable t) {
-        super(msg, t);
-        this.expr = expr;
-    }
-
-    public String getExpression() {
-        return expr;
+    /**
+     * @param expr  expression which failed
+     * @param msg  error message
+     * @param t  the cause of the problem
+     */
+    public CommandSubstitutionException(String expr, String msg, Throwable t) {
+        super(expr, msg, t);
     }
 }

@@ -22,6 +22,7 @@
 package org.jboss.as.cli.parsing.arguments;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.BackQuotesState;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.ParsingContext;
@@ -51,12 +52,16 @@ public class NonObjectArgumentValueState extends DefaultParsingState {
                     case '$':
                         ctx.enterState(ExpressionValueState.INSTANCE);
                         break;
+                    case '`':
+                        ctx.enterState(BackQuotesState.QUOTES_INCLUDED);
+                        break;
                     default:
                         ctx.getCallbackHandler().character(ctx);
                 }
             }});
         setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
         enterState('"', QuotesState.QUOTES_INCLUDED);
+        enterState('`', BackQuotesState.QUOTES_INCLUDED);
         enterState('$', ExpressionValueState.INSTANCE);
     }
 }

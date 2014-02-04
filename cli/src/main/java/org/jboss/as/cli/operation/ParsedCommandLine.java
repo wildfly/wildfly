@@ -36,6 +36,14 @@ public interface ParsedCommandLine {
 
     String getOriginalLine();
 
+    /**
+     * The original line with all the necessary substitution
+     * (of commands, variables, system properties, etc) performed.
+     * @return  the original line with all the necessary substitution
+     * (of commands, variables, system properties, etc) performed
+     */
+    String getSubstitutedLine();
+
     boolean isRequestComplete();
 
     boolean endsOnPropertySeparator();

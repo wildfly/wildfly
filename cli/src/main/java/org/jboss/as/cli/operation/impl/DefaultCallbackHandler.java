@@ -86,6 +86,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     private boolean validation;
 
     private String originalLine;
+    private String substitutedLine;
 
     private LinkedHashMap<String,ParsedOperationRequestHeader> headers;
     private ParsedOperationRequestHeader lastHeader;
@@ -113,7 +114,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
             address = new DefaultOperationRequestAddress(initialAddress);
         }
         this.originalLine = argsStr;
-        ParserUtil.parse(argsStr, this, validation, ctx);
+        substitutedLine = ParserUtil.parse(argsStr, this, validation, ctx);
     }
 
     @Deprecated
@@ -139,13 +140,13 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         }
         this.setFormat(OperationFormat.INSTANCE);
         this.originalLine = argsStr;
-        ParserUtil.parseOperationRequest(argsStr, this);
+        substitutedLine = ParserUtil.parseOperationRequest(argsStr, this);
     }
 
     public void parseHeaders(String argsStr) throws CommandFormatException {
         reset();
         this.originalLine = argsStr;
-        ParserUtil.parseHeaders(argsStr, this);
+        substitutedLine = ParserUtil.parseHeaders(argsStr, this);
     }
 
     public void reset() {
@@ -161,6 +162,7 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
         lastChunkIndex = 0;
         format = null;
         originalLine = null;
+        substitutedLine = null;
         headers = null;
         lastHeaderName = null;
         lastHeader = null;
@@ -169,6 +171,11 @@ public class DefaultCallbackHandler extends ValidatingCallbackHandler implements
     @Override
     public String getOriginalLine() {
         return originalLine;
+    }
+
+    @Override
+    public String getSubstitutedLine() {
+        return substitutedLine;
     }
 
     public List<String> getOtherProperties() {

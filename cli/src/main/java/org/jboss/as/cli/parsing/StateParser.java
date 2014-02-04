@@ -28,6 +28,7 @@ import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.Util;
 
+
 /**
  *
  * @author Alexey Loubyansky
@@ -40,23 +41,35 @@ public class StateParser {
         initialState.enterState(ch, state);
     }
 
-    public void parse(String str, ParsingStateCallbackHandler callbackHandler) throws CommandFormatException {
-        parse(str, callbackHandler, initialState);
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public String parse(String str, ParsingStateCallbackHandler callbackHandler) throws CommandFormatException {
+        return parse(str, callbackHandler, initialState);
     }
 
-    public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState) throws CommandFormatException {
-        parse(str, callbackHandler, initialState, true);
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState) throws CommandFormatException {
+        return parse(str, callbackHandler, initialState, true);
     }
 
-    public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState, boolean strict) throws CommandFormatException {
-        parse(str, callbackHandler, initialState, strict, null);
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState, boolean strict) throws CommandFormatException {
+        return parse(str, callbackHandler, initialState, strict, null);
     }
 
-    public static void parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
             boolean strict, CommandContext ctx) throws CommandFormatException {
 
         try {
-            doParse(str, callbackHandler, initialState, strict, ctx);
+            return doParse(str, callbackHandler, initialState, strict, ctx);
         } catch(CommandFormatException e) {
             throw e;
         } catch(Throwable t) {
@@ -64,16 +77,22 @@ public class StateParser {
         }
     }
 
-    protected static void doParse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    protected static String doParse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
             boolean strict) throws CommandFormatException {
-        doParse(str, callbackHandler, initialState, strict, null);
+        return doParse(str, callbackHandler, initialState, strict, null);
     }
 
-    protected static void doParse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    protected static String doParse(String str, ParsingStateCallbackHandler callbackHandler, ParsingState initialState,
             boolean strict, CommandContext cmdCtx) throws CommandFormatException {
 
         if (str == null || str.isEmpty()) {
-            return;
+            return str;
         }
 
         ParsingContextImpl ctx = new ParsingContextImpl();
@@ -83,7 +102,7 @@ public class StateParser {
         ctx.strict = strict;
         ctx.cmdCtx = cmdCtx;
 
-        ctx.parse();
+        return ctx.parse();
     }
 
     static class ParsingContextImpl implements ParsingContext {
@@ -101,7 +120,7 @@ public class StateParser {
         CommandFormatException error;
         CommandContext cmdCtx;
 
-        void parse() throws CommandFormatException {
+        String parse() throws CommandFormatException {
 
             ch = input.charAt(0);
             originalInput = input;
@@ -125,43 +144,76 @@ public class StateParser {
             }
             initialState.getEndContentHandler().handle(this);
             initialState.getLeaveHandler().handle(this);
-
+            return input;
         }
 
         @Override
         public void resolveExpression(boolean systemProperty, boolean exceptionIfNotResolved)
             throws UnresolvedExpressionException {
-            if(input.charAt(location) != '$') {
-                return;
-            }
-
-            final int inputLength = input.length();
-            if(inputLength - 1 > location && input.charAt(location + 1) == '{') {
-                if(!systemProperty) {
-                    return;
-                }
-                final int endBrace = input.indexOf('}', location + 1);
-                if(endBrace - location - 2 <= 0) {
-                    return;
-                }
-                final String prop = input.substring(location, endBrace + 1);
-                final String resolved = Util.resolveProperties(prop);
-                if (!resolved.equals(prop)) {
-                    StringBuilder buf = new StringBuilder(input.length() - prop.length() + resolved.length());
-                    buf.append(input.substring(0, location)).append(resolved);
-                    if (endBrace < input.length() - 1) {
-                        buf.append(input.substring(endBrace + 1));
+            final char firstChar = input.charAt(location);
+            if(firstChar == '$') {
+                final int inputLength = input.length();
+                if (inputLength - 1 > location && input.charAt(location + 1) == '{') {
+                    if (systemProperty) {
+                        substituteSystemProperty(exceptionIfNotResolved);
                     }
-                    variableCorrection += resolved.length() - prop.length();
-                    input = buf.toString();
-                    ch = input.charAt(location);
-                    return;
-                } else if(exceptionIfNotResolved) {
-                    throw new UnresolvedExpressionException(prop);
+                } else {
+                    substituteVariable(exceptionIfNotResolved);
                 }
+            } else if(firstChar == '`') {
+                substituteCommand(exceptionIfNotResolved);
+            }
+        }
+
+        private void substituteCommand(boolean exceptionIfNotResolved) throws CommandSubstitutionException {
+            if(location + 1 == input.length()) {
+                throw new CommandSubstitutionException("", "Command is missing after `");
+            }
+            final int endQuote = firstNotEscaped('`', location + 1);
+            if(endQuote - location <= 1) {
+                throw new CommandSubstitutionException(input.substring(location + 1),
+                        "Closing ` is missing for " +
+                        input.substring(location, Math.min(location + 5, input.length())) + "...");
             }
 
-            // TODO resolve variables
+            final String cmd = input.substring(location + 1, endQuote);
+            final String resolved = Util.getResult(cmdCtx, cmd);
+
+            final StringBuilder buf = new StringBuilder(input.length() - cmd.length() - 2 + resolved.length());
+            buf.append(input.substring(0, location)).append(resolved);
+            if (endQuote < input.length() - 1) {
+                buf.append(input.substring(endQuote + 1));
+            }
+            variableCorrection += resolved.length() - cmd.length() - 2;
+            input = buf.toString();
+            ch = input.charAt(location);
+        }
+
+        private int firstNotEscaped(char ch, int start) {
+            final int index = input.indexOf(ch, start);
+            if(index < 0) {
+                return index;
+            }
+
+            // make sure ch is not escape
+            if(input.charAt(index - 1) == '\\') {
+                int i = index - 2;
+                boolean escaped = true;
+                while(i - start >= 0 && input.charAt(i) == '\\') {
+                    --i;
+                    escaped = !escaped;
+                }
+                if(escaped) {
+                    if(index + 1 < input.length() - 1) {
+                        return firstNotEscaped(ch, index + 1);
+                    }
+                    return -1;
+                }
+            }
+            return index;
+        }
+
+        private void substituteVariable(boolean exceptionIfNotResolved) throws UnresolvedVariableException {
             int endIndex = location + 1;
             if(endIndex >= input.length() || !Character.isJavaIdentifierStart(input.charAt(endIndex))) {
                 // simply '$'
@@ -177,7 +229,7 @@ public class StateParser {
             final String value = cmdCtx == null ? null : cmdCtx.getVariable(name);
             if(value == null) {
                 if (exceptionIfNotResolved) {
-                    throw new UnresolvedExpressionException(name);
+                    throw new UnresolvedVariableException(name, "Unrecognized variable " + name);
                 }
             } else {
                 StringBuilder buf = new StringBuilder(input.length() - name.length() + value.length());
@@ -188,6 +240,28 @@ public class StateParser {
                 variableCorrection += value.length() - name.length() - 1;
                 input = buf.toString();
                 ch = input.charAt(location);
+            }
+        }
+
+        private void substituteSystemProperty(boolean exceptionIfNotResolved) throws UnresolvedExpressionException {
+            final int endBrace = input.indexOf('}', location + 1);
+            if(endBrace - location - 2 <= 0) {
+                return;
+            }
+            final String prop = input.substring(location, endBrace + 1);
+            final String resolved = Util.resolveProperties(prop);
+            if (!resolved.equals(prop)) {
+                StringBuilder buf = new StringBuilder(input.length() - prop.length() + resolved.length());
+                buf.append(input.substring(0, location)).append(resolved);
+                if (endBrace < input.length() - 1) {
+                    buf.append(input.substring(endBrace + 1));
+                }
+                variableCorrection += resolved.length() - prop.length();
+                input = buf.toString();
+                ch = input.charAt(location);
+                return;
+            } else if(exceptionIfNotResolved) {
+                throw new UnresolvedExpressionException(prop, "Unrecognized system property " + prop);
             }
         }
 

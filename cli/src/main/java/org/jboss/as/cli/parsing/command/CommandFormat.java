@@ -61,4 +61,9 @@ public class CommandFormat implements CommandLineFormat {
     public String getAddressOperationSeparator() {
         return "";
     }
+
+    @Override
+    public String getPropertySeparator() {
+        return " ";
+    }
 }

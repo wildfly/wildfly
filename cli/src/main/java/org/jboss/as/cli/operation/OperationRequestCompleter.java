@@ -68,11 +68,16 @@ public class OperationRequestCompleter implements CommandLineCompleter {
         return complete(ctx, ctx.getParsedCommandLine(), buffer, cursor, candidates);
     }
 
+    public int complete(CommandContext ctx, OperationCandidatesProvider candidatesProvider,
+            final String buffer, int cursor, List<String> candidates) {
+        return complete(ctx, ctx.getParsedCommandLine(), candidatesProvider, buffer, cursor, candidates);
+    }
+
     public int complete(CommandContext ctx, ParsedCommandLine parsedCmd, final String buffer, int cursor, List<String> candidates) {
         return complete(ctx, parsedCmd, ctx.getOperationCandidatesProvider(), buffer, cursor, candidates);
     }
 
-    public int complete(CommandContext ctx, ParsedCommandLine parsedCmd, OperationCandidatesProvider candidatesProvider, final String buffer, int cursor, List<String> candidates) {
+    protected int complete(CommandContext ctx, ParsedCommandLine parsedCmd, OperationCandidatesProvider candidatesProvider, final String buffer, int cursor, List<String> candidates) {
 
         if(parsedCmd.isRequestComplete()) {
             return -1;
@@ -225,6 +230,24 @@ public class OperationRequestCompleter implements CommandLineCompleter {
                 if (valueResult < 0) {
                     return valueResult;
                 } else {
+                    if(chunk != null && candidates.size() == 1 && chunk.equals(candidates.get(0))) {
+                        final CommandLineFormat format = parsedCmd.getFormat();
+                        if(format != null) {
+                            for (CommandArgument arg : allArgs) {
+                                try {
+                                    if(arg.canAppearNext(ctx)) {
+                                        candidates.set(0, "" + format.getPropertySeparator());
+                                        return buffer.length();
+                                    }
+                                } catch (CommandFormatException e) {
+                                    e.printStackTrace();
+                                    return result + valueResult;
+                                }
+                            }
+                            candidates.set(0, format.getPropertyListEnd());
+                            return buffer.length();
+                        }
+                    }
                     return result + valueResult;
                 }
             }

@@ -1163,6 +1163,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         }
 
         final DefaultCallbackHandler originalParsedArguments = this.parsedCmd;
+        final String originalCmdLine = this.cmdLine;
         try {
             this.parsedCmd = new DefaultCallbackHandler();
             resetArgs(line);
@@ -1190,6 +1191,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
             return ((OperationCommand) handler).buildRequest(this);
         } finally {
             this.parsedCmd = originalParsedArguments;
+            this.cmdLine = originalCmdLine;
         }
     }
 

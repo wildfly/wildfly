@@ -47,57 +47,78 @@ import org.jboss.as.cli.parsing.operation.PropertyListState;
  */
 public class ParserUtil {
 
-    public static void parse(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
-        parse(commandLine, handler, true);
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parse(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
+        return parse(commandLine, handler, true);
     }
 
-    public static void parse(String commandLine, final CommandLineParser.CallbackHandler handler, boolean strict) throws CommandFormatException {
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parse(String commandLine, final CommandLineParser.CallbackHandler handler, boolean strict) throws CommandFormatException {
         if(commandLine == null) {
-            return;
+            return null;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
-        StateParser.parse(commandLine, callbackHandler, InitialState.INSTANCE, strict);
+        return StateParser.parse(commandLine, callbackHandler, InitialState.INSTANCE, strict);
     }
 
-    public static void parse(String commandLine, final CommandLineParser.CallbackHandler handler, boolean strict,
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parse(String commandLine, final CommandLineParser.CallbackHandler handler, boolean strict,
             CommandContext ctx) throws CommandFormatException {
         if(commandLine == null) {
-            return;
+            return null;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
-        StateParser.parse(commandLine, callbackHandler, InitialState.INSTANCE, strict, ctx);
+        return StateParser.parse(commandLine, callbackHandler, InitialState.INSTANCE, strict, ctx);
     }
 
-    public static void parseOperationRequest(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parseOperationRequest(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
         if(commandLine == null) {
-            return;
+            return null;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
-        StateParser.parse(commandLine, callbackHandler, OperationRequestState.INSTANCE);
+        return StateParser.parse(commandLine, callbackHandler, OperationRequestState.INSTANCE);
     }
 
-    public static void parseHeaders(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parseHeaders(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
         if(commandLine == null) {
-            return;
+            return null;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
-        StateParser.parse(commandLine, callbackHandler, HeaderListState.INSTANCE);
+        return StateParser.parse(commandLine, callbackHandler, HeaderListState.INSTANCE);
     }
 
-    public static void parseCommandArgs(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parseCommandArgs(String commandLine, final CommandLineParser.CallbackHandler handler) throws CommandFormatException {
         if(commandLine == null) {
-            return;
+            return null;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
-        StateParser.parse(commandLine, callbackHandler, ArgumentListState.INSTANCE);
+        return StateParser.parse(commandLine, callbackHandler, ArgumentListState.INSTANCE);
     }
 
-    public static void parse(String str, final CommandLineParser.CallbackHandler handler, ParsingState initialState) throws CommandFormatException {
+    /**
+     * Returns the string which was actually parsed with all the substitutions performed
+     */
+    public static String parse(String str, final CommandLineParser.CallbackHandler handler, ParsingState initialState) throws CommandFormatException {
         if(str == null) {
-            return;
+            return null;
         }
         final ParsingStateCallbackHandler callbackHandler = getCallbackHandler(handler);
-        StateParser.parse(str, callbackHandler, initialState);
+        return StateParser.parse(str, callbackHandler, initialState);
     }
 
     protected static ParsingStateCallbackHandler getCallbackHandler(final CommandLineParser.CallbackHandler handler) {
@@ -197,7 +218,7 @@ public class ParserUtil {
                     nameValueSeparator = -1;
                 } else if (ArgumentValueState.ID.equals(id)) {
                     if (name == null) {
-                        handler.property(null, buffer.toString().trim(), bufferStartIndex);
+                        handler.property(null, buffer.toString(), bufferStartIndex);
                         buffer.setLength(0);
                         if(!ctx.isEndOfContent()) {
                             handler.propertySeparator(ctx.getLocation());

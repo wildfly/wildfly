@@ -51,7 +51,13 @@ public class DefaultParsingState extends BaseParsingState {
 
         if(enterLeaveContent) {
             setEnterHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
-            setLeaveHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
+            setLeaveHandler(new CharacterHandler() {
+                @Override
+                public void handle(ParsingContext ctx) throws CommandFormatException {
+                    if(!ctx.isEndOfContent()) {
+                        ctx.getCallbackHandler().character(ctx);
+                    }
+                }});
         }
 
         this.handlers = new DefaultCharacterHandlerMap();

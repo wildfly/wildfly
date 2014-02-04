@@ -19,51 +19,35 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.cli.parsing.operation;
-
-import org.jboss.as.cli.CommandLineFormat;
+package org.jboss.as.cli.parsing;
 
 /**
  *
  * @author Alexey Loubyansky
  */
-public class OperationFormat implements CommandLineFormat {
+public class BackQuotesState extends DefaultParsingState {
 
-    public static final OperationFormat INSTANCE = new OperationFormat();
+    public static final String ID = "BQUOTES";
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandLineFormat#getPropertyListStart()
-     */
-    @Override
-    public String getPropertyListStart() {
-        return "(";
+    public static final BackQuotesState QUOTES_INCLUDED = new BackQuotesState(true);
+    public static final BackQuotesState QUOTES_INCLUDED_KEEP_ESCAPES = new BackQuotesState(true, EscapeCharacterState.KEEP_ESCAPE);
+
+    public BackQuotesState(boolean quotesInContent) {
+        this(quotesInContent, true);
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.cli.CommandLineFormat#getPropertyListEnd()
-     */
-    @Override
-    public String getPropertyListEnd() {
-        return ")";
+    public BackQuotesState(boolean quotesInContent, boolean escapeEnabled) {
+        this(quotesInContent, escapeEnabled ? EscapeCharacterState.INSTANCE : null);
     }
 
-    @Override
-    public boolean isPropertySeparator(char ch) {
-        return ch == ',';
-    }
+    public BackQuotesState(boolean quotesInContent, EscapeCharacterState escape) {
+        super(ID, quotesInContent);
 
-    @Override
-    public String getNodeSeparator() {
-        return "/";
-    }
-
-    @Override
-    public String getAddressOperationSeparator() {
-        return ":";
-    }
-
-    @Override
-    public String getPropertySeparator() {
-        return ",";
+        this.setEndContentHandler(new ErrorCharacterHandler("The closing ` is missing."));
+        this.putHandler('`', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
+        if(escape != null) {
+            this.enterState('\\', escape);
+        }
+        this.setDefaultHandler(GlobalCharacterHandlers.CONTENT_CHARACTER_HANDLER);
     }
 }

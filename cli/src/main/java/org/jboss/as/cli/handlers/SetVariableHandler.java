@@ -30,9 +30,10 @@ import java.util.Set;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.Util;
 import org.jboss.as.cli.impl.ArgumentWithValue;
-import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 
 
@@ -44,7 +45,26 @@ public class SetVariableHandler extends CommandHandlerWithHelp {
 
     public SetVariableHandler() {
         super("set");
-        new ArgumentWithValue(this, OperationRequestCompleter.ARG_VALUE_COMPLETER, 0, "--variable");
+        new ArgumentWithValue(this, new CommandLineCompleter(){
+            @Override
+            public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
+                int equals = buffer.indexOf('=');
+                if(equals < 1 || equals + 1 == buffer.length()) {
+                    return -1;
+                }
+                // the problem is splitting values with whitespaces, e.g. for command substitution
+                final String value = buffer.substring(equals + 1);
+                final int valueIndex = ctx.getDefaultCommandCompleter().complete(ctx, value, cursor, candidates);
+                if(valueIndex < 0) {
+                    return -1;
+                }
+                return equals + 1 + valueIndex;
+            }}, Integer.MAX_VALUE, "--variable") {
+            @Override
+            public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
+                return !helpArg.isPresent(ctx.getParsedCommandLine());
+            }
+        };
     }
 
     /* (non-Javadoc)
@@ -87,7 +107,11 @@ public class SetVariableHandler extends CommandHandlerWithHelp {
             if(equals == arg.length() - 1) {
                 ctx.setVariable(name, null);
             } else {
-                ctx.setVariable(name, arg.substring(equals + 1));
+                String value = arg.substring(equals + 1);
+                if(value.length() > 2 && value.charAt(0) == '`' && value.charAt(value.length() - 1) == '`') {
+                    value = Util.getResult(ctx, value.substring(1, value.length() - 1));
+                }
+                ctx.setVariable(name, value);
             }
         }
     }
