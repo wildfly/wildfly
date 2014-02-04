@@ -25,6 +25,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 import org.jboss.as.appclient.component.ApplicationClientComponentDescription;
+import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -38,8 +39,6 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * DUP that processes the manifest to get the main class
@@ -77,7 +76,7 @@ public class ApplicationClientManifestProcessor implements DeploymentUnitProcess
                             DescriptorEnvironmentLifecycleMethodProcessor.handleMethods(environment, moduleDescription, mainClass);
                         }
                     } catch (ClassNotFoundException e) {
-                        throw MESSAGES.cannotLoadAppClientMainClass(e);
+                        throw AppClientLogger.ROOT_LOGGER.cannotLoadAppClientMainClass(e);
                     }
 
                 }

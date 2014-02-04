@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.server.deployment.Attachments;
@@ -41,8 +42,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Processor that marks a sub-deployment as an application client based on the parameters passed on the command line
@@ -83,7 +82,7 @@ public class ApplicationClientStructureProcessor implements DeploymentUnitProces
                 }
 
             } else {
-                throw MESSAGES.cannotFindAppClient(deployment);
+                throw AppClientLogger.ROOT_LOGGER.cannotFindAppClient(deployment);
             }
         } else if (deploymentUnit.getParent() != null && deploymentUnit.getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")) {
             final ResourceRoot parentRoot = deploymentUnit.getParent().getAttachment(Attachments.DEPLOYMENT_ROOT);

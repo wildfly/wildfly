@@ -23,7 +23,6 @@
 package org.jboss.as.appclient.subsystem.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -45,6 +44,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
@@ -397,7 +397,7 @@ public class AppClientXml extends CommonXml {
                 throw unexpectedElement(reader);
             }
             if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
-                throw MESSAGES.duplicateSubsystemDeclaration(reader.getLocation());
+                throw AppClientLogger.ROOT_LOGGER.duplicateSubsystemDeclaration(reader.getLocation());
             }
             // parse subsystem
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();

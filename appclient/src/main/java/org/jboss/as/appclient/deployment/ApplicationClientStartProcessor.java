@@ -32,7 +32,7 @@ import java.util.Properties;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.appclient.component.ApplicationClientComponentDescription;
-import org.jboss.as.appclient.logging.AppClientMessages;
+import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.appclient.service.ApplicationClientDeploymentService;
 import org.jboss.as.appclient.service.ApplicationClientStartService;
 import org.jboss.as.appclient.service.DefaultApplicationClientCallbackHandler;
@@ -53,8 +53,6 @@ import org.jboss.ejb.client.PropertiesBasedEJBClientConfiguration;
 import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.modules.Module;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * Processor that starts an application client deployment
@@ -88,9 +86,9 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
                 final Class<?> callbackClass = classIndex.classIndex(appClientData.getCallbackHandler()).getModuleClass();
                 callbackHandler = new RealmCallbackWrapper((CallbackHandler) callbackClass.newInstance());
             } catch (ClassNotFoundException e) {
-                throw AppClientMessages.MESSAGES.couldNotLoadCallbackClass(appClientData.getCallbackHandler());
+                throw AppClientLogger.ROOT_LOGGER.couldNotLoadCallbackClass(appClientData.getCallbackHandler());
             } catch (Exception e) {
-                throw AppClientMessages.MESSAGES.couldNotCreateCallbackHandler(appClientData.getCallbackHandler());
+                throw AppClientLogger.ROOT_LOGGER.couldNotCreateCallbackHandler(appClientData.getCallbackHandler());
             }
         } else {
             callbackHandler = new DefaultApplicationClientCallbackHandler();
@@ -103,7 +101,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
         }
         final Class<?> mainClass = deploymentUnit.getAttachment(AppClientAttachments.MAIN_CLASS);
         if (mainClass == null) {
-            throw MESSAGES.cannotStartAppClient(deploymentUnit.getName());
+            throw AppClientLogger.ROOT_LOGGER.cannotStartAppClient(deploymentUnit.getName());
         }
         final ApplicationClientComponentDescription component = deploymentUnit.getAttachment(AppClientAttachments.APPLICATION_CLIENT_COMPONENT);
 
@@ -118,7 +116,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
             klass = klass.getSuperclass();
         }
         if (mainMethod == null) {
-            throw MESSAGES.cannotStartAppClient(deploymentUnit.getName(), mainClass);
+            throw AppClientLogger.ROOT_LOGGER.cannotStartAppClient(deploymentUnit.getName(), mainClass);
         }
         final ApplicationClientStartService startService;
 
@@ -171,7 +169,7 @@ public class ApplicationClientStartProcessor implements DeploymentUnitProcessor 
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
                 }
             } catch (Exception e) {
-                throw AppClientMessages.MESSAGES.exceptionLoadingEjbClientPropertiesURL(connectionPropertiesUrl, e);
+                throw AppClientLogger.ROOT_LOGGER.exceptionLoadingEjbClientPropertiesURL(connectionPropertiesUrl, e);
             }
         } else {
 
