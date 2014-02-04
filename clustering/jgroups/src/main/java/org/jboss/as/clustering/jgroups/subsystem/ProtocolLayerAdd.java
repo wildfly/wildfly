@@ -22,7 +22,7 @@
 
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -59,7 +59,7 @@ public class ProtocolLayerAdd implements OperationStepHandler {
 
         // if child resource already exists, throw OFE
         if (resource.hasChild(protocolRelativePath)) {
-            throw JGroupsMessages.MESSAGES.protocolAlreadyDefined(protocolRelativePath.toString());
+            throw JGroupsLogger.ROOT_LOGGER.protocolAlreadyDefined(protocolRelativePath.toString());
         }
 
         // now get the created model
@@ -92,7 +92,7 @@ public class ProtocolLayerAdd implements OperationStepHandler {
                 final Resource param = context.createResource(PathAddress.pathAddress(protocolRelativePath, PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
                 final ModelNode value = property.getValue();
                 if (!value.isDefined()) {
-                    throw JGroupsMessages.MESSAGES.propertyNotDefined(property.getName(), protocolRelativePath.toString());
+                    throw JGroupsLogger.ROOT_LOGGER.propertyNotDefined(property.getName(), protocolRelativePath.toString());
                 }
                 // set the value of the property
                 PropertyResourceDefinition.VALUE.validateAndSet(value, param.getModel());

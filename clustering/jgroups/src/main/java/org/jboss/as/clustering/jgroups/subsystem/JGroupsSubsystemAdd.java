@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 
 import java.util.List;
 

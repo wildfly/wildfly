@@ -27,7 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -104,7 +104,7 @@ public class ChannelMetricsHandler extends AbstractRuntimeOnlyHandler {
         ModelNode result = new ModelNode();
 
         if (metric == null) {
-            context.getFailureDescription().set(JGroupsMessages.MESSAGES.unknownMetric(attrName));
+            context.getFailureDescription().set(JGroupsLogger.ROOT_LOGGER.unknownMetric(attrName));
         } else if (!started) {
             // when the cache service is not available, return a null result
         } else {
