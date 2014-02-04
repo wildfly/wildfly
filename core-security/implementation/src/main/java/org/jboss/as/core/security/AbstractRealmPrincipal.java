@@ -22,9 +22,6 @@
 
 package org.jboss.as.core.security;
 
-
-import static org.jboss.as.core.security.CoreSecurityMessages.MESSAGES;
-
 /**
  * A base {@link Principal} where a realm is also associated.
  *
@@ -44,8 +41,8 @@ abstract class AbstractRealmPrincipal extends SecurityRealmPrincipal implements 
 
     public AbstractRealmPrincipal(final String realm, final String name) {
         super(name);
-        if (name == null) {
-            throw MESSAGES.canNotBeNull("realm");
+        if (realm == null) {
+            throw new IllegalArgumentException("realm is null");
         }
         this.realm = realm;
     }
