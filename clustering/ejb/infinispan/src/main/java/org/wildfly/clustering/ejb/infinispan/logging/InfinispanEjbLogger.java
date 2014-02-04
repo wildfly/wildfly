@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.ejb.infinispan;
+package org.wildfly.clustering.ejb.infinispan.logging;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -31,16 +31,13 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * InfinispanEjbLogger
- *
- * logging id range: 10370-10379
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageLogger(projectCode = "JBAS")
+@MessageLogger(projectCode = "WFLYCLEJBINF", length = 4)
 public interface InfinispanEjbLogger extends BasicLogger {
 
-    String ROOT_LOGGER_CATEGORY = InfinispanEjbLogger.class.getPackage().getName();
+    String ROOT_LOGGER_CATEGORY = "org.wildfly.clustering.ejb.infinispan";
 
     /**
      * A logger with the category of the default clustering package.
@@ -48,10 +45,26 @@ public interface InfinispanEjbLogger extends BasicLogger {
     InfinispanEjbLogger ROOT_LOGGER = Logger.getMessageLogger(InfinispanEjbLogger.class, ROOT_LOGGER_CATEGORY);
 
     @LogMessage(level = WARN)
-    @Message(id = 10320, value = "Failed to passivate stateful session bean %s")
+    @Message(id = 1, value = "Failed to passivate stateful session bean %s")
     void failedToPassivateBean(@Cause Throwable cause, Object id);
 
     @LogMessage(level = WARN)
-    @Message(id = 10321, value = "Failed to passivate stateful session bean group %s")
+    @Message(id = 2, value = "Failed to passivate stateful session bean group %s")
     void failedToPassivateBeanGroup(@Cause Throwable cause, Object id);
+
+
+//    @Message(id = 3, value = "Failed to serialize %s")
+
+    @Message(id = 4, value = "Failed to deserialize %s")
+    IllegalStateException deserializationFailure(@Cause Throwable cause, Object key);
+
+//    @Message(id = 5, value = "Failed to acquire ownership of %s within %d ms")
+
+//    @Message(id = 6, value = "Interrupted while acquiring ownership of %s")
+
+//    @Message(id = 7, value = "Failed to load infinispan cache store")
+//    RuntimeException cacheLoaderFailure(@Cause Throwable cause);
+
+    @Message(id = 8, value = "Stateful session bean %s refers to an invalid bean group %s")
+    IllegalStateException invalidBeanGroup(Object beanId, Object groupId);
 }

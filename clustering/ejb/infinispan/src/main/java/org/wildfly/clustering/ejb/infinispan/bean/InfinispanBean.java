@@ -33,7 +33,7 @@ import org.wildfly.clustering.ejb.Time;
 import org.wildfly.clustering.ejb.infinispan.BeanEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanRemover;
-import org.wildfly.clustering.ejb.infinispan.InfinispanEjbLogger;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
  * A {@link Bean} implementation backed by an infinispan cache.

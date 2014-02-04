@@ -23,6 +23,7 @@ package org.wildfly.clustering.ejb.infinispan;
 
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.RemoveListener;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
  * Bean remover that removes a bean if and only if it is expired.

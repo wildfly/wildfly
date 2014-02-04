@@ -33,7 +33,7 @@ import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupFactory;
-import org.wildfly.clustering.ejb.infinispan.InfinispanEjbLogger;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
  * Encapsulates the cache mapping strategy of a bean group.

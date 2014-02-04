@@ -30,6 +30,7 @@ import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.Batcher;
 import org.wildfly.clustering.ejb.Bean;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
  * Schedules a bean for eviction.
