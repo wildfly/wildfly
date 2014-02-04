@@ -22,8 +22,9 @@
 package org.jboss.as.ee.concurrent;
 
 import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.EeLogger;
 import org.jboss.as.ee.concurrent.handle.ContextHandle;
+import org.jboss.as.ee.concurrent.handle.NullContextHandle;
 
 import javax.enterprise.concurrent.ContextService;
 import java.util.Map;
@@ -35,22 +36,20 @@ import java.util.Map;
  */
 public class DefaultContextSetupProviderImpl implements ContextSetupProvider {
 
-    private ConcurrentContext getConcurrentContext() throws IllegalStateException {
-        final ConcurrentContext concurrentContext = ConcurrentContext.current();
-        if (concurrentContext == null) {
-            throw EeMessages.MESSAGES.noConcurrentContextCurrentlySet();
-        }
-        return concurrentContext;
-    }
-
     @Override
     public org.glassfish.enterprise.concurrent.spi.ContextHandle saveContext(ContextService contextService) {
-        return getConcurrentContext().saveContext(contextService, null);
+        return saveContext(contextService, null);
     }
 
     @Override
     public org.glassfish.enterprise.concurrent.spi.ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
-        return getConcurrentContext().saveContext(contextService, contextObjectProperties);
+        final ConcurrentContext concurrentContext = ConcurrentContext.current();
+        if (concurrentContext != null) {
+            return concurrentContext.saveContext(contextService, contextObjectProperties);
+        } else {
+            EeLogger.ROOT_LOGGER.debug("ee concurrency context not found in invocation context");
+            return NullContextHandle.INSTANCE;
+        }
     }
 
     @Override

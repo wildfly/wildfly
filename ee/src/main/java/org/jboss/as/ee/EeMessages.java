@@ -897,8 +897,8 @@ public interface EeMessages {
     @Message(id = 16706, value = "Global modules may not specify 'annotations', 'meta-inf' or 'services'.")
     String propertiesNotAllowedOnGlobalModules();
 
-    @Message(id = 16707, value = "No concurrent context currently set, unable to locate the context service to delegate.")
-    IllegalStateException noConcurrentContextCurrentlySet();
+    //@Message(id = 16707, value = "No concurrent context currently set, unable to locate the context service to delegate.")
+    //IllegalStateException noConcurrentContextCurrentlySet();
 
     @Message(id = 16708, value = "EE Concurrent Service's value uninitialized.")
     IllegalStateException concurrentServiceValueUninitialized();
