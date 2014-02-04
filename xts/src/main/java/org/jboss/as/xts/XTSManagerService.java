@@ -22,6 +22,7 @@
 
 package org.jboss.as.xts;
 
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.jbossts.XTSService;
 import org.jboss.jbossts.xts.environment.WSCEnvironmentBean;
 import org.jboss.jbossts.xts.environment.XTSPropertyManager;
@@ -80,7 +81,7 @@ public class XTSManagerService extends AbstractService<XTSService> {
             try {
                 service.start();
             } catch (Exception e) {
-                throw XtsAsMessages.MESSAGES.xtsServiceFailedToStart();
+                throw XtsAsLogger.ROOT_LOGGER.xtsServiceFailedToStart();
             }
 
             xtsService = service;

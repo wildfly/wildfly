@@ -20,12 +20,12 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.xts;
+package org.jboss.as.xts.logging;
 
-import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -33,20 +33,20 @@ import org.jboss.msc.service.StartException;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface XtsAsMessages {
+@MessageLogger(projectCode = "WFLYXTS", length = 4)
+public interface XtsAsLogger extends BasicLogger {
 
     /**
-     * The messages
+     * A logger with the category of the package name.
      */
-    XtsAsMessages MESSAGES = Messages.getBundle(XtsAsMessages.class);
+    XtsAsLogger ROOT_LOGGER = Logger.getMessageLogger(XtsAsLogger.class, "org.jboss.as.xts");
 
     /**
      * Creates an exception indicating that the TxBridge inbound recovery service failed to start.
      *
-     * @return a {@link StartException} for the error.
+     * @return a {@link org.jboss.msc.service.StartException} for the error.
      */
-    @Message(id = 18400, value = "TxBridge inbound recovery service start failed")
+    @Message(id = 1, value = "TxBridge inbound recovery service start failed")
     StartException txBridgeInboundRecoveryServiceFailedToStart();
 
     /**
@@ -54,7 +54,7 @@ public interface XtsAsMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 18401, value = "TxBridge outbound recovery service start failed")
+    @Message(id = 2, value = "TxBridge outbound recovery service start failed")
     StartException txBridgeOutboundRecoveryServiceFailedToStart();
 
     /**
@@ -62,7 +62,7 @@ public interface XtsAsMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 18402, value = "XTS service start failed")
+    @Message(id = 3, value = "XTS service start failed")
     StartException xtsServiceFailedToStart();
 
     /**
@@ -70,7 +70,7 @@ public interface XtsAsMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 18403, value = "Service not started")
+    @Message(id = 4, value = "Service not started")
     IllegalStateException xtsServiceIsNotStarted();
 
     /**
@@ -78,23 +78,23 @@ public interface XtsAsMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 18404, value = "Configuration service is not available")
-    IllegalStateException configurationServiceUnavailable();
+    // @Message(id = 5, value = "Configuration service is not available")
+    // IllegalStateException configurationServiceUnavailable();
 
     /**
      * Creates an exception indicating that common configuration is not available.
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 18405, value = "Common configuration is not available")
+    @Message(id = 6, value = "Common configuration is not available")
     IllegalStateException commonConfigurationUnavailable();
 
     /**
      * Creates an exception indicating that the CDI extension could not be loaded.
      *
-     * @return a {@link DeploymentUnitProcessingException} for the error.
+     * @return a {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 18406, value = "Cannot load CDI Extension")
-    DeploymentUnitProcessingException cannotLoadCDIExtension();
+    // @Message(id = 7, value = "Cannot load CDI Extension")
+    // DeploymentUnitProcessingException cannotLoadCDIExtension();
 
 }

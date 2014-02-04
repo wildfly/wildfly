@@ -22,6 +22,7 @@
 
 package org.jboss.as.xts;
 
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -46,7 +47,7 @@ public final class XTSServices {
     }
 
     public static <T> T notNull(T value) {
-        if (value == null) throw XtsAsMessages.MESSAGES.xtsServiceIsNotStarted();
+        if (value == null) throw XtsAsLogger.ROOT_LOGGER.xtsServiceIsNotStarted();
         return value;
     }
 

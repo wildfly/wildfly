@@ -41,6 +41,7 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.webservices.service.EndpointPublishService;
 import org.jboss.as.webservices.util.WSServices;
+import org.jboss.as.xts.logging.XtsAsLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jbossts.XTSService;
 import org.jboss.msc.service.ServiceBuilder;
