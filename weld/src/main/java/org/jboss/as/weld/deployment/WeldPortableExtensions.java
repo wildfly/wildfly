@@ -10,8 +10,7 @@ import javax.enterprise.inject.spi.Extension;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.weld.WeldLogger;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.weld.bootstrap.spi.Metadata;
 import org.jboss.weld.metadata.MetadataImpl;
 
@@ -45,7 +44,7 @@ public class WeldPortableExtensions {
 
     public synchronized void tryRegisterExtension(final Class<?> extensionClass, final DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
         if (!Extension.class.isAssignableFrom(extensionClass)) {
-            throw WeldMessages.MESSAGES.extensionDoesNotImplementExtension(extensionClass);
+            throw WeldLogger.ROOT_LOGGER.extensionDoesNotImplementExtension(extensionClass);
         }
         if (extensions.containsKey(extensionClass)) {
             return;

@@ -24,7 +24,7 @@ package org.jboss.as.weld.deployment;
 
 import java.net.URL;
 
-import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.weld.xml.BeansXmlHandler;
 import org.xml.sax.SAXException;

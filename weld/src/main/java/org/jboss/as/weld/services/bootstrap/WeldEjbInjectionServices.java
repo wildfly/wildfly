@@ -41,7 +41,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ContextNames.BindInfo;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.ResourceInjectionUtilities;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceRegistry;
@@ -68,16 +68,16 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
     public WeldEjbInjectionServices(ServiceRegistry serviceRegistry, EEModuleDescription moduleDescription, final EEApplicationDescription applicationDescription, final VirtualFile deploymentRoot) {
         super(serviceRegistry, moduleDescription);
         if (serviceRegistry == null) {
-            throw WeldMessages.MESSAGES.parameterCannotBeNull("serviceRegistry");
+            throw WeldLogger.ROOT_LOGGER.parameterCannotBeNull("serviceRegistry");
         }
         if (moduleDescription == null) {
-            throw WeldMessages.MESSAGES.parameterCannotBeNull("moduleDescription");
+            throw WeldLogger.ROOT_LOGGER.parameterCannotBeNull("moduleDescription");
         }
         if (applicationDescription == null) {
-            throw WeldMessages.MESSAGES.parameterCannotBeNull("applicationDescription");
+            throw WeldLogger.ROOT_LOGGER.parameterCannotBeNull("applicationDescription");
         }
         if (deploymentRoot == null) {
-            throw WeldMessages.MESSAGES.parameterCannotBeNull("deploymentRoot");
+            throw WeldLogger.ROOT_LOGGER.parameterCannotBeNull("deploymentRoot");
         }
 
         this.applicationDescription = applicationDescription;
@@ -93,10 +93,10 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
     public ResourceReferenceFactory<Object> registerEjbInjectionPoint(final InjectionPoint injectionPoint) {
         EJB ejb = getResourceAnnotated(injectionPoint).getAnnotation(EJB.class);
         if (ejb == null) {
-            throw WeldMessages.MESSAGES.annotationNotFound(EJB.class, injectionPoint.getMember());
+            throw WeldLogger.ROOT_LOGGER.annotationNotFound(EJB.class, injectionPoint.getMember());
         }
         if (injectionPoint.getMember() instanceof Method && ((Method) injectionPoint.getMember()).getParameterTypes().length != 1) {
-            throw WeldMessages.MESSAGES.injectionPointNotAJavabean((Method) injectionPoint.getMember());
+            throw WeldLogger.ROOT_LOGGER.injectionPointNotAJavabean((Method) injectionPoint.getMember());
         }
         if (!ejb.lookup().equals("")) {
             return handleServiceLookup(ejb.lookup(), injectionPoint);
@@ -167,9 +167,9 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
         }
         if(injectionPoint.getAnnotated().isAnnotationPresent(Produces.class)) {
             if (viewService.isEmpty()) {
-                throw WeldMessages.MESSAGES.ejbNotResolved(ejb, injectionPoint.getMember());
+                throw WeldLogger.ROOT_LOGGER.ejbNotResolved(ejb, injectionPoint.getMember());
             } else if (viewService.size() > 1) {
-                throw WeldMessages.MESSAGES.moreThanOneEjbResolved(ejb, injectionPoint.getMember(), viewService);
+                throw WeldLogger.ROOT_LOGGER.moreThanOneEjbResolved(ejb, injectionPoint.getMember(), viewService);
             }
         } else {
             if (viewService.isEmpty()) {
@@ -197,7 +197,7 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
         } else if (type instanceof ParameterizedType) {
             return getType(((ParameterizedType) type).getRawType());
         } else {
-            throw WeldMessages.MESSAGES.couldNotDetermineUnderlyingType(type);
+            throw WeldLogger.ROOT_LOGGER.couldNotDetermineUnderlyingType(type);
         }
     }
 
@@ -234,7 +234,7 @@ public class WeldEjbInjectionServices extends AbstractResourceInjectionServices 
         try {
             return new InitialContext().lookup(name);
         } catch (NamingException e) {
-            throw WeldMessages.MESSAGES.coundNotFindResource(name, e);
+            throw WeldLogger.ROOT_LOGGER.couldNotFindResource(name, e);
         }
     }
 }

@@ -33,7 +33,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.weld.Container;
 import org.jboss.weld.context.bound.BoundConversationContext;

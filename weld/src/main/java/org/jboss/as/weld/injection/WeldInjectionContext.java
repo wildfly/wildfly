@@ -7,7 +7,7 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionTarget;
 
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.weld.bean.ManagedBean;
 
 /**
@@ -52,7 +52,7 @@ public class WeldInjectionContext implements Serializable {
         if (injection != null) {
             injection.inject(instance, context);
         } else {
-            throw WeldMessages.MESSAGES.unknownInterceptorClassForCDIInjection(instance.getClass());
+            throw WeldLogger.ROOT_LOGGER.unknownInterceptorClassForCDIInjection(instance.getClass());
         }
     }
 

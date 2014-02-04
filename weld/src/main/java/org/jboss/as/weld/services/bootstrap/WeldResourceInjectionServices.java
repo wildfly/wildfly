@@ -25,8 +25,7 @@ import org.jboss.as.ee.component.EEDefaultResourceJndiNames;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.ContextNames.BindInfo;
-import org.jboss.as.weld.WeldLogger;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.ResourceInjectionUtilities;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
@@ -176,16 +175,16 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
             annotatedMember = ((AnnotatedParameter<?>) injectionPoint.getAnnotated()).getDeclaringCallable();
         }
         if (!annotatedMember.isAnnotationPresent(Resource.class)) {
-            throw WeldMessages.MESSAGES.annotationNotFound(Resource.class, member);
+            throw WeldLogger.ROOT_LOGGER.annotationNotFound(Resource.class, member);
         }
         if (member instanceof Method && ((Method) member).getParameterTypes().length != 1) {
-            throw WeldMessages.MESSAGES.injectionPointNotAJavabean((Method) member);
+            throw WeldLogger.ROOT_LOGGER.injectionPointNotAJavabean((Method) member);
         }
         String name = getResourceName(injectionPoint);
         try {
             return context.lookup(name);
         } catch (NamingException e) {
-            throw WeldMessages.MESSAGES.coundNotFindResource(name, injectionPoint.getMember().toString(), e);
+            throw WeldLogger.ROOT_LOGGER.couldNotFindResource(name, injectionPoint.getMember().toString(), e);
         }
     }
 
@@ -195,7 +194,7 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         try {
             return context.lookup(name);
         } catch (NamingException e) {
-            throw WeldMessages.MESSAGES.coundNotFindResource(name, e);
+            throw WeldLogger.ROOT_LOGGER.couldNotFindResource(name, e);
         }
     }
 }
