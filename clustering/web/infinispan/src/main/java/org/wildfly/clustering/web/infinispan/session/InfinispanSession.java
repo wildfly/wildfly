@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.infinispan.InfinispanWebMessages;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionAttributes;
 import org.wildfly.clustering.web.session.SessionContext;
@@ -61,7 +61,7 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
     @Override
     public SessionAttributes getAttributes() {
         if (!this.valid.get()) {
-            throw InfinispanWebMessages.MESSAGES.invalidSession(this.getId());
+            throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
         }
         return this.attributes;
     }
@@ -69,7 +69,7 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
     @Override
     public void invalidate() {
         if (!this.valid.compareAndSet(true, false)) {
-            throw InfinispanWebMessages.MESSAGES.invalidSession(this.getId());
+            throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
         }
         this.remover.remove(this.getId());
     }
@@ -82,7 +82,7 @@ public class InfinispanSession<L> extends InfinispanImmutableSession implements 
     @Override
     public SessionMetaData getMetaData() {
         if (!this.valid.get()) {
-            throw InfinispanWebMessages.MESSAGES.invalidSession(this.getId());
+            throw InfinispanWebLogger.ROOT_LOGGER.invalidSession(this.getId());
         }
         return this.metaData;
     }

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan;
+package org.wildfly.clustering.web.infinispan.logging;
 
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -29,6 +29,7 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.metadata.web.jboss.ReplicationGranularity;
 
 /**
  * InfinispanWebLogger
@@ -37,17 +38,30 @@ import org.jboss.logging.annotations.MessageLogger;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageLogger(projectCode = "JBAS")
+@MessageLogger(projectCode = "WFLYCLWEBINF", length = 4)
 public interface InfinispanWebLogger extends BasicLogger {
-    String ROOT_LOGGER_CATEGORY = InfinispanWebLogger.class.getPackage().getName();
+    String ROOT_LOGGER_CATEGORY = "org.wildfly.clustering.web.infinispan";
 
     InfinispanWebLogger ROOT_LOGGER = Logger.getMessageLogger(InfinispanWebLogger.class, ROOT_LOGGER_CATEGORY);
 
     @LogMessage(level = WARN)
-    @Message(id = 10320, value = "Failed to passivate attributes of session %s")
+    @Message(id = 1, value = "Failed to passivate attributes of session %s")
     void failedToPassivateSession(@Cause Throwable cause, String sessionId);
 
     @LogMessage(level = WARN)
-    @Message(id = 10321, value = "Failed to passivate attribute %2$s of session %1$s")
+    @Message(id = 2, value = "Failed to passivate attribute %2$s of session %1$s")
     void failedToPassivateSessionAttribute(@Cause Throwable cause, String sessionId, String attribute);
+
+    /**
+     * Creates an exception indicating the replication granularity is unknown.
+     *
+     * @param value the invalid replication granularity.
+     *
+     * @return an {@link IllegalArgumentException} for the error.
+     */
+    @Message(id = 3, value = "Unknown replication granularity: %s")
+    IllegalArgumentException unknownReplicationGranularity(ReplicationGranularity value);
+
+    @Message(id = 4, value = "Session %s is not valid")
+    IllegalStateException invalidSession(String sessionId);
 }

@@ -41,7 +41,7 @@ import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.InfinispanBatcher;
 import org.wildfly.clustering.web.infinispan.AffinityIdentifierFactory;
-import org.wildfly.clustering.web.infinispan.InfinispanWebMessages;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionCacheEntry;
 import org.wildfly.clustering.web.infinispan.session.coarse.CoarseSessionFactory;
 import org.wildfly.clustering.web.infinispan.session.coarse.SessionAttributesCacheKey;
@@ -101,7 +101,7 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
                 return new CoarseSessionFactory<>(sessionCache, attributesCache, this.invoker, context, marshaller, localContextFactory);
             }
             default: {
-                throw InfinispanWebMessages.MESSAGES.unknownReplicationGranularity(this.metaData.getReplicationConfig().getReplicationGranularity());
+                throw InfinispanWebLogger.ROOT_LOGGER.unknownReplicationGranularity(this.metaData.getReplicationConfig().getReplicationGranularity());
             }
         }
     }
