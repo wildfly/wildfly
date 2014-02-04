@@ -1785,7 +1785,42 @@
 
                 <dependency>
                     <groupId>org.picketlink</groupId>
-                    <artifactId>picketlink-core</artifactId>
+                    <artifactId>picketlink-common</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-config</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-impl</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-idm-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-idm-impl</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-idm-simple-schema</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-federation</artifactId>
                 </dependency>
 
                 <dependency>
@@ -2089,8 +2124,14 @@
                                         <include>org.picketbox:picketbox-commons</include>
                                         -->
                                         <include>org.picketbox:picketbox-infinispan</include>
+                                        <include>org.picketlink:picketlink-common</include>
+                                        <include>org.picketlink:picketlink-config</include>
+                                        <include>org.picketlink:picketlink-api</include>
+                                        <include>org.picketlink:picketlink-impl</include>
+                                        <include>org.picketlink:picketlink-idm-api</include>
+                                        <include>org.picketlink:picketlink-idm-impl</include>
                                         <include>org.picketlink.distribution:picketlink-jbas7</include>
-                                        <include>org.picketlink:picketlink-core</include>
+                                        <include>org.picketlink:picketlink-federation</include>
                                         <include>org.slf4j:jcl-over-slf4j</include>
                                         <include>org.slf4j:slf4j-api</include>
                                         <include>org.slf4j:slf4j-ext</include>

@@ -251,7 +251,7 @@
         <version.org.opensaml.xmltooling>1.3.4.redhat-3</version.org.opensaml.xmltooling>
         <version.org.picketbox>4.0.19.SP3-redhat-1</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final-redhat-2</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.1.9.SP2-redhat-1</version.org.picketlink>
+        <version.org.picketlink>2.5.3.Beta2</version.org.picketlink>
         <version.org.powermock>1.5</version.org.powermock>
         <version.org.projectodd.stilts>0.1.26.redhat-3</version.org.projectodd.stilts>
         <version.org.scannotation>1.0.3.redhat-4</version.org.scannotation>
@@ -6371,7 +6371,52 @@
 
             <dependency>
                 <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-core</artifactId>
+                <artifactId>picketlink-common</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-config</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+          <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-api</artifactId>
+                <version>${version.org.picketlink}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-impl</artifactId>
+                <version>${version.org.picketlink}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-api</artifactId>
+                <version>${version.org.picketlink}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-impl</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-simple-schema</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-federation</artifactId>
                 <version>${version.org.picketlink}</version>
                 <exclusions>
                   <exclusion>
@@ -6381,6 +6426,10 @@
                   <exclusion>
                     <groupId>commons-logging</groupId>
                     <artifactId>commons-logging-api</artifactId>
+                  </exclusion>
+                  <exclusion>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-config</artifactId>
                   </exclusion>
                 </exclusions>
             </dependency>
