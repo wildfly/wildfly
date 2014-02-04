@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.OperationContext;
@@ -39,7 +40,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -108,7 +108,7 @@ public class PoolConfigurationRWHandler {
                     updatePoolConfigs(poolConfigs, parameterName, newValue);
                     handbackHolder.setHandback(poolConfigs);
                 } catch (Exception e) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToSetAttribute(e.getLocalizedMessage())));
+                    throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToSetAttribute(e.getLocalizedMessage())));
                 }
             }
 

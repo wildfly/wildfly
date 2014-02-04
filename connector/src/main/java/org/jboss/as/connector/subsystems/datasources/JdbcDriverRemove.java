@@ -23,7 +23,6 @@
 package org.jboss.as.connector.subsystems.datasources;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_MAJOR_VERSION;
@@ -37,6 +36,7 @@ import java.lang.reflect.Constructor;
 import java.sql.Driver;
 import java.util.ServiceLoader;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -86,7 +86,7 @@ public class JdbcDriverRemove extends AbstractRemoveStepHandler {
             moduleId = ModuleIdentifier.create(moduleName);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleLoadException e) {
-            context.getFailureDescription().set(MESSAGES.failedToLoadModuleDriver(moduleName));
+            context.getFailureDescription().set(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleDriver(moduleName));
             return;
         }
 

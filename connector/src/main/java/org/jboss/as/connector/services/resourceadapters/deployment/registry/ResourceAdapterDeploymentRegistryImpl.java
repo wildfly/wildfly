@@ -23,12 +23,12 @@
 package org.jboss.as.connector.services.resourceadapters.deployment.registry;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 
 
@@ -53,7 +53,7 @@ public final class ResourceAdapterDeploymentRegistryImpl implements ResourceAdap
      */
     public void registerResourceAdapterDeployment(ResourceAdapterDeployment deployment) {
         if (deployment == null)
-            throw new IllegalArgumentException(MESSAGES.nullVar("Deployment"));
+            throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("Deployment"));
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Adding deployment: %s", deployment);
 
@@ -66,7 +66,7 @@ public final class ResourceAdapterDeploymentRegistryImpl implements ResourceAdap
      */
     public void unregisterResourceAdapterDeployment(ResourceAdapterDeployment deployment) {
         if (deployment == null)
-            throw new IllegalArgumentException(MESSAGES.nullVar("Deployment"));
+            throw new IllegalArgumentException(ConnectorLogger.ROOT_LOGGER.nullVar("Deployment"));
 
         DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.tracef("Removing deployment: %s", deployment);
 

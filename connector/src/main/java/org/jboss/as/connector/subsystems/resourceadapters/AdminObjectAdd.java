@@ -22,12 +22,12 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes.ADMIN_OBJECTS_NODE_ATTRIBUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -72,7 +72,7 @@ public class AdminObjectAdd extends AbstractAddStepHandler {
         try {
             adminObjectValue = RaOperationUtil.buildAdminObjects(context, operation, poolName);
         } catch (ValidateException e) {
-            throw new OperationFailedException(e, new ModelNode().set(MESSAGES.failedToCreate("AdminObject", operation, e.getLocalizedMessage())));
+            throw new OperationFailedException(e, new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToCreate("AdminObject", operation, e.getLocalizedMessage())));
         }
 
 

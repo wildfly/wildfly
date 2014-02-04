@@ -22,9 +22,9 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -58,7 +58,7 @@ public class PoolStatisticsRuntimeAttributeReadHandler implements OperationStepH
                         }
 
                     } catch (Exception e) {
-                        throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
+                        throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToGetMetrics(e.getLocalizedMessage()));
                     }
 
                     context.stepCompleted();

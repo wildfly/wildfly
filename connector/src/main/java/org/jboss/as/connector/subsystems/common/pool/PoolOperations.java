@@ -22,12 +22,12 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.subsystems.datasources.Util;
 import static org.jboss.as.connector.subsystems.datasources.Constants.USERNAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.PASSWORD;
@@ -80,7 +80,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             final List<Pool> pools = matcher.match(jndiName, repository);
 
                             if (pools.isEmpty()) {
-                                throw MESSAGES.failedToMatchPool(jndiName);
+                                throw ConnectorLogger.ROOT_LOGGER.failedToMatchPool(jndiName);
                             }
 
                             for (Pool pool : pools) {
@@ -88,7 +88,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                             }
 
                         } catch (Exception e) {
-                            throw new OperationFailedException(new ModelNode().set(MESSAGES.failedToInvokeOperation(e.getLocalizedMessage())));
+                            throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.failedToInvokeOperation(e.getLocalizedMessage())));
                         }
                         if (operationResult != null) {
                             context.getResult().set(operationResult);
@@ -231,7 +231,7 @@ public abstract class PoolOperations implements OperationStepHandler {
                 returnedValue = pool.testConnection();
             }
             if (!returnedValue)
-                throw MESSAGES.invalidConnection();
+                throw ConnectorLogger.ROOT_LOGGER.invalidConnection();
             ModelNode result = new ModelNode();
             result.add(returnedValue);
             return result;

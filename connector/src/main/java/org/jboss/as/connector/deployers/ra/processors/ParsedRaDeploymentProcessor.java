@@ -23,13 +23,13 @@
 package org.jboss.as.connector.deployers.ra.processors;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
 import org.jboss.as.connector.annotations.repository.jandex.JandexAnnotationRepositoryImpl;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
@@ -118,7 +118,7 @@ public class ParsedRaDeploymentProcessor implements DeploymentUnitProcessor {
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null)
-            throw MESSAGES.failedToGetModuleAttachment(phaseContext.getDeploymentUnit());
+            throw ConnectorLogger.ROOT_LOGGER.failedToGetModuleAttachment(phaseContext.getDeploymentUnit());
 
         DEPLOYMENT_CONNECTOR_LOGGER.debugf("ParsedRaDeploymentProcessor: Processing=%s", deploymentUnit);
 

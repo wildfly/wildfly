@@ -87,7 +87,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATIONMILLIS;
 import static org.jboss.as.connector.subsystems.common.pool.Constants.BLOCKING_TIMEOUT_WAIT_MILLIS;
@@ -340,7 +339,7 @@ public class RaOperationUtil {
         final ServiceController<?> inactiveRaController = registry.getService(ConnectorServices.INACTIVE_RESOURCE_ADAPTER_SERVICE.append(raName));
 
         if (inactiveRaController == null) {
-            throw MESSAGES.RARNotYetDeployed(raName);
+            throw ConnectorLogger.ROOT_LOGGER.RARNotYetDeployed(raName);
         }
         InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment inactive = (InactiveResourceAdapterDeploymentService.InactiveResourceAdapterDeployment) inactiveRaController.getValue();
         final ServiceController<?> RaxmlController = registry.getService(ServiceName.of(ConnectorServices.RA_SERVICE, raName));
@@ -392,14 +391,14 @@ public class RaOperationUtil {
             ModuleIdentifier moduleId = ModuleIdentifier.create(moduleName, slot);
             module = Module.getCallerModuleLoader().loadModule(moduleId);
         } catch (ModuleLoadException e) {
-            throw new OperationFailedException(MESSAGES.failedToLoadModuleRA(moduleName), e);
+            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName), e);
         }
         URL path = module.getExportedResource("META-INF/ra.xml");
         Closeable closable = null;
             try {
                 VirtualFile child;
                 if (path.getPath().contains("!")) {
-                    throw new OperationFailedException(MESSAGES.compressedRarNotSupportedInModuleRA(moduleName));
+                    throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.compressedRarNotSupportedInModuleRA(moduleName));
                 } else {
                     child = VFS.getChild(path.getPath().split("META-INF")[0]);
 
@@ -446,7 +445,7 @@ public class RaOperationUtil {
                 }
 
             } catch (Exception e) {
-                throw new OperationFailedException(MESSAGES.failedToLoadModuleRA(moduleName), e);
+                throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToLoadModuleRA(moduleName), e);
             } finally {
                 if (closable != null) {
                     try {

@@ -24,7 +24,7 @@ package org.jboss.as.connector.subsystems.datasources;
 
 import java.util.Map;
 
-import org.jboss.as.connector.logging.ConnectorMessages;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -56,7 +56,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
         if(attributeName.equals(ModelDescriptionConstants.VALUE)) {
             setStringIfNotNull(context, dataSource.getConnectionProperties().get(propName));
         } else {
-            throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
+            throw ConnectorLogger.ROOT_LOGGER.unknownAttribute(attributeName);
         }
     }
 
@@ -383,7 +383,7 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
             //Just return w/o setting a result
             return;
         } else {
-            throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
+            throw ConnectorLogger.ROOT_LOGGER.unknownAttribute(attributeName);
         }
     }
 

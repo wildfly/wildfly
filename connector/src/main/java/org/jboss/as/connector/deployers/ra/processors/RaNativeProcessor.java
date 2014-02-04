@@ -23,12 +23,12 @@
 package org.jboss.as.connector.deployers.ra.processors;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -92,7 +92,7 @@ public class RaNativeProcessor implements DeploymentUnitProcessor {
                 }
             }
         } catch (Exception e) {
-            throw MESSAGES.failedToLoadNativeLibraries(e);
+            throw ConnectorLogger.ROOT_LOGGER.failedToLoadNativeLibraries(e);
         }
     }
 

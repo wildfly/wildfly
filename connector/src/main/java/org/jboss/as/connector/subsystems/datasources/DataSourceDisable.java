@@ -22,7 +22,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -30,6 +29,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -80,10 +80,10 @@ public class DataSourceDisable implements OperationStepHandler {
                             if (ServiceController.State.UP.equals(dataSourceController.getState())) {
                                 dataSourceController.setMode(ServiceController.Mode.NEVER);
                             } else {
-                                throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotEnabled("Data-source", dsName)));
+                                throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceNotEnabled("Data-source", dsName)));
                             }
                         } else {
-                            throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source", dsName)));
+                            throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceNotAvailable("Data-source", dsName)));
                         }
 
                         final ServiceName referenceServiceName = DataSourceReferenceFactoryService.SERVICE_NAME_BASE.append(dsName);
@@ -118,10 +118,10 @@ public class DataSourceDisable implements OperationStepHandler {
                                     if (ServiceController.State.UP.equals(connPropertyController.getState())) {
                                         connPropertyController.setMode(ServiceController.Mode.NEVER);
                                     } else {
-                                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.connectionProperty", name)));
+                                        throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceAlreadyStarted("Data-source.connectionProperty", name)));
                                     }
                                 } else {
-                                    throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source.connectionProperty", name)));
+                                    throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceNotAvailable("Data-source.connectionProperty", name)));
                                 }
                             }
                             if (xaDataSourceConfigServiceName.append("xa-datasource-properties").isParentOf(name)) {
@@ -131,10 +131,10 @@ public class DataSourceDisable implements OperationStepHandler {
                                     if (ServiceController.State.UP.equals(xaConfigPropertyController.getState())) {
                                         xaConfigPropertyController.setMode(ServiceController.Mode.NEVER);
                                     } else {
-                                        throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceAlreadyStarted("Data-source.xa-config-property", name)));
+                                        throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceAlreadyStarted("Data-source.xa-config-property", name)));
                                     }
                                 } else {
-                                    throw new OperationFailedException(new ModelNode().set(MESSAGES.serviceNotAvailable("Data-source.xa-config-property", name)));
+                                    throw new OperationFailedException(new ModelNode().set(ConnectorLogger.ROOT_LOGGER.serviceNotAvailable("Data-source.xa-config-property", name)));
                                 }
                             }
                         }

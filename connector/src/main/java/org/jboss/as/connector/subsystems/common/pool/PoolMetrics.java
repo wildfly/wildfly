@@ -22,12 +22,12 @@
 
 package org.jboss.as.connector.subsystems.common.pool;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.List;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -65,7 +65,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
                                 result.set("" + stat.getValue(attributeName));
                             }
                         } catch (Exception e) {
-                            throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
+                            throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToGetMetrics(e.getLocalizedMessage()));
                         }
                     }
                     context.stepCompleted();
@@ -101,7 +101,7 @@ public abstract class PoolMetrics implements OperationStepHandler {
                                 result.set("" + stats.getValue(attributeName));
 
                             } catch (Exception e) {
-                               throw new OperationFailedException(MESSAGES.failedToGetMetrics(e.getLocalizedMessage()));
+                               throw new OperationFailedException(ConnectorLogger.ROOT_LOGGER.failedToGetMetrics(e.getLocalizedMessage()));
                             }
                         }
                         context.stepCompleted();

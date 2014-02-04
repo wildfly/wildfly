@@ -22,12 +22,11 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-
 import java.io.InputStream;
 import java.util.Locale;
 
 import org.jboss.as.connector.deployers.Util;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.xmldescriptors.IronJacamarXmlDescriptor;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -99,9 +98,9 @@ public class IronJacamarDeploymentParsingProcessor implements DeploymentUnitProc
                 xmlDescriptor = new IronJacamarXmlDescriptor(result);
 
             } else
-                throw MESSAGES.failedToParseServiceXml(serviceXmlFile);
+                throw ConnectorLogger.ROOT_LOGGER.failedToParseServiceXml(serviceXmlFile);
         } catch (Exception e) {
-            throw MESSAGES.failedToParseServiceXml(e, serviceXmlFile);
+            throw ConnectorLogger.ROOT_LOGGER.failedToParseServiceXml(e, serviceXmlFile);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

@@ -21,7 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLE;
@@ -31,6 +30,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -257,11 +257,11 @@ public class Constants {
                 if (value.getType() != ModelType.EXPRESSION) {
                     String str = value.asString();
                     if (!str.startsWith("java:/") && !str.startsWith("java:jboss/")) {
-                        throw MESSAGES.jndiNameInvalidFormat();
+                        throw ConnectorLogger.ROOT_LOGGER.jndiNameInvalidFormat();
                     }
                 }
             } else {
-                throw MESSAGES.jndiNameRequired();
+                throw ConnectorLogger.ROOT_LOGGER.jndiNameRequired();
             }
         }
 

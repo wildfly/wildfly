@@ -25,7 +25,6 @@
  */
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DEPLOYMENT_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_CLASS_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_DATASOURCE_CLASS_NAME;
@@ -37,6 +36,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.DRIVER_XA_
 import static org.jboss.as.connector.subsystems.datasources.Constants.JDBC_COMPLIANT;
 import static org.jboss.as.connector.subsystems.datasources.Constants.MODULE_SLOT;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.driver.InstalledDriver;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.util.ConnectorServices;
@@ -97,7 +97,7 @@ public class InstalledDriversListOperationHandler implements OperationStepHandle
                 }
             }, OperationContext.Stage.RUNTIME);
         } else {
-            context.getResult().set(MESSAGES.noMetricsAvailable());
+            context.getResult().set(ConnectorLogger.ROOT_LOGGER.noMetricsAvailable());
         }
 
         context.stepCompleted();

@@ -46,7 +46,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import java.util.List;
 import java.util.Map;
 
-import org.jboss.as.connector.logging.ConnectorMessages;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.PathAddress;
@@ -183,7 +183,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
 
                     @Override
                     public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return ConnectorMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                        return ConnectorLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
                     }
 
                     @Override
@@ -250,7 +250,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
 
                             @Override
                             public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                                return ConnectorMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                                return ConnectorLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
                             }
 
                             @Override
@@ -303,7 +303,7 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
 
                     @Override
                     public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                        return ConnectorMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                        return ConnectorLogger.ROOT_LOGGER.rejectAttributesMustBeTrue(attributes.keySet());
                     }
 
                     @Override
