@@ -24,11 +24,11 @@ package org.jboss.as.subsystem.test;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_TRANSFORMED_RESOURCE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.io.IOException;
@@ -107,13 +107,14 @@ class MainKernelServicesImpl extends AbstractKernelServicesImpl {
      * @return the transformed model
      * @throws IllegalStateException if this is not the test's main model controller
      */
-    public ModelNode readTransformedModel(ModelVersion modelVersion) {
+    @Override
+    public ModelNode readTransformedModel(ModelVersion modelVersion, boolean includeDefaults) {
         getLegacyServices(modelVersion);//Checks we are the main controller
         ModelNode op = new ModelNode();
         op.get(OP).set(READ_TRANSFORMED_RESOURCE_OPERATION);
         op.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
-        op.get(RECURSIVE).set(true);
         op.get(SUBSYSTEM).set(mainSubsystemName);
+        op.get(INCLUDE_DEFAULTS).set(includeDefaults);
         ModelNode result = internalExecute(op, new ReadTransformedResourceOperation(getTransformersRegistry(), getCoreModelVersionByLegacyModelVersion(modelVersion), modelVersion));
         return ModelTestUtils.checkResultAndGetContents(result);
     }

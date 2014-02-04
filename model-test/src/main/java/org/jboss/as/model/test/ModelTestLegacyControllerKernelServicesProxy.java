@@ -270,6 +270,10 @@ public abstract class ModelTestLegacyControllerKernelServicesProxy {
         throw new IllegalStateException("Can only be called for the main controller");
     }
 
+    public ModelNode readTransformedModel(ModelVersion modelVersion, boolean includeDefaults) {
+        throw new IllegalStateException("Can only be called for the main controller");
+    }
+
 
     public ModelNode executeOperation(ModelVersion modelVersion, TransformedOperation op) {
         throw new IllegalStateException("Can only be called for the main controller");

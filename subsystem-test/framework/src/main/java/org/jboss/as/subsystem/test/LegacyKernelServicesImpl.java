@@ -56,7 +56,7 @@ public class LegacyKernelServicesImpl extends AbstractKernelServicesImpl impleme
     }
 
     @Override
-    public ModelNode readTransformedModel(ModelVersion modelVersion) {
+    public ModelNode readTransformedModel(ModelVersion modelVersion, boolean includeDefaults) {
         //Will throw an error since we are not the main controller
         checkIsMainController();
         return null;

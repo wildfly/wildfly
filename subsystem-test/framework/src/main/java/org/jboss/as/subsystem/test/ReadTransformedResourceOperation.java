@@ -24,11 +24,13 @@
 
 package org.jboss.as.subsystem.test;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_TRANSFORMED_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -85,7 +87,8 @@ class ReadTransformedResourceOperation implements OperationStepHandler {
 
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        final String subsystem = operation.get(ModelDescriptionConstants.SUBSYSTEM).asString();
+        final String subsystem = operation.get(SUBSYSTEM).asString();
+        final boolean includeDefaults = operation.get(INCLUDE_DEFAULTS).asBoolean(true);
         // Add a step to transform the result of a READ_RESOURCE.
         // Do this first, Stage.IMMEDIATE
         final ModelNode readResourceResult = new ModelNode();
@@ -103,6 +106,7 @@ class ReadTransformedResourceOperation implements OperationStepHandler {
         op.get(OP).set(READ_RESOURCE_OPERATION);
         op.get(OP_ADDR).set(PathAddress.EMPTY_ADDRESS.toModelNode());
         op.get(RECURSIVE).set(true);
+        op.get(INCLUDE_DEFAULTS).set(includeDefaults);
         context.addStep(readResourceResult, op, ReadResourceHandler.INSTANCE, OperationContext.Stage.MODEL, true);
         context.stepCompleted();
     }

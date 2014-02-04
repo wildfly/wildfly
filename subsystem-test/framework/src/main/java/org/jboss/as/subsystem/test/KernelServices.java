@@ -35,6 +35,15 @@ public interface KernelServices extends ModelTestKernelServices<KernelServices> 
     ModelNode readTransformedModel(ModelVersion modelVersion);
 
     /**
+     * Transforms the model to the legacy subsystem model version
+     * @param modelVersion the target legacy subsystem model version
+     * @param includeDefaults {@code true} if default values for undefined attributes should be included
+     * @return the transformed model
+     * @throws IllegalStateException if this is not the test's main model controller
+     */
+    ModelNode readTransformedModel(ModelVersion modelVersion, boolean includeDefaults);
+
+    /**
      * Execute an operation in the  controller containg the passed in version of the subsystem.
      * The operation and results will be translated from the format for the main controller to the
      * legacy controller's format.
