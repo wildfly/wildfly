@@ -67,11 +67,32 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-all</artifactId>
+            <groupId>org.apache.directory.jdbm</groupId>
+            <artifactId>apacheds-jdbm2</artifactId>
+            <type>bundle</type>
             <scope>compile</scope>
         </dependency>
-        
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-core-annotations</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-interceptor-kerberos</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-server-annotations</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.directory.shared</groupId>
+            <artifactId>shared-ldap-codec-standalone</artifactId>
+            <scope>compile</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.syslog4j</groupId>
             <artifactId>syslog4j</artifactId>
