@@ -52,7 +52,6 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -111,7 +110,6 @@ public class LdapUrlInSearchBaseTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("bz-1060275")
     public void testLdap() throws Exception {
         final URL servletURL = new URL(webAppURL.toExternalForm() + "?" + LdapUrlTestServlet.PARAM_HOST + "="
                 + URLEncoder.encode(Utils.getSecondaryTestAddress(mgmtClient), "UTF-8") + "&" + LdapUrlTestServlet.PARAM_LDAP
