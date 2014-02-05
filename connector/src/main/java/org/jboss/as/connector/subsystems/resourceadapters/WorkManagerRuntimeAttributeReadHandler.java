@@ -25,6 +25,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.jca.core.api.workmanager.DistributedWorkManager;
 import org.jboss.jca.core.api.workmanager.WorkManager;
@@ -37,10 +38,12 @@ public class WorkManagerRuntimeAttributeReadHandler implements OperationStepHand
 
     private final WorkManagerStatistics wmStat;
     private final WorkManager wm;
+    private final boolean distributed;
 
-    public WorkManagerRuntimeAttributeReadHandler(WorkManager wm, final WorkManagerStatistics wmStat) {
+    public WorkManagerRuntimeAttributeReadHandler(WorkManager wm, final WorkManagerStatistics wmStat, boolean distributed) {
         this.wm = wm;
         this.wmStat = wmStat;
+        this.distributed = distributed;
     }
 
     @Override
@@ -87,6 +90,14 @@ public class WorkManagerRuntimeAttributeReadHandler implements OperationStepHand
                             }
                             case Constants.START_WORK_REJECTED_NAME: {
                                 result.set(wmStat.getStartWorkRejected());
+                                break;
+                            }
+                            case ModelDescriptionConstants.STATISTICS_ENABLED: {
+                                if (distributed) {
+                                    result.set(((DistributedWorkManager) wm).isDistributedStatisticsEnabled());
+                                } else {
+                                    result.set(wm.isStatisticsEnabled());
+                                }
                                 break;
                             }
                             case Constants.WORKMANAGER_STATISTICS_ENABLED_NAME: {
