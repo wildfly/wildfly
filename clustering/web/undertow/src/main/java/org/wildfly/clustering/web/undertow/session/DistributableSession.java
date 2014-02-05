@@ -149,7 +149,7 @@ public class DistributableSession extends AbstractDistributableSession<Session<L
     public String changeSessionId(HttpServerExchange exchange, SessionConfig config) {
         Session<LocalSessionContext> oldSession = this.getSession();
         SessionManager<LocalSessionContext> manager = this.manager.getSessionManager();
-        String id = manager.createSessionId();
+        String id = manager.createIdentifier();
         Session<LocalSessionContext> newSession = manager.createSession(id);
         for (String name: oldSession.getAttributes().getAttributeNames()) {
             newSession.getAttributes().setAttribute(name, oldSession.getAttributes().getAttribute(name));

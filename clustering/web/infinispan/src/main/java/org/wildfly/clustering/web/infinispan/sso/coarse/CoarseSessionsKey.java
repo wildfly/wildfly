@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,33 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
 
-import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
+package org.wildfly.clustering.web.infinispan.sso.coarse;
 
 /**
- * A factory for creating a session manager.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactory {
-    /**
-     * Create as session manager using the specified context and identifier factory.
-     * @param context a session context
-     * @param idFactory a session identifier factory
-     * @return a new session manager
-     */
-    <C> SessionManager<C> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory);
+public class CoarseSessionsKey {
+    private final String id;
+
+    public CoarseSessionsKey(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof CoarseSessionsKey)) return false;
+        CoarseSessionsKey key = (CoarseSessionsKey) object;
+        return this.id.equals(key.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.id;
+    }
 }

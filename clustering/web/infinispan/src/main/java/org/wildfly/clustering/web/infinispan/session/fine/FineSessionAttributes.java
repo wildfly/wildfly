@@ -26,9 +26,10 @@ import java.util.Set;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation;
-import org.wildfly.clustering.web.infinispan.session.CacheMutator;
+import org.jboss.as.clustering.infinispan.invoker.Remover;
+import org.wildfly.clustering.web.infinispan.CacheEntryMutator;
+import org.wildfly.clustering.web.infinispan.session.MutableDetector;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributes;
 
@@ -78,8 +79,8 @@ public class FineSessionAttributes<V> extends FineImmutableSessionAttributes<V> 
         if (value == null) return null;
         Object attribute = this.marshaller.read(value);
         // If the object is mutable, we need to indicate that the attribute should be replicated
-        if (CacheMutator.isMutable(attribute)) {
-            new CacheMutator<>(this.cache, this.invoker, key, value, Flag.SKIP_LOCKING).mutate();
+        if (MutableDetector.isMutable(attribute)) {
+            new CacheEntryMutator<>(this.cache, this.invoker, key, value, Flag.SKIP_LOCKING).mutate();
         }
         return attribute;
     }

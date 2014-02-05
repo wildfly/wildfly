@@ -93,7 +93,7 @@ public class DistributableSessionManagerTestCase {
         Session<LocalSessionContext> session = mock(Session.class);
         String sessionId = "session";
         
-        when(this.manager.createSessionId()).thenReturn(sessionId);
+        when(this.manager.createIdentifier()).thenReturn(sessionId);
         when(this.manager.containsSession(sessionId)).thenReturn(false);
         when(this.manager.createSession(sessionId)).thenReturn(session);
         when(this.manager.getBatcher()).thenReturn(batcher);
