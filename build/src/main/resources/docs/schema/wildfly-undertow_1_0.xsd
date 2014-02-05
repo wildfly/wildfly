@@ -324,6 +324,7 @@
     <xs:complexType name="connection-limitType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="max-concurrent-requests" use="required" type="xs:integer"/>
+        <xs:attribute name="queue-size" use="optional" type="xs:integer"/>
     </xs:complexType>
     <xs:complexType name="response-headerType">
         <xs:attribute name="name" use="required" type="xs:string"/>
