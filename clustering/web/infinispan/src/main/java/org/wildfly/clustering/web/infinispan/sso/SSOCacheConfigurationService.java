@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.web.infinispan.sso;
 
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
@@ -28,21 +28,14 @@ import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
-import org.jboss.metadata.web.jboss.ReplicationConfig;
-import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 
-/**
- * Web session cache configuration service.
- * @author Paul Ferraro
- */
-public class SessionCacheConfigurationService extends AbstractCacheConfigurationService {
+public class SSOCacheConfigurationService extends AbstractCacheConfigurationService {
 
-    public static ServiceBuilder<Configuration> build(ServiceTarget target, String containerName, String cacheName, String templateCacheName, JBossWebMetaData metaData) {
-        SessionCacheConfigurationService service = new SessionCacheConfigurationService(cacheName, metaData);
+    public static ServiceBuilder<Configuration> build(ServiceTarget target, String containerName, String cacheName, String templateCacheName) {
+        SSOCacheConfigurationService service = new SSOCacheConfigurationService(cacheName);
         return target.addService(CacheConfigurationService.getServiceName(containerName, cacheName), service)
                 .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, service.container)
                 .addDependency(CacheConfigurationService.getServiceName(containerName, templateCacheName), Configuration.class, service.configuration)
@@ -51,24 +44,9 @@ public class SessionCacheConfigurationService extends AbstractCacheConfiguration
 
     private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
     private final InjectedValue<Configuration> configuration = new InjectedValue<>();
-    private final JBossWebMetaData metaData;
 
-    private SessionCacheConfigurationService(String name, JBossWebMetaData metaData) {
+    private SSOCacheConfigurationService(String name) {
         super(name);
-        this.metaData = metaData;
-        ReplicationConfig config = this.metaData.getReplicationConfig();
-        if (config == null) {
-            config = new ReplicationConfig();
-            this.metaData.setReplicationConfig(config);
-        }
-        ReplicationGranularity granularity = config.getReplicationGranularity();
-        if (granularity == null) {
-            config.setReplicationGranularity(ReplicationGranularity.SESSION);
-        }
-        Integer maxActiveSessions = this.metaData.getMaxActiveSessions();
-        if (maxActiveSessions == null) {
-            this.metaData.setMaxActiveSessions(Integer.valueOf(-1));
-        }
     }
 
     @Override

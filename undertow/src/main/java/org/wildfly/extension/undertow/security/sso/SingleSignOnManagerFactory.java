@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,13 +19,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.sso;
+package org.wildfly.extension.undertow.security.sso;
 
-import java.util.concurrent.atomic.AtomicReference;
+import org.wildfly.extension.undertow.Host;
 
-import org.wildfly.clustering.web.sso.Credentials;
+import io.undertow.security.impl.SingleSignOnManager;
 
-public interface SSOCacheEntry<L> {
-    Credentials getCredentials();
-    AtomicReference<L> getLocalContext();
+/**
+ * Factory for creating a {@link SingleSignOnManager}.
+ * @author Paul Ferraro
+ */
+public interface SingleSignOnManagerFactory {
+    /**
+     * Creates a single sign on manager for the specified host
+     * @param host a host
+     * @return a single sign on manager
+     */
+    SingleSignOnManager createSingleSignOnManager(Host host);
 }

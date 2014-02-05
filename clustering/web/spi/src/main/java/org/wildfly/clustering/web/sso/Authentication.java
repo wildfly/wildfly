@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,40 +22,13 @@
 package org.wildfly.clustering.web.sso;
 
 /**
- * Uniquely identifies a web application.
+ * Encapsulates the authentication information for an SSO.
  * @author Paul Ferraro
  */
-public class WebApplication {
-    private final String context;
-    private final String host;
+public interface Authentication<I> {
+    I getIdentity();
+    void setIdentity(I identity);
 
-    public WebApplication(String context, String host) {
-        this.context = context;
-        this.host = host;
-    }
-
-    public String getContext() {
-        return this.context;
-    }
-
-    public String getHost() {
-        return this.host;
-    }
-
-    @Override
-    public int hashCode() {
-        return this.context.hashCode() ^ this.host.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if ((object == null) || !(object instanceof WebApplication)) return false;
-        WebApplication application = (WebApplication) object;
-        return this.context.equals(application.context) && this.host.equals(application.host);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s:%s", this.host, this.context);
-    }
+    AuthenticationType getType();
+    void setType(AuthenticationType type);
 }

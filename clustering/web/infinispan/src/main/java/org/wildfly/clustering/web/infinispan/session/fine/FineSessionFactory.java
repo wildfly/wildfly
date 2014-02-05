@@ -24,13 +24,13 @@ package org.wildfly.clustering.web.infinispan.session.fine;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker.Operation;
+import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
-import org.wildfly.clustering.web.infinispan.session.CacheMutator;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
@@ -71,7 +71,7 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
     @Override
     public Session<L> createSession(String id, FineSessionCacheEntry<L> entry) {
         SessionMetaData metaData = entry.getMetaData();
-        Mutator mutator = metaData.isNew() ? Mutator.PASSIVE : new CacheMutator<>(this.sessionCache, this.invoker, id, entry);
+        Mutator mutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.sessionCache, this.invoker, id, entry);
         SessionAttributes attributes = new FineSessionAttributes<>(id, entry.getAttributes(), this.attributeCache, this.invoker, this.marshaller);
         return new InfinispanSession<>(id, entry.getMetaData(), attributes, entry.getLocalContext(), this.localContextFactory, this.context, mutator, this);
     }

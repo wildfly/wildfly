@@ -19,33 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.sso;
+package org.wildfly.clustering.web.infinispan;
 
 import org.infinispan.Cache;
-import org.infinispan.context.Flag;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
+import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.web.Batcher;
 
 /**
- * Mutates an SSO in the distributed cache
+ * A Batcher based on Infinispan's batch capability.
  * @author Paul Ferraro
  */
-public class SSOMutator<V> implements Mutator {
+public class InfinispanBatcher implements Batcher {
 
-    private final Cache<String, V> cache;
-    private final CacheInvoker invoker;
-    private final String id;
-    final V value;
+    final Cache<?, ?> cache;
 
-    public SSOMutator(Cache<String, V> cache, CacheInvoker invoker, String id, V value) {
+    public InfinispanBatcher(Cache<?, ?> cache) {
         this.cache = cache;
-        this.invoker = invoker;
-        this.id = id;
-        this.value = value;
     }
 
     @Override
-    public void mutate() {
-        this.invoker.invoke(this.cache, new MutateOperation<>(this.id, this.value), Flag.IGNORE_RETURN_VALUES);
+    public Batch startBatch() {
+        final boolean started = this.cache.startBatch();
+        return new Batch() {
+            @Override
+            public void close() {
+                this.end(true);
+            }
+
+            @Override
+            public void discard() {
+                this.end(false);
+            }
+
+            private void end(boolean success) {
+                if (started) {
+                    InfinispanBatcher.this.cache.endBatch(success);
+                }
+            }
+        };
     }
 }

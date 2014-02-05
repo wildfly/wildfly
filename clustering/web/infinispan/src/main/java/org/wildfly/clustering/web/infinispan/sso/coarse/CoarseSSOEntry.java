@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,15 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.sso;
+package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-public interface Credentials {
-    AuthenticationType getAuthenticationType();
-    void setAuthenticationType(AuthenticationType type);
+import java.util.Map;
 
-    String getUser();
-    void setUser(String user);
+/**
+ * Simple container for CoarseAuthenticationEntry and sessions map.
+ * @author Paul Ferraro
+ */
+public class CoarseSSOEntry<I, D, L> {
 
-    String getPassword();
-    void setPassword(String password);
+    private final CoarseAuthenticationEntry<I, D, L> authenticationEntry;
+    private final Map<D, String> sessions;
+
+    public CoarseSSOEntry(CoarseAuthenticationEntry<I, D, L> authenticationEntry, Map<D, String> sessions) {
+        this.authenticationEntry = authenticationEntry;
+        this.sessions = sessions;
+    }
+
+    public CoarseAuthenticationEntry<I, D, L> getAuthenticationEntry() {
+        return this.authenticationEntry;
+    }
+
+    public Map<D, String> getSessions() {
+        return this.sessions;
+    }
 }
