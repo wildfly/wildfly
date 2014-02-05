@@ -20,49 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.system;
+package org.jboss.system.logging;
 
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * This module is using message IDs in the range 17800-17899. This file is using the subset 17800-17849 for
- * non-logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
- * JBAS message id blocks.
- *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface ServiceMBeanMessages {
+@MessageLogger(projectCode = "WFLYSYSJMX", length = 4)
+public interface ServiceMBeanLogger extends BasicLogger {
 
-    /**
-     * The messages.
-     */
-    ServiceMBeanMessages MESSAGES = Messages.getBundle(ServiceMBeanMessages.class);
+    ServiceMBeanLogger ROOT_LOGGER = Logger.getMessageLogger(ServiceMBeanLogger.class, "org.jboss.system");
 
-    @Message(id = 17800, value = "Null method name")
+    @Message(id = 1, value = "Null method name")
     IllegalArgumentException nullMethodName();
 
-    @Message(id = 17801, value = "Unknown lifecyle method %s")
+    @Message(id = 2, value = "Unknown lifecyle method %s")
     IllegalArgumentException unknownLifecycleMethod(String methodName);
 
-    @Message(id = 17802, value = "Error in destroy %s")
+    @Message(id = 3, value = "Error in destroy %s")
     IllegalArgumentException errorInDestroy(@Cause Throwable cause, String description);
 
-    @Message(id = 17803, value = "Error in stop %s")
+    @Message(id = 4, value = "Error in stop %s")
     IllegalArgumentException errorInStop(@Cause Throwable cause, String description);
 
-    @Message(id = 17804, value = "Initialization failed %s")
+    @Message(id = 5, value = "Initialization failed %s")
     IllegalArgumentException initializationFailed(@Cause Throwable cause, String description);
 
-    @Message(id = 17805, value = "Starting failed %s")
+    @Message(id = 6, value = "Starting failed %s")
     IllegalArgumentException startingFailed(@Cause Throwable cause, String description);
 
-    @Message(id = 17806, value = "Stopping failed %s")
+    @Message(id = 7, value = "Stopping failed %s")
     IllegalArgumentException stoppingFailed(@Cause Throwable cause, String description);
 
-    @Message(id = 17807, value = "Destroying failed %s")
+    @Message(id = 8, value = "Destroying failed %s")
     IllegalArgumentException destroyingFailed(@Cause Throwable cause, String description);
 }
