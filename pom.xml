@@ -329,6 +329,14 @@
 
     <build>
         <plugins>
+            <!-- to deal with type 'bundle' dependencies -->
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <inherited>true</inherited>
+                <extensions>true</extensions>
+            </plugin>
+
            <!-- Zanata translations -->
             <plugin>
               <groupId>org.zanata</groupId>
@@ -3099,13 +3107,6 @@
                          <artifactId>spring-jms</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-all</artifactId>
-                <scope>test</scope>
-                <version>${version.org.apache.ds}</version>
             </dependency>
 
             <dependency>
@@ -6475,6 +6476,16 @@
                         <artifactId>xml-apis</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+
+            <!-- lastly define extra BOMs -->
+
+            <dependency>
+                <groupId>org.apache.directory.server</groupId>
+                <artifactId>apacheds-parent</artifactId>
+                <version>${version.org.apache.ds}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
         </dependencies>
     </dependencyManagement>
