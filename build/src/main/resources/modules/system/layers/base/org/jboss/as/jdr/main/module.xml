@@ -30,6 +30,10 @@
 
     <main-class name="org.jboss.as.jdr.CommandLineMain"/>
 
+    <exports>
+        <exclude path="org/jboss/as/jdr/logger"/>
+    </exports>
+
     <resources>
         <!-- Insert resources here -->
         <resource-root path="resources"/>

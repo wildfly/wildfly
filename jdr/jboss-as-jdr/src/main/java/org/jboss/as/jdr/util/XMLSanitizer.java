@@ -40,7 +40,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
 
 /**
  * {@link Sanitizer} subclass that removes the contents of the matched xpath expression

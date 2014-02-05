@@ -22,8 +22,6 @@
 
 package org.jboss.as.jdr;
 
-import static org.jboss.as.jdr.JdrMessages.MESSAGES;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -32,6 +30,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.jdr.logger.JdrLogger;
 
 /**
  * Provides a main for collecting a JDR report from the command line.
@@ -47,10 +46,10 @@ public class CommandLineMain {
     private static final String usage = "jdr.{sh,bat} [options]";
 
     static {
-        options.addOption("h", "help", false, MESSAGES.jdrHelpMessage());
-        options.addOption("H", "host", true, MESSAGES.jdrHostnameMessage());
-        options.addOption("p", "port", true, MESSAGES.jdrPortMessage());
-        options.addOption("s", "protocol", true, MESSAGES.jdrProtocolMessage());
+        options.addOption("h", "help", false, JdrLogger.ROOT_LOGGER.jdrHelpMessage());
+        options.addOption("H", "host", true, JdrLogger.ROOT_LOGGER.jdrHostnameMessage());
+        options.addOption("p", "port", true, JdrLogger.ROOT_LOGGER.jdrPortMessage());
+        options.addOption("s", "protocol", true, JdrLogger.ROOT_LOGGER.jdrProtocolMessage());
     }
 
     /**

@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.jdr;
+package org.jboss.as.jdr.logger;
 
 
 import org.jboss.logging.BasicLogger;
@@ -33,80 +33,96 @@ import static org.jboss.logging.Logger.Level.*;
 
 /**
  * JBoss Diagnostic Reporter (JDR) logger.
- * <p/>
- * This module is using message IDs in the range 13100-13199. This file is using the subset 13100-13149 for
- * logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
- * JBAS message id blocks.
  *
  * @author Mike M. Clark
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageLogger(projectCode = "JBAS")
+@MessageLogger(projectCode = "WFLYJDR", length = 4)
 public interface JdrLogger extends BasicLogger {
     /**
      * A logger with the category of the default jdr package.
      */
-    JdrLogger ROOT_LOGGER = Logger.getMessageLogger(JdrLogger.class, JdrLogger.class.getPackage().getName());
+    JdrLogger ROOT_LOGGER = Logger.getMessageLogger(JdrLogger.class, "org.jboss.as.jdr");
 
     /**
      * Indicates that a JDR report has been initiated.
      */
     @LogMessage(level = INFO)
-    @Message(id = 13100, value = "Starting creation of a JBoss Diagnostic Report (JDR).")
+    @Message(id = 1, value = "Starting creation of a JBoss Diagnostic Report (JDR).")
     void startingCollection();
 
     /**
      * Indicates that a JDR report has completed
      */
     @LogMessage(level = INFO)
-    @Message(id = 13101, value = "Completed creation of a JBoss Diagnostic Report (JDR).")
+    @Message(id = 2, value = "Completed creation of a JBoss Diagnostic Report (JDR).")
     void endingCollection();
 
     /**
      * Indicates that the JBoss home directory was not set.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 13102, value = "Unable to create JDR report, JBoss Home directory cannot be determined.")
+    @Message(id = 3, value = "Unable to create JDR report, JBoss Home directory cannot be determined.")
     void jbossHomeNotSet();
 
     /**
      * The sosreport python library threw an exception
      */
     @LogMessage(level = WARN)
-    @Message(id = 13103, value = "JDR python interpreter encountered an exception.")
+    @Message(id = 4, value = "JDR python interpreter encountered an exception.")
     void pythonExceptionEncountered(@Cause Throwable cause);
 
     /**
-     * JDR was unable to decode a path URL for standarization across platforms.
+     * JDR was unable to decode a path URL for standardization across platforms.
      */
     @LogMessage(level = WARN)
-    @Message(id = 13104, value = "Unable to decode a url while creating JDR report.")
+    @Message(id = 5, value = "Unable to decode a url while creating JDR report.")
     void urlDecodeExceptionEncountered(@Cause Throwable cause);
 
     /**
      * JDR plugin location is not a directory as expected.
      */
     @LogMessage(level = WARN)
-    @Message(id = 13105, value = "Plugin contrib location is not a directory.  Ignoring.")
+    @Message(id = 6, value = "Plugin contrib location is not a directory.  Ignoring.")
     void contribNotADirectory();
 
     /**
      * JDR could not create a zipfile to store the report.
      */
-    @LogMessage(level = ERROR)
-    @Message(id=13106, value="Could not create zipfile.")
-    void couldNotCreateZipfile(@Cause Throwable cause);
+    @Message(id = 7, value="Could not create zipfile.")
+    String couldNotCreateZipfile();
 
     /**
      * One of the configuration steps in JDR threw an exception.
      */
-    @LogMessage(level = ERROR)
-    @Message(id=13107, value="Could not configure JDR.")
-    void couldNotConfigureJDR(@Cause Throwable cause);
+    @Message(id = 8, value="Could not configure JDR. At least one configuration step failed.")
+    String couldNotConfigureJDR();
 
     /**
      * No Commands to run, probably no valid plugin loaded
      */
-    @LogMessage(level = ERROR)
-    @Message(id = 13108, value = "No JDR commands were loaded. Be sure that a valid Plugin class is specified in plugins.properties.")
-    void noCommandsToRun();
+    @Message(id = 9, value = "No JDR commands were loaded. Be sure that a valid Plugin class is specified in plugins.properties.")
+    String noCommandsToRun();
+
+    /**
+     * Indicates an invalid, <code>null</code> argument was
+     * passed into a method.
+     *
+     * @param var method variable that was <code>null</code>
+     * @return Exception describing the invalid parameter.
+     */
+    @Message(id = 10, value = "Parameter %s may not be null.")
+    IllegalArgumentException varNull(String var);
+
+    @Message(id = Message.NONE, value = "Display this message and exit")
+    String jdrHelpMessage();
+
+    @Message(id = Message.NONE, value = "hostname that the management api is bound to. (default: localhost)")
+    String jdrHostnameMessage();
+
+    @Message(id = Message.NONE, value = "port that the management api is bound to. (default: 9990)")
+    String jdrPortMessage();
+
+    @Message(id = Message.NONE, value = "Protocol that is used to connect. Can be remote, http or https (default: http)")
+    String jdrProtocolMessage();
 }
