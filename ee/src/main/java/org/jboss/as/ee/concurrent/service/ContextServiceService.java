@@ -25,7 +25,7 @@ package org.jboss.as.ee.concurrent.service;
 import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -76,7 +76,7 @@ public class ContextServiceService extends EEConcurrentAbstractService<ContextSe
     public ContextServiceImpl getValue() throws IllegalStateException {
         final ContextServiceImpl value = this.contextService;
         if (value == null) {
-            throw EeMessages.MESSAGES.concurrentServiceValueUninitialized();
+            throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
         return value;
     }

@@ -26,6 +26,11 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <!-- TODO: used by several other modules, for some reason -->
+    <!-- exports -->
+        <!-- exclude path="org/jboss/as/ee/logging"/ -->
+    <!-- /exports -->
+
     <resources>
         <!-- Insert resources here -->
     </resources>

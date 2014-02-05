@@ -21,8 +21,7 @@
  */
 package org.jboss.as.ee.metadata;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationInstance;
@@ -104,7 +103,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
             } else if (instance.target() instanceof MethodParameterInfo) {
                 //ignore for now
             } else {
-                throw MESSAGES.unknownAnnotationTargetType(instance.target());
+                throw EeLogger.ROOT_LOGGER.unknownAnnotationTargetType(instance.target());
             }
         }
 
@@ -178,7 +177,7 @@ public abstract class ClassAnnotationInformationFactory<A extends Annotation, T>
         } else if (annotationTarget instanceof MethodParameterInfo) {
             return ((MethodParameterInfo) annotationTarget).method().declaringClass();
         } else {
-            throw MESSAGES.unknownAnnotationTargetType(annotationTarget);
+            throw EeLogger.ROOT_LOGGER.unknownAnnotationTargetType(annotationTarget);
         }
     }
 

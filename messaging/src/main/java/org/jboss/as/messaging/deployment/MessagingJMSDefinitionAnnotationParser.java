@@ -22,7 +22,6 @@
 
 package org.jboss.as.messaging.deployment;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.ee.structure.DeploymentType.APPLICATION_CLIENT;
 import static org.jboss.as.ee.structure.DeploymentType.WAR;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
@@ -39,6 +38,7 @@ import javax.jms.JMSConnectionFactoryDefinitions;
 import javax.jms.JMSDestinationDefinition;
 import javax.jms.JMSDestinationDefinitions;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -79,7 +79,7 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         for (AnnotationInstance annotation : index.getAnnotations(JMS_DESTINATION_DEFINITIONS)) {
             final AnnotationTarget target = annotation.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation(JMS_DESTINATION_DEFINITIONS.toString(), target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation(JMS_DESTINATION_DEFINITIONS.toString(), target);
             }
             List<AnnotationInstance> destinationDefinitions = getNestedDefinitionAnnotations(annotation);
             for (AnnotationInstance definition : destinationDefinitions) {
@@ -91,7 +91,7 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         for (AnnotationInstance definition : index.getAnnotations(JMS_DESTINATION_DEFINITION)) {
             final AnnotationTarget target = definition.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation(JMS_DESTINATION_DEFINITION.toString(), target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation(JMS_DESTINATION_DEFINITION.toString(), target);
             }
             processJMSDestinationDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses);
         }
@@ -100,7 +100,7 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         for (AnnotationInstance annotation : index.getAnnotations(JMS_CONNECTION_FACTORY_DEFINITIONS)) {
             final AnnotationTarget target = annotation.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation(JMS_CONNECTION_FACTORY_DEFINITIONS.toString(), target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation(JMS_CONNECTION_FACTORY_DEFINITIONS.toString(), target);
             }
             List<AnnotationInstance> connectionFactoryDefinitions = getNestedDefinitionAnnotations(annotation);
             for (AnnotationInstance definition : connectionFactoryDefinitions) {
@@ -112,7 +112,7 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
         for (AnnotationInstance definition : index.getAnnotations(JMS_CONNECTION_FACTORY_DEFINITION)) {
             final AnnotationTarget target = definition.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation(JMS_CONNECTION_FACTORY_DEFINITION.toString(), target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation(JMS_CONNECTION_FACTORY_DEFINITION.toString(), target);
             }
             processJMSConnectionFactoryDefinition(deploymentUnit, eeModuleDescription, definition, (ClassInfo) target, applicationClasses);
         }
@@ -125,12 +125,12 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
     private void processJMSDestinationDefinition(DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, AnnotationInstance destinationDefinition, ClassInfo target, EEApplicationClasses applicationClasses) {
         final AnnotationValue nameValue = destinationDefinition.value(NAME);
         if (nameValue == null || nameValue.asString().isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing(JMS_DESTINATION_DEFINITION.toString(), NAME);
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing(JMS_DESTINATION_DEFINITION.toString(), NAME);
         }
 
         final AnnotationValue interfaceNameValue = destinationDefinition.value("interfaceName");
         if (interfaceNameValue == null || interfaceNameValue.asString().isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing(JMS_DESTINATION_DEFINITION.toString(), "interfaceName");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing(JMS_DESTINATION_DEFINITION.toString(), "interfaceName");
         }
 
         DirectJMSDestinationInjectionSource source = new DirectJMSDestinationInjectionSource(nameValue.asString(), interfaceNameValue.asString());
@@ -153,7 +153,7 @@ public class MessagingJMSDefinitionAnnotationParser implements DeploymentUnitPro
     private void processJMSConnectionFactoryDefinition(DeploymentUnit deploymentUnit, EEModuleDescription eeModuleDescription, AnnotationInstance connectionFactoryDefinition, ClassInfo target, EEApplicationClasses applicationClasses) {
         final AnnotationValue nameValue = connectionFactoryDefinition.value(NAME);
         if (nameValue == null || nameValue.asString().isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing(JMS_CONNECTION_FACTORY_DEFINITION.toString(), NAME);
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing(JMS_CONNECTION_FACTORY_DEFINITION.toString(), NAME);
         }
 
         DirectJMSConnectionFactoryInjectionSource source = new DirectJMSConnectionFactoryInjectionSource(nameValue.asString());

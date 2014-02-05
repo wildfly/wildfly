@@ -20,7 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ee;
+package org.jboss.as.ee.logging;
+
+import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -31,9 +33,9 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -41,33 +43,183 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * This module is using message IDs in the range 11000-11099 and 16700-16799.
- * <p/>
- * This file is using the subset 11025-11099 and 16700-16799 for non-logger messages.
- * <p/>
- * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
- * list of currently reserved JBAS message id blocks.
- * <p/>
- * Date: 05.11.2011
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface EeMessages {
+@MessageLogger(projectCode = "WFLYEE", length = 4)
+public interface EeLogger extends BasicLogger {
 
     /**
-     * The messages.
+     * A logger with a category of the package name.
      */
-    EeMessages MESSAGES = Messages.getBundle(EeMessages.class);
+    EeLogger ROOT_LOGGER = Logger.getMessageLogger(EeLogger.class, "org.jboss.as.ee");
+
+    /**
+     * A logger with a category of {@code org.jboss.as.server.deployment}.
+     */
+    EeLogger SERVER_DEPLOYMENT_LOGGER = Logger.getMessageLogger(EeLogger.class, "org.jboss.as.server.deployment");
+
+    /**
+     * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
+     * could not be proxied and will not be enlisted in the transactions automatically.
+     *
+     * @param cause     the cause of the error.
+     * @param className the datasource class name.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 1, value = "Transactional datasource %s could not be proxied and will not be enlisted in transactions automatically")
+    void cannotProxyTransactionalDatasource(@Cause Throwable cause, String className);
+
+    /**
+     * Logs a warning message indicating the resource-env-ref could not be resolved.
+     *
+     * @param elementName the name of the element.
+     * @param name        the name resource environment reference.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 2, value = "Could not resolve %s %s")
+    void cannotResolve(String elementName, String name);
+
+    /**
+     * Logs a warning message indicating the class path entry, represented by the {@code entry} parameter, was not found
+     * in the file.
+     *
+     * @param entry the class path entry.
+     * @param file  the file.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 3, value = "Class Path entry %s in %s does not point to a valid jar for a Class-Path reference.")
+    void classPathEntryNotAJar(String entry, VirtualFile file);
+
+    /**
+     * Logs a warning message indicating the class path entry in file may not point to a sub deployment.
+     *
+     * @param file the file.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 4, value = "Class Path entry in %s may not point to a sub deployment.")
+    void classPathEntryASubDeployment(VirtualFile file);
+
+    /**
+     * Logs a warning message indicating the class path entry, represented by the {@code entry} parameter, was not found
+     * in the file.
+     *
+     * @param entry the class path entry.
+     * @param file  the file.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 5, value = "Class Path entry %s in %s not found.")
+    void classPathEntryNotFound(String entry, VirtualFile file);
+
+    /**
+     * Logs a warning message indicating a failure to destroy the component instance.
+     *
+     * @param cause     the cause of the error.
+     * @param component the component instance.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 6, value = "Failed to destroy component instance %s")
+    void componentDestroyFailure(@Cause Throwable cause, ComponentInstance component);
+
+    /**
+     * Logs a warning message indicating the component is not being installed due to an exception.
+     *
+     * @param name  the name of the component.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 7, value = "Not installing optional component %s due to an exception (enable DEBUG log level to see the cause)")
+    void componentInstallationFailure(String name);
+
+    /**
+     * Logs a warning message indicating the property, represented by the {@code name} parameter, is be ignored due to
+     * missing on the setter method on the datasource class.
+     *
+     * @param name          the name of the property.
+     * @param methodName    the name of the method.
+     * @param parameterType the name of the parameter type.
+     * @param className     the name of the datasource class.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 8, value = "Ignoring property %s due to missing setter method: %s(%s) on datasource class: %s")
+    void ignoringProperty(String name, String methodName, String parameterType, String className);
+
+    /**
+     * Logs a warning message indicating the managed bean implementation class MUST NOT be an interface.
+     *
+     * @param sectionId the section id of the managed bean spec.
+     * @param className the class name
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 9, value = "[Managed Bean spec, section %s] Managed bean implementation class MUST NOT be an interface - " +
+            "%s is an interface, hence won't be considered as a managed bean.")
+    void invalidManagedBeanAbstractOrFinal(String sectionId, String className);
+
+    /**
+     * Logs a warning message indicating the managed bean implementation class MUST NOT be abstract or final.
+     *
+     * @param sectionId the section id of the managed bean spec.
+     * @param className the class name
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10, value = "[Managed Bean spec, section %s] Managed bean implementation class MUST NOT be abstract or final - " +
+            "%s won't be considered as a managed bean, since it doesn't meet that requirement.")
+    void invalidManagedBeanInterface(String sectionId, String className);
+
+    /**
+     * Logs a warning message indicating an exception occurred while invoking the pre-destroy on the interceptor
+     * component class, represented by the {@code component} parameter.
+     *
+     * @param cause     the cause of the error.
+     * @param component the component.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11, value = "Exception while invoking pre-destroy interceptor for component class: %s")
+    void preDestroyInterceptorFailure(@Cause Throwable cause, Class<?> component);
+
+    /**
+     * Logs a warning message indicating the transaction datasource, represented by the {@code className} parameter,
+     * will not be enlisted in the transaction as the transaction subsystem is not available.
+     *
+     * @param className the name of the datasource class.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 12, value = "Transactional datasource %s will not be enlisted in the transaction as the transaction subsystem is not available")
+    void transactionSubsystemNotAvailable(String className);
+
+    //@Message(id = 13, value = "Injection for a member with static modifier is only acceptable on application clients, ignoring injection for target %s")
+    //void ignoringStaticInjectionTarget(InjectionTarget injectionTarget);
+
+    @LogMessage(level = WARN)
+    @Message(id = 14, value = "%s in subdeployment ignored. jboss-ejb-client.xml is only parsed for top level deployments.")
+    void subdeploymentIgnored(String pathName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15, value = "Transaction started in EE Concurrent invocation left open, starting rollback to prevent leak.")
+    void rollbackOfTransactionStartedInEEConcurrentInvocation();
+
+    @LogMessage(level = WARN)
+    @Message(id = 16, value = "Failed to rollback transaction.")
+    void failedToRollbackTransaction(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 17, value = "Failed to suspend transaction.")
+    void failedToSuspendTransaction(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 18, value = "System error while checking for transaction leak in EE Concurrent invocation.")
+    void systemErrorWhileCheckingForTransactionLeak(@Cause Throwable cause);
+
 
     /**
      * Creates an exception indicating the alternate deployment descriptor specified for the module file could not be
@@ -78,7 +230,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11025, value = "Could not find alternate deployment descriptor %s specified for %s")
+    @Message(id = 19, value = "Could not find alternate deployment descriptor %s specified for %s")
     DeploymentUnitProcessingException alternateDeploymentDescriptor(VirtualFile deploymentDescriptor, VirtualFile moduleFile);
 
     /**
@@ -89,7 +241,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the exception.
      */
-    @Message(id = 11026, value = "%s annotations must provide a %s.")
+    @Message(id = 20, value = "%s annotations must provide a %s.")
     IllegalArgumentException annotationAttributeMissing(String annotation, String attribute);
 
     /**
@@ -97,7 +249,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11027, value = "Cannot add any more items once getSortedItems() has been called")
+    @Message(id = 21, value = "Cannot add any more items once getSortedItems() has been called")
     IllegalStateException cannotAddMoreItems();
 
     /**
@@ -107,7 +259,7 @@ public interface EeMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11028, value = "%s may not be empty")
+    @Message(id = 22, value = "%s may not be empty")
     RuntimeException cannotBeEmpty(String name);
 
     /**
@@ -118,7 +270,7 @@ public interface EeMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11029, value = "%s cannot be null or empty: %s")
+    @Message(id = 23, value = "%s cannot be null or empty: %s")
     IllegalArgumentException cannotBeNullOrEmpty(String name, Object value);
 
     /**
@@ -130,7 +282,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11030, value = "Could not configure component %s")
+    @Message(id = 24, value = "Could not configure component %s")
     DeploymentUnitProcessingException cannotConfigureComponent(@Cause Throwable cause, String name);
 
     /**
@@ -140,7 +292,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11031, value = "Could not determine type for resource-env-ref %s")
+    @Message(id = 25, value = "Could not determine type for resource-env-ref %s")
     DeploymentUnitProcessingException cannotDetermineType(String name);
 
     /**
@@ -152,7 +304,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11032, value = "Could not determine type for %s %s please specify the %s.")
+    @Message(id = 26, value = "Could not determine type for %s %s please specify the %s.")
     DeploymentUnitProcessingException cannotDetermineType(String tag, String value, String typeTag);
 
     /**
@@ -163,7 +315,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11033, value = "Could not load %s referenced in env-entry")
+    @Message(id = 27, value = "Could not load %s referenced in env-entry")
     DeploymentUnitProcessingException cannotLoad(String injectionTarget);
 
     /**
@@ -185,7 +337,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11034, value = "Could not load interceptor class %s")
+    @Message(id = 28, value = "Could not load interceptor class %s")
     RuntimeException cannotLoadInterceptor(@Cause Throwable cause, String className);
 
     /**
@@ -197,7 +349,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11035, value = "Could not load interceptor class %s on component %s")
+    @Message(id = 29, value = "Could not load interceptor class %s on component %s")
     DeploymentUnitProcessingException cannotLoadInterceptor(@Cause Throwable cause, String className, Class<?> component);
 
     /**
@@ -210,7 +362,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11036, value = "Could not load view class %s for component %s")
+    @Message(id = 30, value = "Could not load view class %s for component %s")
     DeploymentUnitProcessingException cannotLoadViewClass(@Cause Throwable cause, String className, ComponentConfiguration component);
 
     /**
@@ -222,7 +374,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11037, value = "Unable to process modules in application.xml for EAR [%s], module file %s not found")
+    @Message(id = 31, value = "Unable to process modules in application.xml for EAR [%s], module file %s not found")
     DeploymentUnitProcessingException cannotProcessEarModule(VirtualFile earFile, String moduleFile);
 
     /**
@@ -233,7 +385,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11038, value = "Unable to parse resource-ref URI: %s")
+    @Message(id = 32, value = "Unable to parse resource-ref URI: %s")
     DeploymentUnitProcessingException cannotParseResourceRefUri(@Cause Throwable cause, String uri);
 
     /**
@@ -244,7 +396,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11039, value = "Could not resolve injection point %s on class %s specified in web.xml")
+    @Message(id = 33, value = "Could not resolve injection point %s on class %s specified in web.xml")
     DeploymentUnitProcessingException cannotResolveInjectionPoint(String targetName, String className);
 
     /**
@@ -256,7 +408,7 @@ public interface EeMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11040, value = "Could not resolve method %s on class %s with annotations %s")
+    @Message(id = 34, value = "Could not resolve method %s on class %s with annotations %s")
     RuntimeException cannotResolveMethod(MethodIdentifier method, Class<?> component, Collection<?> annotations);
 
     /**
@@ -269,7 +421,7 @@ public interface EeMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11041, value = "Could not set property %s on datasource class %s")
+    @Message(id = 35, value = "Could not set property %s on datasource class %s")
     RuntimeException cannotSetProperty(@Cause Throwable cause, String name, String className);
 
     /**
@@ -281,7 +433,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11042, value = "Cannot specify both a %s and a %s in an environment entry.")
+    @Message(id = 36, value = "Cannot specify both a %s and a %s in an environment entry.")
     DeploymentUnitProcessingException cannotSpecifyBoth(String element1, String element2);
 
     /**
@@ -291,7 +443,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11043, value = "Circular dependency installing %s")
+    @Message(id = 37, value = "Circular dependency installing %s")
     IllegalArgumentException circularDependency(String bindingName);
 
     /**
@@ -302,7 +454,7 @@ public interface EeMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11044, value = "%s annotation is only allowed on a class. %s is not a class.")
+    @Message(id = 38, value = "%s annotation is only allowed on a class. %s is not a class.")
     DeploymentUnitProcessingException classOnlyAnnotation(String annotation, AnnotationTarget target);
 
     /**
@@ -312,7 +464,7 @@ public interface EeMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11045, value = "@%s annotation is only allowed on methods and classes")
+    @Message(id = 39, value = "@%s annotation is only allowed on methods and classes")
     DeploymentUnitProcessingException classOrMethodOnlyAnnotation(DotName annotation);
 
     /**
@@ -323,7 +475,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11046, value = "A component named '%s' is already defined in this module")
+    @Message(id = 40, value = "A component named '%s' is already defined in this module")
     IllegalArgumentException componentAlreadyDefined(String name);
 
     /**
@@ -336,7 +488,7 @@ public interface EeMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11047, value = "Component class %s for component %s has errors: %n%s")
+    @Message(id = 41, value = "Component class %s for component %s has errors: %n%s")
     DeploymentUnitProcessingException componentClassHasErrors(String className, String componentName, String errorMsg);
 
     /**
@@ -346,7 +498,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11048, value = "Failed to construct component instance")
+    @Message(id = 42, value = "Failed to construct component instance")
     IllegalStateException componentConstructionFailure(@Cause Throwable cause);
 
     /**
@@ -354,7 +506,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11049, value = "Component is stopped")
+    @Message(id = 43, value = "Component is stopped")
     IllegalStateException componentIsStopped();
 
     /**
@@ -362,7 +514,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11050, value = "Component not available (interrupted)")
+    @Message(id = 44, value = "Component not available (interrupted)")
     IllegalStateException componentNotAvailable();
 
     /**
@@ -372,7 +524,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11051, value = "No component found for type '%s'")
+    @Message(id = 45, value = "No component found for type '%s'")
     DeploymentUnitProcessingException componentNotFound(String typeName);
 
     /**
@@ -382,7 +534,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11052, value = "Failed to instantiate component view")
+    @Message(id = 46, value = "Failed to instantiate component view")
     IllegalStateException componentViewConstructionFailure(@Cause Throwable cause);
 
     /**
@@ -393,7 +545,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11053, value = "Incompatible conflicting binding at %s source: %s")
+    @Message(id = 47, value = "Incompatible conflicting binding at %s source: %s")
     IllegalArgumentException conflictingBinding(String bindingName, InjectionSource source);
 
     /**
@@ -404,7 +556,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11054, value = "Could not find default constructor for %s")
+    @Message(id = 48, value = "Could not find default constructor for %s")
     DeploymentUnitProcessingException defaultConstructorNotFound(Class<?> clazz);
 
     /**
@@ -416,7 +568,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11055, value = "Could not find default constructor for %s class %s")
+    @Message(id = 49, value = "Could not find default constructor for %s class %s")
     DeploymentUnitProcessingException defaultConstructorNotFound(String annotation, String className);
 
     /**
@@ -428,7 +580,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11056, value = "No default constructor for interceptor class %s on component %s")
+    @Message(id = 50, value = "No default constructor for interceptor class %s on component %s")
     DeploymentUnitProcessingException defaultConstructorNotFoundOnComponent(String className, Class<?> component);
 
     /**
@@ -439,7 +591,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the exception.
      */
-    @Message(id = 11057, value = "%s elements must provide a %s.")
+    @Message(id = 51, value = "%s elements must provide a %s.")
     IllegalArgumentException elementAttributeMissing(String element, String attribute);
 
     /**
@@ -450,7 +602,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11058, value = "Failed to install component %s")
+    @Message(id = 52, value = "Failed to install component %s")
     DeploymentUnitProcessingException failedToInstallComponent(@Cause Throwable cause, String name);
 
     /**
@@ -461,7 +613,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11059, value = "Failed to parse %s")
+    @Message(id = 53, value = "Failed to parse %s")
     DeploymentUnitProcessingException failedToParse(@Cause Throwable cause, VirtualFile xmlFile);
 
     /**
@@ -472,7 +624,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11060, value = "Failed to process children for EAR [%s]")
+    @Message(id = 54, value = "Failed to process children for EAR [%s]")
     DeploymentUnitProcessingException failedToProcessChild(@Cause Throwable cause, VirtualFile earFile);
 
     /**
@@ -483,7 +635,7 @@ public interface EeMessages {
      *
      * @return the message.
      */
-    @Message(id = 11061, value = "Failed to read %s entries for application [%s]")
+    @Message(id = 55, value = "Failed to read %s entries for application [%s]")
     String failedToRead(String entryName, String appName);
 
     /**
@@ -495,7 +647,7 @@ public interface EeMessages {
      *
      * @return the message.
      */
-    @Message(id = 11062, value = "Failed to read %s entries for module [%s, %s]")
+    @Message(id = 56, value = "Failed to read %s entries for module [%s, %s]")
     String failedToRead(String entryName, String appName, String moduleName);
 
     /**
@@ -508,7 +660,7 @@ public interface EeMessages {
      *
      * @return the message.
      */
-    @Message(id = 11063, value = "Failed to read %s entries for component [%s, %s, %s]")
+    @Message(id = 57, value = "Failed to read %s entries for component [%s, %s, %s]")
     String failedToRead(String entryName, String appName, String moduleName, String componentName);
 
     /**
@@ -518,7 +670,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11064, value = "No matching field found for '%s'")
+    @Message(id = 58, value = "No matching field found for '%s'")
     DeploymentUnitProcessingException fieldNotFound(String name);
 
     /**
@@ -526,7 +678,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11065, value = "No injection target found")
+    @Message(id = 59, value = "No injection target found")
     IllegalStateException injectionTargetNotFound();
 
     /**
@@ -537,7 +689,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11066, value = "%s of type java.lang.Character is not exactly one character long %s")
+    @Message(id = 60, value = "%s of type java.lang.Character is not exactly one character long %s")
     DeploymentUnitProcessingException invalidCharacterLength(String elementName, String value);
 
     /**
@@ -547,7 +699,7 @@ public interface EeMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11067, value = "%s is not a valid descriptor")
+    @Message(id = 61, value = "%s is not a valid descriptor")
     RuntimeException invalidDescriptor(String descriptor);
 
     /**
@@ -560,7 +712,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11068, value = "Injection target %s on class %s is not compatible with the type of injection: %s")
+    @Message(id = 62, value = "Injection target %s on class %s is not compatible with the type of injection: %s")
     DeploymentUnitProcessingException invalidInjectionTarget(String targetName, String targetType, Class<?> type);
 
     /**
@@ -573,7 +725,7 @@ public interface EeMessages {
      *
      * @return the message.
      */
-    @Message(id = 11069, value = "Invalid number of arguments for method %s annotated with %s on class %s")
+    @Message(id = 63, value = "Invalid number of arguments for method %s annotated with %s on class %s")
     String invalidNumberOfArguments(String methodName, DotName annotation, DotName className);
 
     /**
@@ -588,7 +740,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11070, value = "A return type of %s is required for method %s annotated with %s on class %s")
+    @Message(id = 64, value = "A return type of %s is required for method %s annotated with %s on class %s")
     IllegalArgumentException invalidReturnType(String returnType, String methodName, DotName annotation, DotName className);
 
     /**
@@ -601,7 +753,7 @@ public interface EeMessages {
      *
      * @return the message.
      */
-    @Message(id = 11071, value = "Invalid signature for method %s annotated with %s on class %s, signature must be '%s'")
+    @Message(id = 65, value = "Invalid signature for method %s annotated with %s on class %s, signature must be '%s'")
     String invalidSignature(String name, DotName annotation, DotName className, String signatureArg);
 
     /**
@@ -613,7 +765,7 @@ public interface EeMessages {
      *
      * @return {@link XMLStreamException} for the error.
      */
-    @Message(id = 11072, value = "Invalid value: %s for '%s' element")
+    @Message(id = 66, value = "Invalid value: %s for '%s' element")
     XMLStreamException invalidValue(String value, String element, @Param Location location);
 
     /**
@@ -623,7 +775,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11073, value = "Method does not exist %s")
+    @Message(id = 67, value = "Method does not exist %s")
     IllegalStateException methodNotFound(Method method);
 
     /**
@@ -635,7 +787,7 @@ public interface EeMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11074, value = "No matching method found for method %s (%s) on %s")
+    @Message(id = 68, value = "No matching method found for method %s (%s) on %s")
     DeploymentUnitProcessingException methodNotFound(String name, String paramType, String className);
 
     /**
@@ -645,7 +797,7 @@ public interface EeMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11075, value = "@%s is only valid on method targets.")
+    @Message(id = 69, value = "@%s is only valid on method targets.")
     DeploymentUnitProcessingException methodOnlyAnnotation(DotName annotation);
 
     /**
@@ -655,7 +807,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11076, value = "Multiple components found for type '%s'")
+    @Message(id = 70, value = "Multiple components found for type '%s'")
     DeploymentUnitProcessingException multipleComponentsFound(String typeName);
 
     /**
@@ -667,7 +819,7 @@ public interface EeMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11077, value = "More than one matching method found for method '%s (%s) on %s")
+    @Message(id = 71, value = "More than one matching method found for method '%s (%s) on %s")
     DeploymentUnitProcessingException multipleMethodsFound(String name, String paramType, String className);
 
     /**
@@ -678,7 +830,7 @@ public interface EeMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11078, value = "Multiple setter methods for %s on class %s found when applying <injection-target> for env-entry")
+    @Message(id = 72, value = "Multiple setter methods for %s on class %s found when applying <injection-target> for env-entry")
     DeploymentUnitProcessingException multipleSetterMethodsFound(String targetName, String className);
 
     /**
@@ -686,7 +838,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11079, value = "No component instance associated")
+    @Message(id = 73, value = "No component instance associated")
     IllegalStateException noComponentInstance();
 
     /**
@@ -696,7 +848,7 @@ public interface EeMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11080, value = "Binding name must not be null: %s")
+    @Message(id = 74, value = "Binding name must not be null: %s")
     DeploymentUnitProcessingException nullBindingName(BindingConfiguration config);
 
     /**
@@ -704,7 +856,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11081, value = "Managed bean class name cannot be null or empty")
+    @Message(id = 75, value = "Managed bean class name cannot be null or empty")
     IllegalArgumentException nullOrEmptyManagedBeanClassName();
 
     /**
@@ -712,7 +864,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11082, value = "Resource reference type cannot be null or empty")
+    @Message(id = 76, value = "Resource reference type cannot be null or empty")
     IllegalArgumentException nullOrEmptyResourceReferenceType();
 
     /**
@@ -720,7 +872,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11083, value = "Cannot register a null resource reference processor")
+    @Message(id = 77, value = "Cannot register a null resource reference processor")
     IllegalArgumentException nullResourceReference();
 
     /**
@@ -730,7 +882,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11084, value = "%s is null")
+    @Message(id = 78, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 
     /**
@@ -742,7 +894,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11085, value = "Can't add %s, priority 0x%s is already taken by %s")
+    @Message(id = 79, value = "Can't add %s, priority 0x%s is already taken by %s")
     IllegalArgumentException priorityAlreadyExists(Object item, String hexPriority, Object current);
 
     /**
@@ -750,7 +902,7 @@ public interface EeMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 11086, value = "Use the ResourceDescriptionResolver variant")
+    @Message(id = 80, value = "Use the ResourceDescriptionResolver variant")
     UnsupportedOperationException resourceDescriptionResolverError();
 
     /**
@@ -760,7 +912,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11087, value = "Resource reference for type: %s is not registered. Cannot unregister")
+    @Message(id = 81, value = "Resource reference for type: %s is not registered. Cannot unregister")
     IllegalArgumentException resourceReferenceNotRegistered(String type);
 
     /**
@@ -768,7 +920,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11088, value = "Service not started")
+    @Message(id = 82, value = "Service not started")
     IllegalStateException serviceNotStarted();
 
     /**
@@ -780,7 +932,7 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11089, value = "%s injection target is invalid.  Only setter methods are allowed: %s")
+    @Message(id = 83, value = "%s injection target is invalid.  Only setter methods are allowed: %s")
     IllegalArgumentException setterMethodOnly(String annotation, MethodInfo methodInfo);
 
     /**
@@ -790,7 +942,7 @@ public interface EeMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11090, value = "Unknown AnnotationTarget type: %s")
+    @Message(id = 84, value = "Unknown AnnotationTarget type: %s")
     RuntimeException unknownAnnotationTargetType(AnnotationTarget target);
 
     /**
@@ -801,7 +953,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11091, value = "Unknown %s type %s")
+    @Message(id = 85, value = "Unknown %s type %s")
     DeploymentUnitProcessingException unknownElementType(String elementName, String type);
 
     /**
@@ -814,11 +966,11 @@ public interface EeMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11092, value = "Could not find method %s %s on view %s of %s")
+    @Message(id = 86, value = "Could not find method %s %s on view %s of %s")
     IllegalArgumentException viewMethodNotFound(String name, String descriptor, Class<?> viewClass, Class<?> component);
 
 
-    @Message(id = 11093, value = "Could not load component class %s")
+    @Message(id = 87, value = "Could not load component class %s")
     DeploymentUnitProcessingException couldNotLoadComponentClass(@Cause Throwable cause, final String className);
 
     /**
@@ -830,7 +982,7 @@ public interface EeMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 11094, value = "Unexpected element '%s' encountered")
+    @Message(id = 88, value = "Unexpected element '%s' encountered")
     XMLStreamException unexpectedElement(QName name, @Param Location location);
 
     /**
@@ -838,7 +990,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11095, value = "Failed to process jboss-ejb-client.xml")
+    @Message(id = 89, value = "Failed to process jboss-ejb-client.xml")
     DeploymentUnitProcessingException failedToProcessEJBClientDescriptor(@Cause Throwable cause);
 
     /**
@@ -849,7 +1001,7 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 11096, value = "Exception while parsing jboss-ejb-client.xml file found at %s")
+    @Message(id = 90, value = "Exception while parsing jboss-ejb-client.xml file found at %s")
     DeploymentUnitProcessingException xmlErrorParsingEJBClientDescriptor(@Cause XMLStreamException cause, String fileLocation);
 
     /**
@@ -860,65 +1012,65 @@ public interface EeMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 11097, value = "%s")
+    @Message(id = 91, value = "%s")
     XMLStreamException errorParsingEJBClientDescriptor(String message, @Param Location location);
 
     /**
      * If a message destination could not be resolved
      */
-    @Message(id = 11098, value = "No message destination with name %s for binding %s")
+    @Message(id = 92, value = "No message destination with name %s for binding %s")
     String noMessageDestination(String name, String binding);
 
 
     /**
      * If a message destination could not be resolved
      */
-    @Message(id = 11099, value = "More than one message destination with name %s for binding %s destinations: %s")
+    @Message(id = 93, value = "More than one message destination with name %s for binding %s destinations: %s")
     String moreThanOneMessageDestination(String name, String binding, Set<String> jndiNames);
 
-    @Message(id = 16700, value = "Failed to load jboss.properties")
+    @Message(id = 94, value = "Failed to load jboss.properties")
     DeploymentUnitProcessingException failedToLoadJbossProperties(@Cause IOException e);
 
-    @Message(id = 16701, value = "Unsupported ear module type: %s")
+    @Message(id = 95, value = "Unsupported ear module type: %s")
     DeploymentUnitProcessingException unsupportedModuleType(String moduleFileName);
 
-    @Message(id = 16702, value = "library-directory of value / is not supported")
+    @Message(id = 96, value = "library-directory of value / is not supported")
     DeploymentUnitProcessingException rootAsLibraryDirectory();
 
-    @Message(id = 16703, value = "Module may not be a child of the EAR's library directory. Library directory: %s, module file name: %s")
+    @Message(id = 97, value = "Module may not be a child of the EAR's library directory. Library directory: %s, module file name: %s")
     DeploymentUnitProcessingException earModuleChildOfLibraryDirectory(String libraryDirectory, String moduleFileName);
 
-    @Message(id = 16704, value = "ManagedReference was null and injection is not optional for injection into field %s")
+    @Message(id = 98, value = "ManagedReference was null and injection is not optional for injection into field %s")
     RuntimeException managedReferenceWasNull(Field field);
 
-    @Message(id = 16705, value = "Only 'true' is allowed for 'jboss-descriptor-property-replacement' due to AS7-4892")
+    @Message(id = 99, value = "Only 'true' is allowed for 'jboss-descriptor-property-replacement' due to AS7-4892")
     String onlyTrueAllowedForJBossDescriptorPropertyReplacement_AS7_4892();
 
-    @Message(id = 16706, value = "Global modules may not specify 'annotations', 'meta-inf' or 'services'.")
+    @Message(id = 100, value = "Global modules may not specify 'annotations', 'meta-inf' or 'services'.")
     String propertiesNotAllowedOnGlobalModules();
 
-    //@Message(id = 16707, value = "No concurrent context currently set, unable to locate the context service to delegate.")
+    //@Message(id = 101, value = "No concurrent context currently set, unable to locate the context service to delegate.")
     //IllegalStateException noConcurrentContextCurrentlySet();
 
-    @Message(id = 16708, value = "EE Concurrent Service's value uninitialized.")
+    @Message(id = 102, value = "EE Concurrent Service's value uninitialized.")
     IllegalStateException concurrentServiceValueUninitialized();
 
-    @Message(id = 16709, value = "EE Concurrent ContextHandle serialization must be handled by the factory.")
-    IOException serializationMustBeHandledByThefactory();
+    @Message(id = 103, value = "EE Concurrent ContextHandle serialization must be handled by the factory.")
+    IOException serializationMustBeHandledByTheFactory();
 
-    @Message(id = 16710, value = "The EE Concurrent Context %s already has a factory named %s")
+    @Message(id = 104, value = "The EE Concurrent Context %s already has a factory named %s")
     IllegalArgumentException factoryAlreadyExists(ConcurrentContext concurrentContext, String factoryName);
 
-    @Message(id = 16711, value = "EE Concurrent Context %s does not has a factory named %s")
+    @Message(id = 105, value = "EE Concurrent Context %s does not has a factory named %s")
     IOException factoryNotFound(ConcurrentContext concurrentContext, String factoryName);
 
-    @Message(id = 16712, value = "EE Concurrent Context %s service not installed.")
+    @Message(id = 106, value = "EE Concurrent Context %s service not installed.")
     IOException concurrentContextServiceNotInstalled(ServiceName serviceName);
 
-    @Message(id = 16713, value = "EE Concurrent Transaction Setup Provider service not installed.")
+    @Message(id = 107, value = "EE Concurrent Transaction Setup Provider service not installed.")
     IllegalStateException transactionSetupProviderServiceNotInstalled();
 
-    @Message(id = 16714, value = "Instance data can only be set during construction")
+    @Message(id = 108, value = "Instance data can only be set during construction")
     IllegalStateException instanceDataCanOnlyBeSetDuringConstruction();
 
     /**
@@ -929,6 +1081,6 @@ public interface EeMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 16715, value = "A class must not declare more than one AroundInvoke method. %s has %s methods annotated.")
-    DeploymentUnitProcessingException aroundInvokeAnnotionUsedTooManyTimes(DotName className, int numberOfAnnotatedMethods);
+    @Message(id = 109, value = "A class must not declare more than one AroundInvoke method. %s has %s methods annotated.")
+    DeploymentUnitProcessingException aroundInvokeAnnotationUsedTooManyTimes(DotName className, int numberOfAnnotatedMethods);
 }

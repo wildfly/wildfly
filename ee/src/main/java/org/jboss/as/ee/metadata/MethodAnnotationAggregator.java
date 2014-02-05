@@ -21,8 +21,7 @@
  */
 package org.jboss.as.ee.metadata;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
@@ -77,7 +76,7 @@ public class MethodAnnotationAggregator {
                         } else {
                             //this should not happen
                             //but if it does, we give some info
-                            throw MESSAGES.cannotResolveMethod(entry.getKey(), c, entry.getValue());
+                            throw EeLogger.ROOT_LOGGER.cannotResolveMethod(entry.getKey(), c, entry.getValue());
                         }
                     }
                 }

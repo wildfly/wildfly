@@ -22,7 +22,7 @@
 
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.ContextListManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -55,7 +55,7 @@ public final class ViewManagedReferenceFactory implements ContextListManagedRefe
         try {
             return view.createInstance();
         } catch (Exception e) {
-            throw EeMessages.MESSAGES.componentViewConstructionFailure(e);
+            throw EeLogger.ROOT_LOGGER.componentViewConstructionFailure(e);
         }
     }
 

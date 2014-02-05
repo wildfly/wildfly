@@ -22,13 +22,12 @@
 
 package org.jboss.as.connector.deployers.datasource;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
@@ -72,7 +71,7 @@ public class DataSourceDefinitionDeploymentDescriptorParser extends AbstractDepl
 
         String name = dataSource.getName();
         if (name == null || name.isEmpty()) {
-            throw MESSAGES.elementAttributeMissing("<data-source>", "name");
+            throw EeLogger.ROOT_LOGGER.elementAttributeMissing("<data-source>", "name");
         }
         // if the name doesn't have a namespace then it defaults to java:comp/env
         if (!name.startsWith("java:")) {
@@ -81,7 +80,7 @@ public class DataSourceDefinitionDeploymentDescriptorParser extends AbstractDepl
 
         final String className = dataSource.getClassName();
         if (className == null || className.equals(Object.class.getName())) {
-            throw MESSAGES.elementAttributeMissing("<data-source>", "className");
+            throw EeLogger.ROOT_LOGGER.elementAttributeMissing("<data-source>", "className");
         }
 
         final String[] properties;

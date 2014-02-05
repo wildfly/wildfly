@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -14,8 +15,6 @@ import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas
@@ -35,7 +34,7 @@ class DefaultComponentViewConfigurator extends AbstractComponentConfigurator imp
             try {
                 viewClass = module.getClassLoader().loadClass(view.getViewClassName());
             } catch (ClassNotFoundException e) {
-                throw MESSAGES.cannotLoadViewClass(e, view.getViewClassName(), configuration);
+                throw EeLogger.ROOT_LOGGER.cannotLoadViewClass(e, view.getViewClassName(), configuration);
             }
             final ViewConfiguration viewConfiguration;
 

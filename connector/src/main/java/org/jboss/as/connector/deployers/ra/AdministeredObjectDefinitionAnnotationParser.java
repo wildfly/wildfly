@@ -22,8 +22,6 @@
 
 package org.jboss.as.connector.deployers.ra;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +29,7 @@ import java.util.List;
 import javax.resource.AdministeredObjectDefinition;
 import javax.resource.AdministeredObjectDefinitions;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -73,7 +72,7 @@ public class AdministeredObjectDefinitionAnnotationParser implements DeploymentU
             for (AnnotationInstance annotation : adminObjectDefinitions) {
                 final AnnotationTarget target = annotation.target();
                 if (target instanceof ClassInfo == false) {
-                    throw MESSAGES.classOnlyAnnotation("@AdministeredObjectDefinitions", target);
+                    throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@AdministeredObjectDefinitions", target);
                 }
                 // get the nested @AdministeredObjectDefinition out of the outer @AdministeredObjectDefinitions
                 List<AnnotationInstance> adminObjects = this.getNestedAdministeredObjectAnnotations(annotation);
@@ -91,7 +90,7 @@ public class AdministeredObjectDefinitionAnnotationParser implements DeploymentU
             for (AnnotationInstance adminObject : adminObjects) {
                 final AnnotationTarget target = adminObject.target();
                 if (target instanceof ClassInfo == false) {
-                    throw MESSAGES.classOnlyAnnotation("@AdministeredObjectDefinition", target);
+                    throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@AdministeredObjectDefinition", target);
                 }
                 // create binding configurations out of it
                 this.processAdministeredObjectDefinition(eeModuleDescription, adminObject, (ClassInfo) target, applicationClasses);
@@ -115,7 +114,7 @@ public class AdministeredObjectDefinitionAnnotationParser implements DeploymentU
 
         String name = asString(adminObjectAnnotation, "name");
         if (name == null || name.isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing("@AdministeredObjectDefinition", "name");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@AdministeredObjectDefinition", "name");
         }
 
         // If the name doesn't have a namespace then it defaults to java:comp/env
@@ -125,12 +124,12 @@ public class AdministeredObjectDefinitionAnnotationParser implements DeploymentU
 
         String clz = asString(adminObjectAnnotation, "className");
         if (clz == null || clz.equals(Object.class.getName())) {
-            throw MESSAGES.annotationAttributeMissing("@AdministeredObjectDefinition", "className");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@AdministeredObjectDefinition", "className");
         }
 
         String ra = asString(adminObjectAnnotation, "resourceAdapter");
         if (ra == null || ra.equals(Object.class.getName())) {
-            throw MESSAGES.annotationAttributeMissing("@AdministeredObjectDefinition", "resourceAdapter");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@AdministeredObjectDefinition", "resourceAdapter");
         }
 
         final DirectAdministeredObjectInjectionSource directAdministeredObjectInjectionSource =

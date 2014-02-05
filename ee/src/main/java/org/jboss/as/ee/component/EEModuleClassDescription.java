@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 
@@ -72,7 +71,7 @@ public final class EEModuleClassDescription {
 
     public void setInterceptorClassDescription(final InterceptorClassDescription interceptorClassDescription) {
         if(interceptorClassDescription == null) {
-            throw MESSAGES.nullVar("interceptorClassDescription");
+            throw EeLogger.ROOT_LOGGER.nullVar("interceptorClassDescription");
         }
         this.interceptorClassDescription = interceptorClassDescription;
     }

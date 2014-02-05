@@ -1,6 +1,5 @@
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 import java.lang.reflect.Constructor;
@@ -13,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.UserInterceptorFactory;
@@ -89,7 +89,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             //use the default constructor if no instanceFactory has been set
             final Constructor<Object> constructor = (Constructor<Object>) componentClassIndex.getConstructor(EMPTY_CLASS_ARRAY);
             if (constructor == null) {
-                throw MESSAGES.defaultConstructorNotFound(configuration.getComponentClass());
+                throw EeLogger.ROOT_LOGGER.defaultConstructorNotFound(configuration.getComponentClass());
             }
             instantiator = new ImmediateInterceptorFactory(new ComponentInstantiatorInterceptor(new ConstructorComponentFactory(constructor), BasicComponentInstance.INSTANCE_KEY, true));
         }
@@ -107,7 +107,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             try {
                 interceptorClass = classIndex.classIndex(interceptorClassName);
             } catch (ClassNotFoundException e) {
-                throw MESSAGES.cannotLoadInterceptor(e, interceptorClassName);
+                throw EeLogger.ROOT_LOGGER.cannotLoadInterceptor(e, interceptorClassName);
             }
 
             final InterceptorEnvironment interceptorEnvironment = moduleDescription.getInterceptorEnvironment().get(interceptorClassName);
@@ -127,7 +127,7 @@ class DefaultInterceptorConfigurator extends AbstractComponentConfigurator imple
             final ClassReflectionIndex<?> interceptorIndex = deploymentReflectionIndex.getClassIndex(interceptorClass.getModuleClass());
             final Constructor<?> constructor = interceptorIndex.getConstructor(EMPTY_CLASS_ARRAY);
             if (constructor == null) {
-                throw MESSAGES.defaultConstructorNotFoundOnComponent(interceptorClassName, configuration.getComponentClass());
+                throw EeLogger.ROOT_LOGGER.defaultConstructorNotFoundOnComponent(interceptorClassName, configuration.getComponentClass());
             }
 
             instantiators.addFirst(new ImmediateInterceptorFactory(new ComponentInstantiatorInterceptor(new ConstructorComponentFactory(constructor), contextKey, false)));

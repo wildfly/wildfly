@@ -22,11 +22,10 @@
 
 package org.jboss.as.ee.component;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * An interceptor factory which gets an object instance from a managed resource.  A reference to the resource will be
@@ -52,10 +51,10 @@ class ComponentInstantiatorInterceptor implements Interceptor {
     public ComponentInstantiatorInterceptor(final ComponentFactory componentFactory, final Object contextKey, final boolean setTarget) {
         this.setTarget = setTarget;
         if (componentFactory == null) {
-            throw MESSAGES.nullVar("componentFactory");
+            throw EeLogger.ROOT_LOGGER.nullVar("componentFactory");
         }
         if (contextKey == null) {
-            throw MESSAGES.nullVar("contextKey");
+            throw EeLogger.ROOT_LOGGER.nullVar("contextKey");
         }
         this.componentFactory = componentFactory;
         this.contextKey = contextKey;

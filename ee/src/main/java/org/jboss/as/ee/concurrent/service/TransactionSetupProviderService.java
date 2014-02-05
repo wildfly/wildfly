@@ -23,7 +23,7 @@
 package org.jboss.as.ee.concurrent.service;
 
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.concurrent.TransactionSetupProviderImpl;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -67,7 +67,7 @@ public class TransactionSetupProviderService implements Service<TransactionSetup
     public TransactionSetupProvider getValue() throws IllegalStateException {
         final TransactionSetupProvider value = this.transactionSetupProvider;
         if (value == null) {
-            throw EeMessages.MESSAGES.concurrentServiceValueUninitialized();
+            throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
         return value;
     }

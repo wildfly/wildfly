@@ -23,8 +23,7 @@
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
 import org.jboss.as.ejb3.util.PropertiesValueResolver;
 import org.jboss.ejb3.annotation.Pool;
@@ -46,7 +45,7 @@ public class PoolAnnotationInformationFactory extends ClassAnnotationInformation
     protected String fromAnnotation(final AnnotationInstance annotationInstance, final boolean replacement) {
         AnnotationValue value = annotationInstance.value();
         if (value == null || value.asString().isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing("@Pool", "value");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@Pool", "value");
         }
         if (replacement)
             return PropertiesValueResolver.replaceProperties(value.asString());

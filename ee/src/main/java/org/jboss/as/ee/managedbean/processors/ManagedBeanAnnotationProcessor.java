@@ -28,6 +28,7 @@ import java.util.List;
 
 import javax.annotation.ManagedBean;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewConfiguration;
@@ -56,8 +57,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.metadata.property.PropertyReplacer;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * Deployment unit processor responsible for scanning a deployment to find classes with {@code javax.annotation.ManagedBean} annotations.
@@ -95,7 +95,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
         for (AnnotationInstance instance : instances) {
             AnnotationTarget target = instance.target();
             if (!(target instanceof ClassInfo)) {
-                throw MESSAGES.classOnlyAnnotation("@ManagedBean", target);
+                throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@ManagedBean", target);
             }
             final ClassInfo classInfo = (ClassInfo) target;
             // skip if it's not a valid managed bean class

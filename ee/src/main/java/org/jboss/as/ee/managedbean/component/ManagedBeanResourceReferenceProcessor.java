@@ -22,13 +22,13 @@
 
 package org.jboss.as.ee.managedbean.component;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.ComponentTypeInjectionSource;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.deployers.EEResourceReferenceProcessor;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * User: jpai
@@ -39,7 +39,7 @@ public class ManagedBeanResourceReferenceProcessor implements EEResourceReferenc
 
     public ManagedBeanResourceReferenceProcessor(final String managedBeanClassName) {
         if (managedBeanClassName == null || managedBeanClassName.trim().isEmpty()) {
-            throw MESSAGES.nullOrEmptyManagedBeanClassName();
+            throw EeLogger.ROOT_LOGGER.nullOrEmptyManagedBeanClassName();
         }
         this.managedBeanClassName = managedBeanClassName;
     }

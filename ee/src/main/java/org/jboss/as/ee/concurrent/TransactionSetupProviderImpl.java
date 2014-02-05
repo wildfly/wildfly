@@ -23,8 +23,7 @@ package org.jboss.as.ee.concurrent;
 
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
-import org.jboss.as.ee.EeLogger;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
@@ -95,7 +94,7 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
     private Object readResolve() throws ObjectStreamException {
         final ServiceController<?> serviceController = currentServiceContainer().getService(ConcurrentServiceNames.TRANSACTION_SETUP_PROVIDER_SERVICE_NAME);
         if(serviceController == null) {
-            throw EeMessages.MESSAGES.transactionSetupProviderServiceNotInstalled();
+            throw EeLogger.ROOT_LOGGER.transactionSetupProviderServiceNotInstalled();
         }
         return serviceController.getValue();
     }

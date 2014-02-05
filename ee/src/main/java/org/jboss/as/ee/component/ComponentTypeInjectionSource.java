@@ -25,6 +25,7 @@ package org.jboss.as.ee.component;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -33,7 +34,6 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.ee.component.Attachments.EE_APPLICATION_DESCRIPTION;
 
 /**
@@ -55,11 +55,11 @@ public final class ComponentTypeInjectionSource extends InjectionSource {
         final Set<ViewDescription> componentsForViewName = applicationDescription.getComponentsForViewName(typeName, deploymentRoot.getRoot());
         final Iterator<ViewDescription> iterator = componentsForViewName.iterator();
         if (!iterator.hasNext()) {
-            throw MESSAGES.componentNotFound(typeName);
+            throw EeLogger.ROOT_LOGGER.componentNotFound(typeName);
         }
         final ViewDescription description = iterator.next();
         if (iterator.hasNext()) {
-            throw MESSAGES.multipleComponentsFound(typeName);
+            throw EeLogger.ROOT_LOGGER.multipleComponentsFound(typeName);
         }
 
         //TODO: should ComponentView also be a managed reference factory?

@@ -22,8 +22,7 @@
 
 package org.jboss.as.ee.concurrent;
 
-import org.jboss.as.ee.EeLogger;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.concurrent.handle.ContextHandle;
 import org.jboss.as.ee.concurrent.handle.ContextHandleFactory;
 import org.jboss.as.naming.util.ThreadLocalStack;
@@ -115,7 +114,7 @@ public class ConcurrentContext {
     public synchronized void addFactory(ContextHandleFactory factory) {
         final String factoryName = factory.getName();
         if(factoryMap.containsKey(factoryName)) {
-            throw EeMessages.MESSAGES.factoryAlreadyExists(this,factoryName);
+            throw EeLogger.ROOT_LOGGER.factoryAlreadyExists(this, factoryName);
         }
         factoryMap.put(factoryName, factory);
         final Comparator<ContextHandleFactory> comparator = new Comparator<ContextHandleFactory>() {
@@ -205,7 +204,7 @@ public class ConcurrentContext {
                 factoryName = handle.getFactoryName();
                 factory = concurrentContext.factoryMap.get(factoryName);
                 if(factory == null) {
-                    throw EeMessages.MESSAGES.factoryNotFound(concurrentContext,factoryName);
+                    throw EeLogger.ROOT_LOGGER.factoryNotFound(concurrentContext, factoryName);
                 }
                 out.writeUTF(factoryName);
                 factory.writeHandle(handle, out);
@@ -249,7 +248,7 @@ public class ConcurrentContext {
                 final ServiceName serviceName = (ServiceName) in.readObject();
                 final ServiceController<?> serviceController = currentServiceContainer().getService(serviceName);
                 if(serviceController == null) {
-                    throw EeMessages.MESSAGES.concurrentContextServiceNotInstalled(serviceName);
+                    throw EeLogger.ROOT_LOGGER.concurrentContextServiceNotInstalled(serviceName);
                 }
                 concurrentContext = (ConcurrentContext) serviceController.getValue();
                 // read setup handles
@@ -260,7 +259,7 @@ public class ConcurrentContext {
                     factoryName = in.readUTF();
                     factory = concurrentContext.factoryMap.get(factoryName);
                     if(factory == null) {
-                        throw EeMessages.MESSAGES.factoryNotFound(concurrentContext,factoryName);
+                        throw EeLogger.ROOT_LOGGER.factoryNotFound(concurrentContext, factoryName);
                     }
                     setupHandles.add(factory.readHandle(in));
                 }

@@ -22,7 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 import java.lang.reflect.Method;
@@ -30,6 +29,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -94,11 +94,11 @@ public final class MethodInjectionTarget extends InjectionTarget {
         }
         Iterator<Method> iterator = methods.iterator();
         if (!iterator.hasNext()) {
-            throw MESSAGES.methodNotFound(name, paramType, className);
+            throw EeLogger.ROOT_LOGGER.methodNotFound(name, paramType, className);
         }
         Method method = iterator.next();
         if (iterator.hasNext()) {
-            throw MESSAGES.multipleMethodsFound(name, paramType, className);
+            throw EeLogger.ROOT_LOGGER.multipleMethodsFound(name, paramType, className);
         }
         return method;
     }

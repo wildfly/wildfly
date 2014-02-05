@@ -22,6 +22,7 @@
 package org.jboss.as.ee.component.deployers;
 
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.ClassDescriptionTraversal;
@@ -62,8 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * Processor that sets up JNDI bindings that are owned by the module. It also handles class level jndi bindings
@@ -139,7 +139,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                     final ClassIndex interceptorClass = classIndex.classIndex(interceptor.getInterceptorClassName());
                     classConfigurations.add(interceptorClass.getModuleClass());
                 } catch (ClassNotFoundException e) {
-                    throw MESSAGES.cannotLoadInterceptor(e, interceptor.getInterceptorClassName(), componentConfiguration.getComponentClass());
+                    throw EeLogger.ROOT_LOGGER.cannotLoadInterceptor(e, interceptor.getInterceptorClassName(), componentConfiguration.getComponentClass());
                 }
             }
             processClassConfigurations(phaseContext, applicationClasses, moduleConfiguration, deploymentDescriptorBindings, handledClasses, componentConfiguration.getComponentDescription().getNamingMode(), classConfigurations, componentConfiguration.getComponentName(), dependencies);
@@ -156,7 +156,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                         return;
                     }
                     if (classDescription.isInvalid()) {
-                        throw MESSAGES.componentClassHasErrors(classDescription.getClassName(), componentName, classDescription.getInvalidMessage());
+                        throw EeLogger.ROOT_LOGGER.componentClassHasErrors(classDescription.getClassName(), componentName, classDescription.getInvalidMessage());
                     }
                     //only process classes once
                     if (handledClasses.contains(classDescription.getClassName())) {
@@ -221,9 +221,9 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                         throw e;
                     BinderService service = (BinderService) registered.getService();
                     if (!service.getSource().equals(bindingConfiguration.getSource()))
-                        throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
+                        throw EeLogger.ROOT_LOGGER.conflictingBinding(bindingName, bindingConfiguration.getSource());
                 } catch (CircularDependencyException e) {
-                    throw MESSAGES.circularDependency(bindingName);
+                    throw EeLogger.ROOT_LOGGER.circularDependency(bindingName);
                 }
             } else {
                 BinderService service;
@@ -240,7 +240,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                         throw e;
                     service = (BinderService) controller.getService();
                     if (!equals(service.getSource(), bindingConfiguration.getSource())) {
-                        throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
+                        throw EeLogger.ROOT_LOGGER.conflictingBinding(bindingName, bindingConfiguration.getSource());
                     }
                 }
                 //as these bindings are not child services
@@ -250,7 +250,7 @@ public class ModuleJndiBindingProcessor implements DeploymentUnitProcessor {
                 unitService.addListener(new BinderReleaseListener(service));
             }
         } else {
-            throw MESSAGES.nullBindingName(bindingConfiguration);
+            throw EeLogger.ROOT_LOGGER.nullBindingName(bindingConfiguration);
         }
     }
 

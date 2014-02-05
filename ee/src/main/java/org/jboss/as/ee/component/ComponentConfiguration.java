@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.component;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -34,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.interceptors.OrderedItemContainer;
 import org.jboss.as.ee.concurrent.ConcurrentContext;
 import org.jboss.as.naming.context.NamespaceContextSelector;
@@ -423,7 +422,7 @@ public class ComponentConfiguration {
      */
     public void setComponentCreateServiceFactory(final ComponentCreateServiceFactory componentCreateServiceFactory) {
         if (componentCreateServiceFactory == null) {
-            throw MESSAGES.nullVar("componentCreateServiceFactory");
+            throw EeLogger.ROOT_LOGGER.nullVar("componentCreateServiceFactory");
         }
         this.componentCreateServiceFactory = componentCreateServiceFactory;
     }

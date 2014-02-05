@@ -22,13 +22,12 @@
 
 package org.jboss.as.ee.component.deployers;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.List;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InvocationContext;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -74,14 +73,14 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
 
     private void processAroundInvoke(final EEModuleDescription eeModuleDescription, final AnnotationTarget target) throws DeploymentUnitProcessingException {
         if (!(target instanceof MethodInfo)) {
-            throw MESSAGES.methodOnlyAnnotation(AROUND_INVOKE_ANNOTATION_NAME);
+            throw EeLogger.ROOT_LOGGER.methodOnlyAnnotation(AROUND_INVOKE_ANNOTATION_NAME);
         }
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
         final EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
         final List<AnnotationInstance> classAroundInvokes = classInfo.annotations().get(AROUND_INVOKE_ANNOTATION_NAME);
         if(classAroundInvokes.size() > 1) {
-           throw MESSAGES.aroundInvokeAnnotionUsedTooManyTimes(classInfo.name(), classAroundInvokes.size());
+           throw EeLogger.ROOT_LOGGER.aroundInvokeAnnotationUsedTooManyTimes(classInfo.name(), classAroundInvokes.size());
         }
         validateArgumentType(classInfo, methodInfo);
         InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder(classDescription.getInterceptorClassDescription());
@@ -93,17 +92,17 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
         final Type[] args = methodInfo.args();
         switch (args.length) {
             case 0:
-                throw new IllegalArgumentException(MESSAGES.invalidSignature(methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name(), "Object methodName(InvocationContext ctx)"));
+                throw new IllegalArgumentException(EeLogger.ROOT_LOGGER.invalidSignature(methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name(), "Object methodName(InvocationContext ctx)"));
             case 1:
                 if (!InvocationContext.class.getName().equals(args[0].name().toString())) {
-                    throw new IllegalArgumentException(MESSAGES.invalidSignature(methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name(), "Object methodName(InvocationContext ctx)"));
+                    throw new IllegalArgumentException(EeLogger.ROOT_LOGGER.invalidSignature(methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name(), "Object methodName(InvocationContext ctx)"));
                 }
                 break;
             default:
-                throw new IllegalArgumentException(MESSAGES.invalidNumberOfArguments(methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name()));
+                throw new IllegalArgumentException(EeLogger.ROOT_LOGGER.invalidNumberOfArguments(methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name()));
         }
         if (!methodInfo.returnType().name().toString().equals(Object.class.getName())) {
-            throw MESSAGES.invalidReturnType(Object.class.getName(), methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name());
+            throw EeLogger.ROOT_LOGGER.invalidReturnType(Object.class.getName(), methodInfo.name(), AROUND_INVOKE_ANNOTATION_NAME, classInfo.name());
         }
     }
 }

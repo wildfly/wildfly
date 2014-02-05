@@ -27,7 +27,7 @@ import org.glassfish.enterprise.concurrent.ContextServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceAdapter;
 import org.glassfish.enterprise.concurrent.ManagedScheduledExecutorServiceImpl;
 import org.glassfish.enterprise.concurrent.ManagedThreadFactoryImpl;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -109,7 +109,7 @@ public class ManagedScheduledExecutorServiceService extends EEConcurrentAbstract
 
     public ManagedScheduledExecutorServiceAdapter getValue() throws IllegalStateException {
         if (executorService == null) {
-            throw EeMessages.MESSAGES.concurrentServiceValueUninitialized();
+            throw EeLogger.ROOT_LOGGER.concurrentServiceValueUninitialized();
         }
         return executorService.getAdapter();
     }

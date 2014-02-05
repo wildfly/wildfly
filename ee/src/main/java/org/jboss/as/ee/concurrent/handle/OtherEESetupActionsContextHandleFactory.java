@@ -21,8 +21,7 @@
  */
 package org.jboss.as.ee.concurrent.handle;
 
-import org.jboss.as.ee.EeLogger;
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.server.deployment.SetupAction;
 
 import javax.enterprise.concurrent.ContextService;
@@ -118,11 +117,11 @@ public class OtherEESetupActionsContextHandleFactory implements ContextHandleFac
         // serialization
 
         private void writeObject(ObjectOutputStream out) throws IOException {
-            throw EeMessages.MESSAGES.serializationMustBeHandledByThefactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
 
         private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            throw EeMessages.MESSAGES.serializationMustBeHandledByThefactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
     }
 }

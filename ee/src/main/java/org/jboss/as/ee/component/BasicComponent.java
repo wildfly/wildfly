@@ -29,6 +29,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
@@ -39,8 +40,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.SimpleInterceptorFactoryContext;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * A basic component implementation.
@@ -107,7 +106,7 @@ public class BasicComponent implements Component {
             // Block until successful start
             synchronized (this) {
                 if (stopping.get()) {
-                    throw MESSAGES.componentIsStopped();
+                    throw EeLogger.ROOT_LOGGER.componentIsStopped();
                 }
                 while (!gate) {
                     // TODO: check for failure condition
@@ -115,7 +114,7 @@ public class BasicComponent implements Component {
                         wait();
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
-                        throw MESSAGES.componentNotAvailable();
+                        throw EeLogger.ROOT_LOGGER.componentNotAvailable();
                     }
                 }
             }
@@ -159,7 +158,7 @@ public class BasicComponent implements Component {
             try {
                 postConstructInterceptor.processInvocation(interceptorContext);
             } catch (Exception e) {
-                throw MESSAGES.componentConstructionFailure(e);
+                throw EeLogger.ROOT_LOGGER.componentConstructionFailure(e);
             }
         }
         componentInstanceCreated(basicComponentInstance);
