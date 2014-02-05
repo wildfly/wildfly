@@ -387,7 +387,7 @@ public class DistributableSessionTestCase {
         ArgumentCaptor<TimeUnit> capturedUnit = ArgumentCaptor.forClass(TimeUnit.class);
         
         when(this.manager.getSessionManager()).thenReturn(manager);
-        when(manager.createSessionId()).thenReturn(sessionId);
+        when(manager.createIdentifier()).thenReturn(sessionId);
         when(manager.createSession(sessionId)).thenReturn(session);
         when(this.session.getAttributes()).thenReturn(oldAttributes);
         when(this.session.getMetaData()).thenReturn(oldMetaData);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.web.undertow.sso;
 
-import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
+import io.undertow.server.session.SessionManager;
 
 /**
- * A factory for creating a session manager.
+ * Mechanism for looking up the {@link SessionManager} for a given deployment.
  * @author Paul Ferraro
  */
-public interface SessionManagerFactory {
+public interface SessionManagerRegistry {
     /**
-     * Create as session manager using the specified context and identifier factory.
-     * @param context a session context
-     * @param idFactory a session identifier factory
-     * @return a new session manager
+     * Returns the session manager for the specified deployment, or null if the deployment does not exist.
+     * @param deployment a deployment name
+     * @return a session manager
      */
-    <C> SessionManager<C> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory);
+    SessionManager getSessionManager(String deployment);
 }

@@ -19,26 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
+package org.wildfly.clustering.web.undertow;
 
+import static org.mockito.Mockito.*;
+import static org.junit.Assert.*;
 import io.undertow.server.session.SessionIdGenerator;
 
-import org.wildfly.clustering.web.session.SessionIdentifierFactory;
+import org.junit.Test;
+import org.wildfly.clustering.web.IdentifierFactory;
+import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
 
 /**
- * {@link SessionIdentifierFactory} that delegates to a {@link SessionIdGenerator}.
+ * Unit test for {@link IdentifierFactoryAdapter}
  * @author Paul Ferraro
  */
-public class UndertowSessionIdentifierFactory implements SessionIdentifierFactory {
+public class IdentifierFactoryAdapterTestCase {
+    private final SessionIdGenerator generator = mock(SessionIdGenerator.class);
+    private final IdentifierFactory<String> factory = new IdentifierFactoryAdapter(this.generator);
 
-    private final SessionIdGenerator generator;
-
-    public UndertowSessionIdentifierFactory(SessionIdGenerator generator) {
-        this.generator = generator;
-    }
-
-    @Override
-    public String createSessionId() {
-        return this.generator.createSessionId();
+    @Test
+    public void test() {
+        String expected = "expected";
+        when(this.generator.createSessionId()).thenReturn(expected);
+        
+        String result = this.factory.createIdentifier();
+        
+        assertSame(expected, result);
     }
 }

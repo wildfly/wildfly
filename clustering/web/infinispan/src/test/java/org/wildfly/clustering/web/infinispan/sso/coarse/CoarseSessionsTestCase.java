@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.sso;
+package org.wildfly.clustering.web.infinispan.sso.coarse;
 
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
@@ -32,21 +32,20 @@ import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.junit.Test;
 import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessions;
 import org.wildfly.clustering.web.sso.Sessions;
-import org.wildfly.clustering.web.sso.WebApplication;
 
 public class CoarseSessionsTestCase {
     private Mutator mutator = mock(Mutator.class);
-    private Map<WebApplication, String> map = mock(Map.class);
-    private Sessions sessions = new CoarseSessions(this.map, this.mutator);
+    private Map<String, String> map = mock(Map.class);
+    private Sessions<String> sessions = new CoarseSessions<>(this.map, this.mutator);
 
     @Test
     public void getApplications() {
-        Set<WebApplication> expected = Collections.emptySet();
+        Set<String> expected = Collections.singleton("deployment");
         when(this.map.keySet()).thenReturn(expected);
         
-        Set<WebApplication> result = this.sessions.getApplications();
+        Set<String> result = this.sessions.getDeployments();
         
-        assertSame(expected, result);
+        assertEquals(expected, result);
         
         verify(this.mutator, never()).mutate();
     }
@@ -54,14 +53,14 @@ public class CoarseSessionsTestCase {
     @Test
     public void getSession() {
         String expected = "id";
-        WebApplication application = new WebApplication("context1", "host1");
-        WebApplication missingApplication = new WebApplication("context2", "host1");
+        String deployment = "deployment1";
+        String missingDeployment = "deployment2";
         
-        when(this.map.get(application)).thenReturn(expected);
-        when(this.map.get(missingApplication)).thenReturn(null);
+        when(this.map.get(deployment)).thenReturn(expected);
+        when(this.map.get(missingDeployment)).thenReturn(null);
         
-        assertSame(expected, this.sessions.getSession(application));
-        assertNull(this.sessions.getSession(missingApplication));
+        assertSame(expected, this.sessions.getSession(deployment));
+        assertNull(this.sessions.getSession(missingDeployment));
         
         verify(this.mutator, never()).mutate();
     }
@@ -69,38 +68,38 @@ public class CoarseSessionsTestCase {
     @Test
     public void addSession() {
         String id = "id";
-        WebApplication application = new WebApplication("", "");
+        String deployment = "deployment";
         
-        when(this.map.put(application, id)).thenReturn(null);
+        when(this.map.put(deployment, id)).thenReturn(null);
         
-        this.sessions.addSession(application, id);
+        this.sessions.addSession(deployment, id);
         
         verify(this.mutator).mutate();
         
         reset(this.map, this.mutator);
         
-        when(this.map.put(application, id)).thenReturn(id);
+        when(this.map.put(deployment, id)).thenReturn(id);
         
-        this.sessions.addSession(application, id);
+        this.sessions.addSession(deployment, id);
         
         verify(this.mutator, never()).mutate();
     }
 
     @Test
     public void removeSession() {
-        WebApplication application = new WebApplication("", "");
+        String deployment = "deployment";
 
-        when(this.map.remove(application)).thenReturn("id");
+        when(this.map.remove(deployment)).thenReturn("id");
         
-        this.sessions.removeSession(application);
+        this.sessions.removeSession(deployment);
         
         verify(this.mutator).mutate();
         
         reset(this.map, this.mutator);
         
-        when(this.map.remove(application)).thenReturn(null);
+        when(this.map.remove(deployment)).thenReturn(null);
         
-        this.sessions.removeSession(application);
+        this.sessions.removeSession(deployment);
         
         verify(this.mutator, never()).mutate();
     }

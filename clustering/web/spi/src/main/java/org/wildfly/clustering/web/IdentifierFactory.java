@@ -19,21 +19,17 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
-
-import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.LocalContextFactory;
+package org.wildfly.clustering.web;
 
 /**
- * A factory for creating a session manager.
+ * Identifier factory SPI
  * @author Paul Ferraro
+ * @param <K> the identifier type
  */
-public interface SessionManagerFactory {
-    /**
-     * Create as session manager using the specified context and identifier factory.
-     * @param context a session context
-     * @param idFactory a session identifier factory
-     * @return a new session manager
-     */
-    <C> SessionManager<C> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory);
+public interface IdentifierFactory<K> {
+    K createIdentifier();
+
+    void start();
+
+    void stop();
 }

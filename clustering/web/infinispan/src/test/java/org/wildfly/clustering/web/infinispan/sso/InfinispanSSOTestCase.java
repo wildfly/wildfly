@@ -30,20 +30,19 @@ import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.junit.Test;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSO;
-import org.wildfly.clustering.web.sso.Credentials;
+import org.wildfly.clustering.web.sso.Authentication;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
-@SuppressWarnings("unchecked")
 public class InfinispanSSOTestCase {
     private final String id = "id";
-    private final Credentials credentials = mock(Credentials.class);
-    private final Sessions sessions = mock(Sessions.class);
+    private final Authentication<String> authentication = mock(Authentication.class);
+    private final Sessions<String> sessions = mock(Sessions.class);
     private final AtomicReference<Object> localContext = new AtomicReference<>();
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
     private final Remover<String> remover = mock(Remover.class);
 
-    private final SSO<Object> sso = new InfinispanSSO<>(this.id, this.credentials, this.sessions, this.localContext, this.localContextFactory, this.remover);
+    private final SSO<String, String, Object> sso = new InfinispanSSO<>(this.id, this.authentication, this.sessions, this.localContext, this.localContextFactory, this.remover);
     
     @Test
     public void getId() {
@@ -51,7 +50,7 @@ public class InfinispanSSOTestCase {
     }
     @Test
     public void getCredentials() {
-        assertSame(this.credentials, this.sso.getCredentials());
+        assertSame(this.authentication, this.sso.getAuthentication());
     }
     
     @Test
@@ -66,6 +65,7 @@ public class InfinispanSSOTestCase {
         verify(this.remover).remove(this.id);
     }
     
+    @SuppressWarnings("unchecked")
     @Test
     public void getLocalContext() {
         Object expected = new Object();

@@ -24,8 +24,11 @@ package org.wildfly.clustering.web.sso;
 /**
  * Represents a single sign on entry for a user.
  * @author Paul Ferraro
+ * @param the authentication identity type
+ * @param the deployment identifier type
+ * @param the local context type
  */
-public interface SSO<L> {
+public interface SSO<I, D, L> {
     /**
      * A unique identifier for this SSO.
      * @return a unique identifier
@@ -33,16 +36,16 @@ public interface SSO<L> {
     String getId();
 
     /**
-     * Returns the credentials for this SSO.
-     * @return a set of credentials.
+     * Returns the authentication for this SSO.
+     * @return an authentication.
      */
-    Credentials getCredentials();
+    Authentication<I> getAuthentication();
 
     /**
      * Returns the session for which the user is authenticated.
      * @return
      */
-    Sessions getSessions();
+    Sessions<D> getSessions();
 
     /**
      * Invalidates this SSO.
@@ -51,6 +54,7 @@ public interface SSO<L> {
 
     /**
      * The local context of this SSO.
+     * The local context is *not* replicated to other nodes in the cluster.
      * @return a local context.
      */
     L getLocalContext();

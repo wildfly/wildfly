@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,46 +19,57 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Set;
-
 import org.jboss.as.clustering.infinispan.invoker.Mutator;
-import org.wildfly.clustering.web.sso.Sessions;
+import org.wildfly.clustering.web.sso.Authentication;
+import org.wildfly.clustering.web.sso.AuthenticationType;
 
-public class CoarseSessions<D> implements Sessions<D> {
+/**
+ * @author Paul Ferraro
+ */
+public class CoarseAuthentication<I> implements Authentication<I> {
 
-    private final Map<D, String> sessions;
+    private final CoarseAuthenticationEntry<I, ?, ?> entry;
     private final Mutator mutator;
 
-    public CoarseSessions(Map<D, String> sessions, Mutator mutator) {
-        this.sessions = sessions;
+    public CoarseAuthentication(CoarseAuthenticationEntry<I, ?, ?> entry, Mutator mutator) {
+        this.entry = entry;
         this.mutator = mutator;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public Set<D> getDeployments() {
-        return Collections.unmodifiableSet(this.sessions.keySet());
+    public I getIdentity() {
+        return this.entry.getIdentity();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String getSession(D deployment) {
-        return this.sessions.get(deployment);
+    public void setIdentity(I identity) {
+        this.entry.setIdentity(identity);
+        this.mutator.mutate();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void removeSession(D deployment) {
-        if (this.sessions.remove(deployment) != null) {
-            this.mutator.mutate();
-        }
+    public AuthenticationType getType() {
+        return this.entry.getType();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void addSession(D deployment, String id) {
-        if (this.sessions.put(deployment, id) == null) {
-            this.mutator.mutate();
-        }
+    public void setType(AuthenticationType type) {
+        this.entry.setAuthenticationType(type);
+        this.mutator.mutate();
     }
 }
