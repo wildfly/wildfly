@@ -54,8 +54,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getAllRunningServers;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getRelatedElements;
 import static org.jboss.as.domain.controller.operations.coordination.DomainServerUtils.getServersForGroup;
@@ -81,6 +80,7 @@ import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.InterfaceDefinition;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
@@ -274,7 +274,7 @@ public class ServerOperationResolver {
                     return getDeploymentOverlayOperations(operation, host);
                 }
                 default:
-                    throw MESSAGES.unexpectedInitialPathKey(address.getElement(0).getKey());
+                    throw DomainControllerLogger.ROOT_LOGGER.unexpectedInitialPathKey(address.getElement(0).getKey());
             }
         }
     }
@@ -585,7 +585,7 @@ public class ServerOperationResolver {
                 }
                 case SERVER:
                 default:
-                    throw MESSAGES.unexpectedInitialPathKey(address.getElement(0).getKey());
+                    throw DomainControllerLogger.ROOT_LOGGER.unexpectedInitialPathKey(address.getElement(0).getKey());
             }
         }
     }

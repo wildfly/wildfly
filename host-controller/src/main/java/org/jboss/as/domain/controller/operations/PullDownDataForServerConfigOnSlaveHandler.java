@@ -39,7 +39,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.IgnoredNonAffectedServerGroupsUtil;
 import org.jboss.as.host.controller.IgnoredNonAffectedServerGroupsUtil.ServerConfigInfo;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
@@ -79,7 +79,7 @@ public class PullDownDataForServerConfigOnSlaveHandler implements OperationStepH
         final PathElement serverGroupElement = PathElement.pathElement(SERVER_GROUP, serverGroupName);
         final Resource serverGroupResource = root.getChild(serverGroupElement);
         if (serverGroupResource == null) {
-            throw HostControllerMessages.MESSAGES.noResourceFor(PathAddress.pathAddress(serverGroupElement));
+            throw HostControllerLogger.ROOT_LOGGER.noResourceFor(PathAddress.pathAddress(serverGroupElement));
         }
 
         String serverGroupSocketBindingGroup = null;
@@ -94,7 +94,7 @@ public class PullDownDataForServerConfigOnSlaveHandler implements OperationStepH
             final PathElement profileElement = PathElement.pathElement(PROFILE, profileName);
             final Resource profileResource = root.getChild(profileElement);
             if (profileResource == null) {
-                throw HostControllerMessages.MESSAGES.noResourceFor(PathAddress.pathAddress(profileElement));
+                throw HostControllerLogger.ROOT_LOGGER.noResourceFor(PathAddress.pathAddress(profileElement));
             }
 
             if (!runtimeIgnoreTransformationRegistry.isProfileKnown(root, host, profileName)) {
@@ -134,7 +134,7 @@ public class PullDownDataForServerConfigOnSlaveHandler implements OperationStepH
         final PathElement socketBindingGroupElement = PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroup);
         final Resource socketBindingGroupResource = root.getChild(socketBindingGroupElement);
         if (socketBindingGroupResource == null) {
-            throw HostControllerMessages.MESSAGES.noResourceFor(PathAddress.pathAddress(socketBindingGroupElement));
+            throw HostControllerLogger.ROOT_LOGGER.noResourceFor(PathAddress.pathAddress(socketBindingGroupElement));
         }
         if (!runtimeIgnoreTransformationRegistry.isSocketBindingGroupKnown(root, host, socketBindingGroup)) {
             unknownElements.add(socketBindingGroupElement);

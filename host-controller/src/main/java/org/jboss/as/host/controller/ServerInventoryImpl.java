@@ -24,8 +24,7 @@ package org.jboss.as.host.controller;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -62,6 +61,7 @@ import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.process.ProcessControllerClient;
 import org.jboss.as.process.ProcessInfo;
 import org.jboss.as.process.ProcessMessageHandler;
@@ -129,10 +129,10 @@ public class ServerInventoryImpl implements ServerInventory {
         }
         try {
             if (!processInventoryLatch.await(30, TimeUnit.SECONDS)){
-                throw MESSAGES.couldNotGetServerInventory(30L, TimeUnit.SECONDS.toString().toLowerCase(Locale.US));
+                throw HostControllerLogger.ROOT_LOGGER.couldNotGetServerInventory(30L, TimeUnit.SECONDS.toString().toLowerCase(Locale.US));
             }
         } catch (InterruptedException e) {
-            throw MESSAGES.couldNotGetServerInventory(30L, TimeUnit.SECONDS.toString().toLowerCase(Locale.US));
+            throw HostControllerLogger.ROOT_LOGGER.couldNotGetServerInventory(30L, TimeUnit.SECONDS.toString().toLowerCase(Locale.US));
         }
         return processInfos;
     }
@@ -169,7 +169,7 @@ public class ServerInventoryImpl implements ServerInventory {
     @Override
     public ServerStatus startServer(final String serverName, final ModelNode domainModel, final boolean blocking) {
         if(shutdown || connectionFinished) {
-            throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
+            throw HostControllerLogger.ROOT_LOGGER.hostAlreadyShutdown();
         }
         ManagedServer server = servers.get(serverName);
         if(server == null) {
@@ -210,7 +210,7 @@ public class ServerInventoryImpl implements ServerInventory {
         synchronized (shutdownCondition) {
             for(;;) {
                 if(shutdown || connectionFinished) {
-                    throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
+                    throw HostControllerLogger.ROOT_LOGGER.hostAlreadyShutdown();
                 }
                 if(! servers.containsKey(serverName)) {
                     break;
@@ -248,7 +248,7 @@ public class ServerInventoryImpl implements ServerInventory {
     @Override
     public void reconnectServer(final String serverName, final ModelNode domainModel, final byte[] authKey, final boolean running, final boolean stopping) {
         if(shutdown || connectionFinished) {
-            throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
+            throw HostControllerLogger.ROOT_LOGGER.hostAlreadyShutdown();
         }
         ManagedServer existing = servers.get(serverName);
         if(existing != null) {
@@ -279,7 +279,7 @@ public class ServerInventoryImpl implements ServerInventory {
     @Override
     public ServerStatus reloadServer(final String serverName, final boolean blocking) {
         if (shutdown || connectionFinished) {
-            throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
+            throw HostControllerLogger.ROOT_LOGGER.hostAlreadyShutdown();
         }
         final ManagedServer server = servers.get(serverName);
         if (server == null) {
@@ -387,7 +387,7 @@ public class ServerInventoryImpl implements ServerInventory {
     @Override
     public ProxyController serverCommunicationRegistered(final String serverProcessName, final ManagementChannelHandler channelAssociation) {
         if(shutdown || connectionFinished) {
-            throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
+            throw HostControllerLogger.ROOT_LOGGER.hostAlreadyShutdown();
         }
         final String serverName = ManagedServer.getServerName(serverProcessName);
         final ManagedServer server = servers.get(serverName);
@@ -638,11 +638,11 @@ public class ServerInventoryImpl implements ServerInventory {
                         try {
                             UsernamePasswordHashUtil uph = new UsernamePasswordHashUtil();
                             if (userName == null || realm == null) {
-                                throw MESSAGES.insufficientInformationToGenerateHash();
+                                throw HostControllerLogger.ROOT_LOGGER.insufficientInformationToGenerateHash();
                             }
                             dhc.setHash(uph.generateHashedURP(userName, realm, password.toCharArray()));
                         } catch (NoSuchAlgorithmException e) {
-                            throw MESSAGES.unableToGenerateHash(e);
+                            throw HostControllerLogger.ROOT_LOGGER.unableToGenerateHash(e);
                         }
                     }
                 }

@@ -37,7 +37,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.operations.coordination.ServerOperationResolver;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -102,7 +102,7 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
             //Don't do this on boot since the domain model is not populated yet
             if (!context.isBooting() && root.getChild(PathElement.pathElement(SERVER_GROUP, resolvedValue.asString())) == null) {
                 if (hostControllerInfo.isMasterDomainController() || !hostControllerInfo.isRemoteDomainControllerIgnoreUnaffectedConfiguration()) {
-                        throw HostControllerMessages.MESSAGES.noServerGroupCalled(resolvedValue.asString());
+                        throw HostControllerLogger.ROOT_LOGGER.noServerGroupCalled(resolvedValue.asString());
                 } else {
                     //We are a slave HC set up to ignore unaffected resources and we don't have the server-group required, so pull it down
                     final String serverName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
@@ -131,7 +131,7 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
                 //Don't do this on boot since the domain model is not populated yet
                 if (!context.isBooting() && resolvedValue.isDefined() && root.getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, resolvedValue.asString())) == null) {
                     if (hostControllerInfo.isMasterDomainController() || !hostControllerInfo.isRemoteDomainControllerIgnoreUnaffectedConfiguration()) {
-                        throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(resolvedValue.asString());
+                        throw HostControllerLogger.ROOT_LOGGER.noSocketBindingGroupCalled(resolvedValue.asString());
                     } else {
                         //We are a slave HC set up to ignore unaffected resources and we don't have the socket-binding-group required, so pull it down
                         final String serverName = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
@@ -168,11 +168,11 @@ public abstract class ServerRestartRequiredServerConfigWriteAttributeHandler ext
                         //An extra sanity check, is this necessary?
                         final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
                         if (!root.hasChild(PathElement.pathElement(SERVER_GROUP, serverGroupName))) {
-                            throw HostControllerMessages.MESSAGES.noServerGroupCalled(serverGroupName);
+                            throw HostControllerLogger.ROOT_LOGGER.noServerGroupCalled(serverGroupName);
                         }
                         if (socketBindingGroupName != null) {
                             if (!root.hasChild(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName))) {
-                                throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(socketBindingGroupName);
+                                throw HostControllerLogger.ROOT_LOGGER.noSocketBindingGroupCalled(socketBindingGroupName);
                             }
                         }
                         context.stepCompleted();

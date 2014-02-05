@@ -40,7 +40,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.extension.ExtensionResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
@@ -186,7 +186,7 @@ public class ApplyMissingDomainModelResourcesHandler implements OperationStepHan
                 }
             }
         } catch (ModuleLoadException e) {
-            throw DomainControllerMessages.MESSAGES.failedToLoadModule(e, module);
+            throw DomainControllerLogger.ROOT_LOGGER.failedToLoadModule(e, module);
         }
     }
 

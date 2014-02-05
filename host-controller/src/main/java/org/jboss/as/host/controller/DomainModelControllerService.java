@@ -33,9 +33,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.DOMAIN_LOGGER;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,6 +99,7 @@ import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.host.controller.RemoteDomainConnectionService.RemoteFileRepository;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationEntry;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
@@ -350,7 +350,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         PathAddress pa = serverControllerClient.getProxyNodeAddress();
         PathElement pe = pa.getElement(1);
         if (modelNodeRegistration.getProxyController(pa) != null) {
-            throw MESSAGES.serverNameAlreadyRegistered(pe.getValue());
+            throw HostControllerLogger.ROOT_LOGGER.serverNameAlreadyRegistered(pe.getValue());
         }
         ROOT_LOGGER.registeringServer(pe.getValue());
         // Register the proxy
@@ -382,7 +382,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         ModelNode rsp = getValue().execute(operation, null, null, null);
         if (!rsp.hasDefined(OUTCOME) || !SUCCESS.equals(rsp.get(OUTCOME).asString())) {
             ModelNode msgNode = rsp.get(FAILURE_DESCRIPTION);
-            String msg = msgNode.isDefined() ? msgNode.toString() : MESSAGES.failedProfileOperationsRetrieval();
+            String msg = msgNode.isDefined() ? msgNode.toString() : HostControllerLogger.ROOT_LOGGER.failedProfileOperationsRetrieval();
             throw new RuntimeException(msg);
         }
         return rsp.require(RESULT);
@@ -396,7 +396,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public HostFileRepository getRemoteFileRepository() {
         if (hostControllerInfo.isMasterDomainController()) {
-            throw MESSAGES.cannotAccessRemoteFileRepository();
+            throw HostControllerLogger.ROOT_LOGGER.cannotAccessRemoteFileRepository();
         }
         return remoteFileRepository;
     }
@@ -690,7 +690,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
         try {
             client.shutdown(exitCode);
         } catch (IOException e) {
-            throw MESSAGES.errorClosingDownHost(e);
+            throw HostControllerLogger.ROOT_LOGGER.errorClosingDownHost(e);
         }
     }
 

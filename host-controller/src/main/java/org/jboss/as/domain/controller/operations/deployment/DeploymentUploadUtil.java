@@ -30,7 +30,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CON
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -45,6 +44,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.CompositeOperationAwareTransformer;
 import org.jboss.as.controller.operations.DomainOperationTransformer;
 import org.jboss.as.controller.operations.OperationAttachments;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -70,12 +70,12 @@ class DeploymentUploadUtil {
      */
     public static byte[] storeContentAndTransformOperation(OperationContext context, ModelNode operation, ContentRepository contentRepository) throws IOException, OperationFailedException {
         if (!operation.hasDefined(CONTENT)) {
-            throw createFailureException(MESSAGES.invalidContentDeclaration());
+            throw createFailureException(DomainControllerLogger.ROOT_LOGGER.invalidContentDeclaration());
         }
         final ModelNode content = operation.get(CONTENT).get(0);
         if (content.hasDefined(HASH)) {
             // This should be handled as part of the OSH
-            throw createFailureException(MESSAGES.invalidContentDeclaration());
+            throw createFailureException(DomainControllerLogger.ROOT_LOGGER.invalidContentDeclaration());
         }
         final byte[] hash = storeDeploymentContent(context, operation, contentRepository);
 
@@ -98,7 +98,7 @@ class DeploymentUploadUtil {
 
     private static InputStream getContents(OperationContext context, ModelNode operation) throws OperationFailedException {
         if(! operation.hasDefined(CONTENT)) {
-            throw createFailureException(MESSAGES.invalidContentDeclaration());
+            throw createFailureException(DomainControllerLogger.ROOT_LOGGER.invalidContentDeclaration());
         }
         return getInputStream(context, operation.require(CONTENT).get(0));
     }
@@ -109,18 +109,18 @@ class DeploymentUploadUtil {
         if (content.hasDefined(INPUT_STREAM_INDEX)) {
             int streamIndex = content.get(INPUT_STREAM_INDEX).asInt();
             if (streamIndex > context.getAttachmentStreamCount() - 1) {
-                message = MESSAGES.invalidValue(INPUT_STREAM_INDEX, streamIndex, (context.getAttachmentStreamCount() - 1));
+                message = DomainControllerLogger.ROOT_LOGGER.invalidValue(INPUT_STREAM_INDEX, streamIndex, (context.getAttachmentStreamCount() - 1));
                 throw createFailureException(message);
             }
-            message = MESSAGES.nullStream(streamIndex);
+            message = DomainControllerLogger.ROOT_LOGGER.nullStream(streamIndex);
             in = context.getAttachmentStream(streamIndex);
         } else if (content.hasDefined(BYTES)) {
             in = new ByteArrayInputStream(content.get(BYTES).asBytes());
-            message = MESSAGES.invalidByteStream();
+            message = DomainControllerLogger.ROOT_LOGGER.invalidByteStream();
         } else if (content.hasDefined(URL)) {
             final String urlSpec = content.get(URL).asString();
             try {
-                message = MESSAGES.invalidUrlStream();
+                message = DomainControllerLogger.ROOT_LOGGER.invalidUrlStream();
                 in = new URL(urlSpec).openStream();
             } catch (MalformedURLException e) {
                 throw createFailureException(message);

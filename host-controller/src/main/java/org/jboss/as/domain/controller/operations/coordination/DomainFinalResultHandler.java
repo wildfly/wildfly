@@ -37,7 +37,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,7 +50,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.domain.controller.DomainControllerLogger;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -99,7 +98,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
         final ModelNode coordinator = domainOperationContext.getCoordinatorResult();
         ModelNode domainFailure = null;
         if (isDomain &&  coordinator != null && coordinator.has(FAILURE_DESCRIPTION)) {
-            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode(MESSAGES.unexplainedFailure());
+            domainFailure = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode(DomainControllerLogger.ROOT_LOGGER.unexplainedFailure());
         }
         if (domainFailure != null) {
             context.getFailureDescription().get(DOMAIN_FAILURE_DESCRIPTION).set(domainFailure);
@@ -119,11 +118,11 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 if (failure.isDefined())
                     formattedFailure.get(DOMAIN_FAILURE_DESCRIPTION).set(failure);
                 else
-                    formattedFailure.get(DOMAIN_FAILURE_DESCRIPTION).set(MESSAGES.unexplainedFailure());
+                    formattedFailure.get(DOMAIN_FAILURE_DESCRIPTION).set(DomainControllerLogger.ROOT_LOGGER.unexplainedFailure());
             } else {
                 ModelNode hostFailureProperty = new ModelNode();
                 ModelNode contextFailure = context.getFailureDescription();
-                ModelNode hostFailure = contextFailure.isDefined() ? contextFailure : new ModelNode().set(MESSAGES.unexplainedFailure());
+                ModelNode hostFailure = contextFailure.isDefined() ? contextFailure : new ModelNode().set(DomainControllerLogger.ROOT_LOGGER.unexplainedFailure());
                 hostFailureProperty.add(domainOperationContext.getLocalHostInfo().getLocalHostName(), hostFailure);
 
                 formattedFailure.get(HOST_FAILURE_DESCRIPTIONS).set(hostFailureProperty);
@@ -143,7 +142,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
                 if (hostFailureResults == null) {
                     hostFailureResults = new ModelNode();
                 }
-                final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
+                final ModelNode desc = hostResult.hasDefined(FAILURE_DESCRIPTION) ? hostResult.get(FAILURE_DESCRIPTION) : new ModelNode().set(DomainControllerLogger.ROOT_LOGGER.unexplainedFailure());
                 hostFailureResults.get(entry.getKey()).set(desc);
             }
         }
@@ -153,7 +152,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
             if (hostFailureResults == null) {
                 hostFailureResults = new ModelNode();
             }
-            final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(MESSAGES.unexplainedFailure());
+            final ModelNode desc = coordinator.hasDefined(FAILURE_DESCRIPTION) ? coordinator.get(FAILURE_DESCRIPTION) : new ModelNode().set(DomainControllerLogger.ROOT_LOGGER.unexplainedFailure());
             hostFailureResults.get(domainOperationContext.getLocalHostInfo().getLocalHostName()).set(desc);
         }
 
@@ -246,7 +245,7 @@ public class DomainFinalResultHandler implements OperationStepHandler {
         }
         if(!serverGroupSuccess) {
             // TODO see if we can extract more information from the server details
-            context.getFailureDescription().set(MESSAGES.operationFailedOrRolledBack());
+            context.getFailureDescription().set(DomainControllerLogger.ROOT_LOGGER.operationFailedOrRolledBack());
         }
     }
 

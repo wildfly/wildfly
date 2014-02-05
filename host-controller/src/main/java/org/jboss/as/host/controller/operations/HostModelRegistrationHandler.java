@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRODUCT_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_CODENAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -45,6 +44,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.HostControllerEnvironment;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.HostModelUtil;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
@@ -85,7 +85,7 @@ public class HostModelRegistrationHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) {
 
         if (!context.isBooting()) {
-            throw MESSAGES.invocationNotAllowedAfterBoot(OPERATION_NAME);
+            throw HostControllerLogger.ROOT_LOGGER.invocationNotAllowedAfterBoot(OPERATION_NAME);
         }
 
         final String hostName = operation.require(NAME).asString();

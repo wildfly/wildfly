@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
-import static org.jboss.as.domain.controller.DomainControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.ROOT_LOGGER;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -46,7 +46,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResource;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainServerUtils;
@@ -186,7 +186,7 @@ public class ApplyExtensionsHandler implements OperationStepHandler {
                 }
             }
         } catch (ModuleLoadException e) {
-            throw DomainControllerMessages.MESSAGES.failedToLoadModule(e, module);
+            throw DomainControllerLogger.ROOT_LOGGER.failedToLoadModule(e, module);
         }
     }
 }

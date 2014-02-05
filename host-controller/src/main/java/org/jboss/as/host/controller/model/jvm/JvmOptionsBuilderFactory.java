@@ -21,8 +21,7 @@
  */
 package org.jboss.as.host.controller.model.jvm;
 
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +30,7 @@ import java.util.Map;
 
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 
 /**
  *
@@ -58,14 +58,14 @@ public class JvmOptionsBuilderFactory {
 
     public void addOptions(JvmElement jvmElement, List<String> command){
         if (jvmElement == null) {
-            throw MESSAGES.nullVar("jvm");
+            throw HostControllerLogger.ROOT_LOGGER.nullVar("jvm");
         }
         if (command == null) {
-            throw MESSAGES.nullVar("command");
+            throw HostControllerLogger.ROOT_LOGGER.nullVar("command");
         }
         JvmOptionsBuilder builder = BUILDERS.get(jvmElement.getJvmType());
         if (builder == null) {
-            throw MESSAGES.unknown("jvm", jvmElement.getJvmType());
+            throw HostControllerLogger.ROOT_LOGGER.unknown("jvm", jvmElement.getJvmType());
         }
         builder.addToOptions(jvmElement, command);
     }

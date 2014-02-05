@@ -43,7 +43,7 @@ import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.controller.operations.PullDownDataForServerConfigOnSlaveHandler;
 import org.jboss.as.domain.controller.operations.coordination.DomainControllerLockIdUtils;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
@@ -122,7 +122,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
                         SlaveChannelAttachments.getTransformers(context.getChannel()),
                         runtimeIgnoreTransformationRegistry);
             } else {
-                throw HostControllerMessages.MESSAGES.cannotExecuteTransactionalOperationFromSlave(operationName);
+                throw HostControllerLogger.ROOT_LOGGER.cannotExecuteTransactionalOperationFromSlave(operationName);
             }
 
             Integer domainControllerLockId;

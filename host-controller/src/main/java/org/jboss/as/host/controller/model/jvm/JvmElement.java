@@ -25,11 +25,10 @@
  */
 package org.jboss.as.host.controller.model.jvm;
 
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -228,7 +227,7 @@ public class JvmElement {
 
     void setAgentPath(String agentPath) {
         if (agentLib != null) {
-            throw MESSAGES.attemptingToSet("agent-path", "agent-lib");
+            throw HostControllerLogger.ROOT_LOGGER.attemptingToSet("agent-path", "agent-lib");
         }
         this.agentPath = agentPath;
     }
@@ -239,7 +238,7 @@ public class JvmElement {
 
     void setAgentLib(String agentLib) {
         if (agentPath != null) {
-            throw MESSAGES.attemptingToSet("agent-lib", "agent-path");
+            throw HostControllerLogger.ROOT_LOGGER.attemptingToSet("agent-lib", "agent-path");
         }
         this.agentLib = agentLib;
     }

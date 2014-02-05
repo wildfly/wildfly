@@ -22,7 +22,7 @@
 
 package org.jboss.as.host.controller.operations;
 
-import static org.jboss.as.host.controller.HostControllerLogger.AS_ROOT_LOGGER;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.AS_ROOT_LOGGER;
 import io.undertow.server.ListenerRegistry;
 
 import java.util.List;

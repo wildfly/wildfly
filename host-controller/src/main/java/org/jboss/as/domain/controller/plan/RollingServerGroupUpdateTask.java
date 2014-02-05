@@ -27,7 +27,7 @@ import java.util.List;
 import javax.security.auth.Subject;
 
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
-import org.jboss.as.domain.controller.DomainControllerLogger;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 
 /**

@@ -22,8 +22,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.domain.controller.DomainControllerLogger.DEPLOYMENT_LOGGER;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.DEPLOYMENT_LOGGER;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +35,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
 import org.jboss.as.server.deployment.DeploymentUtils;
@@ -101,7 +101,7 @@ public abstract class DeploymentRemoveHandler implements OperationStepHandler {
             }
 
             if (badGroups.size() > 0) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.cannotRemoveDeploymentInUse(deploymentName, badGroups)));
+                throw new OperationFailedException(new ModelNode().set(DomainControllerLogger.ROOT_LOGGER.cannotRemoveDeploymentInUse(deploymentName, badGroups)));
             }
         }
     }

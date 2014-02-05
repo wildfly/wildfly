@@ -25,7 +25,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HAS
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.NoSuchElementException;
 
@@ -36,6 +35,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.dmr.ModelNode;
@@ -54,7 +54,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
 
     public ServerGroupDeploymentReplaceHandler(final HostFileRepository fileRepository) {
         if (fileRepository == null) {
-            throw MESSAGES.nullVar("fileRepository");
+            throw DomainControllerLogger.ROOT_LOGGER.nullVar("fileRepository");
         }
         this.fileRepository = fileRepository;
     }
@@ -67,8 +67,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
         String toReplace = DeploymentAttributes.SERVER_GROUP_REPLACE_DEPLOYMENT_ATTRIBUTES.get(TO_REPLACE).resolveModelAttribute(context, operation).asString();
 
         if (name.equals(toReplace)) {
-            throw operationFailed(MESSAGES.cannotUseSameValueForParameters(OPERATION_NAME, NAME, TO_REPLACE,
-                    ServerGroupDeploymentRedeployHandler.OPERATION_NAME, DeploymentFullReplaceHandler.OPERATION_NAME));
+            throw operationFailed(DomainControllerLogger.ROOT_LOGGER.cannotUseSameValueForParameters(OPERATION_NAME, NAME, TO_REPLACE, ServerGroupDeploymentRedeployHandler.OPERATION_NAME, DeploymentFullReplaceHandler.OPERATION_NAME));
         }
 
         final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
@@ -79,7 +78,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
             // check if the domain deployment exists
             domainDeployment = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS.append(deploymentPath));
         } catch (NoSuchElementException e) {
-            throw operationFailed(MESSAGES.noDeploymentContentWithName(name));
+            throw operationFailed(DomainControllerLogger.ROOT_LOGGER.noDeploymentContentWithName(name));
         }
 
         final ModelNode deployment = domainDeployment.getModel();
@@ -93,7 +92,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
 
         final Resource serverGroup = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
         if (! serverGroup.hasChild(replacePath)) {
-            throw operationFailed(MESSAGES.noDeploymentContentWithName(toReplace));
+            throw operationFailed(DomainControllerLogger.ROOT_LOGGER.noDeploymentContentWithName(toReplace));
         }
         final Resource replaceResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(replacePath));
         //
@@ -108,7 +107,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
             deploymentResource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS.append(deploymentPath));
             ModelNode enabled = deploymentResource.getModel().hasDefined(ENABLED) ? deploymentResource.getModel().get(ENABLED) : new ModelNode(false);
             if (enabled.getType() == ModelType.BOOLEAN && enabled.asBoolean()) {
-                throw operationFailed(MESSAGES.deploymentAlreadyStarted(toReplace));
+                throw operationFailed(DomainControllerLogger.ROOT_LOGGER.deploymentAlreadyStarted(toReplace));
             }
             deploymentResource.getModel().get(ENABLED).set(true);
         }

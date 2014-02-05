@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.controller.plan;
 
-import static org.jboss.as.domain.controller.DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER;
 
 import static java.security.AccessController.doPrivileged;
 

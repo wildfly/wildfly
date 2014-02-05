@@ -22,8 +22,6 @@
 
 package org.jboss.as.host.controller;
 
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,6 +39,7 @@ import java.util.Properties;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.process.CommandLineArgumentUsageImpl;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
@@ -90,7 +89,7 @@ public final class Main {
         try {
             StreamUtils.readFully(new Base64InputStream(System.in), authKey);
         } catch (IOException e) {
-            STDERR.println(MESSAGES.failedToReadAuthenticationKey(e));
+            STDERR.println(HostControllerLogger.ROOT_LOGGER.failedToReadAuthenticationKey(e));
             fail();
             return;
         }
@@ -234,7 +233,7 @@ public final class Main {
                     try {
                         pmPort = Integer.valueOf(port);
                     } catch (NumberFormatException e) {
-                        STDERR.println(MESSAGES.invalidValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, "Integer", port, usageNote()));
+                        STDERR.println(HostControllerLogger.ROOT_LOGGER.invalidValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, "Integer", port, usageNote()));
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT)) {
@@ -252,7 +251,7 @@ public final class Main {
                     try {
                         pmAddress = InetAddress.getByName(addr);
                     } catch (UnknownHostException e) {
-                        STDERR.println(MESSAGES.unknownHostValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr, usageNote()));
+                        STDERR.println(HostControllerLogger.ROOT_LOGGER.unknownHostValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr, usageNote()));
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR)) {
@@ -337,7 +336,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
+                        STDERR.println(HostControllerLogger.ROOT_LOGGER.argumentExpected(arg, usageNote()));
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : checkValueIsNotAnArg(arg, args[++i]);
@@ -351,7 +350,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
+                        STDERR.println(HostControllerLogger.ROOT_LOGGER.argumentExpected(arg, usageNote()));
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
@@ -382,7 +381,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
+                        STDERR.println(HostControllerLogger.ROOT_LOGGER.argumentExpected(arg, usageNote()));
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : checkValueIsNotAnArg(arg, args[++i]);
@@ -407,7 +406,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
+                        STDERR.println(HostControllerLogger.ROOT_LOGGER.argumentExpected(arg, usageNote()));
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : checkValueIsNotAnArg(arg, args[++i]);
@@ -423,11 +422,11 @@ public final class Main {
                         return null;
                     }
                 } else {
-                    STDERR.println(MESSAGES.invalidOption(arg, usageNote()));
+                    STDERR.println(HostControllerLogger.ROOT_LOGGER.invalidOption(arg, usageNote()));
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
-                STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
+                STDERR.println(HostControllerLogger.ROOT_LOGGER.argumentExpected(arg, usageNote()));
                 return null;
             }
         }
@@ -440,7 +439,7 @@ public final class Main {
     private static String parseValue(final String arg, final String key) {
         int splitPos = key.length();
         if (arg.length() <= splitPos + 1 || arg.charAt(splitPos) != '=') {
-            STDERR.println(MESSAGES.argumentHasNoValue(arg, usageNote()));
+            STDERR.println(HostControllerLogger.ROOT_LOGGER.argumentHasNoValue(arg, usageNote()));
             return null;
         } else {
             return arg.substring(splitPos + 1);
@@ -458,7 +457,7 @@ public final class Main {
      */
     private static String checkValueIsNotAnArg(String argument, String value) {
         if (value.startsWith("-")) {
-            STDERR.println(MESSAGES.argumentHasNoValue(argument, usageNote()));
+            STDERR.println(HostControllerLogger.ROOT_LOGGER.argumentHasNoValue(argument, usageNote()));
             return null;
         }
         return value;
@@ -477,10 +476,10 @@ public final class Main {
              }
              return true;
          } catch (MalformedURLException e) {
-             STDERR.println(MESSAGES.malformedUrl(arg, usageNote()));
+             STDERR.println(HostControllerLogger.ROOT_LOGGER.malformedUrl(arg, usageNote()));
              return false;
          } catch (IOException e) {
-             STDERR.println(MESSAGES.unableToLoadProperties(url, usageNote()));
+             STDERR.println(HostControllerLogger.ROOT_LOGGER.unableToLoadProperties(url, usageNote()));
              return false;
          }
     }
@@ -489,7 +488,7 @@ public final class Main {
          try {
              return Integer.valueOf(value);
          } catch (NumberFormatException e) {
-             STDERR.println(MESSAGES.invalidValue(key, "Integer", value, usageNote()));
+             STDERR.println(HostControllerLogger.ROOT_LOGGER.invalidValue(key, "Integer", value, usageNote()));
              return null;
          }
     }
@@ -498,7 +497,7 @@ public final class Main {
         try {
             return InetAddress.getByName(value);
         } catch (UnknownHostException e) {
-            STDERR.println(MESSAGES.unknownHostValue(key, value, usageNote()));
+            STDERR.println(HostControllerLogger.ROOT_LOGGER.unknownHostValue(key, value, usageNote()));
             return null;
         }
     }
@@ -567,7 +566,7 @@ public final class Main {
                 }
             }
         } catch (Exception e) {
-            STDERR.println(MESSAGES.cannotAccessJvmInputArgument(e));
+            STDERR.println(HostControllerLogger.ROOT_LOGGER.cannotAccessJvmInputArgument(e));
         }
         return hostSystemProperties;
     }
@@ -575,7 +574,7 @@ public final class Main {
     private static String usageNote() {
         boolean isWindows = (WildFlySecurityManager.getPropertyPrivileged("os.name", null)).toLowerCase(Locale.ENGLISH).contains("windows");
         String command = isWindows ? "domain" : "domain.sh";
-        return MESSAGES.usageNote(command);
+        return HostControllerLogger.ROOT_LOGGER.usageNote(command);
     }
 
     private static class PCSocketConfig {
@@ -604,7 +603,7 @@ public final class Main {
 
         private InetAddress getBindAddress() {
             if (bindAddress == null) {
-                throw MESSAGES.cannotObtainValidDefaultAddress(uhe, defaultBindAddress, CommandLineConstants.INTERPROCESS_HC_ADDRESS);
+                throw HostControllerLogger.ROOT_LOGGER.cannotObtainValidDefaultAddress(uhe, defaultBindAddress, CommandLineConstants.INTERPROCESS_HC_ADDRESS);
             }
             return bindAddress;
         }
@@ -672,7 +671,7 @@ public final class Main {
                 bindAddress = InetAddress.getByName(value);
             } catch (UnknownHostException e) {
                 parseFailed = true;
-                STDERR.println(MESSAGES.invalidValue(key, "InetAddress", value, usageNote()));
+                STDERR.println(HostControllerLogger.ROOT_LOGGER.invalidValue(key, "InetAddress", value, usageNote()));
             }
         }
     }

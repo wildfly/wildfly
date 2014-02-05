@@ -18,7 +18,7 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.domain.controller.DomainControllerLogger.DEPLOYMENT_LOGGER;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.DEPLOYMENT_LOGGER;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -26,7 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.host.controller.HostControllerLogger.DOMAIN_LOGGER;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.DOMAIN_LOGGER;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
@@ -55,10 +55,10 @@ import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.protocol.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -181,11 +181,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             registration.initialize(hostName, hostInfo, context);
 
             if (domainController.getCurrentRunningMode() == RunningMode.ADMIN_ONLY) {
-                registration.failed(SlaveRegistrationException.ErrorCode.MASTER_IS_ADMIN_ONLY, DomainControllerMessages.MESSAGES.adminOnlyModeCannotAcceptSlaves(RunningMode.ADMIN_ONLY));
+                registration.failed(SlaveRegistrationException.ErrorCode.MASTER_IS_ADMIN_ONLY, DomainControllerLogger.ROOT_LOGGER.adminOnlyModeCannotAcceptSlaves(RunningMode.ADMIN_ONLY));
                 return;
             }
             if (!domainController.getLocalHostInfo().isMasterDomainController()) {
-                registration.failed(SlaveRegistrationException.ErrorCode.HOST_IS_NOT_MASTER, DomainControllerMessages.MESSAGES.slaveControllerCannotAcceptOtherSlaves());
+                registration.failed(SlaveRegistrationException.ErrorCode.HOST_IS_NOT_MASTER, DomainControllerLogger.ROOT_LOGGER.slaveControllerCannotAcceptOtherSlaves());
                 return;
             }
 
@@ -251,7 +251,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             context.acquireControllerLock();
             // Check with the controller lock held
             if(domainController.isHostRegistered(registrationContext.hostName)) {
-                final String failureDescription = DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(registrationContext.hostName);
+                final String failureDescription = DomainControllerLogger.ROOT_LOGGER.slaveAlreadyRegistered(registrationContext.hostName);
                 registrationContext.failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, failureDescription);
                 context.getFailureDescription().set(failureDescription);
                 context.stepCompleted();
@@ -266,8 +266,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             final int micro = hostInfo.getManagementMicroVersion();
             boolean as711 = (major == 1 && minor == 1);
             if(as711) {
-                final OperationFailedException failure = HostControllerMessages.MESSAGES.unsupportedManagementVersionForHost(
-                        major, minor, 1, 2);
+                final OperationFailedException failure = HostControllerLogger.ROOT_LOGGER.unsupportedManagementVersionForHost(major, minor, 1, 2);
                 registrationContext.failed(failure);
                 throw failure;
             }
@@ -404,7 +403,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 } finally {
                     // Now see if the existing registration has been removed
                     if (domainController.isHostRegistered(hostName)) {
-                        failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(hostName));
+                        failed(SlaveRegistrationException.ErrorCode.HOST_ALREADY_EXISTS, DomainControllerLogger.ROOT_LOGGER.slaveAlreadyRegistered(hostName));
                     }
                 }
             }

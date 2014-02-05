@@ -22,12 +22,10 @@
 
 package org.jboss.as.host.controller.model.jvm;
 
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.List;
 
-
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 
 /**
  * An element representing a list of jvm options.
@@ -53,7 +51,7 @@ public final class JvmOptionsElement {
     void addOption(final String value) {
         synchronized (options) {
             if (value == null) {
-                throw MESSAGES.nullVar("value");
+                throw HostControllerLogger.ROOT_LOGGER.nullVar("value");
             }
             options.add(value);
         }

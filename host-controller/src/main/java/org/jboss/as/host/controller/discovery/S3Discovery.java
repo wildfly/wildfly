@@ -23,8 +23,7 @@
 package org.jboss.as.host.controller.discovery;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MASTER;
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.host.controller.discovery.Constants.ACCESS_KEY;
 import static org.jboss.as.host.controller.discovery.Constants.LOCATION;
 import static org.jboss.as.host.controller.discovery.Constants.PREFIX;
@@ -39,6 +38,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.discovery.S3Util.AWSAuthConnection;
 import org.jboss.as.host.controller.discovery.S3Util.Bucket;
 import org.jboss.as.host.controller.discovery.S3Util.GetResponse;
@@ -137,7 +137,7 @@ public class S3Discovery implements DiscoveryOption {
             setRemoteDomainControllerHost(host);
             setRemoteDomainControllerPort(port);
         } else {
-            throw MESSAGES.failedMarshallingDomainControllerData();
+            throw HostControllerLogger.ROOT_LOGGER.failedMarshallingDomainControllerData();
         }
     }
 
@@ -179,10 +179,10 @@ public class S3Discovery implements DiscoveryOption {
             PreSignedUrlParser parsedDelete = new PreSignedUrlParser(pre_signed_delete_url);
             if (!parsedPut.getBucket().equals(parsedDelete.getBucket()) ||
                     !parsedPut.getPrefix().equals(parsedDelete.getPrefix())) {
-                throw MESSAGES.preSignedUrlsMustHaveSamePath();
+                throw HostControllerLogger.ROOT_LOGGER.preSignedUrlsMustHaveSamePath();
             }
         } else if (pre_signed_put_url != null || pre_signed_delete_url != null) {
-            throw MESSAGES.preSignedUrlsMustBeSetOrUnset();
+            throw HostControllerLogger.ROOT_LOGGER.preSignedUrlsMustBeSetOrUnset();
         }
     }
 
@@ -222,7 +222,7 @@ public class S3Discovery implements DiscoveryOption {
                 conn.createBucket(location, AWSAuthConnection.LOCATION_DEFAULT, null).connection.getResponseMessage();
             }
         } catch (Exception e) {
-            throw MESSAGES.cannotAccessS3Bucket(location, e.getLocalizedMessage());
+            throw HostControllerLogger.ROOT_LOGGER.cannotAccessS3Bucket(location, e.getLocalizedMessage());
         }
     }
 
@@ -255,13 +255,13 @@ public class S3Discovery implements DiscoveryOption {
                     try {
                         data = S3Util.domainControllerDataFromByteBuffer(buf);
                     } catch (Exception e) {
-                        throw MESSAGES.failedMarshallingDomainControllerData();
+                        throw HostControllerLogger.ROOT_LOGGER.failedMarshallingDomainControllerData();
                     }
                 }
             }
             return data;
         } catch (IOException e) {
-            throw MESSAGES.cannotAccessS3File(e.getLocalizedMessage());
+            throw HostControllerLogger.ROOT_LOGGER.cannotAccessS3File(e.getLocalizedMessage());
         }
     }
 
@@ -296,7 +296,7 @@ public class S3Discovery implements DiscoveryOption {
             }
         }
         catch(Exception e) {
-            throw MESSAGES.cannotWriteToS3File(e.getLocalizedMessage());
+            throw HostControllerLogger.ROOT_LOGGER.cannotWriteToS3File(e.getLocalizedMessage());
         }
     }
 

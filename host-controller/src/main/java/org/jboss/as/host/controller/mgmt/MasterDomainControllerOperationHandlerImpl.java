@@ -18,7 +18,6 @@
  */
 package org.jboss.as.host.controller.mgmt;
 
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 import static org.jboss.as.process.protocol.ProtocolUtils.expectHeader;
 
 import java.io.DataInput;
@@ -28,6 +27,7 @@ import java.util.concurrent.Executor;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.domain.controller.DomainController;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
@@ -110,7 +110,7 @@ class MasterDomainControllerOperationHandlerImpl implements ManagementRequestHan
                             return localFileRepository.getDeploymentRoot(hash);
                         }
                         default: {
-                            throw MESSAGES.invalidRootId(rootId);
+                            throw HostControllerLogger.ROOT_LOGGER.invalidRootId(rootId);
                         }
                     }
                 }

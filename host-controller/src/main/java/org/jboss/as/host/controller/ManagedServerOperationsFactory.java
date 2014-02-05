@@ -90,7 +90,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_EXPRESSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
 import java.util.AbstractList;
@@ -121,6 +120,7 @@ import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.JsonAuditLogFormatterResourceDefinition;
 import org.jboss.as.domain.management.audit.SyslogAuditLogHandlerResourceDefinition;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.operations.SetServerGroupHostHandler;
@@ -222,7 +222,7 @@ public final class ManagedServerOperationsFactory {
             portOffSet = serverModel.get(SOCKET_BINDING_PORT_OFFSET).asInt();
         }
         if (socketBindingRef == null) {
-            throw MESSAGES.undefinedSocketBinding(serverName);
+            throw HostControllerLogger.ROOT_LOGGER.undefinedSocketBinding(serverName);
         }
 
         final ModelNodeList updates = new ModelNodeList();
@@ -616,7 +616,7 @@ public final class ManagedServerOperationsFactory {
         }
         final ModelNode group = groups.get(bindingRef);
         if (group == null) {
-            throw MESSAGES.undefinedSocketBindingGroup(bindingRef);
+            throw HostControllerLogger.ROOT_LOGGER.undefinedSocketBindingGroup(bindingRef);
         }
         final PathAddress groupAddress = PathAddress.pathAddress(PathElement.pathElement(SOCKET_BINDING_GROUP, bindingRef));
         final ModelNode groupAdd = BindingGroupAddHandler.getOperation(groupAddress, group);
@@ -633,7 +633,7 @@ public final class ManagedServerOperationsFactory {
                 if (processed.add(ref)) {
                     final ModelNode includedGroup = groups.get(ref);
                     if (includedGroup == null) {
-                        throw MESSAGES.undefinedSocketBindingGroup(ref);
+                        throw HostControllerLogger.ROOT_LOGGER.undefinedSocketBindingGroup(ref);
                     }
                     mergeBindingGroups(updates, groups, groupName, includedGroup, processed);
                 }

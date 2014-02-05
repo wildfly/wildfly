@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.io.File;
 import java.io.OutputStream;
@@ -38,6 +37,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -72,7 +72,7 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
 
     public void initializeDomainConfigurationPersister(boolean slave) {
         if (domainPersister != null) {
-            throw MESSAGES.configurationPersisterAlreadyInitialized();
+            throw HostControllerLogger.ROOT_LOGGER.configurationPersisterAlreadyInitialized();
         }
 
         final File configDir = environment.getDomainConfigurationDir();
@@ -120,14 +120,14 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
 
     public boolean isSlave() {
         if (slave == null) {
-            throw MESSAGES.mustInvokeBeforeCheckingSlaveStatus("initializeDomainConfigurationPersister");
+            throw HostControllerLogger.ROOT_LOGGER.mustInvokeBeforeCheckingSlaveStatus("initializeDomainConfigurationPersister");
         }
         return slave;
     }
 
     public ExtensibleConfigurationPersister getDomainPersister() {
         if (domainPersister == null) {
-            throw MESSAGES.mustInvokeBeforePersisting("initializeDomainConfigurationPersister");
+            throw HostControllerLogger.ROOT_LOGGER.mustInvokeBeforePersisting("initializeDomainConfigurationPersister");
         }
         return domainPersister;
     }

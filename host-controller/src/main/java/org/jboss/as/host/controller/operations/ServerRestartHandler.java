@@ -20,7 +20,6 @@ package org.jboss.as.host.controller.operations;
 
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -31,6 +30,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.ServerInventory;
 import org.jboss.dmr.ModelNode;
 
@@ -60,7 +60,7 @@ public class ServerRestartHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
         if (context.getRunningMode() == RunningMode.ADMIN_ONLY) {
-            throw new OperationFailedException(new ModelNode(MESSAGES.cannotStartServersInvalidMode(context.getRunningMode())));
+            throw new OperationFailedException(new ModelNode(HostControllerLogger.ROOT_LOGGER.cannotStartServersInvalidMode(context.getRunningMode())));
         }
 
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
@@ -77,7 +77,7 @@ public class ServerRestartHandler implements OperationStepHandler {
 
                 final ServerStatus origStatus = serverInventory.determineServerStatus(serverName);
                 if (origStatus != ServerStatus.STARTED) {
-                    throw new OperationFailedException(new ModelNode(MESSAGES.cannotRestartServer(serverName, origStatus)));
+                    throw new OperationFailedException(new ModelNode(HostControllerLogger.ROOT_LOGGER.cannotRestartServer(serverName, origStatus)));
                 }
                 final ServerStatus status = serverInventory.restartServer(serverName, -1, model, blocking);
                 context.getResult().set(status.toString());

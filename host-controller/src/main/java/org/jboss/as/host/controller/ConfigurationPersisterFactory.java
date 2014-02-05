@@ -34,6 +34,7 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.parsing.DomainXml;
 import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;

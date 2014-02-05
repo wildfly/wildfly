@@ -22,12 +22,10 @@
 
 package org.jboss.as.domain.controller.plan;
 
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
-
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.domain.controller.DomainControllerLogger;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 
 /**
  * Policy that controls whether concurrently executing updates to server groups
@@ -112,7 +110,7 @@ class ConcurrentGroupServerUpdatePolicy {
                 notifyAll();
             }
             else {
-                throw MESSAGES.unknownServerGroup(serverGroup);
+                throw DomainControllerLogger.ROOT_LOGGER.unknownServerGroup(serverGroup);
             }
         }
     }

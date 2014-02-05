@@ -86,7 +86,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.domain.management.parsing.AuditLogXml;
 import org.jboss.as.domain.management.parsing.ManagementXml;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionResourceDefinition;
 import org.jboss.as.host.controller.discovery.StaticDiscoveryResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
@@ -1265,7 +1265,7 @@ public class HostXml extends CommonXml {
             switch (attribute) {
                 case TYPE: {
                     if (!foundTypes.add(value)) {
-                        throw HostControllerMessages.MESSAGES.duplicateIgnoredResourceType(Element.IGNORED_RESOURCE.getLocalName(), value, reader.getLocation());
+                        throw HostControllerLogger.ROOT_LOGGER.duplicateIgnoredResourceType(Element.IGNORED_RESOURCE.getLocalName(), value, reader.getLocation());
                     }
                     type = value;
                     break;

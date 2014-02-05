@@ -32,7 +32,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.operations.coordination.ServerOperationResolver;
 import org.jboss.as.domain.controller.resources.ServerGroupResourceDefinition;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
@@ -74,7 +74,7 @@ public class ServerGroupProfileWriteAttributeHandler extends ModelOnlyWriteAttri
             context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(ServerGroupResourceDefinition.PROFILE.getName(), profile)));
         } catch (Exception e) {
             if (master) {
-                throw DomainControllerMessages.MESSAGES.noProfileCalled(profile);
+                throw DomainControllerLogger.ROOT_LOGGER.noProfileCalled(profile);
             } else {
                 //We are a slave HC and we don't have the profile required, so put the slave AND the server into reload-required
                 context.reloadRequired();

@@ -22,6 +22,7 @@
 package org.jboss.as.domain.controller;
 
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 
 /**
  * Used to propagate error codes as part of the error message when an error occurs registering a slave host controller.
@@ -58,15 +59,15 @@ public class SlaveRegistrationException extends Exception {
     }
 
     public static SlaveRegistrationException forHostAlreadyExists(String slaveName) {
-        return new SlaveRegistrationException(ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveAlreadyRegistered(slaveName));
+        return new SlaveRegistrationException(ErrorCode.HOST_ALREADY_EXISTS, DomainControllerLogger.ROOT_LOGGER.slaveAlreadyRegistered(slaveName));
     }
 
     public static SlaveRegistrationException forMasterInAdminOnlyMode(RunningMode runningMode) {
-        return new SlaveRegistrationException(ErrorCode.MASTER_IS_ADMIN_ONLY, DomainControllerMessages.MESSAGES.adminOnlyModeCannotAcceptSlaves(runningMode));
+        return new SlaveRegistrationException(ErrorCode.MASTER_IS_ADMIN_ONLY, DomainControllerLogger.ROOT_LOGGER.adminOnlyModeCannotAcceptSlaves(runningMode));
     }
 
     public static SlaveRegistrationException forHostIsNotMaster() {
-        return new SlaveRegistrationException(ErrorCode.HOST_ALREADY_EXISTS, DomainControllerMessages.MESSAGES.slaveControllerCannotAcceptOtherSlaves());
+        return new SlaveRegistrationException(ErrorCode.HOST_ALREADY_EXISTS, DomainControllerLogger.ROOT_LOGGER.slaveControllerCannotAcceptOtherSlaves());
     }
 
     public String marshal() {

@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTION;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
@@ -34,6 +33,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -114,7 +114,7 @@ public class DiscoveryOptionAddHandler extends AbstractDiscoveryOptionAddHandler
             final DiscoveryOption discoveryOption = constructor.newInstance(discoveryOptionProperties);
             hostControllerInfo.addRemoteDomainControllerDiscoveryOption(discoveryOption);
         } catch (Exception e) {
-            throw MESSAGES.cannotInstantiateDiscoveryOptionClass(discoveryOptionClassName, e.getLocalizedMessage());
+            throw HostControllerLogger.ROOT_LOGGER.cannotInstantiateDiscoveryOptionClass(discoveryOptionClassName, e.getLocalizedMessage());
         }
     }
 }

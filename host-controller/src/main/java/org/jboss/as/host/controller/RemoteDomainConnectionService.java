@@ -34,8 +34,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 
 import java.io.DataInput;
 import java.io.File;
@@ -86,6 +85,7 @@ import org.jboss.as.domain.controller.operations.coordination.DomainControllerLo
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.host.controller.mgmt.DomainRemoteFileRequestAndHandler;
 import org.jboss.as.host.controller.mgmt.HostControllerRegistrationHandler;
@@ -255,7 +255,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                        // Something else; we can retry if time remains
                        HostControllerLogger.ROOT_LOGGER.cannotConnect(masterURI, e);
                        if (System.currentTimeMillis() > endTime) {
-                           throw MESSAGES.connectionToMasterTimeout(e, retries, timeout);
+                           throw HostControllerLogger.ROOT_LOGGER.connectionToMasterTimeout(e, retries, timeout);
                        }
 
                        try {
@@ -263,7 +263,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                            retries++;
                        } catch (InterruptedException ie) {
                            Thread.currentThread().interrupt();
-                           throw MESSAGES.connectionToMasterInterrupted();
+                           throw HostControllerLogger.ROOT_LOGGER.connectionToMasterInterrupted();
                        }
                    }
                }
@@ -281,7 +281,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                boolean moreOptions = i.hasNext();
                logConnectionException(masterURI, discoveryOption, moreOptions, e);
                if (!moreOptions) {
-                   throw MESSAGES.discoveryOptionsFailureUnableToConnect(e);
+                   throw HostControllerLogger.ROOT_LOGGER.discoveryOptionsFailureUnableToConnect(e);
                }
            }
         }
@@ -362,7 +362,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
 
     @Override
     public void close() throws IOException {
-        throw MESSAGES.closeShouldBeManagedByService();
+        throw HostControllerLogger.ROOT_LOGGER.closeShouldBeManagedByService();
     }
 
     /** {@inheritDoc} */
@@ -440,7 +440,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         operation.get(DOMAIN_MODEL).set(bootOperations);
         final ModelNode result = controller.execute(operation, OperationMessageHandler.logging, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
         if (!SUCCESS.equals(result.get(OUTCOME).asString())) {
-            throw HostControllerMessages.MESSAGES.failedToAddExtensions(result.get(FAILURE_DESCRIPTION));
+            throw HostControllerLogger.ROOT_LOGGER.failedToAddExtensions(result.get(FAILURE_DESCRIPTION));
         }
         final ModelNode subsystems = new ModelNode();
         for (final ModelNode extension : extensions) {
@@ -518,9 +518,9 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         Throwable cause = e;
         while ((cause = cause.getCause()) != null) {
             if (cause instanceof SaslException) {
-                throw MESSAGES.authenticationFailureUnableToConnect(cause);
+                throw HostControllerLogger.ROOT_LOGGER.authenticationFailureUnableToConnect(cause);
             } else if (cause instanceof SSLHandshakeException) {
-                throw MESSAGES.sslFailureUnableToConnect(cause);
+                throw HostControllerLogger.ROOT_LOGGER.sslFailureUnableToConnect(cause);
             } else if (cause instanceof SlaveRegistrationException) {
                 throw (SlaveRegistrationException) cause;
             }
@@ -593,9 +593,9 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             try {
                 DomainRemoteFileRequestAndHandler.INSTANCE.handleResponse(input, localPath, ROOT_LOGGER, resultHandler, context);
             } catch (CannotCreateLocalDirectoryException e) {
-                throw MESSAGES.cannotCreateLocalDirectory(e.getDir());
+                throw HostControllerLogger.ROOT_LOGGER.cannotCreateLocalDirectory(e.getDir());
             } catch (DidNotReadEntireFileException e) {
-                throw MESSAGES.didNotReadEntireFile(e.getMissing());
+                throw HostControllerLogger.ROOT_LOGGER.didNotReadEntireFile(e.getMissing());
             }
         }
     }
@@ -658,7 +658,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                 try {
                     return handler.executeRequest(new GetFileRequest(repoId, relativePath, localFileRepository), null).getResult().get();
                 } catch (Exception e) {
-                    throw MESSAGES.failedToGetFileFromRemoteRepository(e);
+                    throw HostControllerLogger.ROOT_LOGGER.failedToGetFileFromRemoteRepository(e);
                 }
             } else {
                 return localFileRepository.getFile(relativePath);

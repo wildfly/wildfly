@@ -24,7 +24,6 @@ package org.jboss.as.host.controller.operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DISCOVERY_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STATIC_DISCOVERY;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,6 +32,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionsResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -77,7 +77,7 @@ public class DiscoveryOptionsWriteAttributeHandler extends ReloadRequiredWriteAt
         List<ModelNode> newValueList = newValue.isDefined() ? newValue.asList() : Collections.<ModelNode>emptyList();
         List<ModelNode> unorderedDiscoveryOptionsList = unorderedDiscoveryOptions.isDefined() ? unorderedDiscoveryOptions.asList() : Collections.<ModelNode>emptyList();
         if (newValueList.size() != unorderedDiscoveryOptionsList.size() || !newValueList.containsAll(unorderedDiscoveryOptionsList)) {
-            throw MESSAGES.invalidDiscoveryOptionsOrdering(DISCOVERY_OPTIONS);
+            throw HostControllerLogger.ROOT_LOGGER.invalidDiscoveryOptionsOrdering(DISCOVERY_OPTIONS);
         }
     }
 }

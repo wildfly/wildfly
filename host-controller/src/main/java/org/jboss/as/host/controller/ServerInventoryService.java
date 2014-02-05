@@ -22,7 +22,7 @@
 
 package org.jboss.as.host.controller;
 
-import static org.jboss.as.host.controller.HostControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.host.controller.logging.HostControllerLogger.ROOT_LOGGER;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;

@@ -39,7 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.domain.controller.DomainControllerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.ROOT_LOGGER;
 
 import java.util.ArrayList;
 import java.util.HashMap;

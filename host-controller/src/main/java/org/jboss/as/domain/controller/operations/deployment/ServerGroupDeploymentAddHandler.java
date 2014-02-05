@@ -41,7 +41,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.DomainControllerMessages;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -118,8 +118,7 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
                         domainDeployment = root.getChild(PathElement.pathElement(DEPLOYMENT, reName)).getModel();
                         String otherRuntimeName = getRuntimeName(reName, otherDepl, domainDeployment);
                         if (runtimeName.equals(otherRuntimeName)) {
-                            throw DomainControllerMessages.MESSAGES.runtimeNameMustBeUnique(reName, runtimeName,
-                                    sgAddress.getLastElement().getValue());
+                            throw DomainControllerLogger.ROOT_LOGGER.runtimeNameMustBeUnique(reName, runtimeName, sgAddress.getLastElement().getValue());
                         }
                     }
                 }
@@ -146,7 +145,7 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
                 ModelNode existingDeploymentModel = existingDeployment.getModel();
                 if(existingDeploymentModel.hasDefined(RUNTIME_NAME.getName()) && !name.equals(existingDeployment.getName())) {
                     if(existingDeploymentModel.get(RUNTIME_NAME.getName()).asString().equals(runtimeName)) {
-                        throw DomainControllerMessages.MESSAGES.runtimeNameMustBeUnique(existingDeployment.getName(), runtimeName, serverGroupName);
+                        throw DomainControllerLogger.ROOT_LOGGER.runtimeNameMustBeUnique(existingDeployment.getName(), runtimeName, serverGroupName);
                     }
                 }
             }
