@@ -22,8 +22,6 @@
 
 package org.jboss.as.embedded;
 
-import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -51,6 +49,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentPlanResult;
+import org.jboss.as.embedded.logging.EmbeddedLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Main;
@@ -99,15 +98,15 @@ public class EmbeddedStandAloneServerFactory {
 
     public static StandaloneServer create(final File jbossHomeDir, final ModuleLoader moduleLoader, final Properties systemProps, final Map<String, String> systemEnv, final String[] cmdargs) {
         if (jbossHomeDir == null)
-            throw MESSAGES.nullVar("jbossHomeDir");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("jbossHomeDir");
         if (moduleLoader == null)
-            throw MESSAGES.nullVar("moduleLoader");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("moduleLoader");
         if (systemProps == null)
-            throw MESSAGES.nullVar("systemProps");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("systemProps");
         if (systemEnv == null)
-            throw MESSAGES.nullVar("systemEnv");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("systemEnv");
         if (cmdargs == null)
-            throw MESSAGES.nullVar("cmdargs");
+            throw EmbeddedLogger.ROOT_LOGGER.nullVar("cmdargs");
 
         setupCleanDirectories(jbossHomeDir, systemProps);
 
@@ -200,7 +199,7 @@ public class EmbeddedStandAloneServerFactory {
                 } catch (RuntimeException rte) {
                     throw rte;
                 } catch (Exception ex) {
-                    throw MESSAGES.cannotStartEmbeddedServer(ex);
+                    throw EmbeddedLogger.ROOT_LOGGER.cannotStartEmbeddedServer(ex);
                 }
             }
 
@@ -356,7 +355,7 @@ public class EmbeddedStandAloneServerFactory {
                     }
 
                 } catch (FileNotFoundException e) {
-                    throw MESSAGES.cannotSetupEmbeddedServer(e);
+                    throw EmbeddedLogger.ROOT_LOGGER.cannotSetupEmbeddedServer(e);
                 }
             }
         }

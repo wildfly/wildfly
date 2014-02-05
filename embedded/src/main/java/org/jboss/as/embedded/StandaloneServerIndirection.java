@@ -16,8 +16,6 @@
  */
 package org.jboss.as.embedded;
 
-import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -26,6 +24,7 @@ import java.util.concurrent.ExecutionException;
 import javax.naming.Context;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.embedded.logging.EmbeddedLogger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
@@ -61,7 +60,7 @@ final class StandaloneServerIndirection implements StandaloneServer {
             methodDeploy = standaloneServerClass.getMethod("deploy", File.class);
             methodUndeploy = standaloneServerClass.getMethod("undeploy", File.class);
         } catch (final NoSuchMethodException nsme) {
-            throw MESSAGES.cannotGetReflectiveMethod(nsme, nsme.getMessage(), standaloneServerClass.getName());
+            throw EmbeddedLogger.ROOT_LOGGER.cannotGetReflectiveMethod(nsme, nsme.getMessage(), standaloneServerClass.getName());
         }
     }
 
@@ -110,7 +109,7 @@ final class StandaloneServerIndirection implements StandaloneServer {
             if (ex instanceof InvocationTargetException) {
                 cause = ((InvocationTargetException)ex).getCause();
             }
-            throw MESSAGES.cannotInvokeStandaloneServer(cause, method.getName());
+            throw EmbeddedLogger.ROOT_LOGGER.cannotInvokeStandaloneServer(cause, method.getName());
         }
     }
 }
