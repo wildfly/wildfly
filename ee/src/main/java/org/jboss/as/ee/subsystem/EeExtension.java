@@ -115,40 +115,9 @@ public class EeExtension implements Extension {
                         EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT)
                 // Deal with new attributes added to global-modules elements
                 .addRejectCheck(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
-                .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE);
-
-        //Due to https://issues.jboss.org/browse/AS7-4892 the jboss-descriptor-property-replacement attribute
-        //does not get set properly in the model on 7.1.2, it remains undefined and defaults to 'true'.
-        //So although the model version has not changed we register a transformer and reject it for 7.1.2 if it is set
-        //and has a different value from 'true'
-        builder.getAttributeBuilder().addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
-
-            @Override
-            public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-
-                return EeMessages.MESSAGES.onlyTrueAllowedForJBossDescriptorPropertyReplacement_AS7_4892();
-            }
-
-            @Override
-            protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                if (attributeValue.isDefined()) {
-                    ModelVersion version = context.getTarget().getVersion();
-                    if (version.getMajor() == 1 && version.getMinor() == 2) {
-                        //7.1.2 has model version 1.2.0 and should have this transformation
-                        //7.1.3 has model version 1.3.0 and should not have this transformation
-                        if (attributeValue.getType() == ModelType.BOOLEAN) {
-                            return !attributeValue.asBoolean();
-                        } else {
-                            if (!Boolean.parseBoolean(attributeValue.asString())) {
-                                return true;
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
-        }, EeSubsystemRootResource.JBOSS_DESCRIPTOR_PROPERTY_REPLACEMENT)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
+                .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
+                // Deal with new attribute annotation-property-replacement
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT);
 
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));

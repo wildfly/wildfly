@@ -727,7 +727,7 @@ final class SubsystemTestDelegate {
             classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-subsystem-test-framework:" + ModelTestControllerVersion.CurrentVersion.VERSION);
             classLoaderBuilder.addMavenResourceURL("org.jboss.as:jboss-as-model-test:" + ModelTestControllerVersion.CurrentVersion.VERSION);
 
-            if (testControllerVersion != ModelTestControllerVersion.MASTER) {
+            if (testControllerVersion != ModelTestControllerVersion.MASTER  && testControllerVersion.getTestControllerVersion() != null) {
                 String groupId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "org.jboss.as" : "org.wildfly";
                 String serverArtifactId = testControllerVersion.getMavenGavVersion().startsWith("7.") ? "jboss-as-server" : "wildfly-server";
                 classLoaderBuilder.addRecursiveMavenResourceURL(groupId + ":" + serverArtifactId + ":" + testControllerVersion.getMavenGavVersion());

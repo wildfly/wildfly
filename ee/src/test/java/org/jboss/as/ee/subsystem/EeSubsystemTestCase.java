@@ -21,6 +21,13 @@
 */
 package org.jboss.as.ee.subsystem;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GLOBAL_MODULES;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
+import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -40,13 +47,6 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
-
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.ANNOTATIONS;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.GLOBAL_MODULES;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.META_INF;
-import static org.jboss.as.ee.subsystem.GlobalModulesDefinition.SERVICES;
 
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
@@ -133,6 +133,12 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformers1_0_0(ModelTestControllerVersion.EAP_6_1_1);
     }
 
+    @Test
+    public void testTransformersEAP620() throws Exception {
+        //We are 100% compatible with 7.1.3 so do a normal transformation test
+        testTransformers1_0_0(ModelTestControllerVersion.EAP_6_2_0);
+    }
+
 
     private void testTransformers1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("subsystem-transformers.xml");
@@ -154,7 +160,26 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testTransformersRejectGlobalModules() throws Exception {
+    public void testTransformersEAP601Reject() throws Exception {
+        testTransformers1_0_0_reject(ModelTestControllerVersion.EAP_6_0_1);
+    }
+
+    @Test
+    public void testTransformersEAP610Reject() throws Exception {
+        testTransformers1_0_0_reject(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersEAP611Reject() throws Exception {
+        testTransformers1_0_0_reject(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+    @Test
+    public void testTransformersEAP620Reject() throws Exception {
+        testTransformers1_0_0_reject(ModelTestControllerVersion.EAP_6_2_0);
+    }
+
+    private void testTransformers1_0_0_reject(ModelTestControllerVersion controllerVersion) throws Exception {
 
         String subsystemXml = readResource("subsystem.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
@@ -170,15 +195,48 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, new FailedOperationTransformationConfig()
-                .addFailedAttribute(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, EeExtension.SUBSYSTEM_NAME)),
-                                    new GlobalModulesConfig()));
 
+        FailedOperationTransformationConfig.ChainedConfig chained =
+                FailedOperationTransformationConfig.ChainedConfig.createBuilder(GlobalModulesDefinition.INSTANCE.getName(), EESubsystemModel.ANNOTATION_PROPERTY_REPLACEMENT)
+                .addConfig(new GlobalModulesConfig())
+                .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(EESubsystemModel.ANNOTATION_PROPERTY_REPLACEMENT) {
+                    @Override
+                    protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+                        ModelNode resolved = super.correctValue(toResolve, isWriteAttribute);
+                        //Make it a boolean
+                        return new ModelNode(resolved.asBoolean());
+                    }})
+                .build();
+
+
+        FailedOperationTransformationConfig config =  new FailedOperationTransformationConfig()
+        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM), chained);
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
     }
 
     @Test
-    public void testTransformersDiscardGlobalModules() throws Exception {
+    public void testTransformersDiscardsImpliedValuesEAP601() throws Exception {
+        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
 
+    @Test
+    public void testTransformersDiscardsImpliedValuesEAP610() throws Exception {
+        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.EAP_6_1_0);
+    }
+
+    @Test
+    public void testTransformersDiscardsImpliedValuesEAP611() throws Exception {
+        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.EAP_6_1_1);
+    }
+
+
+    @Test
+    public void testTransformersDiscardsImpliedValuesEAP620() throws Exception {
+        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.EAP_6_2_0);
+    }
+
+    private void testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("subsystem-transformers-discard.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         //Use the non-runtime version of the extension which will happen on the HC
