@@ -35,14 +35,14 @@ import javax.servlet.http.HttpSessionListener;
 import org.wildfly.clustering.web.session.SessionContext;
 
 /**
- * Adapts a {@link Deployment} to a {@link SessionContext}
+ * {@link SessionContext} that delegate to a {@link Deployment}.
  * @author Paul Ferraro
  */
-public class SessionContextAdapter implements SessionContext {
+public class UndertowSessionContext implements SessionContext {
 
     private final Deployment deployment;
 
-    public SessionContextAdapter(Deployment deployment) {
+    public UndertowSessionContext(Deployment deployment) {
         this.deployment = deployment;
     }
 

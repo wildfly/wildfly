@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
+package org.wildfly.clustering.web.session;
 
-import org.wildfly.clustering.web.session.SessionManager;
-
-import io.undertow.server.session.SessionListeners;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.Value;
 
 /**
- * Exposes additional session manager aspects to a session.
+ * Builds a {@link RouteLocator} service.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
+public interface RouteLocatorBuilder {
     /**
-     * Returns the configured session listeners for this web application
-     * @return the session listeners
+     * Builds a {@link RouteLocator} service.
+     * @param target the service target
+     * @param name the service name of the route locator service
+     * @param deploymentServiceName the service name of the web deployment
+     * @return a service builder
      */
-    SessionListeners getSessionListeners();
+    ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName);
 
     /**
-     * Returns underlying distributable session manager implementation.
-     * @return a session manager
+     * Builds the server dependencies to be made available to every deployment.
+     * @param target the service target
+     * @param route the injected route source
+     * @return a service builder
      */
-    SessionManager<LocalSessionContext> getSessionManager();
+    ServiceBuilder<?> buildServerDependency(ServiceTarget target, Value<? extends Value<String>> route);
 }

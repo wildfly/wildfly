@@ -24,12 +24,16 @@ package org.jboss.as.test.clustering.cluster;
 import java.util.Map;
 import java.util.TreeMap;
 
+import org.apache.http.Header;
+import org.apache.http.HttpResponse;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.clustering.ClusteringTestConstants;
 import org.jboss.as.test.clustering.NodeUtil;
+import org.jboss.as.web.session.RoutingSupport;
+import org.jboss.as.web.session.SimpleRoutingSupport;
 import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.Before;
@@ -53,13 +57,21 @@ import org.junit.BeforeClass;
 public abstract class ClusterAbstractTestCase implements ClusteringTestConstants {
 
     protected static final Logger log = Logger.getLogger(ClusterAbstractTestCase.class);
-    private static final Map<String, String> NODE_TO_CONTAINER = new TreeMap<>();
-    private static final Map<String, String> NODE_TO_DEPLOYMENT = new TreeMap<>();
+    private static final RoutingSupport routing = new SimpleRoutingSupport();
+    static final Map<String, String> NODE_TO_CONTAINER = new TreeMap<>();
+    static final Map<String, String> NODE_TO_DEPLOYMENT = new TreeMap<>();
     static {
         NODE_TO_CONTAINER.put(NODE_1, CONTAINER_1);
         NODE_TO_CONTAINER.put(NODE_2, CONTAINER_2);
         NODE_TO_DEPLOYMENT.put(NODE_1, DEPLOYMENT_1);
         NODE_TO_DEPLOYMENT.put(NODE_2, DEPLOYMENT_2);
+    }
+
+    protected static Map.Entry<String, String> parseSessionRoute(HttpResponse response) {
+        Header setCookieHeader = response.getFirstHeader("Set-Cookie");
+        if (setCookieHeader == null) return null;
+        String setCookieValue = setCookieHeader.getValue();
+        return routing.parse(setCookieValue.substring(setCookieValue.indexOf('=') + 1, setCookieValue.indexOf(';')));
     }
 
     @ArquillianResource
@@ -125,4 +137,56 @@ public abstract class ClusterAbstractTestCase implements ClusteringTestConstants
         //log.info("System properties:\n" + systemProperties);
     }
 
+    public interface Lifecycle {
+        void start(String... nodes);
+        void stop(String... nodes);
+    }
+
+    public class RestartLifecycle implements Lifecycle {
+        @Override
+        public void start(String... nodes) {
+            for (String node: nodes) {
+                ClusterAbstractTestCase.this.controller.start(this.getContainer(node));
+            }
+        }
+
+        @Override
+        public void stop(String... nodes) {
+            for (String node: nodes) {
+                ClusterAbstractTestCase.this.controller.stop(this.getContainer(node));
+            }
+        }
+
+        private String getContainer(String node) {
+            String container = NODE_TO_CONTAINER.get(node);
+            if (container == null) {
+                throw new IllegalArgumentException(node);
+            }
+            return container;
+        }
+    }
+
+    public class RedeployLifecycle implements Lifecycle {
+        @Override
+        public void start(String... nodes) {
+            for (String node: nodes) {
+                ClusterAbstractTestCase.this.deployer.deploy(this.getDeployment(node));
+            }
+        }
+
+        @Override
+        public void stop(String... nodes) {
+            for (String node: nodes) {
+                ClusterAbstractTestCase.this.deployer.undeploy(this.getDeployment(node));
+            }
+        }
+
+        private String getDeployment(String node) {
+            String deployment = NODE_TO_DEPLOYMENT.get(node);
+            if (deployment == null) {
+                throw new IllegalArgumentException(node);
+            }
+            return deployment;
+        }
+    }
 }

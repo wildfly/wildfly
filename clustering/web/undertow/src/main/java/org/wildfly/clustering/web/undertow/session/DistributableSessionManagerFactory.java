@@ -30,24 +30,22 @@ import io.undertow.server.session.SecureRandomSessionIdGenerator;
 import io.undertow.servlet.api.Deployment;
 
 /**
- * Factory for creating a distributable session manager.
+ * Factory for creating a {@link DistributableSessionManager}.
  * @author Paul Ferraro
  */
-public class SessionManagerAdapterFactory implements io.undertow.servlet.api.SessionManagerFactory {
+public class DistributableSessionManagerFactory implements io.undertow.servlet.api.SessionManagerFactory {
 
     private final SessionManagerFactory factory;
-    private final String deploymentName;
 
-    public SessionManagerAdapterFactory(SessionManagerFactory factory, String deploymentName) {
+    public DistributableSessionManagerFactory(SessionManagerFactory factory) {
         this.factory = factory;
-        this.deploymentName = deploymentName;
     }
 
     @Override
     public io.undertow.server.session.SessionManager createSessionManager(Deployment deployment) {
-        SessionContext context = new SessionContextAdapter(deployment);
-        SessionIdentifierFactory factory = new SessionIdentifierFactoryAdapter(new SecureRandomSessionIdGenerator());
+        SessionContext context = new UndertowSessionContext(deployment);
+        SessionIdentifierFactory factory = new UndertowSessionIdentifierFactory(new SecureRandomSessionIdGenerator());
         SessionManager<LocalSessionContext> manager = this.factory.createSessionManager(context, factory, new LocalSessionContextFactory());
-        return new SessionManagerAdapter(deploymentName, manager);
+        return new DistributableSessionManager(deployment.getDeploymentInfo().getDeploymentName(), manager);
     }
 }

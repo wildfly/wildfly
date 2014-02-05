@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
+package org.wildfly.clustering.web.infinispan.session;
 
-import org.wildfly.clustering.web.session.SessionManager;
-
-import io.undertow.server.session.SessionListeners;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.web.session.RouteLocator;
 
 /**
- * Exposes additional session manager aspects to a session.
+ * Builds a {@link RouteLocator} service.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
-    /**
-     * Returns the configured session listeners for this web application
-     * @return the session listeners
-     */
-    SessionListeners getSessionListeners();
+public class RouteLocatorBuilder implements org.wildfly.clustering.web.session.RouteLocatorBuilder {
 
-    /**
-     * Returns underlying distributable session manager implementation.
-     * @return a session manager
-     */
-    SessionManager<LocalSessionContext> getSessionManager();
+    @Override
+    public ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName) {
+        return RouteLocatorService.build(target, name, deploymentServiceName);
+    }
+
+    @Override
+    public ServiceBuilder<?> buildServerDependency(ServiceTarget target, final Value<? extends Value<String>> route) {
+        return target.addService(RouteRegistryEntryProviderService.SERVICE_NAME, new RouteRegistryEntryProviderService(route));
+    }
 }

@@ -1,1 +1,1 @@
-org.wildfly.clustering.web.undertow.session.SessionManagerAdapterFactoryBuilder
+org.wildfly.clustering.web.undertow.session.DistributableSessionManagerFactoryBuilder

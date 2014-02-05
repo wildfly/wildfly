@@ -26,7 +26,6 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
 
 /**
  * Interface for building a session manager factory.
@@ -34,6 +33,4 @@ import org.jboss.msc.value.Value;
  */
 public interface SessionManagerFactoryBuilder {
     ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData);
-
-    ServiceBuilder<?> buildServerDependency(ServiceTarget target, Value<String> instanceId);
 }

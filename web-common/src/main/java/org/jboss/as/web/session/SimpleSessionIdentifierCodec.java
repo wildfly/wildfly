@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,32 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
+package org.jboss.as.web.session;
 
-import org.wildfly.clustering.web.session.SessionManager;
-
-import io.undertow.server.session.SessionListeners;
+import org.jboss.msc.value.Value;
 
 /**
- * Exposes additional session manager aspects to a session.
+ * Simple codec implementation that uses a static route source.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
-    /**
-     * Returns the configured session listeners for this web application
-     * @return the session listeners
-     */
-    SessionListeners getSessionListeners();
+public class SimpleSessionIdentifierCodec implements SessionIdentifierCodec {
 
-    /**
-     * Returns underlying distributable session manager implementation.
-     * @return a session manager
-     */
-    SessionManager<LocalSessionContext> getSessionManager();
+    private final Value<String> route;
+    private final RoutingSupport routing;
+
+    public SimpleSessionIdentifierCodec(RoutingSupport routing, Value<String> route) {
+        this.routing = routing;
+        this.route = route;
+    }
+
+    @Override
+    public String encode(String sessionId) {
+        String route = this.route.getValue();
+        return (route != null) ? this.routing.format(sessionId, route) : sessionId;
+    }
+
+    @Override
+    public String decode(String encodedSessionId) {
+        return (encodedSessionId != null) ? this.routing.parse(encodedSessionId).getKey() : null;
+    }
 }

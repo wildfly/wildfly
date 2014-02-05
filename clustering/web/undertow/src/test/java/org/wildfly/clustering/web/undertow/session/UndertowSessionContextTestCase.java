@@ -47,9 +47,9 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.web.session.SessionContext;
 
-public class SessionContextAdapterTestCase {
+public class UndertowSessionContextTestCase {
     private final Deployment deployment = mock(Deployment.class);
-    private final SessionContext context = new SessionContextAdapter(this.deployment);
+    private final SessionContext context = new UndertowSessionContext(this.deployment);
 
     @Test
     public void getServletContext() {

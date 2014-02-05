@@ -27,9 +27,7 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 import io.undertow.server.session.SessionListeners;
 
-import java.util.AbstractMap;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -39,17 +37,16 @@ import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
 /**
- * Undertow adapter for a {@link SessionManager}.
+ * Adapts a distributable {@link SessionManager} to an Undertow {@link io.undertow.server.session.SessionManager}.
  * @author Paul Ferraro
  */
-public class SessionManagerAdapter implements UndertowSessionManager {
-
+public class DistributableSessionManager implements UndertowSessionManager {
 
     private final String deploymentName;
     private final SessionListeners sessionListeners = new SessionListeners();
     private final SessionManager<LocalSessionContext> manager;
 
-    public SessionManagerAdapter(String deploymentName, SessionManager<LocalSessionContext> manager) {
+    public DistributableSessionManager(String deploymentName, SessionManager<LocalSessionContext> manager) {
         this.deploymentName = deploymentName;
         this.manager = manager;
     }
@@ -65,24 +62,8 @@ public class SessionManagerAdapter implements UndertowSessionManager {
     }
 
     @Override
-    public Map.Entry<String, String> parse(String id) {
-        int index = (id != null) ? id.indexOf('.') : -1;
-        return (index < 0) ? new AbstractMap.SimpleImmutableEntry<String, String>(id, null) : new AbstractMap.SimpleImmutableEntry<>(id.substring(0, index), id.substring(index + 1));
-    }
-
-    @Override
-    public String format(String sessionId, String routeId) {
-        return (routeId != null) ? String.format("%s.%s", sessionId, routeId) : sessionId;
-    }
-
-    @Override
-    public String locate(String sessionId) {
-        return this.manager.locate(sessionId);
-    }
-
-    @Override
     public String getDeploymentName() {
-        return deploymentName;
+        return this.deploymentName;
     }
 
     @Override
@@ -100,7 +81,8 @@ public class SessionManagerAdapter implements UndertowSessionManager {
         if (config == null) {
             throw UndertowMessages.MESSAGES.couldNotFindSessionCookieConfig();
         }
-        String id = this.findSessionId(exchange, config);
+
+        String id = config.findSessionId(exchange);
 
         if (id != null) {
             if (this.manager.containsSession(id)) {
@@ -108,12 +90,13 @@ public class SessionManagerAdapter implements UndertowSessionManager {
             }
         } else {
             id = this.manager.createSessionId();
+            config.setSessionId(exchange, id);
         }
 
         Batch batch = this.manager.getBatcher().startBatch();
         try {
             Session<LocalSessionContext> session = this.manager.createSession(id);
-            io.undertow.server.session.Session adapter = this.getSession(session, exchange, config, batch);
+            io.undertow.server.session.Session adapter = new DistributableSession(this, session, config, batch);
             this.sessionListeners.sessionCreated(adapter, exchange);
             return adapter;
         } catch (RuntimeException | Error e) {
@@ -124,7 +107,7 @@ public class SessionManagerAdapter implements UndertowSessionManager {
 
     @Override
     public io.undertow.server.session.Session getSession(HttpServerExchange exchange, SessionConfig config) {
-        String id = this.findSessionId(exchange, config);
+        String id = config.findSessionId(exchange);
         if (id == null) return null;
 
         Batch batch = this.manager.getBatcher().startBatch();
@@ -134,32 +117,11 @@ public class SessionManagerAdapter implements UndertowSessionManager {
                 batch.close();
                 return null;
             }
-            return this.getSession(session, exchange, config, batch);
+            return new DistributableSession(this, session, config, batch);
         } catch (RuntimeException | Error e) {
             batch.discard();
             throw e;
         }
-    }
-
-    /**
-     * Strips routing information from requested session identifier.
-     */
-    private String findSessionId(HttpServerExchange exchange, SessionConfig config) {
-        String id = config.findSessionId(exchange);
-        return this.parse(id).getKey();
-    }
-
-    /**
-     * Appends routing information to session identifier.
-     */
-    private io.undertow.server.session.Session getSession(Session<LocalSessionContext> session, HttpServerExchange exchange, SessionConfig config, Batch batch) {
-        SessionAdapter adapter = new SessionAdapter(this, session, config, batch);
-        if (config != null) {
-            String id = session.getId();
-            String route = this.locate(id);
-            config.setSessionId(exchange, (route != null) ? this.format(id, route) : id);
-        }
-        return adapter;
     }
 
     @Override
@@ -198,7 +160,7 @@ public class SessionManagerAdapter implements UndertowSessionManager {
         Batch batch = this.manager.getBatcher().startBatch();
         try {
             ImmutableSession session = this.manager.viewSession(sessionId);
-            return (session != null) ? new ImmutableSessionAdapter(this, session) : null;
+            return (session != null) ? new DistributableImmutableSession(this, session) : null;
         } finally {
             batch.discard();
         }

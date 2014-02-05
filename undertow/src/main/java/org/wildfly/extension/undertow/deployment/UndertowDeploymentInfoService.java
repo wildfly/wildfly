@@ -56,6 +56,7 @@ import io.undertow.servlet.api.WebResourceCollection;
 import io.undertow.servlet.handlers.DefaultServlet;
 import io.undertow.servlet.handlers.ServletPathMatches;
 import io.undertow.servlet.util.ImmediateInstanceFactory;
+
 import org.apache.jasper.deploy.FunctionInfo;
 import org.apache.jasper.deploy.JspPropertyGroup;
 import org.apache.jasper.deploy.TagAttributeInfo;
@@ -76,6 +77,7 @@ import org.jboss.as.version.Version;
 import org.jboss.as.web.common.ExpressionFactoryWrapper;
 import org.jboss.as.web.common.ServletContextAttribute;
 import org.jboss.as.web.common.WebInjectionContainer;
+import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.metadata.javaee.spec.DescriptionGroupMetaData;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
@@ -137,6 +139,7 @@ import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
 import org.wildfly.extension.undertow.security.jacc.JACCContextIdHandler;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
 import org.wildfly.extension.undertow.security.jaspi.JASPICSecurityContextFactory;
+import org.wildfly.extension.undertow.session.CodecSessionConfigWrapper;
 import org.xnio.IoUtils;
 
 import javax.servlet.Filter;
@@ -158,7 +161,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.*;
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.AUTHENTICATE;
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.DENY;
+import static io.undertow.servlet.api.SecurityInfo.EmptyRoleSemantic.PERMIT;
 
 /**
  * Service that builds up the undertow metadata.
@@ -195,7 +200,8 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final boolean explodedDeployment;
 
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
-    private final InjectedValue<SessionManagerFactory> sessionManagerFactory = new InjectedValue<SessionManagerFactory>();
+    private final InjectedValue<SessionManagerFactory> sessionManagerFactory = new InjectedValue<>();
+    private final InjectedValue<SessionIdentifierCodec> sessionIdentifierCodec = new InjectedValue<>();
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<ServletContainerService> container = new InjectedValue<>();
     private final InjectedValue<PathManager> pathManagerInjector = new InjectedValue<PathManager>();
@@ -442,11 +448,13 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     }
 
     private void handleDistributable(final DeploymentInfo deploymentInfo) {
-        if (this.mergedMetaData.getDistributable() != null) {
-            SessionManagerFactory factory = this.sessionManagerFactory.getOptionalValue();
-            if (factory != null) {
-                deploymentInfo.setSessionManagerFactory(factory);
-            }
+        SessionManagerFactory managerFactory = this.sessionManagerFactory.getOptionalValue();
+        if (managerFactory != null) {
+            deploymentInfo.setSessionManagerFactory(managerFactory);
+        }
+        SessionIdentifierCodec codec = this.sessionIdentifierCodec.getOptionalValue();
+        if (codec != null) {
+            deploymentInfo.setSessionConfigWrapper(new CodecSessionConfigWrapper(codec));
         }
     }
 
@@ -1170,6 +1178,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
     public Injector<SessionManagerFactory> getSessionManagerFactoryInjector() {
         return this.sessionManagerFactory;
+    }
+
+    public Injector<SessionIdentifierCodec> getSessionIdentifierCodecInjector() {
+        return this.sessionIdentifierCodec;
     }
 
     public InjectedValue<UndertowService> getUndertowService() {

@@ -39,7 +39,6 @@ import org.jboss.as.web.common.SharedTldsMetaDataBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.ImmediateValue;
 import org.wildfly.extension.undertow.deployment.EarContextRootProcessor;
 import org.wildfly.extension.undertow.deployment.JBossWebParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.ServletContainerInitializerDeploymentProcessor;
@@ -55,8 +54,9 @@ import org.wildfly.extension.undertow.deployment.WarStructureDeploymentProcessor
 import org.wildfly.extension.undertow.deployment.WebFragmentParsingDeploymentProcessor;
 import org.wildfly.extension.undertow.deployment.WebJBossAllParser;
 import org.wildfly.extension.undertow.deployment.WebParsingDeploymentProcessor;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
+import org.wildfly.extension.undertow.session.RouteValueService;
 
 
 /**
@@ -142,9 +142,10 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         UndertowLogger.ROOT_LOGGER.serverStarting(Version.getVersionString());
 
-        DistributableSessionManagerFactoryBuilder builder = new DistributableSessionManagerFactoryBuilderValue().getValue();
+        DistributableSessionIdentifierCodecBuilder builder = new DistributableSessionIdentifierCodecBuilderValue().getValue();
         if (builder != null) {
-            newControllers.add(builder.buildServerDependency(target, new ImmediateValue<>(instanceId)).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
+            newControllers.add(builder.buildServerDependency(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
         }
+        newControllers.add(RouteValueService.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
     }
 }

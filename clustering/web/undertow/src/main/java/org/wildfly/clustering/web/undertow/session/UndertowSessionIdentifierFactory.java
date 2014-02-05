@@ -19,47 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session.fine;
+package org.wildfly.clustering.web.undertow.session;
 
-import org.infinispan.distribution.group.Group;
+import io.undertow.server.session.SessionIdGenerator;
+
+import org.wildfly.clustering.web.session.SessionIdentifierFactory;
 
 /**
- * Cache key for session attributes.
+ * {@link SessionIdentifierFactory} that delegates to a {@link SessionIdGenerator}.
  * @author Paul Ferraro
  */
-public class SessionAttributeCacheKey {
+public class UndertowSessionIdentifierFactory implements SessionIdentifierFactory {
 
-    private final String id;
-    private final String attribute;
+    private final SessionIdGenerator generator;
 
-    public SessionAttributeCacheKey(String id, String attribute) {
-        this.id = id;
-        this.attribute = attribute;
-    }
-
-    @Group
-    public String getId() {
-        return this.id;
-    }
-
-    public String getAttribute() {
-        return this.attribute;
+    public UndertowSessionIdentifierFactory(SessionIdGenerator generator) {
+        this.generator = generator;
     }
 
     @Override
-    public int hashCode() {
-        return this.id.hashCode() ^ this.attribute.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if ((object == null) || !(object instanceof SessionAttributeCacheKey)) return false;
-        SessionAttributeCacheKey key = (SessionAttributeCacheKey) object;
-        return this.id.equals(key.id) && this.attribute.equals(key.attribute);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s->%s", this.id, this.attribute);
+    public String createSessionId() {
+        return this.generator.createSessionId();
     }
 }

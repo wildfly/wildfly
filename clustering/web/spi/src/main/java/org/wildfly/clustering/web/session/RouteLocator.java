@@ -21,6 +21,10 @@
  */
 package org.wildfly.clustering.web.session;
 
+/**
+ * Locates the route appropriate for a given session identifier.
+ * @author Paul Ferraro
+ */
 public interface RouteLocator {
     /**
      * Returns the route identifier most appropriate for the specified session identifier.

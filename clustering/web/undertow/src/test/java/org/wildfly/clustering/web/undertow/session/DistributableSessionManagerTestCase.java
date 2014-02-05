@@ -35,7 +35,6 @@ import io.undertow.server.session.SessionConfig;
 import io.undertow.server.session.SessionListener;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -47,11 +46,12 @@ import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.Session;
 import org.wildfly.clustering.web.session.SessionManager;
 
-public class SessionManagerAdapterTestCase {
+public class DistributableSessionManagerTestCase {
+    private final String deploymentName = "mydeployment.war";
     private final SessionManager<LocalSessionContext> manager = mock(SessionManager.class);
     private final SessionListener listener = mock(SessionListener.class);
 
-    private SessionManagerAdapter adapter = new SessionManagerAdapter("mydeployment.war", this.manager);
+    private DistributableSessionManager adapter = new DistributableSessionManager(this.deploymentName, this.manager);
 
     @Before
     public void init() {
@@ -59,25 +59,8 @@ public class SessionManagerAdapterTestCase {
     }
 
     @Test
-    public void parse() {
-        Map.Entry<String, String> result = this.adapter.parse("session1.route1");
-        assertEquals("session1", result.getKey());
-        assertEquals("route1", result.getValue());
-
-        result = this.adapter.parse("session2");
-        assertEquals("session2", result.getKey());
-        assertNull(result.getValue());
-
-        result = this.adapter.parse(null);
-        assertNull(result.getKey());
-        assertNull(result.getValue());
-    }
-
-    @Test
-    public void format() {
-        assertEquals("session1.route1", this.adapter.format("session1", "route1"));
-        assertEquals("session2", this.adapter.format("session2", null));
-        assertNull(this.adapter.format(null, null));
+    public void getDeploymentName() {
+        assertSame(this.deploymentName, this.adapter.getDeploymentName());
     }
 
     @Test
@@ -109,13 +92,10 @@ public class SessionManagerAdapterTestCase {
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
         String sessionId = "session";
-        String route = "route";
-        String routingSessionId = "session.route";
         
         when(this.manager.createSessionId()).thenReturn(sessionId);
         when(this.manager.containsSession(sessionId)).thenReturn(false);
         when(this.manager.createSession(sessionId)).thenReturn(session);
-        when(this.manager.locate(sessionId)).thenReturn(route);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.startBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
@@ -125,7 +105,7 @@ public class SessionManagerAdapterTestCase {
         assertNotNull(sessionAdapter);
         
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
-        verify(config).setSessionId(exchange, routingSessionId);
+        verify(config).setSessionId(exchange, sessionId);
         verifyZeroInteractions(batch);
 
         String expected = "expected";
@@ -142,15 +122,11 @@ public class SessionManagerAdapterTestCase {
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
-        String requestedSessionId = "session.route1";
         String sessionId = "session";
-        String route = "route";
-        String routingSessionId = "session.route";
         
-        when(config.findSessionId(exchange)).thenReturn(requestedSessionId);
+        when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.containsSession(sessionId)).thenReturn(false);
         when(this.manager.createSession(sessionId)).thenReturn(session);
-        when(this.manager.locate(sessionId)).thenReturn(route);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.startBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
@@ -160,7 +136,6 @@ public class SessionManagerAdapterTestCase {
         assertNotNull(sessionAdapter);
         
         verify(this.listener).sessionCreated(sessionAdapter, exchange);
-        verify(config).setSessionId(exchange, routingSessionId);
         verifyZeroInteractions(batch);
         
         String expected = "expected";
@@ -174,10 +149,9 @@ public class SessionManagerAdapterTestCase {
     public void createSessionAlreadyExists() {
         HttpServerExchange exchange = new HttpServerExchange(null);
         SessionConfig config = mock(SessionConfig.class);
-        String requestedSessionId = "session.route1";
         String sessionId = "session";
         
-        when(config.findSessionId(exchange)).thenReturn(requestedSessionId);
+        when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.containsSession(sessionId)).thenReturn(true);
         
         IllegalStateException exception = null;
@@ -196,14 +170,10 @@ public class SessionManagerAdapterTestCase {
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
         Session<LocalSessionContext> session = mock(Session.class);
-        String requestedSessionId = "session.route1";
         String sessionId = "session";
-        String route = "route2";
-        String routingSessionId = "session.route2";
         
-        when(config.findSessionId(exchange)).thenReturn(requestedSessionId);
+        when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.findSession(sessionId)).thenReturn(session);
-        when(this.manager.locate(sessionId)).thenReturn(route);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.startBatch()).thenReturn(batch);
         when(session.getId()).thenReturn(sessionId);
@@ -212,7 +182,6 @@ public class SessionManagerAdapterTestCase {
         
         assertNotNull(sessionAdapter);
         
-        verify(config).setSessionId(exchange, routingSessionId);
         verifyZeroInteractions(batch);
         
         String expected = "expected";
@@ -240,10 +209,9 @@ public class SessionManagerAdapterTestCase {
         Batcher batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         SessionConfig config = mock(SessionConfig.class);
-        String requestedSessionId = "session.route1";
         String sessionId = "session";
         
-        when(config.findSessionId(exchange)).thenReturn(requestedSessionId);
+        when(config.findSessionId(exchange)).thenReturn(sessionId);
         when(this.manager.findSession(sessionId)).thenReturn(null);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.startBatch()).thenReturn(batch);

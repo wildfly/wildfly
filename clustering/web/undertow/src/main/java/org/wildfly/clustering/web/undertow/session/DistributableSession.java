@@ -39,10 +39,10 @@ import io.undertow.server.session.SessionListener.SessionDestroyedReason;
 import io.undertow.servlet.handlers.security.CachedAuthenticatedSessionHandler;
 
 /**
- * Undertow adapter for a {@link Session}.
+ * Adapts a distributable {@link Session} to an Undertow {@link io.undertow.server.session.Session}.
  * @author Paul Ferraro
  */
-public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionContext>> {
+public class DistributableSession extends AbstractDistributableSession<Session<LocalSessionContext>> {
     // Undertow stores the authenticated session in the HttpSession using a special attribute with the following name
     private static final String AUTHENTICATED_SESSION_ATTRIBUTE_NAME = CachedAuthenticatedSessionHandler.class.getName() + ".AuthenticatedSession";
 
@@ -50,7 +50,7 @@ public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionC
     private volatile Map.Entry<Session<LocalSessionContext>, SessionConfig> entry;
     private final Batch batch;
 
-    public SessionAdapter(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config, Batch batch) {
+    public DistributableSession(UndertowSessionManager manager, Session<LocalSessionContext> session, SessionConfig config, Batch batch) {
         this.manager = manager;
         this.entry = new SimpleImmutableEntry<>(session, config);
         this.batch = batch;
@@ -139,7 +139,8 @@ public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionC
         this.manager.getSessionListeners().sessionDestroyed(this, exchange, SessionDestroyedReason.INVALIDATED);
         session.invalidate();
         if (exchange != null) {
-            entry.getValue().clearSession(exchange, session.getId());
+            String id = session.getId();
+            entry.getValue().clearSession(exchange, id);
         }
         this.batch.close();
     }
@@ -156,7 +157,7 @@ public class SessionAdapter extends AbstractSessionAdapter<Session<LocalSessionC
         newSession.getMetaData().setMaxInactiveInterval(oldSession.getMetaData().getMaxInactiveInterval(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
         newSession.getMetaData().setLastAccessedTime(oldSession.getMetaData().getLastAccessedTime());
         newSession.getLocalContext().setAuthenticatedSession(oldSession.getLocalContext().getAuthenticatedSession());
-        config.setSessionId(exchange, this.manager.format(id, manager.locate(id)));
+        config.setSessionId(exchange, id);
         this.entry = new SimpleImmutableEntry<>(newSession, config);
         oldSession.invalidate();
         return id;

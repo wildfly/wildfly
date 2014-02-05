@@ -45,6 +45,7 @@ public class SimpleServlet extends HttpServlet {
     public static final String REQUEST_DURATION_PARAM = "requestduration";
     public static final String HEADER_SERIALIZED = "serialized";
     public static final String VALUE_HEADER = "value";
+    public static final String SESSION_ID_HEADER = "sessionId";
     private static final String ATTRIBUTE = "test";
 
     public static URI createURI(URL baseURL) throws URISyntaxException {
@@ -54,6 +55,7 @@ public class SimpleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession session = req.getSession(true);
+        resp.addHeader(SESSION_ID_HEADER, session.getId());
         Mutable custom = (Mutable) session.getAttribute(ATTRIBUTE);
         if (custom == null) {
             custom = new Mutable(1);

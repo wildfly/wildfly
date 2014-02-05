@@ -28,9 +28,9 @@ import io.undertow.server.session.SessionIdGenerator;
 import org.junit.Test;
 import org.wildfly.clustering.web.session.SessionIdentifierFactory;
 
-public class SessionIdentifierFactoryAdapterTestCase {
+public class UndertowSessionIdentifierFactoryTestCase {
     private final SessionIdGenerator generator = mock(SessionIdGenerator.class);
-    private final SessionIdentifierFactory factory = new SessionIdentifierFactoryAdapter(this.generator);
+    private final SessionIdentifierFactory factory = new UndertowSessionIdentifierFactory(this.generator);
     
     @Test
     public void test() {

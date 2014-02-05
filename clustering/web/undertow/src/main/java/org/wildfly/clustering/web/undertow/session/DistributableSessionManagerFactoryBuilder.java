@@ -29,51 +29,32 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.ValueService;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.msc.value.Value;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderValue;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
 
 /**
- * Distributable session manager factory builder for Undertow.
+ * Distributable {@link SessionManagerFactory} builder for Undertow.
  * @author Paul Ferraro
  */
-public class SessionManagerAdapterFactoryBuilder implements DistributableSessionManagerFactoryBuilder {
+public class DistributableSessionManagerFactoryBuilder implements org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder {
 
     private final SessionManagerFactoryBuilder builder;
 
-    public SessionManagerAdapterFactoryBuilder() {
+    public DistributableSessionManagerFactoryBuilder() {
         this(new SessionManagerFactoryBuilderValue().getValue());
     }
 
-    public SessionManagerAdapterFactoryBuilder(SessionManagerFactoryBuilder builder) {
+    public DistributableSessionManagerFactoryBuilder(SessionManagerFactoryBuilder builder) {
         this.builder = builder;
     }
 
     @Override
-    public ServiceBuilder<SessionManagerFactory> buildDeploymentDependency(ServiceTarget target, ServiceName name, final ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
+    public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
         ServiceName clusteringServiceName = name.append("clustering");
         this.builder.buildDeploymentDependency(target, clusteringServiceName, deploymentServiceName, module, metaData)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
-        final InjectedValue<org.wildfly.clustering.web.session.SessionManagerFactory> factory = new InjectedValue<>();
-        Value<SessionManagerFactory> factoryValue = new Value<SessionManagerFactory>() {
-            @Override
-            public SessionManagerFactory getValue() throws IllegalStateException, IllegalArgumentException {
-                return new SessionManagerAdapterFactory(factory.getValue(), deploymentServiceName.getSimpleName());
-            }
-        };
-        return target.addService(name, new ValueService<>(factoryValue))
-                .addDependency(clusteringServiceName, org.wildfly.clustering.web.session.SessionManagerFactory.class, factory)
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
-    }
-
-    @Override
-    public ServiceBuilder<?> buildServerDependency(ServiceTarget target, Value<String> instanceId) {
-        return this.builder.buildServerDependency(target, instanceId);
+        return DistributableSessionManagerFactoryService.build(target, name, clusteringServiceName);
     }
 }

@@ -19,26 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
+package org.jboss.as.web.session;
 
-import org.wildfly.clustering.web.session.SessionManager;
-
-import io.undertow.server.session.SessionListeners;
+import java.util.Map;
 
 /**
- * Exposes additional session manager aspects to a session.
+ * Exposes the mechanism for parsing and formation routing information from/into a requested session identifier.
  * @author Paul Ferraro
  */
-public interface UndertowSessionManager extends io.undertow.server.session.SessionManager {
+public interface RoutingSupport {
     /**
-     * Returns the configured session listeners for this web application
-     * @return the session listeners
+     * Parses the routing information from the specified session identifier.
+     * @param requestedSessionId the requested session identifier.
+     * @return a map entry containing the session ID and routing information as the key and value, respectively.
      */
-    SessionListeners getSessionListeners();
+    Map.Entry<String, String> parse(String requestedSessionId);
 
     /**
-     * Returns underlying distributable session manager implementation.
-     * @return a session manager
+     * Formats the specified session identifier and route identifier into a single identifier.
+     * @param sessionId a session identifier
+     * @param route a route identifier.
+     * @return a single identifier containing the specified session identifier and routing identifier.
      */
-    SessionManager<LocalSessionContext> getSessionManager();
+    String format(String sessionId, String route);
 }

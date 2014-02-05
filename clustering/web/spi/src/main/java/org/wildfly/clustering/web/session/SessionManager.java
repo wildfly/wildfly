@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.wildfly.clustering.web.Batcher;
 
-public interface SessionManager<L> extends SessionIdentifierFactory, RouteLocator {
+public interface SessionManager<L> extends SessionIdentifierFactory {
     /**
      * Invoked prior to applicaion deployment.
      */
