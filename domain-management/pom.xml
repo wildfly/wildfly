@@ -61,8 +61,35 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.directory.api</groupId>
+            <artifactId>api-ldap-codec-standalone</artifactId>
+            <scope>test</scope>
+        </dependency>    
+        <dependency>
+            <groupId>org.apache.directory.jdbm</groupId>
+            <artifactId>apacheds-jdbm1</artifactId>
+            <type>bundle</type>
+            <scope>test</scope>
+        </dependency>    
+        <dependency>
             <groupId>org.apache.directory.server</groupId>
-            <artifactId>apacheds-all</artifactId>
+            <artifactId>apacheds-core-annotations</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>    
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-interceptor-kerberos</artifactId>
+            <scope>test</scope>
+        </dependency>    
+        <dependency>
+            <groupId>org.apache.directory.server</groupId>
+            <artifactId>apacheds-server-annotations</artifactId>
             <scope>test</scope>
         </dependency>    
     
