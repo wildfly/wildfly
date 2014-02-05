@@ -46,7 +46,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.extension.undertow.filters.FilterService;
+import org.wildfly.extension.undertow.filters.FilterRef;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -90,11 +90,11 @@ class HostAdd extends AbstractAddStepHandler {
         builder.addListener(verificationHandler);
         builder.setInitialMode(Mode.ON_DEMAND);
 
-        configureFilterRef(fullModel, builder, service);
+        configureFilterRef(fullModel, builder, service,address);
 
-        final ServiceController<WebHost> commonController = null;
+        ServiceController<WebHost> commonController = null;
         if (installCommonHost) {
-            addCommonHost(context, verificationHandler, name, aliases, serverName, virtualHostServiceName);
+            commonController = addCommonHost(context, verificationHandler, name, aliases, serverName, virtualHostServiceName);
         }
 
         final ServiceController<Host> serviceController = builder.install();
@@ -148,11 +148,11 @@ class HostAdd extends AbstractAddStepHandler {
         return builder.install();
     }
 
-    private static void configureFilterRef(final ModelNode model, ServiceBuilder<Host> builder, Host service) {
+    private static void configureFilterRef(final ModelNode model, ServiceBuilder<Host> builder, Host service, PathAddress address) {
         if (model.hasDefined(Constants.FILTER_REF)) {
             for (Property property : model.get(Constants.FILTER_REF).asPropertyList()) {
                 String name = property.getName();
-                LocationAdd.addDep(builder, UndertowService.FILTER.append(name), FilterService.class, service.getInjectedFilters());
+                LocationAdd.addDep(builder, UndertowService.getFilterRefServiceName(address, name), FilterRef.class, service.getFilters());
             }
         }
     }

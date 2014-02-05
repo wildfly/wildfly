@@ -27,11 +27,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-
 import javax.security.jacc.PolicyContext;
 import javax.security.jacc.PolicyContextException;
 
 import io.undertow.Version;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -85,6 +85,7 @@ public class UndertowService implements Service<UndertowService> {
     public static ServiceName locationServiceName(final String server, final String virtualHost, final String locationName) {
         return virtualHostName(server, virtualHost).append(Constants.LOCATION, locationName);
     }
+
     public static ServiceName accessLogServiceName(final String server, final String virtualHost) {
         return virtualHostName(server, virtualHost).append(Constants.ACCESS_LOG);
     }
@@ -93,7 +94,44 @@ public class UndertowService implements Service<UndertowService> {
         return virtualHostName(server, virtualHost).append("console", "redirect");
     }
 
-    public static ServiceName listenerName(String listenerName){
+    public static ServiceName filterRefName(final String server, final String virtualHost, final String locationName, final String filterName) {
+        return virtualHostName(server, virtualHost).append(Constants.LOCATION, locationName).append("filter-ref").append(filterName);
+    }
+
+    public static ServiceName filterRefName(final String server, final String virtualHost, final String filterName) {
+        return SERVER.append(server).append(virtualHost).append("filter-ref").append(filterName);
+    }
+
+    public static ServiceName getFilterRefServiceName(final PathAddress address, String name) {
+        final PathAddress oneUp = address.subAddress(0, address.size() - 1);
+        final PathAddress twoUp = oneUp.subAddress(0, oneUp.size() - 1);
+        final PathAddress threeUp = twoUp.subAddress(0, twoUp.size() - 1);
+        ServiceName serviceName;
+        if (address.getLastElement().getKey().equals(Constants.FILTER_REF)) {
+            if (oneUp.getLastElement().getKey().equals(Constants.HOST)) { //adding reference
+                String host = oneUp.getLastElement().getValue();
+                String server = twoUp.getLastElement().getValue();
+                serviceName = UndertowService.filterRefName(server, host, name);
+            } else {
+                String location = oneUp.getLastElement().getValue();
+                String host = twoUp.getLastElement().getValue();
+                String server = threeUp.getLastElement().getValue();
+                serviceName = UndertowService.filterRefName(server, host, location, name);
+            }
+        } else if (address.getLastElement().getKey().equals(Constants.HOST)) {
+            String host = address.getLastElement().getValue();
+            String server = twoUp.getLastElement().getValue();
+            serviceName = UndertowService.filterRefName(server, host, name);
+        } else {
+            String location = address.getLastElement().getValue();
+            String host = oneUp.getLastElement().getValue();
+            String server = twoUp.getLastElement().getValue();
+            serviceName = UndertowService.filterRefName(server, host, location, name);
+        }
+        return serviceName;
+    }
+
+    public static ServiceName listenerName(String listenerName) {
         return UNDERTOW.append(Constants.LISTENER).append(listenerName);
     }
 

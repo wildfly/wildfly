@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import java.io.IOException;
 import java.util.List;
 
+import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import org.jboss.as.controller.PathAddress;
@@ -57,6 +58,7 @@ import org.junit.Test;
 import org.wildfly.extension.io.BufferPoolService;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
+import org.wildfly.extension.undertow.filters.FilterRef;
 import org.wildfly.extension.undertow.filters.FilterService;
 import org.xnio.OptionMap;
 import org.xnio.Options;
@@ -92,21 +94,14 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         ServiceController<FilterService> connectionLimiter = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("limit-connections"));
         connectionLimiter.setMode(ServiceController.Mode.ACTIVE);
         FilterService connectionLimiterService = connectionLimiter.getService().getValue();
-        HttpHandler result = connectionLimiterService.createHttpHandler(new PathHandler());
+        HttpHandler result = connectionLimiterService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", result);
-
-
-        ServiceController<FilterService> gzipFilterController = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("static-gzip"));
-        gzipFilterController.setMode(ServiceController.Mode.ACTIVE);
-        FilterService gzipFilter = gzipFilterController.getService().getValue();
-        HttpHandler gzipHandler = gzipFilter.createHttpHandler(new PathHandler());
-        Assert.assertNotNull("handler should have been created", gzipHandler);
 
 
         ServiceController<FilterService> headersFilter = (ServiceController<FilterService>) mainServices.getContainer().getService(UndertowService.FILTER.append("headers"));
         headersFilter.setMode(ServiceController.Mode.ACTIVE);
         FilterService headersService = headersFilter.getService().getValue();
-        HttpHandler headerHandler = headersService.createHttpHandler(new PathHandler());
+        HttpHandler headerHandler = headersService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", headerHandler);
 
         final ServiceName hostServiceName = UndertowService.virtualHostName("default-server", "other-host");
@@ -114,7 +109,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(hostSC);
         hostSC.setMode(ServiceController.Mode.ACTIVE);
         Host host = hostSC.getValue();
-        Assert.assertEquals(1, host.getInjectedFilters().size());
+        Assert.assertEquals(1, host.getFilters().size());
 
 
         final ServiceName locationServiceName = UndertowService.locationServiceName("default-server", "default-host", "/");
@@ -130,6 +125,14 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         JSPConfig jspConfig = jspServiceServiceController.getService().getValue().getJspConfig();
         Assert.assertNotNull(jspConfig);
         Assert.assertNotNull(jspConfig.createJSPServletInfo());
+
+        final ServiceName filterRefName = UndertowService.filterRefName("default-server", "other-host", "/", "static-gzip");
+
+        ServiceController<FilterRef> gzipFilterController = (ServiceController<FilterRef>) mainServices.getContainer().getService(filterRefName);
+        gzipFilterController.setMode(ServiceController.Mode.ACTIVE);
+        FilterRef gzipFilterRef = gzipFilterController.getService().getValue();
+        HttpHandler gzipHandler = gzipFilterRef.createHttpHandler(new PathHandler());
+        Assert.assertNotNull("handler should have been created", gzipHandler);
 
 
     }
