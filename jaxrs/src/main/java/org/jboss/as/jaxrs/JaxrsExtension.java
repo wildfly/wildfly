@@ -24,7 +24,7 @@ package org.jboss.as.jaxrs;
 
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoContent;
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
 import java.util.List;
 import javax.xml.stream.XMLStreamConstants;

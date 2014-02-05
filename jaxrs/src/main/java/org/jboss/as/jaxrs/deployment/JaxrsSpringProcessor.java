@@ -22,8 +22,7 @@
 
 package org.jboss.as.jaxrs.deployment;
 
-import org.jboss.as.jaxrs.JaxrsLogger;
-import org.jboss.as.jaxrs.JaxrsMessages;
+import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -87,7 +86,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             if (resourceRoot == null) {
                 URL url = this.getClass().getClassLoader().getResource(SPRING_INT_JAR);
                 if (url == null) {
-                    throw JaxrsMessages.MESSAGES.noSpringIntegrationJar();
+                    throw JaxrsLogger.JAXRS_LOGGER.noSpringIntegrationJar();
                 }
 
                 File file = new File(url.toURI());
