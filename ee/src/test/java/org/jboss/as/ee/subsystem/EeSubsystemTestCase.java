@@ -206,42 +206,55 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
 
-        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, new FailedOperationTransformationConfig()
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM), new GlobalModulesConfig())
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE)), REJECTED_RESOURCE)
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY)), REJECTED_RESOURCE)
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)), REJECTED_RESOURCE)
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)), REJECTED_RESOURCE)
-                .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.ANNOTATION_PROPERTY_REPLACEMENT)), REJECTED_RESOURCE)
-        );
+        FailedOperationTransformationConfig.ChainedConfig chained =
+                FailedOperationTransformationConfig.ChainedConfig.createBuilder(GlobalModulesDefinition.INSTANCE.getName(), EESubsystemModel.ANNOTATION_PROPERTY_REPLACEMENT)
+                .addConfig(new GlobalModulesConfig())
+                .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(EESubsystemModel.ANNOTATION_PROPERTY_REPLACEMENT) {
+                    @Override
+                    protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+                        ModelNode resolved = super.correctValue(toResolve, isWriteAttribute);
+                        //Make it a boolean
+                        return new ModelNode(resolved.asBoolean());
+                    }})
+                .build();
+
+
+        FailedOperationTransformationConfig config =  new FailedOperationTransformationConfig()
+        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM), chained)
+        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE)), REJECTED_RESOURCE)
+        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY)), REJECTED_RESOURCE)
+        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_EXECUTOR_SERVICE)), REJECTED_RESOURCE)
+        .addFailedAttribute(PathAddress.pathAddress(EeExtension.PATH_SUBSYSTEM, PathElement.pathElement(EESubsystemModel.MANAGED_SCHEDULED_EXECUTOR_SERVICE)), REJECTED_RESOURCE);
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
     }
 
     @Test
-    public void testTransformersDiscardGlobalModules713() throws Exception {
-        testTransformersDiscardGlobalModules1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
+    public void testTransformersDiscardsImpliedValues713() throws Exception {
+        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
-    public void testTransformersDiscardGlobalModules720() throws Exception {
-        testTransformersDiscardGlobalModules1_0_0(ModelTestControllerVersion.V7_2_0_FINAL);
+    public void testTransformersDiscardsImpliedValues720() throws Exception {
+        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.V7_2_0_FINAL);
     }
 
     @Test
-    public void testTransformersDiscardGlobalModulesEAP601() throws Exception {
-        testTransformersDiscardGlobalModules1_0_0(ModelTestControllerVersion.EAP_6_0_1);
+    public void testTransformersDiscardsImpliedValuesEAP601() throws Exception {
+        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.EAP_6_0_1);
     }
 
     @Test
-    public void testTransformersDiscardGlobalModulesEAP610() throws Exception {
-        testTransformersDiscardGlobalModules1_0_0(ModelTestControllerVersion.EAP_6_1_0);
+    public void testTransformersDiscardsImpliedValuesEAP610() throws Exception {
+        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.EAP_6_1_0);
     }
 
     @Test
-    public void testTransformersDiscardGlobalModulesEAP611() throws Exception {
-        testTransformersDiscardGlobalModules1_0_0(ModelTestControllerVersion.EAP_6_1_1);
+    public void testTransformersDiscardsImpliedValuesEAP611() throws Exception {
+        testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion.EAP_6_1_1);
     }
 
-    private void testTransformersDiscardGlobalModules1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testTransformersDiscardsImpliedValues1_0_0(ModelTestControllerVersion controllerVersion) throws Exception {
         String subsystemXml = readResource("subsystem-transformers-discard.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 0, 0);
         //Use the non-runtime version of the extension which will happen on the HC
