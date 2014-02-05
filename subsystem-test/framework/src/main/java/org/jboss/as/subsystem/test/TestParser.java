@@ -63,8 +63,9 @@ public final class TestParser implements  ModelTestParser {
 
         String defaultNamespace = writer.getNamespaceContext().getNamespaceURI(XMLConstants.DEFAULT_NS_PREFIX);
         try {
-            ModelNode subsystem = context.getModelNode().get(SUBSYSTEM, mainSubsystemName);
-            if (subsystem.isDefined()) {
+            ModelNode subsystems = context.getModelNode().get(SUBSYSTEM);
+            if (subsystems.has(mainSubsystemName)) {
+                ModelNode subsystem = subsystems.get(mainSubsystemName);
                 //We might have been removed
                 XMLElementWriter<SubsystemMarshallingContext> subsystemWriter = context.getSubsystemWriter(mainSubsystemName);
                 if (subsystemWriter != null) {
