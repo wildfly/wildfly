@@ -21,13 +21,13 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
 
 /**
@@ -53,15 +53,15 @@ public final class WSDeploymentBuilder {
 
     public void build(final DeploymentUnit unit) {
         if (isJaxwsPojoDeployment(unit)) {
-            ROOT_LOGGER.detectedDeployment("JAXWS", "POJO");
+            WSLogger.ROOT_LOGGER.trace("Detected JAXWS POJO deployment");
             JAXWS_JSE.newDeploymentModel(unit);
         }
         if (isJaxwsJmsDeployment(unit)) {
-            ROOT_LOGGER.detectedDeployment("JAXWS", "JMS");
+            WSLogger.ROOT_LOGGER.trace("Detected JAXWS JMS deployment");
             JAXWS_JMS.newDeploymentModel(unit);
         }
         if (isJaxwsEjbDeployment(unit)) {
-            ROOT_LOGGER.detectedDeployment("JAXWS", "EJB");
+            WSLogger.ROOT_LOGGER.trace("Detected JAXWS EJB deployment");
             JAXWS_EJB.newDeploymentModel(unit);
         }
     }

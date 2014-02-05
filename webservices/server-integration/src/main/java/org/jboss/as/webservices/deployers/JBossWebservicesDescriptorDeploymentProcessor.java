@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
 import java.io.IOException;
 import java.net.URL;
 
@@ -33,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.JBossWebservicesPropertyReplaceFactory;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.vfs.VirtualFile;
@@ -72,7 +71,7 @@ public final class JBossWebservicesDescriptorDeploymentProcessor implements Depl
         try {
             return jwsdd.exists() ? jwsdd.toURL() : null;
         } catch (IOException e) {
-            throw MESSAGES.cannotGetURLForDescriptor(e, jwsdd.getPathName());
+            throw WSLogger.ROOT_LOGGER.cannotGetURLForDescriptor(e, jwsdd.getPathName());
         }
     }
 

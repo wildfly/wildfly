@@ -21,13 +21,12 @@
  */
 package org.jboss.as.webservices.tomcat;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
 import org.jboss.metadata.ear.spec.EarMetaData;
@@ -89,7 +88,7 @@ final class WebMetaDataCreator {
      * @param jbossWebMD jboss web meta data
      */
     private void createWebAppDescriptor(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        ROOT_LOGGER.creatingWebXmlDescriptor();
+        WSLogger.ROOT_LOGGER.trace("Creating web.xml descriptor");
         createServlets(dep, jbossWebMD);
         createServletMappings(dep, jbossWebMD);
         createSecurityConstraints(dep, jbossWebMD);
@@ -114,21 +113,21 @@ final class WebMetaDataCreator {
      * @param jbossWebMD jboss web meta data
      */
     private void createJBossWebAppDescriptor(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        ROOT_LOGGER.creatingJBossWebXmlDescriptor();
+         WSLogger.ROOT_LOGGER.trace("Creating jboss-web.xml descriptor");
 
         // Set security domain
         final String securityDomain = ejb3SecurityAccessor.getSecurityDomain(dep);
         final boolean hasSecurityDomain = securityDomain != null;
 
         if (hasSecurityDomain) {
-            ROOT_LOGGER.settingSecurityDomain(securityDomain);
+             WSLogger.ROOT_LOGGER.tracef("Setting security domain: %s", securityDomain);
             jbossWebMD.setSecurityDomain(securityDomain);
         }
 
         // Set virtual host
         final String virtualHost = dep.getService().getVirtualHost();
         if (virtualHost != null) {
-            ROOT_LOGGER.settingVirtualHost(virtualHost);
+             WSLogger.ROOT_LOGGER.tracef("Setting virtual host: %s", virtualHost);
             jbossWebMD.setVirtualHosts(Arrays.asList(virtualHost));
         }
     }
@@ -147,14 +146,14 @@ final class WebMetaDataCreator {
      * @param jbossWebMD jboss web meta data
      */
     private void createServlets(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        ROOT_LOGGER.creatingServlets();
+         WSLogger.ROOT_LOGGER.trace("Creating servlets");
         final JBossServletsMetaData servlets = WebMetaDataHelper.getServlets(jbossWebMD);
 
         for (final Endpoint endpoint : dep.getService().getEndpoints()) {
             final String endpointName = endpoint.getShortName();
             final String endpointClassName = endpoint.getTargetBeanName();
 
-            ROOT_LOGGER.creatingServlet(endpointName, endpointClassName);
+             WSLogger.ROOT_LOGGER.tracef("Servlet name: %s, class: %s", endpointName, endpointClassName);
             WebMetaDataHelper.newServlet(endpointName, endpointClassName, servlets);
         }
     }
@@ -173,7 +172,7 @@ final class WebMetaDataCreator {
      * @param jbossWebMD jboss web meta data
      */
     private void createServletMappings(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        ROOT_LOGGER.creatingServletMappings();
+         WSLogger.ROOT_LOGGER.trace("Creating servlet mappings");
         final List<ServletMappingMetaData> servletMappings = WebMetaDataHelper.getServletMappings(jbossWebMD);
 
         for (final Endpoint ep : dep.getService().getEndpoints()) {
@@ -181,7 +180,7 @@ final class WebMetaDataCreator {
                 final String endpointName = ep.getShortName();
                 final List<String> urlPatterns = WebMetaDataHelper.getUrlPatterns(((HttpEndpoint) ep).getURLPattern());
 
-                ROOT_LOGGER.creatingServletMapping(endpointName, urlPatterns);
+                 WSLogger.ROOT_LOGGER.tracef("Servlet name: %s, URL patterns: %s", endpointName, urlPatterns);
                 WebMetaDataHelper.newServletMapping(endpointName, urlPatterns, servletMappings);
             }
         }
@@ -211,7 +210,7 @@ final class WebMetaDataCreator {
      * @param jbossWebMD jboss web meta data
      */
     private void createSecurityConstraints(final Deployment dep, final JBossWebMetaData jbossWebMD) {
-        ROOT_LOGGER.creatingSecurityConstraints();
+         WSLogger.ROOT_LOGGER.trace("Creating security constraints");
         for (final Endpoint ejbEndpoint : dep.getService().getEndpoints()) {
             final boolean secureWsdlAccess = ejb3SecurityAccessor.isSecureWsdlAccess(ejbEndpoint);
             final String transportGuarantee = ejb3SecurityAccessor.getTransportGuarantee(ejbEndpoint);
@@ -232,19 +231,19 @@ final class WebMetaDataCreator {
                         .getWebResourceCollections(securityConstraint);
                 final String endpointName = ejbEndpoint.getShortName();
                 final String urlPattern = ((HttpEndpoint) ejbEndpoint).getURLPattern();
-                ROOT_LOGGER.creatingWebResourceCollection(endpointName, urlPattern);
+                 WSLogger.ROOT_LOGGER.tracef("Creating web resource collection for endpoint: %s, URL pattern: %s", endpointName, urlPattern);
                 WebMetaDataHelper.newWebResourceCollection(endpointName, urlPattern, secureWsdlAccess,
                         webResourceCollections);
 
                 // auth-constraint
                 if (hasAuthMethod) {
-                    ROOT_LOGGER.creatingAuthConstraint(endpointName);
+                     WSLogger.ROOT_LOGGER.tracef("Creating auth constraint for endpoint: %s", endpointName);
                     WebMetaDataHelper.newAuthConstraint(WebMetaDataHelper.getAllRoles(), securityConstraint);
                 }
 
                 // user-data-constraint
                 if (hasTransportGuarantee) {
-                    ROOT_LOGGER.creatingUserDataConstraint(endpointName, transportGuarantee);
+                     WSLogger.ROOT_LOGGER.tracef("Creating new user data constraint for endpoint: %s, transport guarantee: %s", endpointName, transportGuarantee);
                     WebMetaDataHelper.newUserDataConstraint(transportGuarantee, securityConstraint);
                 }
             }
@@ -269,7 +268,7 @@ final class WebMetaDataCreator {
         final boolean hasAuthMethod = authMethod != null;
 
         if (hasAuthMethod) {
-            ROOT_LOGGER.creatingLoginConfig(EJB_WEBSERVICE_REALM, authMethod);
+             WSLogger.ROOT_LOGGER.tracef("Creating new login config: %s, auth method: %s", EJB_WEBSERVICE_REALM, authMethod);
             final LoginConfigMetaData loginConfig = WebMetaDataHelper.getLoginConfig(jbossWebMD);
             loginConfig.setRealmName(WebMetaDataCreator.EJB_WEBSERVICE_REALM);
             loginConfig.setAuthMethod(authMethod);
@@ -299,7 +298,7 @@ final class WebMetaDataCreator {
             final boolean hasSecurityRolesMD = securityRolesMD != null && !securityRolesMD.isEmpty();
 
             if (hasSecurityRolesMD) {
-                ROOT_LOGGER.creatingSecurityRoles();
+                 WSLogger.ROOT_LOGGER.trace("Setting security roles");
                 jbossWebMD.setSecurityRoles(securityRolesMD);
             }
         }

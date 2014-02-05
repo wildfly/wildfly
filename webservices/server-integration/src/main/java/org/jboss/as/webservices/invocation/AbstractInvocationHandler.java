@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.invocation;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.COMPONENT_VIEW_NAME;
 import static org.jboss.as.webservices.util.ASHelper.getMSCService;
 
@@ -37,6 +36,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.webservices.injection.WSComponent;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -76,7 +76,7 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
             if (componentView == null) {
                componentView = getMSCService(componentViewName, ComponentView.class);
                if (componentView == null) {
-                  throw MESSAGES.cannotFindComponentView(componentViewName);
+                  throw WSLogger.ROOT_LOGGER.cannotFindComponentView(componentViewName);
                }
                if (reference == null) {
                   try {
@@ -132,7 +132,7 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
          wsInvocation.setReturnValue(retObj);
       }
       catch (Throwable t) {
-         log.error(MESSAGES.methodInvocationFailed(t.getLocalizedMessage()), t);
+         WSLogger.ROOT_LOGGER.methodInvocationFailed(t, t.getLocalizedMessage());
          handleInvocationException(t);
       }
       finally {

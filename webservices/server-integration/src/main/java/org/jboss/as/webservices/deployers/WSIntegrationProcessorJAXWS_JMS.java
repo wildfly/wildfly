@@ -23,7 +23,6 @@ package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.server.deployment.Attachments.DEPLOYMENT_ROOT;
 import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getAnnotations;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
@@ -44,6 +43,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
@@ -118,7 +118,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
                         }
                     }
                 } catch (Exception ignore) {
-                    ROOT_LOGGER.cannotReadWsdl(wsdlLocation);
+                    WSLogger.ROOT_LOGGER.cannotReadWsdl(wsdlLocation);
                 }
             }
 

@@ -21,13 +21,13 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.metadata.model.AbstractEndpoint.COMPONENT_VIEW_NAME;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -46,12 +46,12 @@ final class DeploymentModelBuilderJAXWS_POJO extends AbstractDeploymentModelBuil
 
     @Override
     protected void build(final Deployment dep, final DeploymentUnit unit) {
-        ROOT_LOGGER.creatingEndpointsMetaDataModel("JAXWS", "POJO");
+        WSLogger.ROOT_LOGGER.trace("Creating JAXWS POJO endpoints meta data model");
         for (final POJOEndpoint pojoEndpoint : getJaxwsPojos(unit)) {
             final String pojoEndpointName = pojoEndpoint.getName();
-            ROOT_LOGGER.pojoName(pojoEndpointName);
+            WSLogger.ROOT_LOGGER.tracef("POJO name: %s", pojoEndpointName);
             final String pojoEndpointClassName = pojoEndpoint.getClassName();
-            ROOT_LOGGER.pojoClass(pojoEndpointClassName);
+            WSLogger.ROOT_LOGGER.tracef("POJO class: %s", pojoEndpointClassName);
             final Endpoint ep = newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
             final ServiceName componentViewName = pojoEndpoint.getComponentViewName();
             if (componentViewName != null) {

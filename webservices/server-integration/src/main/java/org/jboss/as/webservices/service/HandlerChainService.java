@@ -21,13 +21,12 @@
  */
 package org.jboss.as.webservices.service;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.webservices.dmr.ListInjector;
 import org.jboss.msc.inject.Injector;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -50,7 +49,7 @@ public final class HandlerChainService implements Service<UnifiedHandlerChainMet
     public HandlerChainService(String handlerChainType, String handlerChainId, String protocolBindings) {
         if (!handlerChainType.equalsIgnoreCase("pre-handler-chain") && !handlerChainType.equals("post-handler-chain")) {
             throw new RuntimeException(
-                    MESSAGES.wrongHandlerChainType(handlerChainType, "pre-handler-chain", "post-handler-chain"));
+                    WSLogger.ROOT_LOGGER.wrongHandlerChainType(handlerChainType, "pre-handler-chain", "post-handler-chain"));
         }
         this.handlerChainId = handlerChainId;
         this.protocolBindings = protocolBindings;

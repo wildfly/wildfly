@@ -21,8 +21,7 @@
  */
 package org.jboss.as.webservices.metadata;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.ws.common.integration.WSHelper;
@@ -45,13 +44,13 @@ public final class ContainerMetaDataDeploymentAspect extends AbstractDeploymentA
     public void start(final Deployment dep) {
         if (WSHelper.isJaxwsJseDeployment(dep)) {
             if (WSHelper.hasAttachment(dep, JBossWebMetaData.class)) {
-                ROOT_LOGGER.creatingDeployment("JAXWS", "POJO", dep.getSimpleName());
+                WSLogger.ROOT_LOGGER.tracef("Creating JBoss agnostic JAXWS POJO meta data for deployment: %s", dep.getSimpleName());
                 final JSEArchiveMetaData jseMetaData = jaxwsPojoMDBuilder.create(dep);
                 dep.addAttachment(JSEArchiveMetaData.class, jseMetaData);
             }
         }
         if (WSHelper.isJaxwsEjbDeployment(dep)) {
-            ROOT_LOGGER.creatingDeployment("JAXWS", "EJB", dep.getSimpleName());
+            WSLogger.ROOT_LOGGER.tracef("Creating JBoss agnostic JAXWS EJB meta data for deployment: %s", dep.getSimpleName());
             final EJBArchiveMetaData ejbMetaData = jaxwsEjbMDBuilder.create(dep);
             dep.addAttachment(EJBArchiveMetaData.class, ejbMetaData);
         }

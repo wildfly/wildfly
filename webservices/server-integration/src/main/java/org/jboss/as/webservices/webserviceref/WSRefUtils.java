@@ -22,8 +22,6 @@
 
 package org.jboss.as.webservices.webserviceref;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -43,6 +41,7 @@ import javax.xml.ws.WebServiceRef;
 import javax.xml.ws.WebServiceRefs;
 import javax.xml.ws.soap.MTOM;
 
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.metadata.javaee.jboss.JBossPortComponentRef;
 import org.jboss.metadata.javaee.jboss.JBossServiceReferenceMetaData;
 import org.jboss.metadata.javaee.jboss.StubPropertyMetaData;
@@ -91,7 +90,7 @@ final class WSRefUtils {
                 if (portComponentUMDM.getServiceEndpointInterface() != null || portComponentUMDM.getPortQName() != null) {
                     serviceRefUMDM.addPortComponentRef(portComponentUMDM);
                 } else {
-                    ROOT_LOGGER.ignoringPortComponentRef(portComponentUMDM);
+                    WSLogger.ROOT_LOGGER.ignoringPortComponentRef(portComponentUMDM);
                 }
             }
         }

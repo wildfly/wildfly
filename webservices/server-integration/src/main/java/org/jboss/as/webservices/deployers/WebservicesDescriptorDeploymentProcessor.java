@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.deployers;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
 import java.io.IOException;
 import java.net.URL;
 
@@ -33,6 +31,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.WebservicesPropertyReplaceFactory;
 import org.jboss.as.webservices.util.WSAttachmentKeys;
 import org.jboss.vfs.VirtualFile;
@@ -58,7 +57,7 @@ public final class WebservicesDescriptorDeploymentProcessor implements Deploymen
             final WebservicesMetaData webservicesMD = webservicesFactory.load(webservicesDescriptorURL);
             unit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, webservicesMD);
             if (hasJaxRpcMapping(webservicesMD)) {
-                throw MESSAGES.jaxRpcNotSupported();
+                throw WSLogger.ROOT_LOGGER.jaxRpcNotSupported();
             }
         }
     }
@@ -77,7 +76,7 @@ public final class WebservicesDescriptorDeploymentProcessor implements Deploymen
         try {
             return wsdd.exists() ? wsdd.toURL() : null;
         } catch (IOException e) {
-            throw MESSAGES.cannotGetURLForDescriptor(e, wsdd.getPathName());
+            throw WSLogger.ROOT_LOGGER.cannotGetURLForDescriptor(e, wsdd.getPathName());
         }
     }
 

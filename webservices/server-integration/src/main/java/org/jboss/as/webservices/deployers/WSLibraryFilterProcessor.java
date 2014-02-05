@@ -24,8 +24,6 @@ package org.jboss.as.webservices.deployers;
 
 import static org.jboss.as.server.deployment.Attachments.ANNOTATION_INDEX;
 import static org.jboss.as.server.deployment.Attachments.RESOURCE_ROOTS;
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.util.ASHelper.hasClassesFromPackage;
 import static org.jboss.as.webservices.util.ASHelper.isJaxwsEndpoint;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
@@ -43,6 +41,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ResourceRoot;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -68,13 +67,13 @@ public class WSLibraryFilterProcessor implements DeploymentUnitProcessor {
                 if (resourceRoots != null) {
                     for (ResourceRoot root : resourceRoots) {
                         if (hasClassesFromPackage(root.getAttachment(ANNOTATION_INDEX), "org.apache.cxf")) {
-                            throw MESSAGES.invalidLibraryInDeployment("Apache CXF", root.getRootName());
+                            throw WSLogger.ROOT_LOGGER.invalidLibraryInDeployment("Apache CXF", root.getRootName());
                         }
                     }
                 }
             }
         } else {
-            ROOT_LOGGER.skippingAnnotationProcessing(unit.getName());
+            WSLogger.ROOT_LOGGER.tracef("Skipping WS annotation processing since no composite annotation index found in unit: %s", unit.getName());
         }
     }
 

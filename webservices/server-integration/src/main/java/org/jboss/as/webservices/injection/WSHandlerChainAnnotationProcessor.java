@@ -23,7 +23,6 @@
 package org.jboss.as.webservices.injection;
 
 import static org.jboss.as.server.deployment.Attachments.ANNOTATION_INDEX;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.util.ASHelper.isJaxwsService;
 import static org.jboss.as.webservices.util.DotNames.HANDLER_CHAIN_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
@@ -47,8 +46,8 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.module.ResourceRoot;
-import org.jboss.as.webservices.WSLogger;
 import org.jboss.as.webservices.util.ASHelper;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
@@ -148,7 +147,7 @@ public final class WSHandlerChainAnnotationProcessor implements DeploymentUnitPr
                 return config.openStream();
             }
 
-            throw MESSAGES.missingHandlerChainConfigFile(handlerChainConfigFileResourcePath, resourceRoot);
+            throw WSLogger.ROOT_LOGGER.missingHandlerChainConfigFile(handlerChainConfigFileResourcePath, resourceRoot);
         }
     }
 
