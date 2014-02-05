@@ -28,7 +28,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.naming.jndi.CorbaUtils;
 import org.jboss.as.network.NetworkUtils;

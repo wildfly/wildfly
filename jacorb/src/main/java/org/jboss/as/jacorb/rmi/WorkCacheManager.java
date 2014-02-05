@@ -33,8 +33,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.jacorb.JacORBMessages;
-
+import org.jboss.as.jacorb.logging.JacORBLogger;
 
 /**
  * Instances of this class cache the most complex analyse types.
@@ -93,7 +92,7 @@ class WorkCacheManager {
             constructor = cls.getDeclaredConstructor(new Class[]{Class.class});
             initializer = cls.getDeclaredMethod("doAnalyze");
         } catch (NoSuchMethodException ex) {
-            throw JacORBMessages.MESSAGES.unexpectedException(ex);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(ex);
         }
         workDone = new HashMap<Class, SoftReference<ContainerAnalysis>>();
         workInProgress = new HashMap<InProgressKey, ContainerAnalysis>();

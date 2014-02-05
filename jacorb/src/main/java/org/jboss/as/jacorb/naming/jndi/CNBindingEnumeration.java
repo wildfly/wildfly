@@ -33,7 +33,7 @@ import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.spi.NamingManager;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CosNaming.BindingIterator;
 import org.omg.CosNaming.BindingIteratorHolder;
 import org.omg.CosNaming.BindingListHolder;
@@ -72,7 +72,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
             try {
                 batchsize = Integer.parseInt(batch);
             } catch (NumberFormatException e) {
-                throw JacORBMessages.MESSAGES.illegalBatchSize(batch);
+                throw JacORBLogger.ROOT_LOGGER.illegalBatchSize(batch);
             }
         }
         _ctx = ctx;
@@ -195,7 +195,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
             counter = 0; // reset
         } catch (Exception e) {
             more = false;
-            NamingException ne = JacORBMessages.MESSAGES.errorGettingBindingList();
+            NamingException ne = JacORBLogger.ROOT_LOGGER.errorGettingBindingList();
             ne.setRootCause(e);
             throw ne;
         }
@@ -222,7 +222,7 @@ final class CNBindingEnumeration implements NamingEnumeration {
         } catch (NamingException e) {
             throw e;
         } catch (Exception e) {
-            NamingException ne = JacORBMessages.MESSAGES.errorGeneratingObjectViaFactory();
+            NamingException ne = JacORBLogger.ROOT_LOGGER.errorGeneratingObjectViaFactory();
             ne.setRootCause(e);
             throw ne;
         }

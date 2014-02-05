@@ -21,8 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.DefinitionKind;
 import org.omg.CORBA.IRObject;
 import org.omg.CORBA.IRObjectOperations;
@@ -57,7 +56,7 @@ abstract class IRObjectImpl implements IRObjectOperations {
     }
 
     public void destroy() {
-        throw JacORBMessages.MESSAGES.cannotDestroyRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotDestroyRMIIIOPMapping();
     }
 
     public abstract IRObject getReference();

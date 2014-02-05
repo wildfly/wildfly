@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.Contained;
@@ -226,39 +226,39 @@ class ContainerImplDelegate
     }
 
     public ModuleDef create_module(String id, String name, String version) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ConstantDef create_constant(String id, String name, String version,
                                        IDLType type, org.omg.CORBA.Any value) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public StructDef create_struct(String id, String name, String version,
                                    StructMember[] members) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public UnionDef create_union(String id, String name, String version,
                                  IDLType discriminator_type,
                                  UnionMember[] members) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public EnumDef create_enum(String id, String name, String version,
                                String[] members) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public AliasDef create_alias(String id, String name, String version,
                                  IDLType original_type) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public InterfaceDef create_interface(String id, String name, String version,
                                          InterfaceDef[] base_interfaces,
                                          boolean is_abstract) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ValueDef create_value(String id, String name, String version,
@@ -267,21 +267,21 @@ class ContainerImplDelegate
                                  ValueDef[] abstract_base_values,
                                  InterfaceDef[] supported_interfaces,
                                  Initializer[] initializers) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ValueBoxDef create_value_box(String id, String name, String version,
                                         IDLType original_type_def) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ExceptionDef create_exception(String id, String name, String version,
                                          StructMember[] members) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public NativeDef create_native(String id, String name, String version) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
 
@@ -300,9 +300,9 @@ class ContainerImplDelegate
 
     void add(String name, LocalContained contained) throws IRConstructionException {
         if (contained.getRepository() != delegateFor.getRepository())
-            throw JacORBMessages.MESSAGES.wrongInterfaceRepository();
+            throw JacORBLogger.ROOT_LOGGER.wrongInterfaceRepository();
         if (contMap.get(name) != null)
-            throw JacORBMessages.MESSAGES.duplicateRepositoryName();
+            throw JacORBLogger.ROOT_LOGGER.duplicateRepositoryName();
         cont.add(contained);
         contMap.put(name, contained);
     }

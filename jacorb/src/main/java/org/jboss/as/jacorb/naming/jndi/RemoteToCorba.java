@@ -33,8 +33,7 @@ import javax.naming.Name;
 import javax.naming.NamingException;
 import javax.naming.spi.StateFactory;
 
-import org.jboss.as.jacorb.JacORBMessages;
-
+import org.jboss.as.jacorb.logging.JacORBLogger;
 
 /**
  * StateFactory that turns java.rmi.Remote objects to org.omg.CORBA.Object.
@@ -79,7 +78,7 @@ public class RemoteToCorba implements StateFactory {
                         CorbaUtils.remoteToCorba((Remote) orig, ((CNCtx) ctx)._orb);
             } catch (ClassNotFoundException e) {
                 // RMI-IIOP library not available
-                throw JacORBMessages.MESSAGES.unavailableRMIPackages();
+                throw JacORBLogger.ROOT_LOGGER.unavailableRMIPackages();
             }
         }
         return null; // pass and let next state factory try

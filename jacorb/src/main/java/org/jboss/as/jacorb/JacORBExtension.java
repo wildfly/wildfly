@@ -46,6 +46,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -121,7 +122,7 @@ public class JacORBExtension implements Extension {
 
                 @Override
                 public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-                    return JacORBMessages.MESSAGES.cannotUseSecurityClient();
+                    return JacORBLogger.ROOT_LOGGER.cannotUseSecurityClient();
                 }
 
                 @Override

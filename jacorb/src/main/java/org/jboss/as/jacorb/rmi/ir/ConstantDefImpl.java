@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ConstantDef;
 import org.omg.CORBA.ConstantDefOperations;
@@ -81,7 +81,7 @@ public class ConstantDefImpl extends ContainedImpl implements ConstantDefOperati
     }
 
     public void type_def(IDLType arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public Any value() {
@@ -89,7 +89,7 @@ public class ConstantDefImpl extends ContainedImpl implements ConstantDefOperati
     }
 
     public void value(Any arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
 

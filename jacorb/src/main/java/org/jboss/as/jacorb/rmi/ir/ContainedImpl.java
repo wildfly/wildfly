@@ -23,7 +23,7 @@ package org.jboss.as.jacorb.rmi.ir;
 
 import java.nio.charset.StandardCharsets;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.ContainedPackage.Description;
 import org.omg.CORBA.Container;
 import org.omg.CORBA.ContainerHelper;
@@ -60,7 +60,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
     }
 
     public void id(java.lang.String id) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public java.lang.String name() {
@@ -68,7 +68,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
     }
 
     public void name(java.lang.String name) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public java.lang.String version() {
@@ -76,7 +76,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
     }
 
     public void version(java.lang.String version) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public Container defined_in() {
@@ -95,7 +95,7 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
 
     public void move(Container new_container,
                      String new_name, String new_version) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     /**

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ContainedOperations;
 import org.omg.CORBA.ContainedPackage.Description;
@@ -81,7 +81,7 @@ class ValueMemberDefImpl extends ContainedImpl implements ValueMemberDefOperatio
     }
 
     public void type_def(IDLType arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public short access() {
@@ -89,7 +89,7 @@ class ValueMemberDefImpl extends ContainedImpl implements ValueMemberDefOperatio
     }
 
     public void access(short arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public Description describe() {

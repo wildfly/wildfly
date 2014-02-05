@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.Any;
 
 
@@ -49,7 +49,7 @@ public class ConstantAnalysis
 
         if (type == Void.TYPE ||
                 !type.isPrimitive() && type != java.lang.String.class)
-            throw JacORBMessages.MESSAGES.badConstantType(type.getName());
+            throw JacORBLogger.ROOT_LOGGER.badConstantType(type.getName());
 
         this.type = type;
         this.value = value;

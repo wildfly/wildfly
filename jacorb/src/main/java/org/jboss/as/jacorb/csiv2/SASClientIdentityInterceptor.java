@@ -26,8 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 
 import org.jacorb.orb.MinorCodes;
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.security.RunAs;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
@@ -151,7 +150,7 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
                     try {
                         encapsulatedEncodedName = codec.encode_value(any);
                     } catch (InvalidTypeForEncoding e) {
-                        throw JacORBMessages.MESSAGES.unexpectedException(e);
+                        throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
                     }
 
                     // create identity token.
@@ -200,7 +199,7 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
                 ri.add_request_service_context(sc, true /*replace existing context*/);
             }
         } catch (InvalidTypeForEncoding e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 
@@ -222,15 +221,14 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
 
             if (contextBody.discriminator() == MTContextError.value) {
                 // should not happen.
-                throw JacORBMessages.MESSAGES.unexpectedContextErrorInSASReply(MinorCodes.SAS_CSS_FAILURE,
-                        CompletionStatus.COMPLETED_YES);
+                throw JacORBLogger.ROOT_LOGGER.unexpectedContextErrorInSASReply(MinorCodes.SAS_CSS_FAILURE, CompletionStatus.COMPLETED_YES);
             }
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw JacORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
+            throw JacORBLogger.ROOT_LOGGER.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
         } catch (TypeMismatch e) {
-            throw JacORBMessages.MESSAGES.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
+            throw JacORBLogger.ROOT_LOGGER.errorParsingSASReply(e, 0, CompletionStatus.COMPLETED_YES);
         }
     }
 
@@ -248,9 +246,9 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
         } catch (BAD_PARAM e) {
             // no service context with sasContextId: do nothing.
         } catch (FormatMismatch e) {
-            throw JacORBMessages.MESSAGES.errorParsingSASReply(e, MinorCodes.SAS_CSS_FAILURE, CompletionStatus.COMPLETED_MAYBE);
+            throw JacORBLogger.ROOT_LOGGER.errorParsingSASReply(e, MinorCodes.SAS_CSS_FAILURE, CompletionStatus.COMPLETED_MAYBE);
         } catch (TypeMismatch e) {
-            throw JacORBMessages.MESSAGES.errorParsingSASReply(e, MinorCodes.SAS_CSS_FAILURE, CompletionStatus.COMPLETED_MAYBE);
+            throw JacORBLogger.ROOT_LOGGER.errorParsingSASReply(e, MinorCodes.SAS_CSS_FAILURE, CompletionStatus.COMPLETED_MAYBE);
         }
     }
 

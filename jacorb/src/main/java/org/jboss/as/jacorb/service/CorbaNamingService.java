@@ -23,8 +23,7 @@
 package org.jboss.as.jacorb.service;
 
 import org.jacorb.config.Configuration;
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.naming.CorbaNamingContext;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -82,7 +81,7 @@ public class CorbaNamingService implements Service<NamingContextExt> {
             namingService = NamingContextExtHelper.narrow(namingPOA.create_reference_with_id(rootContextId,
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
         } catch (Exception e) {
-            throw JacORBMessages.MESSAGES.failedToStartJBossCOSNaming(e);
+            throw JacORBLogger.ROOT_LOGGER.failedToStartJBossCOSNaming(e);
         }
 
         // bind the corba naming service to JNDI.

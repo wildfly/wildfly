@@ -30,7 +30,7 @@ import java.net.MalformedURLException;
 import javax.naming.Name;
 import javax.naming.NamingException;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 
 /**
  * Extract components of a "corbaname" URL.
@@ -89,7 +89,7 @@ public final class CorbanameUrl {
     public CorbanameUrl(String url) throws MalformedURLException {
 
         if (!url.startsWith("corbaname:")) {
-            throw JacORBMessages.MESSAGES.invalidURL("corbaname", url);
+            throw JacORBLogger.ROOT_LOGGER.invalidURL("corbaname", url);
         }
 
         int addrStart = 10;  // "corbaname:"

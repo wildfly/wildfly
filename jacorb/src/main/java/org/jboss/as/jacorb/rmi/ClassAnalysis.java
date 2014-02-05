@@ -22,7 +22,7 @@
 package org.jboss.as.jacorb.rmi;
 
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 
 /**
  * Analysis class for classes. These define IDL types.
@@ -67,7 +67,7 @@ public class ClassAnalysis extends AbstractAnalysis {
 
     private static String javaNameOfClass(Class cls) {
         if (cls == null)
-            throw JacORBMessages.MESSAGES.cannotAnalyzeNullClass();
+            throw JacORBLogger.ROOT_LOGGER.cannotAnalyzeNullClass();
 
         String s = cls.getName();
 

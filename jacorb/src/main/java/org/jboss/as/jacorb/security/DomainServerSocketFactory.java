@@ -37,8 +37,7 @@ import org.jacorb.config.Configuration;
 import org.jacorb.config.ConfigurationException;
 import org.jacorb.orb.ORB;
 import org.jacorb.orb.factory.ServerSocketFactory;
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.PropertiesMap;
 import org.jboss.security.JSSESecurityDomain;
@@ -125,7 +124,7 @@ public class DomainServerSocketFactory implements ServerSocketFactory, Configura
         // get the configured security domain name.
         String securityDomain = configuration.getAttribute(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
         if (securityDomain == null)
-            throw JacORBMessages.MESSAGES.errorConfiguringDomainSF();
+            throw JacORBLogger.ROOT_LOGGER.errorConfiguringDomainSF();
 
         // use the security domain name to obtain the JSSE security domain.
         try {
@@ -137,7 +136,7 @@ public class DomainServerSocketFactory implements ServerSocketFactory, Configura
             JacORBLogger.ROOT_LOGGER.failedToObtainJSSEDomain(securityDomain);
         }
         if (this.jsseSecurityDomain == null)
-            throw JacORBMessages.MESSAGES.failedToLookupJSSEDomain();
+            throw JacORBLogger.ROOT_LOGGER.failedToLookupJSSEDomain();
 
         // check if mutual auth is requested or required.
         String optionName = PropertiesMap.JACORB_PROPS_MAP.get(JacORBSubsystemConstants.SECURITY_SERVER_SUPPORTS);
