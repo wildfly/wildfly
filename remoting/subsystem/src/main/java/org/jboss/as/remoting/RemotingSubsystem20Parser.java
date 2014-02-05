@@ -39,6 +39,7 @@ import static org.jboss.as.remoting.CommonAttributes.SECURITY_REALM;
 
 import java.util.EnumSet;
 import java.util.List;
+
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
@@ -83,10 +84,16 @@ class RemotingSubsystem20Parser extends RemotingSubsystem11Parser implements XML
                     if (doneWorkerThreadPool) {
                         throw ParseUtils.duplicateNamedElement(reader, Element.WORKER_THREAD_POOL.getLocalName());
                     }
+                    if (foundEndpoint) {
+                        throw workerThreadPoolEndpointChoiceRequired(reader);
+                    }
                     doneWorkerThreadPool = true;
                     parseWorkerThreadPool(reader, subsystem);
                     break;
                 case ENDPOINT:
+                    if (doneWorkerThreadPool) {
+                        throw workerThreadPoolEndpointChoiceRequired(reader);
+                    }
                     ENDPOINT_PARSER.parse(reader, PathAddress.pathAddress(address), list);
                     foundEndpoint = true;
                     break;
@@ -110,9 +117,13 @@ class RemotingSubsystem20Parser extends RemotingSubsystem11Parser implements XML
                 }
             }
         }
-        if (!foundEndpoint){
-            list.add(Util.createAddOperation(address.append(RemotingEndpointResource.INSTANCE.getPathElement())));
-        }
+    }
+
+    private static XMLStreamException workerThreadPoolEndpointChoiceRequired(XMLExtendedStreamReader reader) {
+        return new XMLStreamException(
+                RemotingMessages.MESSAGES.workerThreadsEndpointConfigurationChoiceRequired(
+                        Element.WORKER_THREAD_POOL.getLocalName(), Element.ENDPOINT.getLocalName()
+                ), reader.getLocation());
     }
 
     void parseRemoteOutboundConnection(final XMLExtendedStreamReader reader, final ModelNode parentAddress, final List<ModelNode> operations) throws XMLStreamException {

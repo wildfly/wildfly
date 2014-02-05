@@ -36,6 +36,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
@@ -69,7 +70,7 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
     public RemotingSubsystemRootResource(final ProcessType processType) {
         super(PATH,
                 RemotingExtension.getResourceDescriptionResolver(RemotingExtension.SUBSYSTEM_NAME),
-                processType.isServer() ? RemotingSubsystemAdd.SERVER : RemotingSubsystemAdd.DOMAIN,
+                RemotingSubsystemAdd.INSTANCE,
                 RemotingSubsystemRemove.INSTANCE);
         this.processType = processType;
     }
@@ -106,8 +107,7 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
                                              ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            RemotingSubsystemAdd addHandler = processType.isServer() ? RemotingSubsystemAdd.SERVER : RemotingSubsystemAdd.DOMAIN;
-            addHandler.launchServices(context, parentModel, verificationHandler, null);
+            RemotingSubsystemAdd.INSTANCE.launchServices(context, parentModel, verificationHandler, null);
         }
 
         @Override
@@ -118,6 +118,11 @@ public class RemotingSubsystemRootResource extends SimpleResourceDefinition {
         @Override
         protected void removeServices(final OperationContext context, final ServiceName parentService, final ModelNode parentModel) throws OperationFailedException {
             super.removeServices(context, parentService, parentModel);
+        }
+
+        @Override
+        protected void validateUpdatedModel(OperationContext context, Resource model) throws OperationFailedException {
+            context.addStep(WorkerThreadPoolVsEndpointHandler.INSTANCE, OperationContext.Stage.MODEL);
         }
     }
 }

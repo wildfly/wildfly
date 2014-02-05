@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -49,31 +50,30 @@ import org.xnio.XnioWorker;
  */
 class RemotingSubsystemAdd extends AbstractAddStepHandler {
 
-    static final RemotingSubsystemAdd DOMAIN = new RemotingSubsystemAdd(false);
-    static final RemotingSubsystemAdd SERVER = new RemotingSubsystemAdd(true);
+    static final RemotingSubsystemAdd INSTANCE = new RemotingSubsystemAdd();
 
-    private final boolean server;
+    static final OperationContext.AttachmentKey<Boolean> RUNTIME_KEY = OperationContext.AttachmentKey.create(Boolean.class);
 
-    private RemotingSubsystemAdd(final boolean server) {
-        this.server = server;
+    private RemotingSubsystemAdd() {
+        super(RemotingSubsystemRootResource.ATTRIBUTES);
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (final AttributeDefinition attribute : RemotingSubsystemRootResource.ATTRIBUTES) {
-            attribute.validateAndSet(operation, model);
-        }
+    protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+        // Add a step to validate worker-thread-pool vs endpoint and to set up a default endpoint resource if needed
+        context.addStep(WorkerThreadPoolVsEndpointHandler.INSTANCE, OperationContext.Stage.MODEL);
     }
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        // Signal RemotingEndpointAdd that we ran
+        context.attach(RUNTIME_KEY, Boolean.FALSE);
+
         launchServices(context, model, verificationHandler, newControllers);
     }
 
     void launchServices(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        if (areWorkerAttributesSet(context, model)) {
-            throw RemotingMessages.MESSAGES.workerConfigurationIgnored();
-        }
 
         ModelNode endpointModel = context.readResource(PathAddress.pathAddress(RemotingEndpointResource.ENDPOINT_PATH)).getModel();
         String workerName = RemotingEndpointResource.WORKER.resolveModelAttribute(context, endpointModel).asString();

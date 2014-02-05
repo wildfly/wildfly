@@ -1,4 +1,5 @@
 <subsystem xmlns="urn:jboss:domain:remoting:2.0">
+   <endpoint/>
    <connector name="remoting-connector" socket-binding="remoting">
       <properties>
          <property name="c1" value="${connector.prop:connector one}"/>

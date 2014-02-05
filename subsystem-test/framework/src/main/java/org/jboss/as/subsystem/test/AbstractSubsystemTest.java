@@ -9,6 +9,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -260,8 +261,8 @@ public abstract class AbstractSubsystemTest {
      * @param modelVersion   the model version of the targetted legacy subsystem
      * @return the whole model of the legacy controller
      */
-    protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion) throws IOException {
-        return checkSubsystemModelTransformation(kernelServices, modelVersion, null);
+    protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion) throws IOException, OperationFailedException {
+        return checkSubsystemModelTransformation(kernelServices, modelVersion, null, true);
     }
 
     /**
@@ -273,8 +274,22 @@ public abstract class AbstractSubsystemTest {
      * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
      * @return the whole model of the legacy controller
      */
-    protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException {
-        return delegate.checkSubsystemModelTransformation(kernelServices, modelVersion, legacyModelFixer);
+    protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException, OperationFailedException {
+        return checkSubsystemModelTransformation(kernelServices, modelVersion, legacyModelFixer, true);
+    }
+
+    /**
+     * Checks that the transformed model is the same as the model built up in the legacy subsystem controller via the transformed operations,
+     * and that the transformed model is valid according to the resource definition in the legacy subsystem controller.
+     *
+     * @param kernelServices the main kernel services
+     * @param modelVersion   the model version of the targetted legacy subsystem
+     * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
+     * @return the whole model of the legacy controller
+     */
+    protected ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion,
+                                                          ModelFixer legacyModelFixer, boolean includeDefaults) throws IOException, OperationFailedException {
+        return delegate.checkSubsystemModelTransformation(kernelServices, modelVersion, legacyModelFixer, includeDefaults);
     }
 
 

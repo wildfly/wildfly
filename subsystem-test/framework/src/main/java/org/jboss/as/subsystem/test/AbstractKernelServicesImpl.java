@@ -110,6 +110,10 @@ public abstract class AbstractKernelServicesImpl extends ModelTestKernelServices
         return SubsystemDescriptionDump.readFullModelDescription(PathAddress.pathAddress(pathAddress), getRootRegistration().getSubModel(PathAddress.pathAddress(pathAddress)));
     }
 
+    @Override
+    public ModelNode readTransformedModel(ModelVersion modelVersion) {
+        return readTransformedModel(modelVersion, true);
+    }
 
     ExtensionRegistry getExtensionRegistry() {
         return extensionRegistry;

@@ -81,7 +81,6 @@ class RemotingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<
                 }
             }
         }
-        list.add(Util.createAddOperation(address.append(RemotingEndpointResource.INSTANCE.getPathElement())));
     }
 
     /**

@@ -1,12 +1,12 @@
 <subsystem xmlns="urn:jboss:domain:remoting:1.0">
-   <!--<worker-thread-pool
+   <worker-thread-pool
        read-threads="5"
        task-core-threads="6"
        task-keepalive="7"
        task-limit="8"
        task-max-threads="9"
        write-threads="10"
-    />-->
+    />
     <connector name="test-connector" socket-binding="test">
       <properties>
          <!-- This must be smaller than worker-read-threads -->

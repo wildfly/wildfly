@@ -58,8 +58,8 @@ public class RemotingEndpointResource extends PersistentResourceDefinition {
             .addOption(RemotingOptions.SEND_BUFFER_SIZE, "send-buffer-size", new ModelNode(RemotingOptions.DEFAULT_SEND_BUFFER_SIZE))
             .addOption(RemotingOptions.RECEIVE_BUFFER_SIZE, "receive-buffer-size", new ModelNode(RemotingOptions.DEFAULT_RECEIVE_BUFFER_SIZE))
             .addOption(RemotingOptions.BUFFER_REGION_SIZE, "buffer-region-size")
-            .addOption(RemotingOptions.TRANSMIT_WINDOW_SIZE, "transmit-window-size", new ModelNode(RemotingOptions.OUTGOING_CHANNEL_DEFAULT_RECEIVE_WINDOW_SIZE))
-            .addOption(RemotingOptions.RECEIVE_WINDOW_SIZE, "receive-window-size", new ModelNode(RemotingOptions.INCOMING_CHANNEL_DEFAULT_TRANSMIT_WINDOW_SIZE))
+            .addOption(RemotingOptions.TRANSMIT_WINDOW_SIZE, "transmit-window-size", new ModelNode(RemotingOptions.INCOMING_CHANNEL_DEFAULT_TRANSMIT_WINDOW_SIZE))
+            .addOption(RemotingOptions.RECEIVE_WINDOW_SIZE, "receive-window-size", new ModelNode(RemotingOptions.INCOMING_CHANNEL_DEFAULT_RECEIVE_WINDOW_SIZE))
             .addOption(RemotingOptions.MAX_OUTBOUND_CHANNELS, "max-outbound-channels", new ModelNode(RemotingOptions.DEFAULT_MAX_OUTBOUND_CHANNELS))
             .addOption(RemotingOptions.MAX_INBOUND_CHANNELS, "max-inbound-channels", new ModelNode(RemotingOptions.DEFAULT_MAX_INBOUND_CHANNELS))
             .addOption(RemotingOptions.AUTHORIZE_ID, "authorize-id")
@@ -75,7 +75,7 @@ public class RemotingEndpointResource extends PersistentResourceDefinition {
             .build();
 
     protected static final PathElement ENDPOINT_PATH = PathElement.pathElement("configuration", "endpoint");
-    protected static final Collection ATTRIBUTES;
+    protected static final Collection<AttributeDefinition> ATTRIBUTES;
 
     static final RemotingEndpointResource INSTANCE = new RemotingEndpointResource();
 

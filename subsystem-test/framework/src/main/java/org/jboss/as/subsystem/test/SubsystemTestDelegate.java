@@ -55,6 +55,7 @@ import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -69,6 +70,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.SubsystemInformation;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.AliasEntry;
@@ -432,14 +434,22 @@ final class SubsystemTestDelegate {
      * Checks that the transformed model is the same as the model built up in the legacy subsystem controller via the transformed operations,
      * and that the transformed model is valid according to the resource definition in the legacy subsystem controller.
      *
+     *
+     *
      * @param kernelServices the main kernel services
      * @param modelVersion   the model version of the targetted legacy subsystem
      * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
+     * @param includeDefaults  whether the legacy controller model and the transformed model should include default values for undefined attributes
      * @return the whole model of the legacy controller
      */
-    ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer) throws IOException {
-        KernelServices legacy = kernelServices.getLegacyServices(modelVersion);
-        ModelNode legacyModel = legacy.readWholeModel();
+    ModelNode checkSubsystemModelTransformation(KernelServices kernelServices, ModelVersion modelVersion, ModelFixer legacyModelFixer, boolean includeDefaults) throws IOException, OperationFailedException {
+
+        ModelNode legacyReadResource = Util.createOperation(ModelDescriptionConstants.READ_RESOURCE_OPERATION, PathAddress.EMPTY_ADDRESS);
+        legacyReadResource.get(ModelDescriptionConstants.RECURSIVE).set(true);
+        legacyReadResource.get(ModelDescriptionConstants.INCLUDE_ALIASES).set(false);
+        legacyReadResource.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(false);
+        legacyReadResource.get(ModelDescriptionConstants.INCLUDE_DEFAULTS).set(includeDefaults);
+        ModelNode legacyModel = ModelTestUtils.checkResultAndGetContents(kernelServices.executeOperation(modelVersion, kernelServices.transformOperation(modelVersion, legacyReadResource)));
         ModelNode legacySubsystem = legacyModel.require(SUBSYSTEM);
         legacySubsystem = legacySubsystem.require(mainSubsystemName);
 
@@ -450,7 +460,7 @@ final class SubsystemTestDelegate {
         //1) Check that the transformed model is the same as the whole model read from the legacy controller.
         //The transformed model is done via the resource transformers
         //The model in the legacy controller is built up via transformed operations
-        ModelNode transformed = kernelServices.readTransformedModel(modelVersion).get(SUBSYSTEM, mainSubsystemName);
+        ModelNode transformed = kernelServices.readTransformedModel(modelVersion, includeDefaults).get(SUBSYSTEM, mainSubsystemName);
 
         ModelTestUtils.compare(legacySubsystem, transformed, true);
 

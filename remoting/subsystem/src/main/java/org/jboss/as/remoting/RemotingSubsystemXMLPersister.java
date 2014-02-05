@@ -54,9 +54,9 @@ class RemotingSubsystemXMLPersister implements XMLStreamConstants, XMLElementWri
 
         final ModelNode model = context.getModelNode();
 
-        RemotingSubsystem20Parser.ENDPOINT_PARSER.persist(writer, model);
-
         writeWorkerThreadPoolIfAttributesSet(writer, model);
+
+        writeEndpointIfAttributesSet(writer, model);
 
         if (model.hasDefined(CONNECTOR)) {
             final ModelNode connector = model.get(CONNECTOR);
@@ -132,6 +132,25 @@ class RemotingSubsystemXMLPersister implements XMLStreamConstants, XMLElementWri
             writer.writeEndElement();
         }
 
+    }
+
+    private void writeEndpointIfAttributesSet(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        ModelNode endpointConfig = model.get(RemotingEndpointResource.ENDPOINT_PATH.getKey(),
+                RemotingEndpointResource.ENDPOINT_PATH.getValue());
+        if (endpointConfig.isDefined()) {
+            boolean write = false;
+
+            for (Property prop : endpointConfig.asPropertyList()) {
+                if (prop.getValue().isDefined()) {
+                    write = true;
+                    break;
+                }
+            }
+
+            if (write) {
+                RemotingSubsystem20Parser.ENDPOINT_PARSER.persist(writer, model);
+            }
+        }
     }
 
     private void writeConnector(final XMLExtendedStreamWriter writer, final ModelNode node, final String name) throws XMLStreamException {
