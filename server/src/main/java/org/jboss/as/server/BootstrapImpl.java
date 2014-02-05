@@ -22,10 +22,12 @@
 
 package org.jboss.as.server;
 
+import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.management.ObjectName;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.modules.Module;
@@ -61,6 +63,14 @@ final class BootstrapImpl implements Bootstrap {
 
     @Override
     public AsyncFuture<ServiceContainer> bootstrap(final Configuration configuration, final List<ServiceActivator> extraServices) {
+
+        try {
+            final Object value = ManagementFactory.getPlatformMBeanServer().getAttribute(new ObjectName("java.lang", "type", "OperatingSystem"), "MaxFileDescriptorCount");
+            final long fdCount = Long.valueOf(value.toString()).longValue();
+            if (fdCount < 4096L) {
+                ServerLogger.FD_LIMIT_LOGGER.fdTooLow(fdCount);
+            }
+        } catch (Throwable ignored) {}
 
         assert configuration != null : "configuration is null";
 

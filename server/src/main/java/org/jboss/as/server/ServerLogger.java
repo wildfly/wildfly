@@ -72,6 +72,11 @@ public interface ServerLogger extends BasicLogger {
     ServerLogger CONFIG_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.config");
 
     /**
+     * A logger with the category {@code org.jboss.as.warn.fdlimit}.
+     */
+    ServerLogger FD_LIMIT_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.warn.fd-limit");
+
+    /**
      * A logger with the category {@code org.jboss.as.server.deployment}.
      */
     ServerLogger DEPLOYMENT_LOGGER = Logger.getMessageLogger(ServerLogger.class, "org.jboss.as.server.deployment");
@@ -401,4 +406,8 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.INFO)
     @Message(id = 15971, value = "Deployment restart detected for deployment %s, performing full redeploy instead.")
     void deploymentRestartDetected(String deployment);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15972, value = "The operating system has limited the number of open files to %d for this process; a value of at least 4096 is recommended")
+    void fdTooLow(long fdCount);
 }
