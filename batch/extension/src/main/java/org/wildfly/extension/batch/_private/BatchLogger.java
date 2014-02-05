@@ -25,13 +25,11 @@ package org.wildfly.extension.batch._private;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.logging.annotations.ValidIdRange;
 
 /**
- * Log messages for WildFly batch module (message id range 20500-20549, https://community.jboss.org/wiki/LoggingIds)
+ * Log messages for WildFly batch module
  */
-@MessageLogger(projectCode = "JBAS")
-@ValidIdRange(min = 20500, max = 20549)
+@MessageLogger(projectCode = "<<none>>")
 public interface BatchLogger extends BasicLogger {
     /**
      * A logger with the category {@code org.wildfly.extension.batch}.

@@ -24,16 +24,44 @@ package org.wildfly.jberet._private;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.logging.annotations.ValidIdRange;
 
 /**
- * Log messages for WildFly batch module (message id range 20550-20559, https://community.jboss.org/wiki/LoggingIds)
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageLogger(projectCode = "JBAS")
-@ValidIdRange(min = 20550, max = 20559)
+@MessageLogger(projectCode = "WFLYBAT", length = 4)
 public interface WildFlyBatchLogger extends BasicLogger {
 
     WildFlyBatchLogger LOGGER = Logger.getMessageLogger(WildFlyBatchLogger.class, "org.wildfly.jberet");
+
+    /**
+     * Creates an exception indicating a service was not installed.
+     *
+     * @param name a name for the service
+     *
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 1, value = "%s service was not added on the deployment. Ensure the deployment has a " +
+            "META-INF/batch.xml file or the META-INF/batch-jobs directory contains batch configuration files.")
+    IllegalStateException serviceNotInstalled(String name);
+
+    /**
+     * Creates an exception indicating the job repository type was invalid.
+     *
+     * @param type the invalid type
+     *
+     * @return an {@link IllegalArgumentException} for the error
+     */
+    @Message(id = 2, value = "Invalid job repository type '%s'.")
+    IllegalArgumentException invalidJobRepositoryType(String type);
+
+    /**
+     * Creates an exception indicating the batch environment has not been configured or has been removed.
+     *
+     * @return an {@link IllegalStateException} for the error
+     */
+    @Message(id = 3, value = "The batch environment was not configured or has been removed.")
+    IllegalStateException invalidBatchEnvironment();
 }
