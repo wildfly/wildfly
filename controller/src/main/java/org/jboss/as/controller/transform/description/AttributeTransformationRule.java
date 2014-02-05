@@ -22,6 +22,11 @@
 
 package org.jboss.as.controller.transform.description;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,8 +59,10 @@ class AttributeTransformationRule extends TransformationRule {
         doTransform(address, transformed, operation, context, rejectedAttributes);
 
         final OperationRejectionPolicy policy;
+        final OperationResultTransformer resultTransformer;
         if (!rejectedAttributes.hasRejections()) {
             policy = OperationTransformer.DEFAULT_REJECTION_POLICY;
+            resultTransformer = OperationResultTransformer.ORIGINAL_RESULT;
         } else {
             policy = new OperationRejectionPolicy() {
                 @Override
@@ -68,9 +75,21 @@ class AttributeTransformationRule extends TransformationRule {
                     return rejectedAttributes.getOperationRejectDescription();
                 }
             };
+            resultTransformer = new OperationResultTransformer() {
+                @Override
+                public ModelNode transformResult(ModelNode result) {
+                    ModelNode res = result;
+                    if (!result.hasDefined(OUTCOME) || SUCCESS.equals(result.get(OUTCOME).asString())) {
+                        res = result.clone();
+                        res.get(OUTCOME).set(FAILED);
+                        res.get(FAILURE_DESCRIPTION).set(policy.getFailureDescription());
+                    }
+                    return res;
+                }
+            };
         }
 
-        context.invokeNext(new OperationTransformer.TransformedOperation(transformed, policy, OperationResultTransformer.ORIGINAL_RESULT));
+        context.invokeNext(new OperationTransformer.TransformedOperation(transformed, policy, resultTransformer));
     }
 
     @Override
