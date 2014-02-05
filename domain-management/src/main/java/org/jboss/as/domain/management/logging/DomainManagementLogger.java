@@ -20,7 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.domain.management;
+package org.jboss.as.domain.management.logging;
+
+import static org.jboss.logging.Logger.Level.WARN;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -31,15 +33,16 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.domain.management.security.password.PasswordValidationException;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.msc.service.StartException;
 
@@ -48,14 +51,79 @@ import org.jboss.msc.service.StartException;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface DomainManagementMessages {
+@MessageLogger(projectCode = "WFLYDM", length = 4)
+public interface DomainManagementLogger extends BasicLogger {
 
     /**
-     * The messages
+     * A logger with a category of the package name.
      */
-    DomainManagementMessages MESSAGES = Messages.getBundle(DomainManagementMessages.class);
+    DomainManagementLogger ROOT_LOGGER = Logger.getMessageLogger(DomainManagementLogger.class, "org.jboss.as.domain.management");
+
+    /**
+     * A logger with category specifically for logging per request security related messages.
+     */
+    DomainManagementLogger SECURITY_LOGGER = Logger.getMessageLogger(DomainManagementLogger.class, "org.jboss.as.domain.management.security");
+
+    /**
+     * Logs a warning message indicating the user and password were found in the properties file.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 1, value = "Properties file defined with default user and password, this will be easy to guess.")
+    void userAndPasswordWarning();
+
+    /**
+     * Logs a warning message indicating that whitespace has been trimmed from the password when it was
+     * decoded from Base64.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 2, value = "Whitespace has been trimmed from the Base64 representation of the secret identity.")
+    void whitespaceTrimmed();
+
+    /**
+     * Logs a warning message indicating that the password attribute is deprecated that that keystore-password
+     * should be used instead.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 3, value = "The attribute 'password' is deprecated, 'keystore-password' should be used instead.")
+    void passwordAttributeDeprecated();
+
+    /**
+     * Logs a message indicating that the name of the realm does not match the name used in the properties file.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 4, value = "The realm name of the defined security realm '%s' does not match the realm name within the properties file '%s'.")
+    void realmMisMatch(final String realmRealmName, final String fileRealmName);
+
+
+    /**
+     * Logs a warning message indicating it failed to retrieving groups from the LDAP provider
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 5, value = "Failed to retrieving groups from the LDAP provider.")
+    void failedRetrieveLdapGroups(@Cause Throwable cause);
+
+    /**
+     * log warning message it was not able to retrieving matching groups from the pattern
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 6, value = "Failed to retrieving matching groups from the pattern, check the regular expression for pattern attribute.")
+    void failedRetrieveMatchingLdapGroups(@Cause Throwable cause);
+
+    /**
+     * log warning message it was not able to retriev matching groups from the pattern
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 7, value = "Failed to retrieve matching groups from the groups, check the regular expression for groups attribute.")
+    void failedRetrieveMatchingGroups();
+
+    /**
+     * log warning message it was not able to retrieve matching groups from the pattern
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 8, value = "Failed to retrieve attribute %s from search result.")
+    void failedRetrieveLdapAttribute(String attribute);
 
     /**
      * Creates an exception indicating the verification could not be performed.
@@ -64,7 +132,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(id = 15220, value = "Unable to perform verification")
+    @Message(id = 9, value = "Unable to perform verification")
     IOException cannotPerformVerification(@Cause Throwable cause);
 
     /**
@@ -75,7 +143,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 15221, value = "Invalid Realm '%s' expected '%s'")
+    @Message(id = 10, value = "Invalid Realm '%s' expected '%s'")
     IllegalStateException invalidRealm(String realm, String expectedRealm);
 
     /**
@@ -85,7 +153,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 15222, value = "Can't follow referral for authentication: %s")
+    @Message(id = 11, value = "Can't follow referral for authentication: %s")
     NamingException nameNotFound(String name);
 
     /**
@@ -93,7 +161,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    //@Message(id = 15223, value = "No authentication mechanism defined in security realm.")
+    //@Message(id = 12, value = "No authentication mechanism defined in security realm.")
     //IllegalStateException noAuthenticationDefined();
 
     /**
@@ -101,7 +169,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(id = 15224, value = "No username provided.")
+    @Message(id = 13, value = "No username provided.")
     IOException noUsername();
 
     /**
@@ -109,7 +177,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(id = 15225, value = "No password to verify.")
+    @Message(id = 14, value = "No password to verify.")
     IOException noPassword();
 
     /**
@@ -120,7 +188,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 15226, value = "One of '%s' or '%s' required.")
+    @Message(id = 15, value = "One of '%s' or '%s' required.")
     IllegalArgumentException oneOfRequired(String attr1, String attr2);
 
     /**
@@ -130,7 +198,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link UnsupportedCallbackException} for the error.
      */
-    @Message(id = 15227, value = "Realm choice not currently supported.")
+    @Message(id = 16, value = "Realm choice not currently supported.")
     UnsupportedCallbackException realmNotSupported(@Param Callback callback);
 
     /**
@@ -140,7 +208,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 15228, value = "Unable to load properties")
+    @Message(id = 17, value = "Unable to load properties")
     StartException unableToLoadProperties(@Cause Throwable cause);
 
     /**
@@ -150,7 +218,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 15229, value = "Unable to start service")
+    @Message(id = 18, value = "Unable to start service")
     StartException unableToStart(@Cause Throwable cause);
 
     /**
@@ -160,7 +228,7 @@ public interface DomainManagementMessages {
      *
      * @return the message.
      */
-    @Message(id = 15230, value = "User '%s' not found.")
+    @Message(id = 19, value = "User '%s' not found.")
     String userNotFound(String username);
 
     /**
@@ -171,7 +239,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link IOException} for the error.
      */
-    @Message(id = 15231, value = "User '%s' not found in directory.")
+    @Message(id = 20, value = "User '%s' not found in directory.")
     NamingException userNotFoundInDirectory(String username);
 
     /**
@@ -179,7 +247,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 15232, value = "No java.io.Console available to interact with user.")
+    @Message(id = 21, value = "No java.io.Console available to interact with user.")
     IllegalStateException noConsoleAvailable();
 
     /**
@@ -187,7 +255,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    //@Message(id = 15233, value = "JBOSS_HOME environment variable not set.")
+    //@Message(id = 22, value = "JBOSS_HOME environment variable not set.")
     //String jbossHomeNotSet();
 
     /**
@@ -195,7 +263,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15234, value = "No %s files found.")
+    @Message(id = 23, value = "No %s files found.")
     String propertiesFileNotFound(String file);
 
     /**
@@ -239,7 +307,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15235, value = "No Username entered, exiting.")
+    @Message(id = 24, value = "No Username entered, exiting.")
     String noUsernameExiting();
 
     /**
@@ -255,7 +323,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15236, value = "No Password entered, exiting.")
+    @Message(id = 25, value = "No Password entered, exiting.")
     String noPasswordExiting();
 
     /**
@@ -271,7 +339,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15237, value = "The passwords do not match.")
+    @Message(id = 26, value = "The passwords do not match.")
     String passwordMisMatch();
 
     /**
@@ -279,7 +347,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15238, value = "Username must not match the password.")
+    @Message(id = 27, value = "Username must not match the password.")
     String usernamePasswordMatch();
 
     /**
@@ -287,7 +355,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15239, value = "Username must be alphanumeric with the exception of the following accepted symbols (%s)")
+    @Message(id = 28, value = "Username must be alphanumeric with the exception of the following accepted symbols (%s)")
     String usernameNotAlphaNumeric(String symbols);
 
     /**
@@ -336,7 +404,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15240, value = "Invalid response. (Valid responses are %s and %s)")
+    @Message(id = 29, value = "Invalid response. (Valid responses are %s and %s)")
     String invalidConfirmationResponse(String firstValues, String secondValues);
 
     /**
@@ -358,7 +426,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15241, value = "Unable to add user to %s due to error %s")
+    @Message(id = 30, value = "Unable to add user to %s due to error %s")
     String unableToAddUser(String file, String error);
 
     /**
@@ -369,7 +437,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15242, value = "Unable to add load users from %s due to error %s")
+    @Message(id = 31, value = "Unable to add load users from %s due to error %s")
     String unableToLoadUsers(String file, String error);
 
     /**
@@ -412,7 +480,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15244, value = "Configuration for security realm '%s' includes multiple username/password based authentication mechanisms (%s). Only one is allowed")
+    @Message(id = 33, value = "Configuration for security realm '%s' includes multiple username/password based authentication mechanisms (%s). Only one is allowed")
     OperationFailedException multipleAuthenticationMechanismsDefined(String realmName, Set<String> mechanisms);
 
     /**
@@ -423,7 +491,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15246, value = "One of '%s' or '%s' required.")
+    @Message(id = 34, value = "One of '%s' or '%s' required.")
     OperationFailedException operationFailedOneOfRequired(String attr1, String attr2);
 
     /**
@@ -434,7 +502,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15247, value = "Only one of '%s' or '%s' is required.")
+    @Message(id = 35, value = "Only one of '%s' or '%s' is required.")
     OperationFailedException operationFailedOnlyOneOfRequired(String attr1, String attr2);
 
     /**
@@ -443,14 +511,14 @@ public interface DomainManagementMessages {
      * @param name - The name of the parameter that can not be null.
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 15248, value = "'%s' can not be null.")
+    @Message(id = 36, value = "'%s' can not be null.")
     IllegalArgumentException canNotBeNull(String name);
 
     /**
      * Creates a String for use in an OperationFailedException to indicate that no security context has been established for a
      * call that requires one.
      */
-    @Message(id = 15249, value = "No security context has been established.")
+    @Message(id = 37, value = "No security context has been established.")
     String noSecurityContextEstablished();
 
     /**
@@ -459,7 +527,7 @@ public interface DomainManagementMessages {
      *
      * @param count - The number of RealmUser instances found.
      */
-    //@Message(id = 15250, value = "An unexpected number (%d) of RealmUsers are associated with the SecurityContext.")
+    //@Message(id = 38, value = "An unexpected number (%d) of RealmUsers are associated with the SecurityContext.")
     //String unexpectedNumberOfRealmUsers(int count);
 
     /**
@@ -495,7 +563,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15251, value = "Invalid response. (Valid responses are A, a, B, or b)")
+    @Message(id = 39, value = "Invalid response. (Valid responses are A, a, B, or b)")
     String invalidChoiceResponse();
 
     /**
@@ -537,7 +605,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15254, value = "Unable to update user to %s due to error %s")
+    @Message(id = 40, value = "Unable to update user to %s due to error %s")
     String unableToUpdateUser(String absolutePath, String message);
 
     /**
@@ -558,7 +626,7 @@ public interface DomainManagementMessages {
      * @param userName - The user attempting local authentication.
      * @return an {@link IOException} for the failure.
      */
-    @Message(id = 15255, value = "The user '%s' is not allowed in a local authentication.")
+    @Message(id = 41, value = "The user '%s' is not allowed in a local authentication.")
     IOException invalidLocalUser(final String userName);
 
     /**
@@ -567,7 +635,7 @@ public interface DomainManagementMessages {
      * @param mechanismName - the name of the mechanism being registered.
      * @return an {@link StartException} for the failure.
      */
-    @Message(id = 15256, value = "Multiple CallbackHandlerServices for the same mechanism (%s)")
+    @Message(id = 42, value = "Multiple CallbackHandlerServices for the same mechanism (%s)")
     StartException multipleCallbackHandlerForMechanism(final String mechanismName);
 
     /**
@@ -577,7 +645,7 @@ public interface DomainManagementMessages {
      * @param realmName - The name of the realm the mechanism was requested from.
      * @return an {@link IllegalStateException} for the failure.
      */
-    @Message(id = 15259, value = "No CallbackHandler available for mechanism %s in realm %s")
+    @Message(id = 43, value = "No CallbackHandler available for mechanism %s in realm %s")
     IllegalStateException noCallbackHandlerForMechanism(final String mechanism, final String realmName);
 
     /**
@@ -586,7 +654,7 @@ public interface DomainManagementMessages {
      * @param name The name of the module loaded.
      * @return an {@link IllegalStateException} for the failure.
      */
-    @Message(id = 15260, value = "No plug in providers found for module name %s")
+    @Message(id = 44, value = "No plug in providers found for module name %s")
     IllegalArgumentException noPlugInProvidersLoaded(final String name);
 
     /**
@@ -596,7 +664,7 @@ public interface DomainManagementMessages {
      * @param error - The error that occurred.
      * @return an {@link IllegalArgumentException} for the failure.
      */
-    @Message(id = 15261, value = "Unable to load plug-in for module %s due to error (%s)")
+    @Message(id = 45, value = "Unable to load plug-in for module %s due to error (%s)")
     IllegalArgumentException unableToLoadPlugInProviders(final String name, final String error);
 
     /**
@@ -605,7 +673,7 @@ public interface DomainManagementMessages {
      * @param name - The name specified.
      * @return an {@link IllegalArgumentException} for the failure.
      */
-    @Message(id = 15262, value = "No authentication plug-in found for name %s")
+    @Message(id = 46, value = "No authentication plug-in found for name %s")
     IllegalArgumentException noAuthenticationPlugInFound(final String name);
 
     /**
@@ -614,7 +682,7 @@ public interface DomainManagementMessages {
      * @param name - The name specified.
      * @return an {@link IllegalArgumentException} for the failure.
      */
-    @Message(id = 15263, value = "Unable to initialise plug-in %s due to error %s")
+    @Message(id = 47, value = "Unable to initialise plug-in %s due to error %s")
     IllegalStateException unableToInitialisePlugIn(final String name, final String message);
 
     /**
@@ -625,7 +693,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15264, value = "Password is not strong enough, it is '%s'. It should be at least '%s'.")
+    @Message(id = 48, value = "Password is not strong enough, it is '%s'. It should be at least '%s'.")
     String passwordNotStrongEnough(String currentStrength, String desiredStrength);
 
     /**
@@ -635,7 +703,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link PasswordValidationException} for the message.
      */
-    @Message(id = 152565, value = "Password must not be equal to '%s', this value is restricted.")
+    @Message(id = 49, value = "Password must not be equal to '%s', this value is restricted.")
     PasswordValidationException passwordMustNotBeEqual(String password);
 
     /**
@@ -643,7 +711,7 @@ public interface DomainManagementMessages {
      * @param minDigit - minimum digit values.
      * @return a {@link String} for the message.
      */
-    @Message(id = 15266, value = "Password must have at least %d digit.")
+    @Message(id = 50, value = "Password must have at least %d digit.")
     String passwordMustHaveDigit(int minDigit);
 
     /**
@@ -651,7 +719,7 @@ public interface DomainManagementMessages {
      * @param minSymbol - minimum symbol values.
      * @return a {@link String} for the message.
      */
-    @Message(id = 15267, value = "Password must have at least %s non-alphanumeric symbol.")
+    @Message(id = 51, value = "Password must have at least %s non-alphanumeric symbol.")
     String passwordMustHaveSymbol(int minSymbol);
 
     /**
@@ -659,7 +727,7 @@ public interface DomainManagementMessages {
      * @param minAlpha - minimum alpha numerical values.
      * @return a {@link String} for the message.
      */
-    @Message(id = 15268, value = "Password must have at least %d alphanumeric character.")
+    @Message(id = 52, value = "Password must have at least %d alphanumeric character.")
     String passwordMustHaveAlpha(int minAlpha);
 
     /**
@@ -667,62 +735,62 @@ public interface DomainManagementMessages {
      * @param desiredLength - desired length of password.
      * @return a {@link PasswordValidationException} for the message.
      */
-    @Message(id = 15269, value = "Password must have at least %s characters!")
+    @Message(id = 53, value = "Password must have at least %s characters!")
     PasswordValidationException passwordNotLongEnough(int desiredLength);
 
-    @Message(id = 15270, value = "Unable to load key trust file.")
+    @Message(id = 54, value = "Unable to load key trust file.")
     IllegalStateException unableToLoadKeyTrustFile(@Cause Throwable t);
 
-    @Message(id = 15271, value = "Unable to operate on trust store.")
+    @Message(id = 55, value = "Unable to operate on trust store.")
     IllegalStateException unableToOperateOnTrustStore(@Cause GeneralSecurityException gse);
 
-    @Message(id = 15272, value = "Unable to create delegate trust manager.")
+    @Message(id = 56, value = "Unable to create delegate trust manager.")
     IllegalStateException unableToCreateDelegateTrustManager();
 
-    @Message(id = 15273, value = "The syslog-handler can only contain one protocol %s")
+    @Message(id = 57, value = "The syslog-handler can only contain one protocol %s")
     XMLStreamException onlyOneSyslogHandlerProtocol(Location location);
 
-    @Message(id = 15274, value = "There is no handler called '%s'")
+    @Message(id = 58, value = "There is no handler called '%s'")
     IllegalStateException noHandlerCalled(String name);
 
-    @Message(id = 15275, value = "There is already a protocol configured for the syslog handler at %s")
+    @Message(id = 59, value = "There is already a protocol configured for the syslog handler at %s")
     OperationFailedException sysLogProtocolAlreadyConfigured(PathAddress append);
 
-    @Message(id = 15276, value = "No syslog protocol was given")
+    @Message(id = 60, value = "No syslog protocol was given")
     OperationFailedException noSyslogProtocol();
 
-    @Message(id = 15277, value = "There is no formatter called '%s'")
+    @Message(id = 61, value = "There is no formatter called '%s'")
     OperationFailedException noFormatterCalled(String formatterName);
 
-    @Message(id = 15278, value = "Can not remove formatter, it is still referenced by the hander '%s'")
+    @Message(id = 62, value = "Can not remove formatter, it is still referenced by the handler '%s'")
     OperationFailedException cannotRemoveReferencedFormatter(PathElement pathElement);
 
-    @Message(id = 15279, value = "Handler names must be unique. There is already a handler called '%s' at %s")
+    @Message(id = 63, value = "Handler names must be unique. There is already a handler called '%s' at %s")
     OperationFailedException handlerAlreadyExists(String name, PathAddress append);
 
     /**
      * Parsing the user property file different realm names have been detected, the add-user utility requires the same realm
-     * name to be used across all propery files a user is being added to.
+     * name to be used across all property files a user is being added to.
      */
-    @Message(id = 15280, value = "Different realm names detected '%s', '%s' reading user property files, all realms must be equal.")
+    @Message(id = 64, value = "Different realm names detected '%s', '%s' reading user property files, all realms must be equal.")
     String multipleRealmsDetected(final String realmOne, final String realmTwo);
 
     /**
      * The user has supplied a realm name but the supplied name does not match the name discovered from the property files.
      */
-    @Message(id = 15281, value = "The user supplied realm name '%s' does not match the realm name discovered from the property file(s) '%s'.")
+    @Message(id = 65, value = "The user supplied realm name '%s' does not match the realm name discovered from the property file(s) '%s'.")
     String userRealmNotMatchDiscovered(final String supplied, final String discovered);
 
     /**
-     * The user has supplied a group properties file name but no user propertites file name.
+     * The user has supplied a group properties file name but no user properties file name.
      */
-    @Message(id = 15282, value = "A group properties file '%s' has been specified, however no user properties has been specified.")
+    @Message(id = 66, value = "A group properties file '%s' has been specified, however no user properties has been specified.")
     String groupPropertiesButNoUserProperties(final String groupProperties);
 
     /**
      * There is no default realm name and the user has not specified one either.
      */
-    @Message(id = 15283, value = "A realm name must be specified.")
+    @Message(id = 67, value = "A realm name must be specified.")
     String realmMustBeSpecified();
 
     /**
@@ -730,7 +798,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15284, value = "The current operation(s) would result in role based access control being enabled but leave it impossible for authenticated users to be assigned roles.")
+    @Message(id = 68, value = "The current operation(s) would result in role based access control being enabled but leave it impossible for authenticated users to be assigned roles.")
     OperationFailedException inconsistentRbacConfiguration();
 
     /**
@@ -738,7 +806,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15285, value = "The runtime role mapping configuration is inconsistent, the server must be restarted.")
+    @Message(id = 69, value = "The runtime role mapping configuration is inconsistent, the server must be restarted.")
     OperationFailedException inconsistentRbacRuntimeState();
 
     /**
@@ -746,10 +814,10 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15286, value = "Invalid response. (Valid responses are A, a, B, b, C or c)")
+    @Message(id = 70, value = "Invalid response. (Valid responses are A, a, B, b, C or c)")
     String invalidChoiceUpdateUserResponse();
 
-    @Message(id = 15287, value = "Role '%s' already contains an %s for type=%s, name=%s, realm=%s.")
+    @Message(id = 71, value = "Role '%s' already contains an %s for type=%s, name=%s, realm=%s.")
     OperationFailedException duplicateIncludeExclude(String roleName, String incExcl, String type, String name, String realm);
 
     /**
@@ -760,7 +828,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15288, value = "Configuration for security realm '%s' includes multiple authorization configurations (%s). Only one is allowed")
+    @Message(id = 72, value = "Configuration for security realm '%s' includes multiple authorization configurations (%s). Only one is allowed")
     OperationFailedException multipleAuthorizationConfigurationsDefined(String realmName, Set<String> configurations);
 
     /**
@@ -771,7 +839,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15289, value = "Configuration for security realm '%s' includes multiple username-to-dn resources within the authorization=ldap resource (%s). Only one is allowed")
+    @Message(id = 73, value = "Configuration for security realm '%s' includes multiple username-to-dn resources within the authorization=ldap resource (%s). Only one is allowed")
     OperationFailedException multipleUsernameToDnConfigurationsDefined(String realmName, Set<String> configurations);
 
     /**
@@ -781,7 +849,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15290, value = "Configuration for security realm '%s' does not contain any group-search resource within the authorization=ldap resource.")
+    @Message(id = 74, value = "Configuration for security realm '%s' does not contain any group-search resource within the authorization=ldap resource.")
     OperationFailedException noGroupSearchDefined(String realmName);
 
     /**
@@ -792,7 +860,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15291, value = "Configuration for security realm '%s' includes multiple group-search resources within the authorization=ldap resource (%s). Only one is allowed")
+    @Message(id = 75, value = "Configuration for security realm '%s' includes multiple group-search resources within the authorization=ldap resource (%s). Only one is allowed")
     OperationFailedException multipleGroupSearchConfigurationsDefined(String realmName, Set<String> configurations);
 
     /**
@@ -802,7 +870,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15292, value = "The role name '%s' is not a valid standard role.")
+    @Message(id = 76, value = "The role name '%s' is not a valid standard role.")
     OperationFailedException invalidRoleName(String roleName);
 
     /**
@@ -812,7 +880,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15293, value = "The role name '%s' is not a valid standard role and is not a host scoped role or a server group scoped role.")
+    @Message(id = 77, value = "The role name '%s' is not a valid standard role and is not a host scoped role or a server group scoped role.")
     OperationFailedException invalidRoleNameDomain(String roleName);
 
     /**
@@ -822,7 +890,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15294, value = "The scoped role '%s' can not be removed as a role mapping still exists.")
+    @Message(id = 78, value = "The scoped role '%s' can not be removed as a role mapping still exists.")
     OperationFailedException roleMappingRemaining(String roleName);
 
     /**
@@ -833,7 +901,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15295, value = "A %s already exists with name '%s'")
+    @Message(id = 79, value = "A %s already exists with name '%s'")
     OperationFailedException duplicateScopedRole(String scopeType, String roleName);
 
     /**
@@ -844,7 +912,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15296, value = "The name '%s' conflicts with the standard role name of '%s' - comparison is case insensitive.")
+    @Message(id = 80, value = "The name '%s' conflicts with the standard role name of '%s' - comparison is case insensitive.")
     OperationFailedException scopedRoleStandardName(String scopedRole, String standardRole);
 
     /**
@@ -854,7 +922,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 15297, value = "The base-role '%s' is not one of the standard roles for the current authorization provider.")
+    @Message(id = 81, value = "The base-role '%s' is not one of the standard roles for the current authorization provider.")
     OperationFailedException badBaseRole(String baseRole);
 
     /**
@@ -862,7 +930,7 @@ public interface DomainManagementMessages {
      *
      * @return an {@link PasswordValidationException} for the error.
      */
-    @Message(id = 15298, value = "The password must be different from the username")
+    @Message(id = 82, value = "The password must be different from the username")
     PasswordValidationException passwordUsernameMatchError();
 
     /**
@@ -870,7 +938,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 15299, value = "The KeyStore %s does not contain any keys.")
+    @Message(id = 83, value = "The KeyStore %s does not contain any keys.")
     StartException noKey(String path);
 
     /**
@@ -878,7 +946,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 21000, value = "The alias specified '%s' is not a Key, valid aliases are %s")
+    @Message(id = 84, value = "The alias specified '%s' is not a Key, valid aliases are %s")
     StartException aliasNotKey(String alias, String validList);
 
     /**
@@ -886,7 +954,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 21001, value = "The alias specified '%s' does not exist in the KeyStore, valid aliases are %s")
+    @Message(id = 85, value = "The alias specified '%s' does not exist in the KeyStore, valid aliases are %s")
     StartException aliasNotFound(String alias, String validList);
 
     /**
@@ -894,18 +962,17 @@ public interface DomainManagementMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 21002, value = "The KeyStore can not be found at %s")
+    @Message(id = 86, value = "The KeyStore can not be found at %s")
     StartException keyStoreNotFound(String path);
 
     /**
      * Error message if more than one cache is defined.
      *
      * @param realmName the name of the security realm
-     * @param configurations the set of configurations .
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 21003, value = "Configuration for security realm '%s' includes multiple cache definitions at the same position in the hierarchy. Only one is allowed")
+    @Message(id = 87, value = "Configuration for security realm '%s' includes multiple cache definitions at the same position in the hierarchy. Only one is allowed")
     OperationFailedException multipleCacheConfigurationsDefined(String realmName);
 
     /**
@@ -915,14 +982,8 @@ public interface DomainManagementMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 21004, value = "Unable to load username for supplied username '%s'")
+    @Message(id = 88, value = "Unable to load username for supplied username '%s'")
     NamingException usernameNotLoaded(String name);
-
-    /*
-     * Logging IDs 15200-15299 and 21000-21099 are reserved for domain management
-     *
-     * The file DomainManagementLogger also contains messages in this range 15200-15220.
-     */
 
     /**
      * Information message saying the username and password must be different.

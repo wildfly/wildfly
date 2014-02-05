@@ -22,7 +22,6 @@
 package org.jboss.as.domain.management.access;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.util.Set;
 
@@ -34,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -57,7 +57,7 @@ public class RoleMappingNotRequiredHandler implements OperationStepHandler {
         Set<String> roleMappings = resource.getChildrenNames(ROLE_MAPPING);
 
         if (roleMappings.contains(roleName)) {
-            throw MESSAGES.roleMappingRemaining(roleName);
+            throw DomainManagementLogger.ROOT_LOGGER.roleMappingRemaining(roleName);
         }
 
         context.stepCompleted();

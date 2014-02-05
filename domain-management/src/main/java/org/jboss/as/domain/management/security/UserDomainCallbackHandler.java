@@ -24,8 +24,7 @@ package org.jboss.as.domain.management.security;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PASSWORD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 
 import java.io.IOException;
@@ -44,6 +43,7 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -147,7 +147,7 @@ public class UserDomainCallbackHandler implements Service<CallbackHandlerService
                 String realm = ((RealmCallback) current).getDefaultText();
                 if (this.realm.equals(realm) == false) {
                     // TODO - Check if this needs a real error or of just an unexpected internal error.
-                    throw MESSAGES.invalidRealm(realm, this.realm);
+                    throw DomainManagementLogger.ROOT_LOGGER.invalidRealm(realm, this.realm);
                 }
             } else {
                 throw new UnsupportedCallbackException(current);

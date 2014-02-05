@@ -23,13 +23,12 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import org.jboss.as.domain.management.security.adduser.AddUser;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.junit.Assert.assertTrue;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 /**
  * Test the duplicated user check state
@@ -45,14 +44,14 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
         PreModificationState userCheckState = new PreModificationState(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
-                expectedDisplayText(MESSAGES.aboutToAddUser(values.getUserName(), values.getRealm())).
+                expectedDisplayText(DomainManagementLogger.ROOT_LOGGER.aboutToAddUser(values.getUserName(), values.getRealm())).
                 expectedDisplayText(AddUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?").
+                expectedDisplayText(DomainManagementLogger.ROOT_LOGGER.isCorrectPrompt() + " " + DomainManagementLogger.ROOT_LOGGER.yes() + "/" + DomainManagementLogger.ROOT_LOGGER.no() + "?").
                 expectedDisplayText(" ").
-                expectedInput(MESSAGES.yes()).
-                expectedDisplayText(MESSAGES.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
+                expectedInput(DomainManagementLogger.ROOT_LOGGER.yes()).
+                expectedDisplayText(DomainManagementLogger.ROOT_LOGGER.addedUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.addedGroups(values.getUserName(), values.getGroups(),values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(DomainManagementLogger.ROOT_LOGGER.addedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
 
@@ -71,9 +70,9 @@ public class DuplicateUserCheckStateTestCase extends PropertyTestHelper {
         PreModificationState userCheckState = new PreModificationState(consoleMock, values);
 
         AssertConsoleBuilder consoleBuilder = new AssertConsoleBuilder().
-                expectedDisplayText(MESSAGES.updateUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(DomainManagementLogger.ROOT_LOGGER.updateUser(values.getUserName(), values.getUserFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE).
-                expectedDisplayText(MESSAGES.updatedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
+                expectedDisplayText(DomainManagementLogger.ROOT_LOGGER.updatedGroups(values.getUserName(), values.getGroups(), values.getGroupFiles().get(0).getCanonicalPath())).
                 expectedDisplayText(AddUser.NEW_LINE);
         consoleMock.setResponses(consoleBuilder);
 

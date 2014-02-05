@@ -21,11 +21,11 @@
  */
 package org.jboss.as.domain.management.security.password;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * A {@link PasswordValidation} which wraps multiple other restrictions.
@@ -59,7 +59,7 @@ public class CompoundRestriction implements PasswordRestriction {
             }
         }
 
-        return must ? MESSAGES.passwordMustContainInfo(sb.toString()) : MESSAGES.passwordShouldContainInfo(sb.toString());
+        return must ? DomainManagementLogger.ROOT_LOGGER.passwordMustContainInfo(sb.toString()) : DomainManagementLogger.ROOT_LOGGER.passwordShouldContainInfo(sb.toString());
     }
 
     @Override

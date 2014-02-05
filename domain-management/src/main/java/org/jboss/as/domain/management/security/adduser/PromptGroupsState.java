@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * State responsible for prompting for the list of groups for a user.
@@ -42,7 +42,7 @@ public class PromptGroupsState implements State {
     public State execute() {
         if (stateValues.isSilentOrNonInteractive() == false) {
             if (!stateValues.getGroupFiles().isEmpty()) {
-                theConsole.printf(MESSAGES.groupsPrompt());
+                theConsole.printf(DomainManagementLogger.ROOT_LOGGER.groupsPrompt());
                 String userGroups = stateValues.getKnownGroups().get(stateValues.getUserName());
                 stateValues.setGroups(theConsole.readLine("[%1$2s]: ", (userGroups == null ? "" : userGroups)));
             }

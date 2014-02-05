@@ -56,7 +56,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.as.domain.management.security.LdapSearcherCache.Predicate;
 import org.jboss.dmr.ModelNode;
@@ -451,7 +451,7 @@ public class LdapCacheResourceDefinition extends SimpleResourceDefinition {
             Set<String> children = resource.getChildrenNames(ModelDescriptionConstants.CACHE);
             if (children.size() > 1) {
                 String realmName = ManagementUtil.getSecurityRealmName(operation);
-                throw DomainManagementMessages.MESSAGES.multipleCacheConfigurationsDefined(realmName);
+                throw DomainManagementLogger.ROOT_LOGGER.multipleCacheConfigurationsDefined(realmName);
             }
 
             context.stepCompleted();

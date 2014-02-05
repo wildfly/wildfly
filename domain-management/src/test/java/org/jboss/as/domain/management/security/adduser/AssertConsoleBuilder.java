@@ -27,8 +27,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.junit.Assert.*;
+
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  *  Assert builder for the console. Use this together with the ConsoleMock object
@@ -110,7 +111,7 @@ public class AssertConsoleBuilder {
     public AssertConsoleBuilder expectedErrorMessage(String text) {
         queue.add(new AssertConsole(NEW_LINE,Type.DISPLAY));
         queue.add(new AssertConsole(" * ",Type.DISPLAY));
-        queue.add(new AssertConsole(MESSAGES.errorHeader(),Type.DISPLAY));
+        queue.add(new AssertConsole(DomainManagementLogger.ROOT_LOGGER.errorHeader(),Type.DISPLAY));
         queue.add(new AssertConsole(" * ",Type.DISPLAY));
         queue.add(new AssertConsole(NEW_LINE,Type.DISPLAY));
         queue.add(new AssertConsole(text,Type.DISPLAY));

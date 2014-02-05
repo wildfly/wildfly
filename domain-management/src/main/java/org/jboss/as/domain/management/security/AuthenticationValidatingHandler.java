@@ -35,7 +35,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -85,7 +85,7 @@ class AuthenticationValidatingHandler implements OperationStepHandler {
         if (children.size() > 1) {
             Set<String> invalid = new HashSet<String>(children);
             invalid.remove(ModelDescriptionConstants.TRUSTSTORE);
-            throw DomainManagementMessages.MESSAGES.multipleAuthenticationMechanismsDefined(realmName, invalid);
+            throw DomainManagementLogger.ROOT_LOGGER.multipleAuthenticationMechanismsDefined(realmName, invalid);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }

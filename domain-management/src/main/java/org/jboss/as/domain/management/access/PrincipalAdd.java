@@ -25,7 +25,6 @@ package org.jboss.as.domain.management.access;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +39,7 @@ import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration.MatchType;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -98,8 +98,7 @@ public class PrincipalAdd implements OperationStepHandler {
         for (Property current : getIncludeExclude(model)) {
             if (matches(context, current.getValue(), principalType, realm, name)) {
                 if (++matchesFound > 1) {
-                    throw MESSAGES.duplicateIncludeExclude(roleName, matchType.toString(), principalType.toString(), name,
-                            realm != null ? realm : "undefined");
+                    throw DomainManagementLogger.ROOT_LOGGER.duplicateIncludeExclude(roleName, matchType.toString(), principalType.toString(), name, realm != null ? realm : "undefined");
                 }
             }
         }
@@ -147,7 +146,7 @@ public class PrincipalAdd implements OperationStepHandler {
                 if (authorizerConfiguration.addRoleMappingPrincipal(roleName, principalType, matchType, name, realm, context.isBooting())) {
                     registerRollbackHandler(context, roleName, principalType, name, realm);
                 } else {
-                    throw MESSAGES.inconsistentRbacRuntimeState();
+                    throw DomainManagementLogger.ROOT_LOGGER.inconsistentRbacRuntimeState();
                 }
             }
         }, Stage.RUNTIME);

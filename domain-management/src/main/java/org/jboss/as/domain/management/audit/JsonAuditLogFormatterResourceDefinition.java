@@ -49,7 +49,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -195,7 +195,7 @@ public class JsonAuditLogFormatterResourceDefinition extends SimpleResourceDefin
                 for (ResourceEntry entry : auditLog.getChildren(handlerType)) {
                     ModelNode auditLogModel = entry.getModel();
                     if (auditLogModel.get(FORMATTER).asString().equals(name)) {
-                        throw DomainManagementMessages.MESSAGES.cannotRemoveReferencedFormatter(entry.getPathElement());
+                        throw DomainManagementLogger.ROOT_LOGGER.cannotRemoveReferencedFormatter(entry.getPathElement());
                     }
                 }
             }

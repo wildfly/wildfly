@@ -22,8 +22,6 @@
 
 package org.jboss.as.domain.management.access;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.util.Locale;
 
 import org.jboss.as.controller.OperationContext;
@@ -34,6 +32,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -93,7 +92,7 @@ public class PrincipalRemove implements OperationStepHandler {
                     registerRollbackHandler(context, roleName, principalType, name, realm);
                 } else {
                     context.restartRequired();
-                    throw MESSAGES.inconsistentRbacRuntimeState();
+                    throw DomainManagementLogger.ROOT_LOGGER.inconsistentRbacRuntimeState();
                 }
             }
         }, Stage.RUNTIME);

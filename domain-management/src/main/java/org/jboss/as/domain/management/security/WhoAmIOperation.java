@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.GROUPS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.IDENTITY;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.MAPPED_ROLES;
@@ -44,6 +43,7 @@ import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.rbac.RunAsRoleMapper;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -88,7 +88,7 @@ public class WhoAmIOperation implements OperationStepHandler {
 
         Caller caller = context.getCaller();
         if (caller == null) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.noSecurityContextEstablished()));
+            throw new OperationFailedException(new ModelNode().set(DomainManagementLogger.ROOT_LOGGER.noSecurityContextEstablished()));
         }
 
         ModelNode result = context.getResult();

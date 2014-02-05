@@ -39,7 +39,7 @@ import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -76,7 +76,7 @@ public class AuditLogHandlerReferenceResourceDefinition extends SimpleResourceDe
             final PathAddress addr = PathAddress.pathAddress(operation.require(OP_ADDR));
             String name = addr.getLastElement().getValue();
             if (!lookForHandler(context, addr, name)) {
-                throw DomainManagementMessages.MESSAGES.noHandlerCalled(name);
+                throw DomainManagementLogger.ROOT_LOGGER.noHandlerCalled(name);
             }
             resource.getModel().setEmptyObject();
         }

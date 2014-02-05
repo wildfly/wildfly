@@ -22,8 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.SUBJECT_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
@@ -50,6 +49,7 @@ import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -94,7 +94,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
             AuthMechanism mechanism = current.getPreferredMechanism();
             if (registeredServices.containsKey(mechanism)) {
                 registeredServices.clear();
-                throw MESSAGES.multipleCallbackHandlerForMechanism(mechanism.name());
+                throw DomainManagementLogger.ROOT_LOGGER.multipleCallbackHandlerForMechanism(mechanism.name());
             }
             registeredServices.put(mechanism, current);
         }
@@ -228,7 +228,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
             }
         }
 
-        throw MESSAGES.noCallbackHandlerForMechanism(mechanism.toString(), name);
+        throw DomainManagementLogger.ROOT_LOGGER.noCallbackHandlerForMechanism(mechanism.toString(), name);
     }
 
     /*

@@ -21,13 +21,13 @@
  */
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * State to perform validation of the supplied username.
@@ -95,7 +95,7 @@ public class ValidateUserState extends AbstractValidationState {
                 for (char currentChar : stateValues.getUserName().toCharArray()) {
                     if ((!isValidPunctuation(currentChar))
                             && (Character.isLetter(currentChar) || Character.isDigit(currentChar)) == false) {
-                        return new ErrorState(theConsole, MESSAGES.usernameNotAlphaNumeric(VALID_SYMBOLS), getRetryState(), stateValues);
+                        return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.usernameNotAlphaNumeric(VALID_SYMBOLS), getRetryState(), stateValues);
                     }
                 }
 
@@ -124,9 +124,9 @@ public class ValidateUserState extends AbstractValidationState {
                     } else {
                         final boolean existingDisabledUser = stateValues.isExistingDisabledUser();
                         if (existingDisabledUser) {
-                            theConsole.printf(MESSAGES.aboutToUpdateDisabledUser(stateValues.getUserName()));
+                            theConsole.printf(DomainManagementLogger.ROOT_LOGGER.aboutToUpdateDisabledUser(stateValues.getUserName()));
                         } else {
-                            theConsole.printf(MESSAGES.aboutToUpdateEnabledUser(stateValues.getUserName()));
+                            theConsole.printf(DomainManagementLogger.ROOT_LOGGER.aboutToUpdateEnabledUser(stateValues.getUserName()));
                         }
                         theConsole.printf(AddUser.NEW_LINE);
                         String response = theConsole.readLine("(a): ");
@@ -151,7 +151,7 @@ public class ValidateUserState extends AbstractValidationState {
                                 stateValues.getOptions().setDisable(true);
                                 return new PreModificationState(theConsole, stateValues);
                             default:
-                                return new ErrorState(theConsole, MESSAGES.invalidChoiceUpdateUserResponse(), this);
+                                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.invalidChoiceUpdateUserResponse(), this);
                         }
                         return ValidateUserState.this;
                     }
@@ -172,8 +172,8 @@ public class ValidateUserState extends AbstractValidationState {
                 if (stateValues.isExistingUser() == false && stateValues.isSilentOrNonInteractive() == false) {
                     for (String current : BAD_USER_NAMES) {
                         if (current.equals(stateValues.getUserName().toLowerCase(Locale.ENGLISH))) {
-                            String message = MESSAGES.usernameEasyToGuess(stateValues.getUserName());
-                            String prompt = MESSAGES.sureToAddUser(stateValues.getUserName());
+                            String message = DomainManagementLogger.ROOT_LOGGER.usernameEasyToGuess(stateValues.getUserName());
+                            String prompt = DomainManagementLogger.ROOT_LOGGER.sureToAddUser(stateValues.getUserName());
 
                             return new ConfirmationChoice(theConsole, message, prompt, ValidateUserState.this, getRetryState());
                         }

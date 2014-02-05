@@ -21,12 +21,6 @@
  */
 package org.jboss.as.domain.management.security.adduser;
 
-import org.jboss.msc.service.StartException;
-import org.junit.Test;
-
-import java.io.IOException;
-
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.junit.Assert.assertTrue;
 
 /**

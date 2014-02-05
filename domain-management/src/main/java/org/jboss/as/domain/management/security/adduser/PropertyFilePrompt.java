@@ -21,12 +21,12 @@
  */
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.DEFAULT_APPLICATION_REALM;
 import static org.jboss.as.domain.management.security.adduser.AddUser.DEFAULT_MANAGEMENT_REALM;
 
 import java.util.Locale;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.security.adduser.AddUser.FileMode;
 import org.jboss.as.domain.management.security.adduser.AddUser.RealmMode;
 
@@ -49,7 +49,7 @@ public class PropertyFilePrompt implements State {
     public State execute() {
 
         theConsole.printf(AddUser.NEW_LINE);
-        theConsole.printf(MESSAGES.filePrompt());
+        theConsole.printf(DomainManagementLogger.ROOT_LOGGER.filePrompt());
         theConsole.printf(AddUser.NEW_LINE);
 
         String temp = theConsole.readLine("(a): ");
@@ -78,7 +78,7 @@ public class PropertyFilePrompt implements State {
                 }
                 return new PropertyFileFinder(theConsole, stateValues);
             default:
-                return new ErrorState(theConsole, MESSAGES.invalidChoiceResponse(), this);
+                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.invalidChoiceResponse(), this);
         }
     }
 

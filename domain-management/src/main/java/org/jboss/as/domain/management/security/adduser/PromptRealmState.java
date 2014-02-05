@@ -22,8 +22,9 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
+
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * State to prompt the user to choose the name of the realm.
@@ -48,7 +49,7 @@ public class PromptRealmState implements State {
     @Override
     public State execute() {
         theConsole.printf(NEW_LINE);
-        theConsole.printf(MESSAGES.enterNewUserDetails());
+        theConsole.printf(DomainManagementLogger.ROOT_LOGGER.enterNewUserDetails());
         theConsole.printf(NEW_LINE);
 
         /*
@@ -61,17 +62,17 @@ public class PromptRealmState implements State {
 
         switch (stateValues.getRealmMode()) {
             case DISCOVERED:
-                theConsole.printf(MESSAGES.discoveredRealm(existingRealm));
+                theConsole.printf(DomainManagementLogger.ROOT_LOGGER.discoveredRealm(existingRealm));
                 theConsole.printf(NEW_LINE);
 
                 return new PromptNewUserState(theConsole, stateValues);
             case USER_SUPPLIED:
-                theConsole.printf(MESSAGES.userSuppliedRealm(existingRealm));
+                theConsole.printf(DomainManagementLogger.ROOT_LOGGER.userSuppliedRealm(existingRealm));
                 theConsole.printf(NEW_LINE);
 
                 return new PromptNewUserState(theConsole, stateValues);
             default:
-                theConsole.printf(MESSAGES.realmPrompt(existingRealm));
+                theConsole.printf(DomainManagementLogger.ROOT_LOGGER.realmPrompt(existingRealm));
                 String temp = theConsole.readLine(" : ");
                 if (temp == null) {
                     /*

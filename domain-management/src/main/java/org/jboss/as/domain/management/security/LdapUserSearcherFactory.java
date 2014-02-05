@@ -21,8 +21,7 @@
  */
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 
 import java.io.IOException;
 import java.net.URI;
@@ -127,7 +126,7 @@ class LdapUserSearcherFactory {
                 try {
                     if (searchEnumeration.hasMore() == false) {
                         SECURITY_LOGGER.tracef("User '%s' not found in directory.", suppliedName);
-                        throw MESSAGES.userNotFoundInDirectory(suppliedName);
+                        throw SECURITY_LOGGER.userNotFoundInDirectory(suppliedName);
                     }
                 } catch (LdapReferralException e) {
                     Object info = e.getReferralInfo();
@@ -142,11 +141,11 @@ class LdapUserSearcherFactory {
                         currentConnectionHandler = currentConnectionHandler.findForReferral(referralAddress);
                         if (currentConnectionHandler == null) {
                             SECURITY_LOGGER.tracef("Unable to follow referral to '%s' for user '%s'", fullUri, suppliedName);
-                            throw MESSAGES.userNotFoundInDirectory(suppliedName);
+                            throw SECURITY_LOGGER.userNotFoundInDirectory(suppliedName);
                         }
                     } catch (URISyntaxException ue) {
                         SECURITY_LOGGER.tracef("Unable to construct URI from referral: %s", info);
-                        throw MESSAGES.nameNotFound(suppliedName);
+                        throw SECURITY_LOGGER.nameNotFound(suppliedName);
                     }
 
                     DirContext context = currentConnectionHandler.getConnection();
@@ -180,7 +179,7 @@ class LdapUserSearcherFactory {
                                     referralAddress.toString(), distinguishedUserDN);
                         } catch (URISyntaxException usi) {
                             SECURITY_LOGGER.tracef("Unable to construct URI from referral name: %s", name);
-                            throw MESSAGES.nameNotFound(suppliedName);
+                            throw SECURITY_LOGGER.nameNotFound(suppliedName);
                         }
                     }
                     attributes = result.getAttributes();
@@ -209,7 +208,7 @@ class LdapUserSearcherFactory {
                 }
 
                 if (username == null) {
-                    throw MESSAGES.usernameNotLoaded(suppliedName);
+                    throw SECURITY_LOGGER.usernameNotLoaded(suppliedName);
                 }
                 SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, username);
 

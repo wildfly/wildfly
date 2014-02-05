@@ -22,9 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
@@ -47,6 +46,7 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -131,7 +131,7 @@ public class PropertiesCallbackHandler extends UserPropertiesFileLoader implemen
                 ROOT_LOGGER.realmMisMatch(realm, fileRealm);
             }
         } catch (IOException e) {
-            throw MESSAGES.unableToLoadProperties(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToLoadProperties(e);
         }
     }
 
@@ -173,7 +173,7 @@ public class PropertiesCallbackHandler extends UserPropertiesFileLoader implemen
             } else if (current instanceof RealmCallback) {
                 String realm = ((RealmCallback) current).getDefaultText();
                 if (this.realm.equals(realm) == false) {
-                    throw MESSAGES.invalidRealm(realm, this.realm);
+                    throw DomainManagementLogger.ROOT_LOGGER.invalidRealm(realm, this.realm);
                 }
             } else {
                 throw new UnsupportedCallbackException(current);

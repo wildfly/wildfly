@@ -22,8 +22,6 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -40,6 +38,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.management.security.LdapCacheResourceDefinition.CacheFor;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -126,11 +125,9 @@ public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition
         boolean usernameFileDefined = operation.hasDefined(ModelDescriptionConstants.USERNAME_ATTRIBUTE);
         boolean advancedFilterDefined = operation.hasDefined(ModelDescriptionConstants.ADVANCED_FILTER);
         if (usernameFileDefined && advancedFilterDefined) {
-            throw MESSAGES.operationFailedOnlyOneOfRequired(ModelDescriptionConstants.USERNAME_ATTRIBUTE,
-                    ModelDescriptionConstants.ADVANCED_FILTER);
+            throw DomainManagementLogger.ROOT_LOGGER.operationFailedOnlyOneOfRequired(ModelDescriptionConstants.USERNAME_ATTRIBUTE, ModelDescriptionConstants.ADVANCED_FILTER);
         } else if ((usernameFileDefined || advancedFilterDefined) == false) {
-            throw MESSAGES.operationFailedOneOfRequired(ModelDescriptionConstants.USERNAME_ATTRIBUTE,
-                    ModelDescriptionConstants.ADVANCED_FILTER);
+            throw DomainManagementLogger.ROOT_LOGGER.operationFailedOneOfRequired(ModelDescriptionConstants.USERNAME_ATTRIBUTE, ModelDescriptionConstants.ADVANCED_FILTER);
         }
     }
 

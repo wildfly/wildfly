@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * State to branch between adding and updating the user and outputting summary information if not running in silent mode.
@@ -48,8 +48,8 @@ public class PreModificationState implements State {
             if (stateValues.isSilentOrNonInteractive()) {
                 continuingState = addState;
             } else {
-                String message = MESSAGES.aboutToAddUser(stateValues.getUserName(), stateValues.getRealm());
-                String prompt = MESSAGES.isCorrectPrompt() + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
+                String message = DomainManagementLogger.ROOT_LOGGER.aboutToAddUser(stateValues.getUserName(), stateValues.getRealm());
+                String prompt = DomainManagementLogger.ROOT_LOGGER.isCorrectPrompt() + " " + DomainManagementLogger.ROOT_LOGGER.yes() + "/" + DomainManagementLogger.ROOT_LOGGER.no() + "?";
 
                 continuingState = new ConfirmationChoice(theConsole, message, prompt, addState, new PromptNewUserState(
                         theConsole, stateValues));

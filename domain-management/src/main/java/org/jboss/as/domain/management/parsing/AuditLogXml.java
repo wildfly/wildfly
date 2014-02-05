@@ -49,7 +49,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
 import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
@@ -315,7 +315,7 @@ public class AuditLogXml {
 
             //Check there is only one protocol
             if (protocolSet) {
-                throw DomainManagementMessages.MESSAGES.onlyOneSyslogHandlerProtocol(reader.getLocation());
+                throw DomainManagementLogger.ROOT_LOGGER.onlyOneSyslogHandlerProtocol(reader.getLocation());
             }
             protocolSet = true;
 

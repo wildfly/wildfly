@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.management.security.password;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * A {@link PasswordRestriction} to verify that the username and password and not equal.
@@ -39,15 +39,15 @@ public class UsernamePasswordMatch implements PasswordRestriction {
     @Override
     public String getRequirementMessage() {
         if (must) {
-            return MESSAGES.passwordUsernameMustMatchInfo();
+            return DomainManagementLogger.ROOT_LOGGER.passwordUsernameMustMatchInfo();
         }
-        return MESSAGES.passwordUsernameShouldMatchInfo();
+        return DomainManagementLogger.ROOT_LOGGER.passwordUsernameShouldMatchInfo();
     }
 
     @Override
     public void validate(String userName, String password) throws PasswordValidationException {
         if (userName.equals(password)) {
-            throw MESSAGES.passwordUsernameMatchError();
+            throw DomainManagementLogger.ROOT_LOGGER.passwordUsernameMatchError();
         }
     }
 

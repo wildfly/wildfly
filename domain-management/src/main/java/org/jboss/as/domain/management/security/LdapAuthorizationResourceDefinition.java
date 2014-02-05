@@ -39,7 +39,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -137,16 +137,16 @@ public class LdapAuthorizationResourceDefinition extends LdapResourceDefinition 
             if (children.size() > 1) {
                 String realmName = ManagementUtil.getSecurityRealmName(operation);
                 Set<String> invalid = new HashSet<String>(children);
-                throw DomainManagementMessages.MESSAGES.multipleUsernameToDnConfigurationsDefined(realmName, invalid);
+                throw DomainManagementLogger.ROOT_LOGGER.multipleUsernameToDnConfigurationsDefined(realmName, invalid);
             }
             children = resource.getChildrenNames(ModelDescriptionConstants.GROUP_SEARCH);
             if (children.size() == 0) {
                 String realmName = ManagementUtil.getSecurityRealmName(operation);
-                throw DomainManagementMessages.MESSAGES.noGroupSearchDefined(realmName);
+                throw DomainManagementLogger.ROOT_LOGGER.noGroupSearchDefined(realmName);
             } else if (children.size() > 1) {
                 String realmName = ManagementUtil.getSecurityRealmName(operation);
                 Set<String> invalid = new HashSet<String>(children);
-                throw DomainManagementMessages.MESSAGES.multipleGroupSearchConfigurationsDefined(realmName, invalid);
+                throw DomainManagementLogger.ROOT_LOGGER.multipleGroupSearchConfigurationsDefined(realmName, invalid);
             }
 
             context.stepCompleted();

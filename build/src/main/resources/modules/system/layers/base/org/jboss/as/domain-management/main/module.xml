@@ -27,6 +27,11 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/jboss/as/domain/management/logging"/>
+        <exclude path="org/jboss/as/domain/management/_private"/>
+    </exports>
+
     <resources>
         <!-- Insert resources here -->
     </resources>
@@ -45,8 +50,4 @@
         <module name="javax.api"/>
         <module name="sun.jdk" export="true" />        
     </dependencies>
-    
-    <exports>
-        <exclude path="org.jboss.as.domain.management._private"/>
-    </exports>
 </module>

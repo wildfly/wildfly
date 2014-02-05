@@ -22,8 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.SUBJECT_CALLBACK_SUPPORTED;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
@@ -46,6 +45,7 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -142,16 +142,16 @@ public class JaasCallbackHandler implements Service<CallbackHandlerService>, Cal
 
         if (nameCallBack == null) {
             SECURITY_LOGGER.trace("No username supplied in Callbacks.");
-            throw MESSAGES.noUsername();
+            throw DomainManagementLogger.ROOT_LOGGER.noUsername();
         }
         final String userName = nameCallBack.getDefaultName();
         if (userName == null || userName.length() == 0) {
             SECURITY_LOGGER.trace("NameCallback either has no username or is 0 length.");
-            throw MESSAGES.noUsername();
+            throw DomainManagementLogger.ROOT_LOGGER.noUsername();
         }
         if (verifyPasswordCallback == null || verifyPasswordCallback.getPassword() == null) {
             SECURITY_LOGGER.trace("No password to verify.");
-            throw MESSAGES.noPassword();
+            throw DomainManagementLogger.ROOT_LOGGER.noPassword();
         }
         final char[] password = verifyPasswordCallback.getPassword().toCharArray();
 

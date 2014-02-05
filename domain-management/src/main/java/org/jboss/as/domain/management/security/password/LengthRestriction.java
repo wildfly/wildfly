@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.management.security.password;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * A {@link PasswordRestriction} to check the length of the password.
@@ -43,13 +43,13 @@ public class LengthRestriction implements PasswordRestriction {
 
     @Override
     public String getRequirementMessage() {
-        return MESSAGES.passwordLengthInfo(desiredLength);
+        return DomainManagementLogger.ROOT_LOGGER.passwordLengthInfo(desiredLength);
     }
 
     @Override
     public void validate(String userName, String password) throws PasswordValidationException {
         if (password == null || password.length() < this.desiredLength) {
-            throw MESSAGES.passwordNotLongEnough(desiredLength);
+            throw DomainManagementLogger.ROOT_LOGGER.passwordNotLongEnough(desiredLength);
         }
     }
 }
