@@ -31,7 +31,7 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.server.deployment.SetupAction;
-import org.jboss.as.txn.TransactionLogger;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;

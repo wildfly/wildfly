@@ -23,8 +23,7 @@
 package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
+import static org.jboss.as.txn.logging.TransactionLogger.ROOT_LOGGER;
 
 import java.util.List;
 import java.util.Map;
@@ -55,7 +54,7 @@ class CMResourceAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         String str = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
         if (!str.startsWith("java:/") && !str.startsWith("java:jboss/")) {
-            throw MESSAGES.jndiNameInvalidFormat();
+            throw ROOT_LOGGER.jndiNameInvalidFormat();
         }
 
 

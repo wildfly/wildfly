@@ -20,26 +20,52 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.txn;
+package org.jboss.as.txn.logging;
 
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
+
 /**
- * Date: 16.05.2011
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface TransactionMessages {
+@MessageLogger(projectCode = "WFLYTX", length = 4)
+public interface TransactionLogger extends BasicLogger {
     /**
-     * The messages
+     * A logger with the category of the default transaction package.
      */
-    TransactionMessages MESSAGES = Messages.getBundle(TransactionMessages.class);
+    TransactionLogger ROOT_LOGGER = Logger.getMessageLogger(TransactionLogger.class, "org.jboss.as.txn");
+
+    /**
+     * If a transaction could not be rolled back
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 1, value = "Unable to roll back active transaction")
+    void unableToRollBack(@Cause Throwable cause);
+
+
+    /**
+     * If the current transaction status could not be determined
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 2, value = "Unable to get transaction state")
+    void unableToGetTransactionStatus(@Cause Throwable cause);
+
+
+    /**
+     * If the user left a transaction open
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 3, value = "APPLICATION ERROR: transaction still active in request with status %s")
+    void transactionStillOpen(int status);
 
     /**
      * Creates an exception indicating a create failed.
@@ -48,7 +74,7 @@ public interface TransactionMessages {
      *
      * @return a {@link org.jboss.msc.service.StartException} initialized with the cause.
      */
-    @Message(id = 10100, value = "Create failed")
+    @Message(id = 4, value = "Create failed")
     StartException createFailed(@Cause Throwable cause);
 
     /**
@@ -59,7 +85,7 @@ public interface TransactionMessages {
      *
      * @return a {@link org.jboss.msc.service.StartException} initialized with the cause and error message.
      */
-    @Message(id = 10101, value = "%s manager create failed")
+    @Message(id = 5, value = "%s manager create failed")
     StartException managerStartFailure(@Cause Throwable cause, String managerName);
 
     /**
@@ -69,7 +95,7 @@ public interface TransactionMessages {
      *
      * @return a {@link org.jboss.msc.service.StartException} initialized with the cause and error message.
      */
-    @Message(id = 10102, value = "Failed to configure object store browser bean")
+    @Message(id = 6, value = "Failed to configure object store browser bean")
     StartException objectStoreStartFailure(@Cause Throwable cause);
 
 
@@ -78,7 +104,7 @@ public interface TransactionMessages {
      *
      * @return a {@link IllegalStateException} initialized with the cause and error message.
      */
-    @Message(id = 10103, value = "Service not started")
+    @Message(id = 7, value = "Service not started")
     IllegalStateException serviceNotStarted();
 
     /**
@@ -88,7 +114,7 @@ public interface TransactionMessages {
      *
      * @return a {@link org.jboss.msc.service.StartException} initialized with the cause.
      */
-    @Message(id = 10104, value = "Start failed")
+    @Message(id = 8, value = "Start failed")
     StartException startFailure(@Cause Throwable cause);
 
     /**
@@ -98,33 +124,40 @@ public interface TransactionMessages {
      *
      * @return the message.
      */
-    @Message(id = 10105, value = "Unknown metric %s")
+    @Message(id = 9, value = "Unknown metric %s")
     String unknownMetric(Object metric);
 
-    @Message(id = 10106, value = "MBean Server service not installed, this functionality is not available if the JMX subsystem has not been installed.")
+    @Message(id = 10, value = "MBean Server service not installed, this functionality is not available if the JMX subsystem has not been installed.")
     RuntimeException jmxSubsystemNotInstalled();
 
-    @Message(id = 10107, value = "'hornetq-store-enable-async-io' must be true.")
+    @Message(id = 11, value = "'hornetq-store-enable-async-io' must be true.")
     String transformHornetQStoreEnableAsyncIoMustBeTrue();
 
-    @Message(id = 10108, value = "Attributes %s and %s are alternatives; both cannot be set with conflicting values.")
+    @Message(id = 12, value = "Attributes %s and %s are alternatives; both cannot be set with conflicting values.")
     OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);
+
+    /**
+     * If the user has set node identifier to the default value
+     *
+     * @return the message.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 13, value = "Node identifier property is set to the default value. Please make sure it is unique.")
+    void nodeIdentifierIsSetToDefault();
 
     /**
      * A message indicating that jndi-name is missing and it's a required attribute
      *
      * @return the message.
      */
-    @Message(id = 10109, value = "Jndi name is required")
+    @Message(id = 14, value = "Jndi name is required")
     OperationFailedException jndiNameRequired();
-
 
     /**
      * A message indicating that jndi-name has an invalid format
      *
      * @return the message.
      */
-    @Message(id = 10110, value = "Jndi names have to start with java:/ or java:jboss/")
+    @Message(id = 15, value = "Jndi names have to start with java:/ or java:jboss/")
     OperationFailedException jndiNameInvalidFormat();
-
 }

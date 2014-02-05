@@ -29,6 +29,7 @@ import java.util.List;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -51,8 +52,6 @@ import com.arjuna.ats.internal.jts.recovery.transactions.TopLevelTransactionReco
 import com.arjuna.ats.internal.txoj.recovery.TORecoveryModule;
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 import com.arjuna.orbportability.internal.utils.PostInitLoader;
-
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
 
 /**
  * A service responsible for exposing the proprietary Arjuna {@link RecoveryManagerService}.
@@ -114,7 +113,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
             try {
                 recoveryManagerService.create();
             } catch (Exception e) {
-                throw MESSAGES.managerStartFailure(e, "Recovery");
+                throw TransactionLogger.ROOT_LOGGER.managerStartFailure(e, "Recovery");
             }
 
             recoveryManagerService.start();
@@ -141,7 +140,7 @@ public class ArjunaRecoveryManagerService implements Service<RecoveryManagerServ
                 recoveryManagerService.start();
                 this.recoveryManagerService = recoveryManagerService;
             } catch (Exception e) {
-                throw MESSAGES.managerStartFailure(e, "Recovery");
+                throw TransactionLogger.ROOT_LOGGER.managerStartFailure(e, "Recovery");
             }
         }
     }

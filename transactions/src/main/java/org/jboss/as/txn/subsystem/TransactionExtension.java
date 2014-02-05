@@ -24,7 +24,6 @@ package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
 
 import java.util.Map;
 
@@ -50,7 +49,7 @@ import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
-import org.jboss.as.txn.TransactionMessages;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -96,7 +95,7 @@ public class TransactionExtension implements Extension {
         final ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
         final ServiceController<?> serviceController = serviceRegistry.getService(MBEAN_SERVER_SERVICE_NAME);
         if (serviceController == null) {
-            throw TransactionMessages.MESSAGES.jmxSubsystemNotInstalled();
+            throw TransactionLogger.ROOT_LOGGER.jmxSubsystemNotInstalled();
         }
         return (MBeanServer) serviceController.getValue();
     }
@@ -105,7 +104,7 @@ public class TransactionExtension implements Extension {
      * {@inheritDoc}
      */
     public void initialize(ExtensionContext context) {
-        ROOT_LOGGER.debug("Initializing Transactions Extension");
+        TransactionLogger.ROOT_LOGGER.debug("Initializing Transactions Extension");
         final LogStoreResource resource = new LogStoreResource();
         final boolean registerRuntimeOnly = context.isRuntimeOnlyRegistrationValid();
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
@@ -278,7 +277,7 @@ public class TransactionExtension implements Extension {
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return TransactionMessages.MESSAGES.transformHornetQStoreEnableAsyncIoMustBeTrue();
+            return TransactionLogger.ROOT_LOGGER.transformHornetQStoreEnableAsyncIoMustBeTrue();
         }
 
         @Override

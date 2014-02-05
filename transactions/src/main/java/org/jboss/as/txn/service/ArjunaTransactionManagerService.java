@@ -27,6 +27,7 @@ import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import com.arjuna.ats.arjuna.tools.osb.mbean.ObjStoreBrowser;
 import com.arjuna.ats.jta.common.JTAEnvironmentBean;
 import com.arjuna.orbportability.internal.utils.PostInitLoader;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -41,8 +42,6 @@ import org.omg.CORBA.ORB;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
 
 /**
  * A service for the proprietary Arjuna {@link com.arjuna.ats.jbossatx.jta.TransactionManagerService}
@@ -111,7 +110,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             try {
                 service.create();
             } catch (Exception e) {
-                throw MESSAGES.managerStartFailure(e, "Transaction");
+                throw TransactionLogger.ROOT_LOGGER.managerStartFailure(e, "Transaction");
             }
             service.start();
             value = service;
@@ -136,12 +135,12 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
             try {
                 service.create();
             } catch (Exception e) {
-                throw MESSAGES.createFailed(e);
+                throw TransactionLogger.ROOT_LOGGER.createFailed(e);
             }
             try {
                 service.start(orb);
             } catch (Exception e) {
-                throw MESSAGES.startFailure(e);
+                throw TransactionLogger.ROOT_LOGGER.startFailure(e);
             }
             value = service;
         }
@@ -149,7 +148,7 @@ public final class ArjunaTransactionManagerService implements Service<com.arjuna
         try {
             objStoreBrowser.start();
         } catch (Exception e) {
-            throw MESSAGES.objectStoreStartFailure(e);
+            throw TransactionLogger.ROOT_LOGGER.objectStoreStartFailure(e);
         }
 
     }
