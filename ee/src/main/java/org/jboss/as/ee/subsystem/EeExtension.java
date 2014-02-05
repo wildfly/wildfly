@@ -125,7 +125,7 @@ public class EeExtension implements Extension {
                 .addRejectCheck(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
                 .setValueConverter(globalModulesRejecterConverter, GlobalModulesDefinition.INSTANCE)
                 // Deal with new attribute annotation-property-replacement
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT)
                 .addRejectCheck(RejectAttributeChecker.DEFINED, EeSubsystemRootResource.ANNOTATION_PROPERTY_REPLACEMENT);
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.CONTEXT_SERVICE));
         builder.rejectChildResource(PathElement.pathElement(EESubsystemModel.MANAGED_THREAD_FACTORY));
