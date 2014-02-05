@@ -136,6 +136,6 @@ public class RunAsMDBUnitTestCase {
         consumer.close();
         producer.close();
         session.close();
-        conn.stop();
+        conn.close();
     }
 }
