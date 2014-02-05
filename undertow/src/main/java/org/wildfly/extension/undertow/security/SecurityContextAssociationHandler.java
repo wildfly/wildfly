@@ -34,7 +34,7 @@ import org.jboss.metadata.javaee.jboss.RunAsIdentityMetaData;
 import org.jboss.security.RunAs;
 import org.jboss.security.RunAsIdentity;
 import org.jboss.security.SecurityContext;
-import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import java.security.AccessController;
 import java.security.PrivilegedAction;

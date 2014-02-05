@@ -34,6 +34,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.filters.FilterRef;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -51,9 +52,9 @@ public class LocationService implements Service<LocationService> {
 
     @Override
     public void start(StartContext context) throws StartException {
-        UndertowLogger.ROOT_LOGGER.registeringHandler( httpHandler.getValue(), locationPath);
+        UndertowLogger.ROOT_LOGGER.tracef("registering handler %s under path '%s'", httpHandler.getValue(), locationPath);
         host.getValue().registerHandler(locationPath, configureHandler());
-    }
+     }
 
     @Override
     public void stop(StopContext context) {

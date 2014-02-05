@@ -38,6 +38,7 @@ import org.jboss.security.auth.message.GenericMessageInfo;
 import org.jboss.security.identity.plugins.SimpleRole;
 import org.jboss.security.identity.plugins.SimpleRoleGroup;
 import org.jboss.security.plugins.auth.JASPIServerAuthenticationManager;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.AccountImpl;
 
 import javax.security.auth.Subject;
@@ -54,9 +55,6 @@ import org.jboss.security.auth.callback.JASPICallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
 import org.xnio.conduits.StreamSinkConduit;
-
-import static org.wildfly.extension.undertow.UndertowLogger.ROOT_LOGGER;
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
 /**
  * <p>
@@ -92,7 +90,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
         final String applicationIdentifier = buildApplicationIdentifier(requestContext);
         final JASPICallbackHandler cbh = new JASPICallbackHandler();
 
-        ROOT_LOGGER.debugf("validateRequest for layer [%s] and applicationContextIdentifier [%s]", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
+        UndertowLogger.ROOT_LOGGER.debugf("validateRequest for layer [%s] and applicationContextIdentifier [%s]", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
 
         Account cachedAccount = null;
         final JASPICSecurityContext jaspicSecurityContext = (JASPICSecurityContext) exchange.getSecurityContext();
@@ -189,7 +187,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
 
     private Account createAccount(final Account cachedAccount, final org.jboss.security.SecurityContext jbossSct) {
         if (jbossSct == null) {
-            throw MESSAGES.nullParamter("org.jboss.security.SecurityContext");
+            throw UndertowLogger.ROOT_LOGGER.nullParamter("org.jboss.security.SecurityContext");
         }
 
         // null principal: SAM has opted out of the authentication process.
@@ -230,7 +228,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
                 String applicationIdentifier = buildApplicationIdentifier(requestContext);
 
                 if (!wasAuthExceptionThrown()) {
-                    ROOT_LOGGER.debugf("secureResponse for layer [%s] and applicationContextIdentifier [%s].", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
+                    UndertowLogger.ROOT_LOGGER.debugf("secureResponse for layer [%s] and applicationContextIdentifier [%s].", JASPI_HTTP_SERVLET_LAYER, applicationIdentifier);
                     sam.secureResponse(messageInfo, new Subject(), JASPI_HTTP_SERVLET_LAYER, applicationIdentifier, cbh);
 
                     // A SAM can unwrap the HTTP request/response objects - update the servlet request context with the values found in the message info.

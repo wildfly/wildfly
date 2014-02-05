@@ -130,7 +130,7 @@ import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.JSPConfig;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.SessionCookieConfig;
-import org.wildfly.extension.undertow.UndertowMessages;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
@@ -611,7 +611,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                         s.addHandlerChainWrapper(JspFileHandler.jspFileHandlerWrapper(servlet.getJspFile()));
                     } else {
                         if (servlet.getServletClass() == null) {
-                            throw UndertowMessages.MESSAGES.servletClassNotDefined(servlet.getServletName());
+                            throw UndertowLogger.ROOT_LOGGER.servletClassNotDefined(servlet.getServletName());
                         }
                         Class<? extends Servlet> servletClass = (Class<? extends Servlet>) module.getClassLoader().loadClass(servlet.getServletClass());
                         ManagedReferenceFactory creator = componentRegistry.createInstanceFactory(servletClass);

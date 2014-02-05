@@ -36,7 +36,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelNode;
 import org.wildfly.extension.undertow.AbstractHandlerDefinition;
 import org.wildfly.extension.undertow.Constants;
-import org.wildfly.extension.undertow.UndertowMessages;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author Tomaz Cerar (c) 2013 Red Hat Inc.
@@ -98,8 +98,8 @@ abstract class Filter extends AbstractHandlerDefinition {
             }
 
         } catch (Throwable e) {
-            throw UndertowMessages.MESSAGES.cannotCreateHttpHandler(handlerClass, model, e);
+            throw UndertowLogger.ROOT_LOGGER.cannotCreateHttpHandler(handlerClass, model, e);
         }
-        throw UndertowMessages.MESSAGES.cannotCreateHttpHandler(handlerClass, model, null);
+        throw UndertowLogger.ROOT_LOGGER.cannotCreateHttpHandler(handlerClass, model, null);
     }
 }

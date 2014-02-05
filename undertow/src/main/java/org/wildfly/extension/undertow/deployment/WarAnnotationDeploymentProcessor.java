@@ -85,8 +85,7 @@ import org.jboss.metadata.web.spec.TransportGuaranteeType;
 import org.jboss.metadata.web.spec.Web30MetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
 import org.jboss.modules.ModuleIdentifier;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * Web annotation deployment processor.
@@ -162,7 +161,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 ServletMetaData servlet = new ServletMetaData();
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException(MESSAGES.invalidWebServletAnnotation(target));
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidWebServletAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 servlet.setServletClass(classInfo.toString());
@@ -190,7 +189,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                             AnnotationValue initParamName = initParamsAnnotation.value("name");
                             AnnotationValue initParamValue = initParamsAnnotation.value();
                             if (initParamName == null || initParamValue == null) {
-                                throw new DeploymentUnitProcessingException(MESSAGES.invalidWebInitParamAnnotation(target));
+                                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidWebInitParamAnnotation(target));
                             }
                             AnnotationValue initParamDescription = initParamsAnnotation.value("description");
                             initParam.setParamName(initParamName.asString());
@@ -251,7 +250,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 FilterMetaData filter = new FilterMetaData();
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException(MESSAGES.invalidWebFilterAnnotation(target));
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidWebFilterAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 filter.setFilterClass(classInfo.toString());
@@ -275,7 +274,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                             AnnotationValue initParamName = initParamsAnnotation.value("name");
                             AnnotationValue initParamValue = initParamsAnnotation.value();
                             if (initParamName == null || initParamValue == null) {
-                                throw new DeploymentUnitProcessingException(MESSAGES.invalidWebInitParamAnnotation(target));
+                                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidWebInitParamAnnotation(target));
                             }
                             AnnotationValue initParamDescription = initParamsAnnotation.value("description");
                             initParam.setParamName(initParamName.asString());
@@ -357,7 +356,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                 ListenerMetaData listener = new ListenerMetaData();
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException(MESSAGES.invalidWebListenerAnnotation(target));
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidWebListenerAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 listener.setListenerClass(classInfo.toString());
@@ -393,7 +392,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
                     annotations.add(annotationMD);
                 }
                 if (annotation.value() == null) {
-                    throw new DeploymentUnitProcessingException(MESSAGES.invalidRunAsAnnotation(target));
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidRunAsAnnotation(target));
                 }
                 RunAsMetaData runAs = new RunAsMetaData();
                 runAs.setRoleName(annotation.value().asString());
@@ -410,7 +409,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             }
             for (final AnnotationInstance annotation : declareRolesAnnotations) {
                 if (annotation.value() == null) {
-                    throw new DeploymentUnitProcessingException(MESSAGES.invalidDeclareRolesAnnotation(annotation.target()));
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidDeclareRolesAnnotation(annotation.target()));
                 }
                 for (String role : annotation.value().asStringArray()) {
                     SecurityRoleMetaData sr = new SecurityRoleMetaData();
@@ -430,7 +429,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             for (final AnnotationInstance annotation : multipartConfigAnnotations) {
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException(MESSAGES.invalidMultipartConfigAnnotation(target));
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidMultipartConfigAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 AnnotationMetaData annotationMD = annotations.get(classInfo.toString());
@@ -470,7 +469,7 @@ public class WarAnnotationDeploymentProcessor implements DeploymentUnitProcessor
             for (final AnnotationInstance annotation : servletSecurityAnnotations) {
                 AnnotationTarget target = annotation.target();
                 if (!(target instanceof ClassInfo)) {
-                    throw new DeploymentUnitProcessingException(MESSAGES.invalidServletSecurityAnnotation(target));
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.invalidServletSecurityAnnotation(target));
                 }
                 ClassInfo classInfo = ClassInfo.class.cast(target);
                 AnnotationMetaData annotationMD = annotations.get(classInfo.toString());

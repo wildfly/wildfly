@@ -47,8 +47,7 @@ import org.jboss.metadata.parser.servlet.WebFragmentMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.vfs.VirtualFile;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author Remy Maucherat
@@ -84,9 +83,9 @@ public class WebFragmentParsingDeploymentProcessor implements DeploymentUnitProc
 
                         webFragments.put(resourceRoot.getRootName(), WebFragmentMetaDataParser.parse(xmlReader, SpecDescriptorPropertyReplacement.propertyReplacer(deploymentUnit)));
                     } catch (XMLStreamException e) {
-                        throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webFragment, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
+                        throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webFragment, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()));
                     } catch (IOException e) {
-                        throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(webFragment), e);
+                        throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(webFragment), e);
                     } finally {
                         try {
                             if (is != null) {

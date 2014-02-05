@@ -36,7 +36,7 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.authorization.ResourceKeys;
 import org.jboss.security.javaee.AbstractWebAuthorizationHelper;
 import org.jboss.security.javaee.SecurityHelperFactory;
-import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import javax.security.auth.Subject;
 import javax.security.jacc.PolicyContext;

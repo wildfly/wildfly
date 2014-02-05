@@ -69,7 +69,7 @@ import org.wildfly.extension.undertow.DeploymentDefinition;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
 import org.wildfly.extension.undertow.UndertowExtension;
-import org.wildfly.extension.undertow.UndertowLogger;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
@@ -85,8 +85,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
-
 import javax.security.jacc.PolicyConfiguration;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
@@ -98,7 +96,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
     public UndertowDeploymentProcessor(String defaultHost, final String defaultContainer, String defaultServer) {
         this.defaultHost = defaultHost;
         if (defaultHost == null) {
-            throw MESSAGES.nullDefaultHost();
+            throw UndertowLogger.ROOT_LOGGER.nullDefaultHost();
         }
         this.defaultContainer = defaultContainer;
         this.defaultServer = defaultServer;
@@ -126,7 +124,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
         String hostName = hostNames.iterator().next();
         if (hostName == null) {
-            throw MESSAGES.nullHostName();
+            throw UndertowLogger.ROOT_LOGGER.nullHostName();
         }
         return hostName;
     }
@@ -142,7 +140,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         final VirtualFile deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT).getRoot();
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         if (module == null) {
-            throw new DeploymentUnitProcessingException(MESSAGES.failedToResolveModule(deploymentUnit));
+            throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failedToResolveModule(deploymentUnit));
         }
         final JBossWebMetaData metaData = warMetaData.getMergedJBossWebMetaData();
         final List<SetupAction> setupActions = deploymentUnit.getAttachmentList(org.jboss.as.ee.component.Attachments.WEB_SETUP_ACTIONS);

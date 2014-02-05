@@ -43,8 +43,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.extension.undertow.Host;
 import org.wildfly.extension.undertow.ServletContainerService;
-import org.wildfly.extension.undertow.UndertowLogger;
-import org.wildfly.extension.undertow.UndertowMessages;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author Stuart Douglas
@@ -167,7 +166,7 @@ public class UndertowDeploymentService implements Service<UndertowDeploymentServ
                 UndertowDeploymentService service = controller.getValue();
                 service.startContext();
             } catch (Exception ex) {
-                throw UndertowMessages.MESSAGES.cannotActivateContext(ex, controller.getName());
+                throw UndertowLogger.ROOT_LOGGER.cannotActivateContext(ex, controller.getName());
             }
             return true;
         }

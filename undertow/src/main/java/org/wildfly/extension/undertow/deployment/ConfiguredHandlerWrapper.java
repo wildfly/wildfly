@@ -24,7 +24,7 @@ package org.wildfly.extension.undertow.deployment;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import org.jboss.common.beans.property.BeanUtils;
-import org.wildfly.extension.undertow.UndertowMessages;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.lang.reflect.Constructor;
@@ -57,7 +57,7 @@ public class ConfiguredHandlerWrapper implements HandlerWrapper {
             } else if (HandlerWrapper.class.isAssignableFrom(handlerClass)) {
                 instance = handlerClass.newInstance();
             } else {
-                throw UndertowMessages.MESSAGES.handlerWasNotAHandlerOrWrapper(handlerClass);
+                throw UndertowLogger.ROOT_LOGGER.handlerWasNotAHandlerOrWrapper(handlerClass);
             }
             Properties p = new Properties();
             p.putAll(properties);
@@ -75,7 +75,7 @@ public class ConfiguredHandlerWrapper implements HandlerWrapper {
                 return ((HandlerWrapper) instance).wrap(handler);
             }
         } catch (Exception e) {
-            throw UndertowMessages.MESSAGES.failedToConfigureHandler(handlerClass, e);
+            throw UndertowLogger.ROOT_LOGGER.failedToConfigureHandler(handlerClass, e);
         }
     }
 }
