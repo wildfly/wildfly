@@ -212,7 +212,7 @@ public class PersistentResourceXMLDescription {
 
             }
             for (Map.Entry<String, AttributeDefinition> def : attributes.entrySet()) {
-                def.getValue().getAttributeMarshaller().marshallAsAttribute(def.getValue(), model, false, writer);
+                def.getValue().getAttributeMarshaller().marshallAsAttribute(def.getValue(), model, true, writer);
             }
             persistChildren(writer, model);
 
