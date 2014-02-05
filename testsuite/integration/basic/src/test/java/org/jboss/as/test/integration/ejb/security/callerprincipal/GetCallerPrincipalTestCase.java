@@ -331,7 +331,7 @@ public class GetCallerPrincipalTestCase {
                 session.close();
             }
             if(conn!=null) {
-                conn.stop();
+                conn.close();
             }
             client.logout();
         }
