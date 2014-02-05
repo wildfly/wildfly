@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.wildfly.clustering.web.Batch;
-import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -40,17 +39,16 @@ import io.undertow.server.session.SessionManager;
  * Adapts an {@link SSO} to a {@link SingleSignOn}.
  * @author Paul Ferraro
  */
-//TODO Leverage SingleSignOn.close() to consolidate batching
 public class DistributableSingleSignOn implements SingleSignOn {
 
     private final SSO<Account, String, Void> sso;
     private final SessionManagerRegistry registry;
-    private final Batcher batcher;
+    private final Batch batch;
 
-    public DistributableSingleSignOn(SSO<Account, String, Void> sso, SessionManagerRegistry registry, Batcher batcher) {
+    public DistributableSingleSignOn(SSO<Account, String, Void> sso, SessionManagerRegistry registry, Batch batch) {
         this.sso = sso;
         this.registry = registry;
-        this.batcher = batcher;
+        this.batch = batch;
     }
 
     @Override
@@ -95,21 +93,22 @@ public class DistributableSingleSignOn implements SingleSignOn {
 
     @Override
     public void add(Session session) {
-        try (Batch batch = this.batcher.startBatch()) {
-            this.sso.getSessions().addSession(session.getSessionManager().getDeploymentName(), session.getId());
-        }
+        this.sso.getSessions().addSession(session.getSessionManager().getDeploymentName(), session.getId());
     }
 
     @Override
     public void remove(Session session) {
-        try (Batch batch = this.batcher.startBatch()) {
-            this.sso.getSessions().removeSession(session.getSessionManager().getDeploymentName());
-        }
+        this.sso.getSessions().removeSession(session.getSessionManager().getDeploymentName());
     }
 
     @Override
     public Session getSession(SessionManager manager) {
         String sessionId = this.sso.getSessions().getSession(manager.getDeploymentName());
         return (sessionId != null) ? manager.getSession(sessionId) : null;
+    }
+
+    @Override
+    public void close() {
+        this.batch.close();
     }
 }
