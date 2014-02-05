@@ -72,7 +72,7 @@ public class DistributableSingleSignOnManagerTestCase {
 
         verify(authentication).setIdentity(account);
         verify(authentication).setType(AuthenticationType.BASIC);
-        verify(batch).close();
+        verifyNoMoreInteractions(batch);
     }
 
     @Test
@@ -89,7 +89,7 @@ public class DistributableSingleSignOnManagerTestCase {
 
         assertNull(result);
 
-        verify(batch).close();
+        verify(batch).discard();
         reset(batch);
 
         SSO<Account, String, Void> sso = mock(SSO.class);
@@ -100,7 +100,7 @@ public class DistributableSingleSignOnManagerTestCase {
 
         assertNotNull(result);
 
-        verify(batch).close();
+        verifyNoMoreInteractions(batch);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class DistributableSingleSignOnManagerTestCase {
 
         this.subject.removeSingleSignOn(id);
 
-        verify(batch).close();
+        verify(batch).discard();
         reset(batch);
 
         SSO<Account, String, Void> sso = mock(SSO.class);

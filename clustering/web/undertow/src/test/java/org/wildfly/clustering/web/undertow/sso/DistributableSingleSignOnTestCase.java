@@ -34,7 +34,7 @@ import java.util.Iterator;
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
-import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.sso.Authentication;
 import org.wildfly.clustering.web.sso.AuthenticationType;
 import org.wildfly.clustering.web.sso.SSO;
@@ -48,8 +48,8 @@ public class DistributableSingleSignOnTestCase {
 
     private final SSO<Account, String, Void> sso = mock(SSO.class);
     private final SessionManagerRegistry registry = mock(SessionManagerRegistry.class);
-    private final Batcher batcher = mock(Batcher.class);
-    private final DistributableSingleSignOn subject = new DistributableSingleSignOn(this.sso, this.registry, this.batcher);
+    private final Batch batch = mock(Batch.class);
+    private final DistributableSingleSignOn subject = new DistributableSingleSignOn(this.sso, this.registry, this.batch);
 
     @Test
     public void getId() {
@@ -60,6 +60,8 @@ public class DistributableSingleSignOnTestCase {
         String result = this.subject.getId();
 
         assertSame(id, result);
+
+        verifyZeroInteractions(this.batch);
     }
 
     @Test
@@ -73,6 +75,8 @@ public class DistributableSingleSignOnTestCase {
         Account result = this.subject.getAccount();
 
         assertSame(account, result);
+
+        verifyZeroInteractions(this.batch);
     }
 
     @Test
@@ -86,6 +90,8 @@ public class DistributableSingleSignOnTestCase {
         String result = this.subject.getMechanismName();
 
         assertEquals(HttpServletRequest.CLIENT_CERT_AUTH, result);
+
+        verifyZeroInteractions(this.batch);
     }
 
     @Test
@@ -107,6 +113,8 @@ public class DistributableSingleSignOnTestCase {
         assertTrue(result.hasNext());
         assertSame(session, result.next());
         assertFalse(result.hasNext());
+
+        verifyZeroInteractions(this.batch);
     }
 
     @Test
@@ -125,11 +133,15 @@ public class DistributableSingleSignOnTestCase {
 
         assertFalse(result);
 
+        verifyZeroInteractions(this.batch);
+
         when(sessions.getDeployments()).thenReturn(Collections.singleton(deployment));
 
         result = this.subject.contains(session);
 
         assertTrue(result);
+
+        verifyZeroInteractions(this.batch);
     }
 
     @Test
@@ -148,6 +160,7 @@ public class DistributableSingleSignOnTestCase {
         this.subject.add(session);
 
         verify(sessions).addSession(deployment, sessionId);
+        verifyZeroInteractions(this.batch);
     }
 
     @Test
@@ -164,6 +177,7 @@ public class DistributableSingleSignOnTestCase {
         this.subject.remove(session);
 
         verify(sessions).removeSession(deployment);
+        verifyZeroInteractions(this.batch);
     }
 
     @Test
@@ -183,5 +197,14 @@ public class DistributableSingleSignOnTestCase {
         Session result = this.subject.getSession(manager);
 
         assertSame(session, result);
+
+        verifyZeroInteractions(this.batch);
+    }
+
+    @Test
+    public void close() {
+        this.subject.close();
+        
+        verify(this.batch).close();
     }
 }
