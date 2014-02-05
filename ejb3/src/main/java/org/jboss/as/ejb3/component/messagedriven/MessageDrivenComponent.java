@@ -32,6 +32,7 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.pool.PoolConfig;
@@ -48,9 +49,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 import static java.security.AccessController.doPrivileged;
 import static java.util.Collections.emptyMap;
 import static javax.ejb.TransactionAttributeType.REQUIRED;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import static org.jboss.as.ejb3.component.MethodIntf.MESSAGE_ENDPOINT;
 
 /**
@@ -176,7 +176,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
     @Override
     public void start() {
         if (endpoint == null) {
-            throw MESSAGES.endpointUnAvailable(this.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.endpointUnAvailable(this.getComponentName());
         }
 
         getShutDownInterceptorFactory().start();
@@ -224,7 +224,7 @@ public class MessageDrivenComponent extends EJBComponent implements PooledCompon
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(classLoader);
             endpoint.deactivate(endpointFactory, activationSpec);
         } catch (ResourceException re) {
-            throw MESSAGES.failureDuringEndpointDeactivation(this.getComponentName(), re);
+            throw EjbLogger.ROOT_LOGGER.failureDuringEndpointDeactivation(this.getComponentName(), re);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }

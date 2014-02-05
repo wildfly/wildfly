@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -44,8 +45,6 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for finding @AroundTimeout annotated methods in classes within a deployment.
@@ -78,7 +77,7 @@ public class AroundTimeoutAnnotationParsingProcessor implements DeploymentUnitPr
 
     private void processAroundInvoke(final AnnotationTarget target, final EEModuleDescription eeModuleDescription) {
         if (!(target instanceof MethodInfo)) {
-            throw MESSAGES.annotationApplicableOnlyForMethods(AROUND_TIMEOUT_ANNOTATION_NAME.toString());
+            throw EjbLogger.ROOT_LOGGER.annotationApplicableOnlyForMethods(AROUND_TIMEOUT_ANNOTATION_NAME.toString());
         }
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
@@ -94,17 +93,17 @@ public class AroundTimeoutAnnotationParsingProcessor implements DeploymentUnitPr
         final Type[] args = methodInfo.args();
         switch (args.length) {
             case 0:
-                throw MESSAGES.aroundTimeoutMethodExpectedWithInvocationContextParam(methodInfo.name(), classInfo.toString());
+                throw EjbLogger.ROOT_LOGGER.aroundTimeoutMethodExpectedWithInvocationContextParam(methodInfo.name(), classInfo.toString());
             case 1:
                 if (!InvocationContext.class.getName().equals(args[0].name().toString())) {
-                    throw MESSAGES.aroundTimeoutMethodExpectedWithInvocationContextParam(methodInfo.name(), classInfo.toString());
+                    throw EjbLogger.ROOT_LOGGER.aroundTimeoutMethodExpectedWithInvocationContextParam(methodInfo.name(), classInfo.toString());
                 }
                 break;
             default:
-                throw MESSAGES.aroundTimeoutMethodExpectedWithInvocationContextParam(methodInfo.name(), classInfo.toString());
+                throw EjbLogger.ROOT_LOGGER.aroundTimeoutMethodExpectedWithInvocationContextParam(methodInfo.name(), classInfo.toString());
         }
         if (!methodInfo.returnType().name().toString().equals(Object.class.getName())) {
-            throw MESSAGES.aroundTimeoutMethodMustReturnObjectType(methodInfo.name(), classInfo.toString());
+            throw EjbLogger.ROOT_LOGGER.aroundTimeoutMethodMustReturnObjectType(methodInfo.name(), classInfo.toString());
         }
     }
 }

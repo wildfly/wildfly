@@ -37,9 +37,9 @@ import javax.transaction.xa.XAResource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import org.jboss.as.ejb3.logging.EjbLogger;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -127,7 +127,7 @@ public class MessageEndpointInvocationHandler extends AbstractInvocationHandler 
     protected Object doInvoke(Object proxy, Method method, Object[] args) throws Throwable {
         // Are we still usable?
         if (released.get())
-            throw MESSAGES.messageEndpointAlreadyReleased(this);
+            throw EjbLogger.ROOT_LOGGER.messageEndpointAlreadyReleased(this);
 
         // TODO: check for concurrent invocation
 

@@ -38,7 +38,7 @@ import org.jboss.as.ee.component.ViewConfiguration;
 import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -77,8 +77,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.PortableServer.POA;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * This is the DUP that sets up IIOP for EJB's
@@ -159,14 +157,14 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         try {
             remoteClass = classIndex.classIndex(remoteView.getViewClassName());
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
+            throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
         final EJBViewDescription homeView = componentDescription.getEjbHomeView();
         final ClassIndex homeClass;
         try {
             homeClass = classIndex.classIndex(homeView.getViewClassName());
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
+            throw EjbLogger.ROOT_LOGGER.failedToLoadViewClassForComponent(e, componentDescription.getEJBClassName());
         }
 
         componentDescription.getEjbHomeView().getConfigurators().add(new IIOPInterceptorViewConfigurator());
@@ -178,7 +176,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             //TODO: change all this to use the deployment reflection index
             remoteInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(remoteClass.getModuleClass());
         } catch (RMIIIOPViolationException e) {
-            throw MESSAGES.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
         final Map<String, SkeletonStrategy> beanMethodMap = new HashMap<String, SkeletonStrategy>();
@@ -219,7 +217,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
             //TODO: change all this to use the deployment reflection index
             homeInterfaceAnalysis = InterfaceAnalysis.getInterfaceAnalysis(homeClass.getModuleClass());
         } catch (RMIIIOPViolationException e) {
-            throw MESSAGES.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.failedToAnalyzeRemoteInterface(e, componentDescription.getComponentName());
         }
 
         final Map<String, SkeletonStrategy> homeMethodMap = new HashMap<String, SkeletonStrategy>();

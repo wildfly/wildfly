@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.cache.distributable;
 import java.util.Deque;
 import java.util.LinkedList;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.wildfly.clustering.ejb.Batch;
 
 /**
@@ -46,7 +46,7 @@ public class BatchStack {
     public static Batch popBatch() {
         Deque<Batch> stack = BATCH_STACK.get();
         if (stack.isEmpty()) {
-            throw EjbMessages.MESSAGES.asymmetricCacheUsage();
+            throw EjbLogger.ROOT_LOGGER.asymmetricCacheUsage();
         }
         return stack.removeLast();
     }

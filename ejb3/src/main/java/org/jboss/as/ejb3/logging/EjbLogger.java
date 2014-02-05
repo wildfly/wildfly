@@ -1,31 +1,35 @@
 /*
- * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
- * as indicated by the @author tags. See the copyright.txt file in the
- * distribution for a full listing of individual contributors.
  *
- * This is free software; you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation; either version 2.1 of
- * the License, or (at your option) any later version.
+ *  * JBoss, Home of Professional Open Source.
+ *  * Copyright 2011, Red Hat, Inc., and individual contributors
+ *  * as indicated by the @author tags. See the copyright.txt file in the
+ *  * distribution for a full listing of individual contributors.
+ *  *
+ *  * This is free software; you can redistribute it and/or modify it
+ *  * under the terms of the GNU Lesser General Public License as
+ *  * published by the Free Software Foundation; either version 2.1 of
+ *  * the License, or (at your option) any later version.
+ *  *
+ *  * This software is distributed in the hope that it will be useful,
+ *  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  * Lesser General Public License for more details.
+ *  *
+ *  * You should have received a copy of the GNU Lesser General Public
+ *  * License along with this software; if not, write to the Free
+ *  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ *  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this software; if not, write to the Free
- * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.ejb3;
+package org.jboss.as.ejb3.logging;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.util.Date;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.TimeUnit;
@@ -44,6 +48,8 @@ import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.ObjectNotFoundException;
 import javax.ejb.RemoveException;
 import javax.ejb.ScheduleExpression;
+import javax.ejb.Timer;
+
 import javax.ejb.TimerHandle;
 import javax.ejb.TransactionAttributeType;
 import javax.interceptor.InvocationContext;
@@ -57,7 +63,6 @@ import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ee.component.Component;
@@ -65,6 +70,7 @@ import org.jboss.as.ee.component.ComponentCreateServiceFactory;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
+import org.jboss.as.ejb3.EJBMethodIdentifier;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBComponentUnavailableException;
@@ -72,8 +78,11 @@ import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponent;
+import org.jboss.as.ejb3.component.stateful.StatefulSessionComponentInstance;
 import org.jboss.as.ejb3.concurrency.LockableComponent;
+import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.subsystem.deployment.EJBComponentType;
+import org.jboss.as.ejb3.subsystem.deployment.InstalledComponent;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
 import org.jboss.as.ejb3.tx.TimerTransactionRolledBackException;
@@ -81,35 +90,378 @@ import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.ejb.client.EJBLocator;
+import org.jboss.ejb.client.SessionID;
+import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jca.core.spi.rar.NotFoundException;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
+import org.jboss.remoting3.Channel;
+import org.jboss.remoting3.MessageInputStream;
+
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
- * This module is using message IDs in the range 14100-14599. This file is using the subset 14300-14599 for
- * non-logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
- * JBAS message id blocks.
- *
  * @author <a href="mailto:Flemming.Harms@gmail.com">Flemming Harms</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface EjbMessages {
+@MessageLogger(projectCode = "WFLYEJB", length = 4)
+public interface EjbLogger extends BasicLogger {
+
+    EjbLogger ROOT_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3");
 
     /**
-     * The default messages.
+     * logger use to log EJB invocation errors
      */
-    EjbMessages MESSAGES = Messages.getBundle(EjbMessages.class);
+    EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.invocation");
+
+    /**
+     * Logs an error message indicating an exception occurred while removing an inactive bean.
+     *
+     * @param id the session id that could not be removed
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 1, value = "Failed to remove %s from cache")
+    void cacheRemoveFailed(Object id);
+
+    /**
+     * Logs a warning message indicating an EJB for the specific id could not be found
+     *
+     * @param id the session id that could not be released
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 2, value = "Failed to find SFSB instance with session ID %s in cache")
+    void cacheEntryNotFound(Object id);
+
+    /**
+     * Logs an error message indicating an exception occurred while executing an invocation
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 3, value = "Asynchronous invocation failed")
+    void asyncInvocationFailed(@Cause Throwable cause);
+
+    /**
+     * Logs an error message indicating an exception occurred while getting status
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 4, value = "failed to get tx manager status; ignoring")
+    void getTxManagerStatusFailed(@Cause Throwable cause);
+
+    /**
+     * Logs an error message indicating an exception occurred while calling setRollBackOnly
+     *
+     * @param se the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 5, value = "failed to set rollback only; ignoring")
+    void setRollbackOnlyFailed(@Cause Throwable se);
+
+    /**
+     * Logs a warning message indicating ActivationConfigProperty will be ignored since it is not allowed by resource adapter
+     *
+     * @param propName
+     * @param resourceAdapterName
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 6, value = "ActivationConfigProperty %s will be ignored since it is not allowed by resource adapter: %s")
+    void activationConfigPropertyIgnored(Object propName, String resourceAdapterName);
+
+    /**
+     * Logs an error message indicating Discarding stateful component instance due to exception
+     *
+     * @param component the discarded instance
+     * @param t         the cause of error
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 7, value = "Discarding stateful component instance: %s due to exception")
+    void discardingStatefulComponent(StatefulSessionComponentInstance component, @Cause Throwable t);
+
+    /**
+     * Logs an error message indicating it failed to remove bean with the specified session id
+     *
+     * @param componentName
+     * @param sessionId
+     * @param t             the cause of error
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 8, value = "Failed to remove bean: %s with session id %s")
+    void failedToRemoveBean(String componentName, SessionID sessionId, @Cause Throwable t);
+
+    /**
+     * Logs an info message indicating it could not find stateful session bean instance with id
+     *
+     * @param sessionId     the id of the session bean
+     * @param componentName
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 9, value = "Could not find stateful session bean instance with id: %s for bean: %s during destruction. Probably already removed")
+    void failToFindSfsbWithId(SessionID sessionId, String componentName);
+
+    /**
+     * Logs a warning message indicating Default interceptor class is not listed in the <interceptors> section of ejb-jar.xml and will not be applied"
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10, value = "Default interceptor class %s is not listed in the <interceptors> section of ejb-jar.xml and will not be applied")
+    void defaultInterceptorClassNotListed(String clazz);
+
+    /**
+     * Logs a warning message indicating No method found on EJB while processing exclude-list element in ejb-jar.xml
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11, value = "No method named: %s found on EJB: %s while processing exclude-list element in ejb-jar.xml")
+    void noMethodFoundOnEjbExcludeList(String methodName, String ejbName);
+
+    /**
+     * Logs a warning message indicating No method with param types found on EJB while processing exclude-list element in ejb-jar.xml
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 12, value = "No method named: %s with param types: %s found on EJB: %s while processing exclude-list element in ejb-jar.xml")
+    void noMethodFoundOnEjbWithParamExcludeList(String methodName, String s, String ejbName);
+
+    /**
+     * Logs a warning message indicating no method named found on EJB while processing method-permission element in ejb-jar.xml
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 13, value = "No method named: %s found on EJB: %s while processing method-permission element in ejb-jar.xml")
+    void noMethodFoundOnEjbPermission(String methodName, String ejbName);
+
+    /**
+     * Logs a warning message indicating No method with param type found on EJB while processing method-permission element in ejb-jar.xml
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 14, value = "No method named: %s with param types: %s found on EJB: %s while processing method-permission element in ejb-jar.xml")
+    void noMethodFoundWithParamOnEjbMethodPermission(String methodName, String s, String ejbName);
+
+
+    /**
+     * Logs a warning message indicating Unknown timezone id found in schedule expression. Ignoring it and using server's timezone
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 15, value = "Unknown timezone id: %s found in schedule expression. Ignoring it and using server's timezone: %s")
+    void unknownTimezoneId(String timezoneId, String id);
+
+    /**
+     * Logs a warning message indicating the timer persistence is not enabled, persistent timers will not survive JVM restarts
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 16, value = "Timer persistence is not enabled, persistent timers will not survive JVM restarts")
+    void timerPersistenceNotEnable();
+
+    /**
+     * Logs an info message indicating the next expiration is null. No tasks will be scheduled for timer
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 17, value = "Next expiration is null. No tasks will be scheduled for timer %S")
+    void nextExpirationIsNull(TimerImpl timer);
+
+    /**
+     * Logs an error message indicating Ignoring exception during setRollbackOnly
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 18, value = "Ignoring exception during setRollbackOnly")
+    void ignoringException(@Cause Throwable e);
+
+    /**
+     * Logs a warning message indicating the unregistered an already registered Timerservice with id %s and a new instance will be registered
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 19, value = "Unregistered an already registered Timerservice with id %s and a new instance will be registered")
+    void UnregisteredRegisteredTimerService(String timedObjectId);
+
+    /**
+     * Logs an error message indicating an error invoking timeout for timer
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 20, value = "Error invoking timeout for timer: %s")
+    void errorInvokeTimeout(Timer timer, @Cause Throwable e);
+
+    /**
+     * Logs an info message indicating timer will be retried
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 21, value = "Timer: %s will be retried")
+    void timerRetried(Timer timer);
+
+    /**
+     * Logs an error message indicating an error during retyring timeout for timer
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 22, value = "Error during retrying timeout for timer: %s")
+    void errorDuringRetryTimeout(Timer timer, @Cause Throwable e);
+
+    /**
+     * Logs an info message indicating retrying timeout for timer
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 23, value = "Retrying timeout for timer: %s")
+    void retryingTimeout(Timer timer);
+
+    /**
+     * Logs an info message indicating timer is not active, skipping retry of timer
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 24, value = "Timer is not active, skipping retry of timer: %s")
+    void timerNotActive(Timer timer);
+
+    /**
+     * Logs a warning message indicating could not read timer information for EJB component
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 26, value = "Could not read timer information for EJB component %s")
+    void failToReadTimerInformation(String componentName);
+
+    /**
+     * Logs an error message indicating it could not remove persistent timer
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 27, value = "Could not remove persistent timer %s")
+    void failedToRemovePersistentTimer(File file);
+
+    /**
+     * Logs an error message indicating it's not a directory, could not restore timers"
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 28, value = "%s is not a directory, could not restore timers")
+    void failToRestoreTimers(File file);
+
+    /**
+     * Logs an error message indicating it could not restore timer from file
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 29, value = "Could not restore timer from %s")
+    void failToRestoreTimersFromFile(File timerFile, @Cause Throwable e);
+
+    /**
+     * Logs an error message indicating error closing file
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 30, value = "error closing file ")
+    void failToCloseFile(@Cause Throwable e);
+
+    /**
+     * Logs an error message indicating Could not restore timers for specified id
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 31, value = "Could not restore timers for %s")
+    void failToRestoreTimersForObjectId(String timedObjectId, @Cause Throwable e);
+
+    /**
+     * Logs an error message indicating Could not restore timers for specified id
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 32, value = "Could not create directory %s to persist EJB timers.")
+    void failToCreateDirectoryForPersistTimers(File file);
+
+    /**
+     * Logs an error message indicating it discarding entity component instance
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 33, value = "Discarding entity component instance: %s due to exception")
+    void discardingEntityComponent(EntityBeanComponentInstance instance, @Cause Throwable t);
+
+    /**
+     * Logs an error message indicating that an invocation failed
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 34, value = "EJB Invocation failed on component %s for method %s")
+    void invocationFailed(String component, Method method, @Cause Throwable t);
+
+    /**
+     * Logs an error message indicating that an ejb client proxy could not be swapped out in a RMI invocation
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 35, value = "Could not find EJB for locator %s, EJB client proxy will not be replaced")
+    void couldNotFindEjbForLocatorIIOP(EJBLocator locator);
+
+
+    /**
+     * Logs an error message indicating that an ejb client proxy could not be swapped out in a RMI invocation
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 36, value = "EJB %s is not being replaced with a Stub as it is not exposed over IIOP")
+    void ejbNotExposedOverIIOP(EJBLocator locator);
+
+    /**
+     * Logs an error message indicating that dynamic stub creation failed
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 37, value = "Dynamic stub creation failed for class %s")
+    void dynamicStubCreationFailed(String clazz, @Cause Throwable t);
+
+
+    /**
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 38, value = "Exception releasing entity")
+    void exceptionReleasingEntity(@Cause Throwable t);
+
+    /**
+     * Log message indicating that an unsupported client marshalling strategy was received from a remote client
+     *
+     * @param strategy The client marshalling strategy
+     * @param channel  The channel on which the client marshalling strategy was received
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 39, value = "Unsupported client marshalling strategy %s received on channel %s ,no further communication will take place")
+    void unsupportedClientMarshallingStrategy(String strategy, Channel channel);
+
+
+    /**
+     * Log message indicating that some error caused a channel to be closed
+     *
+     * @param channel The channel being closed
+     * @param t       The cause
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 40, value = "Closing channel %s due to an error")
+    void closingChannel(Channel channel, @Cause Throwable t);
+
+    /**
+     * Log message indicating that a {@link Channel.Receiver#handleEnd(org.jboss.remoting3.Channel)} notification
+     * was received and the channel is being closed
+     *
+     * @param channel The channel for which the {@link Channel.Receiver#handleEnd(org.jboss.remoting3.Channel)} notification
+     *                was received
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 41, value = "Channel end notification received, closing channel %s")
+    void closingChannelOnChannelEnd(Channel channel);
+
+    /**
+     * Logs a message which includes the resource adapter name and the destination on which a message driven bean
+     * is listening
+     *
+     * @param mdbName The message driven bean name
+     * @param raName  The resource adapter name
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 42, value = "Started message driven bean '%s' with '%s' resource adapter")
+    void logMDBStart(final String mdbName, final String raName);
+
+    /**
+     * Logs a waring message indicating an overlapped invoking timeout for timer
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 43, value = "A previous execution of timer [%s %s] is still in progress, skipping this overlapping scheduled execution at: %s")
+    void skipOverlappingInvokeTimeout(String timedObjectId, String timerId, Date scheduledTime);
 
     /**
      * Returns a {@link IllegalStateException} indicating that {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
@@ -117,8 +469,7 @@ public interface EjbMessages {
      *
      * @return
      */
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14144, value = "Resource adapter repository is not available")
+    @Message(id = 44, value = "Resource adapter repository is not available")
     IllegalStateException resourceAdapterRepositoryUnAvailable();
 
     /**
@@ -129,8 +480,7 @@ public interface EjbMessages {
      * @param notFoundException   The original exception cause
      * @return
      */
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14145, value = "Could not find an Endpoint for resource adapter %s")
+    @Message(id = 45, value = "Could not find an Endpoint for resource adapter %s")
     IllegalArgumentException noSuchEndpointException(final String resourceAdapterName, @Cause NotFoundException notFoundException);
 
     /**
@@ -140,8 +490,7 @@ public interface EjbMessages {
      * @param componentName The MDB component name
      * @return
      */
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14146, value = "Endpoint is not available for message driven component %s")
+    @Message(id = 46, value = "Endpoint is not available for message driven component %s")
     IllegalStateException endpointUnAvailable(String componentName);
 
     /**
@@ -152,306 +501,418 @@ public interface EjbMessages {
      * @param cause         Original cause
      * @return
      */
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14147, value = "Could not deactive endpoint for message driven component %s")
+    @Message(id = 47, value = "Could not deactive endpoint for message driven component %s")
     RuntimeException failureDuringEndpointDeactivation(final String componentName, @Cause ResourceException cause);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14148, value = "")
+    @Message(id = 48, value = "")
     UnsupportedCallbackException unsupportedCallback(@Param Callback current);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14149, value = "Could not create an instance of cluster node selector %s for cluster %s")
+    @Message(id = 49, value = "Could not create an instance of cluster node selector %s for cluster %s")
     RuntimeException failureDuringLoadOfClusterNodeSelector(final String clusterNodeSelectorName, final String clusterName, @Cause Exception e);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14151, value = "Could not find view %s for EJB %s")
+    @LogMessage(level = WARN)
+    @Message(id = 50, value = "Failed to parse property %s due to %s")
+    void failedToCreateOptionForProperty(String propertyName, String reason);
+
+    @Message(id = 51, value = "Could not find view %s for EJB %s")
     IllegalStateException viewNotFound(String viewClass, String ejbName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14152, value = "Cannot perform asynchronous local invocation for component that is not a session bean")
+    @Message(id = 52, value = "Cannot perform asynchronous local invocation for component that is not a session bean")
     RuntimeException asyncInvocationOnlyApplicableForSessionBeans();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14153, value = "%s is not a Stateful Session bean in app: %s module: %s distinct-name: %s")
+    @Message(id = 53, value = "%s is not a Stateful Session bean in app: %s module: %s distinct-name: %s")
     IllegalArgumentException notStatefulSessionBean(String ejbName, String appName, String moduleName, String distinctName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14154, value = "Failed to marshal EJB parameters")
+    @Message(id = 54, value = "Failed to marshal EJB parameters")
     RuntimeException failedToMarshalEjbParameters(@Cause Exception e);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14155, value = "Unknown deployment - app name: %s module name: %s distinct name: %s")
+    @Message(id = 55, value = "Unknown deployment - app name: %s module name: %s distinct name: %s")
     IllegalArgumentException unknownDeployment(String appName, String moduleName, String distinctName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14156, value = "Could not find EJB %s in deployment [app: %s module: %s distinct-name: %s]")
+    @Message(id = 56, value = "Could not find EJB %s in deployment [app: %s module: %s distinct-name: %s]")
     IllegalArgumentException ejbNotFoundInDeployment(String ejbName, String appName, String moduleName, String distinctName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14157, value = "%s annotation is only valid on method targets")
+    @Message(id = 57, value = "%s annotation is only valid on method targets")
     IllegalArgumentException annotationApplicableOnlyForMethods(String annotationName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14158, value = "Method %s, on class %s, annotated with @javax.interceptor.AroundTimeout is expected to accept a single param of type javax.interceptor.InvocationContext")
+    @Message(id = 58, value = "Method %s, on class %s, annotated with @javax.interceptor.AroundTimeout is expected to accept a single param of type javax.interceptor.InvocationContext")
     IllegalArgumentException aroundTimeoutMethodExpectedWithInvocationContextParam(String methodName, String className);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14159, value = "Method %s, on class %s, annotated with @javax.interceptor.AroundTimeout must return Object type")
+    @Message(id = 59, value = "Method %s, on class %s, annotated with @javax.interceptor.AroundTimeout must return Object type")
     IllegalArgumentException aroundTimeoutMethodMustReturnObjectType(String methodName, String className);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14160, value = "Wrong tx on thread: expected %s, actual %s")
+    @Message(id = 60, value = "Wrong tx on thread: expected %s, actual %s")
     IllegalStateException wrongTxOnThread(Transaction expected, Transaction actual);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14161, value = "Unknown transaction attribute %s on invocation %s")
+    @Message(id = 61, value = "Unknown transaction attribute %s on invocation %s")
     IllegalStateException unknownTxAttributeOnInvocation(TransactionAttributeType txAttr, InterceptorContext invocation);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14162, value = "Transaction is required for invocation %s")
+    @Message(id = 62, value = "Transaction is required for invocation %s")
     EJBTransactionRequiredException txRequiredForInvocation(InterceptorContext invocation);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14163, value = "Transaction present on server in Never call (EJB3 13.6.2.6)")
+    @Message(id = 63, value = "Transaction present on server in Never call (EJB3 13.6.2.6)")
     EJBException txPresentForNeverTxAttribute();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14165, value = "View interface cannot be null")
+    @LogMessage(level = ERROR)
+    @Message(id = 64, value = "Failed to set transaction for rollback only")
+    void failedToSetRollbackOnly(@Cause Exception e);
+
+    @Message(id = 65, value = "View interface cannot be null")
     IllegalArgumentException viewInterfaceCannotBeNull();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14166, value = "Cannot call getEjbObject before the object is associated with a primary key")
+    @Message(id = 66, value = "Cannot call getEjbObject before the object is associated with a primary key")
     IllegalStateException cannotCallGetEjbObjectBeforePrimaryKeyAssociation();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14167, value = "Cannot call getEjbLocalObject before the object is associated with a primary key")
+    @Message(id = 67, value = "Cannot call getEjbLocalObject before the object is associated with a primary key")
     IllegalStateException cannotCallGetEjbLocalObjectBeforePrimaryKeyAssociation();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14168, value = "Could not load view class for component %s")
+    @Message(id = 68, value = "Could not load view class for component %s")
     RuntimeException failedToLoadViewClassForComponent(@Cause Exception e, String componentName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14169, value = "Entities can not be created for %s bean since no create method is available.")
+    @Message(id = 69, value = "Entities can not be created for %s bean since no create method is available.")
     IllegalStateException entityCannotBeCreatedDueToMissingCreateMethod(String beanName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14170, value = "%s is not an entity bean component")
+    @Message(id = 70, value = "%s is not an entity bean component")
     IllegalArgumentException notAnEntityBean(Component component);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14171, value = "Instance for PK [%s] already registered")
+    @Message(id = 71, value = "Instance for PK [%s] already registered")
     IllegalStateException instanceAlreadyRegisteredForPK(Object primaryKey);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14172, value = "Instance [%s] not found in cache")
+    @Message(id = 72, value = "Instance [%s] not found in cache")
     IllegalStateException entityBeanInstanceNotFoundInCache(EntityBeanComponentInstance instance);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14173, value = "Illegal call to EJBHome.remove(Object) on a session bean")
+    @Message(id = 73, value = "Illegal call to EJBHome.remove(Object) on a session bean")
     RemoveException illegalCallToEjbHomeRemove();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14174, value = "EJB 3.1 FR 13.6.2.8 setRollbackOnly is not allowed with SUPPORTS transaction attribute")
+    @Message(id = 74, value = "EJB 3.1 FR 13.6.2.8 setRollbackOnly is not allowed with SUPPORTS transaction attribute")
     IllegalStateException setRollbackOnlyNotAllowedForSupportsTxAttr();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14175, value = "Cannot call getPrimaryKey on a session bean")
+    @Message(id = 75, value = "Cannot call getPrimaryKey on a session bean")
     EJBException cannotCallGetPKOnSessionBean();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14176, value = "Singleton beans cannot have EJB 2.x views")
+    @Message(id = 76, value = "Singleton beans cannot have EJB 2.x views")
     RuntimeException ejb2xViewNotApplicableForSingletonBeans();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14177, value = "ClassTable %s cannot find a class for class index %d")
+    @Message(id = 77, value = "ClassTable %s cannot find a class for class index %d")
     ClassNotFoundException classNotFoundInClassTable(String classTableName, int index);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14178, value = "Bean %s does not have an EJBLocalObject")
+    @Message(id = 78, value = "Bean %s does not have an EJBLocalObject")
     IllegalStateException ejbLocalObjectUnavailable(String beanName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14179, value = "[EJB 3.1 spec, section 14.1.1] Class: %s cannot be marked as an application exception because it is not of type java.lang.Exception")
+    @Message(id = 79, value = "[EJB 3.1 spec, section 14.1.1] Class: %s cannot be marked as an application exception because it is not of type java.lang.Exception")
     IllegalArgumentException cannotBeApplicationExceptionBecauseNotAnExceptionType(Class klass);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14180, value = "[EJB 3.1 spec, section 14.1.1] Exception class: %s cannot be marked as an application exception because it is of type java.rmi.RemoteException")
+    @Message(id = 80, value = "[EJB 3.1 spec, section 14.1.1] Exception class: %s cannot be marked as an application exception because it is of type java.rmi.RemoteException")
     IllegalArgumentException rmiRemoteExceptionCannotBeApplicationException(Class klass);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14181, value = "%s annotation is allowed only on classes. %s is not a class")
+    @Message(id = 81, value = "%s annotation is allowed only on classes. %s is not a class")
     RuntimeException annotationOnlyAllowedOnClass(String annotationName, AnnotationTarget incorrectTarget);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14182, value = "Bean %s specifies @Remote annotation, but does not implement 1 interface")
+    @Message(id = 82, value = "Bean %s specifies @Remote annotation, but does not implement 1 interface")
     DeploymentUnitProcessingException beanWithRemoteAnnotationImplementsMoreThanOneInterface(Class beanClass);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14183, value = "Bean %s specifies @Local annotation, but does not implement 1 interface")
+    @Message(id = 83, value = "Bean %s specifies @Local annotation, but does not implement 1 interface")
     DeploymentUnitProcessingException beanWithLocalAnnotationImplementsMoreThanOneInterface(Class beanClass);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14184, value = "Could not analyze remote interface for %s")
+    @Message(id = 84, value = "Could not analyze remote interface for %s")
     RuntimeException failedToAnalyzeRemoteInterface(@Cause Exception e, String beanName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14185, value = "Exception while parsing %s")
+    @Message(id = 85, value = "Exception while parsing %s")
     DeploymentUnitProcessingException failedToParse(@Cause Exception e, String filePath);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14186, value = "Failed to install management resources for %s")
+    @Message(id = 86, value = "Failed to install management resources for %s")
     DeploymentUnitProcessingException failedToInstallManagementResource(@Cause Exception e, String componentName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14187, value = "Could not load view %s")
+    @Message(id = 87, value = "Could not load view %s")
     RuntimeException failedToLoadViewClass(@Cause Exception e, String viewClassName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14188, value = "Could not determine type of ejb-ref %s for injection target %s")
+    @Message(id = 88, value = "Could not determine type of ejb-ref %s for injection target %s")
     DeploymentUnitProcessingException couldNotDetermineEjbRefForInjectionTarget(String ejbRefName, ResourceInjectionTarget injectionTarget);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14189, value = "Could not determine type of ejb-local-ref %s for injection target %s")
+    @Message(id = 89, value = "Could not determine type of ejb-local-ref %s for injection target %s")
     DeploymentUnitProcessingException couldNotDetermineEjbLocalRefForInjectionTarget(String ejbLocalRefName, ResourceInjectionTarget injectionTarget);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14190, value = "@EJB injection target %s is invalid. Only setter methods are allowed")
+    @Message(id = 90, value = "@EJB injection target %s is invalid. Only setter methods are allowed")
     IllegalArgumentException onlySetterMethodsAllowedToHaveEJBAnnotation(MethodInfo methodInfo);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14191, value = "@EJB attribute 'name' is required for class level annotations. Class: %s")
+    @Message(id = 91, value = "@EJB attribute 'name' is required for class level annotations. Class: %s")
     DeploymentUnitProcessingException nameAttributeRequiredForEJBAnnotationOnClass(String className);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14192, value = "@EJB attribute 'beanInterface' is required for class level annotations. Class: %s")
+    @Message(id = 92, value = "@EJB attribute 'beanInterface' is required for class level annotations. Class: %s")
     DeploymentUnitProcessingException beanInterfaceAttributeRequiredForEJBAnnotationOnClass(String className);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14193, value = "Module hasn't been attached to deployment unit %s")
+    @Message(id = 93, value = "Module hasn't been attached to deployment unit %s")
     IllegalStateException moduleNotAttachedToDeploymentUnit(DeploymentUnit deploymentUnit);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14194, value = "EJB 3.1 FR 5.4.2 MessageDrivenBean %s does not implement 1 interface nor specifies message listener interface")
+    @Message(id = 94, value = "EJB 3.1 FR 5.4.2 MessageDrivenBean %s does not implement 1 interface nor specifies message listener interface")
     DeploymentUnitProcessingException mdbDoesNotImplementNorSpecifyMessageListener(ClassInfo beanClass);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14195, value = "Unknown session bean type %s")
+    @Message(id = 95, value = "Unknown session bean type %s")
     IllegalArgumentException unknownSessionBeanType(String sessionType);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14196, value = "More than one method found with name %s on %s")
+    @Message(id = 96, value = "More than one method found with name %s on %s")
     DeploymentUnitProcessingException moreThanOneMethodWithSameNameOnComponent(String methodName, Class componentClass);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14197, value = "Unknown EJB locator type %s")
+    @Message(id = 97, value = "Unknown EJB locator type %s")
     RuntimeException unknownEJBLocatorType(EJBLocator locator);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14198, value = "Could not create CORBA object for %s")
+    @Message(id = 98, value = "Could not create CORBA object for %s")
     RuntimeException couldNotCreateCorbaObject(@Cause Exception cause, EJBLocator locator);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14199, value = "Provided locator %s was not for EJB %s")
+    @Message(id = 99, value = "Provided locator %s was not for EJB %s")
     IllegalArgumentException incorrectEJBLocatorForBean(EJBLocator locator, String beanName);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14200, value = "Failed to lookup java:comp/ORB")
+    @Message(id = 100, value = "Failed to lookup java:comp/ORB")
     IOException failedToLookupORB();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14201, value = "%s is not an ObjectImpl")
+    @Message(id = 101, value = "%s is not an ObjectImpl")
     IOException notAnObjectImpl(Class type);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14202, value = "Message endpoint %s has already been released")
+    @Message(id = 102, value = "Message endpoint %s has already been released")
     UnavailableException messageEndpointAlreadyReleased(MessageEndpoint messageEndpoint);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14203, value = "Cannot handle client version %s")
+    @Message(id = 103, value = "Cannot handle client version %s")
     RuntimeException ejbRemoteServiceCannotHandleClientVersion(byte version);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14204, value = "Could not find marshaller factory for marshaller strategy %s")
+    @Message(id = 104, value = "Could not find marshaller factory for marshaller strategy %s")
     RuntimeException failedToFindMarshallerFactoryForStrategy(String marshallerStrategy);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14205, value = "%s is not an EJB component")
+    @Message(id = 105, value = "%s is not an EJB component")
     IllegalArgumentException notAnEJBComponent(Component component);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14206, value = "Could not load method param class %s of timeout method")
+    @Message(id = 106, value = "Could not load method param class %s of timeout method")
     RuntimeException failedToLoadTimeoutMethodParamClass(@Cause Exception cause, String className);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14207, value = "Timer invocation failed, invoker is not started")
+    @Message(id = 107, value = "Timer invocation failed, invoker is not started")
     IllegalStateException timerInvocationFailedDueToInvokerNotBeingStarted();
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14208, value = "Could not load timer with id %s")
+    @Message(id = 108, value = "Could not load timer with id %s")
     NoSuchObjectLocalException timerNotFound(String timerId);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14209, value = "Invalid value for second: %s")
+    @Message(id = 109, value = "Invalid value for second: %s")
     IllegalArgumentException invalidValueForSecondInScheduleExpression(String value);
 
-    // NOTE: this message was moved from logger, do not change this id, or use next one
-    @Message(id = 14210, value = "Timer invocation failed, transaction rolled back")
+    @Message(id = 110, value = "Timer invocation failed, transaction rolled back")
     TimerTransactionRolledBackException timerInvocationRolledBack();
 
+    @LogMessage(level = INFO)
+    @Message(id = 111, value = "No jndi bindings will be created for EJB %s since no views are exposed")
+    void noJNDIBindingsForSessionBean(String beanName);
 
-    // *Exception messages* greater >= 14225 start here.
-    @Message(id = 14225, value = "Could not create an instance of deployment node selector %s")
+    @LogMessage(level = WARN)
+    @Message(id = 112, value = "Could not send cluster formation message to the client on channel %s")
+    void failedToSendClusterFormationMessageToClient(@Cause Exception e, Channel channel);
+
+    @LogMessage(level = WARN)
+    @Message(id = 113, value = "Could not send module availability notification of module %s on channel %s")
+    void failedToSendModuleAvailabilityMessageToClient(@Cause Exception e, DeploymentModuleIdentifier deploymentId, Channel channel);
+
+    @LogMessage(level = WARN)
+    @Message(id = Message.INHERIT, value = "Could not send initial module availability report to channel %s")
+    void failedToSendModuleAvailabilityMessageToClient(@Cause Exception e, Channel channel);
+
+    @LogMessage(level = WARN)
+    @Message(id = 114, value = "Could not send module un-availability notification of module %s on channel %s")
+    void failedToSendModuleUnavailabilityMessageToClient(@Cause Exception e, DeploymentModuleIdentifier deploymentId, Channel channel);
+
+    @LogMessage(level = WARN)
+    @Message(id = 115, value = "Could not send a cluster formation message for cluster: %s to the client on channel %s")
+    void failedToSendClusterFormationMessageToClient(@Cause Exception e, String clusterName, Channel channel);
+
+    @LogMessage(level = WARN)
+    @Message(id = 116, value = "Could not write a new cluster node addition message to channel %s")
+    void failedToSendClusterNodeAdditionMessageToClient(@Cause Exception e, Channel channel);
+
+    @LogMessage(level = WARN)
+    @Message(id = 117, value = "Could not write a cluster node removal message to channel %s")
+    void failedToSendClusterNodeRemovalMessageToClient(@Cause Exception e, Channel channel);
+
+    @LogMessage(level = WARN)
+    @Message(id = 118, value = "[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST NOT be a interface - %s is an interface, hence won't be considered as a session bean")
+    void sessionBeanClassCannotBeAnInterface(String className);
+
+    @LogMessage(level = WARN)
+    @Message(id = 119, value = "[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST be public, not abstract and not final - %s won't be considered as a session bean, since it doesn't meet that requirement")
+    void sessionBeanClassMustBePublicNonAbstractNonFinal(String className);
+
+    @LogMessage(level = WARN)
+    @Message(id = 120, value = "[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST NOT be a interface - %s is an interface, hence won't be considered as a message driven bean")
+    void mdbClassCannotBeAnInterface(String className);
+
+    @LogMessage(level = WARN)
+    @Message(id = 121, value = "[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST be public, not abstract and not final - %s won't be considered as a message driven bean, since it doesn't meet that requirement")
+    void mdbClassMustBePublicNonAbstractNonFinal(String className);
+
+    @LogMessage(level = WARN)
+    @Message(id = 122, value = "Method %s was a async method but the client could not be informed about the same. This will mean that the client might block till the method completes")
+    void failedToSendAsyncMethodIndicatorToClient(@Cause Throwable t, Method invokedMethod);
+
+    @LogMessage(level = WARN)
+    @Message(id = 123, value = "Asynchronous invocations are only supported on session beans. Bean class %s is not a session bean, invocation on method %s will have no asynchronous semantics")
+    void asyncMethodSupportedOnlyForSessionBeans(Class beanClass, Method invokedMethod);
+
+    @LogMessage(level = INFO)
+    @Message(id = 124, value = "Cannot add cluster node %s to cluster %s since none of the client mappings matched for addresses %s")
+    void cannotAddClusterNodeDueToUnresolvableClientMapping(final String nodeName, final String clusterName, final Object bindings);
+
+    @Message(id = 125, value = "Could not create an instance of deployment node selector %s")
     DeploymentUnitProcessingException failedToCreateDeploymentNodeSelector(@Cause Exception e, String deploymentNodeSelectorClassName);
 
-    @Message(id = 14226, value = "Could not lookup service %s")
+    @Message(id = 126, value = "Could not lookup service %s")
     IllegalStateException serviceNotFound(ServiceName serviceName);
 
-    @Message(id = 14227, value = "EJB %s of type %s must have public default constructor")
+    @Message(id = 127, value = "EJB %s of type %s must have public default constructor")
     DeploymentUnitProcessingException ejbMustHavePublicDefaultConstructor(String componentName, String componentClassName);
 
-    @Message(id = 14228, value = "EJB %s of type %s must not be inner class")
+    @Message(id = 128, value = "EJB %s of type %s must not be inner class")
     DeploymentUnitProcessingException ejbMustNotBeInnerClass(String componentName, String componentClassName);
 
-    @Message(id = 14229, value = "EJB %s of type %s must be declared public")
+    @Message(id = 129, value = "EJB %s of type %s must be declared public")
     DeploymentUnitProcessingException ejbMustBePublicClass(String componentName, String componentClassName);
 
-    @Message(id = 14230, value = "EJB %s of type %s must not be declared final")
+    @Message(id = 130, value = "EJB %s of type %s must not be declared final")
     DeploymentUnitProcessingException ejbMustNotBeFinalClass(String componentName, String componentClassName);
 
-    @Message(id = 14231, value = "EJB client context selector failed due to unavailability of %s service")
+    @Message(id = 131, value = "EJB client context selector failed due to unavailability of %s service")
     IllegalStateException ejbClientContextSelectorUnableToFunctionDueToMissingService(ServiceName serviceName);
 
-    @Message(id = 14232, value = "@PostConstruct method of EJB singleton %s of type %s has been recursively invoked")
+    @Message(id = 132, value = "@PostConstruct method of EJB singleton %s of type %s has been recursively invoked")
     IllegalStateException reentrantSingletonCreation(String componentName, String componentClassName);
 
-    @Message(id = 14233, value = "Failed to read EJB info")
+    @Message(id = 133, value = "Failed to read EJB info")
     IOException failedToReadEjbInfo(@Cause Throwable e);
 
-    @Message(id = 14234, value = "Failed to read EJB Locator")
+    @Message(id = 134, value = "Failed to read EJB Locator")
     IOException failedToReadEJBLocator(@Cause Throwable e);
 
-    @Message(id = 14235, value = "default-security-domain was defined")
+    @Message(id = 135, value = "default-security-domain was defined")
     String rejectTransformationDefinedDefaultSecurityDomain();
 
-    @Message(id = 14236, value = "default-missing-method-permissions-deny-access was set to true")
+    @Message(id = 136, value = "default-missing-method-permissions-deny-access was set to true")
     String rejectTransformationDefinedDefaultMissingMethodPermissionsDenyAccess();
 
-    @Message(id = 14237, value = "Only session and message-driven beans with bean-managed transaction demarcation are allowed to access UserTransaction")
+    @Message(id = 137, value = "Only session and message-driven beans with bean-managed transaction demarcation are allowed to access UserTransaction")
     IllegalStateException unauthorizedAccessToUserTransaction();
 
-    @Message(id = 14238, value = "More than one timer found in database with id %s")
+    @Message(id = 138, value = "More than one timer found in database with id %s")
     RuntimeException moreThanOneTimerFoundWithId(String id);
 
-    @Message(id = 14239, value = "The timer service has been disabled. Please add a <timer-service> entry into the ejb section of the server configuration to enable it.")
+    @Message(id = 139, value = "The timer service has been disabled. Please add a <timer-service> entry into the ejb section of the server configuration to enable it.")
     String timerServiceIsNotActive();
 
-    @Message(id = 14240, value = "This EJB does not have any timeout methods")
+    @Message(id = 140, value = "This EJB does not have any timeout methods")
     String ejbHasNoTimerMethods();
 
-    // Don't add exception messages greater that 14240!!! If you need more go to
-    // https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
+    @LogMessage(level = ERROR)
+    @Message(id = 141, value = "Exception calling deployment added listener")
+    void deploymentAddListenerException(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 142, value = "Exception calling deployment removal listener")
+    void deploymentRemoveListenerException(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 143, value = "Failed to remove management resources for %s -- %s")
+    void failedToRemoveManagementResources(InstalledComponent component, String cause);
+
+    @LogMessage(level = INFO)
+    @Message(id = 144, value = "CORBA interface repository for %s: %s")
+    void cobraInterfaceRepository(String repo, String object);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 145, value = "Cannot unregister EJBHome from CORBA naming service")
+    void cannotUnregisterEJBHomeFromCobra(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 146, value = "Cannot deactivate home servant")
+    void cannotDeactivateHomeServant(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 147, value = "Cannot deactivate bean servant")
+    void cannotDeactivateBeanServant(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 148, value = "Exception on channel %s from message %s")
+    void exceptionOnChannel(@Cause Throwable cause, Channel channel, MessageInputStream inputStream);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 149, value = "Error invoking method %s on bean named %s for appname %s modulename %s distinctname %s")
+    void errorInvokingMethod(@Cause Throwable cause, Method invokedMethod, String beanName, String appName, String moduleName, String distinctName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 150, value = "Could not write method invocation failure for method %s on bean named %s for appname %s modulename %s distinctname %s due to")
+    void couldNotWriteMethodInvocation(@Cause Throwable cause, Method invokedMethod, String beanName, String appName, String moduleName, String distinctName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 151, value = "Exception while generating session id for component %s with invocation id: %s on channel %s")
+    void exceptionGeneratingSessionId(@Cause Throwable cause, String componentName, short invocationId, Channel channel);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 152, value = "Could not write out message to channel due to")
+    void couldNotWriteOutToChannel(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 153, value = "Could not write out invocation success message to channel due to")
+    void couldNotWriteInvocationSuccessMessage(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 154, value = "Received unsupported message header 0x%s on channel %s")
+    void unsupportedMessageHeader(String header, Channel channel);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 155, value = "Error during transaction management of transaction id %s")
+    void errorDuringTransactionManagement(@Cause Throwable cause, XidTransactionID id);
+
+    @LogMessage(level = WARN)
+    @Message(id = 156, value = "%s retrying %d")
+    void retrying(String message, int count);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 157, value = "Failed to get status")
+    void failedToGetStatus(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 158, value = "Failed to rollback")
+    void failedToRollback(@Cause Throwable cause);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 159, value = "BMT stateful bean '%s' did not complete user transaction properly status=%s")
+    void transactionNotComplete(String componentName, String status);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 160, value = "Cannot delete cache %s %s, will be deleted on exit")
+    void cannotDeleteCacheFile(String fileType, String fileName);
+
+    @LogMessage(level = WARN)
+    @Message(id = 161, value = "Failed to reinstate timer '%s' (id=%s) from its persistent state")
+    void timerReinstatementFailed(String timedObjectId, String timerId, @Cause Throwable cause);
+
+    /**
+     * Logs a waring message indicating an overlapped invoking timeout for timer
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 162, value = "A previous execution of timer [%s %s] is being retried, skipping this scheduled execution at: %s")
+    void skipInvokeTimeoutDuringRetry(String timedObjectId, String timerId, Date scheduledTime);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 163, value = "Cannot create table for timer persistence")
+    void couldNotCreateTable(@Cause SQLException e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 164, value = "Exception running timer task for timer %s on EJB %s")
+    void exceptionRunningTimerTask(String timerId, String timedObjectId, @Cause  Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 165, value = "Error during transaction recovery")
+    void errorDuringTransactionRecovery(@Cause Throwable cause);
+
+    @LogMessage(level = WARN)
+    @Message(id = 166, value = "The @%s annotation is deprecated and will be ignored.")
+    void deprecatedAnnotation(String annotation);
+
+    @LogMessage(level = WARN)
+    @Message(id = 167, value = "The <%2$s xmlns=\"%1$s\"/> element will be ignored.")
+    void deprecatedNamespace(String namespace, String element);
 
     /**
      * Creates an exception indicating it could not find the EJB with specific id
@@ -459,7 +920,7 @@ public interface EjbMessages {
      * @param sessionId Session id
      * @return a {@link NoSuchEJBException} for the error.
      */
-    @Message(id = 14300, value = "Could not find EJB with id %s")
+    @Message(id = 168, value = "Could not find EJB with id %s")
     NoSuchEJBException couldNotFindEjb(String sessionId);
 
     /**
@@ -468,7 +929,7 @@ public interface EjbMessages {
      * @param context the context.
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14301, value = "Component not set in InterceptorContext: %s")
+    @Message(id = 169, value = "Component not set in InterceptorContext: %s")
     IllegalStateException componentNotSetInInterceptor(InterceptorContext context);
 
     /**
@@ -476,7 +937,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14302, value = "Method name cannot be null")
+    @Message(id = 170, value = "Method name cannot be null")
     IllegalArgumentException methodNameIsNull();
 
     /**
@@ -484,7 +945,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14303, value = "Bean %s does not have a Home interface")
+    @Message(id = 171, value = "Bean %s does not have a Home interface")
     IllegalStateException beanHomeInterfaceIsNull(String componentName);
 
     /**
@@ -492,7 +953,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14304, value = "Bean %s does not have a Local Home interface")
+    @Message(id = 172, value = "Bean %s does not have a Local Home interface")
     IllegalStateException beanLocalHomeInterfaceIsNull(String componentName);
 
     /**
@@ -500,7 +961,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14305, value = "EJB 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +
+    @Message(id = 173, value = "EJB 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +
             "can use getRollbackOnly.")
     IllegalStateException failToCallgetRollbackOnly();
 
@@ -509,7 +970,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14306, value = "getRollbackOnly() not allowed without a transaction.")
+    @Message(id = 174, value = "getRollbackOnly() not allowed without a transaction.")
     IllegalStateException failToCallgetRollbackOnlyOnNoneTransaction();
 
     /**
@@ -517,7 +978,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14307, value = "getRollbackOnly() not allowed after transaction is completed (EJBTHREE-1445)")
+    @Message(id = 175, value = "getRollbackOnly() not allowed after transaction is completed (EJBTHREE-1445)")
     IllegalStateException failToCallgetRollbackOnlyAfterTxcompleted();
 
     /**
@@ -525,7 +986,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14308, value = "EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with bean-managed transaction demarcation can use this method.")
+    @Message(id = 176, value = "EJB 3.1 FR 4.3.3 & 5.4.5 Only beans with bean-managed transaction demarcation can use this method.")
     IllegalStateException failToCallIsBeanManagedTransaction();
 
     /**
@@ -533,7 +994,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14309, value = "jndi name cannot be null during lookup")
+    @Message(id = 177, value = "jndi name cannot be null during lookup")
     IllegalArgumentException jndiNameCannotBeNull();
 
     /**
@@ -542,7 +1003,7 @@ public interface EjbMessages {
      * @param name the jndi name
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14310, value = "No NamespaceContextSelector available, cannot lookup %s")
+    @Message(id = 178, value = "No NamespaceContextSelector available, cannot lookup %s")
     IllegalArgumentException noNamespaceContextSelectorAvailable(String name);
 
     /**
@@ -552,7 +1013,7 @@ public interface EjbMessages {
      * @param e    cause of the exception
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14311, value = " Could not lookup jndi name: %s")
+    @Message(id = 179, value = " Could not lookup jndi name: %s")
     RuntimeException failToLookupJNDI(String name, @Cause Throwable e);
 
     /**
@@ -561,7 +1022,7 @@ public interface EjbMessages {
      * @param name the jndi name
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14312, value = "Cannot lookup jndi name: %s since it" +
+    @Message(id = 180, value = "Cannot lookup jndi name: %s since it" +
             " doesn't belong to java:app, java:module, java:comp or java:global namespace")
     IllegalArgumentException failToLookupJNDINameSpace(String name);
 
@@ -573,7 +1034,7 @@ public interface EjbMessages {
      * @param ne                       cause of the exception
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14313, value = "Could not lookup jndi name: %s in context: %s")
+    @Message(id = 181, value = "Could not lookup jndi name: %s in context: %s")
     IllegalArgumentException failToLookupStrippedJNDI(NamespaceContextSelector namespaceContextSelector, Context jndiContext, @Cause Throwable ne);
 
     /**
@@ -581,7 +1042,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14314, value = "EJB 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +
+    @Message(id = 182, value = "EJB 3.1 FR 13.6.1 Only beans with container-managed transaction demarcation " +
             "can use setRollbackOnly.")
     IllegalStateException failToCallSetRollbackOnlyOnNoneCMB();
 
@@ -590,7 +1051,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14315, value = "setRollbackOnly() not allowed without a transaction.")
+    @Message(id = 183, value = "setRollbackOnly() not allowed without a transaction.")
     IllegalStateException failToCallSetRollbackOnlyWithNoTx();
 
     /**
@@ -598,7 +1059,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14316, value = "EjbJarConfiguration cannot be null")
+    @Message(id = 184, value = "EjbJarConfiguration cannot be null")
     IllegalArgumentException EjbJarConfigurationIsNull();
 
     /**
@@ -606,7 +1067,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14317, value = "Cannot set security roles to null")
+    @Message(id = 185, value = "Cannot set security roles to null")
     IllegalArgumentException SecurityRolesIsNull();
 
     /**
@@ -614,7 +1075,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14318, value = "Classname cannot be null or empty: %s")
+    @Message(id = 186, value = "Classname cannot be null or empty: %s")
     IllegalArgumentException classnameIsNull(String className);
 
     /**
@@ -622,7 +1083,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14319, value = "Cannot set null roles for class %s")
+    @Message(id = 187, value = "Cannot set null roles for class %s")
     IllegalArgumentException setRolesForClassIsNull(String className);
 
     /**
@@ -630,7 +1091,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14320, value = "EJB method identifier cannot be null while setting roles on method")
+    @Message(id = 188, value = "EJB method identifier cannot be null while setting roles on method")
     IllegalArgumentException ejbMethodIsNull();
 
     /**
@@ -638,7 +1099,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14321, value = "Roles cannot be null while setting roles on method: %s")
+    @Message(id = 189, value = "Roles cannot be null while setting roles on method: %s")
     IllegalArgumentException rolesIsNull(EJBMethodIdentifier ejbMethodIdentifier);
 
     /**
@@ -646,7 +1107,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14322, value = "EJB method identifier cannot be null while setting roles on view type: %s")
+    @Message(id = 190, value = "EJB method identifier cannot be null while setting roles on view type: %s")
     IllegalArgumentException ejbMethodIsNullForViewType(MethodIntf viewType);
 
     /**
@@ -655,7 +1116,7 @@ public interface EjbMessages {
      * @param viewType
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14323, value = "Roles cannot be null while setting roles on view type: %s")
+    @Message(id = 191, value = "Roles cannot be null while setting roles on view type: %s")
     IllegalArgumentException rolesIsNullOnViewType(final MethodIntf viewType);
 
     /**
@@ -664,7 +1125,7 @@ public interface EjbMessages {
      * @param viewType
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14324, value = "Roles cannot be null while setting roles on view type: %s and method: %s")
+    @Message(id = 192, value = "Roles cannot be null while setting roles on view type: %s and method: %s")
     IllegalArgumentException rolesIsNullOnViewTypeAndMethod(MethodIntf viewType, EJBMethodIdentifier ejbMethodIdentifier);
 
     /**
@@ -673,7 +1134,7 @@ public interface EjbMessages {
      * @param fromRole role it link from
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14325, value = "Cannot link from a null or empty security role: %s")
+    @Message(id = 193, value = "Cannot link from a null or empty security role: %s")
     IllegalArgumentException failToLinkFromEmptySecurityRole(String fromRole);
 
     /**
@@ -682,7 +1143,7 @@ public interface EjbMessages {
      * @param toRole role it link to
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14326, value = "Cannot link to a null or empty security role: %s")
+    @Message(id = 194, value = "Cannot link to a null or empty security role: %s")
     IllegalArgumentException failToLinkToEmptySecurityRole(String toRole);
 
     /**
@@ -691,7 +1152,7 @@ public interface EjbMessages {
      * @param deploymentUnit
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14327, value = "EjbJarConfiguration not found as an attachment in deployment unit: %s")
+    @Message(id = 195, value = "EjbJarConfiguration not found as an attachment in deployment unit: %s")
     DeploymentUnitProcessingException ejbJarConfigNotFound(DeploymentUnit deploymentUnit);
 
     /**
@@ -700,7 +1161,7 @@ public interface EjbMessages {
      * @param context
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14328, value = "ComponentViewInstance not available in interceptor context: %s")
+    @Message(id = 196, value = "ComponentViewInstance not available in interceptor context: %s")
     IllegalStateException componentViewNotAvailableInContext(InterceptorContext context);
 
     /**
@@ -709,7 +1170,7 @@ public interface EjbMessages {
      * @param method
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14329, value = "Unknown timeout method %s")
+    @Message(id = 197, value = "Unknown timeout method %s")
     RuntimeException failToCallTimeOutMethod(Method method);
 
     /**
@@ -718,7 +1179,7 @@ public interface EjbMessages {
      * @param componentName
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14330, value = "Component %s does not have a timeout method")
+    @Message(id = 198, value = "Component %s does not have a timeout method")
     IllegalArgumentException componentTimeoutMethodNotSet(String componentName);
 
     /**
@@ -727,7 +1188,7 @@ public interface EjbMessages {
      * @param resourceAdapterName
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14331, value = "No resource adapter registered with resource adapter name %s")
+    @Message(id = 199, value = "No resource adapter registered with resource adapter name %s")
     IllegalStateException unknownResourceAdapter(String resourceAdapterName);
 
     /**
@@ -736,7 +1197,7 @@ public interface EjbMessages {
      * @param resourceAdapterName
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14332, value = "found more than one RA registered as %s")
+    @Message(id = 200, value = "found more than one RA registered as %s")
     IllegalStateException multipleResourceAdapterRegistered(String resourceAdapterName);
 
     /**
@@ -744,7 +1205,7 @@ public interface EjbMessages {
      *
      * @return a {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 14333, value = "Security is not enabled")
+    @Message(id = 201, value = "Security is not enabled")
     UnsupportedOperationException securityNotEnabled();
 
     /**
@@ -752,7 +1213,7 @@ public interface EjbMessages {
      *
      * @return a {@link TimeoutException} for the error.
      */
-    @Message(id = 14334, value = "Task did not complete in %s  %S")
+    @Message(id = 202, value = "Task did not complete in %s  %S")
     TimeoutException failToCompleteTaskBeforeTimeOut(long timeout, TimeUnit unit);
 
     /**
@@ -760,16 +1221,15 @@ public interface EjbMessages {
      *
      * @return a {@link TimeoutException} for the error.
      */
-    @Message(id = 14335, value = "Task was cancelled")
+    @Message(id = 203, value = "Task was cancelled")
     CancellationException taskWasCancelled();
-
 
     /**
      * Creates an exception indicating that it could not resolve ejbRemove method for interface method on EJB
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14336, value = "Could not resolve ejbRemove method for interface method on EJB %s")
+    @Message(id = 204, value = "Could not resolve ejbRemove method for interface method on EJB %s")
     DeploymentUnitProcessingException failToResolveEjbRemoveForInterface(String ejbName);
 
     /**
@@ -777,16 +1237,15 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14337, value = "Could not resolve corresponding %s for home interface method %s on EJB %s")
+    @Message(id = 205, value = "Could not resolve corresponding %s for home interface method %s on EJB %s")
     DeploymentUnitProcessingException failToResolveMethodForHomeInterface(String ejbMethodName, Method method, String ejbName);
-
 
     /**
      * Creates an exception indicating the method is not implemented
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14338, value = "Not implemented yet")
+    @Message(id = 206, value = "Not implemented yet")
     IllegalStateException methodNotImplemented();
 
     /**
@@ -795,7 +1254,7 @@ public interface EjbMessages {
      * @param aClass the attached class
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14339, value = "%s was attached to a view that is not an EJBObject or an EJBLocalObject")
+    @Message(id = 207, value = "%s was attached to a view that is not an EJBObject or an EJBLocalObject")
     RuntimeException classAttachToViewNotEjbObject(Class<?> aClass);
 
     /**
@@ -803,7 +1262,7 @@ public interface EjbMessages {
      *
      * @return a {@link NoSuchEJBException} for the error.
      */
-    @Message(id = 14340, value = "Invocation was not associated with an instance, primary key was null, instance may have been removed")
+    @Message(id = 208, value = "Invocation was not associated with an instance, primary key was null, instance may have been removed")
     NoSuchEJBException invocationNotAssociated();
 
     /**
@@ -811,7 +1270,7 @@ public interface EjbMessages {
      *
      * @return a {@link EJBException} for the error.
      */
-    @Message(id = 14341, value = "Could not re-acquire lock for non-reentrant instance %s")
+    @Message(id = 209, value = "Could not re-acquire lock for non-reentrant instance %s")
     EJBException failToReacquireLockForNonReentrant(ComponentInstance privateData);
 
     /**
@@ -819,7 +1278,7 @@ public interface EjbMessages {
      *
      * @return a {@link ObjectNotFoundException} for the error.
      */
-    @Message(id = 14342, value = "Could not find entity from %s with params %s")
+    @Message(id = 210, value = "Could not find entity from %s with params %s")
     ObjectNotFoundException couldNotFindEntity(Method finderMethod, String s);
 
 
@@ -828,7 +1287,7 @@ public interface EjbMessages {
      *
      * @return a {@link NoSuchEJBException} for the error.
      */
-    @Message(id = 14343, value = "Invocation was not associated with an instance, primary key was null, instance may have been removed")
+    @Message(id = 211, value = "Invocation was not associated with an instance, primary key was null, instance may have been removed")
     NoSuchEJBException primaryKeyIsNull();
 
     /**
@@ -836,7 +1295,7 @@ public interface EjbMessages {
      *
      * @return a {@link NoSuchEJBException} for the error.
      */
-    @Message(id = 14344, value = "Instance of %s with primary key %s has been removed")
+    @Message(id = 212, value = "Instance of %s with primary key %s has been removed")
     NoSuchEntityException instanceWasRemoved(String componentName, Object primaryKey);
 
     /**
@@ -844,7 +1303,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14345, value = "Unexpected component: %s component Expected %s")
+    @Message(id = 213, value = "Unexpected component: %s component Expected %s")
     IllegalStateException unexpectedComponent(Component component, Class<?> entityBeanComponentClass);
 
     /**
@@ -852,7 +1311,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14346, value = "EjbJarConfiguration hasn't been set in %s Cannot create component create service for EJB %S")
+    @Message(id = 214, value = "EjbJarConfiguration hasn't been set in %s Cannot create component create service for EJB %S")
     IllegalStateException ejbJarConfigNotBeenSet(ComponentCreateServiceFactory serviceFactory, String componentName);
 
     /**
@@ -860,7 +1319,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14347, value = "Cannot find any resource adapter service for resource adapter %s")
+    @Message(id = 215, value = "Cannot find any resource adapter service for resource adapter %s")
     IllegalStateException failToFindResourceAdapter(String resourceAdapterName);
 
     /**
@@ -868,7 +1327,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14348, value = "No resource-adapter has been specified for %s")
+    @Message(id = 216, value = "No resource-adapter has been specified for %s")
     IllegalStateException resourceAdapterNotSpecified(MessageDrivenComponent messageDrivenComponent);
 
     /**
@@ -876,7 +1335,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14349, value = "PoolConfig cannot be null")
+    @Message(id = 217, value = "PoolConfig cannot be null")
     IllegalArgumentException poolConfigIsNull();
 
     /**
@@ -884,7 +1343,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14350, value = "PoolConfig cannot be null or empty")
+    @Message(id = 218, value = "PoolConfig cannot be null or empty")
     IllegalStateException poolConfigIsEmpty();
 
     /**
@@ -892,7 +1351,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14351, value = "Cannot invoke %s in a session bean lifecycle method")
+    @Message(id = 219, value = "Cannot invoke %s in a session bean lifecycle method")
     IllegalStateException failToInvokeMethodInSessionBeanLifeCycle(String method);
 
     /**
@@ -900,7 +1359,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14352, value = "[EJB 3.1 spec, section 4.9.7] - Can't add view class: %s as local view since it's already marked as remote view for bean: %s")
+    @Message(id = 220, value = "[EJB 3.1 spec, section 4.9.7] - Can't add view class: %s as local view since it's already marked as remote view for bean: %s")
     IllegalStateException failToAddClassToLocalView(String viewClassName, String ejbName);
 
     /**
@@ -908,7 +1367,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14353, value = "Business interface type cannot be null")
+    @Message(id = 221, value = "Business interface type cannot be null")
     IllegalStateException businessInterfaceIsNull();
 
     /**
@@ -916,7 +1375,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14354, value = "Bean %s does not have an %s")
+    @Message(id = 222, value = "Bean %s does not have an %s")
     IllegalStateException beanComponentMissingEjbObject(String componentName, String ejbLocalObject);
 
     /**
@@ -924,7 +1383,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14355, value = "EJB 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute")
+    @Message(id = 223, value = "EJB 3.1 FR 13.6.2.9 getRollbackOnly is not allowed with SUPPORTS attribute")
     IllegalStateException getRollBackOnlyIsNotAllowWithSupportsAttribute();
 
     /**
@@ -932,7 +1391,7 @@ public interface EjbMessages {
      *
      * @return a {@link EJBException} for the error.
      */
-    @Message(id = 14356, value = "Not a business method %s. Do not call non-public methods on EJB's")
+    @Message(id = 224, value = "Not a business method %s. Do not call non-public methods on EJB's")
     EJBException failToCallBusinessOnNonePublicMethod(Method method);
 
     /**
@@ -940,7 +1399,7 @@ public interface EjbMessages {
      *
      * @return a {@link Exception} for the error.
      */
-    @Message(id = 14357, value = "Component instance isn't available for invocation: %s")
+    @Message(id = 225, value = "Component instance isn't available for invocation: %s")
     Exception componentInstanceNotAvailable(InterceptorContext interceptorContext);
 
     /**
@@ -948,7 +1407,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14358, value = "Component %s with component class: %s isn't a singleton component")
+    @Message(id = 226, value = "Component %s with component class: %s isn't a singleton component")
     IllegalArgumentException componentNotSingleton(Component component, Class<?> componentClass);
 
     /**
@@ -956,7 +1415,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14359, value = "SingletonComponent cannot be null")
+    @Message(id = 227, value = "SingletonComponent cannot be null")
     IllegalArgumentException singletonComponentIsNull();
 
     /**
@@ -964,7 +1423,7 @@ public interface EjbMessages {
      *
      * @return a {@link ConcurrentAccessTimeoutException} for the error.
      */
-    @Message(id = 14360, value = "EJB 3.1 FR 4.3.14.1 concurrent access timeout on %s - could not obtain lock within %s %s")
+    @Message(id = 228, value = "EJB 3.1 FR 4.3.14.1 concurrent access timeout on %s - could not obtain lock within %s %s")
     ConcurrentAccessTimeoutException failToObtainLock(InterceptorContext context, long value, TimeUnit timeUnit);
 
     /**
@@ -972,7 +1431,7 @@ public interface EjbMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14361, value = "Unable to find method %s %s")
+    @Message(id = 229, value = "Unable to find method %s %s")
     RuntimeException failToFindMethod(String name, String s);
 
     /**
@@ -980,7 +1439,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14362, value = "TimerService is not supported for Stateful session bean %s")
+    @Message(id = 230, value = "TimerService is not supported for Stateful session bean %s")
     IllegalStateException timerServiceNotSupportedForSFSB(String componentName);
 
     /**
@@ -988,7 +1447,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14363, value = "Session id cannot be null")
+    @Message(id = 231, value = "Session id cannot be null")
     IllegalArgumentException sessionIdIsNull();
 
     /**
@@ -996,7 +1455,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14364, value = "Stateful component cannot be null")
+    @Message(id = 232, value = "Stateful component cannot be null")
     IllegalArgumentException statefulComponentIsNull();
 
     /**
@@ -1004,7 +1463,7 @@ public interface EjbMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14365, value = "Could not create session for Stateful bean %s")
+    @Message(id = 233, value = "Could not create session for Stateful bean %s")
     RuntimeException failToCreateStatefulSessionBean(String beanName, @Cause Throwable e);
 
     /**
@@ -1012,7 +1471,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14366, value = "Session id hasn't been set for stateful component: %s")
+    @Message(id = 234, value = "Session id hasn't been set for stateful component: %s")
     IllegalStateException statefulSessionIdIsNull(String componentName);
 
     /**
@@ -1020,7 +1479,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14367, value = "@Remove method identifier cannot be null")
+    @Message(id = 235, value = "@Remove method identifier cannot be null")
     IllegalArgumentException removeMethodIsNull();
 
     /**
@@ -1028,7 +1487,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14368, value = "Component %s with component class: %s%n isn't a %s component")
+    @Message(id = 236, value = "Component %s with component class: %s%n isn't a %s component")
     IllegalArgumentException componentNotInstanceOfSessionComponent(Component component, Class<?> componentClass, String type);
 
     /**
@@ -1036,7 +1495,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14369, value = "both methodIntf and className are set on %s")
+    @Message(id = 237, value = "both methodIntf and className are set on %s")
     IllegalArgumentException bothMethodIntAndClassNameSet(String componentName);
 
     /**
@@ -1044,7 +1503,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalLoopbackException} for the error.
      */
-    @Message(id = 14370, value = "EJB 3.1 PFD2 4.8.5.1.1 upgrading from read to write lock is not allowed")
+    @Message(id = 238, value = "EJB 3.1 PFD2 4.8.5.1.1 upgrading from read to write lock is not allowed")
     IllegalLoopbackException failToUpgradeToWriteLock();
 
     /**
@@ -1052,7 +1511,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14371, value = "%s cannot be null")
+    @Message(id = 239, value = "%s cannot be null")
     IllegalArgumentException componentIsNull(String name);
 
     /**
@@ -1060,7 +1519,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14372, value = "Invocation context: %s cannot be processed because it's not applicable for a method invocation")
+    @Message(id = 240, value = "Invocation context: %s cannot be processed because it's not applicable for a method invocation")
     IllegalArgumentException invocationNotApplicableForMethodInvocation(InvocationContext invocationContext);
 
     /**
@@ -1068,7 +1527,7 @@ public interface EjbMessages {
      *
      * @return a {@link ConcurrentAccessTimeoutException} for the error.
      */
-    @Message(id = 14373, value = "EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on %s - could not obtain lock within %s")
+    @Message(id = 241, value = "EJB 3.1 PFD2 4.8.5.5.1 concurrent access timeout on %s - could not obtain lock within %s")
     ConcurrentAccessTimeoutException concurrentAccessTimeoutException(InvocationContext invocationContext, String s);
 
     /**
@@ -1076,7 +1535,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14374, value = "Illegal lock type %s on %s for component %s")
+    @Message(id = 242, value = "Illegal lock type %s on %s for component %s")
     IllegalStateException failToObtainLockIllegalType(LockType lockType, Method method, LockableComponent lockableComponent);
 
     /**
@@ -1086,7 +1545,7 @@ public interface EjbMessages {
      * @param missing    the missing type.
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14377, value = "Cannot call %s, no %s is present for this invocation")
+    @Message(id = 243, value = "Cannot call %s, no %s is present for this invocation")
     IllegalStateException cannotCall(String methodName, String missing);
 
 
@@ -1095,7 +1554,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14379, value = "No asynchronous invocation in progress")
+    @Message(id = 244, value = "No asynchronous invocation in progress")
     IllegalStateException noAsynchronousInvocationInProgress();
 
     /**
@@ -1103,7 +1562,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14380, value = "%s is not allowed while dependency injection is in progress")
+    @Message(id = 245, value = "%s is not allowed while dependency injection is in progress")
     IllegalStateException callMethodNotAllowWhenDependencyInjectionInProgress(String method);
 
 
@@ -1112,7 +1571,7 @@ public interface EjbMessages {
      *
      * @return a {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 14384, value = "%s is deprecated")
+    @Message(id = 246, value = "%s is deprecated")
     UnsupportedOperationException isDeprecated(String getEnvironment);
 
     /**
@@ -1120,7 +1579,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14385, value = "Getting parameters is not allowed on lifecycle callbacks")
+    @Message(id = 247, value = "Getting parameters is not allowed on lifecycle callbacks")
     IllegalStateException gettingParametersNotAllowLifeCycleCallbacks();
 
     /**
@@ -1128,7 +1587,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14386, value = "%s is not allowed in lifecycle callbacks (EJB 3.1 FR 4.6.1, 4.7.2, 4.8.6, 5.5.1)")
+    @Message(id = 248, value = "%s is not allowed in lifecycle callbacks (EJB 3.1 FR 4.6.1, 4.7.2, 4.8.6, 5.5.1)")
     IllegalStateException notAllowedInLifecycleCallbacks(String name);
 
     /**
@@ -1136,7 +1595,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14387, value = "Setting parameters is not allowed on lifecycle callbacks")
+    @Message(id = 249, value = "Setting parameters is not allowed on lifecycle callbacks")
     IllegalStateException setParameterNotAllowOnLifeCycleCallbacks();
 
     /**
@@ -1144,7 +1603,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14388, value = "Got wrong number of arguments, expected %s, got %s on %s")
+    @Message(id = 250, value = "Got wrong number of arguments, expected %s, got %s on %s")
     IllegalArgumentException wrongNumberOfArguments(int length, int length1, Method method);
 
     /**
@@ -1152,7 +1611,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14389, value = "Parameter %s has the wrong type, expected %, got %s on %s")
+    @Message(id = 251, value = "Parameter %s has the wrong type, expected %, got %s on %s")
     IllegalArgumentException wrongParameterType(int i, Class<?> expectedType, Class<?> actualType, Method method);
 
     /**
@@ -1160,7 +1619,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14390, value = "No current invocation context available")
+    @Message(id = 252, value = "No current invocation context available")
     IllegalStateException noCurrentContextAvailable();
 
     /**
@@ -1168,7 +1627,7 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14391, value = "Should be overridden")
+    @Message(id = 253, value = "Should be overridden")
     IllegalStateException shouldBeOverridden();
 
     /**
@@ -1176,7 +1635,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14392, value = "Could not find session bean with name %s")
+    @Message(id = 254, value = "Could not find session bean with name %s")
     DeploymentUnitProcessingException couldNotFindSessionBean(String beanName);
 
     /**
@@ -1184,7 +1643,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14393, value = "<role-name> cannot be null or empty in <security-role-ref>%nfor bean: %s")
+    @Message(id = 255, value = "<role-name> cannot be null or empty in <security-role-ref>%nfor bean: %s")
     DeploymentUnitProcessingException roleNamesIsNull(String ejbName);
 
     /**
@@ -1192,7 +1651,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14394, value = "Default interceptors cannot specify a method to bind to in ejb-jar.xml")
+    @Message(id = 256, value = "Default interceptors cannot specify a method to bind to in ejb-jar.xml")
     DeploymentUnitProcessingException defaultInterceptorsNotBindToMethod();
 
     /**
@@ -1200,7 +1659,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    //@Message(id = 14395, value = "Could not load component class %s")
+    //@Message(id = 257, value = "Could not load component class %s")
     //DeploymentUnitProcessingException failToLoadComponentClass(String componentClassName);
 
     /**
@@ -1208,7 +1667,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14396, value = "Two ejb-jar.xml bindings for %s specify an absolute order")
+    @Message(id = 258, value = "Two ejb-jar.xml bindings for %s specify an absolute order")
     DeploymentUnitProcessingException twoEjbBindingsSpecifyAbsoluteOrder(String component);
 
     /**
@@ -1216,7 +1675,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14397, value = "Could not find method %s.%s referenced in ejb-jar.xml")
+    @Message(id = 259, value = "Could not find method %s.%s referenced in ejb-jar.xml")
     DeploymentUnitProcessingException failToFindMethodInEjbJarXml(String name, String methodName);
 
     /**
@@ -1224,7 +1683,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14398, value = "More than one method %s found on class %s referenced in ejb-jar.xml. Specify the parameter types to resolve the ambiguity")
+    @Message(id = 260, value = "More than one method %s found on class %s referenced in ejb-jar.xml. Specify the parameter types to resolve the ambiguity")
     DeploymentUnitProcessingException multipleMethodReferencedInEjbJarXml(String methodName, String name);
 
     /**
@@ -1232,7 +1691,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14399, value = "Could not find method %s.%s with parameter types %s referenced in ejb-jar.xml")
+    @Message(id = 261, value = "Could not find method %s.%s with parameter types %s referenced in ejb-jar.xml")
     DeploymentUnitProcessingException failToFindMethodWithParameterTypes(String name, String methodName, MethodParametersMetaData methodParams);
 
     /**
@@ -1240,7 +1699,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14400, value = "Could not load component class for component %s")
+    @Message(id = 262, value = "Could not load component class for component %s")
     DeploymentUnitProcessingException failToLoadComponentClass(@Cause Throwable t, String componentName);
 
     /**
@@ -1248,7 +1707,7 @@ public interface EjbMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14401, value = "Could not load EJB view class ")
+    @Message(id = 263, value = "Could not load EJB view class ")
     RuntimeException failToLoadEjbViewClass(@Cause Throwable e);
 
 
@@ -1257,7 +1716,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14402, value = "Could not merge data for %s")
+    @Message(id = 264, value = "Could not merge data for %s")
     DeploymentUnitProcessingException failToMergeData(String componentName, @Cause Throwable e);
 
     /**
@@ -1265,7 +1724,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14403, value = "Could not load EJB class %s")
+    @Message(id = 265, value = "Could not load EJB class %s")
     DeploymentUnitProcessingException failToLoadEjbClass(String ejbClassName, @Cause Throwable e);
 
     /**
@@ -1273,7 +1732,7 @@ public interface EjbMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14404, value = "Only one %s method is allowed on bean %s")
+    @Message(id = 266, value = "Only one %s method is allowed on bean %s")
     RuntimeException multipleAnnotationsOnBean(String annotationType, String ejbClassName);
 
     /**
@@ -1282,7 +1741,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14405, value = "Could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)%n due to multiple create* methods with different return types on home %s")
+    @Message(id = 267, value = "Could not determine type of corresponding implied EJB 2.x local interface (see EJB 3.1 21.4.5)%n due to multiple create* methods with different return types on home %s")
     DeploymentUnitProcessingException multipleCreateMethod(Class localHomeClass);
 
     /**
@@ -1290,7 +1749,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14406, value = "Could not find EJB %s referenced by @DependsOn annotation in %s")
+    @Message(id = 268, value = "Could not find EJB %s referenced by @DependsOn annotation in %s")
     DeploymentUnitProcessingException failToFindEjbRefByDependsOn(String annotationValue, String componentClassName);
 
     /**
@@ -1298,7 +1757,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14407, value = "More than one EJB called %s referenced by @DependsOn annotation in %s Components:%s")
+    @Message(id = 269, value = "More than one EJB called %s referenced by @DependsOn annotation in %s Components:%s")
     DeploymentUnitProcessingException failToCallEjbRefByDependsOn(String annotationValue, String componentClassName, Set<ComponentDescription> components);
 
     /**
@@ -1306,7 +1765,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14408, value = "Async method %s does not return void or Future")
+    @Message(id = 270, value = "Async method %s does not return void or Future")
     DeploymentUnitProcessingException wrongReturnTypeForAsyncMethod(Method method);
 
     /**
@@ -1314,7 +1773,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14409, value = "Could not load application exception class %s in ejb-jar.xml")
+    @Message(id = 271, value = "Could not load application exception class %s in ejb-jar.xml")
     DeploymentUnitProcessingException failToLoadAppExceptionClassInEjbJarXml(String exceptionClassName, @Cause Throwable e);
 
     /**
@@ -1323,7 +1782,7 @@ public interface EjbMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14410, value = "EJB %s entity bean %s implemented TimedObject, but has a different timeout " +
+    @Message(id = 272, value = "EJB %s entity bean %s implemented TimedObject, but has a different timeout " +
             "method specified either via annotations or via the deployment descriptor")
     DeploymentUnitProcessingException invalidEjbEntityTimeout(String versionId, Class<?> componentClass);
 
@@ -1332,7 +1791,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14411, value = "% does not have an EJB 2.x local interface")
+    @Message(id = 273, value = "% does not have an EJB 2.x local interface")
     RuntimeException invalidEjbLocalInterface(String componentName);
 
     /**
@@ -1340,7 +1799,7 @@ public interface EjbMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14412, value = "Local Home not allowed for %s")
+    @Message(id = 274, value = "Local Home not allowed for %s")
     DeploymentUnitProcessingException localHomeNotAllow(EJBComponentDescription description);
 
     /**
@@ -1348,7 +1807,7 @@ public interface EjbMessages {
      *
      * @return an {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14413, value = "Could not resolve corresponding ejbCreate or @Init method for home interface method %s on EJB %s")
+    @Message(id = 275, value = "Could not resolve corresponding ejbCreate or @Init method for home interface method %s on EJB %s")
     DeploymentUnitProcessingException failToCallEjbCreateForHomeInterface(Method method, String ejbClassName);
 
     /**
@@ -1356,7 +1815,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14414, value = "EJBComponent has not been set in the current invocation context %s")
+    @Message(id = 276, value = "EJBComponent has not been set in the current invocation context %s")
     IllegalStateException failToGetEjbComponent(InterceptorContext currentInvocationContext);
 
     /**
@@ -1364,7 +1823,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14415, value = "Value cannot be null")
+    @Message(id = 277, value = "Value cannot be null")
     IllegalArgumentException valueIsNull();
 
     /**
@@ -1372,7 +1831,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14416, value = "Cannot create %s from a null schedule expression")
+    @Message(id = 278, value = "Cannot create %s from a null schedule expression")
     IllegalArgumentException invalidScheduleExpression(String name);
 
     /**
@@ -1380,7 +1839,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14417, value = "Second cannot be null in schedule expression %s")
+    @Message(id = 279, value = "Second cannot be null in schedule expression %s")
     IllegalArgumentException invalidScheduleExpressionSecond(ScheduleExpression schedule);
 
     /**
@@ -1388,7 +1847,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14418, value = "Minute cannot be null in schedule expression %s")
+    @Message(id = 280, value = "Minute cannot be null in schedule expression %s")
     IllegalArgumentException invalidScheduleExpressionMinute(ScheduleExpression schedule);
 
     /**
@@ -1396,7 +1855,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14419, value = "Hour cannot be null in schedule expression %s")
+    @Message(id = 281, value = "Hour cannot be null in schedule expression %s")
     IllegalArgumentException invalidScheduleExpressionHour(ScheduleExpression schedule);
 
     /**
@@ -1404,7 +1863,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14420, value = "day-of-month cannot be null in schedule expression %s")
+    @Message(id = 282, value = "day-of-month cannot be null in schedule expression %s")
     IllegalArgumentException invalidScheduleExpressionDayOfMonth(ScheduleExpression schedule);
 
     /**
@@ -1412,7 +1871,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14421, value = "day-of-week cannot be null in schedule expression %s")
+    @Message(id = 283, value = "day-of-week cannot be null in schedule expression %s")
     IllegalArgumentException invalidScheduleExpressionDayOfWeek(ScheduleExpression schedule);
 
     /**
@@ -1420,7 +1879,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14422, value = "Month cannot be null in schedule expression %s")
+    @Message(id = 284, value = "Month cannot be null in schedule expression %s")
     IllegalArgumentException invalidScheduleExpressionMonth(ScheduleExpression schedule);
 
     /**
@@ -1428,7 +1887,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14423, value = "Year cannot be null in schedule expression %s")
+    @Message(id = 285, value = "Year cannot be null in schedule expression %s")
     IllegalArgumentException invalidScheduleExpressionYear(ScheduleExpression schedule);
 
     /**
@@ -1436,7 +1895,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14424, value = "Invalid range value: %s")
+    @Message(id = 286, value = "Invalid range value: %s")
     IllegalArgumentException invalidRange(String range);
 
     /**
@@ -1444,7 +1903,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14425, value = "Invalid list expression: %s")
+    @Message(id = 287, value = "Invalid list expression: %s")
     IllegalArgumentException invalidListExpression(String list);
 
     /**
@@ -1452,7 +1911,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14426, value = "Invalid increment value: %s")
+    @Message(id = 288, value = "Invalid increment value: %s")
     IllegalArgumentException invalidIncrementValue(String value);
 
     /**
@@ -1460,7 +1919,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14427, value = "There are no valid seconds for expression: %s")
+    @Message(id = 289, value = "There are no valid seconds for expression: %s")
     IllegalStateException invalidExpressionSeconds(String origValue);
 
     /**
@@ -1468,7 +1927,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14428, value = "There are no valid minutes for expression: %s")
+    @Message(id = 290, value = "There are no valid minutes for expression: %s")
     IllegalStateException invalidExpressionMinutes(String origValue);
 
     /**
@@ -1476,7 +1935,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14429, value = "Invalid value: %s since %s doesn't support values of types %s")
+    @Message(id = 291, value = "Invalid value: %s since %s doesn't support values of types %s")
     IllegalArgumentException invalidScheduleExpressionType(String value, String name, String type);
 
     /**
@@ -1484,7 +1943,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14430, value = "A list value can only contain either a range or an individual value. Invalid value: %s")
+    @Message(id = 292, value = "A list value can only contain either a range or an individual value. Invalid value: %s")
     IllegalArgumentException invalidListValue(String listItem);
 
     /**
@@ -1492,7 +1951,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14431, value = "Could not parse: %s in schedule expression")
+    @Message(id = 293, value = "Could not parse: %s in schedule expression")
     IllegalArgumentException couldNotParseScheduleExpression(String origValue);
 
     /**
@@ -1500,7 +1959,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14432, value = "Invalid value: %s Valid values are between %s and %s")
+    @Message(id = 294, value = "Invalid value: %s Valid values are between %s and %s")
     IllegalArgumentException invalidValuesRange(Integer value, int min, int max);
 
     /**
@@ -1508,7 +1967,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14433, value = "Invalid value for day-of-month: %s")
+    @Message(id = 295, value = "Invalid value for day-of-month: %s")
     IllegalArgumentException invalidValueDayOfMonth(Integer value);
 
     /**
@@ -1516,7 +1975,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14434, value = "Relative day-of-month cannot be null or empty")
+    @Message(id = 296, value = "Relative day-of-month cannot be null or empty")
     IllegalArgumentException relativeDayOfMonthIsNull();
 
     /**
@@ -1524,7 +1983,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14435, value = "%s is not a relative value")
+    @Message(id = 297, value = "%s is not a relative value")
     IllegalArgumentException invalidRelativeValue(String relativeDayOfMonth);
 
     /**
@@ -1532,7 +1991,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14436, value = "Value is null, cannot determine if it's relative")
+    @Message(id = 298, value = "Value is null, cannot determine if it's relative")
     IllegalArgumentException relativeValueIsNull();
 
     /**
@@ -1540,7 +1999,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14437, value = "null timerservice cannot be registered")
+    @Message(id = 299, value = "null timerservice cannot be registered")
     IllegalArgumentException timerServiceNotRegistered();
 
     /**
@@ -1548,7 +2007,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14438, value = "Timer service with timedObjectId: %s%n is already registered")
+    @Message(id = 300, value = "Timer service with timedObjectId: %s%n is already registered")
     IllegalStateException timerServiceAlreadyRegistered(String timedObjectId);
 
     /**
@@ -1556,7 +2015,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14439, value = "null timedObjectId cannot be used for unregistering timerservice")
+    @Message(id = 301, value = "null timedObjectId cannot be used for unregistering timerservice")
     IllegalStateException timedObjectIdIsNullForUnregisteringTimerService();
 
     /**
@@ -1564,7 +2023,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14440, value = "Cannot unregister timer service with timedObjectId: %s because it's not registered")
+    @Message(id = 302, value = "Cannot unregister timer service with timedObjectId: %s because it's not registered")
     IllegalStateException failToUnregisterTimerService(String timedObjectId);
 
     /**
@@ -1572,7 +2031,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14441, value = "Invoker cannot be null")
+    @Message(id = 303, value = "Invoker cannot be null")
     IllegalArgumentException invokerIsNull();
 
     /**
@@ -1580,7 +2039,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14442, value = "Transaction manager cannot be null")
+    @Message(id = 304, value = "Transaction manager cannot be null")
     IllegalArgumentException transactionManagerIsNull();
 
     /**
@@ -1588,7 +2047,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14443, value = "Executor cannot be null")
+    @Message(id = 305, value = "Executor cannot be null")
     IllegalArgumentException executorIsNull();
 
     /**
@@ -1596,7 +2055,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14444, value = "initialExpiration cannot be null while creating a timer")
+    @Message(id = 306, value = "initialExpiration cannot be null while creating a timer")
     IllegalArgumentException initialExpirationIsNullCreatingTimer();
 
     /**
@@ -1604,7 +2063,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14445, value = "%s cannot be negative while creating a timer")
+    @Message(id = 307, value = "%s cannot be negative while creating a timer")
     IllegalArgumentException invalidInitialExpiration(String type);
 
     /**
@@ -1612,7 +2071,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14446, value = "expiration cannot be null while creating a single action timer")
+    @Message(id = 308, value = "expiration cannot be null while creating a single action timer")
     IllegalArgumentException expirationIsNull();
 
     /**
@@ -1620,7 +2079,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14447, value = "expiration.getTime() cannot be negative while creating a single action timer")
+    @Message(id = 309, value = "expiration.getTime() cannot be negative while creating a single action timer")
     IllegalArgumentException invalidExpirationActionTimer();
 
     /**
@@ -1628,7 +2087,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14448, value = "duration cannot be negative while creating single action timer")
+    @Message(id = 310, value = "duration cannot be negative while creating single action timer")
     IllegalArgumentException invalidDurationActionTimer();
 
     /**
@@ -1636,7 +2095,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14449, value = "Duration cannot negative while creating the timer")
+    @Message(id = 311, value = "Duration cannot negative while creating the timer")
     IllegalArgumentException invalidDurationTimer();
 
     /**
@@ -1644,7 +2103,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14450, value = "Expiration date cannot be null while creating a timer")
+    @Message(id = 312, value = "Expiration date cannot be null while creating a timer")
     IllegalArgumentException expirationDateIsNull();
 
     /**
@@ -1652,7 +2111,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14451, value = "expiration.getTime() cannot be negative while creating a timer")
+    @Message(id = 313, value = "expiration.getTime() cannot be negative while creating a timer")
     IllegalArgumentException invalidExpirationTimer();
 
     /**
@@ -1660,7 +2119,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14452, value = "Initial duration cannot be negative while creating timer")
+    @Message(id = 314, value = "Initial duration cannot be negative while creating timer")
     IllegalArgumentException invalidInitialDurationTimer();
 
     /**
@@ -1668,7 +2127,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14453, value = "Interval cannot be negative while creating timer")
+    @Message(id = 315, value = "Interval cannot be negative while creating timer")
     IllegalArgumentException invalidIntervalTimer();
 
     /**
@@ -1676,7 +2135,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14454, value = "initial expiration date cannot be null while creating a timer")
+    @Message(id = 316, value = "initial expiration date cannot be null while creating a timer")
     IllegalArgumentException initialExpirationDateIsNull();
 
     /**
@@ -1684,7 +2143,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14455, value = "interval duration cannot be negative while creating timer")
+    @Message(id = 317, value = "interval duration cannot be negative while creating timer")
     IllegalArgumentException invalidIntervalDurationTimer();
 
     /**
@@ -1692,7 +2151,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14456, value = "Creation of timers is not allowed during lifecycle callback of non-singleton EJBs")
+    @Message(id = 318, value = "Creation of timers is not allowed during lifecycle callback of non-singleton EJBs")
     IllegalStateException failToCreateTimerDoLifecycle();
 
     /**
@@ -1700,7 +2159,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14457, value = "initial expiration is null")
+    @Message(id = 319, value = "initial expiration is null")
     IllegalArgumentException initialExpirationIsNull();
 
     /**
@@ -1708,7 +2167,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14458, value = "interval duration is negative")
+    @Message(id = 320, value = "interval duration is negative")
     IllegalArgumentException invalidIntervalDuration();
 
     /**
@@ -1716,7 +2175,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14459, value = "schedule is null")
+    @Message(id = 321, value = "schedule is null")
     IllegalArgumentException scheduleIsNull();
 
     /**
@@ -1724,7 +2183,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14460, value = "Could not start transaction")
+    @Message(id = 322, value = "Could not start transaction")
     RuntimeException failToStartTransaction(@Cause Throwable t);
 
     /**
@@ -1732,7 +2191,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14461, value = "Transaction cannot be ended since no transaction is in progress")
+    @Message(id = 323, value = "Transaction cannot be ended since no transaction is in progress")
     IllegalStateException noTransactionInProgress();
 
     /**
@@ -1740,7 +2199,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14462, value = "Could not end transaction")
+    @Message(id = 324, value = "Could not end transaction")
     RuntimeException failToEndTransaction(@Cause Throwable e);
 
     /**
@@ -1748,7 +2207,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14463, value = "Cannot invoke timer service methods in lifecycle callback of non-singleton beans")
+    @Message(id = 325, value = "Cannot invoke timer service methods in lifecycle callback of non-singleton beans")
     IllegalStateException failToInvokeTimerServiceDoLifecycle();
 
     /**
@@ -1756,7 +2215,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14464, value = "Timer cannot be null")
+    @Message(id = 326, value = "Timer cannot be null")
     IllegalStateException timerIsNull();
 
     /**
@@ -1764,7 +2223,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14465, value = "%s Timer handles are only available for persistent timers.")
+    @Message(id = 327, value = "%s Timer handles are only available for persistent timers.")
     IllegalStateException invalidTimerHandlersForPersistentTimers(String s);
 
     /**
@@ -1772,7 +2231,7 @@ public interface EjbMessages {
      *
      * @return an {@link NoMoreTimeoutsException} for the error.
      */
-    @Message(id = 14466, value = "No more timeouts for timer %s")
+    @Message(id = 328, value = "No more timeouts for timer %s")
     NoMoreTimeoutsException noMoreTimeoutForTimer(TimerImpl timer);
 
     /**
@@ -1780,7 +2239,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException for the error.
      */
-    @Message(id = 14467, value = "Timer %s is not a calendar based timer")
+    @Message(id = 329, value = "Timer %s is not a calendar based timer")
     IllegalStateException invalidTimerNotCalendarBaseTimer(final TimerImpl timer);
 
     /**
@@ -1788,7 +2247,7 @@ public interface EjbMessages {
      *
      * @return an {@link NoSuchObjectLocalException} for the error.
      */
-    @Message(id = 14468, value = "Timer has expired")
+    @Message(id = 330, value = "Timer has expired")
     NoSuchObjectLocalException timerHasExpired();
 
     /**
@@ -1796,7 +2255,7 @@ public interface EjbMessages {
      *
      * @return an {@link NoSuchObjectLocalException} for the error.
      */
-    @Message(id = 14469, value = "Timer was canceled")
+    @Message(id = 331, value = "Timer was canceled")
     NoSuchObjectLocalException timerWasCanceled();
 
     /**
@@ -1804,7 +2263,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14470, value = "Timer %s is not persistent")
+    @Message(id = 332, value = "Timer %s is not persistent")
     IllegalStateException failToPersistTimer(TimerImpl timer);
 
     /**
@@ -1812,7 +2271,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14471, value = "Could not register with tx for timer cancellation")
+    @Message(id = 333, value = "Could not register with tx for timer cancellation")
     RuntimeException failToRegisterWithTxTimerCancellation(@Cause Throwable e);
 
     /**
@@ -1820,7 +2279,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14472, value = "Could not deserialize info in timer ")
+    @Message(id = 334, value = "Could not deserialize info in timer ")
     RuntimeException failToDeserializeInfoInTimer(@Cause Throwable e);
 
     /**
@@ -1828,7 +2287,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14473, value = "Id cannot be null")
+    @Message(id = 335, value = "Id cannot be null")
     IllegalArgumentException idIsNull();
 
     /**
@@ -1836,7 +2295,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14474, value = "Timed objectid cannot be null")
+    @Message(id = 336, value = "Timed objectid cannot be null")
     IllegalArgumentException timedObjectNull();
 
     /**
@@ -1844,7 +2303,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14475, value = "Timer service cannot be null")
+    @Message(id = 337, value = "Timer service cannot be null")
     IllegalArgumentException timerServiceIsNull();
 
     /**
@@ -1852,7 +2311,7 @@ public interface EjbMessages {
      *
      * @return an {@link EJBException} for the error.
      */
-    @Message(id = 14476, value = "Timerservice with timedObjectId: %s is not registered")
+    @Message(id = 338, value = "Timerservice with timedObjectId: %s is not registered")
     EJBException timerServiceWithIdNotRegistered(String timedObjectId);
 
     /**
@@ -1860,7 +2319,7 @@ public interface EjbMessages {
      *
      * @return an {@link NoSuchObjectLocalException} for the error.
      */
-    @Message(id = 14477, value = "Timer for handle: %s is not active")
+    @Message(id = 339, value = "Timer for handle: %s is not active")
     NoSuchObjectLocalException timerHandleIsNotActive(TimerHandle timerHandle);
 
     /**
@@ -1868,7 +2327,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14478, value = "Could not find timeout method: %s")
+    @Message(id = 340, value = "Could not find timeout method: %s")
     IllegalStateException failToFindTimeoutMethod(TimeoutMethod timeoutMethodInfo);
 
     /**
@@ -1876,7 +2335,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14479, value = "Cannot invoke getTimeoutMethod on a timer which is not an auto-timer")
+    @Message(id = 341, value = "Cannot invoke getTimeoutMethod on a timer which is not an auto-timer")
     IllegalStateException failToInvokegetTimeoutMethod();
 
     /**
@@ -1884,7 +2343,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14480, value = "Could not load declaring class: %s of timeout method")
+    @Message(id = 342, value = "Could not load declaring class: %s of timeout method")
     RuntimeException failToLoadDeclaringClassOfTimeOut(String declaringClass);
 
     /**
@@ -1892,7 +2351,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14481, value = "Cannot invoke timeout method because method %s is not a timeout method")
+    @Message(id = 343, value = "Cannot invoke timeout method because method %s is not a timeout method")
     RuntimeException failToInvokeTimeout(Method method);
 
     /**
@@ -1900,7 +2359,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14482, value = "Could not create timer file store directory %s")
+    @Message(id = 344, value = "Could not create timer file store directory %s")
     RuntimeException failToCreateTimerFileStoreDir(File baseDir);
 
     /**
@@ -1908,7 +2367,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14483, value = "Timer file store directory %s does not exist")
+    @Message(id = 345, value = "Timer file store directory %s does not exist")
     RuntimeException timerFileStoreDirNotExist(File baseDir);
 
     /**
@@ -1916,7 +2375,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14484, value = "Timer file store directory %s is not a directory")
+    @Message(id = 346, value = "Timer file store directory %s is not a directory")
     RuntimeException invalidTimerFileStoreDir(File baseDir);
 
     /**
@@ -1924,7 +2383,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14485, value = "EJB %s is enabled for security but doesn't have a security domain set")
+    @Message(id = 347, value = "EJB %s is enabled for security but doesn't have a security domain set")
     IllegalStateException invalidSecurityForDomainSet(String componentName);
 
     /**
@@ -1932,7 +2391,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14486, value = "%s is not an EJB component")
+    @Message(id = 348, value = "%s is not an EJB component")
     IllegalArgumentException invalidComponentConfiguration(String componentName);
 
     /**
@@ -1940,7 +2399,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14487, value = "Could not load view class for ejb %s")
+    @Message(id = 349, value = "Could not load view class for ejb %s")
     RuntimeException failToLoadViewClassEjb(String beanName, @Cause Throwable e);
 
     /**
@@ -1948,7 +2407,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14488, value = "Component named %s with component class %s is not an EJB component")
+    @Message(id = 350, value = "Component named %s with component class %s is not an EJB component")
     IllegalArgumentException invalidEjbComponent(String componentName, Class<?> componentClass);
 
     /**
@@ -1956,7 +2415,7 @@ public interface EjbMessages {
      *
      * @return an {@link StartException} for the error.
      */
-    @Message(id = 14489, value = "No timed object invoke for %s")
+    @Message(id = 351, value = "No timed object invoke for %s")
     StartException failToInvokeTimedObject(EJBComponent component);
 
     /**
@@ -1964,7 +2423,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14490, value = "TimerService is not started")
+    @Message(id = 352, value = "TimerService is not started")
     IllegalStateException failToStartTimerService();
 
     /**
@@ -1972,7 +2431,7 @@ public interface EjbMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 14491, value = "ResourceBundle based descriptions of %s are not supported")
+    @Message(id = 353, value = "ResourceBundle based descriptions of %s are not supported")
     UnsupportedOperationException resourceBundleDescriptionsNotSupported(String name);
 
     /**
@@ -1980,7 +2439,7 @@ public interface EjbMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 14492, value = "Runtime attribute %s is not marshallable")
+    @Message(id = 354, value = "Runtime attribute %s is not marshallable")
     UnsupportedOperationException runtimeAttributeNotMarshallable(String name);
 
     /**
@@ -1988,7 +2447,7 @@ public interface EjbMessages {
      *
      * @return an {@link String} for the error.
      */
-    @Message(id = 14493, value = "Invalid value: %s for '%s' element %s")
+    @Message(id = 355, value = "Invalid value: %s for '%s' element %s")
     String invalidValueForElement(String value, String element, Location location);
 
     /**
@@ -1996,7 +2455,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14494, value = "EJB component type %s does not support pools")
+    @Message(id = 356, value = "EJB component type %s does not support pools")
     IllegalStateException invalidComponentType(String simpleName);
 
     /**
@@ -2004,7 +2463,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14495, value = "Unknown EJBComponent type %s")
+    @Message(id = 357, value = "Unknown EJBComponent type %s")
     IllegalStateException unknownComponentType(EJBComponentType ejbComponentType);
 
     /**
@@ -2013,7 +2472,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14496, value = "Method %s for view %s shouldn't be marked for both %s and %s at the same time")
+    @Message(id = 358, value = "Method %s for view %s shouldn't be marked for both %s and %s at the same time")
     IllegalStateException invalidSecurityAnnotation(Method componentMethod, String viewClassName, final String s, final String s1);
 
     /**
@@ -2021,7 +2480,7 @@ public interface EjbMessages {
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14497, value = "Method named %s with params %s not found on component class %s")
+    @Message(id = 359, value = "Method named %s with params %s not found on component class %s")
     RuntimeException failToFindComponentMethod(String name, String s, Class<?> componentClass);
 
     /**
@@ -2029,7 +2488,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14498, value = "EJB method security metadata cannot be null")
+    @Message(id = 360, value = "EJB method security metadata cannot be null")
     IllegalArgumentException ejbMethodSecurityMetaDataIsNull();
 
     /**
@@ -2037,7 +2496,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14499, value = "View classname cannot be null or empty")
+    @Message(id = 361, value = "View classname cannot be null or empty")
     IllegalArgumentException viewClassNameIsNull();
 
     /**
@@ -2045,7 +2504,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14500, value = "View method cannot be null")
+    @Message(id = 362, value = "View method cannot be null")
     IllegalArgumentException viewMethodIsNull();
 
     /**
@@ -2053,7 +2512,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14501, value = "%s cannot handle method %s of view class %s.Expected view method to be %s on view class %s")
+    @Message(id = 363, value = "%s cannot handle method %s of view class %s.Expected view method to be %s on view class %s")
     IllegalStateException failProcessInvocation(String name, final Method invokedMethod, String viewClassOfInvokedMethod, Method viewMethod, String viewClassName);
 
     /**
@@ -2061,7 +2520,7 @@ public interface EjbMessages {
      *
      * @return an {@link EJBAccessException} for the error.
      */
-    @Message(id = 14502, value = "Invocation on method: %s of bean: %s is not allowed")
+    @Message(id = 364, value = "Invocation on method: %s of bean: %s is not allowed")
     EJBAccessException invocationOfMethodNotAllowed(Method invokedMethod, String componentName);
 
     /**
@@ -2069,7 +2528,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14503, value = "Unknown EJB Component description type %s")
+    @Message(id = 365, value = "Unknown EJB Component description type %s")
     IllegalArgumentException unknownComponentDescriptionType(Class<?> aClass);
 
     /**
@@ -2077,7 +2536,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14504, value = "Unknown attribute %s")
+    @Message(id = 366, value = "Unknown attribute %s")
     IllegalStateException unknownAttribute(String attributeName);
 
     /**
@@ -2085,7 +2544,7 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14505, value = "Unknown operation %s")
+    @Message(id = 367, value = "Unknown operation %s")
     IllegalStateException unknownOperations(String opName);
 
     /**
@@ -2093,7 +2552,7 @@ public interface EjbMessages {
      *
      * @return an {@link String} for the error.
      */
-    @Message(id = 14506, value = "No EJB component registered for address %s")
+    @Message(id = 368, value = "No EJB component registered for address %s")
     String noComponentRegisteredForAddress(PathAddress operationAddress);
 
     /**
@@ -2101,7 +2560,7 @@ public interface EjbMessages {
      *
      * @return an {@link String} for the error.
      */
-    @Message(id = 14507, value = "No EJB component is available for address %s")
+    @Message(id = 369, value = "No EJB component is available for address %s")
     String noComponentAvailableForAddress(PathAddress operationAddress);
 
     /**
@@ -2109,7 +2568,7 @@ public interface EjbMessages {
      *
      * @return an {@link String} for the error.
      */
-    @Message(id = 14508, value = "EJB component for address %s is in %n state %s, must be in state %s")
+    @Message(id = 370, value = "EJB component for address %s is in %n state %s, must be in state %s")
     String invalidComponentState(PathAddress operationAddress, ServiceController.State controllerState, ServiceController.State up);
 
 
@@ -2119,7 +2578,7 @@ public interface EjbMessages {
      * @param componentName
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14509, value = "%s is not an EJB component")
+    @Message(id = 371, value = "%s is not an EJB component")
     IllegalArgumentException invalidComponentIsNotEjbComponent(final String componentName);
 
     /**
@@ -2127,7 +2586,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14510, value = "Component class %s has multiple @Timeout annotations")
+    @Message(id = 372, value = "Component class %s has multiple @Timeout annotations")
     DeploymentUnitProcessingException componentClassHasMultipleTimeoutAnnotations(Class<?> componentClass);
 
     /**
@@ -2136,7 +2595,7 @@ public interface EjbMessages {
      * @param component the component.
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14511, value = "Current component is not an EJB %s")
+    @Message(id = 373, value = "Current component is not an EJB %s")
     IllegalStateException currentComponentNotAEjb(ComponentInstance component);
 
     /**
@@ -2145,10 +2604,10 @@ public interface EjbMessages {
      * @param methodName the name of the method.
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14512, value = "%s not allowed in lifecycle methods")
+    @Message(id = 374, value = "%s not allowed in lifecycle methods")
     IllegalStateException lifecycleMethodNotAllowed(String methodName);
 
-    @Message(id = 14513, value = "%s is not allowed in lifecycle methods of stateless session beans")
+    @Message(id = 375, value = "%s is not allowed in lifecycle methods of stateless session beans")
     IllegalStateException lifecycleMethodNotAllowedFromStatelessSessionBean(String methodName);
 
     /**
@@ -2157,16 +2616,16 @@ public interface EjbMessages {
      * @param name type of object
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14514, value = "Cannot call %s when invoking through %s or %s")
+    @Message(id = 376, value = "Cannot call %s when invoking through %s or %s")
     IllegalStateException cannotCall(String methodName, String name, String localName);
 
-    @Message(id = 14515, value = "%s is not allowed from stateful beans")
+    @Message(id = 377, value = "%s is not allowed from stateful beans")
     IllegalStateException notAllowedFromStatefulBeans(String method);
 
-    @Message(id = 14516, value = "Failed to acquire a permit within %s %s")
+    @Message(id = 378, value = "Failed to acquire a permit within %s %s")
     EJBException failedToAcquirePermit(long timeout, TimeUnit timeUnit);
 
-    @Message(id = 14517, value = "Acquire semaphore was interrupted")
+    @Message(id = 379, value = "Acquire semaphore was interrupted")
     EJBException acquireSemaphoreInterrupted();
 
 
@@ -2175,13 +2634,13 @@ public interface EjbMessages {
      *
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14518, value = "%s is deprecated")
+    @Message(id = 380, value = "%s is deprecated")
     IllegalStateException isDeprecatedIllegalState(String getEnvironment);
 
-    @Message(id = 14519, value = "Could not find method %s on entity bean")
+    @Message(id = 381, value = "Could not find method %s on entity bean")
     RuntimeException couldNotFindEntityBeanMethod(String method);
 
-    @Message(id = 14520, value = "Could not determine ClassLoader for stub %s")
+    @Message(id = 382, value = "Could not determine ClassLoader for stub %s")
     RuntimeException couldNotFindClassLoaderForStub(String stub);
 
     /**
@@ -2192,7 +2651,7 @@ public interface EjbMessages {
      * @param resourceAdapterName The resource adapter name
      * @return a {@link IllegalStateException} for the error.
      */
-    @Message(id = 14521, value = "No message listener of type %s found in resource adapter %s")
+    @Message(id = 383, value = "No message listener of type %s found in resource adapter %s")
     IllegalStateException unknownMessageListenerType(String resourceAdapterName, String messageListenerType);
 
     /**
@@ -2202,7 +2661,7 @@ public interface EjbMessages {
      * @param viewClass The view
      * @param ejb       The ejb
      */
-    @Message(id = 14522, value = "Could not find method %s from view %s on EJB class %s")
+    @Message(id = 384, value = "Could not find method %s from view %s on EJB class %s")
     DeploymentUnitProcessingException couldNotFindViewMethodOnEjb(final Method method, String viewClass, String ejb);
 
     /**
@@ -2212,91 +2671,97 @@ public interface EjbMessages {
      * @param paramName The param name
      * @return an {@link IllegalArgumentException} for the exception
      */
-    @Message(id = 14523, value = "%s cannot be null or empty")
+    @Message(id = 385, value = "%s cannot be null or empty")
     IllegalArgumentException stringParamCannotBeNullOrEmpty(final String paramName);
 
     /**
      * Exception that is thrown when invoking remove while an EJB is in a transaction
      */
-    @Message(id = 14524, value = "EJB 4.6.4 Cannot remove EJB via EJB 2.x remove() method while participating in a transaction")
+    @Message(id = 386, value = "EJB 4.6.4 Cannot remove EJB via EJB 2.x remove() method while participating in a transaction")
     RemoveException cannotRemoveWhileParticipatingInTransaction();
 
-    @Message(id = 14525, value = "Transaction propagation over IIOP is not supported")
+    @Message(id = 387, value = "Transaction propagation over IIOP is not supported")
     RemoteException transactionPropagationNotSupported();
 
     @Deprecated
-    @Message(id = 14526, value = "Cannot call method %s in afterCompletion callback")
+    @Message(id = 388, value = "Cannot call method %s in afterCompletion callback")
     IllegalStateException cannotCallMethodInAfterCompletion(String methodName);
 
+    /**
+     * Exception thrown if a method cannot be invoked at the given time
+     */
+    @Message(id = 389, value = "Cannot call %s when state is %s")
+    IllegalStateException cannotCallMethod(String methodName, String state);
+
     @Deprecated
-    @Message(id = 14528, value = "%s is already associated with serialization group %s")
+    @Message(id = 390, value = "%s is already associated with serialization group %s")
     IllegalStateException existingSerializationGroup(Object key, Object group);
 
     @Deprecated
-    @Message(id = 14529, value = "%s is not compatible with serialization group %s")
+    @Message(id = 391, value = "%s is not compatible with serialization group %s")
     IllegalStateException incompatibleSerializationGroup(Object object, Object group);
 
     @Deprecated
-    @Message(id = 14530, value = "Cache entry %s is in use")
+    @Message(id = 392, value = "Cache entry %s is in use")
     IllegalStateException cacheEntryInUse(Object entry);
 
     @Deprecated
-    @Message(id = 14531, value = "Cache entry %s is not in use")
+    @Message(id = 393, value = "Cache entry %s is not in use")
     IllegalStateException cacheEntryNotInUse(Object entry);
 
     @Deprecated
-    @Message(id = 14532, value = "Failed to acquire lock on %s")
+    @Message(id = 394, value = "Failed to acquire lock on %s")
     RuntimeException lockAcquisitionInterrupted(@Cause Throwable cause, Object id);
 
     @Deprecated
-    @Message(id = 14533, value = "%s is already a member of serialization group %s")
+    @Message(id = 395, value = "%s is already a member of serialization group %s")
     IllegalStateException duplicateSerializationGroupMember(Object id, Object groupId);
 
     @Deprecated
-    @Message(id = 14534, value = "%s is not a member of serialization group %s")
+    @Message(id = 396, value = "%s is not a member of serialization group %s")
     IllegalStateException missingSerializationGroupMember(Object id, Object groupId);
 
     @Deprecated
-    @Message(id = 14535, value = "%s already exists in cache")
+    @Message(id = 397, value = "%s already exists in cache")
     IllegalStateException duplicateCacheEntry(Object id);
 
     @Deprecated
-    @Message(id = 14536, value = "%s is missing from cache")
+    @Message(id = 398, value = "%s is missing from cache")
     IllegalStateException missingCacheEntry(Object id);
 
-    @Message(id = 14537, value = "Incompatible cache implementations in nested hierarchy")
+    @Message(id = 399, value = "Incompatible cache implementations in nested hierarchy")
     IllegalStateException incompatibleCaches();
 
     @Deprecated
-    @Message(id = 14538, value = "Failed to passivate %s")
+    @Message(id = 400, value = "Failed to passivate %s")
     RuntimeException passivationFailed(@Cause Throwable cause, Object id);
 
     @Deprecated
-    @Message(id = 14539, value = "Failed to activate %s")
+    @Message(id = 401, value = "Failed to activate %s")
     RuntimeException activationFailed(@Cause Throwable cause, Object id);
 
     @Deprecated
-    @Message(id = 14540, value = "Failed to create passivation directory: %s")
+    @Message(id = 402, value = "Failed to create passivation directory: %s")
     RuntimeException passivationDirectoryCreationFailed(String path);
 
     @Deprecated
-    @Message(id = 14541, value = "Failed to create passivation directory: %s")
+    @Message(id = 403, value = "Failed to create passivation directory: %s")
     RuntimeException passivationPathNotADirectory(String path);
 
     @Deprecated
-    @Message(id = 14542, value = "Group creation context already exists")
+    @Message(id = 404, value = "Group creation context already exists")
     IllegalStateException groupCreationContextAlreadyExists();
 
-    @Message(id = 14543, value = "No EJB found with interface of type '%s' and name '%s' for binding %s")
+    @Message(id = 405, value = "No EJB found with interface of type '%s' and name '%s' for binding %s")
     String ejbNotFound(String typeName, String beanName, String binding);
 
-    @Message(id = 14544, value = "No EJB found with interface of type '%s' for binding %s")
+    @Message(id = 406, value = "No EJB found with interface of type '%s' for binding %s")
     String ejbNotFound(String typeName, String binding);
 
-    @Message(id = 14545, value = "More than one EJB found with interface of type '%s' and name '%s' for binding %s. Found: %s")
+    @Message(id = 407, value = "More than one EJB found with interface of type '%s' and name '%s' for binding %s. Found: %s")
     String moreThanOneEjbFound(String typeName, String beanName, String binding, Set<EJBViewDescription> componentViews);
 
-    @Message(id = 14546, value = "More than one EJB found with interface of type '%s' for binding %s. Found: %s")
+    @Message(id = 408, value = "More than one EJB found with interface of type '%s' for binding %s. Found: %s")
     String moreThanOneEjbFound(String typeName, String binding, Set<EJBViewDescription> componentViews);
 
     /**
@@ -2309,7 +2774,7 @@ public interface EjbMessages {
      * @return
      */
     @Deprecated
-    @Message(id = 14547, value = "@Clustered annotation cannot be used with message driven beans. %s failed since %s bean is marked with @Clustered on class %s")
+    @Message(id = 409, value = "@Clustered annotation cannot be used with message driven beans. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForMDB(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
     /**
@@ -2322,7 +2787,7 @@ public interface EjbMessages {
      * @return
      */
     @Deprecated
-    @Message(id = 14548, value = "@Clustered annotation cannot be used with entity beans. %s failed since %s bean is marked with @Clustered on class %s")
+    @Message(id = 410, value = "@Clustered annotation cannot be used with entity beans. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForEntityBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
     /**
@@ -2335,7 +2800,7 @@ public interface EjbMessages {
      * @return
      */
     @Deprecated
-    @Message(id = 14549, value = "@Clustered annotation is currently not supported for singleton EJB. %s failed since %s bean is marked with @Clustered on class %s")
+    @Message(id = 411, value = "@Clustered annotation is currently not supported for singleton EJB. %s failed since %s bean is marked with @Clustered on class %s")
     DeploymentUnitProcessingException clusteredAnnotationNotYetImplementedForSingletonBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
     /**
@@ -2348,21 +2813,16 @@ public interface EjbMessages {
      * @return
      */
     @Deprecated
-    @Message(id = 14550, value = "%s failed since @Clustered annotation cannot be used for %s bean on class %s")
+    @Message(id = 412, value = "%s failed since @Clustered annotation cannot be used for %s bean on class %s")
     DeploymentUnitProcessingException clusteredAnnotationIsNotApplicableForBean(final DeploymentUnit unit, final String componentName, final String componentClassName);
 
 
-    /**
-     * Exception thrown if a method cannot be invoked at the given time
-     */
-    @Message(id = 14527, value = "Cannot call %s when state is %s")
-    IllegalStateException cannotCallMethod(String methodName, String state);
 
 
     /**
      * Exception thrown if the session-type of a session bean is not specified
      */
-    @Message(id = 14551, value = "<session-type> not specified for ejb %s. This must be present in ejb-jar.xml")
+    @Message(id = 413, value = "<session-type> not specified for ejb %s. This must be present in ejb-jar.xml")
     DeploymentUnitProcessingException sessionTypeNotSpecified(String bean);
 
 
@@ -2371,7 +2831,7 @@ public interface EjbMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 14552, value = "Default interceptors cannot specify an <interceptor-order> element in ejb-jar.xml")
+    @Message(id = 414, value = "Default interceptors cannot specify an <interceptor-order> element in ejb-jar.xml")
     DeploymentUnitProcessingException defaultInterceptorsNotSpecifyOrder();
 
     /**
@@ -2379,7 +2839,7 @@ public interface EjbMessages {
      *
      * @return
      */
-    @Message(id = 14553, value = "Cache is not clustered")
+    @Message(id = 415, value = "Cache is not clustered")
     IllegalStateException cacheIsNotClustered();
 
     /**
@@ -2388,13 +2848,13 @@ public interface EjbMessages {
      * @param paramName The param name
      * @return an {@link IllegalArgumentException} for the exception
      */
-    @Message(id = 14554, value = "%s cannot be null")
+    @Message(id = 416, value = "%s cannot be null")
     IllegalArgumentException paramCannotBeNull(final String paramName);
 
-    @Message(id = 14555, value = "A GroupMembershipNotifier is already registered by the name of %s")
+    @Message(id = 417, value = "A GroupMembershipNotifier is already registered by the name of %s")
     IllegalArgumentException groupMembershipNotifierAlreadyRegistered(final String groupName);
 
-    @Message(id = 14556, value = "No GroupMembershipNotifier registered by the name of %s")
+    @Message(id = 418, value = "No GroupMembershipNotifier registered by the name of %s")
     IllegalArgumentException groupMembershipNotifierNotRegistered(final String groupName);
 
     /**
@@ -2403,88 +2863,88 @@ public interface EjbMessages {
      * @param ejbName The EJB name
      * @return an {@link IllegalArgumentException} for the exception
      */
-    @Message(id = 14557, value = "Pool name cannot be empty string for bean %s")
+    @Message(id = 419, value = "Pool name cannot be empty string for bean %s")
     IllegalArgumentException poolNameCannotBeEmptyString(final String ejbName);
 
     /**
      * The user attempts to look up the ejb context in a war when no ejb context is active
      */
-    @Message(id = 14558, value = "No EjbContext available as no EJB invocation is active")
+    @Message(id = 420, value = "No EjbContext available as no EJB invocation is active")
     IllegalStateException noEjbContextAvailable();
 
-    @Message(id = 14559, value = "Invocation cannot proceed as component is shutting down")
+    @Message(id = 421, value = "Invocation cannot proceed as component is shutting down")
     EJBComponentUnavailableException componentIsShuttingDown();
 
-    @Message(id = 14560, value = "Could not open message outputstream for writing to Channel")
+    @Message(id = 422, value = "Could not open message outputstream for writing to Channel")
     IOException failedToOpenMessageOutputStream(@Cause Throwable e);
 
-    @Message(id = 14561, value = "Could not create session for stateful bean %s")
+    @Message(id = 423, value = "Could not create session for stateful bean %s")
     RuntimeException failedToCreateSessionForStatefulBean(@Cause Exception e, String beanName);
 
-    @Message(id = 14562, value = "No thread context classloader available")
+    @Message(id = 424, value = "No thread context classloader available")
     IllegalStateException tcclNotAvailable();
 
-    @Message(id = 14563, value = "Cannot write to null DataOutput")
+    @Message(id = 425, value = "Cannot write to null DataOutput")
     IllegalArgumentException cannotWriteToNullDataOutput();
 
-    @Message(id = 14564, value = "No client-mapping entries found for node %s in cluster %s")
+    @Message(id = 426, value = "No client-mapping entries found for node %s in cluster %s")
     IllegalStateException clientMappingMissing(String nodeName, String clusterName);
 
-    @Message(id = 14565, value = "Could not load class")
+    @Message(id = 427, value = "Could not load class")
     RuntimeException classNotFoundException(@Cause ClassNotFoundException cnfe);
 
-    @Message(id = 14566, value = "EJB module identifiers cannot be null")
+    @Message(id = 428, value = "EJB module identifiers cannot be null")
     IllegalArgumentException ejbModuleIdentifiersCannotBeNull();
 
-    @Message(id = 14567, value = "MessageInputStream cannot be null")
+    @Message(id = 429, value = "MessageInputStream cannot be null")
     IllegalArgumentException messageInputStreamCannotBeNull();
 
-    @Message(id = 14568, value = "Unknown transaction request type %s")
+    @Message(id = 430, value = "Unknown transaction request type %s")
     IllegalArgumentException unknownTransactionRequestType(String txRequestType);
 
-    @Message(id = 14569, value = "Could not close channel")
+    @Message(id = 431, value = "Could not close channel")
     RuntimeException couldNotCloseChannel(@Cause IOException ioe);
 
-    @Message(id = 14570, value = "No subordinate transaction present for xid %s")
+    @Message(id = 432, value = "No subordinate transaction present for xid %s")
     RuntimeException noSubordinateTransactionPresentForXid(Xid xid);
 
-    @Message(id = 14571, value = "Failed to register transaction synchronization")
+    @Message(id = 433, value = "Failed to register transaction synchronization")
     RuntimeException failedToRegisterTransactionSynchronization(@Cause Exception e);
 
-    @Message(id = 14572, value = "Failed to get current transaction")
+    @Message(id = 434, value = "Failed to get current transaction")
     RuntimeException failedToGetCurrentTransaction(@Cause Exception e);
 
-    @Message(id = 14573, value = "Could not obtain lock on %s to passivate %s")
+    @Message(id = 435, value = "Could not obtain lock on %s to passivate %s")
     IllegalStateException couldNotObtainLockForGroup(String groupId, String groupMember);
 
-    @Message(id = 14574, value = "Unknown channel creation option type %s")
+    @Message(id = 436, value = "Unknown channel creation option type %s")
     IllegalArgumentException unknownChannelCreationOptionType(String optionType);
 
-    @Message(id = 14575, value = "Could not determine remote interface from home interface %s for bean %s")
+    @Message(id = 437, value = "Could not determine remote interface from home interface %s for bean %s")
     DeploymentUnitProcessingException couldNotDetermineRemoteInterfaceFromHome(final String homeClass, final String beanName);
 
-    @Message(id = 14576, value = "Could not determine local interface from local home interface %s for bean %s")
+    @Message(id = 438, value = "Could not determine local interface from local home interface %s for bean %s")
     DeploymentUnitProcessingException couldNotDetermineLocalInterfaceFromLocalHome(final String localHomeClass, final String beanName);
 
-    @Message(id = 14577, value = "Unsupported marshalling version: %d")
+    @Message(id = 439, value = "Unsupported marshalling version: %d")
     IllegalArgumentException unsupportedMarshallingVersion(int version);
 
-    @Message(id = 14578, value = "%s method %s must be public")
+    @Message(id = 440, value = "%s method %s must be public")
     DeploymentUnitProcessingException ejbMethodMustBePublic(final String type, final Method method);
 
-    @Message(id = 14579, value = "EJB business method %s must be public")
+    @Message(id = 441, value = "EJB business method %s must be public")
     DeploymentUnitProcessingException ejbBusinessMethodMustBePublic(final Method method);
 
-    @Message(id = 14580, value = "Unexpected Error")
+    @Message(id = 442, value = "Unexpected Error")
     EJBException unexpectedError();
 
-    @Message(id = 14581, value = "EJB 3.1 FR 13.3.3: BMT bean %s should complete transaction before returning.")
+    @Message(id = 443, value = "EJB 3.1 FR 13.3.3: BMT bean %s should complete transaction before returning.")
     String transactionNotComplete(String componentName);
 
-    @Message(id = 14582, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
+    @Message(id = 444, value = "Timer service resource %s is not suitable for the target. Only a configuration with a single file-store and no other configured data-store is supported on target")
     String untransformableTimerService(PathAddress address);
 
-    @Message(id = 14583, value = "Detected asymmetric usage of cache")
+    @Message(id = 445, value = "Detected asymmetric usage of cache")
     IllegalStateException asymmetricCacheUsage();
 
     /**
@@ -2492,25 +2952,21 @@ public interface EjbMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 14584, value = "The timer '%s' is already active.")
+    @Message(id = 446, value = "The timer '%s' is already active.")
     IllegalStateException timerIsActive(String timerId);
 
-    @Message(id = 14585, value = "Transaction '%s' was already rolled back")
+    @Message(id = 447, value = "Transaction '%s' was already rolled back")
     RollbackException transactionAlreadyRolledBack(Transaction tx);
 
-    @Message(id = 14586, value = "Transaction '%s' is in unexpected state (%s)")
+    @Message(id = 448, value = "Transaction '%s' is in unexpected state (%s)")
     EJBException transactionInUnexpectedState(Transaction tx, String txStatus);
 
-    @Message(id = 14587, value = "Timerservice API is not allowed on stateful session bean %s")
+    @Message(id = 449, value = "Timerservice API is not allowed on stateful session bean %s")
     String timerServiceMethodNotAllowedForSFSB(final String ejbComponent);
 
-    @Message(id = 14588, value = "CMP Entity Beans are not supported")
+    @Message(id = 450, value = "CMP Entity Beans are not supported")
     DeploymentUnitProcessingException cmpEntityBeansAreNotSupported();
 
-    @Message(id = 14589, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'")
+    @Message(id = 451, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'")
     OperationFailedException inconsistentAttributeNotSupported(String attributeName, String mustMatch);
-
-    // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
-    // using and take more (lower) numbers from the available range for this module. If the range for the module is
-    // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
 }

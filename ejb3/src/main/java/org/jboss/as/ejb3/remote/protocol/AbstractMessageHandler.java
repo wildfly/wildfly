@@ -34,7 +34,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 import org.jboss.as.ejb3.remote.protocol.versionone.ProtocolV1ClassTable;
 import org.jboss.as.ejb3.remote.protocol.versionone.ProtocolV1ObjectTable;
@@ -99,7 +99,7 @@ public abstract class AbstractMessageHandler implements MessageHandler {
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Exception e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         outputStream = new DataOutputStream(messageOutputStream);
         try {
@@ -126,7 +126,7 @@ public abstract class AbstractMessageHandler implements MessageHandler {
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Exception e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         dataOutputStream = new DataOutputStream(messageOutputStream);
         try {

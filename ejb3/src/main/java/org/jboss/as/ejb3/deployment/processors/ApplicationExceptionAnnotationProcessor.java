@@ -27,7 +27,7 @@ import java.util.List;
 import javax.ejb.ApplicationException;
 
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.ApplicationExceptionDescriptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.Attachments;
@@ -68,7 +68,7 @@ public class ApplicationExceptionAnnotationProcessor implements DeploymentUnitPr
         for (AnnotationInstance annotationInstance : applicationExceptionAnnotations) {
             AnnotationTarget target = annotationInstance.target();
             if (!(target instanceof ClassInfo)) {
-                throw EjbMessages.MESSAGES.annotationOnlyAllowedOnClass(ApplicationException.class.getName(), target);
+                throw EjbLogger.ROOT_LOGGER.annotationOnlyAllowedOnClass(ApplicationException.class.getName(), target);
             }
             String exceptionClassName = ((ClassInfo) target).name().toString();
             boolean rollback = false;

@@ -30,12 +30,13 @@ import javax.ejb.EJBLocalObject;
 import javax.ejb.EJBObject;
 import javax.ejb.TransactionAttributeType;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.concurrency.AccessTimeoutDetails;
 import org.jboss.invocation.InterceptorContext;
 
 import static java.util.Collections.emptyMap;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -62,21 +63,21 @@ public abstract class SessionBeanComponent extends EJBComponent {
 
     public <T> T getBusinessObject(Class<T> businessInterface, final InterceptorContext context) throws IllegalStateException {
         if (businessInterface == null) {
-            throw MESSAGES.businessInterfaceIsNull();
+            throw EjbLogger.ROOT_LOGGER.businessInterfaceIsNull();
         }
         return createViewInstanceProxy(businessInterface, emptyMap());
     }
 
     public EJBLocalObject getEJBLocalObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbLocalObjectViewServiceName() == null) {
-            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(),"EJBLocalObject");
+            throw EjbLogger.ROOT_LOGGER.beanComponentMissingEjbObject(getComponentName(), "EJBLocalObject");
         }
         return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>emptyMap(), getEjbLocalObjectViewServiceName());
     }
 
     public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbObjectViewServiceName() == null) {
-            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(),"EJBObject");
+            throw EjbLogger.ROOT_LOGGER.beanComponentMissingEjbObject(getComponentName(), "EJBObject");
         }
         return createViewInstanceProxy(EJBObject.class, Collections.<Object, Object>emptyMap(), getEjbObjectViewServiceName());
     }
@@ -94,7 +95,7 @@ public abstract class SessionBeanComponent extends EJBComponent {
     public boolean getRollbackOnly() throws IllegalStateException {
         // NOT_SUPPORTED and NEVER will not have a transaction context, so we can ignore those
         if (getCurrentTransactionAttribute() == TransactionAttributeType.SUPPORTS) {
-            throw MESSAGES.getRollBackOnlyIsNotAllowWithSupportsAttribute();
+            throw EjbLogger.ROOT_LOGGER.getRollBackOnlyIsNotAllowWithSupportsAttribute();
         }
         return super.getRollbackOnly();
     }
@@ -103,7 +104,7 @@ public abstract class SessionBeanComponent extends EJBComponent {
     public void setRollbackOnly() throws IllegalStateException {
         // NOT_SUPPORTED and NEVER will not have a transaction context, so we can ignore those
         if (getCurrentTransactionAttribute() == TransactionAttributeType.SUPPORTS) {
-            throw MESSAGES.setRollbackOnlyNotAllowedForSupportsTxAttr();
+            throw EjbLogger.ROOT_LOGGER.setRollbackOnlyNotAllowedForSupportsTxAttr();
         }
         super.setRollbackOnly();
     }

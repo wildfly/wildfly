@@ -25,13 +25,14 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * @author Stuart Douglas
  */
@@ -54,7 +55,7 @@ public class MethodResolutionUtils {
         final Collection<Method> method = resolveMethods(methodName, parameters, componentClass, reflectionIndex);
 
         if(method.size() >1) {
-            throw MESSAGES.moreThanOneMethodWithSameNameOnComponent(methodName, componentClass);
+            throw EjbLogger.ROOT_LOGGER.moreThanOneMethodWithSameNameOnComponent(methodName, componentClass);
         }
         return method.iterator().next();
     }
@@ -86,7 +87,7 @@ public class MethodResolutionUtils {
             }
             clazz = clazz.getSuperclass();
         }
-        throw MESSAGES.failToFindMethodInEjbJarXml(componentClass.getName(),methodName);
+        throw EjbLogger.ROOT_LOGGER.failToFindMethodInEjbJarXml(componentClass.getName(), methodName);
 
     }
 }

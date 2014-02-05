@@ -35,7 +35,7 @@ import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.invocation.Interceptor;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * {@link org.jboss.as.ee.component.Component} responsible for managing EJB3 stateless session beans

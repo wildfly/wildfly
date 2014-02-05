@@ -28,7 +28,7 @@ import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.EJBClientConfiguration;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.ServiceController;
@@ -98,7 +98,7 @@ class EJBClientCommonConnectionConfig implements EJBClientConfiguration.CommonCo
                 final Option<?> option = Option.fromString(propertyName, classLoader);
                 optionMapBuilder.parse(option, properties.getProperty(propertyName), classLoader);
             } catch (IllegalArgumentException e) {
-                EjbLogger.EJB3_LOGGER.failedToCreateOptionForProperty(propertyName, e.getMessage());
+                EjbLogger.ROOT_LOGGER.failedToCreateOptionForProperty(propertyName, e.getMessage());
             }
         }
         return optionMapBuilder.getMap();

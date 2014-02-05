@@ -29,8 +29,7 @@ import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;
@@ -63,7 +62,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
     @Override
     public void processMessage(ChannelAssociation channelAssociation, InputStream inputStream) throws IOException {
         if (inputStream == null) {
-            throw EjbMessages.MESSAGES.messageInputStreamCannotBeNull();
+            throw EjbLogger.ROOT_LOGGER.messageInputStreamCannotBeNull();
         }
         final DataInputStream dataInputStream = new DataInputStream(inputStream);
         // read invocation id
@@ -80,7 +79,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
         }
         final Component component = ejbDeploymentInformation.getEjbComponent();
         if (!(component instanceof StatefulSessionComponent)) {
-            final String failureMessage = EjbMessages.MESSAGES.notStatefulSessionBean(beanName, appName, moduleName, distinctName).getLocalizedMessage();
+            final String failureMessage = EjbLogger.ROOT_LOGGER.notStatefulSessionBean(beanName, appName, moduleName, distinctName).getLocalizedMessage();
             this.writeInvocationFailure(channelAssociation, HEADER_EJB_NOT_STATEFUL, invocationId, failureMessage);
             return;
         }
@@ -97,7 +96,7 @@ class SessionOpenRequestHandler extends EJBIdentifierBasedMessageHandler {
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Exception e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         dataOutputStream = new DataOutputStream(messageOutputStream);
         try {

@@ -31,8 +31,7 @@ import java.util.concurrent.ExecutorService;
 import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.jta.utils.XAHelper;
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
@@ -130,7 +129,7 @@ class TransactionRecoverMessageHandler extends AbstractMessageHandler {
             try {
                 messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
             } catch (Exception e) {
-                throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+                throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
             }
             dataOutputStream = new DataOutputStream(messageOutputStream);
             try {

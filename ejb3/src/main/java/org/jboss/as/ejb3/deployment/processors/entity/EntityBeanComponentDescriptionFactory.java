@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.entity;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
 import org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor;
@@ -62,7 +62,7 @@ public class EntityBeanComponentDescriptionFactory extends AbstractDeploymentUni
     private void processEntityBeanMetaData(final DeploymentUnit deploymentUnit, final EntityBeanMetaData entity) throws DeploymentUnitProcessingException {
 
         if(entity.isCMP()) {
-            throw EjbMessages.MESSAGES.cmpEntityBeansAreNotSupported();
+            throw EjbLogger.ROOT_LOGGER.cmpEntityBeansAreNotSupported();
         }
 
         final EjbJarDescription ejbJarDescription = getEjbJarDescription(deploymentUnit);

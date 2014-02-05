@@ -189,7 +189,7 @@ public class RunAsPrincipalTestCase  {
         } catch (Exception dex) {
             Throwable t = checkEjbException(dex);
             log.info("Expected deployment error because the Singleton has nosecurity context per itself", dex.getCause());
-            Assert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("JBAS014502"));
+            Assert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
         } finally {
             deployer.undeploy(STARTUP_SINGLETON_DEPLOYMENT);
         }
@@ -207,7 +207,7 @@ public class RunAsPrincipalTestCase  {
         } catch (Exception dex) {
             Throwable t = checkEjbException(dex);
             log.info("Expected deployment error because the Singleton has nosecurity context per itself", dex.getCause());
-            Assert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("JBAS014502"));
+            Assert.assertThat(t.getMessage(), t.getMessage(), CoreMatchers.containsString("WFLYEJB0364"));
         } finally {
             client.logout();
         }

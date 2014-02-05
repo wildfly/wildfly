@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -45,7 +45,7 @@ class AnonymousCallbackHandler implements CallbackHandler {
                 RealmCallback rcb = (RealmCallback) current;
                 rcb.setText(rcb.getDefaultText());
             } else {
-                throw EjbMessages.MESSAGES.unsupportedCallback(current);
+                throw EjbLogger.ROOT_LOGGER.unsupportedCallback(current);
             }
         }
     }

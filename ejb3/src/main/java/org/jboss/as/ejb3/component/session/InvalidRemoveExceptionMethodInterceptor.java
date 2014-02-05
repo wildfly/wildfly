@@ -21,12 +21,11 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas
@@ -40,6 +39,6 @@ public class InvalidRemoveExceptionMethodInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        throw MESSAGES.illegalCallToEjbHomeRemove();
+        throw EjbLogger.ROOT_LOGGER.illegalCallToEjbHomeRemove();
     }
 }

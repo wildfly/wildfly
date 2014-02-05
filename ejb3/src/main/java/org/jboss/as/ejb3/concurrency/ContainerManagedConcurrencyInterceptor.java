@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.concurrency;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.logging.Logger;
@@ -32,8 +33,8 @@ import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 /**
  * @author Jaikiran Pai
  */
@@ -53,7 +54,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
 
     public ContainerManagedConcurrencyInterceptor(LockableComponent component) {
         if (component == null) {
-            throw MESSAGES.componentIsNull(LockableComponent.class.getName());
+            throw EjbLogger.ROOT_LOGGER.componentIsNull(LockableComponent.class.getName());
         }
         this.lockableComponent = component;
     }
@@ -69,7 +70,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         // get the invoked method
         Method invokedMethod = invocationContext.getMethod();
         if (invokedMethod == null) {
-            throw MESSAGES.invocationNotApplicableForMethodInvocation(invocationContext);
+            throw EjbLogger.ROOT_LOGGER.invocationNotApplicableForMethodInvocation(invocationContext);
         }
         // get the Lock applicable for this method
         Lock lock = getLock(lockableComponent, invokedMethod);
@@ -97,7 +98,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
         // try getting the lock
         boolean success = lock.tryLock(time, unit);
         if (!success) {
-            throw MESSAGES.concurrentAccessTimeoutException(invocationContext,time + unit.name());
+            throw EjbLogger.ROOT_LOGGER.concurrentAccessTimeoutException(invocationContext, time + unit.name());
         }
         try {
             // lock obtained. now proceed!
@@ -115,7 +116,7 @@ public class ContainerManagedConcurrencyInterceptor implements Interceptor {
             case WRITE:
                 return readWriteLock.writeLock();
         }
-        throw MESSAGES.failToObtainLockIllegalType(lockType,method,lockableComponent);
+        throw EjbLogger.ROOT_LOGGER.failToObtainLockIllegalType(lockType, method, lockableComponent);
     }
 
 }

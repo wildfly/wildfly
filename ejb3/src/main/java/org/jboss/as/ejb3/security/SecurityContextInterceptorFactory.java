@@ -21,8 +21,7 @@
  */
 package org.jboss.as.ejb3.security;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +29,7 @@ import java.util.Set;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.security.service.SimpleSecurityManager;
 import org.jboss.invocation.Interceptor;
@@ -58,7 +58,7 @@ public class SecurityContextInterceptorFactory extends ComponentInterceptorFacto
     @Override
     protected Interceptor create(final Component component, final InterceptorFactoryContext context) {
         if (component instanceof EJBComponent == false) {
-            throw MESSAGES.unexpectedComponent(component, EJBComponent.class);
+            throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, EJBComponent.class);
         }
         final EJBComponent ejbComponent = (EJBComponent) component;
         final ServerSecurityManager securityManager;

@@ -54,7 +54,7 @@ import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -216,10 +216,10 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
             TransformationTarget tgt = context.getTarget();
             if (tgt.isIgnoredResourceListAvailableAtRegistration()) {
                 // Slave is 7.2.x or higher and we know this resource is not ignored
-                throw new OperationFailedException(EjbMessages.MESSAGES.untransformableTimerService(address));
+                throw new OperationFailedException(EjbLogger.ROOT_LOGGER.untransformableTimerService(address));
             } else {
                 // 7.1.x slave; resource *may* be ignored so we can't fail; just log
-                context.getLogger().logWarning(EjbMessages.MESSAGES.untransformableTimerService(address));
+                context.getLogger().logWarning(EjbLogger.ROOT_LOGGER.untransformableTimerService(address));
             }
         }
 

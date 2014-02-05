@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.BasicComponentCreateService;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilder;
 import org.jboss.as.ejb3.cache.CacheFactoryBuilderService;
@@ -34,8 +35,6 @@ import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
@@ -49,7 +48,7 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
     @Override
     public BasicComponentCreateService constructService(final ComponentConfiguration configuration) {
         if (this.ejbJarConfiguration == null) {
-            throw MESSAGES.ejbJarConfigNotBeenSet(this,configuration.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.ejbJarConfigNotBeenSet(this, configuration.getComponentName());
         }
         // setup an injection dependency to inject the DefaultAccessTimeoutService in the stateful bean
         // component create service

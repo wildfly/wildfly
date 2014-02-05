@@ -34,6 +34,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ee.component.interceptors.InvocationType;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.invocation.Interceptor;
@@ -41,8 +42,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Interceptor that hooks up finder methods for BMP entity beans
@@ -137,7 +136,7 @@ public class EntityBeanHomeFinderInterceptorFactory implements InterceptorFactor
             }
             default: {
                 if (result == null) {
-                    throw MESSAGES.couldNotFindEntity(finderMethod, Arrays.toString(context.getParameters()));
+                    throw EjbLogger.ROOT_LOGGER.couldNotFindEntity(finderMethod, Arrays.toString(context.getParameters()));
                 }
                 return getLocalObject(result);
             }

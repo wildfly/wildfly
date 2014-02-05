@@ -24,11 +24,11 @@ package org.jboss.as.ejb3.component.messagedriven;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInterceptorFactory;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.NonPooledEJBComponentInstanceAssociatingInterceptor;
 import org.jboss.as.ejb3.component.pool.PooledInstanceInterceptor;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorFactoryContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
@@ -48,7 +48,7 @@ public class MessageDrivenComponentInstanceAssociatingFactory extends ComponentI
     @Override
     protected Interceptor create(Component component, InterceptorFactoryContext context) {
         if (component instanceof MessageDrivenComponent == false) {
-            throw MESSAGES.unexpectedComponent(component,MessageDrivenComponent.class);
+            throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, MessageDrivenComponent.class);
         }
         final MessageDrivenComponent mdbComponent = (MessageDrivenComponent) component;
         if (mdbComponent.getPool() != null) {

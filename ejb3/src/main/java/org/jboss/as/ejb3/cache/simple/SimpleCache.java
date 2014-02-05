@@ -30,7 +30,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.Identifiable;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
@@ -110,7 +110,7 @@ public class SimpleCache<K, V extends Identifiable<K>> implements Cache<K, V> {
     public V create() {
         if (CURRENT_GROUP.get() != null) {
             // An SFSB that uses a distributable cache cannot contain an SFSB that uses a simple cache
-            throw EjbMessages.MESSAGES.incompatibleCaches();
+            throw EjbLogger.ROOT_LOGGER.incompatibleCaches();
         }
         V bean = this.factory.createInstance();
         this.entries.put(bean.getId(), new Entry<>(bean));

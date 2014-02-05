@@ -33,6 +33,7 @@ import javax.ejb.SessionSynchronization;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.ejb3.deployment.processors.dd.MethodResolutionUtils;
 import org.jboss.as.server.deployment.Attachments;
@@ -43,7 +44,6 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Merging processor that handles session synchronization callback methods
  *
@@ -65,7 +65,7 @@ public class SessionSynchronizationMergingProcessor extends AbstractMergingProce
 
         RuntimeAnnotationInformation<Boolean> afterBegin = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, AfterBegin.class);
         if (afterBegin.getMethodAnnotations().size() > 1) {
-            throw MESSAGES.multipleAnnotationsOnBean("@AfterBegin",description.getEJBClassName());
+            throw EjbLogger.ROOT_LOGGER.multipleAnnotationsOnBean("@AfterBegin", description.getEJBClassName());
         } else if (!afterBegin.getMethodAnnotations().isEmpty()) {
             Map.Entry<Method, List<Boolean>> entry = afterBegin.getMethodAnnotations().entrySet().iterator().next();
             description.setAfterBegin(entry.getKey());
@@ -73,7 +73,7 @@ public class SessionSynchronizationMergingProcessor extends AbstractMergingProce
 
         RuntimeAnnotationInformation<Boolean> afterComp = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, AfterCompletion.class);
         if (afterComp.getMethodAnnotations().size() > 1) {
-            throw MESSAGES.multipleAnnotationsOnBean("@AfterCompletion",description.getEJBClassName());
+            throw EjbLogger.ROOT_LOGGER.multipleAnnotationsOnBean("@AfterCompletion", description.getEJBClassName());
         } else if (!afterComp.getMethodAnnotations().isEmpty()) {
             Map.Entry<Method, List<Boolean>> entry = afterComp.getMethodAnnotations().entrySet().iterator().next();
             description.setAfterCompletion(entry.getKey());
@@ -81,7 +81,7 @@ public class SessionSynchronizationMergingProcessor extends AbstractMergingProce
 
         RuntimeAnnotationInformation<Boolean> beforeComp = MethodAnnotationAggregator.runtimeAnnotationInformation(componentClass, applicationClasses, deploymentReflectionIndex, BeforeCompletion.class);
         if (beforeComp.getMethodAnnotations().size() > 1) {
-            throw MESSAGES.multipleAnnotationsOnBean("@BeforeCompletion",description.getEJBClassName());
+            throw EjbLogger.ROOT_LOGGER.multipleAnnotationsOnBean("@BeforeCompletion", description.getEJBClassName());
         } else if (!beforeComp.getMethodAnnotations().isEmpty()) {
             Map.Entry<Method, List<Boolean>> entry = beforeComp.getMethodAnnotations().entrySet().iterator().next();
             description.setBeforeCompletion(entry.getKey());

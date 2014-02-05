@@ -28,13 +28,12 @@ import java.util.Date;
 import javax.ejb.EJBException;
 import javax.ejb.ScheduleExpression;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.persistence.TimeoutMethod;
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.task.CalendarTimerTask;
 import org.jboss.as.ejb3.timerservice.task.TimerTask;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Represents a {@link javax.ejb.Timer} which is created out a calendar expression
@@ -166,7 +165,7 @@ public class CalendarTimer extends TimerImpl {
 
     public Method getTimeoutMethod() {
         if (!this.autoTimer) {
-            throw MESSAGES.failToInvokegetTimeoutMethod();
+            throw EjbLogger.ROOT_LOGGER.failToInvokegetTimeoutMethod();
         }
         return this.timeoutMethod;
     }
@@ -300,7 +299,7 @@ public class CalendarTimer extends TimerImpl {
         try {
             timeoutMethodDeclaringClass = Class.forName(declaringClass, false, timedObjectInvoker.getClassLoader());
         } catch (ClassNotFoundException cnfe) {
-            throw MESSAGES.failToLoadDeclaringClassOfTimeOut(declaringClass);
+            throw EjbLogger.ROOT_LOGGER.failToLoadDeclaringClassOfTimeOut(declaringClass);
         }
 
         String timeoutMethodName = timeoutMethodInfo.getMethodName();
@@ -316,7 +315,7 @@ public class CalendarTimer extends TimerImpl {
                 try {
                     methodParamClass = Class.forName(paramClassName, false, timedObjectInvoker.getClassLoader());
                 } catch (ClassNotFoundException cnfe) {
-                    throw MESSAGES.failedToLoadTimeoutMethodParamClass(cnfe, paramClassName);
+                    throw EjbLogger.ROOT_LOGGER.failedToLoadTimeoutMethodParamClass(cnfe, paramClassName);
                 }
                 timeoutMethodParamTypes[i++] = methodParamClass;
             }

@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.dd;
 
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -33,7 +34,6 @@ import org.jboss.metadata.ejb.spec.EnterpriseBeanMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Sets up the {@link EJBComponentDescription} with the &lt;security-role-ref&gt;s declared for an EJB
  *
@@ -61,7 +61,7 @@ public class SecurityRoleRefDDProcessor extends AbstractEjbXmlDescriptorProcesso
             final String fromRole = securityRoleRef.getRoleName();
             String toRole = securityRoleRef.getRoleLink();
             if (fromRole == null || fromRole.trim().isEmpty()) {
-                throw MESSAGES.roleNamesIsNull(ejbComponentDescription.getEJBName());
+                throw EjbLogger.ROOT_LOGGER.roleNamesIsNull(ejbComponentDescription.getEJBName());
             }
             // if role-link hasn't been specified, then it links to the same role name as the one specified
             // in the role-name

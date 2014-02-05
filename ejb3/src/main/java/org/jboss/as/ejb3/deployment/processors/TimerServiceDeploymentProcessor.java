@@ -34,7 +34,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ComponentStartService;
 import org.jboss.as.ee.component.DependencyConfigurator;
 import org.jboss.as.ee.component.EEModuleDescription;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.TimerServiceRegistry;
@@ -56,7 +56,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * Deployment processor that sets up the timer service for singletons and stateless session beans
@@ -164,9 +164,9 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
                             final NonFunctionalTimerService nonFunctionalTimerService;
                             if (ejbComponentDescription instanceof StatefulComponentDescription) {
                                 // for stateful beans, use a different error message that gets thrown from the NonFunctionalTimerService
-                                nonFunctionalTimerService = new NonFunctionalTimerService(EjbMessages.MESSAGES.timerServiceMethodNotAllowedForSFSB(ejbComponentDescription.getComponentName()), timerServiceRegistry);
+                                nonFunctionalTimerService = new NonFunctionalTimerService(EjbLogger.ROOT_LOGGER.timerServiceMethodNotAllowedForSFSB(ejbComponentDescription.getComponentName()), timerServiceRegistry);
                             } else {
-                                nonFunctionalTimerService = new NonFunctionalTimerService(EjbMessages.MESSAGES.ejbHasNoTimerMethods(), timerServiceRegistry);
+                                nonFunctionalTimerService = new NonFunctionalTimerService(EjbLogger.ROOT_LOGGER.ejbHasNoTimerMethods(), timerServiceRegistry);
                             }
                             // add the non-functional timer service as a MSC service
                             context.getServiceTarget().addService(nonFunctionalTimerServiceName, nonFunctionalTimerService).install();

@@ -22,9 +22,10 @@
 
 package org.jboss.as.ejb3.component.pool;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * User: jpai
  */
@@ -34,7 +35,7 @@ public abstract class PoolConfig {
 
     public PoolConfig(final String poolName) {
         if (poolName == null || poolName.trim().isEmpty()) {
-            throw MESSAGES.poolConfigIsEmpty();
+            throw EjbLogger.ROOT_LOGGER.poolConfigIsEmpty();
         }
         this.poolName = poolName;
     }

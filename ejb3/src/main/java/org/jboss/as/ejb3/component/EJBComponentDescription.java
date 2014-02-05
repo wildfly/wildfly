@@ -22,8 +22,6 @@
 package org.jboss.as.ejb3.component;
 
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import javax.ejb.EJBLocalObject;
 import javax.ejb.TimerService;
 import javax.ejb.TransactionAttributeType;
@@ -65,6 +63,7 @@ import org.jboss.as.ee.component.ViewService;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.naming.ContextInjectionSource;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.AdditionalSetupInterceptor;
 import org.jboss.as.ejb3.component.interceptors.CurrentInvocationContextInterceptor;
 import org.jboss.as.ejb3.component.interceptors.EjbExceptionTransformingInterceptorFactories;
@@ -611,7 +610,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void setDeclaredRoles(Collection<String> roles) {
         if (roles == null) {
-            throw MESSAGES.SecurityRolesIsNull();
+            throw EjbLogger.ROOT_LOGGER.SecurityRolesIsNull();
         }
         this.declaredRoles.clear();
         this.declaredRoles.addAll(roles);
@@ -688,10 +687,10 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
     public void linkSecurityRoles(final String fromRole, final String toRole) {
         if (fromRole == null || fromRole.trim().isEmpty()) {
-            throw MESSAGES.failToLinkFromEmptySecurityRole(fromRole);
+            throw EjbLogger.ROOT_LOGGER.failToLinkFromEmptySecurityRole(fromRole);
         }
         if (toRole == null || toRole.trim().isEmpty()) {
-            throw MESSAGES.failToLinkToEmptySecurityRole(toRole);
+            throw EjbLogger.ROOT_LOGGER.failToLinkToEmptySecurityRole(toRole);
         }
 
         Collection<String> roleLinks = this.securityRoleLinks.get(fromRole);
@@ -808,7 +807,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
             final DeploymentUnit deploymentUnit = context.getDeploymentUnit();
             final ApplicationExceptions appExceptions = deploymentUnit.getAttachment(EjbDeploymentAttachmentKeys.APPLICATION_EXCEPTION_DETAILS);
             if (appExceptions == null) {
-                throw MESSAGES.ejbJarConfigNotFound(deploymentUnit);
+                throw EjbLogger.ROOT_LOGGER.ejbJarConfigNotFound(deploymentUnit);
             }
             final EJBComponentCreateServiceFactory ejbComponentCreateServiceFactory = (EJBComponentCreateServiceFactory) configuration.getComponentCreateServiceFactory();
             ejbComponentCreateServiceFactory.setEjbJarConfiguration(appExceptions);
@@ -861,7 +860,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
         public Object processInvocation(InterceptorContext context) throws Exception {
             final ComponentView componentView = context.getPrivateData(ComponentView.class);
             if (componentView == null) {
-                throw MESSAGES.componentViewNotAvailableInContext(context);
+                throw EjbLogger.ROOT_LOGGER.componentViewNotAvailableInContext(context);
             }
             return "Proxy for view class: " + componentView.getViewClass().getName() + " of EJB: " + name;
         }

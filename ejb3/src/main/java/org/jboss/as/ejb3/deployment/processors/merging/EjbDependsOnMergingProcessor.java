@@ -32,6 +32,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.EEModuleClassDescription;
 import org.jboss.as.ee.metadata.ClassAnnotationInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.singleton.SingletonComponentDescription;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -41,8 +42,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.SessionBean31MetaData;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * @author Stuart Douglas
@@ -95,9 +95,9 @@ public class EjbDependsOnMergingProcessor extends AbstractMergingProcessor<EJBCo
 
             final Set<ComponentDescription> components = applicationDescription.getComponents(annotationValue, deploymentRoot.getRoot());
             if (components.isEmpty()) {
-                throw MESSAGES.failToFindEjbRefByDependsOn(annotationValue, description.getComponentClassName());
+                throw EjbLogger.ROOT_LOGGER.failToFindEjbRefByDependsOn(annotationValue, description.getComponentClassName());
             } else if (components.size() != 1) {
-                throw MESSAGES.failToCallEjbRefByDependsOn(annotationValue, description.getComponentClassName(), components);
+                throw EjbLogger.ROOT_LOGGER.failToCallEjbRefByDependsOn(annotationValue, description.getComponentClassName(), components);
             }
             final ComponentDescription component = components.iterator().next();
 

@@ -22,14 +22,13 @@
 
 package org.jboss.as.ejb3.security;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
@@ -81,7 +80,7 @@ public class EJBSecurityMetaData {
      */
     public EJBSecurityMetaData(final ComponentConfiguration componentConfiguration) {
         if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
-            throw MESSAGES.invalidComponentConfiguration(componentConfiguration.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.invalidComponentConfiguration(componentConfiguration.getComponentName());
         }
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();
         this.ejbClassName = ejbComponentDescription.getEJBClassName();

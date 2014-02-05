@@ -43,7 +43,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.interceptors.InvocationType;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.component.EJBViewDescription;
@@ -92,10 +92,10 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
                                              final String defaultResourceAdapterName, final MessageDrivenBeanMetaData descriptorData) {
         super(componentName, componentClassName, ejbJarDescription, deploymentUnitServiceName, descriptorData);
         if (messageListenerInterfaceName == null || messageListenerInterfaceName.isEmpty()) {
-            throw EjbMessages.MESSAGES.stringParamCannotBeNullOrEmpty("Message listener interface");
+            throw EjbLogger.ROOT_LOGGER.stringParamCannotBeNullOrEmpty("Message listener interface");
         }
         if (defaultResourceAdapterName == null || defaultResourceAdapterName.trim().isEmpty()) {
-            throw EjbMessages.MESSAGES.stringParamCannotBeNullOrEmpty("Default resource adapter name");
+            throw EjbLogger.ROOT_LOGGER.stringParamCannotBeNullOrEmpty("Default resource adapter name");
         }
         this.resourceAdapterName = defaultResourceAdapterName;
         this.deliveryActive = true;
@@ -188,7 +188,7 @@ public class MessageDrivenComponentDescription extends EJBComponentDescription {
 
     public void setResourceAdapterName(String resourceAdapterName) {
         if (resourceAdapterName == null || resourceAdapterName.trim().isEmpty()) {
-            throw EjbMessages.MESSAGES.stringParamCannotBeNullOrEmpty("Resource adapter name");
+            throw EjbLogger.ROOT_LOGGER.stringParamCannotBeNullOrEmpty("Resource adapter name");
         }
         this.resourceAdapterName = resourceAdapterName;
     }

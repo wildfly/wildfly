@@ -21,11 +21,12 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 import java.util.Calendar;
 import java.util.SortedSet;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Represents the value of a minute constructed out of a {@link javax.ejb.ScheduleExpression#getMinute()}
  * <p/>
@@ -80,7 +81,7 @@ public class Minute extends IntegerBasedExpression {
         }
         SortedSet<Integer> eligibleMinutes = this.getEligibleMinutes();
         if (eligibleMinutes.isEmpty()) {
-            throw MESSAGES.invalidExpressionMinutes(this.origValue);
+            throw EjbLogger.ROOT_LOGGER.invalidExpressionMinutes(this.origValue);
         }
         return eligibleMinutes.first();
     }

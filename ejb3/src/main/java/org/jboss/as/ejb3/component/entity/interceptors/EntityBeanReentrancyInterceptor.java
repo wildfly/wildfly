@@ -24,12 +24,12 @@ package org.jboss.as.ejb3.component.entity.interceptors;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  *
@@ -43,7 +43,7 @@ public class EntityBeanReentrancyInterceptor implements Interceptor{
     public Object processInvocation(final InterceptorContext context) throws Exception {
         EntityBeanComponentInstance instance = (EntityBeanComponentInstance) context.getPrivateData(ComponentInstance.class);
         if(instance.isInvocationInProgress()) {
-            throw MESSAGES.failToReacquireLockForNonReentrant(context.getPrivateData(ComponentInstance.class));
+            throw EjbLogger.ROOT_LOGGER.failToReacquireLockForNonReentrant(context.getPrivateData(ComponentInstance.class));
         }
         instance.setInvocationInProgress(true);
         try {

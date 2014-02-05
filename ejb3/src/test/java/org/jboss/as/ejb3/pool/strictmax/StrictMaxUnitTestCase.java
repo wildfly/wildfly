@@ -32,7 +32,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.pool.StatelessObjectFactory;
 import org.jboss.as.ejb3.pool.common.MockBean;
@@ -137,7 +137,7 @@ public class StrictMaxUnitTestCase {
             pool.get();
             fail("should have thrown an exception");
         } catch (Exception e) {
-            assertEquals(EjbMessages.MESSAGES.failedToAcquirePermit(1, TimeUnit.SECONDS).getMessage(), e.getMessage());
+            assertEquals(EjbLogger.ROOT_LOGGER.failedToAcquirePermit(1, TimeUnit.SECONDS).getMessage(), e.getMessage());
         }
 
         for (int i = 0; i < beans.length; i++) {

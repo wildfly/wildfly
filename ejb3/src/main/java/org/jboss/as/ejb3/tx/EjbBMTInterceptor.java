@@ -28,8 +28,7 @@ import javax.transaction.TransactionManager;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
@@ -79,7 +78,7 @@ public class EjbBMTInterceptor extends BMTInterceptor {
                 }
                 // fall through...
             case Status.STATUS_PREPARED:
-                final String msg = EjbMessages.MESSAGES.transactionNotComplete(component.getComponentName());
+                final String msg = EjbLogger.ROOT_LOGGER.transactionNotComplete(component.getComponentName());
                 EjbLogger.ROOT_LOGGER.error(msg);
                 if (ex instanceof Exception) {
                     throw new EJBException(msg, (Exception) ex);

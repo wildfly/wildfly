@@ -28,6 +28,7 @@ import javax.ejb.ConcurrentAccessTimeoutException;
 
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.interceptors.InvocationType;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
@@ -36,8 +37,7 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * Interceptor factory for entity beans that associates an invocation with a primary key
@@ -54,7 +54,7 @@ public class EntityBeanAssociatingInterceptor extends AbstractEJBInterceptor {
 
         final Object primaryKey = context.getPrivateData(EntityBeanComponent.PRIMARY_KEY_CONTEXT_KEY);
         if (primaryKey == null) {
-            throw MESSAGES.primaryKeyIsNull();
+            throw EjbLogger.ROOT_LOGGER.primaryKeyIsNull();
         }
         final EntityBeanComponentInstance instance;
         try {
@@ -62,7 +62,7 @@ public class EntityBeanAssociatingInterceptor extends AbstractEJBInterceptor {
 
             if (instance.isRemoved()) {
                 component.getCache().release(instance, true);
-                throw MESSAGES.instanceWasRemoved(component.getComponentName(), primaryKey);
+                throw EjbLogger.ROOT_LOGGER.instanceWasRemoved(component.getComponentName(), primaryKey);
             }
         } catch (javax.ejb.NoSuchEntityException e) {
             //if this is a timer service invocation we throw a special exception

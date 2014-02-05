@@ -21,11 +21,12 @@
  */
 package org.jboss.as.ejb3.component.session;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 import java.lang.reflect.Method;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * @author Stuart Douglas
  */
@@ -39,6 +40,6 @@ public class NotBusinessMethodInterceptor implements Interceptor {
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
-        throw MESSAGES.failToCallBusinessOnNonePublicMethod(method);
+        throw EjbLogger.ROOT_LOGGER.failToCallBusinessOnNonePublicMethod(method);
     }
 }

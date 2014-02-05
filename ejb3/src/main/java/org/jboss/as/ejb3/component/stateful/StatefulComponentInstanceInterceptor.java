@@ -28,15 +28,14 @@ import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.RemoveException;
 
 import org.jboss.as.ee.component.ComponentInstance;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.AbstractEJBInterceptor;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * Associate the proper component instance to the invocation based on the passed in session identifier.
@@ -53,13 +52,13 @@ public class StatefulComponentInstanceInterceptor extends AbstractEJBInterceptor
         // TODO: this is a contract with the client interceptor
         SessionID sessionId = context.getPrivateData(SessionID.class);
         if (sessionId == null) {
-            throw MESSAGES.statefulSessionIdIsNull(component.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.statefulSessionIdIsNull(component.getComponentName());
         }
         ROOT_LOGGER.debugf("Looking for stateful component instance with session id: %s", sessionId);
         StatefulSessionComponentInstance instance = component.getCache().get(sessionId);
         if (instance == null) {
             //This exception will be transformed into the correct exception type by the exception transforming interceptor
-            throw EjbMessages.MESSAGES.couldNotFindEjb(sessionId.toString());
+            throw EjbLogger.ROOT_LOGGER.couldNotFindEjb(sessionId.toString());
         }
         try {
             context.putPrivateData(ComponentInstance.class, instance);

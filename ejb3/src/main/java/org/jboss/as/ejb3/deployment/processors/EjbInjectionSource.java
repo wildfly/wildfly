@@ -33,7 +33,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.ViewManagedReferenceFactory;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -125,15 +125,15 @@ public class EjbInjectionSource extends InjectionSource {
 
                     if (ejbsForViewName.isEmpty()) {
                         if (beanName == null) {
-                            error = EjbMessages.MESSAGES.ejbNotFound(typeName, bindingName);
+                            error = EjbLogger.ROOT_LOGGER.ejbNotFound(typeName, bindingName);
                         } else {
-                            error = EjbMessages.MESSAGES.ejbNotFound(typeName, beanName, bindingName);
+                            error = EjbLogger.ROOT_LOGGER.ejbNotFound(typeName, beanName, bindingName);
                         }
                     } else if (ejbsForViewName.size() > 1) {
                         if (beanName == null) {
-                            error = EjbMessages.MESSAGES.moreThanOneEjbFound(typeName, bindingName, ejbsForViewName);
+                            error = EjbLogger.ROOT_LOGGER.moreThanOneEjbFound(typeName, bindingName, ejbsForViewName);
                         } else {
-                            error = EjbMessages.MESSAGES.moreThanOneEjbFound(typeName, beanName, bindingName, ejbsForViewName);
+                            error = EjbLogger.ROOT_LOGGER.moreThanOneEjbFound(typeName, beanName, bindingName, ejbsForViewName);
                         }
                     } else {
                         final EJBViewDescription description = ejbsForViewName.iterator().next();
