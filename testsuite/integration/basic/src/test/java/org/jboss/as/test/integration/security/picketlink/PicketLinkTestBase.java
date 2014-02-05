@@ -181,7 +181,7 @@ public class PicketLinkTestBase {
 	 * @param String bindingType 
 	 * @return String content
 	 */
-	public static String propertiesReplacer(String resourceFile, String deploymentName ,String bindingType) {
+	public static String propertiesReplacer(String resourceFile, String deploymentName, String bindingType, String idpContextPath) {
 
 		String hostname = System.getProperty("node0");		
 		
@@ -199,6 +199,7 @@ public class PicketLinkTestBase {
 		map.put("hostname", hostname);
 		map.put("deployment", deploymentName);
 		map.put("bindingType", bindingType);
+		map.put("idpContextPath", idpContextPath);
 		
 		try {
 			content = StrSubstitutor.replace(IOUtils.toString(SAML2BasicAuthenticationTestCase.class.getResourceAsStream(resourceFile), "UTF-8"), map);

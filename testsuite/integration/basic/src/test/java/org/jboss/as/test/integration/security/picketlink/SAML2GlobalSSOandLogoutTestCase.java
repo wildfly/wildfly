@@ -41,6 +41,8 @@ public class SAML2GlobalSSOandLogoutTestCase {
 	private static final String SP2 = "sp2";
 	private static final String LOGOUT_PARAMETER = "?GLO=true";
 
+	private static final String IDP_CONTEXT_PATH = "idp";
+    
 	@ArquillianResource
 	@OperateOnDeployment(IDP)
 	private URL idpUrl;
@@ -63,7 +65,7 @@ public class SAML2GlobalSSOandLogoutTestCase {
 		war.addAsWebInfResource(Utils.getJBossWebXmlAsset("idp", "org.picketlink.identity.federation.bindings.tomcat.idp.IDPWebBrowserSSOValve"),
 				"jboss-web.xml");		
 		war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.picketlink"),"jboss-deployment-structure.xml");
-		war.addAsWebInfResource(new StringAsset(PicketLinkTestBase.propertiesReplacer("picketlink-idp.xml",IDP,"")), "picketlink.xml");
+		war.addAsWebInfResource(new StringAsset(PicketLinkTestBase.propertiesReplacer("picketlink-idp.xml",IDP,"", IDP_CONTEXT_PATH)), "picketlink.xml");
 		war.add(new StringAsset("Welcome to IdP"), "index.jsp");
 		war.add(new StringAsset("Welcome to IdP hosted"), "hosted/index.jsp");
 
@@ -78,7 +80,7 @@ public class SAML2GlobalSSOandLogoutTestCase {
 		war.addAsWebInfResource( Utils.getJBossWebXmlAsset("sp", "org.picketlink.identity.federation.bindings.tomcat.sp.ServiceProviderAuthenticator"),
 				"jboss-web.xml");		
 		war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.picketlink"), "jboss-deployment-structure.xml");
-		war.addAsWebInfResource(new StringAsset(PicketLinkTestBase.propertiesReplacer("picketlink-sp.xml",SP1,"REDIRECT")), "picketlink.xml");
+		war.addAsWebInfResource(new StringAsset(PicketLinkTestBase.propertiesReplacer("picketlink-sp.xml",SP1,"REDIRECT", IDP_CONTEXT_PATH)), "picketlink.xml");
 		war.add(new StringAsset("Welcome to SP1"), "index.jsp");
 		war.add(new StringAsset("Logout in progress"), "logout.jsp");
 
@@ -93,7 +95,7 @@ public class SAML2GlobalSSOandLogoutTestCase {
 		war.addAsWebInfResource( Utils.getJBossWebXmlAsset("sp", "org.picketlink.identity.federation.bindings.tomcat.sp.ServiceProviderAuthenticator"),
 				"jboss-web.xml");		
 		war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.picketlink"),"jboss-deployment-structure.xml");
-		war.addAsWebInfResource(new StringAsset(PicketLinkTestBase.propertiesReplacer("picketlink-sp.xml",SP2,"REDIRECT")), "picketlink.xml");
+		war.addAsWebInfResource(new StringAsset(PicketLinkTestBase.propertiesReplacer("picketlink-sp.xml",SP2,"REDIRECT", IDP_CONTEXT_PATH)), "picketlink.xml");
 		war.add(new StringAsset("Welcome to SP2"), "index.jsp");
 		war.add(new StringAsset("Logout in progress"), "logout.jsp");
 

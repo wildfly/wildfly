@@ -61,36 +61,54 @@ public class Krb5LoginConfiguration extends Configuration {
      */
     public Krb5LoginConfiguration(final String principal, final File keyTab, final boolean acceptor)
             throws MalformedURLException {
-        final Map<String, Object> options = new HashMap<String, Object>();
-        final String loginModule;
+        final String loginModule = getLoginModule();
+        Map<String, String> options = getOptions(principal, keyTab, acceptor);
+        configList[0] = new AppConfigurationEntry(loginModule, AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
+    }
+
+    public static Map<String, String> getOptions() {
+        return getOptions(null, null, false);
+    }
+
+    public static Map<String, String> getOptions(final String principal, final File keyTab, final boolean acceptor) {
+        final Map<String, String> res = new HashMap<String, String>();
+
         if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
-            loginModule = "com.ibm.security.auth.module.Krb5LoginModule";
             if (keyTab != null) {
-                options.put("useKeytab", keyTab.toURI().toString());
+                res.put("useKeytab", keyTab.toURI().toString());
             }
             if (acceptor) {
-                options.put("credsType", "acceptor");
+                res.put("credsType", "acceptor");
             } else {
-                options.put("noAddress", "true");
+                res.put("noAddress", "true");
             }
         } else {
-            loginModule = "com.sun.security.auth.module.Krb5LoginModule";
             if (keyTab != null) {
-                options.put("keyTab", keyTab.getAbsolutePath());
-                options.put("doNotPrompt", "true");
-                options.put("useKeyTab", "true");
+                res.put("keyTab", keyTab.getAbsolutePath());
+                res.put("doNotPrompt", "true");
+                res.put("useKeyTab", "true");
             }
             if (acceptor) {
-                options.put("storeKey", "true");
+                res.put("storeKey", "true");
             }
         }
-        options.put("refreshKrb5Config", "true");
-        options.put("debug", "true");
+
+        res.put("refreshKrb5Config", "true");
+        res.put("debug", "true");
 
         if (principal != null) {
-            options.put("principal", principal);
+            res.put("principal", principal);
         }
-        configList[0] = new AppConfigurationEntry(loginModule, AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options);
+
+        return res;
+    }
+
+    public static String getLoginModule() {
+        if (SystemUtils.JAVA_VENDOR.startsWith("IBM")) {
+            return "com.ibm.security.auth.module.Krb5LoginModule";
+        } else {
+            return "com.sun.security.auth.module.Krb5LoginModule";
+        }
     }
 
     /**
