@@ -46,4 +46,11 @@ public interface TestResultServiceMBean {
 
     public void setStopServiceInvoked(boolean stopServiceInvoked);
 
+    public boolean isStartingNotificationReceived();
+
+    public boolean isStartedNotificationReceived();
+
+    public boolean isStoppingNotificationReceived();
+
+    public boolean isStoppedNotificationReceived();
 }
