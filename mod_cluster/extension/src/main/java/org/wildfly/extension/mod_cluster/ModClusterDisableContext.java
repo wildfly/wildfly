@@ -23,7 +23,6 @@
 package org.wildfly.extension.mod_cluster;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-import static org.wildfly.extension.mod_cluster.ModClusterMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -63,7 +62,7 @@ public class ModClusterDisableContext implements OperationStepHandler {
                     try {
                         service.disableContext(contexthost.webhost, contexthost.webcontext);
                     } catch (IllegalArgumentException e) {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.ContextorHostNotFound(contexthost.webhost, contexthost.webcontext)));
+                        throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.ContextOrHostNotFound(contexthost.webhost, contexthost.webcontext)));
                     }
 
                     context.completeStep(new OperationContext.RollbackHandler() {

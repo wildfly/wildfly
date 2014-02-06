@@ -35,7 +35,6 @@ import org.jboss.modcluster.ModClusterServiceMBean;
 import org.jboss.msc.service.ServiceController;
 
 import static org.wildfly.extension.mod_cluster.ModClusterLogger.ROOT_LOGGER;
-import static org.wildfly.extension.mod_cluster.ModClusterMessages.MESSAGES;
 
 public class ModClusterStopContext implements OperationStepHandler {
 
@@ -65,7 +64,7 @@ public class ModClusterStopContext implements OperationStepHandler {
                     try {
                         service.stopContext(contexthost.webhost, contexthost.webcontext, contexthost.waittime, TimeUnit.SECONDS);
                     } catch(IllegalArgumentException e) {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.ContextorHostNotFound(contexthost.webhost, contexthost.webcontext)));
+                        throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.ContextOrHostNotFound(contexthost.webhost, contexthost.webcontext)));
                     }
 
                     context.completeStep(new OperationContext.RollbackHandler() {
