@@ -23,13 +23,13 @@
 package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.util.Map;
 import java.util.ServiceLoader;
 
 import javax.persistence.spi.PersistenceProvider;
 
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.transaction.JtaManagerImpl;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -113,7 +113,7 @@ public class PersistenceProviderAdaptorLoader {
         if (serviceLoader != null) {
             for (PersistenceProviderAdaptor adaptor : serviceLoader) {
                 if (persistenceProviderAdaptor != null) {
-                    throw MESSAGES.multipleAdapters(adapterModule);
+                    throw JpaLogger.ROOT_LOGGER.multipleAdapters(adapterModule);
                 }
                 persistenceProviderAdaptor = adaptor;
                 JPA_LOGGER.debugf("loaded persistence provider adapter %s", adapterModule);
@@ -143,7 +143,7 @@ public class PersistenceProviderAdaptorLoader {
         if (serviceLoader != null) {
             for (PersistenceProviderAdaptor adaptor : serviceLoader) {
                 if (persistenceProviderAdaptor != null) {
-                    throw MESSAGES.classloaderHasMultipleAdapters(persistenceProvider.getClass().getClassLoader().toString());
+                    throw JpaLogger.ROOT_LOGGER.classloaderHasMultipleAdapters(persistenceProvider.getClass().getClassLoader().toString());
                 }
                 persistenceProviderAdaptor = adaptor;
                 JPA_LOGGER.debugf("loaded persistence provider adapter %s from classloader %s",

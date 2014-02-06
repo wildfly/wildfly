@@ -22,8 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +44,7 @@ import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -108,7 +107,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                 String lookup = puRef.getLookupName();
 
                 if (!isEmpty(lookup) && !isEmpty(persistenceUnitName)) {
-                    throw MESSAGES.cannotSpecifyBoth("<lookup-name>", lookup, "persistence-unit-name", persistenceUnitName, "<persistence-unit-ref/>", resourceInjectionTarget);
+                    throw JpaLogger.ROOT_LOGGER.cannotSpecifyBoth("<lookup-name>", lookup, "persistence-unit-name", persistenceUnitName, "<persistence-unit-ref/>", resourceInjectionTarget);
                 }
                 if (!name.startsWith("java:")) {
                     name = environment.getDefaultContext() + name;
@@ -160,7 +159,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                     String lookup = puRef.getLookupName();
 
                     if (!isEmpty(lookup) && !isEmpty(persistenceUnitName)) {
-                        throw MESSAGES.cannotSpecifyBoth("<lookup-name>", lookup, "persistence-unit-name", persistenceUnitName, "<persistence-context-ref/>", resourceInjectionTarget);
+                        throw JpaLogger.ROOT_LOGGER.cannotSpecifyBoth("<lookup-name>", lookup, "persistence-unit-name", persistenceUnitName, "<persistence-context-ref/>", resourceInjectionTarget);
                     }
                     if (!name.startsWith("java:")) {
                         name = environment.getDefaultContext() + name;
@@ -209,7 +208,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
         }
         final PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
         if (null == pu) {
-            throw new DeploymentUnitProcessingException(MESSAGES.persistenceUnitNotFound(searchName, deploymentUnit));
+            throw new DeploymentUnitProcessingException(JpaLogger.ROOT_LOGGER.persistenceUnitNotFound(searchName, deploymentUnit));
         }
         String scopedPuName = pu.getScopedPersistenceUnitName();
         ServiceName puServiceName = getPuServiceName(scopedPuName);
@@ -236,7 +235,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
 
         PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, puName);
         if (null == pu) {
-            throw new DeploymentUnitProcessingException(MESSAGES.persistenceUnitNotFound(puName, deploymentUnit));
+            throw new DeploymentUnitProcessingException(JpaLogger.ROOT_LOGGER.persistenceUnitNotFound(puName, deploymentUnit));
         }
         return pu;
     }

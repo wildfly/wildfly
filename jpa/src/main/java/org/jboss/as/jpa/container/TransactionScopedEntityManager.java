@@ -31,6 +31,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.SynchronizationType;
 
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.jpa.transaction.TransactionUtil;
 import org.jboss.as.jpa.util.JPAServiceNames;
@@ -39,7 +40,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Transaction scoped entity manager will be injected into SLSB or SFSB beans.  At bean invocation time, they
@@ -102,7 +102,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
     @Override
     public void close() {
         // Transaction scoped entity manager will be closed when the (owning) component invocation completes
-        throw MESSAGES.cannotCloseTransactionContainerEntityManger();
+        throw JpaLogger.ROOT_LOGGER.cannotCloseTransactionContainerEntityManger();
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -194,7 +194,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
         if (SynchronizationType.SYNCHRONIZED.equals(targetSynchronizationType)
                 && entityManager instanceof AbstractEntityManager
                 && SynchronizationType.UNSYNCHRONIZED.equals( ((AbstractEntityManager)entityManager).getSynchronizationType())) {
-            throw MESSAGES.badSynchronizationTypeCombination(scopedPuName);
+            throw JpaLogger.ROOT_LOGGER.badSynchronizationTypeCombination(scopedPuName);
         }
     }
 

@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.transaction;
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import javax.persistence.EntityManager;
 import javax.transaction.Status;
@@ -34,6 +33,7 @@ import javax.transaction.TransactionManager;
 import javax.transaction.TransactionSynchronizationRegistry;
 
 import org.jboss.as.jpa.container.ExtendedEntityManager;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.tm.TxUtils;
 
 /**
@@ -87,7 +87,7 @@ public class TransactionUtil {
         try {
             return transactionManager.getTransaction();
         } catch (SystemException e) {
-            throw MESSAGES.errorGettingTransaction(e);
+            throw JpaLogger.ROOT_LOGGER.errorGettingTransaction(e);
         }
     }
 

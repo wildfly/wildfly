@@ -121,7 +121,7 @@ public class ShallowExtendedPersistenceContextInheritanceTestCase {
 
         Throwable error = null;
         // excepted error will be something like:
-        //  javax.ejb.EJBException: JBAS011437:
+        //  javax.ejb.EJBException: WFLYJPA0030:
         //  Found extended persistence context in SFSB invocation call stack but that cannot be used
         //  because the transaction already has a transactional context associated with it...
         try {
