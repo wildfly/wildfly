@@ -26,6 +26,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -34,6 +35,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.MountedDeploymentOverlay;
 import org.jboss.as.server.deployment.PrivateSubDeploymentMarker;
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
@@ -114,7 +116,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
         final MountHandle mountHandle = deploymentResourceRoot.getMountHandle();
         try {
             // add standard resource roots, this should eventually replace ClassPathEntry
-            final List<ResourceRoot> resourceRoots = createResourceRoots(deploymentRoot, mountHandle);
+            final List<ResourceRoot> resourceRoots = createResourceRoots(deploymentRoot, deploymentUnit);
             for (ResourceRoot root : resourceRoots) {
                 deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, root);
             }
@@ -139,11 +141,11 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
      * Create the resource roots for a .war deployment
      *
      * @param deploymentRoot the deployment root
-     * @param mountHandle    the root mount handle
+     * @param deploymentUnit    the root mount handle
      * @return the resource roots
      * @throws IOException for any error
      */
-    private List<ResourceRoot> createResourceRoots(final VirtualFile deploymentRoot, MountHandle mountHandle) throws IOException, DeploymentUnitProcessingException {
+    private List<ResourceRoot> createResourceRoots(final VirtualFile deploymentRoot, DeploymentUnit deploymentUnit) throws IOException, DeploymentUnitProcessingException {
         final List<ResourceRoot> entries = new ArrayList<ResourceRoot>();
         // WEB-INF classes
         final VirtualFile webinfClasses = deploymentRoot.getChild(WEB_INF_CLASSES);
@@ -153,14 +155,20 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
             entries.add(webInfClassesRoot);
         }
         // WEB-INF lib
+        Map<String, MountedDeploymentOverlay> overlays = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_OVERLAY_LOCATIONS);
         final VirtualFile webinfLib = deploymentRoot.getChild(WEB_INF_LIB);
         if (webinfLib.exists()) {
             final List<VirtualFile> archives = webinfLib.getChildren(DEFAULT_WEB_INF_LIB_FILTER);
             for (final VirtualFile archive : archives) {
                 try {
-                    final Closeable closable;
-                    if(archive.isFile()) {
-                       closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
+
+                    String relativeName = archive.getPathNameRelativeTo(deploymentRoot);
+                    MountedDeploymentOverlay overlay = overlays.get(relativeName);
+                    Closeable closable = null;
+                    if(overlay != null) {
+                        overlay.remountAsZip(false);
+                    } else if (archive.isFile()) {
+                        closable = VFS.mountZip(archive, archive, TempFileProviderService.provider());
                     } else {
                         closable = null;
                     }

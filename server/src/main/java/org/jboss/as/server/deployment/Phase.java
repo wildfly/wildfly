@@ -186,6 +186,7 @@ public enum Phase {
     // STRUCTURE
     public static final int STRUCTURE_EXPLODED_MOUNT                    = 0x0100;
     public static final int STRUCTURE_MOUNT                             = 0x0200;
+    public static final int STRUCTURE_DEPLOYMENT_OVERLAY                = 0x0280;
     public static final int STRUCTURE_MANIFEST                          = 0x0300;
     public static final int STRUCTURE_OSGI_MANIFEST                     = 0x0400;
     public static final int STRUCTURE_REMOUNT_EXPLODED                  = 0x0450;
@@ -201,7 +202,6 @@ public enum Phase {
     public static final int STRUCTURE_RAR                               = 0x0700;
     public static final int STRUCTURE_WAR_DEPLOYMENT_INIT               = 0x0800;
     public static final int STRUCTURE_WAR                               = 0x0900;
-    public static final int STRUCTURE_CONTENT_OVERRIDE                  = 0x0950;
     public static final int STRUCTURE_EAR_DEPLOYMENT_INIT               = 0x0A00;
     public static final int STRUCTURE_REGISTER_JBOSS_ALL_APPCLIENT      = 0x0A10;
     public static final int STRUCTURE_REGISTER_JBOSS_ALL_EE_APP         = 0x0A11;
