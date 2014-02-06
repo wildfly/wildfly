@@ -42,7 +42,7 @@ import java.util.Set;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.security.PasswordCredential;
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.remoting.RemotingConnectionCredential;
 import org.jboss.as.security.remoting.RemotingConnectionPrincipal;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
@@ -109,12 +109,12 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         try {
             final SecurityContext securityContext = SecurityContextFactory.createSecurityContext(securityDomain);
             if (securityManagement == null)
-                throw SecurityMessages.MESSAGES.securityManagementNotInjected();
+                throw SecurityLogger.ROOT_LOGGER.securityManagementNotInjected();
             securityContext.setSecurityManagement(securityManagement);
             SecurityContextAssociation.setSecurityContext(securityContext);
             return securityContext;
         } catch (Exception e) {
-            throw SecurityMessages.MESSAGES.securityException(e);
+            throw SecurityLogger.ROOT_LOGGER.securityException(e);
         }
     }
 
@@ -365,7 +365,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
         }
 
         if (authenticate(context, subject) == false) {
-            throw SecurityMessages.MESSAGES.invalidUserException();
+            throw SecurityLogger.ROOT_LOGGER.invalidUserException();
         }
 
         SecurityContext previous = contexts.peek();

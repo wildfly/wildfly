@@ -61,6 +61,7 @@ import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -103,7 +104,7 @@ class LegacySupport {
         @Override
         protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
             // This method being used indicates a misuse of this class
-            throw SecurityMessages.MESSAGES.unsupportedOperationExceptionUseResourceDesc();
+            throw SecurityLogger.ROOT_LOGGER.unsupportedOperationExceptionUseResourceDesc();
         }
 
         @Override
@@ -128,7 +129,7 @@ class LegacySupport {
 
         @Override
         public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
-            throw SecurityMessages.MESSAGES.unsupportedOperation();
+            throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
 
         private ModelNode getNoTextValueTypeDescription(final ModelNode parent) {
@@ -188,7 +189,7 @@ class LegacySupport {
         @Override
         protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
             // This method being used indicates a misuse of this class
-            throw SecurityMessages.MESSAGES.unsupportedOperationExceptionUseResourceDesc();
+            throw SecurityLogger.ROOT_LOGGER.unsupportedOperationExceptionUseResourceDesc();
         }
 
         @Override
@@ -212,7 +213,7 @@ class LegacySupport {
 
         @Override
         public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
-            throw SecurityMessages.MESSAGES.unsupportedOperation();
+            throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
 
         private ModelNode getNoTextValueTypeDescription(final ModelNode parent) {
@@ -268,7 +269,7 @@ class LegacySupport {
         @Override
         protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
             // This method being used indicates a misuse of this class
-            throw SecurityMessages.MESSAGES.unsupportedOperationExceptionUseResourceDesc();
+            throw SecurityLogger.ROOT_LOGGER.unsupportedOperationExceptionUseResourceDesc();
         }
 
         @Override
@@ -289,7 +290,7 @@ class LegacySupport {
 
         @Override
         public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
-            throw SecurityMessages.MESSAGES.unsupportedOperation();
+            throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
 
         private ModelNode getNoTextValueTypeDescription(final ModelNode parent) {
@@ -337,7 +338,7 @@ class LegacySupport {
         @Override
         protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
             // This method being used indicates a misuse of this class
-            throw SecurityMessages.MESSAGES.unsupportedOperationExceptionUseResourceDesc();
+            throw SecurityLogger.ROOT_LOGGER.unsupportedOperationExceptionUseResourceDesc();
         }
 
         @Override
@@ -357,7 +358,7 @@ class LegacySupport {
 
         @Override
         public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
-            throw SecurityMessages.MESSAGES.unsupportedOperation();
+            throw SecurityLogger.ROOT_LOGGER.unsupportedOperation();
         }
 
         private ModelNode getNoTextValueTypeDescription(final ModelNode parent) {

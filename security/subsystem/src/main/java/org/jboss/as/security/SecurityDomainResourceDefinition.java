@@ -46,6 +46,7 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.dmr.ModelNode;
@@ -101,7 +102,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
     public static ServiceName getSecurityDomainServiceName(PathAddress pathAddress) {
         PathAddress domain = Util.getParentAddressByKey(pathAddress, Constants.SECURITY_DOMAIN);
         if (domain == null)
-            throw SecurityMessages.MESSAGES.addressDidNotContainSecurityDomain();
+            throw SecurityLogger.ROOT_LOGGER.addressDidNotContainSecurityDomain();
         return SecurityDomainService.SERVICE_NAME.append(domain.getLastElement().getValue());
    }
 
@@ -144,7 +145,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
                 if (!result.isDefined())
                     result.setEmptyList();
             } else {
-                throw SecurityMessages.MESSAGES.noAuthenticationCacheAvailable(securityDomain);
+                throw SecurityLogger.ROOT_LOGGER.noAuthenticationCacheAvailable(securityDomain);
             }
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
         }
@@ -180,7 +181,7 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
                 else
                     manager.flushCache();
             } else {
-                throw SecurityMessages.MESSAGES.noAuthenticationCacheAvailable(securityDomain);
+                throw SecurityLogger.ROOT_LOGGER.noAuthenticationCacheAvailable(securityDomain);
             }
             // Can't rollback
             context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
@@ -205,13 +206,13 @@ class SecurityDomainResourceDefinition extends SimpleResourceDefinition {
             monitor.awaitStability(100, MILLISECONDS);
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw SecurityMessages.MESSAGES.interruptedWaitingForSecurityDomain(controller.getName().getSimpleName());
+            throw SecurityLogger.ROOT_LOGGER.interruptedWaitingForSecurityDomain(controller.getName().getSimpleName());
         } finally {
             monitor.removeController(controller);
         }
 
         if (controller.getState() != ServiceController.State.UP) {
-            throw SecurityMessages.MESSAGES.requiredSecurityDomainServiceNotAvailable(controller.getName().getSimpleName());
+            throw SecurityLogger.ROOT_LOGGER.requiredSecurityDomainServiceNotAvailable(controller.getName().getSimpleName());
         }
     }
 

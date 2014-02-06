@@ -26,7 +26,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.remoting.RemotingContext;
 import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -73,11 +73,11 @@ class SecurityActions {
                                 e = ce;
                             }
                         }
-                        throw e != null ? e : SecurityMessages.MESSAGES.cnfe(name);
+                        throw e != null ? e : SecurityLogger.ROOT_LOGGER.cnfe(name);
                     }
                 });
             } catch (PrivilegedActionException pae) {
-                throw SecurityMessages.MESSAGES.cnfeThrow(name, pae);
+                throw SecurityLogger.ROOT_LOGGER.cnfeThrow(name, pae);
             }
         } else {
             ClassLoader[] cls = new ClassLoader[] { SecurityActions.class.getClassLoader(), // PB classes (not always on TCCL [modular env])
@@ -95,7 +95,7 @@ class SecurityActions {
                     e = ce;
                 }
             }
-            throw e != null ? e : SecurityMessages.MESSAGES.cnfe(name);
+            throw e != null ? e : SecurityLogger.ROOT_LOGGER.cnfe(name);
         }
     }
 

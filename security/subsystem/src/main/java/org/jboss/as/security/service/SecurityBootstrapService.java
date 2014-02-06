@@ -30,8 +30,7 @@ import java.util.Set;
 import javax.security.jacc.PolicyContext;
 
 import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.security.SecurityLogger;
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.ModuleClassLoaderLocator;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.msc.inject.Injector;
@@ -96,10 +95,10 @@ public class SecurityBootstrapService implements Service<Void> {
                 try {
                     jaccPolicy = (Policy) providerClass.newInstance();
                 } catch (Exception e1) {
-                    throw SecurityMessages.MESSAGES.unableToStartException("SecurityBootstrapService", e1);
+                    throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e1);
                 }
             } catch (Exception e) {
-                throw SecurityMessages.MESSAGES.unableToStartException("SecurityBootstrapService", e);
+                throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e);
             }
 
             // Install the JACC policy provider
@@ -119,7 +118,7 @@ public class SecurityBootstrapService implements Service<Void> {
             //Register a module classloader locator
             ClassLoaderLocatorFactory.set(new ModuleClassLoaderLocator(moduleLoaderValue.getValue()));
         } catch (Exception e) {
-            throw SecurityMessages.MESSAGES.unableToStartException("SecurityBootstrapService", e);
+            throw SecurityLogger.ROOT_LOGGER.unableToStartException("SecurityBootstrapService", e);
         }
     }
 

@@ -45,6 +45,7 @@ import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.security.context.SecurityDomainJndiInjectable;
 import org.jboss.as.security.deployment.JaccEarDeploymentProcessor;
 import org.jboss.as.security.deployment.SecurityDependencyProcessor;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityBootstrapService;
 import org.jboss.as.security.service.SecurityManagementService;

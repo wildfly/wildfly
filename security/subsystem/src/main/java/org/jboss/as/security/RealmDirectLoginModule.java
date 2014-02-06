@@ -51,6 +51,7 @@ import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -98,7 +99,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
             securityRealm = (SecurityRealm) controller.getValue();
         }
         if (securityRealm == null) {
-            throw SecurityMessages.MESSAGES.realmNotFound(realm);
+            throw SecurityLogger.ROOT_LOGGER.realmNotFound(realm);
         }
         Set<AuthMechanism> authMechs = securityRealm.getSupportedAuthenticationMechanisms();
 
@@ -107,7 +108,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
         } else if (authMechs.contains(AuthMechanism.PLAIN)) {
             chosenMech = AuthMechanism.PLAIN;
         } else {
-            throw SecurityMessages.MESSAGES.noPasswordValidationAvailable(realm);
+            throw SecurityLogger.ROOT_LOGGER.noPasswordValidationAvailable(realm);
         }
 
         Map<String, String> mechOpts = securityRealm.getMechanismConfig(chosenMech);
@@ -188,9 +189,9 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
             AuthorizingCallbackHandler callbackHandler = getCallbackHandler();
             callbackHandler.handle(callbacks);
         } catch (IOException e) {
-            throw SecurityMessages.MESSAGES.failureCallingSecurityRealm(e.getMessage());
+            throw SecurityLogger.ROOT_LOGGER.failureCallingSecurityRealm(e.getMessage());
         } catch (UnsupportedCallbackException e) {
-            throw SecurityMessages.MESSAGES.failureCallingSecurityRealm(e.getMessage());
+            throw SecurityLogger.ROOT_LOGGER.failureCallingSecurityRealm(e.getMessage());
         }
     }
 
@@ -274,7 +275,7 @@ public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
             return new Group[]{sg};
         } catch (Exception e) {
-            throw SecurityMessages.MESSAGES.failureCallingSecurityRealm(e.getMessage());
+            throw SecurityLogger.ROOT_LOGGER.failureCallingSecurityRealm(e.getMessage());
         }
     }
 

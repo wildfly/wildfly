@@ -24,6 +24,8 @@ package org.jboss.as.security.vault;
 import java.io.Console;
 import java.util.Arrays;
 
+import org.jboss.as.security.logging.SecurityLogger;
+
 /**
  * An interactive session for {@link VaultTool}
  *
@@ -44,62 +46,62 @@ public class VaultInteractiveSession {
         Console console = System.console();
 
         if (console == null) {
-            System.err.println(VaultMessages.MESSAGES.noConsole());
+            System.err.println(SecurityLogger.ROOT_LOGGER.noConsole());
             System.exit(1);
         }
 
         while (encDir == null || encDir.length() == 0) {
             encDir = console
-                    .readLine(VaultMessages.MESSAGES.enterEncryptionDirectory());
+                    .readLine(SecurityLogger.ROOT_LOGGER.enterEncryptionDirectory());
         }
 
         while (keystoreURL == null || keystoreURL.length() == 0) {
-            keystoreURL = console.readLine(VaultMessages.MESSAGES.enterKeyStoreURL());
+            keystoreURL = console.readLine(SecurityLogger.ROOT_LOGGER.enterKeyStoreURL());
         }
 
-        char[] keystorePasswd = getSensitiveValue(VaultMessages.MESSAGES.enterKeyStorePassword());
+        char[] keystorePasswd = getSensitiveValue(SecurityLogger.ROOT_LOGGER.enterKeyStorePassword());
 
         try {
             while (salt == null || salt.length() != 8) {
-                salt = console.readLine(VaultMessages.MESSAGES.enterSalt());
+                salt = console.readLine(SecurityLogger.ROOT_LOGGER.enterSalt());
             }
 
-            String ic = console.readLine(VaultMessages.MESSAGES.enterIterationCount());
+            String ic = console.readLine(SecurityLogger.ROOT_LOGGER.enterIterationCount());
             iterationCount = Integer.parseInt(ic);
             vaultNISession = new VaultSession(keystoreURL, new String(keystorePasswd), encDir, salt, iterationCount);
 
             while (keystoreAlias == null || keystoreAlias.length() == 0) {
-                keystoreAlias = console.readLine(VaultMessages.MESSAGES.enterKeyStoreAlias());
+                keystoreAlias = console.readLine(SecurityLogger.ROOT_LOGGER.enterKeyStoreAlias());
             }
 
-            System.out.println(VaultMessages.MESSAGES.initializingVault());
+            System.out.println(SecurityLogger.ROOT_LOGGER.initializingVault());
             vaultNISession.startVaultSession(keystoreAlias);
             vaultNISession.vaultConfigurationDisplay();
 
-            System.out.println(VaultMessages.MESSAGES.vaultInitialized());
-            System.out.println(VaultMessages.MESSAGES.handshakeComplete());
+            System.out.println(SecurityLogger.ROOT_LOGGER.vaultInitialized());
+            System.out.println(SecurityLogger.ROOT_LOGGER.handshakeComplete());
 
             VaultInteraction vaultInteraction = new VaultInteraction(vaultNISession);
             vaultInteraction.start();
         } catch (Exception e) {
-            System.out.println(VaultMessages.MESSAGES.exceptionEncountered() + e.getLocalizedMessage());
+            System.out.println(SecurityLogger.ROOT_LOGGER.exceptionEncountered() + e.getLocalizedMessage());
         }
     }
 
     public static char[] getSensitiveValue(String passwordPrompt) {
         while (true) {
             if (passwordPrompt == null)
-                passwordPrompt = VaultMessages.MESSAGES.enterYourPassword();
+                passwordPrompt = SecurityLogger.ROOT_LOGGER.enterYourPassword();
 
             Console console = System.console();
 
             char[] passwd = console.readPassword(passwordPrompt + ": ");
-            char[] passwd1 = console.readPassword(passwordPrompt + VaultMessages.MESSAGES.passwordAgain());
+            char[] passwd1 = console.readPassword(passwordPrompt + SecurityLogger.ROOT_LOGGER.passwordAgain());
             boolean noMatch = !Arrays.equals(passwd, passwd1);
             if (noMatch)
-                System.out.println(VaultMessages.MESSAGES.passwordsDoNotMatch());
+                System.out.println(SecurityLogger.ROOT_LOGGER.passwordsDoNotMatch());
             else {
-                System.out.println(VaultMessages.MESSAGES.passwordsMatch());
+                System.out.println(SecurityLogger.ROOT_LOGGER.passwordsMatch());
                 return passwd;
             }
         }

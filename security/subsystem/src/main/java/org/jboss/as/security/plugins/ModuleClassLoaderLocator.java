@@ -25,7 +25,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.security.SecureClassLoader;
 
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.plugins.ClassLoaderLocator;
@@ -54,7 +54,7 @@ public class ModuleClassLoaderLocator implements ClassLoaderLocator {
              */
             return new CombinedClassLoader(moduleClassLoader, tccl);
         } catch (ModuleLoadException e) {
-            throw SecurityMessages.MESSAGES.runtimeException(e);
+            throw SecurityLogger.ROOT_LOGGER.runtimeException(e);
         }
     }
     /** A Classloader that takes in two Classloaders to delegate to */

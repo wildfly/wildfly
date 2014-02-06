@@ -39,7 +39,7 @@ import javax.naming.NamingEnumeration;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ValueManagedReference;
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.DefaultAuthenticationCacheFactory;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -80,7 +80,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ContextL
         try {
             loader = SecurityActions.getModuleClassLoader();
         } catch (ModuleLoadException e) {
-            throw SecurityMessages.MESSAGES.unableToGetModuleClassLoader(e);
+            throw SecurityLogger.ROOT_LOGGER.unableToGetModuleClassLoader(e);
         }
         Class<?>[] interfaces = { Context.class };
         return new ValueManagedReference(new ImmediateValue<Object>(Proxy.newProxyInstance(loader, interfaces, this)));
@@ -118,7 +118,7 @@ public class SecurityDomainJndiInjectable implements InvocationHandler, ContextL
             return proxy;
         }
         if (!methodName.equals("lookup"))
-            throw SecurityMessages.MESSAGES.operationNotSupported(method);
+            throw SecurityLogger.ROOT_LOGGER.operationNotSupported(method);
         if (args[0] instanceof String)
             name = parser.parse((String) args[0]);
         else

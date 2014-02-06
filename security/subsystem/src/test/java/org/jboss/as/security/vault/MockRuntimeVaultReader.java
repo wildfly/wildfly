@@ -8,9 +8,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
-import org.jboss.as.security.SecurityMessages;
-import org.jboss.as.security.vault.RuntimeVaultReader;
-import org.jboss.as.security.vault.VaultSession;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.security.vault.SecurityVault;
 import org.jboss.security.vault.SecurityVaultException;
@@ -40,18 +38,18 @@ public class MockRuntimeVaultReader extends RuntimeVaultReader {
     } catch (PrivilegedActionException e) {
       Throwable t = e.getCause();
       if (t instanceof SecurityVaultException) {
-        throw SecurityMessages.MESSAGES.vaultReaderException(t);
+        throw SecurityLogger.ROOT_LOGGER.vaultReaderException(t);
       }
       if (t instanceof RuntimeException) {
-        throw SecurityMessages.MESSAGES.runtimeException(t);
+        throw SecurityLogger.ROOT_LOGGER.runtimeException(t);
       }
-      throw SecurityMessages.MESSAGES.runtimeException(t);
+      throw SecurityLogger.ROOT_LOGGER.runtimeException(t);
     }
     try {
       vault.init(vaultOptions);
     } catch (SecurityVaultException e) {
       e.printStackTrace();
-      throw SecurityMessages.MESSAGES.vaultReaderException(e);
+      throw SecurityLogger.ROOT_LOGGER.vaultReaderException(e);
     }
     this.vault = vault;
   }
@@ -60,13 +58,13 @@ public class MockRuntimeVaultReader extends RuntimeVaultReader {
     if (isVaultFormat(password)) {
 
       if (vault == null) {
-        throw SecurityMessages.MESSAGES.vaultNotInitializedException();
+        throw SecurityLogger.ROOT_LOGGER.vaultNotInitializedException();
       }
 
       try {
         return getValueAsString(password);
       } catch (SecurityVaultException e) {
-        throw SecurityMessages.MESSAGES.securityException(e);
+        throw SecurityLogger.ROOT_LOGGER.securityException(e);
       }
 
     }

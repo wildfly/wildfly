@@ -31,7 +31,7 @@ import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
-import org.jboss.as.security.SecurityLogger;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.security.UserPrincipal;
 import org.jboss.security.SimpleGroup;

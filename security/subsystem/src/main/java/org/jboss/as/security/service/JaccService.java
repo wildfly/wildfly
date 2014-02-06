@@ -29,8 +29,7 @@ import javax.security.jacc.PolicyConfigurationFactory;
 import javax.security.jacc.PolicyContextException;
 
 import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.security.SecurityLogger;
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -62,7 +61,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
 
     public JaccService(final String contextId, T metaData, Boolean standalone) {
         if (contextId == null)
-            throw SecurityMessages.MESSAGES.nullArgument("JACC Context Id");
+            throw SecurityLogger.ROOT_LOGGER.nullArgument("JACC Context Id");
         this.contextId = contextId;
         this.metaData = metaData;
         this.standalone = standalone;
@@ -103,7 +102,7 @@ public abstract class JaccService<T> implements Service<PolicyConfiguration> {
                 Policy.getPolicy().refresh();
             }
         } catch (Exception e) {
-            throw SecurityMessages.MESSAGES.unableToStartException("JaccService", e);
+            throw SecurityLogger.ROOT_LOGGER.unableToStartException("JaccService", e);
         }
     }
 
