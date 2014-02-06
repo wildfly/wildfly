@@ -33,7 +33,6 @@ import java.util.List;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
@@ -132,10 +131,20 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                  .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
-                  .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
-                  .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
-                  .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, new ModelFixer() {
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        //Replace the value used in the xml
+                        modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
+                        //modelNode.get(Constants.DATA_SOURCE).get("complexDs_Pool").remove(Constants.ENABLED.getName());
+                        //modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.ENABLED.getName());
+                        return modelNode;
+
+                    }
+                });
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -150,12 +159,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                 Assert.assertTrue(modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").get(Constants.JTA.getName()).asBoolean());
                 //Replace the value used in the xml
                 modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
-                //if (modelVersion.equals(ModelVersion.create(1, 1, 0))) {
-
-                    modelNode.get(Constants.DATA_SOURCE).get("complexDs_Pool").remove(Constants.ENABLED.getName());
-
-                    modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.ENABLED.getName());
-                //}
                 return modelNode;
 
             }

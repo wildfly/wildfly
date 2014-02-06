@@ -21,6 +21,8 @@
 */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
+
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
@@ -34,15 +36,13 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 /**
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefinition {
 
-    private static final PathElement PATH = PathElement.pathElement(CONNECTIONDEFINITIONS_NAME);
+    static final PathElement PATH = PathElement.pathElement(CONNECTIONDEFINITIONS_NAME);
     private static final ResourceDescriptionResolver RESOLVER = ResourceAdaptersExtension.getResourceDescriptionResolver(CONNECTIONDEFINITIONS_NAME);
     private static final OperationDefinition FLUSH__IDLE_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_IDLE_CONNECTION_IN_POOL, RESOLVER)
             .withFlag(Flag.RUNTIME_ONLY)
@@ -105,11 +105,4 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES);
     }
 
-    static void registerTransformer110(ResourceTransformationDescriptionBuilder parentBuilder) {
-        parentBuilder.addChildResource(PATH)
-                .getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.SECURITY_DOMAIN, Constants.SECURITY_DOMAIN_AND_APPLICATION, Constants.APPLICATION)
-                .setDiscard(DiscardAttributeChecker.ALWAYS, Constants.ENLISTMENT, Constants.SHARABLE, org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES);
-    }
 }
