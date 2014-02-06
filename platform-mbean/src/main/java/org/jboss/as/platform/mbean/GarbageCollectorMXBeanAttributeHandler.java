@@ -31,6 +31,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -62,7 +63,7 @@ class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBeanAttrib
         }
 
         if (gcMBean == null) {
-            throw PlatformMBeanMessages.MESSAGES.unknownGarbageCollector(gcName);
+            throw PlatformMBeanLogger.ROOT_LOGGER.unknownGarbageCollector(gcName);
         }
 
         if (PlatformMBeanUtil.JVM_MAJOR_VERSION > 6 && PlatformMBeanConstants.OBJECT_NAME.getName().equals(name)) {
@@ -85,7 +86,7 @@ class GarbageCollectorMXBeanAttributeHandler extends AbstractPlatformMBeanAttrib
         } else if (GarbageCollectorResourceDefinition.GARBAGE_COLLECTOR_READ_ATTRIBUTES.contains(name)
                 || GarbageCollectorResourceDefinition.GARBAGE_COLLECTOR_METRICS.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl4(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badReadAttributeImpl(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);

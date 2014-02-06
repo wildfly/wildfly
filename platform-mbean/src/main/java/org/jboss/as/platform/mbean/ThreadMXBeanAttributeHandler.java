@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -86,7 +87,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
                 ManagementFactory.getThreadMXBean().setThreadCpuTimeEnabled(operation.require(ModelDescriptionConstants.VALUE).asBoolean());
             } else if (ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES.contains(name)) {
                 // Bug
-                throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl4(name);
+                throw PlatformMBeanLogger.ROOT_LOGGER.badWriteAttributeImpl(name);
             } else {
                 // Shouldn't happen; the global handler should reject
                 throw unknownAttribute(operation);
@@ -138,7 +139,7 @@ class ThreadMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
                 || ThreadResourceDefinition.THREADING_READ_WRITE_ATTRIBUTES.contains(name)
                 || ThreadResourceDefinition.THREADING_METRICS.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl11(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badReadAttributeImpl(name);
         }
 
     }

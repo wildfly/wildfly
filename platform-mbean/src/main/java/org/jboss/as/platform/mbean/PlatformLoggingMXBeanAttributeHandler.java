@@ -25,6 +25,7 @@ package org.jboss.as.platform.mbean;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -62,7 +63,7 @@ class PlatformLoggingMXBeanAttributeHandler extends AbstractPlatformMBeanAttribu
             }
         } else if (PlatformMBeanConstants.LOGGING_READ_ATTRIBUTES.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl9(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badReadAttributeImpl(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);

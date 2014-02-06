@@ -32,6 +32,7 @@ import java.util.TreeMap;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -139,7 +140,7 @@ class RuntimeMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandle
         } else if (RuntimeResourceDefinition.RUNTIME_READ_ATTRIBUTES.contains(name)
                 || RuntimeResourceDefinition.RUNTIME_METRICS.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl10(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badReadAttributeImpl(name);
         }
 
     }

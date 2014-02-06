@@ -28,6 +28,7 @@ import java.util.Set;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -48,7 +49,7 @@ abstract class AbstractPlatformMBeanResource implements Resource.ResourceEntry {
 
     @Override
     public void writeModel(ModelNode newModel) {
-        throw PlatformMBeanMessages.MESSAGES.modelNotWritable();
+        throw PlatformMBeanLogger.ROOT_LOGGER.modelNotWritable();
     }
 
     @Override
@@ -117,12 +118,12 @@ abstract class AbstractPlatformMBeanResource implements Resource.ResourceEntry {
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        throw PlatformMBeanMessages.MESSAGES.addingChildrenNotSupported();
+        throw PlatformMBeanLogger.ROOT_LOGGER.addingChildrenNotSupported();
     }
 
     @Override
     public Resource removeChild(PathElement address) {
-        throw PlatformMBeanMessages.MESSAGES.removingChildrenNotSupported();
+        throw PlatformMBeanLogger.ROOT_LOGGER.removingChildrenNotSupported();
     }
 
     @Override
