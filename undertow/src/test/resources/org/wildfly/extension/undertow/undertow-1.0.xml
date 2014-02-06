@@ -46,7 +46,7 @@
             <location name="/" handler="welcome-content">
                 <filter-ref name="limit-connections"/>
                 <filter-ref name="headers"/>
-                <filter-ref name="static-gzip"/>
+                <filter-ref name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']" />
             </location>
             <filter-ref name="headers"/>
         </host>
@@ -96,7 +96,7 @@
         <!--<basic-auth name="security-other" security-domain="other"/>-->
         <connection-limit name="limit-connections" max-concurrent-requests="15000" queue-size="100"/>
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
-        <gzip name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']" />
+        <gzip name="static-gzip" />
     </filters>
 
 </subsystem>

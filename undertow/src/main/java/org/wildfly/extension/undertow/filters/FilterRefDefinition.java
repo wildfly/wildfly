@@ -25,10 +25,11 @@ package org.wildfly.extension.undertow.filters;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelType;
 import org.wildfly.extension.undertow.Constants;
 import org.wildfly.extension.undertow.UndertowExtension;
 
@@ -37,18 +38,23 @@ import org.wildfly.extension.undertow.UndertowExtension;
  */
 public class FilterRefDefinition extends PersistentResourceDefinition {
 
+    static final AttributeDefinition PREDICATE = new SimpleAttributeDefinitionBuilder("predicate", ModelType.STRING)
+                .setAllowNull(true)
+                .setAllowExpression(true)
+                .build();
+
     public static final FilterRefDefinition INSTANCE = new FilterRefDefinition();
 
 
     private FilterRefDefinition() {
         super(UndertowExtension.PATH_FILTER_REF,
                 UndertowExtension.getResolver(Constants.FILTER_REF),
-                new AbstractAddStepHandler(),
+                new FilterRefAdd(),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Collections.emptySet();
+        return Collections.singleton(PREDICATE);
     }
 }

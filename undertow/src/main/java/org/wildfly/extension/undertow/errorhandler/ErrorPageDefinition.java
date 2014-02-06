@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
+import io.undertow.predicate.Predicate;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.error.FileErrorPageHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -66,7 +67,7 @@ public class ErrorPageDefinition extends AbstractHandlerDefinition {
     }
 
     @Override
-    public HttpHandler createHttpHandler(ModelNode model, HttpHandler next) {
+    public HttpHandler createHttpHandler(Predicate predicate, ModelNode model, HttpHandler next) {
         throw new IllegalStateException("not implemented!");
     }
 }

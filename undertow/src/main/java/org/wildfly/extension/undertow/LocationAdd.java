@@ -39,7 +39,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.extension.undertow.filters.FilterService;
+import org.wildfly.extension.undertow.filters.FilterRef;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -76,7 +76,7 @@ class LocationAdd extends AbstractAddStepHandler {
                 .addDependency(hostServiceName, Host.class, service.getHost())
                 .addDependency(UndertowService.HANDLER.append(handler), HttpHandler.class, service.getHttpHandler());
 
-        configureFilterRef(fullModel, builder, service);
+        configureFilterRef(fullModel, builder, service, address);
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
         builder.addListener(verificationHandler);
@@ -86,11 +86,11 @@ class LocationAdd extends AbstractAddStepHandler {
         }
     }
 
-    private static void configureFilterRef(final ModelNode model, ServiceBuilder<LocationService> builder, LocationService service) {
+    private static void configureFilterRef(final ModelNode model, ServiceBuilder<LocationService> builder, LocationService service,PathAddress address) {
         if (model.hasDefined(Constants.FILTER_REF)) {
             for (Property property : model.get(Constants.FILTER_REF).asPropertyList()) {
                 String name = property.getName();
-                addDep(builder, UndertowService.FILTER.append(name), FilterService.class, service.getInjectedFilters());
+                addDep(builder, UndertowService.getFilterRefServiceName(address,name), FilterRef.class, service.getFilters());
             }
         }
     }

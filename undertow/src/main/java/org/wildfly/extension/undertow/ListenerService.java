@@ -54,7 +54,10 @@ public abstract class ListenerService<T> implements Service<T> {
     protected static final OptionMap commonOptions = OptionMap.builder()
             .set(Options.TCP_NODELAY, true)
             .set(Options.REUSE_ADDRESSES, true)
+            .set(Options.BALANCING_TOKENS, 1)
+            .set(Options.BALANCING_CONNECTIONS, 2)
             .getMap();
+
     protected final InjectedValue<XnioWorker> worker = new InjectedValue<>();
     protected final InjectedValue<SocketBinding> binding = new InjectedValue<>();
     protected final InjectedValue<SocketBinding> redirectSocket = new InjectedValue<>();

@@ -25,35 +25,31 @@
 package org.wildfly.extension.undertow.filters;
 
 import io.undertow.predicate.Predicate;
-import io.undertow.predicate.Predicates;
 import io.undertow.server.HttpHandler;
-import io.undertow.server.handlers.encoding.ContentEncodingRepository;
-import io.undertow.server.handlers.encoding.EncodingHandler;
-import io.undertow.server.handlers.encoding.GzipEncodingProvider;
-import org.jboss.dmr.ModelNode;
+import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  */
-public class GzipFilter extends Filter {
+public class FilterRef extends AbstractService<FilterRef> {
+    private final Predicate predicate;
+    private final InjectedValue<FilterService> filter = new InjectedValue<>();
 
+    public FilterRef(Predicate predicate) {
+        this.predicate = predicate;
+    }
 
-    public static final GzipFilter INSTANCE = new GzipFilter();
+    InjectedValue<FilterService> getFilter() {
+        return filter;
+    }
 
-    private GzipFilter() {
-        super("gzip");
+    public HttpHandler createHttpHandler(HttpHandler next) {
+        return filter.getValue().createHttpHandler(predicate, next);
     }
 
     @Override
-    public Class<? extends HttpHandler> getHandlerClass() {
-        return null;
-    }
-
-    @Override
-    public HttpHandler createHttpHandler(final Predicate predicate, ModelNode model, HttpHandler next) {
-        EncodingHandler encodingHandler = new EncodingHandler(new ContentEncodingRepository()
-                .addEncodingHandler("gzip", new GzipEncodingProvider(), 50, predicate!=null?predicate : Predicates.truePredicate()));
-        encodingHandler.setNext(next);
-        return encodingHandler;
+    public FilterRef getValue() throws IllegalStateException {
+        return this;
     }
 }

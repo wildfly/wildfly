@@ -57,9 +57,12 @@ class FilterAdd extends AbstractAddStepHandler {
 
         final FilterService service = new FilterService(handler, getResolvedModel(context, model));
         final ServiceTarget target = context.getServiceTarget();
-        newControllers.add(target.addService(UndertowService.FILTER.append(name), service)
+        ServiceController<?> sc = target.addService(UndertowService.FILTER.append(name), service)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
-                .install());
+                .install();
+        if (newControllers != null) {
+            newControllers.add(sc);
+        }
 
     }
 
