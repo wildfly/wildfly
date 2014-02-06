@@ -39,6 +39,7 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceTarget;
 
 /**
  * The jaxrs subsystem add update handler.
@@ -53,12 +54,12 @@ class JaxrsSubsystemAdd extends AbstractBoottimeAddStepHandler {
         model.setEmptyObject();
     }
 
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
-
+    protected void performBoottime(final OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) {
+        final ServiceTarget serviceTarget = context.getServiceTarget();
         context.addStep(new AbstractDeploymentChainStep() {
             public void execute(DeploymentProcessorTarget processorTarget) {
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JAXRS_ANNOTATIONS, new JaxrsAnnotationProcessor());
-                processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRS_SPRING, new JaxrsSpringProcessor());
+                processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRS_SPRING, new JaxrsSpringProcessor(serviceTarget));
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JAXRS, new JaxrsDependencyProcessor());
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_SCANNING, new JaxrsScanningProcessor());
                 processorTarget.addDeploymentProcessor(JaxrsExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JAXRS_COMPONENT, new JaxrsComponentDeployer());
