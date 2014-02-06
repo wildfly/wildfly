@@ -21,15 +21,22 @@
  */
 package org.jboss.as.test.integration.security.common;
 
+import java.io.IOException;
+import java.lang.reflect.Field;
+import javax.security.auth.kerberos.KerberosPrincipal;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.AnnotationUtils;
 import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.i18n.I18n;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
+import org.apache.directory.server.kerberos.shared.replay.ReplayCache;
 import org.apache.directory.server.protocol.shared.transport.TcpTransport;
 import org.apache.directory.server.protocol.shared.transport.Transport;
 import org.apache.directory.server.protocol.shared.transport.UdpTransport;
+import org.apache.directory.shared.kerberos.KerberosTime;
+import org.apache.directory.shared.ldap.model.exception.LdapInvalidDnException;
 import org.apache.mina.util.AvailablePortFinder;
+import org.jboss.logging.Logger;
 
 /**
  * Annotation processor for creating Kerberos servers - based on original implementation in
@@ -73,7 +80,7 @@ public class KDCServerAnnotationProcessor {
         if (createKdcServer == null) {
             return null;
         }
-        KdcServer kdcServer = new KdcServer();
+        KdcServer kdcServer = new NoReplayKdcServer();
         kdcServer.setServiceName(createKdcServer.name());
         kdcServer.setKdcPrincipal(createKdcServer.kdcPrincipal());
         kdcServer.setPrimaryRealm(createKdcServer.primaryRealm());
@@ -125,4 +132,61 @@ public class KDCServerAnnotationProcessor {
         return kdcServer;
     }
 
+}
+
+/**
+ *
+ * Replacement of apacheDS KdcServer class with disabled ticket replay cache.
+ *
+ * @author Dominik Pospisil <dpospisi@redhat.com>
+ */
+class NoReplayKdcServer extends KdcServer {
+
+    private static Logger LOGGER = Logger.getLogger(NoReplayKdcServer.class);
+
+    /**
+     *
+     * Dummy implementation of the ApacheDS kerberos replay cache. Essentially disables kerbores ticket replay checks.
+     * https://issues.jboss.org/browse/JBPAPP-10974
+     *
+     * @author Dominik Pospisil <dpospisi@redhat.com>
+     */
+    private class DummyReplayCache implements ReplayCache {
+
+        @Override
+        public boolean isReplay(KerberosPrincipal serverPrincipal, KerberosPrincipal clientPrincipal, KerberosTime clientTime,
+                int clientMicroSeconds) {
+            return false;
+        }
+
+        @Override
+        public void save(KerberosPrincipal serverPrincipal, KerberosPrincipal clientPrincipal, KerberosTime clientTime,
+                int clientMicroSeconds) {
+            return;
+        }
+
+        @Override
+        public void clear() {
+            return;
+        }
+
+    }
+
+    /**
+     * @throws IOException if we cannot bind to the sockets
+     */
+    public void start() throws IOException, LdapInvalidDnException {
+        super.start();
+
+        try {
+
+            // override initialized replay cache with a dummy implementation
+            Field replayCacheField = KdcServer.class.getDeclaredField("replayCache");
+            replayCacheField.setAccessible(true);
+            replayCacheField.set(this, new DummyReplayCache());
+        } catch (Exception e) {
+            LOGGER.warn("Unable to override replay cache.", e);
+        }
+
+    }
 }
