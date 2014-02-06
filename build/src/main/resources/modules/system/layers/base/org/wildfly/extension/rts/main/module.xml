@@ -27,6 +27,10 @@
         <!-- Insert resources here -->
     </resources>
 
+    <exports>
+        <exclude path="org/wildfly/extension/rts/logging"/>
+    </exports>
+
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>

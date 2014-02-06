@@ -31,7 +31,7 @@ import org.jboss.logging.annotations.MessageLogger;
  * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
  *
  */
-@MessageLogger(projectCode = "JBAS")
+@MessageLogger(projectCode = "WFLYRTS", length = 4)
 public interface RTSLogger extends BasicLogger {
 
     RTSLogger ROOT_LOGGER = Logger.getMessageLogger(RTSLogger.class, "org.wildfly.extension.rts");
