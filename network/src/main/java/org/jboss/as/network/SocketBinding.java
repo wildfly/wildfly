@@ -33,7 +33,7 @@ import java.util.List;
 
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.network.NetworkMessages.MESSAGES;
+import static org.jboss.as.network.logging.NetworkMessages.MESSAGES;
 
 /**
  * An encapsulation of socket binding related information.

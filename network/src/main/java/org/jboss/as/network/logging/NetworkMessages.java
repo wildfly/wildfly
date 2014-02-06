@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.network;
+package org.jboss.as.network.logging;
 
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
@@ -30,8 +30,9 @@ import org.jboss.logging.Messages;
  * Date: 24.06.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
+@MessageBundle(projectCode = "WFLYNET", length = 4)
 public interface NetworkMessages {
     /**
      * The default messages
@@ -43,7 +44,7 @@ public interface NetworkMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 15300, value = "cannot change value while the socket is bound.")
+    @Message(id = 1, value = "cannot change value while the socket is bound.")
     IllegalStateException cannotChangeWhileBound();
 
     /**
@@ -53,7 +54,7 @@ public interface NetworkMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 15301, value = "no multicast binding: %s")
+    @Message(id = 2, value = "no multicast binding: %s")
     IllegalStateException noMulticastBinding(String name);
 
     /**
@@ -63,7 +64,7 @@ public interface NetworkMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 15302, value = "%s cannot be null or an empty string")
+    @Message(id = 3, value = "%s cannot be null or an empty string")
     IllegalArgumentException nullOrEmptyVar(String name);
 
     /**
@@ -74,7 +75,7 @@ public interface NetworkMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 15303, value = "%s cannot be null for outbound socket binding '%s'")
+    @Message(id = 4, value = "%s cannot be null for outbound socket binding '%s'")
     IllegalArgumentException nullOutboundSocketBindingParam(String type, String name);
 
     /**
@@ -84,7 +85,7 @@ public interface NetworkMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 15304, value = "Destination address cannot be null or empty for outbound socket binding '%s'")
+    @Message(id = 5, value = "Destination address cannot be null or empty for outbound socket binding '%s'")
     IllegalArgumentException nullDestinationAddress(String name);
 
     /**
@@ -95,6 +96,6 @@ public interface NetworkMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 15305, value = "Destination port cannot be a negative value: [%d] for outbound socket binding '%s'")
+    @Message(id = 6, value = "Destination port cannot be a negative value: [%d] for outbound socket binding '%s'")
     IllegalArgumentException negativeDestinationPort(int port, String name);
 }

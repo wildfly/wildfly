@@ -22,6 +22,7 @@
 
 package org.jboss.as.network;
 
+import org.jboss.as.network.logging.NetworkMessages;
 import org.jboss.msc.service.ServiceName;
 
 import java.io.IOException;
