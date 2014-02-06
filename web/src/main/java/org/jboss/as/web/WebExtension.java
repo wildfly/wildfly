@@ -99,7 +99,7 @@ public class WebExtension implements Extension {
             new SensitivityClassification(SUBSYSTEM_NAME, "web-valve", false, false, false));
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     /**
@@ -163,6 +163,7 @@ public class WebExtension implements Extension {
             registerTransformers_1_1_x(subsystem, 0);
             registerTransformers_1_1_x(subsystem, 1);
             registerTransformers_1_2_0(subsystem);
+            registerTransformers_1_3_0(subsystem);
         }
     }
 
@@ -205,25 +206,27 @@ public class WebExtension implements Extension {
                             attributeValue.set(defaultRedirectPort);
                         }
                     }
-                }, WebConnectorDefinition.REDIRECT_PORT.getName())
+                }, WebConnectorDefinition.REDIRECT_PORT)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
                 .end()
                 .addOperationTransformationOverride(UNDEFINE_ATTRIBUTE_OPERATION)
-                    .inheritResourceAttributeDefinitions() // although probably not necessary
-                    .setCustomOperationTransformer(new OperationTransformer() {
-                        @Override
-                        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
-                            final String attributeName = operation.require(NAME).asString();
+                .inheritResourceAttributeDefinitions() // although probably not necessary
+                .setCustomOperationTransformer(new OperationTransformer() {
+                    @Override
+                    public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+                        final String attributeName = operation.require(NAME).asString();
                             if(WebConnectorDefinition.REDIRECT_PORT.getName().equals(attributeName)) {
-                                final ModelNode transformed = new ModelNode();
-                                transformed.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                                transformed.get(OP_ADDR).set(address.toModelNode());
-                                transformed.get(NAME).set(attributeName);
-                                transformed.get(VALUE).set(defaultRedirectPort);
-                                return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
-                            }
-                            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+                            final ModelNode transformed = new ModelNode();
+                            transformed.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+                            transformed.get(OP_ADDR).set(address.toModelNode());
+                            transformed.get(NAME).set(attributeName);
+                            transformed.get(VALUE).set(defaultRedirectPort);
+                            return new TransformedOperation(transformed, OperationResultTransformer.ORIGINAL_RESULT);
                         }
-                    });
+                        return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
+                    }
+                });
 
         if (micro == 0) {
             connectorBuilder.getAttributeBuilder().addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
@@ -290,13 +293,30 @@ public class WebExtension implements Extension {
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebReWriteConditionDefinition.FLAGS);
 
         final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
-        connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
+        connectorBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .end()
+                .addChildResource(SSL_PATH).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSLDefinition.SSL_PROTOCOL)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL)
                 .end();
 
         TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 2, 0));
 
+    }
+
+    private void registerTransformers_1_3_0(SubsystemRegistration registration) {
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
+        connectorBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .end();
+
+
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 3, 0));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {

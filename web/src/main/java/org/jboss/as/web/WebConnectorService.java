@@ -47,6 +47,7 @@ import org.apache.coyote.ajp.AjpProtocol;
 import org.apache.coyote.http11.Http11AprProtocol;
 import org.apache.coyote.http11.Http11NioProtocol;
 import org.jboss.as.network.ManagedBinding;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
@@ -81,6 +82,8 @@ class WebConnectorService implements Service<Connector> {
 
     private final InjectedValue<Executor> executor = new InjectedValue<Executor>();
     private final InjectedValue<SocketBinding> binding = new InjectedValue<SocketBinding>();
+    private final InjectedValue<OutboundSocketBinding> proxy = new InjectedValue<OutboundSocketBinding>();
+    private final InjectedValue<SocketBinding> redirect = new InjectedValue<SocketBinding>();
     private final InjectedValue<WebServer> server = new InjectedValue<WebServer>();
 
     public WebConnectorService(String protocol, String scheme) {
@@ -122,9 +125,20 @@ class WebConnectorService implements Service<Connector> {
             if(enableLookups != null) connector.setEnableLookups(enableLookups);
             if(maxPostSize != null) connector.setMaxPostSize(maxPostSize);
             if(maxSavePostSize != null) connector.setMaxSavePostSize(maxSavePostSize);
-            if(proxyName != null) connector.setProxyName(proxyName);
-            if(proxyPort != null) connector.setProxyPort(proxyPort);
-            if(redirectPort != null) connector.setRedirectPort(redirectPort);
+            final OutboundSocketBinding proxySocket = proxy.getOptionalValue();
+            if(proxySocket != null) {
+                connector.setProxyName(proxySocket.getDestinationAddress().getHostName());
+                connector.setProxyPort(proxySocket.getDestinationPort());
+            } else {
+                if(proxyName != null) connector.setProxyName(proxyName);
+                if(proxyPort != null) connector.setProxyPort(proxyPort);
+            }
+            final SocketBinding redirectSocket = redirect.getOptionalValue();
+            if (redirectSocket != null) {
+                connector.setRedirectPort(redirectSocket.getAbsolutePort());
+            } else if(redirectPort != null) {
+                connector.setRedirectPort(redirectPort);
+            }
             if(secure != null) connector.setSecure(secure);
             boolean nativeProtocolHandler = false;
             boolean nioProtocolHandler = false;
@@ -396,6 +410,7 @@ class WebConnectorService implements Service<Connector> {
 
 
     /** {@inheritDoc} */
+    @Override
     public synchronized void stop(StopContext context) {
         final SocketBinding binding = this.binding.getValue();
         binding.getSocketBindings().getNamedRegistry().unregisterBinding(binding.getName());
@@ -499,6 +514,14 @@ class WebConnectorService implements Service<Connector> {
 
     InjectedValue<SocketBinding> getBinding() {
         return binding;
+    }
+
+    InjectedValue<OutboundSocketBinding> getProxy() {
+        return proxy;
+    }
+
+    InjectedValue<SocketBinding> getRedirect() {
+        return redirect;
     }
 
     InjectedValue<WebServer> getServer() {

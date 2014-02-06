@@ -1,8 +1,4 @@
-<!--
-   This file should be kept in sync with subsystem-1.1.0.xml
-  -->
-
-        <subsystem xmlns="urn:jboss:domain:web:2.1" default-virtual-server="default-host" native="${prop.native:true}">
+        <subsystem xmlns="urn:jboss:domain:web:1.5" default-virtual-server="default-host" native="${prop.native:true}">
             <configuration>
                 <static-resources listings="${prop.listings:true}"
                                  sendfile="${prop.sendfile:1000}"
@@ -42,11 +38,10 @@
                        socket-binding="http"
                        enabled="${prop.enabled:true}"
                        enable-lookups="${prop.enable-lookups:false}"
-                       proxy-name="${prop.proxy-name:some-name}"
-                       proxy-port="${prop.proxy-port:7777}"
+                       proxy-binding="reverse-proxy"
                        max-post-size="${prop.max-post-size:2097153}"
                        max-save-post-size="${prop.max-save-post-size:512}"
-                       redirect-port="${prop.redirect-port:7778}"
+                       redirect-binding="https"
                        max-connections="${prop.max-connections:300}"
                        secure="false"
                        executor="some-executor"
@@ -67,7 +62,7 @@
                     truststore-type="${prop.truststore-type:JKS}"
                     session-cache-size="${prop.session-cache-size:512}"
                     session-timeout="${prop.session-timeout:3000}"
-                    ssl-protocol="${prop.ssl-protocol:RFC4279}" 
+                    ssl-protocol="${prop.ssl-protocol:RFC4279}"
                   />
             </connector>
             <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >

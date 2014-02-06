@@ -47,6 +47,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
@@ -102,9 +103,6 @@ class WebConnectorAdd extends AbstractAddStepHandler {
         if ((resolved =  WebConnectorDefinition.PROXY_PORT.resolveModelAttribute(context, fullModel)).isDefined()) {
             service.setProxyPort(resolved.asInt());
         }
-        if ((resolved =  WebConnectorDefinition.REDIRECT_PORT.resolveModelAttribute(context, fullModel)).isDefined()) {
-            service.setRedirectPort(resolved.asInt());
-        }
         if ((resolved =  WebConnectorDefinition.MAX_POST_SIZE.resolveModelAttribute(context, fullModel)).isDefined()) {
             service.setMaxPostSize(resolved.asInt());
         }
@@ -127,6 +125,15 @@ class WebConnectorAdd extends AbstractAddStepHandler {
         final ServiceBuilder<Connector> serviceBuilder = context.getServiceTarget().addService(WebSubsystemServices.JBOSS_WEB_CONNECTOR.append(name), service)
                 .addDependency(WebSubsystemServices.JBOSS_WEB, WebServer.class, service.getServer())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding());
+        if((resolved =   WebConnectorDefinition.REDIRECT_BINDING.resolveModelAttribute(context, fullModel)).isDefined()) {
+            serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(resolved.asString()), SocketBinding.class, service.getRedirect());
+        } else if ((resolved =  WebConnectorDefinition.REDIRECT_PORT.resolveModelAttribute(context, fullModel)).isDefined()) {
+            service.setRedirectPort(resolved.asInt());
+        }
+        if((resolved = WebConnectorDefinition.PROXY_BINDING.resolveModelAttribute(context, fullModel)).isDefined()) {
+            serviceBuilder.addDependency(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(resolved.asString()),
+                    OutboundSocketBinding.class, service.getProxy());
+        }
         if ((resolved =  WebConnectorDefinition.EXECUTOR.resolveModelAttribute(context, fullModel)).isDefined()) {
             String executorRef = resolved.asString();
             serviceBuilder.addDependency(ThreadsServices.executorName(executorRef), Executor.class, service.getExecutor());
