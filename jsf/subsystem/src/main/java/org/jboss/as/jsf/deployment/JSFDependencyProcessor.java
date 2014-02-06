@@ -27,8 +27,7 @@ import java.util.List;
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
-import org.jboss.as.jsf.JSFLogger;
-import org.jboss.as.jsf.JSFMessages;
+import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -79,7 +78,7 @@ public class JSFDependencyProcessor implements DeploymentUnitProcessor {
         }
 
         if (jsfVersion.equals(defaultJsfVersion) && !moduleIdFactory.isValidJSFSlot(jsfVersion)) {
-            throw JSFMessages.MESSAGES.invalidDefaultJSFImpl(defaultJsfVersion);
+            throw JSFLogger.ROOT_LOGGER.invalidDefaultJSFImpl(defaultJsfVersion);
         }
 
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
