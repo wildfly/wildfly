@@ -62,11 +62,6 @@ public class DistributableSessionManager implements UndertowSessionManager {
     }
 
     @Override
-    public String getDeploymentName() {
-        return this.deploymentName;
-    }
-
-    @Override
     public void start() {
         this.manager.start();
     }
@@ -89,7 +84,7 @@ public class DistributableSessionManager implements UndertowSessionManager {
                 throw UndertowMessages.MESSAGES.sessionAlreadyExists(id);
             }
         } else {
-            id = this.manager.createSessionId();
+            id = this.manager.createIdentifier();
             config.setSessionId(exchange, id);
         }
 
@@ -164,5 +159,27 @@ public class DistributableSessionManager implements UndertowSessionManager {
         } finally {
             batch.discard();
         }
+    }
+
+    @Override
+    public String getDeploymentName() {
+        return this.deploymentName;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof DistributableSessionManager)) return false;
+        DistributableSessionManager manager = (DistributableSessionManager) object;
+        return this.deploymentName.equals(manager.getDeploymentName());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.deploymentName.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return this.deploymentName;
     }
 }

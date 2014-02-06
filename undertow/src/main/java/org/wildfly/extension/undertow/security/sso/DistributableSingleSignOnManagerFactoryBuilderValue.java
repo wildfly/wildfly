@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,36 +19,39 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.sso;
+
+package org.wildfly.extension.undertow.security.sso;
 
 import java.util.ServiceLoader;
 
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.value.Value;
 
 /**
- * Uses a service loader to load a distributable {@link SSOManagerFactoryBuilder} implementation.
+ * Uses a service loader to load a {@link DistributableSingleSignOnManagerFactoryBuilder} implementation.
+ * This serves to decouple the undertow subsystem from the clustering modules.
  * @author Paul Ferraro
  */
-public class SSOManagerFactoryBuilderService extends AbstractService<SSOManagerFactoryBuilder> {
-    private final SSOManagerFactoryBuilder builder;
+public class DistributableSingleSignOnManagerFactoryBuilderValue implements Value<DistributableSingleSignOnManagerFactoryBuilder> {
 
-    public SSOManagerFactoryBuilderService() {
+    private final DistributableSingleSignOnManagerFactoryBuilder builder;
+
+    public DistributableSingleSignOnManagerFactoryBuilderValue() {
         this(load());
     }
 
-    public SSOManagerFactoryBuilderService(SSOManagerFactoryBuilder builder) {
+    public DistributableSingleSignOnManagerFactoryBuilderValue(DistributableSingleSignOnManagerFactoryBuilder builder) {
         this.builder = builder;
     }
 
-    private static SSOManagerFactoryBuilder load() {
-        for (SSOManagerFactoryBuilder builder: ServiceLoader.load(SSOManagerFactoryBuilder.class, SSOManagerFactoryBuilder.class.getClassLoader())) {
+    private static DistributableSingleSignOnManagerFactoryBuilder load() {
+        for (DistributableSingleSignOnManagerFactoryBuilder builder: ServiceLoader.load(DistributableSingleSignOnManagerFactoryBuilder.class, DistributableSingleSignOnManagerFactoryBuilder.class.getClassLoader())) {
             return builder;
         }
         return null;
     }
 
     @Override
-    public SSOManagerFactoryBuilder getValue() {
+    public DistributableSingleSignOnManagerFactoryBuilder getValue() {
         return this.builder;
     }
 }

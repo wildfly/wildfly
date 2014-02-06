@@ -19,53 +19,51 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.sso;
+package org.wildfly.clustering.web.infinispan;
 
-import org.wildfly.clustering.web.Batcher;
+import org.infinispan.Cache;
+import org.infinispan.affinity.KeyAffinityService;
+import org.infinispan.affinity.KeyGenerator;
+import org.infinispan.manager.EmbeddedCacheManager;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.sso.SSO;
-import org.wildfly.clustering.web.sso.SSOManager;
 
-public class InfinispanSSOManager<V, I, D, L> implements SSOManager<I, D, L> {
+/**
+ * {@link IdentifierFactory} that uses a {@link KeyAffinityService} to generate identifiers.
+ * @author Paul Ferraro
+ * @param <K> the key type
+ */
+public class AffinityIdentifierFactory<K> implements IdentifierFactory<K>, KeyGenerator<K> {
 
-    private final SSOFactory<V, I, D, L> factory;
-    private final Batcher batcher;
-    private final IdentifierFactory<String> identifierFactory;
+    private final IdentifierFactory<K> factory;
+    private final KeyAffinityService<K> affinity;
+    private final EmbeddedCacheManager manager;
 
-    public InfinispanSSOManager(SSOFactory<V, I, D, L> factory, IdentifierFactory<String> identifierFactory, Batcher batcher) {
+    public AffinityIdentifierFactory(IdentifierFactory<K> factory, Cache<K, ?> cache, KeyAffinityServiceFactory affinityFactory) {
         this.factory = factory;
-        this.batcher = batcher;
-        this.identifierFactory = identifierFactory;
+        this.affinity = affinityFactory.createService(cache, this);
+        this.manager = cache.getCacheManager();
     }
 
     @Override
-    public SSO<I, D, L> createSSO(String ssoId) {
-        return this.factory.createSSO(ssoId, this.factory.createValue(ssoId));
+    public K createIdentifier() {
+        return this.affinity.getKeyForAddress(this.manager.getAddress());
     }
 
     @Override
-    public SSO<I, D, L> findSSO(String ssoId) {
-        V value = this.factory.findValue(ssoId);
-        return (value != null) ? this.factory.createSSO(ssoId, value) : null;
-    }
-
-    @Override
-    public Batcher getBatcher() {
-        return this.batcher;
-    }
-
-    @Override
-    public String createIdentifier() {
-        return this.identifierFactory.createIdentifier();
+    public K getKey() {
+        return this.factory.createIdentifier();
     }
 
     @Override
     public void start() {
-        this.identifierFactory.start();
+        this.factory.start();
+        this.affinity.start();
     }
 
     @Override
     public void stop() {
-        this.identifierFactory.stop();
+        this.affinity.stop();
+        this.factory.stop();
     }
 }

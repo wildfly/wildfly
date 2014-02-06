@@ -34,25 +34,18 @@ import java.security.Permission;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Currency;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.infinispan.Cache;
-import org.infinispan.context.Flag;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.wildfly.clustering.web.annotation.Immutable;
 
 /**
- * Ensures that an object that exists in the distributed cache replicates.
+ * Determines whether a given object is mutable.
  * @author Paul Ferraro
  */
-public class CacheMutator<K, V> implements Mutator {
+public class MutableDetector {
 
     private static List<Object> IMMUTABLE_VALUES = Arrays.asList(
             null,
@@ -89,29 +82,6 @@ public class CacheMutator<K, V> implements Mutator {
             UUID.class
     );
 
-    private final Cache<K, V> cache;
-    private final CacheInvoker invoker;
-    private final K id;
-    private final V value;
-    private final Set<Flag> flags;
-    private final AtomicBoolean mutated = new AtomicBoolean(false);
-
-    public CacheMutator(Cache<K, V> cache, CacheInvoker invoker, K id, V value, Flag... flags) {
-        this.cache = cache;
-        this.invoker = invoker;
-        this.id = id;
-        this.value = value;
-        this.flags = EnumSet.of(Flag.IGNORE_RETURN_VALUES, flags);
-    }
-
-    @Override
-    public void mutate() {
-        // We only ever have to perform a replace once within a batch
-        if (this.mutated.compareAndSet(false, true)) {
-            this.invoker.invoke(this.cache, new MutateOperation<>(this.id, this.value), this.flags.toArray(new Flag[this.flags.size()]));
-        }
-    }
-
     public static boolean isMutable(Object object) {
         for (Object value: IMMUTABLE_VALUES) {
             if (object == value) return false;
@@ -120,5 +90,9 @@ public class CacheMutator<K, V> implements Mutator {
             if (immutableClass.isInstance(object)) return false;
         }
         return !object.getClass().isAnnotationPresent(Immutable.class);
+    }
+
+    private MutableDetector() {
+        // Hide
     }
 }
