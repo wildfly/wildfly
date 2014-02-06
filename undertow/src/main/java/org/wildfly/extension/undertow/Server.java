@@ -109,7 +109,6 @@ public class Server implements Service<Server> {
     }
 
     public int lookupSecurePort(final int unsecurePort) {
-
         return securePortMappings.get(unsecurePort);
     }
 
