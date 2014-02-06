@@ -168,8 +168,10 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE
                         )
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
-                //These are not nillable in the old model
-                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.EXCEPTION_SORTER_PROPERTIES, Constants.REAUTHPLUGIN_PROPERTIES, Constants.STALE_CONNECTION_CHECKER_PROPERTIES, Constants.VALID_CONNECTION_CHECKER_PROPERTIES)
+                 /*These are nillable in the old model, but appear as not nillable in CompareModelUtils due to problems in the resource description
+                  (leave the line commented out so noone else gets confused)
+                  .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.EXCEPTION_SORTER_PROPERTIES, Constants.REAUTHPLUGIN_PROPERTIES, Constants.STALE_CONNECTION_CHECKER_PROPERTIES, Constants.VALID_CONNECTION_CHECKER_PROPERTIES)*/
+                        //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
                 //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
                 .end()
