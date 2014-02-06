@@ -72,7 +72,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
         try {
             this.messageDigest = MessageDigest.getInstance("SHA-1");
         } catch (NoSuchAlgorithmException e) {
-            throw ManagedDMRContentMessages.MESSAGES.messageDigestAlgorithmNotAvailable(e);
+            throw ManagedDMRContentLogger.ROOT_LOGGER.messageDigestAlgorithmNotAvailable(e);
         }
 
         // Establish an initial hash attribute
@@ -197,10 +197,10 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
     @Override
     public void registerChild(PathElement address, Resource resource) {
         if (!childType.equals(address.getKey())) {
-            throw ManagedDMRContentMessages.MESSAGES.illegalChildType(address.getKey(), childType);
+            throw ManagedDMRContentLogger.ROOT_LOGGER.illegalChildType(address.getKey(), childType);
         }
         if (! (resource instanceof ManagedDMRContentResource)) {
-            throw ManagedDMRContentMessages.MESSAGES.illegalChildClass(resource.getClass());
+            throw ManagedDMRContentLogger.ROOT_LOGGER.illegalChildClass(resource.getClass());
         }
 
         // Just attach ourself to this child so during the course of this operation it can access data
@@ -266,7 +266,7 @@ public class ManagedDMRContentTypeResource implements Resource.ResourceEntry {
     private void loadContent(byte[] initialHash) {
         VirtualFile vf = contentRepository.getContent(initialHash);
         if (vf == null) {
-            throw ManagedDMRContentMessages.MESSAGES.noContentFoundWithHash(HashUtil.bytesToHexString(initialHash));
+            throw ManagedDMRContentLogger.ROOT_LOGGER.noContentFoundWithHash(HashUtil.bytesToHexString(initialHash));
         }
         InputStream is = null;
         try {
