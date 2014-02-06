@@ -38,6 +38,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptor;
 import org.jboss.as.service.descriptor.JBossServiceXmlDescriptorParser;
 import org.jboss.as.service.descriptor.ParseResult;
+import org.jboss.as.service.logging.SarLogger;
 import org.jboss.staxmapper.XMLMapper;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
@@ -97,9 +98,9 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
             if(xmlDescriptor != null)
                 phaseContext.getDeploymentUnit().putAttachment(JBossServiceXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
-                throw SarMessages.MESSAGES.failedXmlParsing(serviceXmlFile);
+                throw SarLogger.ROOT_LOGGER.failedXmlParsing(serviceXmlFile);
         } catch(Exception e) {
-            throw SarMessages.MESSAGES.failedXmlParsing(e, serviceXmlFile);
+            throw SarLogger.ROOT_LOGGER.failedXmlParsing(e, serviceXmlFile);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

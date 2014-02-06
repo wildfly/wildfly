@@ -20,33 +20,57 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.service;
+package org.jboss.as.service.logging;
+
+import static org.jboss.logging.Logger.Level.WARN;
 
 import javax.xml.namespace.QName;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.msc.service.StartException;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * This module is using message IDs in the range 17200-17299. This file is using the subset 17220-17299 for
- * non-logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
- * JBAS message id blocks.
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface SarMessages {
+@MessageLogger(projectCode = "WFLYSAR", length = 4)
+public interface SarLogger extends BasicLogger {
 
     /**
-     * The messages.
+     * A logger with a category of the package name.
      */
-    SarMessages MESSAGES = Messages.getBundle(SarMessages.class);
+    SarLogger ROOT_LOGGER = Logger.getMessageLogger(SarLogger.class, "org.jboss.as.service");
+
+    /**
+     * A logger with the category {@code org.jboss.as.deployment.service}.
+     */
+    SarLogger DEPLOYMENT_SERVICE_LOGGER = Logger.getMessageLogger(SarLogger.class, "org.jboss.as.deployment.service");
+
+    /**
+     * A message indicating a failure to execute a legacy service method, represented by the {@code methodName}
+     * parameter.
+     *
+     * @param methodName the name of the method that failed to execute.
+     *
+     * @return the message
+     */
+    @Message(id = 1, value = "Failed to execute legacy service %s method")
+    String failedExecutingLegacyMethod(String methodName);
+
+    /**
+     * Logs a warning message indicating the inability to find a {@link java.beans.PropertyEditor} for the type.
+     *
+     * @param type the type.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 2, value = "Unable to find PropertyEditor for type %s")
+    void propertyNotFound(Class<?> type);
 
     /**
      * Creates an exception indicating the class could not be found.
@@ -55,7 +79,7 @@ public interface SarMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 17220, value = "Class not found")
+    @Message(id = 3, value = "Class not found")
     IllegalArgumentException classNotFound(@Cause Throwable cause);
 
     /**
@@ -65,20 +89,8 @@ public interface SarMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 17221, value = "Class not instantiated")
+    @Message(id = 4, value = "Class not instantiated")
     IllegalArgumentException classNotInstantiated(@Cause Throwable cause);
-
-    /**
-     * Creates an exception indicating a failure to execute a legacy service method, represented by the {@code
-     * methodName} parameter.
-     *
-     * @param cause      the cause of the error.
-     * @param methodName the name of the method that failed to execute.
-     *
-     * @return a {@link StartException} for the error.
-     */
-    @Message(id = 17222, value = "Failed to execute legacy service %s method")
-    StartException failedExecutingLegacyMethod(@Cause Throwable cause, String methodName);
 
     /**
      * Creates an exception indicating a failure to get an attachment.
@@ -86,9 +98,9 @@ public interface SarMessages {
      * @param attachmentType the type/name of the attachment.
      * @param deploymentUnit the deployment unit.
      *
-     * @return a {@link DeploymentUnitProcessingException} for the error.
+     * @return a {@link org.jboss.as.server.deployment.DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 17223, value = "Failed to get %s attachment for %s")
+    @Message(id = 5, value = "Failed to get %s attachment for %s")
     DeploymentUnitProcessingException failedToGetAttachment(String attachmentType, DeploymentUnit deploymentUnit);
 
     /**
@@ -98,7 +110,7 @@ public interface SarMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 17224, value = "Failed to parse service xml [%s]")
+    @Message(id = 6, value = "Failed to parse service xml [%s]")
     DeploymentUnitProcessingException failedXmlParsing(VirtualFile xmlFile);
 
     /**
@@ -120,7 +132,7 @@ public interface SarMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 17225, value = "Method '%s(%s)' not found for: %s")
+    @Message(id = 7, value = "Method '%s(%s)' not found for: %s")
     IllegalStateException methodNotFound(String methodName, String methodParams, String className);
 
     /**
@@ -128,7 +140,7 @@ public interface SarMessages {
      *
      * @return the message.
      */
-    @Message(id = 17226, value = "Missing one or more required attributes:")
+    @Message(id = 8, value = "Missing one or more required attributes:")
     String missingRequiredAttributes();
 
     /**
@@ -138,7 +150,7 @@ public interface SarMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 17227, value = "%s is null")
+    @Message(id = 9, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 
     /**
@@ -150,7 +162,7 @@ public interface SarMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 17228, value = "%s method for property '%s' not found for: %s")
+    @Message(id = 10, value = "%s method for property '%s' not found for: %s")
     IllegalStateException propertyMethodNotFound(String methodPrefix, String propertyName, String className);
 
     /**
@@ -162,7 +174,7 @@ public interface SarMessages {
      *
      * @return the message.
      */
-    @Message(id = 17229, value = "Unexpected content of type '%s' named '%s', text is: %s")
+    @Message(id = 11, value = "Unexpected content of type '%s' named '%s', text is: %s")
     String unexpectedContent(String kind, QName name, String text);
 
     /**
@@ -174,7 +186,7 @@ public interface SarMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 17230, value = "Failed to process SAR child archives for [%s]")
+    @Message(id = 12, value = "Failed to process SAR child archives for [%s]")
     DeploymentUnitProcessingException failedToProcessSarChild(@Cause Throwable cause, VirtualFile deploymentRoot);
 
     /**
@@ -185,6 +197,6 @@ public interface SarMessages {
      *
      * @return a {@link DeploymentUnitProcessingException} for the error.
      */
-    @Message(id = 17231, value = "Malformed dependency name %s")
+    @Message(id = 13, value = "Malformed dependency name %s")
     DeploymentUnitProcessingException malformedDependencyName(@Cause Throwable cause,  String dependencyName);
 }
