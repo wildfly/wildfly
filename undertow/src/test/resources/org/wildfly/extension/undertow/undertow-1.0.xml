@@ -40,7 +40,7 @@
                 <filter-ref name="limit-connections"/>
             </location>
             <access-log pattern="REQ %{i,test-header}" directory="${jboss.server.server.dir}" prefix="access"/>
-            <!--<sso reauthenticate="${prop.reauthenticate:true}" domain="${prop.domain:myDomain}" cache-name="myCache" cache-container="cache-container"/>-->
+            <single-sign-on domain="${prop.domain:myDomain}" re-authenticate="${prop.domain.reauthenticate:true}"/>
         </host>
         <host name="other-host" alias="www.mysite.com" default-web-module="something.war">
             <location name="/" handler="welcome-content">

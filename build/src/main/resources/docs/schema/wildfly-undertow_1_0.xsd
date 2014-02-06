@@ -168,6 +168,7 @@
             <xs:element name="location" type="locationType" minOccurs="0" maxOccurs="unbounded"/>
             <xs:element name="access-log" type="accessLogType" maxOccurs="1" minOccurs="0"/>
             <xs:element name="filter-ref" type="filter-refType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="single-sign-on" minOccurs="0" maxOccurs="1" type="singleSignOnType" />
         </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="alias" use="optional" type="xs:string"/>
@@ -297,6 +298,45 @@
                           contains[search='MSIE', value='%{i,User-Agent}'] and path-suffix['.js'] - User agent contains MSIE and request URL ends with .js
                           regex['/resources/(*.)\.css'] and equals[{'$1', 'myCssFile'}] - regex match, with a reference to match group 1 later in the expression
                         ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="singleSignOnType">
+        <xs:attribute name="domain" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                              Cookie domain to use.
+                              ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cache-container" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                      Name of the cache container to use for clusterised sso
+                      ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cache-name" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                      Name of the cache to use for clusterised sso
+                      ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="re-authenticate" type="xs:boolean">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                      Each request should cause a reauthentication.
+                      ]]>
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
