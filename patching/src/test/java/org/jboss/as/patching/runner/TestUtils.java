@@ -38,7 +38,7 @@ import static org.jboss.as.patching.Constants.SYSTEM;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.IoUtils.newFile;
 import static org.jboss.as.patching.IoUtils.safeClose;
-import static org.jboss.as.patching.PatchLogger.ROOT_LOGGER;
+import static org.jboss.as.patching.logging.PatchLogger.ROOT_LOGGER;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -58,7 +58,6 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.ZipUtils;
 import org.jboss.as.patching.installation.InstalledImage;
 import org.jboss.as.patching.installation.PatchableTarget;
-import org.jboss.as.patching.metadata.ModuleItem;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.protocol.StreamUtils;

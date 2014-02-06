@@ -18,8 +18,7 @@ import java.util.Map;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.PatchLogger;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstalledIdentity;
@@ -67,17 +66,17 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
             // Check if we can apply this patch
             final Patch patch = patchResolver.resolvePatch(modification.getName(), modification.getVersion());
             if (patch == null) {
-                throw PatchMessages.MESSAGES.failedToResolvePatch(modification.getName(), modification.getVersion());
+                throw PatchLogger.ROOT_LOGGER.failedToResolvePatch(modification.getName(), modification.getVersion());
             }
             final String patchId = patch.getPatchId();
             final Identity identity = patch.getIdentity();
             final String appliesTo = identity.getVersion();
             if (!appliesTo.equals(modification.getVersion())) {
-                throw PatchMessages.MESSAGES.doesNotApply(appliesTo, modification.getVersion());
+                throw PatchLogger.ROOT_LOGGER.doesNotApply(appliesTo, modification.getVersion());
             }
             // Cannot apply the same patch twice
             if (modification.isApplied(patchId)) {
-                throw PatchMessages.MESSAGES.alreadyApplied(patchId);
+                throw PatchLogger.ROOT_LOGGER.alreadyApplied(patchId);
             }
             // See if the prerequisites are met
             checkUpgradeConditions(identity, modification);
@@ -150,7 +149,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
             if (target.isApplied(elementPatchId)) {
                 // TODO if it is already applied, we can just skip the entry (maybe based ont the type of the patch)
                 // This needs some further testing, maybe we need to compare our history with the patch if they are consistent
-                throw PatchMessages.MESSAGES.alreadyApplied(elementPatchId);
+                throw PatchLogger.ROOT_LOGGER.alreadyApplied(elementPatchId);
             }
             // Check upgrade conditions
             checkUpgradeConditions(provider, target);
@@ -196,7 +195,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
      */
     public PatchingResult rollbackPatch(final String patchId, final ContentVerificationPolicy contentPolicy, final boolean rollbackTo, final boolean resetConfiguration, InstallationManager.InstallationModification modification) throws PatchingException {
         if (Constants.BASE.equals(patchId)) {
-            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
+            throw PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
         }
         try {
             // Before rolling back the patch, validate that the state until that point is consistent
@@ -217,7 +216,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 patches.addAll(oneOffs);
                 patches.add(modification.getCumulativePatchID());
             } else {
-                throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
+                throw PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
             }
         } else if (index == 0) {
             patches.add(patchId);
@@ -229,7 +228,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 }
             } else {
                 // TODO perhaps we can allow this as well?
-                throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
+                throw PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
             }
         }
 
@@ -283,7 +282,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
         if (oneOffs.isEmpty()) {
             patchId = modification.getCumulativePatchID();
             if (patchId == null || Constants.NOT_PATCHED.equals(patchId)) {
-                throw PatchMessages.MESSAGES.noPatchesApplied();
+                throw PatchLogger.ROOT_LOGGER.noPatchesApplied();
             }
         } else {
             patchId = oneOffs.get(oneOffs.size() - 1);
@@ -339,7 +338,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 if (!originals.containsKey(layerName)) {
                     originals.put(layerName, patchElement);
                 } else {
-                    throw PatchMessages.MESSAGES.installationDuplicateLayer(layerType.toString(), layerName);
+                    throw PatchLogger.ROOT_LOGGER.installationDuplicateLayer(layerType.toString(), layerName);
                 }
             }
             // Process the rollback xml
@@ -361,7 +360,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 }
                 final PatchElement original = originals.remove(layerName);
                 if (original == null) {
-                    throw PatchMessages.MESSAGES.noSuchLayer(layerName);
+                    throw PatchLogger.ROOT_LOGGER.noSuchLayer(layerName);
                 }
                 final IdentityPatchContext.PatchEntry entry = context.resolveForElement(patchElement);
                 final Map<Location, ContentTaskDefinition> modifications = entry.getDefinitions();
@@ -382,7 +381,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 }
             }
             if (!originalLayers.isEmpty() || !originalAddOns.isEmpty()) {
-                throw PatchMessages.MESSAGES.invalidRollbackInformation();
+                throw PatchLogger.ROOT_LOGGER.invalidRollbackInformation();
             }
 
             // Rollback the patch
@@ -484,7 +483,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
                 }
             }
             if (!found) {
-                throw PatchMessages.MESSAGES.patchNotFoundInHistory(cumulativePatchID);
+                throw PatchLogger.ROOT_LOGGER.patchNotFoundInHistory(cumulativePatchID);
             }
         }
     }
@@ -511,7 +510,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
         }
         // If there were problems report them
         if (!conflicts.isEmpty()) {
-            throw PatchMessages.MESSAGES.conflictsDetected(conflicts);
+            throw PatchLogger.ROOT_LOGGER.conflictsDetected(conflicts);
         }
         // Execute the tasks
         for (final PreparedTask task : tasks) {
@@ -612,7 +611,7 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
             workDir = new File(parent == null ? TEMP_DIR : parent, DIRECTORY_SUFFIX + count);
         }
         if (!workDir.mkdirs()) {
-            throw new PatchingException(PatchMessages.MESSAGES.cannotCreateDirectory(workDir.getAbsolutePath()));
+            throw new PatchingException(PatchLogger.ROOT_LOGGER.cannotCreateDirectory(workDir.getAbsolutePath()));
         }
         return workDir;
     }
@@ -636,20 +635,20 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
         // See if the prerequisites are met
         for (final String required : condition.getRequires()) {
             if (!target.isApplied(required)) {
-                throw PatchMessages.MESSAGES.requiresPatch(required);
+                throw PatchLogger.ROOT_LOGGER.requiresPatch(required);
             }
         }
         // Check for incompatibilities
         for (final String incompatible : condition.getIncompatibleWith()) {
             if (target.isApplied(incompatible)) {
-                throw PatchMessages.MESSAGES.incompatiblePatch(incompatible);
+                throw PatchLogger.ROOT_LOGGER.incompatiblePatch(incompatible);
             }
         }
     }
 
     static void assertExists(final File file) throws PatchingException {
         if (!file.exists()) {
-            throw new PatchingException(PatchMessages.MESSAGES.fileDoesNotExist(file.getAbsolutePath()));
+            throw new PatchingException(PatchLogger.ROOT_LOGGER.fileDoesNotExist(file.getAbsolutePath()));
         }
     }
 

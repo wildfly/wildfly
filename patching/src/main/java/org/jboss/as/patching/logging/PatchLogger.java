@@ -20,35 +20,44 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching;
+package org.jboss.as.patching.logging;
+
+import static org.jboss.logging.Logger.Level.*;
 
 import java.io.IOException;
 import java.io.SyncFailedException;
 import java.util.Collection;
 import java.util.Set;
 
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.patching.ContentConflictsException;
+import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.validation.PatchingArtifact;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.logging.annotations.Param;
 
 /**
- * This module is using message IDs in the range 16800-16899.
- * <p/>
- * This file is using the subset 16840-16899 for non-logger messages.
- * <p/>
- * See <a href="http://community.jboss.org/docs/DOC-16810">http://community.jboss.org/docs/DOC-16810</a> for the full
- * list of currently reserved JBAS message id blocks.
- * <p/>
- *
  * @author Emanuel Muckenhuber
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface PatchMessages {
+@MessageLogger(projectCode = "WFLYPAT", length = 4)
+public interface PatchLogger extends BasicLogger {
 
-    PatchMessages MESSAGES = Messages.getBundle(PatchMessages.class);
+    PatchLogger ROOT_LOGGER = Logger.getMessageLogger(PatchLogger.class, "org.jboss.as.patching");
+
+    @LogMessage(level = WARN)
+    @Message(id = 1, value = "Cannot delete file %s")
+    void cannotDeleteFile(String name);
+
+    @LogMessage(level = WARN)
+    @Message(id = 2, value = "Cannot invalidate %s")
+    void cannotInvalidateZip(String name);
 
     @Message(id = Message.NONE, value = "Filesystem path of a pristine unzip of the distribution of the version of the " +
             "software to which the generated patch applies")
@@ -118,13 +127,13 @@ public interface PatchMessages {
 
     // User related errors
 
-    @Message(id = 16840, value = "Patch does not apply - expected (%s), but was (%s)")
+    @Message(id = 3, value = "Patch does not apply - expected (%s), but was (%s)")
     PatchingException doesNotApply(String appliesTo, String version);
 
-    @Message(id = 16841, value = "Failed to delete (%s)")
+    @Message(id = 4, value = "Failed to delete (%s)")
     IOException failedToDelete(String path);
 
-    @Message(id = 16842, value = "Failed to create directory (%s)")
+    @Message(id = 5, value = "Failed to create directory (%s)")
     IOException cannotCreateDirectory(String path);
 
     /**
@@ -134,61 +143,91 @@ public interface PatchMessages {
      *
      * @return the message.
      */
-    @Message(id = 16843, value = "Argument expected for option %s")
+    @Message(id = 6, value = "Argument expected for option %s")
     String argumentExpected(String arg);
 
-    @Message(id = 16844, value = "Missing required argument(s): %s")
+    @Message(id = 7, value = "Missing required argument(s): %s")
     String missingRequiredArgs(Set<String> missing);
 
-    @Message(id = 16845, value = "File at path specified by argument %s does not exist")
+    @Message(id = 8, value = "File at path specified by argument %s does not exist")
     String fileDoesNotExist(String arg);
 
-    @Message(id = 16846, value = "File at path specified by argument %s is not a directory")
+    @Message(id = 9, value = "File at path specified by argument %s is not a directory")
     String fileIsNotADirectory(String arg);
 
-    @Message(id = 16847, value = "File at path specified by argument %s is a directory")
+    @Message(id = 10, value = "File at path specified by argument %s is a directory")
     String fileIsADirectory(String arg);
 
-    @Message(id = 16848, value = "Cannot rollback patch (%s)")
+    @Message(id = 11, value = "Cannot rollback patch (%s)")
     PatchingException cannotRollbackPatch(String id);
 
-    @Message(id = 16849, value = "Patch '%s' already applied")
+    @Message(id = 12, value = "Patch '%s' already applied")
     PatchingException alreadyApplied(String patchId);
 
-    @Message(id = 16850, value = "There is no layer called %s installed")
+    @Message(id = 13, value = "There is no layer called %s installed")
     PatchingException noSuchLayer(String name);
 
-    @Message(id = 16851, value = "Failed to resolve a valid patch descriptor for %s %s")
+    @Message(id = 14, value = "Failed to resolve a valid patch descriptor for %s %s")
     PatchingException failedToResolvePatch(String product, String version);
 
-    @Message(id = 16852, value = "Requires patch '%s'")
+    @Message(id = 15, value = "Requires patch '%s'")
     PatchingException requiresPatch(String patchId);
 
-    @Message(id = 16853, value = "Patch is incompatible with patch '%s'")
+    @Message(id = 16, value = "Patch is incompatible with patch '%s'")
     PatchingException incompatiblePatch(String patchId);
 
-    @Message(id = 16854, value = "Conflicts detected")
+    @Message(id = 17, value = "Conflicts detected")
     ContentConflictsException conflictsDetected(@Param Collection<ContentItem> conflicts);
 
-    @Message(id = 16855, value = "copied content does not match expected hash for item: %s")
+    @Message(id = 18, value = "copied content does not match expected hash for item: %s")
     SyncFailedException wrongCopiedContent(ContentItem item);
 
-    @Message(id = 16856, value = "invalid patch name '%s'")
+    @Message(id = 19, value = "invalid patch name '%s'")
     IllegalArgumentException illegalPatchName(String name);
 
-    @Message(id = 16857, value = "Cannot rollback. No patches applied.")
+    @Message(id = 20, value = "Cannot rollback. No patches applied.")
     IllegalArgumentException noPatchesApplied();
 
-    @Message(id = 16858, value = "Patch '%s' not found in history.")
+    @Message(id = 21, value = "Patch '%s' not found in history.")
     PatchingException patchNotFoundInHistory(String patchId);
 
-    @Message(id = 16860, value = "missing: '%s'")
+    @Message(id = 22, value = "Cannot complete operation. Patch '%s' is currently active")
+    OperationFailedException patchActive(String patchId);
+
+    @Message(id = 23, value = "Failed to show history of patches")
+    OperationFailedException failedToShowHistory(@Cause Throwable cause);
+
+    @Message(id = 24, value = "Unable to apply or rollback a patch when the server is in a restart-required state.")
+    OperationFailedException serverRequiresRestart();
+
+    @Message(id = 25, value = "failed to load identity info")
+    String failedToLoadIdentity();
+
+    @Message(id = 26, value = "No more patches")
+    String noMorePatches();
+
+    @Message(id = 27, value = "No patch history %s")
+    String noPatchHistory(String path);
+
+    @Message(id = 28, value = "Patch is missing file %s")
+    String patchIsMissingFile(String path);
+
+    @Message(id = 29, value = "File is not readable %s")
+    String fileIsNotReadable(String path);
+
+    @Message(id = 30, value = "Layer not found %s")
+    String layerNotFound(String name);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 31, value = "failed to undo change for: '%s'")
+    void failedToUndoChange(String name);
+
+    @Message(id = 32, value = "missing: '%s'")
     String missingArtifact(PatchingArtifact.ArtifactState state);
 
-    @Message(id = 16861, value = "inconsistent state: '%s'")
+    @Message(id = 33, value = "inconsistent state: '%s'")
     String inconsistentArtifact(PatchingArtifact.ArtifactState state);
 
-    @Message(id = 16862, value = "in error: '%s'")
+    @Message(id = 34, value = "in error: '%s'")
     String artifactInError(PatchingArtifact.ArtifactState state);
-
 }

@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -45,7 +46,7 @@ abstract class PatchAttributeReadHandler implements OperationStepHandler {
         try {
             handle(result, info);
         } catch (IOException e) {
-            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+            throw new OperationFailedException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
     }

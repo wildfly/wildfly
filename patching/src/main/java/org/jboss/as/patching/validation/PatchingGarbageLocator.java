@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.PatchLogger;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.Layer;

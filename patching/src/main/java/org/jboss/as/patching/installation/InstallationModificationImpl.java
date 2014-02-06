@@ -8,8 +8,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.PatchLogger;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.LayerType;
 import org.jboss.as.patching.runner.PatchUtils;
@@ -47,7 +46,7 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
     @Override
     public void addInstalledPatch(String patchId) throws PatchingException {
         if (allPatches.contains(patchId)) {
-            throw PatchMessages.MESSAGES.alreadyApplied(patchId);
+            throw PatchLogger.ROOT_LOGGER.alreadyApplied(patchId);
         }
         allPatches.add(patchId);
     }
@@ -55,7 +54,7 @@ abstract class InstallationModificationImpl extends MutableTargetImpl implements
     @Override
     public void removeInstalledPatch(String patchId) throws PatchingException {
         if (! allPatches.contains(patchId)) {
-            throw PatchMessages.MESSAGES.cannotRollbackPatch(patchId);
+            throw PatchLogger.ROOT_LOGGER.cannotRollbackPatch(patchId);
         }
         allPatches.remove(patchId);
     }

@@ -27,7 +27,7 @@ import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ContentType;
@@ -154,7 +154,7 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
         context.recordChange(original, rollbackAction);
         // Fail after adding the undo action
         if (! Arrays.equals(contentHash, contentItem.getContentHash()) && failOnContentMismatch(context)) {
-            throw PatchMessages.MESSAGES.wrongCopiedContent(contentItem);
+            throw PatchLogger.ROOT_LOGGER.wrongCopiedContent(contentItem);
         }
     }
 

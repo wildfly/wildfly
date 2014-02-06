@@ -31,6 +31,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.zip.ZipFile;
 
+import org.jboss.as.patching.logging.PatchLogger;
+
 /**
  * @author Emanuel Muckenhuber
  * @author Brian Stansberry (c) 2012 Red Hat Inc.
@@ -88,10 +90,10 @@ public class IoUtils {
     private static void copyStream(InputStream is, OutputStream os, int bufferSize)
             throws IOException {
         if (is == null) {
-            throw PatchMessages.MESSAGES.nullInputStream();
+            throw PatchLogger.ROOT_LOGGER.nullInputStream();
         }
         if (os == null) {
-            throw PatchMessages.MESSAGES.nullOutputStream();
+            throw PatchLogger.ROOT_LOGGER.nullOutputStream();
         }
         byte[] buff = new byte[bufferSize];
         int rc;
@@ -106,7 +108,7 @@ public class IoUtils {
             File parent = targetFile.getParentFile();
             if (!parent.exists()) {
                 if (!parent.mkdirs()) {
-                    throw PatchMessages.MESSAGES.cannotCreateDirectory(parent.getAbsolutePath());
+                    throw PatchLogger.ROOT_LOGGER.cannotCreateDirectory(parent.getAbsolutePath());
                 }
             }
             final InputStream is = new FileInputStream(sourceFile);
@@ -118,10 +120,10 @@ public class IoUtils {
     private static void copyDir(File sourceDir, File targetDir) throws IOException {
         if (targetDir.exists()) {
             if (!targetDir.isDirectory()) {
-                throw PatchMessages.MESSAGES.notADirectory(targetDir.getAbsolutePath());
+                throw PatchLogger.ROOT_LOGGER.notADirectory(targetDir.getAbsolutePath());
             }
         } else if (!targetDir.mkdirs()) {
-            throw PatchMessages.MESSAGES.cannotCreateDirectory(targetDir.getAbsolutePath());
+            throw PatchLogger.ROOT_LOGGER.cannotCreateDirectory(targetDir.getAbsolutePath());
         }
 
         File[] children = sourceDir.listFiles();

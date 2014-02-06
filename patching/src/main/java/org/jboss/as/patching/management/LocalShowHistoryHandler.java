@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
 import org.jboss.as.patching.installation.PatchableTarget;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.tool.PatchingHistory;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceRegistry;
@@ -53,8 +54,8 @@ public final class LocalShowHistoryHandler implements OperationStepHandler {
             context.getResult().set(result);
             context.stepCompleted();
         } catch (Throwable t) {
-            PatchManagementLogger.ROOT_LOGGER.debugf(t, "failed to get history");
-            throw PatchManagementMessages.MESSAGES.failedToShowHistory(t);
+            PatchLogger.ROOT_LOGGER.debugf(t, "failed to get history");
+            throw PatchLogger.ROOT_LOGGER.failedToShowHistory(t);
         }
     }
 }

@@ -58,11 +58,11 @@ import org.jboss.as.cli.operation.ParsedCommandLine;
 import org.jboss.as.cli.util.SimpleTable;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.Constants;
-import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.metadata.Identity;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchXml;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.tool.PatchOperationBuilder;
 import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.dmr.ModelNode;
@@ -466,7 +466,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
             resolved = getSecurityManager() == null ? getProperty(HOME_DIR) : doPrivileged(new ReadPropertyAction(HOME_DIR));
         }
         if (resolved == null) {
-            throw PatchMessages.MESSAGES.cliFailedToResolveDistribution();
+            throw PatchLogger.ROOT_LOGGER.cliFailedToResolveDistribution();
         }
         return resolved;
     }
