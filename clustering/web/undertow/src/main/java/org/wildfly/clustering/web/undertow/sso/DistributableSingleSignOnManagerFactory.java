@@ -22,7 +22,6 @@
 package org.wildfly.clustering.web.undertow.sso;
 
 import io.undertow.security.idm.Account;
-import io.undertow.security.impl.SingleSignOnManager;
 import io.undertow.server.session.SecureRandomSessionIdGenerator;
 
 import org.wildfly.clustering.web.IdentifierFactory;
@@ -31,6 +30,7 @@ import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 import org.wildfly.clustering.web.undertow.IdentifierFactoryAdapter;
 import org.wildfly.extension.undertow.Host;
+import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
 import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerFactory;
 
 /**

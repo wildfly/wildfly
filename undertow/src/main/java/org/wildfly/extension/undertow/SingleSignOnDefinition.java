@@ -33,42 +33,28 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>  2014 Red Hat Inc.
+ * @author Paul Ferraro
  */
 class SingleSignOnDefinition extends PersistentResourceDefinition {
 
     static final SimpleAttributeDefinition DOMAIN = new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING)
-            .setAllowNull(false)
             .setAllowExpression(true)
             .build();
-    static final SimpleAttributeDefinition RE_AUTHENTICATE = new SimpleAttributeDefinitionBuilder("re-authenticate", ModelType.BOOLEAN, true)
-            .setAllowExpression(true)
-            .setDefaultValue(new ModelNode(false))
-            .build();
 
-    /*static final SimpleAttributeDefinition CACHE_CONTAINER = new SimpleAttributeDefinitionBuilder("cache-container", ModelType.STRING, true)
-            .setValidator(new StringLengthValidator(1, true))
-            .build();
-    static final SimpleAttributeDefinition CACHE_NAME = new SimpleAttributeDefinitionBuilder("cache-name", ModelType.STRING, true)
-            .setValidator(new StringLengthValidator(1, true))
-            .build();*/
-
-    static final List<SimpleAttributeDefinition> ATTRIBUTES = Arrays.asList(DOMAIN, RE_AUTHENTICATE);
+    static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(DOMAIN);
 
     static final SingleSignOnDefinition INSTANCE = new SingleSignOnDefinition();
 
     private SingleSignOnDefinition() {
-        super(UndertowExtension.PATH_SSO, UndertowExtension.getResolver("single-sign-on"), new SingleSignOnAdd(), ReloadRequiredRemoveStepHandler.INSTANCE);
+        super(UndertowExtension.PATH_SSO, UndertowExtension.getResolver(Constants.SINGLE_SIGN_ON), new SingleSignOnAdd(), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        //noinspection unchecked
-        return (Collection) ATTRIBUTES;
+        return ATTRIBUTES;
     }
-
 }

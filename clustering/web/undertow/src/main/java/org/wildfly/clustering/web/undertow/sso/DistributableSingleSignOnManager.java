@@ -23,27 +23,44 @@ package org.wildfly.clustering.web.undertow.sso;
 
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
-import io.undertow.security.impl.SingleSignOnManager;
 
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.sso.Authentication;
 import org.wildfly.clustering.web.sso.AuthenticationType;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
+import org.wildfly.extension.undertow.security.sso.SingleSignOnManager;
 
 /**
  * Adapts an {@link SSOManager} to a {@link SingleSignOnManager}.
  * @author Paul Ferraro
  */
-// TODO Leverage SingleSignOn.close() to consolidate batching
 public class DistributableSingleSignOnManager implements SingleSignOnManager {
 
     private final SSOManager<Account, String, Void> manager;
     private final SessionManagerRegistry registry;
+    private volatile boolean started = false;
 
     public DistributableSingleSignOnManager(SSOManager<Account, String, Void> manager, SessionManagerRegistry registry) {
         this.manager = manager;
         this.registry = registry;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return this.started;
+    }
+
+    @Override
+    public void start() {
+        this.manager.start();
+        this.started = true;
+    }
+
+    @Override
+    public void stop() {
+        this.started = false;
+        this.manager.stop();
     }
 
     @Override

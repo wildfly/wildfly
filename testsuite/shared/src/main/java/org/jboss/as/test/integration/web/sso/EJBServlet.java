@@ -25,18 +25,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Date;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.rmi.PortableRemoteObject;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.jboss.as.test.integration.web.sso.interfaces.StatelessSession;
-import org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionHome;
-import org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocal;
-import org.jboss.as.test.integration.web.sso.interfaces.StatelessSessionLocalHome;
 
 /**
  * A servlet that accesses an EJB and tests whether the call argument is
@@ -49,8 +40,9 @@ public class EJBServlet extends HttpServlet {
 
     private static final long serialVersionUID = 2070931818661985879L;
 
-    protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-            IOException {
+    @Override
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws IOException {
+/*
         try {
             InitialContext ctx = new InitialContext();
             Context enc = (Context) ctx.lookup("java:comp/env");
@@ -70,20 +62,13 @@ public class EJBServlet extends HttpServlet {
         } catch (Exception e) {
             throw new ServletException("Failed to call OptimizedEJB through remote and local interfaces", e);
         }
+*/
         response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-        out.println("<html>");
-        out.println("<head><title>EJBServlet</title></head>");
-        out.println("<body>Tests passed<br>Time:" + new Date().toString() + "</body>");
-        out.println("</html>");
-        out.close();
-    }
-
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        processRequest(request, response);
+        try (PrintWriter out = response.getWriter()) {
+            out.println("<html>");
+            out.println("<head><title>EJBServlet</title></head>");
+            out.println("<body>Tests passed<br>Time:" + new Date().toString() + "</body>");
+            out.println("</html>");
+        }
     }
 }

@@ -24,53 +24,53 @@
 
 package org.wildfly.extension.undertow;
 
-import io.undertow.security.impl.InMemorySingleSignOnManager;
-import io.undertow.security.impl.SingleSignOnAuthenticationMechanism;
+import io.undertow.security.impl.SingleSignOnManager;
+
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.security.sso.SingleSignOnAuthenticationMechanism;
 
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
+ * @author Paul Ferraro
  */
 public class SingleSignOnService implements Service<SingleSignOnService> {
 
     private final String domain;
-    private final boolean reAuthenticate;
     private final InjectedValue<Host> host = new InjectedValue<>();
+    private final InjectedValue<SingleSignOnManager> manager = new InjectedValue<>();
 
-
-    public SingleSignOnService(String domain, boolean reAuthenticate) {
+    public SingleSignOnService(String domain) {
         this.domain = domain;
-        this.reAuthenticate = reAuthenticate;
     }
 
     @Override
-    public void start(StartContext startContext) throws StartException {
-        SingleSignOnAuthenticationMechanism authenticationMechanism = createInMemory();
+    public void start(StartContext startContext) {
+        SingleSignOnAuthenticationMechanism mechanism = new SingleSignOnAuthenticationMechanism(this.manager.getValue());
+        if (this.domain != null) {
+            mechanism.setDomain(this.domain);
+        }
 
-        host.getValue().registerAdditionalAuthenticationMechanism("sso", authenticationMechanism);
-    }
-
-    private SingleSignOnAuthenticationMechanism createInMemory() {
-        return new SingleSignOnAuthenticationMechanism(new InMemorySingleSignOnManager()).setDomain(domain);
+        host.getValue().registerAdditionalAuthenticationMechanism("sso", mechanism);
     }
 
     @Override
     public void stop(StopContext stopContext) {
-
-    }
-
-    InjectedValue<Host> getHost() {
-        return host;
     }
 
     @Override
-    public SingleSignOnService getValue() throws IllegalStateException {
+    public SingleSignOnService getValue() {
         return this;
     }
 
+    Injector<Host> getHost() {
+        return host;
+    }
 
+    Injector<SingleSignOnManager> getSingleSignOnSessionManager() {
+        return this.manager;
+    }
 }
