@@ -22,18 +22,39 @@
  * /
  */
 
-package org.wildfly.extension.undertow;
+package org.wildfly.extension.undertow.security.sso;
 
-import io.undertow.security.impl.InMemorySingleSignOnManager;
-import io.undertow.security.impl.SingleSignOnManager;
-import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerFactory;
+import org.wildfly.extension.undertow.Host;
 
 /**
+ * Factory for creating an in-memory SingleSignOnManager
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
+ * @author Paul Ferraro
  */
 public class InMemorySingleSignOnManagerFactory implements SingleSignOnManagerFactory {
+
     @Override
     public SingleSignOnManager createSingleSignOnManager(Host host) {
         return new InMemorySingleSignOnManager();
+    }
+
+    static class InMemorySingleSignOnManager extends io.undertow.security.impl.InMemorySingleSignOnManager implements SingleSignOnManager {
+
+        private volatile boolean started = false;
+
+        @Override
+        public boolean isStarted() {
+            return this.started;
+        }
+
+        @Override
+        public void start() {
+            this.started = true;
+        }
+
+        @Override
+        public void stop() {
+            this.started = false;
+        }
     }
 }

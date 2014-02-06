@@ -21,31 +21,30 @@
  */
 package org.wildfly.extension.undertow.security.sso;
 
-import java.util.Map;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
-import org.wildfly.extension.undertow.Host;
-
-import io.undertow.security.api.AuthenticationMechanism;
-import io.undertow.security.api.AuthenticationMechanismFactory;
-import io.undertow.security.impl.SingleSignOnAuthenticationMechanism;
-import io.undertow.server.handlers.form.FormParserFactory;
+import io.undertow.security.impl.SingleSignOnManager;
+import io.undertow.server.HttpServerExchange;
+import io.undertow.server.session.Session;
+import io.undertow.servlet.handlers.ServletRequestContext;
+import io.undertow.servlet.spec.HttpSessionImpl;
 
 /**
  * Factory for creating a single sign on {@link AuthenticationMechanism}.
+ * TODO This will be made obsolete by io.undertow.servlet.handlers.security.SingleSignOnAuthenticationMechanism in Undertow 1.0.0.Final.
  * @author Paul Ferraro
  */
-public class SingleSignOnAuthenticationMechanismFactory implements AuthenticationMechanismFactory {
+public class SingleSignOnAuthenticationMechanism extends io.undertow.security.impl.SingleSignOnAuthenticationMechanism {
 
-    private final SingleSignOnManagerFactory factory;
-    private final Host host;
-
-    public SingleSignOnAuthenticationMechanismFactory(SingleSignOnManagerFactory factory, Host host) {
-        this.factory = factory;
-        this.host = host;
+    public SingleSignOnAuthenticationMechanism(SingleSignOnManager manager) {
+        super(manager);
     }
 
     @Override
-    public AuthenticationMechanism create(String mechanismName, FormParserFactory formParserFactory, Map<String, String> properties) {
-        return new SingleSignOnAuthenticationMechanism(this.factory.createSingleSignOnManager(this.host));
+    protected Session getSession(HttpServerExchange exchange) {
+        ServletRequestContext context = exchange.getAttachment(ServletRequestContext.ATTACHMENT_KEY);
+        PrivilegedAction<Session> action = new HttpSessionImpl.UnwrapSessionAction(context.getCurrentServetContext().getSession(exchange, true));
+        return (System.getSecurityManager() == null) ? action.run() : AccessController.doPrivileged(action);
     }
 }

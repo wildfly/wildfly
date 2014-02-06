@@ -57,7 +57,7 @@ public class DistributableSingleSignOnManagerFactoryBuilder implements org.wildf
 
     @Override
     public ServiceBuilder<SingleSignOnManagerFactory> build(ServiceTarget target, ServiceName name, final ServiceName hostServiceName) {
-        ServiceName managerServiceName = name.append("clustering");
+        ServiceName managerServiceName = name.append("distributable");
         this.builder.build(target, managerServiceName, hostServiceName.getSimpleName()).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         SessionManagerRegistryService.build(target, hostServiceName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
         return DistributableSingleSignOnManagerFactoryService.build(target, name, hostServiceName, managerServiceName);

@@ -21,17 +21,16 @@
  */
 package org.wildfly.extension.undertow.security.sso;
 
-import org.wildfly.extension.undertow.Host;
+import io.undertow.servlet.core.Lifecycle;
 
 /**
- * Factory for creating a {@link SingleSignOnManager}.
+ * Adds {@link Lifecycle} support for a {@link SingleSignOnManager}.
  * @author Paul Ferraro
  */
-public interface SingleSignOnManagerFactory {
-    /**
-     * Creates a single sign on manager for the specified host
-     * @param host a host
-     * @return a single sign on manager
-     */
-    SingleSignOnManager createSingleSignOnManager(Host host);
+public interface SingleSignOnManager extends io.undertow.security.impl.SingleSignOnManager, Lifecycle {
+    @Override
+    void start();
+
+    @Override
+    void stop();
 }

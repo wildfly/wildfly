@@ -50,7 +50,7 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
 
     @Override
     public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
-        ServiceName clusteringServiceName = name.append("clustering");
+        ServiceName clusteringServiceName = name.append("distributable");
         this.builder.buildDeploymentDependency(target, clusteringServiceName, deploymentServiceName, module, metaData)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()

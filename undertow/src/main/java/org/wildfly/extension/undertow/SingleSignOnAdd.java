@@ -25,19 +25,21 @@
 package org.wildfly.extension.undertow;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import io.undertow.security.impl.SingleSignOnManager;
 
 import java.util.List;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.extension.undertow.security.sso.SingleSignOnManagerService;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2014 Red Hat Inc.
@@ -45,7 +47,7 @@ import org.jboss.msc.service.ServiceTarget;
 class SingleSignOnAdd extends AbstractAddStepHandler {
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (SimpleAttributeDefinition def : SingleSignOnDefinition.ATTRIBUTES) {
+        for (AttributeDefinition def : SingleSignOnDefinition.ATTRIBUTES) {
             def.validateAndSet(operation, model);
         }
     }
@@ -57,22 +59,24 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
                 final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
 
         final String domain = SingleSignOnDefinition.DOMAIN.resolveModelAttribute(context, model).asString();
-        final boolean reAuthenticate = SingleSignOnDefinition.RE_AUTHENTICATE.resolveModelAttribute(context, model).asBoolean();
-        /*final ModelNode cacheNameNode = SingleSignOnDefinition.CACHE_NAME.resolveModelAttribute(context, model);
-        final ModelNode cacheContainerNode = SingleSignOnDefinition.CACHE_CONTAINER.resolveModelAttribute(context, model);
-
-        final String cacheName = cacheNameNode.isDefined() ? cacheNameNode.asString() : null;
-        final String cacheContainer = cacheContainerNode.isDefined() ? cacheContainerNode.asString() : null;*/
 
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
         final ServiceName serviceName = UndertowService.ssoServiceName(serverName, hostName);
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, hostName);
 
-        final SingleSignOnService service = new SingleSignOnService(domain, reAuthenticate);
         final ServiceTarget target = context.getServiceTarget();
+
+        ServiceName managerServiceName = serviceName.append("manager");
+        ServiceController<?> factoryController = SingleSignOnManagerService.build(target, managerServiceName, virtualHostServiceName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        if (newControllers != null) {
+            newControllers.add(factoryController);
+        }
+
+        final SingleSignOnService service = new SingleSignOnService(domain);
         final ServiceController<?> sc = target.addService(serviceName, service)
                 .addDependency(virtualHostServiceName, Host.class, service.getHost())
+                .addDependency(managerServiceName, SingleSignOnManager.class, service.getSingleSignOnSessionManager())
                 .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 

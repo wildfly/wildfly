@@ -313,33 +313,6 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="cache-container" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    <![CDATA[
-                      Name of the cache container to use for clusterised sso
-                      ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="cache-name" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    <![CDATA[
-                      Name of the cache to use for clusterised sso
-                      ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="re-authenticate" type="xs:boolean">
-            <xs:annotation>
-                <xs:documentation>
-                    <![CDATA[
-                      Each request should cause a reauthentication.
-                      ]]>
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="buffer-cachesType">

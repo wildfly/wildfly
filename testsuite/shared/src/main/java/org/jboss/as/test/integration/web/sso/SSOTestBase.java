@@ -40,6 +40,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.HttpClientUtils;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
@@ -82,40 +83,47 @@ public abstract class SSOTestBase {
         URL warB2 = new URL (serverB, "/war2/");
 
         // Start by accessing the secured index.html of war1
-        DefaultHttpClient httpclient = new DefaultHttpClient();
+        DefaultHttpClient httpclient = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        try {
+            checkAccessDenied(httpclient, warA1 + "index.html");
 
-        checkAccessDenied(httpclient, warA1 + "index.html");
+            CookieStore store = httpclient.getCookieStore();
 
-        CookieStore store = httpclient.getCookieStore();
+            log.debug("Saw JSESSIONID=" + getSessionIdValueFromState(store));
 
-        log.debug("Saw JSESSIONID=" + getSessionIdValueFromState(store));
+            // Submit the login form
+            executeFormLogin(httpclient, warA1);
 
-        // Submit the login form
-        executeFormLogin(httpclient, warA1);
+            String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
+            log.debug("Saw JSESSIONIDSSO=" + ssoID);
 
-        String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
-        log.debug("Saw JSESSIONIDSSO=" + ssoID);
+            // Now try getting the war2 index using the JSESSIONIDSSO cookie
+            log.debug("Prepare /war2/index.html get");
+            checkAccessAllowed(httpclient, warB2 + "index.html");
 
-        // Now try getting the war2 index using the JSESSIONIDSSO cookie
-        log.debug("Prepare /war2/index.html get");
-        checkAccessAllowed(httpclient, warB2 + "index.html");
+            // Access a secured servlet that calls a secured ejb in war2 to test
+            // propagation of the SSO identity to the ejb container.
+            checkAccessAllowed(httpclient, warB2 + "EJBServlet");
 
-        // Access a secured servlet that calls a secured ejb in war2 to test
-        // propagation of the SSO identity to the ejb container.
-        checkAccessAllowed(httpclient, warB2 + "EJBServlet");
+            // Now try logging out of war2
+            executeLogout(httpclient, warB2);
+        } finally {
+            HttpClientUtils.closeQuietly(httpclient);
+        }
 
-        // Now try logging out of war2
-        executeLogout(httpclient, warB2);
+        httpclient = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        try {
+            // Reset Http client
+            httpclient = new DefaultHttpClient();
 
-        // Reset Http client
-        httpclient = new DefaultHttpClient();
+            // Try accessing war1 again
+            checkAccessDenied(httpclient, warA1 + "index.html");
 
-        // Try accessing war1 again
-        checkAccessDenied(httpclient, warA1 + "index.html");
-
-        // Try accessing war2 again
-        checkAccessDenied(httpclient, warB2 + "index.html");
-
+            // Try accessing war2 again
+            checkAccessDenied(httpclient, warB2 + "index.html");
+        } finally {
+            HttpClientUtils.closeQuietly(httpclient);
+        }
     }
 
     public static void executeNoAuthSingleSignOnTest(URL serverA, URL serverB, Logger log) throws Exception {
@@ -124,57 +132,65 @@ public abstract class SSOTestBase {
         URL warB6 = new URL(serverB + "/war6/");
 
         // Start by accessing the secured index.html of war1
-        DefaultHttpClient httpclient = new DefaultHttpClient();
+        DefaultHttpClient httpclient = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        try {
+            checkAccessDenied(httpclient, warA1 + "index.html");
 
-        checkAccessDenied(httpclient, warA1 + "index.html");
+            CookieStore store = httpclient.getCookieStore();
 
-        CookieStore store = httpclient.getCookieStore();
+            log.debug("Saw JSESSIONID=" + getSessionIdValueFromState(store));
 
-        log.debug("Saw JSESSIONID=" + getSessionIdValueFromState(store));
+            // Submit the login form
+            executeFormLogin(httpclient, warA1);
 
-        // Submit the login form
-        executeFormLogin(httpclient, warA1);
+            String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
+            log.debug("Saw JSESSIONIDSSO=" + ssoID);
 
-        String ssoID = processSSOCookie(store, serverA.toString(), serverB.toString());
-        log.debug("Saw JSESSIONIDSSO=" + ssoID);
+            // Now try getting the war2 index using the JSESSIONIDSSO cookie
+            log.debug("Prepare /war2/index.html get");
+            checkAccessAllowed(httpclient, warB2 + "index.html");
 
-        // Now try getting the war2 index using the JSESSIONIDSSO cookie
-        log.debug("Prepare /war2/index.html get");
-        checkAccessAllowed(httpclient, warB2 + "index.html");
+            // Access a secured servlet that calls a secured ejb in war2 to test
+            // propagation of the SSO identity to the ejb container.
+            checkAccessAllowed(httpclient, warB2 + "EJBServlet");
 
-        // Access a secured servlet that calls a secured ejb in war2 to test
-        // propagation of the SSO identity to the ejb container.
-        checkAccessAllowed(httpclient, warB2 + "EJBServlet");
+            // Do the same test on war6 to test SSO auth replication with no auth
+            // configured war
+            checkAccessAllowed(httpclient, warB6 + "index.html");
 
-        // Do the same test on war6 to test SSO auth replication with no auth
-        // configured war
-        checkAccessAllowed(httpclient, warB6 + "index.html");
-
-        checkAccessAllowed(httpclient, warB2 + "EJBServlet");
-
+            checkAccessAllowed(httpclient, warB2 + "EJBServlet");
+        } finally {
+            HttpClientUtils.closeQuietly(httpclient);
+        }
     }
 
     public static void executeLogout(HttpClient httpConn, URL warURL) throws IOException {
         HttpGet logout = new HttpGet(warURL + "Logout");
         logout.setParams(new BasicHttpParams().setParameter("http.protocol.handle-redirects", false));
         HttpResponse response = httpConn.execute(logout);
+        try {
+            int statusCode = response.getStatusLine().getStatusCode();
+            assertTrue("Logout: Didn't saw HTTP_MOVED_TEMP(" + statusCode + ")", statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
 
-        int statusCode = response.getStatusLine().getStatusCode();
-        assertTrue("Logout: Didn't saw HTTP_MOVED_TEMP(" + statusCode + ")", statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
-
-        Header location = response.getFirstHeader("Location");
-        assertTrue("Get of " + warURL + "Logout not redirected to login page", location.getValue().indexOf("index.html") >= 0);
+            Header location = response.getFirstHeader("Location");
+            assertTrue("Get of " + warURL + "Logout not redirected to login page", location.getValue().indexOf("index.html") >= 0);
+        } finally {
+            HttpClientUtils.closeQuietly(response);
+        }
     }
 
     public static void checkAccessAllowed(HttpClient httpConn, String url) throws IOException {
         HttpGet getMethod = new HttpGet(url);
         HttpResponse response = httpConn.execute(getMethod);
+        try {
+            int statusCode = response.getStatusLine().getStatusCode();
+            assertTrue("Expected code == OK but got " + statusCode + " for request=" + url, statusCode == HttpURLConnection.HTTP_OK);
 
-        int statusCode = response.getStatusLine().getStatusCode();
-        assertTrue("Expected code == OK but got " + statusCode + " for request=" + url, statusCode == HttpURLConnection.HTTP_OK);
-
-        String body = EntityUtils.toString(response.getEntity());
-        assertTrue("Get of " + url + " redirected to login page", body.indexOf("j_security_check") < 0);
+            String body = EntityUtils.toString(response.getEntity());
+            assertTrue("Get of " + url + " redirected to login page", body.indexOf("j_security_check") < 0);
+        } finally {
+            HttpClientUtils.closeQuietly(response);
+        }
     }
 
     public static void executeFormLogin(HttpClient httpConn, URL warURL) throws IOException {
@@ -188,36 +204,42 @@ public abstract class SSOTestBase {
         formPost.setEntity(new UrlEncodedFormEntity(formparams, "UTF-8"));
 
         HttpResponse postResponse = httpConn.execute(formPost);
+        try {
+            int statusCode = postResponse.getStatusLine().getStatusCode();
+            Header[] errorHeaders = postResponse.getHeaders("X-NoJException");
+            assertTrue("Should see HTTP_MOVED_TEMP. Got " + statusCode, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
+            assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
+            EntityUtils.consume(postResponse.getEntity());
 
-        int statusCode = postResponse.getStatusLine().getStatusCode();
-        Header[] errorHeaders = postResponse.getHeaders("X-NoJException");
-        assertTrue("Should see HTTP_MOVED_TEMP. Got " + statusCode, statusCode == HttpURLConnection.HTTP_MOVED_TEMP);
-        assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
-        EntityUtils.consume(postResponse.getEntity());
+            // Follow the redirect to the index.html page
+            String indexURL = postResponse.getFirstHeader("Location").getValue();
+            HttpGet rediretGet = new HttpGet(indexURL.toString());
+            HttpResponse redirectResponse = httpConn.execute(rediretGet);
 
-        // Follow the redirect to the index.html page
-        String indexURL = postResponse.getFirstHeader("Location").getValue();
-        HttpGet rediretGet = new HttpGet(indexURL.toString());
-        HttpResponse redirectResponse = httpConn.execute(rediretGet);
+            statusCode = redirectResponse.getStatusLine().getStatusCode();
+            errorHeaders = redirectResponse.getHeaders("X-NoJException");
+            assertTrue("Wrong response code: " + statusCode, statusCode == HttpURLConnection.HTTP_OK);
+            assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
 
-        statusCode = redirectResponse.getStatusLine().getStatusCode();
-        errorHeaders = redirectResponse.getHeaders("X-NoJException");
-        assertTrue("Wrong response code: " + statusCode, statusCode == HttpURLConnection.HTTP_OK);
-        assertTrue("X-NoJException(" + Arrays.toString(errorHeaders) + ") is null", errorHeaders.length == 0);
-
-        String body = EntityUtils.toString(redirectResponse.getEntity());
-        assertTrue("Get of " + indexURL + " redirected to login page", body.indexOf("j_security_check") < 0);
+            String body = EntityUtils.toString(redirectResponse.getEntity());
+            assertTrue("Get of " + indexURL + " redirected to login page", body.indexOf("j_security_check") < 0);
+        } finally {
+            HttpClientUtils.closeQuietly(postResponse);
+        }
     }
 
     public static void checkAccessDenied(HttpClient httpConn, String url) throws IOException {
         HttpGet getMethod = new HttpGet(url);
         HttpResponse response = httpConn.execute(getMethod);
+        try {
+            int statusCode = response.getStatusLine().getStatusCode();
+            assertTrue("Expected code == OK but got " + statusCode + " for request=" + url, statusCode == HttpURLConnection.HTTP_OK);
 
-        int statusCode = response.getStatusLine().getStatusCode();
-        assertTrue("Expected code == OK but got " + statusCode + " for request=" + url, statusCode == HttpURLConnection.HTTP_OK);
-
-        String body = EntityUtils.toString(response.getEntity());
-        assertTrue("Redirected to login page for request=" + url + ", body[" + body + "]", body.indexOf("j_security_check") > 0);
+            String body = EntityUtils.toString(response.getEntity());
+            assertTrue("Redirected to login page for request=" + url + ", body[" + body + "]", body.indexOf("j_security_check") > 0);
+        } finally {
+            HttpClientUtils.closeQuietly(response);
+        }
     }
 
     public static String processSSOCookie(CookieStore cookieStore, String serverA, String serverB) {
@@ -233,7 +255,7 @@ public abstract class SSOTestBase {
             }
         }
 
-        assertTrue("Didn't saw JSESSIONIDSSO", ssoID != null);
+        assertTrue("Didn't see JSESSIONIDSSO: " + cookieStore.getCookies(), ssoID != null);
         return ssoID;
     }
 
@@ -323,19 +345,9 @@ public abstract class SSOTestBase {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         // SSO element name must be 'configuration'
-        updates.add(createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", ADD));
-
-        applyUpdates(updates, client);
-    }
-
-    public static void addClusteredSso(ModelControllerClient client) throws Exception {
-        final List<ModelNode> updates = new ArrayList<ModelNode>();
-
-        // SSO element name must be 'configuration'
-        ModelNode addOp = createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", ADD);
-        addOp.get("cache-container").set("web");
-        addOp.get("cache-name").set("sso");
-        updates.add(addOp);
+        ModelNode op = createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", ADD);
+        op.get("domain").set("${jboss.bind.address:127.0.0.1}");
+        updates.add(op);
 
         applyUpdates(updates, client);
     }
@@ -343,7 +355,9 @@ public abstract class SSOTestBase {
     public static void removeSso(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
-        updates.add(createOpNode("subsystem=web/virtual-server=default-host/sso=configuration", REMOVE));
+        ModelNode op = createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", REMOVE);
+        op.get("domain").set("${jboss.bind.address:127.0.0.1}");
+        updates.add(op);
 
         applyUpdates(updates, client);
     }
