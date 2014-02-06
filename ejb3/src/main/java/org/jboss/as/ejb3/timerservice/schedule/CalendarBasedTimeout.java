@@ -232,6 +232,7 @@ public class CalendarBasedTimeout {
         }
         Calendar nextCal = this.copy(currentCal);
 
+        nextCal.setTimeZone(this.timezone);
         Date start = this.scheduleExpression.getStart();
         if (start != null && currentCal.getTime().before(start)) {
             nextCal.setTime(start);
