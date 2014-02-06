@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.server.deployment.Attachments;
@@ -38,6 +39,7 @@ import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.MountedDeploymentOverlay;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
@@ -111,6 +113,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
         }
 
         // Process all the children
+        Map<String, MountedDeploymentOverlay> overlays = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_OVERLAY_LOCATIONS);
         try {
             final VirtualFile libDir;
             // process the lib directory
@@ -119,8 +122,16 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 if (libDir.exists()) {
                     List<VirtualFile> libArchives = libDir.getChildren(CHILD_ARCHIVE_FILTER);
                     for (final VirtualFile child : libArchives) {
-                        final Closeable closable = child.isFile() ? mount(child, false) : null;
-                        final MountHandle mountHandle = new MountHandle(closable);
+                        String relativeName = child.getPathNameRelativeTo(deploymentRoot.getRoot());
+                        MountedDeploymentOverlay overlay = overlays.get(relativeName);
+                        final MountHandle mountHandle;
+                        if(overlay != null) {
+                            overlay.remountAsZip(false);
+                            mountHandle = new MountHandle(null);
+                        } else {
+                            final Closeable closable = child.isFile() ? mount(child, false) : null;
+                            mountHandle = new MountHandle(closable);
+                        }
                         final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                         if (child.getName().toLowerCase(Locale.ENGLISH).endsWith(JAR_EXTENSION)) {
                             ModuleRootMarker.mark(childResource);

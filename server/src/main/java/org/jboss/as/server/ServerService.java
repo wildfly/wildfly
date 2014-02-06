@@ -65,7 +65,7 @@ import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.controller.resources.VersionModelInitializer;
 import org.jboss.as.server.deployment.Attachments;
-import org.jboss.as.server.deployment.ContentOverrideDeploymentUnitProcessor;
+import org.jboss.as.server.deployment.DeploymentOverlayDeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -285,7 +285,7 @@ public final class ServerService extends AbstractControllerService {
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_MOUNT, new DeploymentRootMountProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_MANIFEST, new ManifestAttachmentProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_ADDITIONAL_MANIFEST, new ManifestAttachmentProcessor());
-            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_CONTENT_OVERRIDE, new ContentOverrideDeploymentUnitProcessor(deploymentOverlayIndexService));
+            DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_DEPLOYMENT_OVERLAY, new DeploymentOverlayDeploymentUnitProcessor(deploymentOverlayIndexService));
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_SUB_DEPLOYMENT, new SubDeploymentProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_MODULE_IDENTIFIERS, new ModuleIdentifierProcessor());
             DeployerChainAddHandler.addDeploymentProcessor(SERVER_NAME, Phase.STRUCTURE, Phase.STRUCTURE_ANNOTATION_INDEX, new AnnotationIndexProcessor());

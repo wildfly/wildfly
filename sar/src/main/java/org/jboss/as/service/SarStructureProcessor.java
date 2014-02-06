@@ -4,12 +4,14 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.MountedDeploymentOverlay;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -57,12 +59,19 @@ public class SarStructureProcessor implements DeploymentUnitProcessor {
 
         ModuleRootMarker.mark(resourceRoot, true);
 
+        Map<String, MountedDeploymentOverlay> overlays = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_OVERLAY_LOCATIONS);
         try {
             final List<VirtualFile> childArchives = deploymentRoot.getChildren(CHILD_ARCHIVE_FILTER);
 
             for (final VirtualFile child : childArchives) {
-                final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService.provider())
-                        : NO_OP_CLOSEABLE;
+                String relativeName = child.getPathNameRelativeTo(deploymentRoot);
+                MountedDeploymentOverlay overlay = overlays.get(relativeName);
+                Closeable closable = NO_OP_CLOSEABLE;
+                if(overlay != null) {
+                    overlay.remountAsZip(false);
+                } else if(child.isFile()) {
+                    closable = VFS.mountZip(child, child, TempFileProviderService.provider());
+                }
                 final MountHandle mountHandle = new MountHandle(closable);
                 final ResourceRoot childResource = new ResourceRoot(child, mountHandle);
                 ModuleRootMarker.mark(childResource);
