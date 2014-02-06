@@ -46,7 +46,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,6 +82,7 @@ import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
+import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.as.jmx.model.ChildAddOperationFinder.ChildAddOperationEntry;
 import org.jboss.as.server.deployment.DeploymentUploadStreamAttachmentHandler;
 import org.jboss.as.server.operations.RootResourceHack;
@@ -357,7 +357,7 @@ public class MBeanInfoFactory {
         Boolean allowExpressions = attribute.hasDefined(EXPRESSIONS_ALLOWED) && attribute.get(EXPRESSIONS_ALLOWED).asBoolean();
         descriptions.put(DESC_EXPRESSIONS_ALLOWED, allowExpressions.toString());
         descriptions.put(DESC_EXPRESSIONS_ALLOWED_DESC, allowExpressions ?
-                MESSAGES.descriptorAttributeExpressionsAllowedTrue() : MESSAGES.descriptorAttributeExpressionsAllowedFalse());
+                JmxLogger.ROOT_LOGGER.descriptorAttributeExpressionsAllowedTrue() : JmxLogger.ROOT_LOGGER.descriptorAttributeExpressionsAllowedFalse());
         return new ImmutableDescriptor(descriptions);
     }
 
@@ -370,19 +370,19 @@ public class MBeanInfoFactory {
     private void addMBeanExpressionSupport(Map<String, String> descriptions) {
         if (legacy) {
             descriptions.put(DESC_MBEAN_EXPR, "true");
-            descriptions.put(DESC_MBEAN_EXPR_DESCR, MESSAGES.descriptorMBeanExpressionSupportFalse());
+            descriptions.put(DESC_MBEAN_EXPR_DESCR, JmxLogger.ROOT_LOGGER.descriptorMBeanExpressionSupportFalse());
             if (configuredDomains.getExprDomain() != null) {
                 ObjectName alternate = configuredDomains.getMirroredObjectName(name);
                 descriptions.put(DESC_ALTERNATE_MBEAN, alternate.toString());
-                descriptions.put(DESC_ALTERNATE_MBEAN_DESCR, MESSAGES.descriptorAlternateMBeanExpressions(alternate));
+                descriptions.put(DESC_ALTERNATE_MBEAN_DESCR, JmxLogger.ROOT_LOGGER.descriptorAlternateMBeanExpressions(alternate));
             }
         } else {
             descriptions.put(DESC_MBEAN_EXPR, "false");
-            descriptions.put(DESC_MBEAN_EXPR_DESCR, MESSAGES.descriptorMBeanExpressionSupportTrue());
+            descriptions.put(DESC_MBEAN_EXPR_DESCR, JmxLogger.ROOT_LOGGER.descriptorMBeanExpressionSupportTrue());
             if (configuredDomains.getLegacyDomain() != null) {
                 ObjectName alternate = configuredDomains.getMirroredObjectName(name);
                 descriptions.put(DESC_ALTERNATE_MBEAN, alternate.toString());
-                descriptions.put(DESC_ALTERNATE_MBEAN_DESCR, MESSAGES.descriptorAlternateMBeanLegacy(alternate));
+                descriptions.put(DESC_ALTERNATE_MBEAN_DESCR, JmxLogger.ROOT_LOGGER.descriptorAlternateMBeanLegacy(alternate));
             }
         }
     }

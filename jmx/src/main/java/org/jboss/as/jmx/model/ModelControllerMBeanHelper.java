@@ -35,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -66,6 +65,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.core.security.AccessMechanism;
+import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.as.jmx.model.ChildAddOperationFinder.ChildAddOperationEntry;
 import org.jboss.as.jmx.model.ResourceAccessControlUtil.ResourceAccessControl;
 import org.jboss.as.jmx.model.RootResourceIterator.ResourceAction;
@@ -184,7 +184,7 @@ public class ModelControllerMBeanHelper {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw MESSAGES.mbeanNotFound(name);
+            throw JmxLogger.ROOT_LOGGER.mbeanNotFound(name);
         }
         final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, true);
         return MBeanInfoFactory.createMBeanInfo(name, converters, configuredDomains, standalone, address, getMBeanRegistration(address, reg));
@@ -194,7 +194,7 @@ public class ModelControllerMBeanHelper {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw MESSAGES.mbeanNotFound(name);
+            throw JmxLogger.ROOT_LOGGER.mbeanNotFound(name);
         }
         final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
         return getAttribute(reg, address, name, attribute, accessControl);
@@ -204,7 +204,7 @@ public class ModelControllerMBeanHelper {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw MESSAGES.mbeanNotFound(name);
+            throw JmxLogger.ROOT_LOGGER.mbeanNotFound(name);
         }
         final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
         AttributeList list = new AttributeList();
@@ -222,13 +222,13 @@ public class ModelControllerMBeanHelper {
         final ImmutableManagementResourceRegistration registration = getMBeanRegistration(address, reg);
         final DescriptionProvider provider = registration.getModelDescription(PathAddress.EMPTY_ADDRESS);
         if (provider == null) {
-            throw MESSAGES.descriptionProviderNotFound(address);
+            throw JmxLogger.ROOT_LOGGER.descriptionProviderNotFound(address);
         }
         final ModelNode description = provider.getModelDescription(null);
         final String attributeName = findAttributeName(description.get(ATTRIBUTES), attribute);
 
         if (!accessControl.isReadableAttribute(attributeName)) {
-            throw MESSAGES.notAuthorizedToReadAttribute(attributeName);
+            throw JmxLogger.ROOT_LOGGER.notAuthorizedToReadAttribute(attributeName);
         }
 
 
@@ -250,7 +250,7 @@ public class ModelControllerMBeanHelper {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw MESSAGES.mbeanNotFound(name);
+            throw JmxLogger.ROOT_LOGGER.mbeanNotFound(name);
         }
         final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
         setAttribute(reg, address, name, attribute, accessControl);
@@ -261,7 +261,7 @@ public class ModelControllerMBeanHelper {
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw MESSAGES.mbeanNotFound(name);
+            throw JmxLogger.ROOT_LOGGER.mbeanNotFound(name);
         }
         final ResourceAccessControl accessControl = accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
 
@@ -272,7 +272,7 @@ public class ModelControllerMBeanHelper {
                 //Propagate the JMRuntimeException thrown from authorization
                 throw e;
             } catch (Exception e) {
-                throw MESSAGES.cannotSetAttribute(e, attribute.getName());
+                throw JmxLogger.ROOT_LOGGER.cannotSetAttribute(e, attribute.getName());
             }
         }
 
@@ -283,17 +283,17 @@ public class ModelControllerMBeanHelper {
         final ImmutableManagementResourceRegistration registration = getMBeanRegistration(address, reg);
         final DescriptionProvider provider = registration.getModelDescription(PathAddress.EMPTY_ADDRESS);
         if (provider == null) {
-            throw MESSAGES.descriptionProviderNotFound(address);
+            throw JmxLogger.ROOT_LOGGER.descriptionProviderNotFound(address);
         }
         final ModelNode description = provider.getModelDescription(null);
         final String attributeName = findAttributeName(description.get(ATTRIBUTES), attribute.getName());
 
         if (!standalone) {
-            throw MESSAGES.attributeNotWritable(attribute);
+            throw JmxLogger.ROOT_LOGGER.attributeNotWritable(attribute);
         }
 
         if (!accessControl.isWritableAttribute(attributeName)) {
-            throw MESSAGES.notAuthorizedToWriteAttribute(attributeName);
+            throw JmxLogger.ROOT_LOGGER.notAuthorizedToWriteAttribute(attributeName);
         }
 
         ModelNode op = new ModelNode();
@@ -303,7 +303,7 @@ public class ModelControllerMBeanHelper {
         try {
             op.get(VALUE).set(converters.toModelNode(description.require(ATTRIBUTES).require(attributeName), attribute.getValue()));
         } catch (ClassCastException e) {
-            throw MESSAGES.invalidAttributeType(e, attribute.getName());
+            throw JmxLogger.ROOT_LOGGER.invalidAttributeType(e, attribute.getName());
         }
         ModelNode result = execute(op);
         String error = getFailureDescription(result);
@@ -312,7 +312,7 @@ public class ModelControllerMBeanHelper {
             //check the error code
             //TODO add a separate authorize step where we check ourselves that the operation will pass authorization?
             if (isVaultExpression(attribute.getValue()) && error.contains(AUTHORIZED_ERROR)) {
-                throw MESSAGES.notAuthorizedToWriteAttribute(attributeName);
+                throw JmxLogger.ROOT_LOGGER.notAuthorizedToWriteAttribute(attributeName);
             }
             throw new InvalidAttributeValueException(error);
         }
@@ -321,7 +321,7 @@ public class ModelControllerMBeanHelper {
     ObjectInstance getObjectInstance(ObjectName name) throws InstanceNotFoundException {
         final PathAddress address = resolvePathAddress(name);
         if (address == null) {
-            throw MESSAGES.mbeanNotFound(name);
+            throw JmxLogger.ROOT_LOGGER.mbeanNotFound(name);
         }
         accessControlUtil.getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(name, address, false);
         return new ObjectInstance(name, CLASS_NAME);
@@ -329,7 +329,7 @@ public class ModelControllerMBeanHelper {
 
     Object invoke(ObjectName name, String operationName, Object[] params, String[] signature) throws InstanceNotFoundException, MBeanException, ReflectionException {
         if (operationName == null) {
-            throw MESSAGES.nullVar("operationName");
+            throw JmxLogger.ROOT_LOGGER.nullVar("operationName");
         }
         if (params == null) {
             params = new Object[0];
@@ -338,13 +338,13 @@ public class ModelControllerMBeanHelper {
             signature = new String[0];
         }
         if (params.length != signature.length) {
-            throw MESSAGES.differentLengths("params", "signature");
+            throw JmxLogger.ROOT_LOGGER.differentLengths("params", "signature");
         }
 
         final ResourceAndRegistration reg = getRootResourceAndRegistration();
         final PathAddress address = resolvePathAddress(name, reg);
         if (address == null) {
-            throw MESSAGES.mbeanNotFound(name);
+            throw JmxLogger.ROOT_LOGGER.mbeanNotFound(name);
         }
         final ImmutableManagementResourceRegistration registration = getMBeanRegistration(address, reg);
 
@@ -376,12 +376,12 @@ public class ModelControllerMBeanHelper {
         if (opEntry == null) {
             ChildAddOperationEntry entry = ChildAddOperationFinder.findAddChildOperation(reg.getRegistration().getSubModel(address), operationName);
             if (entry == null) {
-                throw MESSAGES.noOperationCalled(null, operationName, address);
+                throw JmxLogger.ROOT_LOGGER.noOperationCalled(null, operationName, address);
             }
             PathElement element = entry.getElement();
             if (element.isWildcard()) {
                 if (params.length == 0) {
-                    throw MESSAGES.wildcardNameParameterRequired();
+                    throw JmxLogger.ROOT_LOGGER.wildcardNameParameterRequired();
                 }
                 element = PathElement.pathElement(element.getKey(), (String)params[0]);
                 Object[] newParams = new Object[params.length - 1];
@@ -396,7 +396,7 @@ public class ModelControllerMBeanHelper {
 
     private Object invoke(final OperationEntry entry, final String operationName, PathAddress address, Object[] params)  throws InstanceNotFoundException, MBeanException, ReflectionException {
         if (!standalone && !entry.getFlags().contains(OperationEntry.Flag.READ_ONLY)) {
-            throw MESSAGES.noOperationCalled(operationName);
+            throw JmxLogger.ROOT_LOGGER.noOperationCalled(operationName);
         }
 
         ResourceAccessControl accessControl;
@@ -409,7 +409,7 @@ public class ModelControllerMBeanHelper {
         }
 
         if (!accessControl.isExecutableOperation(operationName)) {
-            throw MESSAGES.notAuthorizedToExecuteOperation(operationName);
+            throw JmxLogger.ROOT_LOGGER.notAuthorizedToExecuteOperation(operationName);
         }
 
         final ModelNode description = entry.getDescriptionProvider().getModelDescription(null);
@@ -420,7 +420,7 @@ public class ModelControllerMBeanHelper {
             ModelNode requestProperties = description.require(REQUEST_PROPERTIES);
             Set<String> keys = requestProperties.keys();
             if (keys.size() != params.length) {
-                throw MESSAGES.differentLengths("params", "description");
+                throw JmxLogger.ROOT_LOGGER.differentLengths("params", "description");
             }
             Iterator<String> it = requestProperties.keys().iterator();
             for (int i = 0 ; i < params.length ; i++) {
@@ -439,7 +439,7 @@ public class ModelControllerMBeanHelper {
                     //check the error code
                     //TODO add a separate authorize step where we check ourselves that the operation will pass authorization?
                     if (isVaultExpression(param)) {
-                        throw MESSAGES.notAuthorizedToExecuteOperation(operationName);
+                        throw JmxLogger.ROOT_LOGGER.notAuthorizedToExecuteOperation(operationName);
                     }
                 }
             }
@@ -466,7 +466,7 @@ public class ModelControllerMBeanHelper {
         //TODO Populate MBeanInfo
         ImmutableManagementResourceRegistration resourceRegistration = reg.getRegistration().getSubModel(address);
         if (resourceRegistration == null) {
-            throw MESSAGES.registrationNotFound(address);
+            throw JmxLogger.ROOT_LOGGER.registrationNotFound(address);
         }
         return resourceRegistration;
     }
@@ -487,7 +487,7 @@ public class ModelControllerMBeanHelper {
                 return key;
             }
         }
-        throw MESSAGES.attributeNotFound(attributeName);
+        throw JmxLogger.ROOT_LOGGER.attributeNotFound(attributeName);
     }
 
     private boolean isExcludeAddress(PathAddress pathAddress) {

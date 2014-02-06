@@ -203,7 +203,7 @@ public class JmxManagementInterface implements ManagementInterface {
                 String message = e.getMessage();
                 if (message.contains("WFLYCTL0216") || message.contains("WFLYCTL0030")) {
                     throw e;
-                } else if (message.contains("WFLYCTL0313") || message.contains("11362")) {
+                } else if (message.contains("WFLYCTL0313") || message.contains("WFLYJMX0039")) {
                     filtered.add(JmxInterfaceStringUtils.toDashCase(attributeName));
                 } else {
                     throw new RuntimeException(e);

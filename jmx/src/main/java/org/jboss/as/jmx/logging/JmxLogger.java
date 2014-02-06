@@ -20,7 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jmx;
+package org.jboss.as.jmx.logging;
+
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
 
 import java.util.Hashtable;
 import java.util.List;
@@ -32,31 +35,84 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.JMRuntimeException;
 import javax.management.MBeanException;
 import javax.management.ObjectName;
+
 import javax.management.ReflectionException;
 import javax.management.openmbean.OpenDataException;
 import javax.management.openmbean.OpenType;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.msc.service.StartException;
 
 /**
- * Date: 05.11.2011
- * Reserved logging id ranges from: http://community.jboss.org/wiki/LoggingIds: 11330 - 11399
- *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface JmxMessages {
+@MessageLogger(projectCode = "WFLYJMX", length = 4)
+public interface JmxLogger extends BasicLogger {
 
     /**
-     * The message.
+     * A logger with the category of the package name.
      */
-    JmxMessages MESSAGES = Messages.getBundle(JmxMessages.class);
+    JmxLogger ROOT_LOGGER = Logger.getMessageLogger(JmxLogger.class, "org.jboss.as.jmx");
+
+    /**
+     * Creates an exception indicating the inability to shutdown the RMI registry.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 1, value = "Could not shutdown rmi registry")
+    void cannotShutdownRmiRegistry(@Cause Throwable cause);
+
+    /**
+     * Creates an exception indicating the JMX connector could not unbind from the registry.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 2, value = "Could not stop connector server")
+    void cannotStopConnectorServer(@Cause Throwable cause);
+
+    /**
+     * Creates an exception indicating the JMX connector could not unbind from the registry.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 3, value = "Could not unbind jmx connector from registry")
+    void cannotUnbindConnector(@Cause Throwable cause);
+
+    /**
+     * Logs a warning message indicating no {@link javax.management.ObjectName} is available to unregister.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 4, value = "No ObjectName available to unregister")
+    void cannotUnregisterObject();
+
+    /**
+     * Logs an error message indicating a failure to unregister the object name.
+     *
+     * @param cause the cause of the error.
+     * @param name  the name of the object name.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 5, value = "Failed to unregister [%s]")
+    void unregistrationFailure(@Cause Throwable cause, ObjectName name);
+
+    /**
+     * The jmx-connector element is no longer supported.
+     *
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 6, value = "<jmx-connector/> is no longer supporting. <remoting-connector/> should be used instead to allow remote connections via JBoss Remoting.")
+    void jmxConnectorNotSupported();
+
 
     @Message(id = Message.NONE, value = "entry")
     String compositeEntryTypeName();
@@ -123,7 +179,7 @@ public interface JmxMessages {
      *
      * @return an {@link AttributeNotFoundException} for the error.
      */
-    @Message(id = 11330, value = "Could not find any attribute matching: %s")
+    @Message(id = 7, value = "Could not find any attribute matching: %s")
     AttributeNotFoundException attributeNotFound(String name);
 
     /**
@@ -133,7 +189,7 @@ public interface JmxMessages {
      *
      * @return an {@link AttributeNotFoundException} for the error.
      */
-    @Message(id = 11331, value = "Attribute %s is not writable")
+    @Message(id = 8, value = "Attribute %s is not writable")
     AttributeNotFoundException attributeNotWritable(javax.management.Attribute attribute);
 
     /**
@@ -146,7 +202,7 @@ public interface JmxMessages {
      * @param s
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11332, value = "Could not create ObjectName for address %s from string %s")
+    @Message(id = 9, value = "Could not create ObjectName for address %s from string %s")
     RuntimeException cannotCreateObjectName(@Cause Throwable cause, PathAddress address, String s);
 
     /**
@@ -157,7 +213,7 @@ public interface JmxMessages {
      *
      * @return a {@link ReflectionException} for the error.
      */
-    @Message(id = 11333, value = "Could not set %s")
+    @Message(id = 10, value = "Could not set %s")
     ReflectionException cannotSetAttribute(@Cause Exception cause, String name);
 
     /**
@@ -167,7 +223,7 @@ public interface JmxMessages {
      *
      * @return an {@link InstanceNotFoundException} for the exception.
      */
-    @Message(id = 11334, value = "No description provider found for %s")
+    @Message(id = 11, value = "No description provider found for %s")
     InstanceNotFoundException descriptionProviderNotFound(PathAddress address);
 
     /**
@@ -178,7 +234,7 @@ public interface JmxMessages {
      *
      * @return an {@link IllegalArgumentException} for the exception.
      */
-    @Message(id = 11335, value = "%s and %s have different lengths")
+    @Message(id = 12, value = "%s and %s have different lengths")
     IllegalArgumentException differentLengths(String name1, String name2);
 
     /**
@@ -189,7 +245,7 @@ public interface JmxMessages {
      *
      * @return an {@link InvalidAttributeValueException} for the error.
      */
-    @Message(id = 11336, value = "Bad type for '%s'")
+    @Message(id = 13, value = "Bad type for '%s'")
     InvalidAttributeValueException invalidAttributeType(@Cause Throwable cause, String name);
 
     /**
@@ -200,7 +256,7 @@ public interface JmxMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11337, value = "Invalid key %s for %s")
+    @Message(id = 14, value = "Invalid key %s for %s")
     IllegalArgumentException invalidKey(List<?> keys, Map.Entry<?, Object> entry);
 
     /**
@@ -211,7 +267,7 @@ public interface JmxMessages {
      *
      * @return an {@link Error} for the error.
      */
-    @Message(id = 11338, value = "Invalid ObjectName: %s; %s")
+    @Message(id = 15, value = "Invalid ObjectName: %s; %s")
     Error invalidObjectName(String name, String message);
 
     /**
@@ -249,7 +305,7 @@ public interface JmxMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11339, value = "Received request for server socket %s on port [%d] but the service socket configured for port [%d]")
+    @Message(id = 16, value = "Received request for server socket %s on port [%d] but the service socket configured for port [%d]")
     IllegalStateException invalidServerSocketPort(String name, int port, int configuredPort);
 
     /**
@@ -259,7 +315,7 @@ public interface JmxMessages {
      *
      * @return an {@link InstanceNotFoundException} for the error.
      */
-    @Message(id = 11340, value = "No MBean found with name %s")
+    @Message(id = 17, value = "No MBean found with name %s")
     InstanceNotFoundException mbeanNotFound(ObjectName name);
 
     /**
@@ -270,7 +326,7 @@ public interface JmxMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11341, value = "Failed to register mbean [%s]")
+    @Message(id = 18, value = "Failed to register mbean [%s]")
     StartException mbeanRegistrationFailed(@Cause Throwable cause, String name);
 
     /**
@@ -280,7 +336,7 @@ public interface JmxMessages {
      *
      * @return a {@link InstanceNotFoundException} for the error.
      */
-    @Message(id = 11342, value = "No operation called '%s'")
+    @Message(id = 19, value = "No operation called '%s'")
     InstanceNotFoundException noOperationCalled(String operation);
 
     /**
@@ -292,7 +348,7 @@ public interface JmxMessages {
      *
      * @return a {@link MBeanException} for the error.
      */
-    @Message(id = 11343, value = "No operation called '%s' at %s")
+    @Message(id = 20, value = "No operation called '%s' at %s")
     MBeanException noOperationCalled(@Cause Exception cause, String operation, PathAddress address);
 
     /**
@@ -302,7 +358,7 @@ public interface JmxMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11344, value = "%s is null")
+    @Message(id = 21, value = "%s is null")
     IllegalArgumentException nullVar(String name);
 
     /**
@@ -312,7 +368,7 @@ public interface JmxMessages {
      *
      * @return an {@link InstanceNotFoundException} for the error.
      */
-    @Message(id = 11345, value = "No registration found for path address %s")
+    @Message(id = 22, value = "No registration found for path address %s")
     InstanceNotFoundException registrationNotFound(PathAddress address);
 
     /**
@@ -322,7 +378,7 @@ public interface JmxMessages {
      *
      * @return the message.
      */
-    @Message(id = 11346, value = "You can't create mbeans under the reserved domain '%s'")
+    @Message(id = 23, value = "You can't create mbeans under the reserved domain '%s'")
     String reservedMBeanDomain(String name);
 
     /**
@@ -332,7 +388,7 @@ public interface JmxMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11347, value = "Unknown type %s")
+    @Message(id = 24, value = "Unknown type %s")
     RuntimeException unknownType(ModelType type);
 
     /**
@@ -342,7 +398,7 @@ public interface JmxMessages {
      *
      * @return a {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11348, value = "Unknown value %s")
+    @Message(id = 25, value = "Unknown value %s")
     IllegalArgumentException unknownValue(Object value);
 
     /**
@@ -350,50 +406,49 @@ public interface JmxMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11349, value = "Need the name parameter for wildcard add")
+    @Message(id = 26, value = "Need the name parameter for wildcard add")
     IllegalStateException wildcardNameParameterRequired();
 
-    @Message(id = 11350, value="An error happened creating a composite type for %s")
+    @Message(id = 27, value="An error happened creating a composite type for %s")
     IllegalStateException errorCreatingCompositeType(@Cause OpenDataException e, OpenType<?> type);
 
-    @Message(id = 11351, value="An error happened creating a composite data for %s")
+    @Message(id = 28, value="An error happened creating a composite data for %s")
     IllegalStateException errorCreatingCompositeData(@Cause OpenDataException e, OpenType<?> type);
 
-    @Message(id = 11352, value="Unknown domain: %s")
+    @Message(id = 29, value="Unknown domain: %s")
     IllegalArgumentException unknownDomain(String domain);
 
-    @Message(id = 11353, value="Expression can not be converted into target type %s")
+    @Message(id = 30, value="Expression can not be converted into target type %s")
     IllegalArgumentException expressionCannotBeConvertedIntoTargeteType(OpenType<?> type);
 
-    @Message(id = 11354, value = "Unknown child %s")
+    @Message(id = 31, value = "Unknown child %s")
     IllegalArgumentException unknownChild(String child);
 
-    @Message(id = 11355, value = "ObjectName cannot be null")
+    @Message(id = 32, value = "ObjectName cannot be null")
     IllegalArgumentException objectNameCantBeNull();
 
-    @Message(id = 11356, value = "'domain-name' can only be 'jboss.as'")
+    @Message(id = 33, value = "'domain-name' can only be 'jboss.as'")
     String domainNameMustBeJBossAs();
 
 
-    @Message(id = 11357, value = "'false' is the only acceptable value for 'proper-property-format'")
+    @Message(id = 34, value = "'false' is the only acceptable value for 'proper-property-format'")
     String properPropertyFormatMustBeFalse();
 
-    @Message(id = 11358, value = "The 'enabled' attribute of audit-log must be false")
+    @Message(id = 35, value = "The 'enabled' attribute of audit-log must be false")
     String auditLogEnabledMustBeFalse();
 
-    @Message(id = 11359, value = "There is no handler called '%s'")
+    @Message(id = 36, value = "There is no handler called '%s'")
     IllegalStateException noHandlerCalled(String name);
 
-    @Message(id = 11360, value = "Unauthorized access")
+    @Message(id = 37, value = "Unauthorized access")
     JMRuntimeException unauthorized();
 
-    @Message(id = 11361, value = "Not authorized to write attribute: '%s'")
+    @Message(id = 38, value = "Not authorized to write attribute: '%s'")
     JMRuntimeException notAuthorizedToWriteAttribute(String attributeName);
 
-    @Message(id = 11362, value = "Not authorized to read attribute: '%s'")
+    @Message(id = 39, value = "Not authorized to read attribute: '%s'")
     JMRuntimeException notAuthorizedToReadAttribute(String attributeName);
 
-    @Message(id = 11363, value = "Not authorized to invoke operation: '%s'")
+    @Message(id = 40, value = "Not authorized to invoke operation: '%s'")
     JMRuntimeException notAuthorizedToExecuteOperation(String operationName);
 }
-

@@ -42,7 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jboss.as.jmx.JmxMessages;
+
+import org.jboss.as.jmx.logging.JmxLogger;
 
 import org.jboss.as.jmx.model.TypeConverters.TypeConverter;
 import org.jboss.dmr.ModelNode;
@@ -194,8 +195,8 @@ public class ExpressionTypeConverterUnitTestCase {
         CompositeType type = assertCast(CompositeType.class, converter.getOpenType());
         Set<String> keys = type.keySet();
         Assert.assertEquals(2, keys.size());
-        assertCompositeType(type, "name", String.class.getName(), JmxMessages.MESSAGES.propertyName());
-        assertCompositeType(type, "value", String.class.getName(), JmxMessages.MESSAGES.propertyValue());
+        assertCompositeType(type, "name", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyName());
+        assertCompositeType(type, "value", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyValue());
 
         CompositeData data = assertCast(CompositeData.class, converter.fromModelNode(new ModelNode().set("one", "uno")));
         Assert.assertEquals(type, data.getCompositeType());
@@ -218,8 +219,8 @@ public class ExpressionTypeConverterUnitTestCase {
         CompositeType type = assertCast(CompositeType.class, converter.getOpenType());
         Set<String> keys = type.keySet();
         Assert.assertEquals(2, keys.size());
-        assertCompositeType(type, "name", String.class.getName(), JmxMessages.MESSAGES.propertyName());
-        assertCompositeType(type, "value", String.class.getName(), JmxMessages.MESSAGES.propertyValue());
+        assertCompositeType(type, "name", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyName());
+        assertCompositeType(type, "value", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyValue());
 
         CompositeData data = assertCast(CompositeData.class, converter.fromModelNode(new ModelNode().set("one", 1)));
         Assert.assertEquals(type, data.getCompositeType());
@@ -638,8 +639,8 @@ public class ExpressionTypeConverterUnitTestCase {
         CompositeType type = assertCast(CompositeType.class, converter.getOpenType());
         Set<String> keys = type.keySet();
         Assert.assertEquals(2, keys.size());
-        assertCompositeType(type, "name", String.class.getName(), JmxMessages.MESSAGES.propertyName());
-        assertCompositeType(type, "value", String.class.getName(), JmxMessages.MESSAGES.propertyValue());
+        assertCompositeType(type, "name", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyName());
+        assertCompositeType(type, "value", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyValue());
 
         CompositeData data = assertCast(CompositeData.class, converter.fromModelNode(new ModelNode().setExpression("one", "${this.should.not.exist.!!!!!:uno}")));
         Assert.assertEquals(type, data.getCompositeType());
@@ -662,8 +663,8 @@ public class ExpressionTypeConverterUnitTestCase {
         CompositeType type = assertCast(CompositeType.class, converter.getOpenType());
         Set<String> keys = type.keySet();
         Assert.assertEquals(2, keys.size());
-        assertCompositeType(type, "name", String.class.getName(), JmxMessages.MESSAGES.propertyName());
-        assertCompositeType(type, "value", String.class.getName(), JmxMessages.MESSAGES.propertyValue());
+        assertCompositeType(type, "name", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyName());
+        assertCompositeType(type, "value", String.class.getName(), JmxLogger.ROOT_LOGGER.propertyValue());
 
         CompositeData data = assertCast(CompositeData.class, converter.fromModelNode(new ModelNode().set("one", "${this.should.not.exist.!!!!!:1}")));
         Assert.assertEquals(type, data.getCompositeType());

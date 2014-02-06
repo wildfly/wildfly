@@ -35,7 +35,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE;
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.ObjectName;
@@ -44,6 +43,7 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.ReadResourceDescriptionHandler;
+import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -69,7 +69,7 @@ class ResourceAccessControlUtil {
     ResourceAccessControl getResourceAccessWithInstanceNotFoundExceptionIfNotAccessible(ObjectName name, PathAddress address, boolean operations) throws InstanceNotFoundException {
         ResourceAccessControl accessControl = getResourceAccess(address, operations);
         if (!accessControl.isAccessibleResource()) {
-            throw MESSAGES.mbeanNotFound(name);
+            throw JmxLogger.ROOT_LOGGER.mbeanNotFound(name);
         }
         return accessControl;
     }

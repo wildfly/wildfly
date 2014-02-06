@@ -118,8 +118,8 @@ public class RbacUtil {
                 if (!FAILED.equals(outcome)) {
                     fail("Didn't fail: " + result.asString());
                 }
-                if (!result.get(FAILURE_DESCRIPTION).asString().contains("WFLYCTL0313") && !result.asString().contains("11360")
-                        && !result.asString().contains("11361")  && !result.asString().contains("11362")  && !result.asString().contains("11363")) {
+                if (!result.get(FAILURE_DESCRIPTION).asString().contains("WFLYCTL0313") && !result.asString().contains("WFLYJMX0037")
+                        && !result.asString().contains("WFLYJMX0038")  && !result.asString().contains("WFLYJMX0039")  && !result.asString().contains("WFLYJMX0040")) {
                     fail("Incorrect failure type: " + result.asString());
                 }
                 break;
@@ -129,7 +129,7 @@ public class RbacUtil {
                     fail("Didn't fail: " + result.asString());
                 }
                 String failureDesc = result.get(FAILURE_DESCRIPTION).asString();
-                if (!failureDesc.contains("WFLYCTL0216") && !failureDesc.contains("WFLYCTL0030") && !failureDesc.contains("11340")) {
+                if (!failureDesc.contains("WFLYCTL0216") && !failureDesc.contains("WFLYCTL0030") && !failureDesc.contains("WFLYJMX0017")) {
                     fail("Incorrect failure type: " + result.asString());
                 }
                 break;
@@ -140,7 +140,7 @@ public class RbacUtil {
                 }
                 String failureDesc = result.get(FAILURE_DESCRIPTION).asString();
                 if (failureDesc.contains("WFLYCTL0216") || failureDesc.contains("WFLYCTL0030")
-                        || failureDesc.contains("WFLYCTL0313") || failureDesc.contains("11340")) {
+                        || failureDesc.contains("WFLYCTL0313") || failureDesc.contains("WFLYJMX0017")) {
                     fail("Incorrect failure type: " + result.asString());
                 }
                 break;
