@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.transaction.UserTransaction;
+import javax.transaction.TransactionManager;
 
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
@@ -51,7 +51,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
 
     private final InjectedValue<BeanManager> beanManagerInjector = new InjectedValue<>();
     private final InjectedValue<ExecutorService> executorServiceInjector = new InjectedValue<>();
-    private final InjectedValue<UserTransaction> userTransactionInjector = new InjectedValue<>();
+    private final InjectedValue<TransactionManager> transactionManagerInjector = new InjectedValue<>();
 
     private BatchEnvironment batchEnvironment = null;
     private Properties properties = null;
@@ -62,7 +62,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         WildFlyBatchLogger.LOGGER.debugf("Creating batch environment; %s", classLoader);
         final BatchEnvironment batchEnvironment = new WildFlyBatchEnvironment(classLoader,
                 beanManagerInjector.getOptionalValue(), executorServiceInjector.getValue(),
-                userTransactionInjector.getOptionalValue(), properties);
+                transactionManagerInjector.getOptionalValue(), properties);
         // Add the service to the factory
         BatchEnvironmentFactory.getInstance().add(classLoader, batchEnvironment);
         this.batchEnvironment = batchEnvironment;
@@ -98,25 +98,25 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         this.properties = properties;
     }
 
-    public InjectedValue<UserTransaction> getUserTransactionInjector() {
-        return userTransactionInjector;
+    public InjectedValue<TransactionManager> getTransactionManagerInjector() {
+        return transactionManagerInjector;
     }
 
     private static class WildFlyBatchEnvironment implements BatchEnvironment {
 
         private final ArtifactFactory artifactFactory;
         private final ExecutorService executorService;
-        private final UserTransaction userTransaction;
+        private final TransactionManager transactionManager;
         private final Properties properties;
         private final ClassLoader classLoader;
 
         WildFlyBatchEnvironment(final ClassLoader classLoader, final BeanManager beanManager,
-                                final ExecutorService executorService, final UserTransaction userTransaction,
+                                final ExecutorService executorService, final TransactionManager transactionManager,
                                 final Properties properties) {
             this.classLoader = classLoader;
             artifactFactory = (beanManager == null ? null : new WildFlyArtifactFactory(beanManager));
             this.executorService = executorService;
-            this.userTransaction = userTransaction;
+            this.transactionManager = transactionManager;
             this.properties = properties;
         }
 
@@ -187,11 +187,11 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         }
 
         @Override
-        public UserTransaction getUserTransaction() {
-            if (userTransaction == null) {
-                throw WildFlyBatchMessages.MESSAGES.serviceNotInstalled("UserTransaction");
+        public TransactionManager getTransactionManager() {
+            if (transactionManager == null) {
+                throw WildFlyBatchMessages.MESSAGES.serviceNotInstalled("TransactionManager");
             }
-            return userTransaction;
+            return transactionManager;
         }
 
         @Override

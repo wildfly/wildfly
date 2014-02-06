@@ -24,7 +24,7 @@ package org.wildfly.extension.batch.deployment;
 
 import java.util.concurrent.ExecutorService;
 import javax.enterprise.inject.spi.BeanManager;
-import javax.transaction.UserTransaction;
+import javax.transaction.TransactionManager;
 
 import org.jberet.spi.BatchEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
@@ -84,7 +84,7 @@ public class BatchEnvironmentProcessor implements DeploymentUnitProcessor {
             // Only add transactions and the BeanManager if this is a batch deployment
             if (isBatchDeployment(deploymentUnit)) {
                 BatchLogger.LOGGER.tracef("Adding UserTransaction and BeanManager service dependencies for deployment %s", deploymentUnit.getName());
-                serviceBuilder.addDependency(TxnServices.JBOSS_TXN_USER_TRANSACTION, UserTransaction.class, service.getUserTransactionInjector());
+                serviceBuilder.addDependency(TxnServices.JBOSS_TXN_TRANSACTION_MANAGER, TransactionManager.class, service.getTransactionManagerInjector());
 
                 // Add the bean manager
                 serviceBuilder.addDependency(BatchServiceNames.beanManagerServiceName(deploymentUnit), new CastingInjector<>(service.getBeanManagerInjector(), BeanManager.class));
