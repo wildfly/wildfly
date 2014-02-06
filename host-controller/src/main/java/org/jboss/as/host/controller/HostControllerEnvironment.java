@@ -477,18 +477,20 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     }
 
     /**
-     * Gets the address the process controller told this Host Controller to listen on for communication from the servers.
+     * Gets the address the process controller told this Host Controller to use for communication with it.
+     * Not related to communication with management clients.
      *
-     * @return the host controller's address
+     * @return the address used for inter-process communication with the Process Controller
      */
     public InetAddress getHostControllerAddress() {
         return hostControllerAddress;
     }
 
     /**
-     * Gets the port the process controller told this Host Controller to listen on for communication from the servers.
+     * Gets the port the process controller told this Host Controller to use for communication with it.
+     * Not related to communication with management clients.
      *
-     * @return the host controller's port
+     * @return the port used for inter-process communication with the Process Controller
      */
     public Integer getHostControllerPort() {
         return hostControllerPort;
