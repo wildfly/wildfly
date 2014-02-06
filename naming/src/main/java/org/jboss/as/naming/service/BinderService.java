@@ -34,7 +34,7 @@ import org.jboss.msc.value.InjectedValue;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+import static org.jboss.as.naming.logging.NamingLogger.ROOT_LOGGER;
 
 /**
  * Service responsible for binding and unbinding an entry into a naming context.  This service can be used as a dependency for

@@ -22,13 +22,12 @@
 
 package org.jboss.as.naming.deployment;
 
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.DeploymentUnit;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Configuration object used to managed a collection a JNDI namespace bindings for a deployment.  This is primarily used
@@ -67,7 +66,7 @@ public class NamespaceBindings {
     public boolean addBinding(final JndiName name, final Object value) throws DuplicateBindingException {
         final Object existing = bindings.putIfAbsent(name, value);
         if (existing != null && !existing.equals(value)) {
-            throw new DuplicateBindingException(MESSAGES.duplicateBinding(name, existing, value));
+            throw new DuplicateBindingException(NamingLogger.ROOT_LOGGER.duplicateBinding(name, existing, value));
         }
         return existing == null;
     }

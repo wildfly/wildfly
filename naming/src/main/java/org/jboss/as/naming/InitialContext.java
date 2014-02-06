@@ -39,9 +39,8 @@ import javax.naming.spi.NamingManager;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.context.NamespaceContextSelector;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * @author Eduardo Martins
@@ -113,7 +112,7 @@ public class InitialContext extends InitialLdapContext {
                     final Class<?> factoryClass = Class.forName(factoryClassName, true, classLoader);
                     defaultInitCtx = ((javax.naming.spi.InitialContextFactory)factoryClass.newInstance()).getInitialContext(myProps);
                 } catch (Exception e) {
-                    throw MESSAGES.failedToInstantiate(e, "InitialContextFactory", factoryClassName, classLoader);
+                    throw NamingLogger.ROOT_LOGGER.failedToInstantiate(e, "InitialContextFactory", factoryClassName, classLoader);
                 }
             }
             gotDefault = true;

@@ -37,12 +37,11 @@ import javax.naming.spi.DirObjectFactory;
 import javax.naming.spi.ObjectFactory;
 
 import org.jboss.as.naming.ServiceAwareObjectFactory;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceContainer;
 import org.wildfly.security.manager.WildFlySecurityManager;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * ObjectFactoryBuilder implementation used to support custom object factories being loaded from modules. This class
@@ -174,7 +173,7 @@ public class ObjectFactoryBuilder implements javax.naming.spi.ObjectFactoryBuild
             }
             return factory;
         } catch (Throwable t) {
-            throw MESSAGES.objectFactoryCreationFailure(t);
+            throw NamingLogger.ROOT_LOGGER.objectFactoryCreationFailure(t);
         }
     }
 

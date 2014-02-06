@@ -21,7 +21,7 @@
  */
 package org.jboss.as.naming.service;
 
-import org.jboss.as.naming.NamingMessages;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.context.external.ExternalContexts;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.msc.service.Service;
@@ -58,7 +58,7 @@ public class ExternalContextsService implements Service<ExternalContexts> {
     @Override
     public ExternalContexts getValue() throws IllegalStateException, IllegalArgumentException {
         if(!started) {
-            throw NamingMessages.MESSAGES.serviceNotStarted(SERVICE_NAME);
+            throw NamingLogger.ROOT_LOGGER.serviceNotStarted(SERVICE_NAME);
         }
         return externalContexts;
     }

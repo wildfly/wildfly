@@ -22,14 +22,13 @@
 
 package org.jboss.as.naming.deployment;
 
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.msc.value.Value;
 
 import javax.naming.Context;
 import javax.naming.NamingException;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Value that is looked up from a naming context.
@@ -60,7 +59,7 @@ public class NamingLookupValue<T> implements Value<T> {
         try {
             return (T)context.lookup(contextName);
         } catch (NamingException e) {
-            throw MESSAGES.entryNotRegistered(e, contextName, context);
+            throw NamingLogger.ROOT_LOGGER.entryNotRegistered(e, contextName, context);
         }
     }
 

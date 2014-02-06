@@ -24,6 +24,7 @@ package org.jboss.as.naming.service;
 
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -31,8 +32,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import static org.jboss.as.naming.logging.NamingLogger.ROOT_LOGGER;
 
 /**
  * Service responsible for creating and managing the life-cycle of the Naming Server.
@@ -71,7 +71,7 @@ public class NamingService implements Service<NamingStore> {
         try {
             NamingContext.setActiveNamingStore(namingStore.getValue());
         } catch (Throwable t) {
-            throw new StartException(MESSAGES.failedToStart("naming service"), t);
+            throw new StartException(NamingLogger.ROOT_LOGGER.failedToStart("naming service"), t);
         }
     }
 

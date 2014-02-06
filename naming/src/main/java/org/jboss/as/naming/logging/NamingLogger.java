@@ -20,8 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.naming;
+package org.jboss.as.naming.logging;
 
+import java.io.IOException;
 import java.security.Permission;
 
 import javax.naming.Context;
@@ -29,29 +30,112 @@ import javax.naming.InvalidNameException;
 import javax.naming.Name;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
-
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.naming.subsystem.BindingType;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.logging.Messages;
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.Logger;
+import static org.jboss.logging.Logger.Level.ERROR;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.logging.annotations.MessageLogger;
+
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
+
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.remoting3.Channel;
 
 /**
  * Date: 17.06.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface NamingMessages {
+@MessageLogger(projectCode = "WFLYNAM", length = 4)
+public interface NamingLogger extends BasicLogger {
     /**
-     * The default messages.
+     * The root logger with a category of the package name.
      */
-    NamingMessages MESSAGES = Messages.getBundle(NamingMessages.class);
+    NamingLogger ROOT_LOGGER = Logger.getMessageLogger(NamingLogger.class, "org.jboss.as.naming");
+
+    /**
+     * Logs an informational message indicating the naming subsystem is being activated.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 1, value = "Activating Naming Subsystem")
+    void activatingSubsystem();
+
+    /**
+     * Logs a warning message indicating the {@code name} failed to get set.
+     *
+     * @param cause the cause of the error.
+     * @param name  the name of the object that didn't get set.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 2, value = "Failed to set %s")
+    void failedToSet(@Cause Throwable cause, String name);
+
+    /**
+     * Logs an informational message indicating the naming service is starting.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 3, value = "Starting Naming Service")
+    void startingService();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 4, value = "Unable to send header, closing channel")
+    void failedToSendHeader(@Cause IOException exception);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 5, value = "Error determining version selected by client.")
+    void failedToDetermineClientVersion(@Cause IOException exception);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 6, value = "Closing channel %s due to an error")
+    void closingChannel(Channel channel, @Cause Throwable t);
+
+    @LogMessage(level = INFO)
+    @Message(id = 7, value = "Channel end notification received, closing channel %s")
+    void closingChannelOnChannelEnd(Channel channel);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 8, value = "Unexpected internal error")
+    void unexpectedError(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 9, value = "Null correlationId so error not sent to client")
+    void nullCorrelationId(@Cause Throwable t);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 10, value = "Failed to send exception response to client")
+    void failedToSendExceptionResponse(@Cause IOException ioe);
+
+
+    @LogMessage(level = ERROR)
+    @Message(id = 11, value = "Unexpected parameter type - expected: %d  received: %d")
+    void unexpectedParameterType(byte expected, byte actual);
+
+    /**
+     * Creates an exception indicating that a class is not an {@link ObjectFactory} instance, from the specified module.
+     * @param cause
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 12, value = "Failed to release binder service, used for a runtime made JNDI binding")
+    void failedToReleaseBinderService(@Cause Throwable cause);
+
+    /**
+     *  A message indicating that the lookup of an entry's JNDI view value failed.
+     *
+     * @param cause the cause of the error.
+     * @param entry the jndi name of the entry
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 13, value = "Failed to obtain jndi view value for entry %s.")
+    void failedToLookupJndiViewValue(String entry, @Cause Throwable cause);
+
 
     /**
      * Creates an exception indicating you cannot add a {@link Permission} to a read-only
@@ -59,7 +143,7 @@ public interface NamingMessages {
      *
      * @return A {@link SecurityException} for the error.
      */
-    @Message(id = 11830, value = "Attempt to add a Permission to a readonly PermissionCollection")
+    @Message(id = 14, value = "Attempt to add a Permission to a readonly PermissionCollection")
     SecurityException cannotAddToReadOnlyPermissionCollection();
 
     /**
@@ -69,7 +153,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11831, value = "%s cannot be null.")
+    @Message(id = 15, value = "%s cannot be null.")
     String cannotBeNull(String name);
 
     /**
@@ -79,7 +163,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11832, value = "Could not dereference object")
+    @Message(id = 16, value = "Could not dereference object")
     NamingException cannotDeferenceObject(@Cause Throwable cause);
 
     /**
@@ -87,7 +171,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11833, value = "Unable to list a non Context binding.")
+    @Message(id = 17, value = "Unable to list a non Context binding.")
     NamingException cannotListNonContextBinding();
 
     /**
@@ -95,7 +179,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11834, value = "Could not lookup link")
+    @Message(id = 18, value = "Could not lookup link")
     String cannotLookupLink();
 
     /**
@@ -106,7 +190,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11835, value = "Cannot obtain %s")
+    @Message(id = 19, value = "Cannot obtain %s")
     IllegalStateException cannotObtain(@Cause Throwable cause, String name);
 
     /**
@@ -116,7 +200,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11836, value = "Could not resolve service %s")
+    @Message(id = 20, value = "Could not resolve service %s")
     NamingException cannotResolveService(ServiceName serviceName);
 
     /**
@@ -128,7 +212,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11837, value = "Could not resolve service reference to %s in factory %s. Service was in state %s.")
+    @Message(id = 21, value = "Could not resolve service reference to %s in factory %s. Service was in state %s.")
     NamingException cannotResolveService(ServiceName serviceName, String className, String state);
 
     /**
@@ -140,7 +224,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11838, value = "Could not resolve service reference to %s in factory %s. This is a bug in ServiceReferenceObjectFactory. State was %s.")
+    @Message(id = 22, value = "Could not resolve service reference to %s in factory %s. This is a bug in ServiceReferenceObjectFactory. State was %s.")
     NamingException cannotResolveServiceBug(ServiceName serviceName, String className, String state);
 
     /**
@@ -152,7 +236,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11839, value = "Duplicate JNDI bindings for '%s' are not compatible.  [%s] != [%s]")
+    @Message(id = 23, value = "Duplicate JNDI bindings for '%s' are not compatible.  [%s] != [%s]")
     String duplicateBinding(JndiName jndiName, Object existing, Object value);
 
     /**
@@ -160,7 +244,7 @@ public interface NamingMessages {
      *
      * @return an {@link InvalidNameException} for the error.
      */
-    @Message(id = 11840, value = "An empty name is not allowed")
+    @Message(id = 24, value = "An empty name is not allowed")
     InvalidNameException emptyNameNotAllowed();
 
     /**
@@ -172,7 +256,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11841, value = "Jndi entry '%s' is not yet registered in context '%s'")
+    @Message(id = 25, value = "Jndi entry '%s' is not yet registered in context '%s'")
     IllegalStateException entryNotRegistered(@Cause Throwable cause, String contextName, Context context);
 
     /**
@@ -182,7 +266,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11842, value = "Failed to destroy root context")
+    @Message(id = 26, value = "Failed to destroy root context")
     IllegalStateException failedToDestroyRootContext(@Cause Throwable cause);
 
     /**
@@ -194,7 +278,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11843, value = "Failed instantiate %s %s from classloader %s")
+    @Message(id = 27, value = "Failed instantiate %s %s from classloader %s")
     NamingException failedToInstantiate(@Cause Throwable cause, String description, String className, ClassLoader classLoader);
 
     /**
@@ -205,7 +289,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11844, value = "Failed to read %s context entries.")
+    @Message(id = 28, value = "Failed to read %s context entries.")
     String failedToReadContextEntries(String bindingName);
 
     /**
@@ -215,7 +299,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11845, value = "Failed to start %s")
+    @Message(id = 29, value = "Failed to start %s")
     String failedToStart(String name);
 
     /**
@@ -225,7 +309,7 @@ public interface NamingMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11846, value = "Illegal context in name: %s")
+    @Message(id = 30, value = "Illegal context in name: %s")
     RuntimeException illegalContextInName(String jndiName);
 
     /**
@@ -233,7 +317,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11847, value = "invalid actions mask")
+    @Message(id = 31, value = "invalid actions mask")
     IllegalArgumentException invalidActionMask();
 
     /**
@@ -243,7 +327,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11848, value = "Invalid context reference.  Not a '%s' reference.")
+    @Message(id = 32, value = "Invalid context reference.  Not a '%s' reference.")
     NamingException invalidContextReference(String referenceName);
 
     /**
@@ -253,7 +337,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11849, value = "A valid JNDI name must be provided: %s")
+    @Message(id = 33, value = "A valid JNDI name must be provided: %s")
     IllegalArgumentException invalidJndiName(String jndiName);
 
     /**
@@ -261,7 +345,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11850, value = "Load factor must be greater than 0 and less than or equal to 1")
+    @Message(id = 34, value = "Load factor must be greater than 0 and less than or equal to 1")
     IllegalArgumentException invalidLoadFactor();
 
     /**
@@ -271,7 +355,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11851, value = "invalid permission, unknown action: %s")
+    @Message(id = 35, value = "invalid permission, unknown action: %s")
     IllegalArgumentException invalidPermission(Permission permission);
 
     /**
@@ -281,7 +365,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11852, value = "invalid permission, unknown action: %s")
+    @Message(id = 36, value = "invalid permission, unknown action: %s")
     IllegalArgumentException invalidPermissionAction(String permissionAction);
 
     /**
@@ -289,7 +373,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11853, value = "Can not have a negative size table!")
+    @Message(id = 37, value = "Can not have a negative size table!")
     IllegalArgumentException invalidTableSize();
 
     /**
@@ -297,7 +381,7 @@ public interface NamingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11854, value = "Jndi view is only available in runtime mode.")
+    @Message(id = 38, value = "Jndi view is only available in runtime mode.")
     String jndiViewNotAvailable();
 
     /**
@@ -308,7 +392,7 @@ public interface NamingMessages {
      *
      * @return a {@link NameNotFoundException} for the error.
      */
-    @Message(id = 11855, value = "Name '%s' not found in context '%s'")
+    @Message(id = 39, value = "Name '%s' not found in context '%s'")
     NameNotFoundException nameNotFoundInContext(String name, Name contextName);
 
     /**
@@ -316,7 +400,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11856, value = "Nothing available to bind to.")
+    @Message(id = 40, value = "Nothing available to bind to.")
     IllegalStateException noBindingsAvailable();
 
     /**
@@ -326,7 +410,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11857, value = "%s is null")
+    @Message(id = 41, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
 
     /**
@@ -336,7 +420,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11858, value = "Failed to create object factory from classloader.")
+    @Message(id = 42, value = "Failed to create object factory from classloader.")
     NamingException objectFactoryCreationFailure(@Cause Throwable cause);
 
     /**
@@ -344,7 +428,7 @@ public interface NamingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 11859, value = "Naming context is read-only")
+    @Message(id = 43, value = "Naming context is read-only")
     UnsupportedOperationException readOnlyNamingContext();
 
     /**
@@ -354,7 +438,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11860, value = "Service with name [%s] already bound.")
+    @Message(id = 44, value = "Service with name [%s] already bound.")
     IllegalArgumentException serviceAlreadyBound(ServiceName serviceName);
 
     /**
@@ -362,7 +446,7 @@ public interface NamingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11861, value = "Table is full!")
+    @Message(id = 45, value = "Table is full!")
     IllegalStateException tableIsFull();
 
     /**
@@ -372,13 +456,13 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11862, value = "Thread interrupted while retrieving service reference for service %s")
+    @Message(id = 46, value = "Thread interrupted while retrieving service reference for service %s")
     NamingException threadInterrupt(ServiceName serviceName);
 
-    @Message(id = 11863, value = "Invalid name for context binding %s")
+    @Message(id = 47, value = "Invalid name for context binding %s")
     DeploymentUnitProcessingException invalidNameForContextBinding(String name);
 
-    @Message(id = 11864, value = "Invalid binding name %s, name must start with one of %s")
+    @Message(id = 48, value = "Invalid binding name %s, name must start with one of %s")
     OperationFailedException invalidNamespaceForBinding(String name, String namespaces);
 
     /**
@@ -386,7 +470,7 @@ public interface NamingMessages {
      * @param type the unknown type
      * @return
      */
-    @Message(id = 11865, value = "Unknown binding type %s")
+    @Message(id = 49, value = "Unknown binding type %s")
     OperationFailedException unknownBindingType(String type);
 
     /**
@@ -394,7 +478,7 @@ public interface NamingMessages {
      * @param type the unsupported type
      * @return
      */
-    @Message(id = 11866, value = "Unsupported simple binding type %s")
+    @Message(id = 50, value = "Unsupported simple binding type %s")
     OperationFailedException unsupportedSimpleBindingType(String type);
 
     /**
@@ -403,7 +487,7 @@ public interface NamingMessages {
      * @param cause the original cause of failure
      * @return
      */
-    @Message(id = 11867, value = "Unable to transform URL binding value %s")
+    @Message(id = 51, value = "Unable to transform URL binding value %s")
     OperationFailedException unableToTransformURLBindingValue(String value, @Cause Throwable cause);
 
     /**
@@ -411,7 +495,7 @@ public interface NamingMessages {
      * @param moduleID the module not loaded
      * @return
      */
-    @Message(id = 11868, value = "Could not load module %s")
+    @Message(id = 52, value = "Could not load module %s")
     OperationFailedException couldNotLoadModule(ModuleIdentifier moduleID);
 
     /**
@@ -420,7 +504,7 @@ public interface NamingMessages {
      * @param moduleID the module
      * @return
      */
-    @Message(id = 11869, value = "Could not load class %s from module %s")
+    @Message(id = 53, value = "Could not load class %s from module %s")
     OperationFailedException couldNotLoadClassFromModule(String className, ModuleIdentifier moduleID);
 
     /**
@@ -429,7 +513,7 @@ public interface NamingMessages {
      * @param moduleID the module
      * @return
      */
-    @Message(id = 11870, value = "Could not instantiate instance of class %s from module %s")
+    @Message(id = 54, value = "Could not instantiate instance of class %s from module %s")
     OperationFailedException couldNotInstantiateClassInstanceFromModule(String className, ModuleIdentifier moduleID);
 
     /**
@@ -438,7 +522,7 @@ public interface NamingMessages {
      * @param moduleID the module id
      * @return
      */
-    @Message(id = 11871, value = "Class %s from module %s is not an instance of ObjectFactory")
+    @Message(id = 55, value = "Class %s from module %s is not an instance of ObjectFactory")
     OperationFailedException notAnInstanceOfObjectFactory(String className, ModuleIdentifier moduleID);
 
     /**
@@ -446,7 +530,7 @@ public interface NamingMessages {
      * @param modelVersion the model version related with the transformer.
      * @return
      */
-    @Message(id = 11872, value = "Binding add operation for Simple URL not supported in Naming Subsystem model version %s")
+    @Message(id = 56, value = "Binding add operation for Simple URL not supported in Naming Subsystem model version %s")
     String failedToTransformSimpleURLNameBindingAddOperation(String modelVersion);
 
     /**
@@ -454,7 +538,7 @@ public interface NamingMessages {
      * @param modelVersion the model version related with the transformer.
      * @return
      */
-    @Message(id = 11873, value = "Binding add operation for Object Factory With Environment not supported in Naming Subsystem model version %s")
+    @Message(id = 57, value = "Binding add operation for Object Factory With Environment not supported in Naming Subsystem model version %s")
     String failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation(String modelVersion);
 
     /**
@@ -462,7 +546,7 @@ public interface NamingMessages {
      * @param modelVersion the model version related with the transformer.
      * @return
      */
-    @Message(id = 11874, value = "Binding add operation for external context not supported in Naming Subsystem model version %s")
+    @Message(id = 58, value = "Binding add operation for external context not supported in Naming Subsystem model version %s")
     String failedToTransformExternalContext(String modelVersion);
 
     /**
@@ -472,7 +556,7 @@ public interface NamingMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11875, value = "Resource lookup for injection failed: %s")
+    @Message(id = 59, value = "Resource lookup for injection failed: %s")
     RuntimeException resourceLookupForInjectionFailed(String jndiName, @Cause Throwable cause);
 
     /**
@@ -481,10 +565,10 @@ public interface NamingMessages {
      * @param attributeName
      * @return
      */
-    @Message(id = 11876, value = "Binding type %s requires attributed named %s defined")
+    @Message(id = 60, value = "Binding type %s requires attributed named %s defined")
     OperationFailedException bindingTypeRequiresAttributeDefined(BindingType bindingType, String attributeName);
 
-    @Message(id = 11877, value = "Binding type %s can not take a 'cache' attribute")
+    @Message(id = 61, value = "Binding type %s can not take a 'cache' attribute")
     OperationFailedException cacheNotValidForBindingType(BindingType type);
 
     /**
@@ -494,7 +578,7 @@ public interface NamingMessages {
      *
      * @return a {@link NamingException} for the error.
      */
-    @Message(id = 11878, value = "Failed to lookup %s")
+    @Message(id = 62, value = "Failed to lookup %s")
     NamingException lookupError(String name);
 
     /**
@@ -502,7 +586,7 @@ public interface NamingMessages {
      * @param serviceName
      * @return
      */
-    @Message(id = 11879, value = "%s service not started")
+    @Message(id = 63, value = "%s service not started")
     IllegalStateException serviceNotStarted(ServiceName serviceName);
 
 }

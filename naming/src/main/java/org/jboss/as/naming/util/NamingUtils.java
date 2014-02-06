@@ -31,11 +31,10 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.NotContextException;
+import org.jboss.as.naming.logging.NamingLogger;
 
 import java.util.Collection;
 import java.util.Iterator;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * Common utility functions used by the naming implementation.
@@ -108,7 +107,7 @@ public class NamingUtils {
      * @return the exception
      */
     public static NameNotFoundException nameNotFoundException(final String name, final Name contextName) {
-        return MESSAGES.nameNotFoundInContext(name, contextName);
+        return NamingLogger.ROOT_LOGGER.nameNotFoundInContext(name, contextName);
     }
 
     /**
@@ -127,7 +126,7 @@ public class NamingUtils {
      * @return the exception
      */
     public static InvalidNameException emptyNameException() {
-        return MESSAGES.emptyNameNotAllowed();
+        return NamingLogger.ROOT_LOGGER.emptyNameNotAllowed();
     }
 
     /**
