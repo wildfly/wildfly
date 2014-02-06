@@ -152,7 +152,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
 
                     super.initializeSocketBindingsOperations(ops);
 
-                    final String[] names = {"ajp", "http", "http-2", "https", "https-2", "ajps"};
+                    final String[] names = {"ajp", "http", "http-2", "https-non-default", "https-2", "ajps"};
                     final int[] ports = {8009, 8080, 8081, 8433, 8434, 8010};
                     for (int i = 0; i < names.length; i++) {
                         final ModelNode op = new ModelNode();

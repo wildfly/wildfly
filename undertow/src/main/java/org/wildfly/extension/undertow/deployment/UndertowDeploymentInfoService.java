@@ -441,7 +441,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             @Override
             public int getConfidentialPort(HttpServerExchange exchange) {
-                int port = exchange.getHostPort();
+                int port = exchange.getDestinationAddress().getPort();
                 return host.getValue().getServer().getValue().lookupSecurePort(port);
             }
         };

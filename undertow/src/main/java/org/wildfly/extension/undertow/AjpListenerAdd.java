@@ -24,6 +24,7 @@ package org.wildfly.extension.undertow;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.xnio.OptionMap;
@@ -41,7 +42,7 @@ class AjpListenerAdd extends ListenerAdd {
     ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException {
         ModelNode schemeNode = AjpListenerResourceDefinition.SCHEME.resolveModelAttribute(context, model);
         String scheme = null;
-        if(schemeNode.isDefined()) {
+        if (schemeNode.isDefined()) {
             scheme = schemeNode.asString();
         }
         return new AjpListenerService(name, scheme, listenerOptions);
@@ -49,6 +50,7 @@ class AjpListenerAdd extends ListenerAdd {
 
     @Override
     void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
-
+        String redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model).asString();
+        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(redirectBindingRef), SocketBinding.class, service.getRedirectSocket());
     }
 }
