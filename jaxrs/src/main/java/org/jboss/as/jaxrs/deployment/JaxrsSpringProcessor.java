@@ -37,7 +37,16 @@ import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.ListenerMetaData;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceController;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
 import org.jboss.vfs.VFS;
+import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 import java.io.Closeable;
@@ -56,7 +65,53 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
     public static final String SPRING_LISTENER = "org.resteasy.plugins.spring.SpringContextLoaderListener";
     public static final String SPRING_SERVLET = "org.springframework.web.servlet.DispatcherServlet";
     public static final String DISABLE_PROPERTY = "org.jboss.as.jaxrs.disableSpringIntegration";
+    public static final String SERVICE_NAME = "resteasy-spring-integration-resource-root";
 
+    private final ServiceTarget serviceTarget;
+    private VirtualFile resourceRoot;
+
+    public JaxrsSpringProcessor(ServiceTarget serviceTarget) {
+        this.serviceTarget = serviceTarget;
+    }
+
+    /**
+     * Lookup Seam integration resource loader.
+     * @return the Seam integration resource loader
+     * @throws DeploymentUnitProcessingException for any error
+     */
+    protected synchronized VirtualFile getResteasySpringVirtualFile() throws DeploymentUnitProcessingException {
+        try {
+            if (resourceRoot == null) {
+                URL url = this.getClass().getClassLoader().getResource(SPRING_INT_JAR);
+                if (url == null) {
+                    throw JaxrsMessages.MESSAGES.noSpringIntegrationJar();
+                }
+
+                File file = new File(url.toURI());
+                VirtualFile vf = VFS.getChild(file.toURI());
+                final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
+                Service<Closeable> mountHandleService = new Service<Closeable>() {
+                    public void start(StartContext startContext) throws StartException {
+                    }
+
+                    public void stop(StopContext stopContext) {
+                        VFSUtils.safeClose(mountHandle);
+                    }
+
+                    public Closeable getValue() throws IllegalStateException, IllegalArgumentException {
+                        return mountHandle;
+                    }
+                };
+                ServiceBuilder<Closeable> builder = serviceTarget.addService(ServiceName.JBOSS.append(SERVICE_NAME),
+                        mountHandleService);
+                builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+                resourceRoot = vf;
+            }
+            return resourceRoot;
+        } catch (Exception e) {
+            throw new DeploymentUnitProcessingException(e);
+        }
+    }
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
@@ -109,17 +164,8 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             }
             if (found) {
                 try {
-                    URL url = this.getClass().getClassLoader().getResource(SPRING_INT_JAR);
-                    if (url == null) {
-                        throw JaxrsMessages.MESSAGES.noSpringIntegrationJar();
-                    }
-
-                    File file = new File(url.toURI());
-                    VirtualFile vf = VFS.getChild(file.toURI());
-                    final Closeable mountHandle = VFS.mountZip(file, vf, TempFileProviderService.provider());
-
-                    MountHandle mh = new MountHandle(mountHandle); // actual close is done by the MSC service above
-                    ResourceRoot resourceRoot = new ResourceRoot(vf, mh);
+                    MountHandle mh = new MountHandle(null); // actual close is done by the MSC service above
+                    ResourceRoot resourceRoot = new ResourceRoot(getResteasySpringVirtualFile(), mh);
                     ModuleRootMarker.mark(resourceRoot);
                     deploymentUnit.addToAttachmentList(Attachments.RESOURCE_ROOTS, resourceRoot);
                 } catch (Exception e) {
