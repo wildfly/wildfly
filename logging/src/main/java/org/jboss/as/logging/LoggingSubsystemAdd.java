@@ -39,6 +39,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.logging.deployments.LoggingConfigDeploymentProcessor;
 import org.jboss.as.logging.deployments.LoggingDependencyDeploymentProcessor;
 import org.jboss.as.logging.deployments.LoggingProfileDeploymentProcessor;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;

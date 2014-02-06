@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.logging.LoggingMessages;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -55,7 +55,7 @@ public class FileResolver implements ModelNodeResolver<String> {
             result = resolve(context, relativeToNode.asString(), path);
         }
         if (result == null) {
-            throw LoggingMessages.MESSAGES.pathManagerServiceNotStarted();
+            throw new IllegalStateException(LoggingLogger.ROOT_LOGGER.pathManagerServiceNotStarted());
         }
         return result;
     }

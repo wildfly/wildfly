@@ -42,6 +42,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.logging.LoggingOperations.LoggingWriteAttributeHandler;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logmanager.config.FormatterConfiguration;
@@ -155,7 +156,7 @@ class CustomFormatterResourceDefinition extends TransformerResourceDefinition {
         public void performRuntime(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode model) throws OperationFailedException {
             final FormatterConfiguration configuration = logContextConfiguration.getFormatterConfiguration(name);
             if (configuration == null) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.formatterNotFound(name));
+                throw createOperationFailure(LoggingLogger.ROOT_LOGGER.formatterNotFound(name));
             }
             logContextConfiguration.removeFormatterConfiguration(name);
         }

@@ -22,7 +22,7 @@
 
 package org.jboss.as.logging.deployments;
 
-import org.jboss.as.logging.LoggingLogger;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;

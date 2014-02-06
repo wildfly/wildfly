@@ -30,8 +30,7 @@ import org.apache.log4j.Category;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.OptionHandler;
-import org.jboss.as.logging.LoggingLogger;
-import org.jboss.as.logging.LoggingMessages;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.ExtLogRecord;
 
@@ -139,7 +138,7 @@ public class Log4jAppenderHandler extends ExtHandler {
     protected void doPublish(final ExtLogRecord record) {
         final Appender appender = this.appender;
         if (appender == null) {
-            throw LoggingMessages.MESSAGES.handlerClosed();
+            throw LoggingLogger.ROOT_LOGGER.handlerClosed();
         }
         final LoggingEvent event = new LoggingEvent(record, DummyCategory.of(record.getLoggerName()));
         appender.doAppend(event);

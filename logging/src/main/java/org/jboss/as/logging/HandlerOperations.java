@@ -55,6 +55,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.logging.logmanager.Log4jAppenderHandler;
 import org.jboss.as.logging.logmanager.PropertySorter;
 import org.jboss.as.logging.resolvers.ModelNodeResolver;
@@ -122,7 +123,7 @@ final class HandlerOperations {
         public final void performRuntime(final OperationContext context, final ModelNode operation, final LogContextConfiguration logContextConfiguration, final String name, final ModelNode model) throws OperationFailedException {
             final HandlerConfiguration configuration = logContextConfiguration.getHandlerConfiguration(name);
             if (configuration == null) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.handlerConfigurationNotFound(name));
+                throw createOperationFailure(LoggingLogger.ROOT_LOGGER.handlerConfigurationNotFound(name));
             }
             if (attributes != null) {
                 boolean restartRequired = false;
@@ -292,9 +293,9 @@ final class HandlerOperations {
                         }
                     }
                 } catch (ClassNotFoundException e) {
-                    throw createOperationFailure(LoggingMessages.MESSAGES.classNotFound(e, className));
+                    throw createOperationFailure(LoggingLogger.ROOT_LOGGER.classNotFound(e, className));
                 } catch (ModuleLoadException e) {
-                    throw LoggingMessages.MESSAGES.cannotLoadModule(e, moduleName, "handler", name);
+                    throw LoggingLogger.ROOT_LOGGER.cannotLoadModule(e, moduleName, "handler", name);
                 }
             } else {
                 // Check for construction parameters
@@ -465,10 +466,10 @@ final class HandlerOperations {
             // Get the handler name
             final String handlerName = HANDLER_NAME.resolveModelAttribute(context, operation).asString();
             if (name.equals(handlerName)) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.cannotAddHandlerToSelf(configuration.getName()));
+                throw createOperationFailure(LoggingLogger.ROOT_LOGGER.cannotAddHandlerToSelf(configuration.getName()));
             }
             if (configuration.getHandlerNames().contains(handlerName)) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.handlerAlreadyDefined(handlerName));
+                throw createOperationFailure(LoggingLogger.ROOT_LOGGER.handlerAlreadyDefined(handlerName));
             }
             configuration.addHandlerName(handlerName);
         }
@@ -637,7 +638,7 @@ final class HandlerOperations {
         } else if (attribute.getName().equals(SUBHANDLERS.getName())) {
             final Collection<String> resolvedValue = (resolveValue ? SUBHANDLERS.resolvePropertyValue(context, model) : SUBHANDLERS.resolver().resolveValue(context, model));
             if (resolvedValue.contains(configuration.getName())) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.cannotAddHandlerToSelf(configuration.getName()));
+                throw createOperationFailure(LoggingLogger.ROOT_LOGGER.cannotAddHandlerToSelf(configuration.getName()));
             }
             configuration.setHandlerNames(resolvedValue);
         } else if (attribute.getName().equals(HANDLER_NAME.getName())) {

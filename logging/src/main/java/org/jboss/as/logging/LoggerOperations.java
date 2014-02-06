@@ -41,6 +41,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.config.LogContextConfiguration;
 import org.jboss.logmanager.config.LoggerConfiguration;
@@ -64,7 +65,7 @@ final class LoggerOperations {
             final String loggerName = getLogManagerLoggerName(name);
             LoggerConfiguration configuration = logContextConfiguration.getLoggerConfiguration(loggerName);
             if (configuration == null) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.loggerConfigurationNotFound(loggerName));
+                throw createOperationFailure(LoggingLogger.ROOT_LOGGER.loggerConfigurationNotFound(loggerName));
             }
             performRuntime(context, operation, configuration, loggerName, model);
         }
@@ -186,7 +187,7 @@ final class LoggerOperations {
             final String loggerName = getLogManagerLoggerName(name);
             final LoggerConfiguration configuration = logContextConfiguration.getLoggerConfiguration(loggerName);
             if (configuration == null) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.loggerNotFound(loggerName));
+                throw createOperationFailure(LoggingLogger.ROOT_LOGGER.loggerNotFound(loggerName));
             }
             logContextConfiguration.removeLoggerConfiguration(loggerName);
         }
@@ -208,7 +209,7 @@ final class LoggerOperations {
             final String handlerName = HANDLER_NAME.resolveModelAttribute(context, operation).asString();
             final String loggerName = getLogManagerLoggerName(name);
             if (configuration.getHandlerNames().contains(handlerName)) {
-                throw createOperationFailure(LoggingMessages.MESSAGES.handlerAlreadyDefined(handlerName));
+                throw createOperationFailure(LoggingLogger.ROOT_LOGGER.handlerAlreadyDefined(handlerName));
             }
             LoggingLogger.ROOT_LOGGER.tracef("Adding handler '%s' to logger '%s' at '%s'", handlerName, getLogManagerLoggerName(loggerName), LoggingOperations.getAddress(operation));
             configuration.addHandlerName(handlerName);

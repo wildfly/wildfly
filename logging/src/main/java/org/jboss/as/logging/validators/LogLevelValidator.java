@@ -23,7 +23,6 @@
 package org.jboss.as.logging.validators;
 
 import static org.jboss.as.logging.Logging.createOperationFailure;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +34,7 @@ import java.util.logging.Level;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -96,10 +96,10 @@ public final class LogLevelValidator extends ModelTypeValidator implements Allow
             try {
                 final Level level = Level.parse(levelString);
                 if (!allowedValues.contains(level)) {
-                    throw createOperationFailure(MESSAGES.invalidLogLevel(levelString));
+                    throw createOperationFailure(LoggingLogger.ROOT_LOGGER.invalidLogLevel(levelString));
                 }
             } catch (IllegalArgumentException e) {
-                throw createOperationFailure(MESSAGES.invalidLogLevel(levelString));
+                throw createOperationFailure(LoggingLogger.ROOT_LOGGER.invalidLogLevel(levelString));
             }
         }
     }

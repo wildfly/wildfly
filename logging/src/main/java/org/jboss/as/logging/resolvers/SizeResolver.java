@@ -23,13 +23,13 @@
 package org.jboss.as.logging.resolvers;
 
 import static org.jboss.as.logging.Logging.createOperationFailure;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -51,7 +51,7 @@ public class SizeResolver implements ModelNodeResolver<String> {
     public long parseSize(final ModelNode value) throws OperationFailedException {
         final Matcher matcher = SIZE_PATTERN.matcher(value.asString());
         if (!matcher.matches()) {
-            throw createOperationFailure(MESSAGES.invalidSize(value.asString()));
+            throw createOperationFailure(LoggingLogger.ROOT_LOGGER.invalidSize(value.asString()));
         }
         long qty = Long.parseLong(matcher.group(1), 10);
         final String chr = matcher.group(2);
@@ -77,7 +77,7 @@ public class SizeResolver implements ModelNodeResolver<String> {
                     qty <<= 40L;
                     break;
                 default:
-                    throw createOperationFailure(MESSAGES.invalidSize(value.asString()));
+                    throw createOperationFailure(LoggingLogger.ROOT_LOGGER.invalidSize(value.asString()));
             }
         }
         return qty;

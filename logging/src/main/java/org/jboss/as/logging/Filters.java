@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -144,7 +145,7 @@ class Filters {
                     .append(")").toString();
         }
         final String name = value.hasDefined(CommonAttributes.FILTER.getName()) ? value.get(CommonAttributes.FILTER.getName()).asString() : value.asString();
-        throw Logging.createOperationFailure(LoggingMessages.MESSAGES.invalidFilter(name));
+        throw Logging.createOperationFailure(LoggingLogger.ROOT_LOGGER.invalidFilter(name));
     }
 
     /**
@@ -167,7 +168,7 @@ class Filters {
                 model.setEmptyObject();
                 return;
             }
-            throw LoggingMessages.MESSAGES.unexpectedEnd();
+            throw LoggingLogger.ROOT_LOGGER.unexpectedEnd();
         }
         final String token = iterator.next();
         if (ACCEPT.equals(token)) {
@@ -241,7 +242,7 @@ class Filters {
             expect(")", iterator);
         } else {
             final String name = expectName(iterator);
-            throw LoggingMessages.MESSAGES.filterNotFound(name);
+            throw LoggingLogger.ROOT_LOGGER.filterNotFound(name);
         }
     }
 
@@ -252,7 +253,7 @@ class Filters {
                 return next;
             }
         }
-        throw LoggingMessages.MESSAGES.expectedIdentifier();
+        throw LoggingLogger.ROOT_LOGGER.expectedIdentifier();
     }
 
     private static String expectString(final Iterator<String> iterator) {
@@ -262,7 +263,7 @@ class Filters {
                 return next.substring(1);
             }
         }
-        throw LoggingMessages.MESSAGES.expectedString();
+        throw LoggingLogger.ROOT_LOGGER.expectedString();
     }
 
     private static boolean expect(final String trueToken, final String falseToken, final Iterator<String> iterator) {
@@ -270,14 +271,14 @@ class Filters {
         final String next = hasNext ? iterator.next() : null;
         final boolean result;
         if (!hasNext || !((result = trueToken.equals(next)) || falseToken.equals(next))) {
-            throw LoggingMessages.MESSAGES.expected(trueToken, falseToken);
+            throw LoggingLogger.ROOT_LOGGER.expected(trueToken, falseToken);
         }
         return result;
     }
 
     private static void expect(String token, Iterator<String> iterator) {
         if (!iterator.hasNext() || !token.equals(iterator.next())) {
-            throw LoggingMessages.MESSAGES.expected(token);
+            throw LoggingLogger.ROOT_LOGGER.expected(token);
         }
     }
 
@@ -324,7 +325,7 @@ class Filters {
                     if (ch == '\\') {
                         idx = source.offsetByCodePoints(idx, 1);
                         if (idx == length) {
-                            throw LoggingMessages.MESSAGES.truncatedFilterExpression();
+                            throw LoggingLogger.ROOT_LOGGER.truncatedFilterExpression();
                         }
                         ch = source.codePointAt(idx);
                         switch (ch) {
@@ -353,7 +354,7 @@ class Filters {
                                 b.append('\t');
                                 break;
                             default:
-                                throw LoggingMessages.MESSAGES.invalidEscapeFoundInFilterExpression();
+                                throw LoggingLogger.ROOT_LOGGER.invalidEscapeFoundInFilterExpression();
                         }
                     } else {
                         b.appendCodePoint(ch);

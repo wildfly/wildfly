@@ -48,6 +48,7 @@ import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.logging.logmanager.WildFlyLogContextSelector;
 import org.jboss.as.logging.stdio.LogContextStdioContextSelector;
 import org.jboss.logmanager.LogContext;
@@ -100,7 +101,7 @@ public class LoggingExtension implements Extension {
         // The logging subsystem requires JBoss Log Manager to be used
         // Testing the log manager must use the FQCN as the classes may be loaded via different class loaders
         if (!java.util.logging.LogManager.getLogManager().getClass().getName().equals(org.jboss.logmanager.LogManager.class.getName())) {
-            throw LoggingMessages.MESSAGES.extensionNotInitialized();
+            throw LoggingLogger.ROOT_LOGGER.extensionNotInitialized();
         }
         LogContext.setLogContextSelector(CONTEXT_SELECTOR);
         // Install STDIO context selector
