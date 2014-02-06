@@ -77,6 +77,7 @@ import org.jboss.as.messaging.jms.JMSQueueDefinition;
 import org.jboss.as.messaging.jms.JMSTopicDefinition;
 import org.jboss.as.messaging.jms.PooledConnectionFactoryDefinition;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -229,7 +230,7 @@ public class MessagingTransformers {
                         // Treat 'undefined' as 'ignore this and match the actual config' instead of the legacy default 'false'
                         boolean wantsClustered = attributeValue.asBoolean(clustered);
                         if (clustered && !wantsClustered) {
-                            String msg = MessagingMessages.MESSAGES.canNotChangeClusteredAttribute(address);
+                            String msg = MessagingLogger.ROOT_LOGGER.canNotChangeClusteredAttribute(address);
                             context.getLogger().logAttributeWarning(address, operation, msg, CLUSTERED.getName());
                         }
                         return true;

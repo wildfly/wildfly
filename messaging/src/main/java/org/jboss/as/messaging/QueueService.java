@@ -22,12 +22,12 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 
 import org.hornetq.api.core.SimpleString;
 import org.hornetq.core.config.CoreQueueConfiguration;
 import org.hornetq.core.server.HornetQServer;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -47,7 +47,7 @@ class QueueService implements Service<Void> {
 
     public QueueService(final CoreQueueConfiguration queueConfiguration, final boolean temporary) {
         if(queueConfiguration == null) {
-            throw MESSAGES.nullVar("queueConfiguration");
+            throw MessagingLogger.ROOT_LOGGER.nullVar("queueConfiguration");
         }
         this.queueConfiguration = queueConfiguration;
         this.temporary = temporary;

@@ -31,7 +31,6 @@ import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationI
 import static org.jboss.as.messaging.ManagementUtil.reportListOfString;
 import static org.jboss.as.messaging.ManagementUtil.reportRoles;
 import static org.jboss.as.messaging.ManagementUtil.reportRolesAsJSON;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.dmr.ModelType.BOOLEAN;
 
 import java.util.EnumSet;
@@ -52,6 +51,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -137,7 +137,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         if (hqService == null || hqService.getState() != ServiceController.State.UP) {
-            throw MESSAGES.hornetQServerNotInstalled(hqServiceName.getSimpleName());
+            throw MessagingLogger.ROOT_LOGGER.hornetQServerNotInstalled(hqServiceName.getSimpleName());
         }
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
 
@@ -224,7 +224,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult();
             } else {
                 // Bug
-                throw MESSAGES.unsupportedOperation(operationName);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
             }
         } catch (RuntimeException e) {
             throw e;
@@ -403,7 +403,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
             context.getResult().set(active);
         } else {
             // Bug
-            throw MESSAGES.unsupportedAttribute(name);
+            throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(name);
         }
     }
 
@@ -411,7 +411,7 @@ public class HornetQServerControlHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName hqServiceName = MessagingServices.getHornetQServiceName(PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR)));
         ServiceController<?> hqService = context.getServiceRegistry(false).getService(hqServiceName);
         if (hqService == null || hqService.getState() != ServiceController.State.UP) {
-            throw MESSAGES.hornetQServerNotInstalled(hqServiceName.getSimpleName());
+            throw MessagingLogger.ROOT_LOGGER.hornetQServerNotInstalled(hqServiceName.getSimpleName());
         }
         HornetQServer hqServer = HornetQServer.class.cast(hqService.getValue());
         return hqServer.getHornetQServerControl();

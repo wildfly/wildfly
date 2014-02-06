@@ -21,9 +21,8 @@
  */
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.messaging.logging.MessagingLogger;
 
 /**
  * A wrapper for pooled CF attributes with additional parameters required
@@ -74,7 +73,7 @@ public class ConnectionFactoryAttribute {
             case STRING:
                 return String.class.getName();
             default:
-                throw MESSAGES.invalidAttributeType(attributeDefinition.getName(), attributeDefinition.getType());
+                throw MessagingLogger.ROOT_LOGGER.invalidAttributeType(attributeDefinition.getName(), attributeDefinition.getType());
 
         }
     }

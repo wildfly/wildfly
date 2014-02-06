@@ -20,25 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.messaging;
+package org.jboss.as.messaging.logging;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+import static org.jboss.logging.Logger.Level.WARN;
 import static org.jboss.logging.annotations.Message.INHERIT;
 
 import java.util.Collection;
 
 import javax.jms.IllegalStateRuntimeException;
 import javax.xml.stream.XMLStreamException;
-
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.messaging.Element;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
-import org.jboss.msc.service.ServiceController.State;
+import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
@@ -47,12 +52,192 @@ import org.jboss.msc.service.StartException;
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface MessagingMessages {
+@MessageLogger(projectCode = "WFLYMSG", length = 4)
+public interface MessagingLogger extends BasicLogger {
     /**
-     * The default messages.
+     * The logger with the category of the package.
      */
-    MessagingMessages MESSAGES = Messages.getBundle(MessagingMessages.class);
+    MessagingLogger ROOT_LOGGER = Logger.getMessageLogger(MessagingLogger.class, "org.jboss.as.messaging");
+
+    /**
+     * A logger with the category {@code org.jboss.messaging}.
+     */
+    MessagingLogger MESSAGING_LOGGER = Logger.getMessageLogger(MessagingLogger.class, "org.jboss.messaging");
+
+    /**
+     * Logs a warning message indicating AIO was not found.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 1, value = "AIO wasn't located on this platform, it will fall back to using pure Java NIO. If your platform is Linux, install LibAIO to enable the AIO journal")
+    void aioWarning();
+
+    /**
+     * Logs an informational message indicating a messaging object was bound to the JNDI name represented by the
+     * {@code jndiName} parameter.
+     *
+     * @param jndiName the name the messaging object was bound to.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 2, value = "Bound messaging object to jndi name %s")
+    void boundJndiName(String jndiName);
+
+    /**
+     * Logs an error message indicating an exception occurred while stopping the JMS server.
+     *
+     * @param cause the cause of the error.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 3, value = "Exception while stopping JMS server")
+    void errorStoppingJmsServer(@Cause Throwable cause);
+
+    /**
+     * Logs a warning message indicating the connection factory was not destroyed.
+     *
+     * @param cause       the cause of the error.
+     * @param description the description of what failed to get destroyed.
+     * @param name        the name of the factory.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 4, value = "Failed to destroy %s: %s")
+    void failedToDestroy(@Cause Throwable cause, String description, String name);
+
+    /**
+     * Logs a warning message indicating the connection factory was not destroyed.
+     *
+     * @param description the description of what failed to get destroyed.
+     * @param name        the name of the factory.
+     */
+    @LogMessage(level = WARN)
+    void failedToDestroy(String description, String name);
+
+    /**
+     * Logs an error message indicating the class, represented by the {@code className} parameter, caught an exception
+     * attempting to revert the operation, represented by the {@code operation} parameter, at the address, represented
+     * by the {@code address} parameter.
+     *
+     * @param cause     the cause of the error.
+     * @param className the name of the class that caused the error.
+     * @param operation the operation.
+     * @param address   the address.
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 5, value = "%s caught exception attempting to revert operation %s at address %s")
+    void revertOperationFailed(@Cause Throwable cause, String className, String operation, PathAddress address);
+
+    /**
+     * Logs an informational message indicating a messaging object was unbound from the JNDI name represented by the
+     * {@code jndiName} parameter.
+     *
+     * @param jndiName the name the messaging object was bound to.
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 6, value = "Unbound messaging object to jndi name %s")
+    void unboundJndiName(String jndiName);
+
+    /**
+     */
+    @LogMessage(level = ERROR)
+    @Message(id = 7, value = "Could not close file %s")
+    void couldNotCloseFile(String file, @Cause Throwable cause);
+
+    /**
+     * Logs a warning message indicating the messaging object bound to the JNDI name represented by
+     * the {@code jndiName) has not be unbound in a timely fashion.
+     *
+     * @param jndiName the name the messaging object was bound to.
+     * @param timeout  the timeout value
+     * @param timeUnit the timeout time unit
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 8, value = "Failed to unbind messaging object bound to jndi name %s in %d %s")
+    void failedToUnbindJndiName(String jndiName, long timeout, String timeUnit);
+
+    /**
+     * Logs a warning message indicating the XML element with the given {@code name}
+     * is deprecated and will not be used anymore.
+     *
+     * @param name the name of the deprecated XML element
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 9, value = "Element %s is deprecated and will not be taken into account")
+    void deprecatedXMLElement(String name);
+
+    /**
+     * Logs a warning message indicating the XML attribute with the given {@code name}
+     * is deprecated and will not be used anymore.
+     *
+     * @param name the name of the deprecated XML attribute
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10, value = "Attribute %s is deprecated and will not be taken into account")
+    void deprecatedXMLAttribute(String name);
+
+    /**
+     * Logs an info message when a service for the given {@code type} and {@code name} is <em>started</em>.
+     *
+     * @param type the type of the service
+     * @param name the name of the service
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 11, value = "Started %s %s")
+    void startedService(String type, String name);
+
+    /**
+     * Logs an info message when a service for the given {@code type} and {@code name} is <em>stopped</em>.
+     *
+     * @param type the type of the service
+     * @param name the name of the service
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 12, value = "Stopped %s %s")
+    void stoppedService(String type, String name);
+
+    /**
+     * Logs a warning message indicating the management attribute with the given {@code name}
+     * is deprecated and will not be used anymore.
+     *
+     * @param name the name of the deprecated XML attribute
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 13, value = "Attribute %s of the resource at %s is deprecated and setting its value will not be taken into account")
+    void deprecatedAttribute(String name, PathAddress address);
+
+    @Message(id = 14, value = "Can not change the clustered attribute to false: The hornetq-server resource at %s has cluster-connection children resources and will remain clustered.")
+    String canNotChangeClusteredAttribute(PathAddress address);
+
+    @LogMessage(level = WARN)
+    @Message(id = 15, value = "Ignoring %s property that is not a known property for pooled connection factory.")
+    void unknownPooledConnectionFactoryAttribute(String name);
+
+    /**
+     * Logs an info message when a HTTP Upgrade handler is registered for the given {@code protocol}.
+     *
+     * @param name the name of the protocol that is handled
+     */
+    @LogMessage(level = INFO)
+    @Message(id = 16, value = "Registered HTTP upgrade for %s protocol handled by %s acceptor")
+    void registeredHTTPUpgradeHandler(String name, String acceptor);
+
+    /**
+     * Logs a warning message indicating the XML element with the given {@code name}
+     * is deprecated and instead a different attribute will be used.
+     *
+     * @param name the name of the deprecated XML element
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 17, value = "Element %s is deprecated and %s will be used in its place")
+    void deprecatedXMLElement(String name, String replacement);
+
+    /**
+     * Logs a warn message when no connectors were specified for a connection factory definition
+     * and one connector was picked up to be used.
+     *
+     * @param name the name of the connection factory definition
+     * @param connectorName the name of the connector that was picked
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 18, value = "No connectors were explicitly defined for the pooled connection factory %s. Using %s as the connector.")
+    void connectorForPooledConnectionFactory(String name, String connectorName);
 
     /**
      * A message indicating the alternative attribute represented by the {@code name} parameter is already defined.
@@ -61,7 +246,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11630, value = "Alternative attribute of (%s) is already defined.")
+    @Message(id = 19, value = "Alternative attribute of (%s) is already defined.")
     String altAttributeAlreadyDefined(String name);
 
     /**
@@ -72,7 +257,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11631, value = "All attribute definitions must have the same xml name -- found %s but already had %s")
+    @Message(id = 20, value = "All attribute definitions must have the same xml name -- found %s but already had %s")
     IllegalArgumentException attributeDefinitionsMustMatch(String nameFound, String nameRequired);
 
     /**
@@ -82,7 +267,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11632, value = "All attribute definitions must have unique names -- already found %s")
+    @Message(id = 21, value = "All attribute definitions must have unique names -- already found %s")
     IllegalArgumentException attributeDefinitionsNotUnique(String nameFound);
 
     /**
@@ -90,7 +275,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11633, value = "Cannot bind a null or empty string as jndi name")
+    @Message(id = 22, value = "Cannot bind a null or empty string as jndi name")
     IllegalArgumentException cannotBindJndiName();
 
     /**
@@ -102,7 +287,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11634, value = "Operation cannot include both parameter %s and parameter %s")
+    @Message(id = 23, value = "Operation cannot include both parameter %s and parameter %s")
     String cannotIncludeOperationParameters(String paramName1, String paramName2);
 
     /**
@@ -113,7 +298,7 @@ public interface MessagingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 11635, value = "%s cannot be marshalled as an attribute; use marshallAsElement")
+    @Message(id = 24, value = "%s cannot be marshalled as an attribute; use marshallAsElement")
     UnsupportedOperationException cannotMarshalAttribute(String name);
 
     /**
@@ -121,7 +306,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11636, value = "Cannot unbind a null or empty string as jndi name")
+    @Message(id = 25, value = "Cannot unbind a null or empty string as jndi name")
     IllegalArgumentException cannotUnbindJndiName();
 
     /**
@@ -131,7 +316,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11637, value = "A child resource of type %1$s already exists; the messaging subsystem only allows a single resource of type %1$s")
+    @Message(id = 26, value = "A child resource of type %1$s already exists; the messaging subsystem only allows a single resource of type %1$s")
     String childResourceAlreadyExists(String type);
 
     /**
@@ -141,7 +326,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11638, value = "Connector %s not defined")
+    @Message(id = 27, value = "Connector %s not defined")
     IllegalStateException connectorNotDefined(String connectorName);
 
     /**
@@ -153,7 +338,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11639, value = "Failed to create %s")
+    @Message(id = 28, value = "Failed to create %s")
     StartException failedToCreate(@Cause Throwable cause, String name);
 
     /**
@@ -163,7 +348,7 @@ public interface MessagingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11640, value = "Failed to find SocketBinding for broadcast binding: %s")
+    @Message(id = 29, value = "Failed to find SocketBinding for broadcast binding: %s")
     StartException failedToFindBroadcastSocketBinding(String name);
 
     /**
@@ -173,7 +358,7 @@ public interface MessagingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11641, value = "Failed to find SocketBinding for connector: %s")
+    @Message(id = 30, value = "Failed to find SocketBinding for connector: %s")
     StartException failedToFindConnectorSocketBinding(String name);
 
     /**
@@ -183,7 +368,7 @@ public interface MessagingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11642, value = "Failed to find SocketBinding for discovery binding: %s")
+    @Message(id = 31, value = "Failed to find SocketBinding for discovery binding: %s")
     StartException failedToFindDiscoverySocketBinding(String name);
 
     /**
@@ -194,7 +379,7 @@ public interface MessagingMessages {
      *
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 11643, value = "Failed to shutdown %s server")
+    @Message(id = 32, value = "Failed to shutdown %s server")
     RuntimeException failedToShutdownServer(@Cause Throwable cause, String server);
 
     /**
@@ -204,7 +389,7 @@ public interface MessagingMessages {
      *
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 11644, value = "Failed to start service")
+    @Message(id = 33, value = "Failed to start service")
     StartException failedToStartService(@Cause Throwable cause);
 
     /**
@@ -215,7 +400,7 @@ public interface MessagingMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 11645, value = "Ignoring unhandled element: %s, at: %s")
+    @Message(id = 34, value = "Ignoring unhandled element: %s, at: %s")
     XMLStreamException ignoringUnhandledElement(Element element, String location);
 
     /**
@@ -227,7 +412,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11646, value = "Illegal element %s: cannot be used when %s is used")
+    @Message(id = 35, value = "Illegal element %s: cannot be used when %s is used")
     String illegalElement(String illegalElement, String element);
 
     /**
@@ -239,7 +424,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11647, value = "Illegal value %s for element %s")
+    @Message(id = 36, value = "Illegal value %s for element %s")
     String illegalValue(Object value, String element);
 
     /**
@@ -261,7 +446,7 @@ public interface MessagingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 11648, value = "Resource is immutable")
+    @Message(id = 37, value = "Resource is immutable")
     UnsupportedOperationException immutableResource();
 
     /**
@@ -271,7 +456,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11649, value = "%s is invalid")
+    @Message(id = 38, value = "%s is invalid")
     String invalid(Object obj);
 
     /**
@@ -283,7 +468,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11650, value = "Attribute %s has unexpected type %s")
+    @Message(id = 39, value = "Attribute %s has unexpected type %s")
     IllegalStateException invalidAttributeType(String name, ModelType type);
 
     /**
@@ -295,7 +480,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11651, value = "Operation must include parameter %s or parameter %s")
+    @Message(id = 40, value = "Operation must include parameter %s or parameter %s")
     String invalidOperationParameters(String paramName1, String paramName2);
 
     /**
@@ -309,7 +494,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11652, value = "%s is an invalid value for parameter %s. Values must be one of: %s")
+    @Message(id = 41, value = "%s is an invalid value for parameter %s. Values must be one of: %s")
     String invalidParameterValue(Object value, String name, Collection<?> allowedValues);
 
     /**
@@ -322,8 +507,8 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11653, value = "Service %s is not in state %s, it is in state %s")
-    IllegalStateException invalidServiceState(ServiceName service, State validState, State currentState);
+    @Message(id = 42, value = "Service %s is not in state %s, it is in state %s")
+    IllegalStateException invalidServiceState(ServiceName service, ServiceController.State validState, ServiceController.State currentState);
 
     /**
      * A message indicating the JNDI name has already been registered.
@@ -332,7 +517,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11654, value = "JNDI name %s is already registered")
+    @Message(id = 43, value = "JNDI name %s is already registered")
     String jndiNameAlreadyRegistered(String jndiName);
 
     /**
@@ -343,7 +528,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11655, value = "Multiple %s children found; only one is allowed")
+    @Message(id = 44, value = "Multiple %s children found; only one is allowed")
     IllegalStateException multipleChildrenFound(String element);
 
     /**
@@ -353,7 +538,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11656, value = "%s is required")
+    @Message(id = 45, value = "%s is required")
     String required(Object obj);
 
     /**
@@ -364,7 +549,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11657, value = "Either %s or %s is required")
+    @Message(id = 46, value = "Either %s or %s is required")
     String required(Object obj1, Object obj2);
 
     /**
@@ -374,7 +559,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11658, value = "%s is null")
+    @Message(id = 47, value = "%s is null")
     IllegalArgumentException nullVar(String varName);
 
     /**
@@ -384,7 +569,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11659, value = "Parameter not defined: %s")
+    @Message(id = 48, value = "Parameter not defined: %s")
     String parameterNotDefined(Object parameter);
 
     /**
@@ -394,7 +579,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11660, value = "No such attribute (%s)")
+    @Message(id = 49, value = "No such attribute (%s)")
     String unknownAttribute(String name);
 
     /**
@@ -405,7 +590,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11661, value = "Read support for attribute %s was not properly implemented")
+    @Message(id = 50, value = "Read support for attribute %s was not properly implemented")
     IllegalStateException unsupportedAttribute(String name);
 
     /**
@@ -416,7 +601,7 @@ public interface MessagingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 11662, value = "Implement support for element %s")
+    @Message(id = 51, value = "Implement support for element %s")
     UnsupportedOperationException unsupportedElement(String name);
 
     /**
@@ -427,7 +612,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalStateException} for the error.
      */
-    @Message(id = 11663, value = "Support for operation %s was not properly implemented")
+    @Message(id = 52, value = "Support for operation %s was not properly implemented")
     IllegalStateException unsupportedOperation(String name);
 
     /**
@@ -438,7 +623,7 @@ public interface MessagingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 11664, value = "Runtime handling for %s is not implemented")
+    @Message(id = 53, value = "Runtime handling for %s is not implemented")
     UnsupportedOperationException unsupportedRuntimeAttribute(String name);
 
     /**
@@ -449,20 +634,20 @@ public interface MessagingMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 11665, value = "No HornetQ Server is available under name %s")
+    @Message(id = 54, value = "No HornetQ Server is available under name %s")
     OperationFailedException hornetQServerNotInstalled(String name);
 
 
-    @Message(id = 11666, value = "Could not parse file %s")
+    @Message(id = 55, value = "Could not parse file %s")
     DeploymentUnitProcessingException couldNotParseDeployment(final String file, @Cause Throwable cause);
 
-    @Message(id = 11667, value = "Handler cannot handle operation %s")
+    @Message(id = 56, value = "Handler cannot handle operation %s")
     IllegalStateException operationNotValid(final String operation);
 
-    @Message(id = 11668, value = "No message destination registered at address %s")
+    @Message(id = 57, value = "No message destination registered at address %s")
     String noDestinationRegisteredForAddress(final PathAddress address);
 
-    @Message(id = 11669, value = "SecurityDomainContext has not been set")
+    @Message(id = 58, value = "SecurityDomainContext has not been set")
     IllegalStateException securityDomainContextNotSet();
 
     /**
@@ -473,7 +658,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11670, value = "Only one of %s or %s is required")
+    @Message(id = 59, value = "Only one of %s or %s is required")
     String onlyOneRequired(Object obj1, Object obj2);
 
 
@@ -486,7 +671,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11671, value = "Failed to recover %s")
+    @Message(id = 60, value = "Failed to recover %s")
     OperationFailedException failedToRecover(@Cause Throwable cause, String name);
 
     /**
@@ -497,7 +682,7 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11672, value = "Attribute(s) %s are not supported by messaging management model %s")
+    @Message(id = 61, value = "Attribute(s) %s are not supported by messaging management model %s")
     String unsupportedAttributeInVersion(String attributes, ModelVersion version);
 
     /**
@@ -505,7 +690,7 @@ public interface MessagingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 11673, value = "The clustered attribute is deprecated. To create a clustered HornetQ server, define at least one cluster-connection")
+    @Message(id = 62, value = "The clustered attribute is deprecated. To create a clustered HornetQ server, define at least one cluster-connection")
     UnsupportedOperationException canNotWriteClusteredAttribute();
 
     /**
@@ -513,7 +698,7 @@ public interface MessagingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 11674, value = "Resources of type %s cannot be registered")
+    @Message(id = 63, value = "Resources of type %s cannot be registered")
     UnsupportedOperationException canNotRegisterResourceOfType(String childType);
 
     /**
@@ -521,13 +706,19 @@ public interface MessagingMessages {
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
-    @Message(id = 11675, value = "Resources of type %s cannot be removed")
+    @Message(id = 64, value = "Resources of type %s cannot be removed")
     UnsupportedOperationException canNotRemoveResourceOfType(String childType);
 
-    @Message(id = 11677, value = "Can not change the clustered attribute to false: The hornetq-server resource at %s has cluster-connection children resources and will remain clustered.")
-    String canNotChangeClusteredAttribute(PathAddress address);
+    /**
+     * Logs an error message indicating the given {@code address} does not match any known
+     * resource. Meant for use with runtime resources available via {@link org.hornetq.core.server.HornetQServer#getManagementService()}
+     *
+     * @param address    the address.
+     */
+    @Message(id = 65, value = "No resource exists at address %s")
+    String hqServerManagementServiceResourceNotFound(PathAddress address);
 
-    @Message(id = 11678, value = "Resource at the address %s can not be managed, the hornetq-server is in backup mode")
+    @Message(id = 66, value = "Resource at the address %s can not be managed, the hornetq-server is in backup mode")
     String hqServerInBackupMode(PathAddress address);
 
     /**
@@ -535,7 +726,7 @@ public interface MessagingMessages {
      *
      * @return an {@link OperationFailedException} for the error.
      */
-    @Message(id = 11679, value = "The broadcast group '%s' defines reference to nonexistent connector '%s'. Available connectors '%s'.")
+    @Message(id = 67, value = "The broadcast group '%s' defines reference to nonexistent connector '%s'. Available connectors '%s'.")
     OperationFailedException wrongConnectorRefInBroadCastGroup(final String bgName, final String connectorRef, final Collection<String> presentConnectors);
 
 
@@ -544,7 +735,7 @@ public interface MessagingMessages {
      *
      * @return an {@link IllegalStateRuntimeException} for the error.
      */
-    @Message(id = 11680, value = "It is not permitted to call this method on injected JMSContext (see JMS 2.0 spec, §12.4.5).")
+    @Message(id = 68, value = "It is not permitted to call this method on injected JMSContext (see JMS 2.0 spec, §12.4.5).")
     IllegalStateRuntimeException callNotPermittedOnInjectedJMSContext();
 
     /**
@@ -555,11 +746,31 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11681, value = "Attribute (%s) can not been undefined as the resource does not define any alternative to this attribute.")
+    @Message(id = 69, value = "Attribute (%s) can not been undefined as the resource does not define any alternative to this attribute.")
     String undefineAttributeWithoutAlternative(String name);
 
-    @Message(id = 11682, value = "Attributes %s is an alias for attribute %s; both cannot be set with conflicting values.")
+    @Message(id = 70, value = "Attributes %s is an alias for attribute %s; both cannot be set with conflicting values.")
     OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);
+
+    /**
+     * Logs a warn message when there is no resource matching the address-settings' expiry-address.
+     *
+     * @param address the name of the address-settings' missing expiry-address
+     * @param addressSettings the name of the address-settings
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 71, value = "There is no resource matching the expiry-address %s for the address-settings %s, expired messages from destinations matching this address-setting will be lost!")
+    void noMatchingExpiryAddress(String address, String addressSettings);
+
+    /**
+     * Logs a warn message when there is no resource matching the address-settings' dead-letter-address.
+     *
+     * @param address the name of the address-settings' missing dead-letter-address
+     * @param addressSettings the name of the address-settings
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 72, value = "There is no resource matching the dead-letter-address %s for the address-settings %s, undelivered messages from destinations matching this address-setting will be lost!")
+    void noMatchingDeadLetterAddress(String address, String addressSettings);
 
     /**
      * A message indicating the resource must have at least one JNDI name.
@@ -568,5 +779,6 @@ public interface MessagingMessages {
      *
      * @return the message.
      */
-    @Message(id = 11683, value = "Can not remove JNDI name %s. The resource must have at least one JNDI name")
-    String canNotRemoveLastJNDIName(String jndiName);}
+    @Message(id = 73, value = "Can not remove JNDI name %s. The resource must have at least one JNDI name")
+    String canNotRemoveLastJNDIName(String jndiName);
+}

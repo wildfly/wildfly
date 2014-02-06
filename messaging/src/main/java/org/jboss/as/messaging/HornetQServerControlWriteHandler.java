@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 import static org.jboss.as.messaging.CommonAttributes.CLUSTERED;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_ENABLED;
 import static org.jboss.as.messaging.HornetQActivationService.isHornetQServerActive;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Set;
 
@@ -36,15 +35,16 @@ import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -139,7 +139,7 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
         HornetQServerControl serverControl = HornetQServer.class.cast(hqService.getValue()).getHornetQServerControl();
         if (serverControl == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
         try {
             if (attributeName.equals(CommonAttributes.FAILOVER_ON_SHUTDOWN.getName()))  {
@@ -157,7 +157,7 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                 }
             } else {
                 // Bug! Someone added the attribute to the set but did not implement
-                throw MESSAGES.unsupportedRuntimeAttribute(attributeName);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedRuntimeAttribute(attributeName);
             }
 
         } catch (RuntimeException e) {
@@ -196,7 +196,7 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
                 boolean wantsClustered = CLUSTERED.resolveModelAttribute(context, mock).asBoolean();
                 if (clustered && !wantsClustered) {
                     PathAddress serverAddress = PathAddress.pathAddress(operation.get(OP_ADDR));
-                    MessagingLogger.MESSAGING_LOGGER.canNotChangeClusteredAttribute(serverAddress);
+                    MessagingLogger.MESSAGING_LOGGER.warn(MessagingLogger.MESSAGING_LOGGER.canNotChangeClusteredAttribute(serverAddress));
                 }
                 // ignore the operation
                 context.stepCompleted();

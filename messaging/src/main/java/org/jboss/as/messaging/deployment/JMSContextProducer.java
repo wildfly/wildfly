@@ -23,7 +23,6 @@
 package org.jboss.as.messaging.deployment;
 
 import static javax.jms.JMSContext.AUTO_ACKNOWLEDGE;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.io.Serializable;
 
@@ -59,6 +58,8 @@ import javax.naming.NamingException;
 import javax.transaction.Status;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
+
+import org.jboss.as.messaging.logging.MessagingLogger;
 
 /**
  * Producer factory for JMSContext resources.
@@ -246,7 +247,7 @@ public class JMSContextProducer {
 
         @Override
         public void setClientID(String clientID) {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
@@ -261,23 +262,23 @@ public class JMSContextProducer {
 
         @Override
         public void setExceptionListener(ExceptionListener listener) {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
         public void start() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
 
         public void stop() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
         public void setAutoStart(boolean autoStart) {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
@@ -287,7 +288,7 @@ public class JMSContextProducer {
 
         @Override
         public void close() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
@@ -342,17 +343,17 @@ public class JMSContextProducer {
 
         @Override
         public void commit() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
         public void rollback() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
         public void recover() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
 
         @Override
@@ -437,7 +438,7 @@ public class JMSContextProducer {
 
         @Override
         public void acknowledge() {
-            throw MESSAGES.callNotPermittedOnInjectedJMSContext();
+            throw MessagingLogger.ROOT_LOGGER.callNotPermittedOnInjectedJMSContext();
         }
     }
 }

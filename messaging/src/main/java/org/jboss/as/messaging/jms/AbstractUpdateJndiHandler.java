@@ -24,10 +24,9 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import org.hornetq.jms.server.JMSServerManager;
-import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -35,6 +34,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
@@ -76,7 +76,7 @@ public abstract class AbstractUpdateJndiHandler implements OperationStepHandler 
         if (addOperation) {
             for (ModelNode entry : entries.asList()) {
                 if (jndiName.equals(entry.asString())) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.jndiNameAlreadyRegistered(jndiName)));
+                    throw new OperationFailedException(new ModelNode().set(ROOT_LOGGER.jndiNameAlreadyRegistered(jndiName)));
                 }
             }
             entries.add(jndiName);
@@ -86,7 +86,7 @@ public abstract class AbstractUpdateJndiHandler implements OperationStepHandler 
             for (ModelNode entry : entries.asList()) {
                 if (jndiName.equals(entry.asString())) {
                     if (entries.asList().size() == 1) {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.canNotRemoveLastJNDIName(jndiName)));
+                        throw new OperationFailedException(new ModelNode().set(ROOT_LOGGER.canNotRemoveLastJNDIName(jndiName)));
                     }
                     updated = true;
                 } else {
@@ -118,7 +118,7 @@ public abstract class AbstractUpdateJndiHandler implements OperationStepHandler 
 
                         if (jmsServerManager == null) {
                             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-                            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
+                            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
                         }
 
                         try {

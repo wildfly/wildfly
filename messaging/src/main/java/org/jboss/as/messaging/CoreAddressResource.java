@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.CommonAttributes.ROLE;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,6 +35,7 @@ import org.hornetq.core.server.management.ManagementService;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -60,7 +60,7 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public void writeModel(ModelNode newModel) {
-        throw MESSAGES.immutableResource();
+        throw MessagingLogger.ROOT_LOGGER.immutableResource();
     }
 
     @Override
@@ -124,12 +124,12 @@ public class CoreAddressResource implements Resource {
 
     @Override
     public void registerChild(PathElement address, Resource resource) {
-        throw MESSAGES.immutableResource();
+        throw MessagingLogger.ROOT_LOGGER.immutableResource();
     }
 
     @Override
     public Resource removeChild(PathElement address) {
-        throw MESSAGES.immutableResource();
+        throw MessagingLogger.ROOT_LOGGER.immutableResource();
     }
 
     @Override

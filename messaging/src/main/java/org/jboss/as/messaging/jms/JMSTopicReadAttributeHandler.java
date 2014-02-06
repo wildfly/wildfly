@@ -25,7 +25,6 @@ package org.jboss.as.messaging.jms;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
 import static org.jboss.as.messaging.HornetQActivationService.ignoreOperationIfServerNotActive;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 import static org.jboss.as.messaging.jms.JMSTopicDefinition.DURABLE_MESSAGE_COUNT;
 import static org.jboss.as.messaging.jms.JMSTopicDefinition.DURABLE_SUBSCRIPTION_COUNT;
 import static org.jboss.as.messaging.jms.JMSTopicDefinition.NON_DURABLE_MESSAGE_COUNT;
@@ -37,7 +36,7 @@ import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -45,6 +44,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -86,7 +86,7 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         if (CommonAttributes.MESSAGE_COUNT.getName().equals(attributeName)) {
@@ -116,7 +116,7 @@ public class JMSTopicReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         } else if (CommonAttributes.TEMPORARY.getName().equals(attributeName)) {
             context.getResult().set(control.isTemporary());
         } else {
-            throw MESSAGES.unsupportedAttribute(attributeName);
+            throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(attributeName);
         }
         context.stepCompleted();
     }

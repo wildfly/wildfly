@@ -24,7 +24,6 @@ package org.jboss.as.messaging.jms;
 
 import static org.jboss.as.controller.OperationContext.Stage.MODEL;
 import static org.jboss.as.messaging.HornetQActivationService.isHornetQServerActive;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.ConnectionFactoryControl;
@@ -38,6 +37,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.CommonAttributes;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.dmr.ModelNode;
@@ -186,7 +186,7 @@ public class ConnectionFactoryWriteAttributeHandler extends AbstractWriteAttribu
                 control.setConnectionLoadBalancingPolicyClassName(value.asString());
             } else {
                 // Bug! Someone added the attribute to the set but did not implement
-                throw MESSAGES.unsupportedRuntimeAttribute(attributeName);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedRuntimeAttribute(attributeName);
             }
 
         } catch (RuntimeException e) {

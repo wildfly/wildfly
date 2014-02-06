@@ -25,7 +25,6 @@ package org.jboss.as.messaging.jms;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Locale;
 
@@ -33,7 +32,7 @@ import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSServerControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -43,6 +42,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.MessagingDescriptions;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -101,7 +101,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
         final JMSServerControl serverControl = getServerControl(context, operation);
         if (serverControl == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         try {
@@ -145,7 +145,7 @@ public class JMSServerControlHandler extends AbstractRuntimeOnlyHandler {
                 context.getResult().set(html);
             } else {
                 // Bug
-                throw MESSAGES.unsupportedOperation(operationName);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
             }
         } catch (RuntimeException e) {
             throw e;

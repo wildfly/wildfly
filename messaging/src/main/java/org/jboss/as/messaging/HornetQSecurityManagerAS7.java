@@ -22,10 +22,9 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.security.SecurityContext;
 import org.jboss.security.SecurityContextAssociation;
@@ -56,7 +55,7 @@ public class HornetQSecurityManagerAS7 implements org.hornetq.spi.core.security.
             return true;
 
         if (securityDomainContext == null)
-            throw MESSAGES.securityDomainContextNotSet();
+            throw MessagingLogger.ROOT_LOGGER.securityDomainContextNotSet();
 
         return securityDomainContext.getAuthenticationManager().isValid(new SimplePrincipal(username), password, new Subject());
     }
@@ -67,7 +66,7 @@ public class HornetQSecurityManagerAS7 implements org.hornetq.spi.core.security.
             return true;
 
         if (securityDomainContext == null)
-            throw MESSAGES.securityDomainContextNotSet();
+            throw MessagingLogger.ROOT_LOGGER.securityDomainContextNotSet();
 
         final Subject subject = new Subject();
 

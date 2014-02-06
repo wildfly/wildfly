@@ -36,8 +36,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.ee.structure.JBossDescriptorPropertyReplacement;
-import org.jboss.as.messaging.MessagingLogger;
-import org.jboss.as.messaging.MessagingMessages;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -93,7 +92,7 @@ public class MessagingXmlParsingDeploymentUnitProcessor implements DeploymentUni
                         safeClose(streamReader, f.getAbsolutePath());
                     }
                 } catch (XMLStreamException e) {
-                    throw MessagingMessages.MESSAGES.couldNotParseDeployment(f.getPath(), e);
+                    throw MessagingLogger.ROOT_LOGGER.couldNotParseDeployment(f.getPath(), e);
                 }
             } catch (Exception e) {
                 throw new DeploymentUnitProcessingException(e.getMessage(), e);

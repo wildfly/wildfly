@@ -24,14 +24,14 @@ package org.jboss.as.messaging.jms;
 
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
@@ -51,7 +51,7 @@ class ConnectionFactoryService implements Service<Void> {
     public ConnectionFactoryService(final ConnectionFactoryConfiguration configuration) {
         name = configuration.getName();
         if(name == null) {
-            throw MESSAGES.nullVar("cf name");
+            throw MessagingLogger.ROOT_LOGGER.nullVar("cf name");
         }
         this.configuration = configuration;
     }
@@ -66,7 +66,7 @@ class ConnectionFactoryService implements Service<Void> {
                     jmsManager.createConnectionFactory(false, configuration, configuration.getBindings());
                     context.complete();
                 } catch (Throwable e) {
-                    context.failed(MESSAGES.failedToCreate(e, "connection-factory"));
+                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "connection-factory"));
                 }
             }
         };
