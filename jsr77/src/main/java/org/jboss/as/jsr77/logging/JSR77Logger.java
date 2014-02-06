@@ -20,34 +20,30 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.jsr77;
+package org.jboss.as.jsr77.logging;
 
 import java.lang.reflect.Method;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.ObjectName;
-
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
+import org.jboss.logging.annotations.MessageLogger;
 
 /**
- * This module is using message IDs in the range 19000-19999
- * This file is using the subset 19000-19949 JSR-77 logger messages.
- * See http://community.jboss.org/docs/DOC-16810 for the full list of
- * currently reserved JBAS message id blocks.
- *
  * @author Kabir Khan
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
-public interface JSR77Messages {
+@MessageLogger(projectCode = "WFLYEEMGMT", length = 4)
+public interface JSR77Logger extends BasicLogger {
 
     /**
-     * The messages
+     * A logger with a category of the package name.
      */
-    JSR77Messages MESSAGES = Messages.getBundle(JSR77Messages.class);
+    JSR77Logger ROOT_LOGGER = Logger.getMessageLogger(JSR77Logger.class, "org.jboss.as.jsr77");
 
     @Message(id = Message.NONE, value = "The object name")
     String attrInfoAttrName();
@@ -94,39 +90,40 @@ public interface JSR77Messages {
     @Message(id = Message.NONE, value = "The node")
     String attrInfoNode();
 
-    @Message(id = 19900, value = "Only required in local view")
+    @Message(id = 1, value = "Only required in local view")
     UnsupportedOperationException onlyRequiredInLocalView();
 
-    @Message(id = 19901, value = "Expected at least %d elements in parameter array with size %d")
+    @Message(id = 2, value = "Expected at least %d elements in parameter array with size %d")
     IllegalArgumentException wrongParamLength(int index, int length);
 
-    @Message(id = 19902, value = "Bad type for parameter at %d. Expected %s, but was %s")
+    @Message(id = 3, value = "Bad type for parameter at %d. Expected %s, but was %s")
     IllegalArgumentException wrongParamType(int index, String expected, String actual);
 
-    @Message(id = 19903, value = "No attribute called %s")
+    @Message(id = 4, value = "No attribute called %s")
     AttributeNotFoundException noAttributeCalled(String attribute);
 
-    @Message(id = 19904, value = "No mbean found called %s")
+    @Message(id = 5, value = "No mbean found called %s")
     InstanceNotFoundException noMBeanCalled(ObjectName name);
 
-    @Message(id = 19905, value = "Should not get called")
+    @Message(id = 6, value = "Should not get called")
     IllegalStateException shouldNotGetCalled();
 
-    @Message(id = 19906, value = "Could not find %s")
+    @Message(id = 7, value = "Could not find %s")
     InstanceNotFoundException couldNotFindJ2eeType(String j2eeType);
 
-    @Message(id = 19907, value = "Invalid ObjectName: %s")
+    @Message(id = 8, value = "Invalid ObjectName: %s")
     IllegalStateException invalidObjectName(@Cause Throwable t, String s);
 
-    @Message(id = 19908, value = "Could not create ObjectName: %s")
+    @Message(id = 9, value = "Could not create ObjectName: %s")
     IllegalStateException couldNotCreateObjectName(@Cause Throwable t, String s);
 
-    @Message(id = 19909, value = "%s is read-only")
+    @Message(id = 10, value = "%s is read-only")
     IllegalStateException mbeanIsReadOnly(ObjectName on);
 
-    @Message(id = 19910, value = "Not yet implemented")
+    @Message(id = 11, value = "Not yet implemented")
     IllegalStateException notYetImplemented();
 
-    @Message(id = 19911, value = "Unknown method: %s")
+    @Message(id = 12, value = "Unknown method: %s")
     IllegalArgumentException unknownMethod(Method m);
+
 }
