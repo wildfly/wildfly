@@ -25,12 +25,16 @@ package org.wildfly.extension.undertow;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import io.undertow.Handlers;
+import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.servlet.api.Deployment;
@@ -57,6 +61,7 @@ public class Host implements Service<Host> {
     private final InjectedValue<AccessLogService> accessLogService = new InjectedValue<>();
     private final List<InjectedValue<FilterRef>> filters = new CopyOnWriteArrayList<>();
     private final Set<Deployment> deployments = new CopyOnWriteArraySet<>();
+    private final Map<String, AuthenticationMechanism> additionalAuthenticationMechanisms = new ConcurrentHashMap<>();
 
     protected Host(String name, List<String> aliases, String defaultWebModule) {
         this.name = name;
@@ -191,4 +196,11 @@ public class Host implements Service<Host> {
         return filters;
     }
 
+    void registerAdditionalAuthenticationMechanism(String name, AuthenticationMechanism authenticationMechanismFactory){
+        additionalAuthenticationMechanisms.put(name, authenticationMechanismFactory);
+    }
+
+    public Map<String, AuthenticationMechanism> getAdditionalAuthenticationMechanisms() {
+        return new LinkedHashMap<>(additionalAuthenticationMechanisms);
+    }
 }
