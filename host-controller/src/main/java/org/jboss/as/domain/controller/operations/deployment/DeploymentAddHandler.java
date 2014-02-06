@@ -27,7 +27,6 @@ import static org.jboss.as.server.controller.resources.DeploymentAttributes.DOMA
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.HashUtil;
@@ -39,7 +38,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainControllerLogger;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentHandlerUtils;
 import org.jboss.dmr.ModelNode;
@@ -95,7 +93,6 @@ public class DeploymentAddHandler implements OperationStepHandler {
         final String runtimeName = operation.hasDefined(RUNTIME_NAME.getName()) ? operation.get(RUNTIME_NAME.getName()).asString() : name;
         newModel.get(RUNTIME_NAME.getName()).set(runtimeName);
 
-
         byte[] hash = null;
 
         if (contentItemNode.hasDefined(CONTENT_HASH.getName())) {
@@ -121,17 +118,11 @@ public class DeploymentAddHandler implements OperationStepHandler {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
                 throw createFailureException(MESSAGES.slaveCannotAcceptUploads());
             }
-
-            InputStream in = DeploymentHandlerUtils.getInputStream(context, contentItemNode);
             try {
-                try {
-                    hash = contentRepository.addContent(in);
-                } catch (IOException e) {
-                    throw createFailureException(e.toString());
-                }
-
-            } finally {
-                StreamUtils.safeClose(in);
+                // Store and transform operation
+                hash = DeploymentUploadUtil.storeContentAndTransformOperation(context, operation, contentRepository);
+            } catch (IOException e) {
+                throw createFailureException(e.toString());
             }
             contentItemNode = new ModelNode();
             contentItemNode.get(CONTENT_HASH.getName()).set(hash);

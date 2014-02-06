@@ -22,8 +22,10 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTE_FOR_COORDINATOR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.domain.controller.DomainControllerLogger.CONTROLLER_LOGGER;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
@@ -95,6 +97,8 @@ public class DomainSlaveHandler implements OperationStepHandler {
             if(transformers != null) {
                 for(final DomainOperationTransformer transformer : transformers) {
                     op = transformer.transform(context, op);
+                    // Set the flag for host controller operations
+                    op.get(OPERATION_HEADERS, EXECUTE_FOR_COORDINATOR).set(true);
                 }
             }
 

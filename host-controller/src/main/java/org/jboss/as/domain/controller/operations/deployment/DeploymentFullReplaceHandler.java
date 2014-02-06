@@ -29,7 +29,6 @@ import static org.jboss.as.domain.controller.operations.deployment.AbstractDeplo
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -41,7 +40,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
@@ -109,7 +107,6 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
         // Set up the new content attribute
         final byte[] newHash;
-        // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
         ModelNode contentItemNode = content.require(0);
         if (contentItemNode.hasDefined(HASH)) {
             newHash = contentItemNode.require(HASH).asBytes();
@@ -128,17 +125,11 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
                 throw createFailureException(MESSAGES.slaveCannotAcceptUploads());
             }
-
-            InputStream in = DeploymentHandlerUtils.getInputStream(context, contentItemNode);
             try {
-                try {
-                    newHash = contentRepository.addContent(in);
-                } catch (IOException e) {
-                    throw createFailureException(e.toString());
-                }
-
-            } finally {
-                StreamUtils.safeClose(in);
+                // Store and transform operation
+                newHash = DeploymentUploadUtil.storeContentAndTransformOperation(context, operation, contentRepository);
+            } catch (IOException e) {
+                throw createFailureException(e.toString());
             }
 
             // Replace the op-provided content node with one that has a hash

@@ -27,6 +27,7 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
@@ -36,9 +37,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.operations.CompositeOperationAwareTransformer;
+import org.jboss.as.controller.operations.DomainOperationTransformer;
+import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.dmr.ModelNode;
 
@@ -47,12 +53,45 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class DeploymentUploadUtil {
+class DeploymentUploadUtil {
 
     private DeploymentUploadUtil() {
     }
 
-    public static byte[] storeDeploymentContent(OperationContext context, ModelNode operation, ContentRepository contentRepository) throws IOException, OperationFailedException {
+    /**
+     * Store the deployment contents and attach a "transformed" slave operation to the operation context.
+     *
+     * @param context the operation context
+     * @param operation the original operation
+     * @param contentRepository the content repository
+     * @return the hash of the uploaded deployment content
+     * @throws IOException
+     * @throws OperationFailedException
+     */
+    public static byte[] storeContentAndTransformOperation(OperationContext context, ModelNode operation, ContentRepository contentRepository) throws IOException, OperationFailedException {
+        if (!operation.hasDefined(CONTENT)) {
+            throw createFailureException(MESSAGES.invalidContentDeclaration());
+        }
+        final ModelNode content = operation.get(CONTENT).get(0);
+        if (content.hasDefined(HASH)) {
+            // This should be handled as part of the OSH
+            throw createFailureException(MESSAGES.invalidContentDeclaration());
+        }
+        final byte[] hash = storeDeploymentContent(context, operation, contentRepository);
+
+        // Clear the contents and update with the hash
+        final ModelNode slave = operation.clone();
+        slave.get(CONTENT).setEmptyList().add().get(HASH).set(hash);
+        // Add the domain op transformer
+        List<DomainOperationTransformer> transformers = context.getAttachment(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS);
+        if (transformers == null) {
+            context.attach(OperationAttachments.SLAVE_SERVER_OPERATION_TRANSFORMERS, transformers = new ArrayList<DomainOperationTransformer>());
+        }
+        transformers.add(new CompositeOperationAwareTransformer(slave));
+        return hash;
+    }
+
+    private static byte[] storeDeploymentContent(OperationContext context, ModelNode operation, ContentRepository contentRepository) throws IOException, OperationFailedException {
         InputStream in = getContents(context, operation);
         return contentRepository.addContent(in);
     }
