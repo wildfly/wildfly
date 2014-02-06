@@ -54,7 +54,7 @@ import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.server.Bootstrap;
 import org.jboss.as.server.Main;
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.client.ModelControllerServerDeploymentManager;
 import org.jboss.modules.ModuleLoader;
@@ -140,7 +140,7 @@ public class EmbeddedStandAloneServerFactory {
             @Override
             public Context getContext() {
                 if (context == null) {
-                    throw ServerMessages.MESSAGES.namingContextHasNotBeenSet();
+                    throw ServerLogger.ROOT_LOGGER.namingContextHasNotBeenSet();
                 }
                 return context;
             }
@@ -284,7 +284,7 @@ public class EmbeddedStandAloneServerFactory {
             if (prop == null) {
                 File dir = new File(jbossHomeDir, "standalone" + File.separator + relativeLocation);
                 if (mustExist && (!dir.exists() || !dir.isDirectory())) {
-                    throw ServerMessages.MESSAGES.embeddedServerDirectoryNotFound("standalone" + File.separator + relativeLocation, jbossHomeDir.getAbsolutePath());
+                    throw ServerLogger.ROOT_LOGGER.embeddedServerDirectoryNotFound("standalone" + File.separator + relativeLocation, jbossHomeDir.getAbsolutePath());
                 }
                 return dir;
             } else {
@@ -322,10 +322,10 @@ public class EmbeddedStandAloneServerFactory {
 
     private static void validateDirectory(String property, File file) {
         if (!file.exists()) {
-            throw ServerMessages.MESSAGES.propertySpecifiedFileDoesNotExist(property, file.getAbsolutePath());
+            throw ServerLogger.ROOT_LOGGER.propertySpecifiedFileDoesNotExist(property, file.getAbsolutePath());
         }
         if (!file.isDirectory()) {
-            throw ServerMessages.MESSAGES.propertySpecifiedFileIsNotADirectory(property, file.getAbsolutePath());
+            throw ServerLogger.ROOT_LOGGER.propertySpecifiedFileIsNotADirectory(property, file.getAbsolutePath());
         }
     }
 
@@ -348,7 +348,7 @@ public class EmbeddedStandAloneServerFactory {
                             out.write(i);
                         }
                     } catch (IOException e) {
-                        throw ServerMessages.MESSAGES.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
+                        throw ServerLogger.ROOT_LOGGER.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
                     } finally {
                         StreamUtils.safeClose(in);
                         StreamUtils.safeClose(out);

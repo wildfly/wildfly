@@ -26,7 +26,7 @@ import java.security.Permission;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 
 /**
  * A reflection index for a deployment.
@@ -69,7 +69,7 @@ public final class DeploymentReflectionIndex {
             }
             return index;
         } catch (Throwable e) {
-            throw ServerMessages.MESSAGES.errorGettingReflectiveInformation(clazz, clazz.getClassLoader(), e);
+            throw ServerLogger.ROOT_LOGGER.errorGettingReflectiveInformation(clazz, clazz.getClassLoader(), e);
         }
     }
 }

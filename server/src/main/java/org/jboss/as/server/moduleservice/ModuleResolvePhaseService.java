@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.inject.InjectionException;
@@ -124,7 +124,7 @@ public class ModuleResolvePhaseService implements Service<ModuleResolvePhaseServ
 
     public static ServiceName moduleSpecServiceName(ModuleIdentifier identifier, int phase) {
         if (!ServiceModuleLoader.isDynamicModule(identifier)) {
-            throw ServerMessages.MESSAGES.missingModulePrefix(identifier, ServiceModuleLoader.MODULE_PREFIX);
+            throw ServerLogger.ROOT_LOGGER.missingModulePrefix(identifier, ServiceModuleLoader.MODULE_PREFIX);
         }
         return SERVICE_NAME.append(identifier.getName()).append(identifier.getSlot()).append("" + phase);
     }

@@ -38,7 +38,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.MountedDeploymentOverlay;
@@ -265,7 +265,7 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
             throw missingAttributes(reader.getLocation(), required);
         }
         if (result.getSubDeploymentSpecifications().containsKey(name)) {
-            throw ServerMessages.MESSAGES.duplicateSubdeploymentListing(name);
+            throw ServerLogger.ROOT_LOGGER.duplicateSubdeploymentListing(name);
         }
         final ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
         result.getSubDeploymentSpecifications().put(name, moduleSpecification);
@@ -296,7 +296,7 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
         }
         // FIXME: change this
         if (!name.startsWith("deployment.")) {
-            throw ServerMessages.MESSAGES.invalidModuleName(name);
+            throw ServerLogger.ROOT_LOGGER.invalidModuleName(name);
         }
         ModuleStructureSpec moduleSpecification = new ModuleStructureSpec();
         moduleSpecification.setModuleIdentifier(ModuleIdentifier.create(name, slot));
@@ -515,7 +515,7 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
             switch (reader.nextTag()) {
                 case XMLStreamConstants.END_ELEMENT: {
                     if (path.startsWith("/")) {
-                        throw ServerMessages.MESSAGES.externalResourceRootsNotSupported(path);
+                        throw ServerLogger.ROOT_LOGGER.externalResourceRootsNotSupported(path);
                     } else {
                         try {
                             final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
@@ -876,12 +876,12 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
                 break;
         }
 
-        return ServerMessages.MESSAGES.unexpectedContent(kind, (reader.hasName() ? reader.getName() : null),
+        return ServerLogger.ROOT_LOGGER.unexpectedContent(kind, (reader.hasName() ? reader.getName() : null),
                 (reader.hasText() ? reader.getText() : null), reader.getLocation());
     }
 
     private static XMLStreamException endOfDocument(final Location location) {
-        return ServerMessages.MESSAGES.unexpectedEndOfDocument(location);
+        return ServerLogger.ROOT_LOGGER.unexpectedEndOfDocument(location);
     }
 
     private static XMLStreamException missingAttributes(final Location location, final Set<Attribute> required) {
@@ -889,6 +889,6 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
         for (Attribute attribute : required) {
             b.append(' ').append(attribute);
         }
-        return ServerMessages.MESSAGES.missingRequiredAttributes(b.toString(), location);
+        return ServerLogger.ROOT_LOGGER.missingRequiredAttributes(b.toString(), location);
     }
 }

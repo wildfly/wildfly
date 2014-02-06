@@ -35,7 +35,7 @@ import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.dmr.ModelNode;
 
@@ -76,23 +76,23 @@ public abstract class DeploymentHandlerUtils {
             int streamIndex = DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.resolveModelAttribute(context, contentItem).asInt();
             int maxIndex = context.getAttachmentStreamCount();
             if (streamIndex > maxIndex) {
-                throw ServerMessages.MESSAGES.invalidStreamIndex(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.getName(), streamIndex, maxIndex);
+                throw ServerLogger.ROOT_LOGGER.invalidStreamIndex(DeploymentAttributes.CONTENT_INPUT_STREAM_INDEX.getName(), streamIndex, maxIndex);
             }
             in = context.getAttachmentStream(streamIndex);
         } else if (contentItem.hasDefined(DeploymentAttributes.CONTENT_BYTES.getName())) {
             try {
                 in = new ByteArrayInputStream(DeploymentAttributes.CONTENT_BYTES.resolveModelAttribute(context, contentItem).asBytes());
             } catch (IllegalArgumentException iae) {
-                throw ServerMessages.MESSAGES.invalidStreamBytes(DeploymentAttributes.CONTENT_BYTES.getName());
+                throw ServerLogger.ROOT_LOGGER.invalidStreamBytes(DeploymentAttributes.CONTENT_BYTES.getName());
             }
         } else if (contentItem.hasDefined(DeploymentAttributes.CONTENT_URL.getName())) {
             final String urlSpec = DeploymentAttributes.CONTENT_URL.resolveModelAttribute(context, contentItem).asString();
             try {
                 in = new URL(urlSpec).openStream();
             } catch (MalformedURLException e) {
-                throw ServerMessages.MESSAGES.invalidStreamURL(e, urlSpec);
+                throw ServerLogger.ROOT_LOGGER.invalidStreamURL(e, urlSpec);
             } catch (IOException e) {
-                throw ServerMessages.MESSAGES.invalidStreamURL(e, urlSpec);
+                throw ServerLogger.ROOT_LOGGER.invalidStreamURL(e, urlSpec);
             }
         }
         if (in == null) {
@@ -121,6 +121,6 @@ public abstract class DeploymentHandlerUtils {
     protected static void validateOnePieceOfContent(final ModelNode content) throws OperationFailedException {
         // TODO: implement overlays
         if (content.asList().size() != 1)
-            throw ServerMessages.MESSAGES.multipleContentItemsNotSupported();
+            throw ServerLogger.ROOT_LOGGER.multipleContentItemsNotSupported();
     }
 }

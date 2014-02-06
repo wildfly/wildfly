@@ -52,8 +52,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.DeploymentFileRepository;
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deploymentoverlay.service.ContentService;
 import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayService;
 import org.jboss.dmr.ModelNode;
@@ -135,7 +134,7 @@ public class ContentAdd extends AbstractAddStepHandler {
             attr.validateAndSet(modified, resource.getModel());
         }
         if (!contentRepository.syncContent(hash)) {
-            throw ServerMessages.MESSAGES.noSuchDeploymentContent(Arrays.toString(hash));
+            throw ServerLogger.ROOT_LOGGER.noSuchDeploymentContent(Arrays.toString(hash));
         }
     }
 
@@ -174,7 +173,7 @@ public class ContentAdd extends AbstractAddStepHandler {
 
     protected static void validateOnePieceOfContent(final ModelNode content) throws OperationFailedException {
         if (content.asList().size() != 1)
-            throw ServerMessages.MESSAGES.multipleContentItemsNotSupported();
+            throw ServerLogger.ROOT_LOGGER.multipleContentItemsNotSupported();
     }
 
     byte[] addFromHash(byte[] hash, String deploymentOverlayName, final String contentName, final OperationContext context) throws OperationFailedException {
@@ -189,10 +188,10 @@ public class ContentAdd extends AbstractAddStepHandler {
                     ServerLogger.DEPLOYMENT_LOGGER.reportAdminOnlyMissingDeploymentOverlayContent(HashUtil.bytesToHexString(hash), deploymentOverlayName, contentName);
 
                 } else {
-                    throw ServerMessages.MESSAGES.noSuchDeploymentOverlayContentAtBoot(HashUtil.bytesToHexString(hash), deploymentOverlayName, contentName);
+                    throw ServerLogger.ROOT_LOGGER.noSuchDeploymentOverlayContentAtBoot(HashUtil.bytesToHexString(hash), deploymentOverlayName, contentName);
                 }
             } else {
-                throw ServerMessages.MESSAGES.noSuchDeploymentOverlayContent(HashUtil.bytesToHexString(hash));
+                throw ServerLogger.ROOT_LOGGER.noSuchDeploymentOverlayContent(HashUtil.bytesToHexString(hash));
             }
         }
         return hash;
@@ -224,23 +223,23 @@ public class ContentAdd extends AbstractAddStepHandler {
             int streamIndex = operation.get(INPUT_STREAM_INDEX).asInt();
             int maxIndex = context.getAttachmentStreamCount();
             if (streamIndex > maxIndex) {
-                throw ServerMessages.MESSAGES.invalidStreamIndex(INPUT_STREAM_INDEX, streamIndex, maxIndex);
+                throw ServerLogger.ROOT_LOGGER.invalidStreamIndex(INPUT_STREAM_INDEX, streamIndex, maxIndex);
             }
             in = context.getAttachmentStream(streamIndex);
         } else if (operation.hasDefined(BYTES)) {
             try {
                 in = new ByteArrayInputStream(operation.get(BYTES).asBytes());
             } catch (IllegalArgumentException iae) {
-                throw ServerMessages.MESSAGES.invalidStreamBytes(BYTES);
+                throw ServerLogger.ROOT_LOGGER.invalidStreamBytes(BYTES);
             }
         } else if (operation.hasDefined(URL)) {
             final String urlSpec = operation.get(URL).asString();
             try {
                 in = new java.net.URL(urlSpec).openStream();
             } catch (MalformedURLException e) {
-                throw ServerMessages.MESSAGES.invalidStreamURL(e, urlSpec);
+                throw ServerLogger.ROOT_LOGGER.invalidStreamURL(e, urlSpec);
             } catch (IOException e) {
-                throw ServerMessages.MESSAGES.invalidStreamURL(e, urlSpec);
+                throw ServerLogger.ROOT_LOGGER.invalidStreamURL(e, urlSpec);
             }
         }
         if (in == null) {

@@ -47,7 +47,7 @@ import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -80,7 +80,7 @@ public class RootResourceHack implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         ResourceAndRegistration threadResource = resource.get();
         if (threadResource == null || threadResource != ResourceAndRegistration.NULL) {
-            throw ServerMessages.MESSAGES.internalUseOnly();
+            throw ServerLogger.ROOT_LOGGER.internalUseOnly();
         }
         try {
         resource.set(new ResourceAndRegistration(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true), context.getResourceRegistration()));
@@ -99,7 +99,7 @@ public class RootResourceHack implements OperationStepHandler {
             reg = resource.get();
             resource.remove();
             if (ResourceAndRegistration.NULL == reg) {
-                throw ServerMessages.MESSAGES.cannotGetRootResource();
+                throw ServerLogger.ROOT_LOGGER.cannotGetRootResource();
             }
         }
         return reg;

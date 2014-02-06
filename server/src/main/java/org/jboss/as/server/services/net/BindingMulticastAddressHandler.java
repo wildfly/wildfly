@@ -24,7 +24,7 @@ import java.net.UnknownHostException;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.network.SocketBinding;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -48,7 +48,7 @@ public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler 
             try {
                 address = InetAddress.getByName(addrString);
             } catch (UnknownHostException e) {
-                throw ServerMessages.MESSAGES.failedToResolveMulticastAddress(e, addrString);
+                throw ServerLogger.ROOT_LOGGER.failedToResolveMulticastAddress(e, addrString);
             }
         } else {
             address = null;
@@ -64,7 +64,7 @@ public class BindingMulticastAddressHandler extends AbstractBindingWriteHandler 
             try {
                 address = InetAddress.getByName(addrString);
             } catch (UnknownHostException e) {
-                throw ServerMessages.MESSAGES.failedToResolveMulticastAddressForRollback(e, addrString);
+                throw ServerLogger.ROOT_LOGGER.failedToResolveMulticastAddressForRollback(e, addrString);
             }
         } else {
             address = null;

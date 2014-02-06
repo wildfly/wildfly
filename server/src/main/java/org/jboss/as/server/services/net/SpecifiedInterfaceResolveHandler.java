@@ -38,7 +38,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.NetworkUtils;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -86,9 +86,9 @@ public class SpecifiedInterfaceResolveHandler implements OperationStepHandler {
             NetworkInterfaceBinding nib = NetworkInterfaceService.createBinding(parsed);
             context.getResult().set(NetworkUtils.canonize(nib.getAddress().getHostAddress()));
         } catch (SocketException e) {
-            throw ServerMessages.MESSAGES.cannotResolveInterface(e, e);
+            throw ServerLogger.ROOT_LOGGER.cannotResolveInterface(e, e);
         } catch (UnknownHostException e) {
-            throw ServerMessages.MESSAGES.cannotResolveInterface(e, e);
+            throw ServerLogger.ROOT_LOGGER.cannotResolveInterface(e, e);
         }
 
         context.stepCompleted();

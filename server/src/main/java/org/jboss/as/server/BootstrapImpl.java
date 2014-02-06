@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import javax.management.ObjectName;
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -87,7 +88,7 @@ final class BootstrapImpl implements Bootstrap {
         try {
             Module.registerURLStreamHandlerFactoryModule(moduleLoader.loadModule(ModuleIdentifier.create("org.jboss.vfs")));
         } catch (ModuleLoadException e) {
-            throw ServerMessages.MESSAGES.vfsNotAvailable();
+            throw ServerLogger.ROOT_LOGGER.vfsNotAvailable();
         }
         final FutureServiceContainer future = new FutureServiceContainer(container);
         final ServiceTarget tracker = container.subTarget();
@@ -119,7 +120,7 @@ final class BootstrapImpl implements Bootstrap {
                                         break;
                                     }
                                     case REMOVING_to_REMOVED: {
-                                        future.failed(ServerMessages.MESSAGES.serverControllerServiceRemoved());
+                                        future.failed(ServerLogger.ROOT_LOGGER.serverControllerServiceRemoved());
                                         controller.removeListener(this);
                                         break;
                                     }
@@ -135,7 +136,7 @@ final class BootstrapImpl implements Bootstrap {
                     }
                     case REMOVING_to_REMOVED: {
                         controller.removeListener(this);
-                        future.failed(ServerMessages.MESSAGES.rootServiceRemoved());
+                        future.failed(ServerLogger.ROOT_LOGGER.rootServiceRemoved());
                         break;
                     }
                 }
@@ -152,7 +153,7 @@ final class BootstrapImpl implements Bootstrap {
             ServiceController<?> controller = container.getRequiredService(Services.JBOSS_AS);
             return (AsyncFuture<ServiceContainer>) controller.getValue();
         } catch (Exception ex) {
-            throw ServerMessages.MESSAGES.cannotStartServer(ex);
+            throw ServerLogger.ROOT_LOGGER.cannotStartServer(ex);
         }
     }
 

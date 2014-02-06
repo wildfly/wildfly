@@ -22,16 +22,13 @@
 
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.server.ServerLogger.DEPLOYMENT_LOGGER;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.DelegatingServiceRegistry;
 import org.jboss.msc.service.Service;
@@ -163,7 +160,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
                     final RegisteredDeploymentUnitProcessor prev = iterator.previous();
                     safeUndeploy(deploymentUnit, phase, prev);
                 }
-                throw ServerMessages.MESSAGES.deploymentPhaseFailed(phase, deploymentUnit, e);
+                throw ServerLogger.ROOT_LOGGER.deploymentPhaseFailed(phase, deploymentUnit, e);
             }
         }
         if (nextPhase != null) {
@@ -200,7 +197,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             if (nextPhase == Phase.FIRST_MODULE_USE) {
                 Mode initialMode = getDeferableInitialMode(deploymentUnit, deferredModules);
                 if (initialMode != Mode.ACTIVE) {
-                    DEPLOYMENT_LOGGER.infoDeferDeploymentPhase(nextPhase, name, initialMode);
+                    ServerLogger.DEPLOYMENT_LOGGER.infoDeferDeploymentPhase(nextPhase, name, initialMode);
                     phaseServiceBuilder.setInitialMode(initialMode);
                 }
             }

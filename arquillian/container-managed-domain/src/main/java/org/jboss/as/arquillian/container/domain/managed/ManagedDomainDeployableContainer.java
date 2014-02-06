@@ -38,10 +38,10 @@ import org.jboss.arquillian.container.spi.client.container.LifecycleException;
 import org.jboss.as.arquillian.container.domain.CommonDomainDeployableContainer;
 import org.jboss.as.arquillian.container.domain.Domain;
 import org.jboss.as.arquillian.container.domain.Domain.Server;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.as.arquillian.container.domain.ManagementClient;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.ServerMessages;
 
 /**
  * @author <a href="mailto:aslak@redhat.com">Aslak Knutsen</a>
@@ -444,10 +444,10 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
             cleanServerBaseDir = createTempServerBaseDirectory();
         }
         if (!cleanServerBaseDir.exists()) {
-            throw ServerMessages.MESSAGES.serverBaseDirectoryDoesNotExist(cleanServerBaseDir);
+            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(cleanServerBaseDir);
         }
         if (!cleanServerBaseDir.isDirectory()) {
-            throw ServerMessages.MESSAGES.serverBaseDirectoryIsNotADirectory(cleanServerBaseDir);
+            throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(cleanServerBaseDir);
         }
         copyOriginalDirectoryToCleanServerBaseDir(CONFIG_DIR, serverBaseDir, jbossHome, cleanServerBaseDir);
         copyOriginalDirectoryToCleanServerBaseDir(DATA_DIR, serverBaseDir, jbossHome, cleanServerBaseDir);
@@ -520,7 +520,7 @@ public class ManagedDomainDeployableContainer extends CommonDomainDeployableCont
                             out.write(i);
                         }
                     } catch (IOException e) {
-                        throw ServerMessages.MESSAGES.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
+                        throw ServerLogger.ROOT_LOGGER.errorCopyingFile(srcFile.getAbsolutePath(), destFile.getAbsolutePath(), e);
                     } finally {
                         StreamUtils.safeClose(in);
                         StreamUtils.safeClose(out);

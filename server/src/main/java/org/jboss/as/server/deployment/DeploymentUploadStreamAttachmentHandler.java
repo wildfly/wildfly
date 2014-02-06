@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.dmr.ModelNode;
 
@@ -61,7 +61,7 @@ public class DeploymentUploadStreamAttachmentHandler
         final int streamIndex = operation.require(INPUT_STREAM_INDEX).asInt();
         final InputStream in = operationContext.getAttachmentStream(streamIndex);
         if (in == null) {
-            throw ServerMessages.MESSAGES.nullStreamAttachment(streamIndex);
+            throw ServerLogger.ROOT_LOGGER.nullStreamAttachment(streamIndex);
         }
         return in;
     }

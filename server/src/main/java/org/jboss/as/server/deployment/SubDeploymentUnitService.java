@@ -26,7 +26,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.services.security.AbstractVaultReader;
@@ -48,9 +48,9 @@ public class SubDeploymentUnitService extends AbstractDeploymentUnitService {
 
     public SubDeploymentUnitService(ResourceRoot deploymentRoot, DeploymentUnit parent, ImmutableManagementResourceRegistration registration, final ManagementResourceRegistration mutableRegistration, Resource resource, final ServiceVerificationHandler serviceVerificationHandler, final AbstractVaultReader vaultReader) {
         this.serviceVerificationHandler = serviceVerificationHandler;
-        if (deploymentRoot == null) throw ServerMessages.MESSAGES.deploymentRootRequired();
+        if (deploymentRoot == null) throw ServerLogger.ROOT_LOGGER.deploymentRootRequired();
         this.deploymentRoot = deploymentRoot;
-        if (parent == null) throw ServerMessages.MESSAGES.subdeploymentsRequireParent();
+        if (parent == null) throw ServerLogger.ROOT_LOGGER.subdeploymentsRequireParent();
         this.parent = parent;
         this.registration = registration;
         this.mutableRegistration = mutableRegistration;

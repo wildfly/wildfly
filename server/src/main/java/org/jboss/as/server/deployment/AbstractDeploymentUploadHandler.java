@@ -33,8 +33,7 @@ import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -79,7 +78,7 @@ public abstract class AbstractDeploymentUploadHandler implements OperationStepHa
             }
         }
         catch (IOException e) {
-            throw ServerMessages.MESSAGES.caughtIOExceptionUploadingContent(e);
+            throw ServerLogger.ROOT_LOGGER.caughtIOExceptionUploadingContent(e);
         }
 
         context.stepCompleted();
