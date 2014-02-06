@@ -38,7 +38,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.modules.security.ModularPermissionFactory;
 import org.jboss.modules.security.PermissionFactory;
-import org.wildfly.extension.security.manager.SecurityManagerMessages;
+import org.wildfly.extension.security.manager.logging.SecurityManagerLogger;
 
 /**
  * This class implements a parser for the {@code permissions.xml} and {@code jboss-permissions.xml} descriptors. The
@@ -91,7 +91,7 @@ public class PermissionsParser extends MetaDataElementParser {
                 case VERSION: {
                     String version = reader.getAttributeValue(i);
                     if (!"7".equals(version))
-                        throw SecurityManagerMessages.MESSAGES.invalidPermissionsXMLVersion(version, "7");
+                        throw SecurityManagerLogger.ROOT_LOGGER.invalidPermissionsXMLVersion(version, "7");
                     break;
                 }
                 default: {
