@@ -43,6 +43,13 @@ public class ConnectionLimitHandler extends Filter {
             .setAllowNull(true)
             .build();
 
+
+    public static final AttributeDefinition QUEUE_SIZE = new SimpleAttributeDefinitionBuilder("queue-size", ModelType.INT)
+            .setAllowExpression(true)
+            .setAllowNull(true)
+            .build();
+
+
     /*
     <connection-limit max-concurrent-requests="100" />
      */
@@ -53,7 +60,7 @@ public class ConnectionLimitHandler extends Filter {
 
     @Override
     public Collection<AttributeDefinition> getAttributes() {
-        return Arrays.asList(MAX_CONCURRENT_REQUESTS);
+        return Arrays.asList(MAX_CONCURRENT_REQUESTS, QUEUE_SIZE);
     }
 
 

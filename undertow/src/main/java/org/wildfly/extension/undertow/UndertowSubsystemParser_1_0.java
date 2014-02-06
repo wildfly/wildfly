@@ -191,7 +191,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 )
                                 .addChild(
                                         builder(ConnectionLimitHandler.INSTANCE)
-                                                .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS)
+                                                .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS, ConnectionLimitHandler.QUEUE_SIZE)
                                 ).addChild(
                                         builder(ResponseHeaderFilter.INSTANCE)
                                                 .addAttributes(ResponseHeaderFilter.INSTANCE.getAttributes())

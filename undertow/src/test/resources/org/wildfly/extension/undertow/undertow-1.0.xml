@@ -94,7 +94,7 @@
     </handlers>
     <filters>
         <!--<basic-auth name="security-other" security-domain="other"/>-->
-        <connection-limit name="limit-connections" max-concurrent-requests="15000"/>
+        <connection-limit name="limit-connections" max-concurrent-requests="15000" queue-size="100"/>
         <response-header name="headers" header-name="MY_HEADER" header-value="someValue"/>
         <gzip name="static-gzip" predicate="path-suffix['.js'] or path-suffix ['.css'] or path-prefix['/resources']" />
     </filters>
