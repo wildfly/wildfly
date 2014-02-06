@@ -22,7 +22,6 @@
 
 package org.wildfly.mod_cluster.undertow;
 
-import io.undertow.server.session.SessionCookieConfig;
 
 import java.util.Iterator;
 
@@ -31,10 +30,12 @@ import org.jboss.modcluster.container.Engine;
 import org.jboss.modcluster.container.Host;
 import org.jboss.modcluster.container.Server;
 import org.wildfly.extension.undertow.ListenerService;
+import org.wildfly.extension.undertow.SessionCookieConfig;
 import org.wildfly.extension.undertow.UndertowService;
 
 /**
  * Adapts {@link org.wildfly.extension.undertow.Server} to an {@link Engine}.
+ *
  * @author Radoslav Husar
  * @since 8.0
  */
@@ -146,14 +147,28 @@ public class UndertowEngine implements Engine {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return overridden session cookie name if defined, otherwise {@link io.undertow.server.session.SessionCookieConfig#DEFAULT_SESSION_ID}
+     */
     @Override
     public String getSessionCookieName() {
-        return SessionCookieConfig.DEFAULT_SESSION_ID;
+        SessionCookieConfig override = server.getServletContainer().getSessionCookieConfig();
+        if (override == null) {
+            return io.undertow.server.session.SessionCookieConfig.DEFAULT_SESSION_ID;
+        }
+        return override.getName();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return lowercase value of {@link #getSessionCookieName()}
+     */
     @Override
     public String getSessionParameterName() {
-        return "jsessionid";
+        return getSessionCookieName().toLowerCase();
     }
 
     @Override

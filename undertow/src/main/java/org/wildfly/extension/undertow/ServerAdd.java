@@ -66,8 +66,8 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
         final ServiceName serverName = UndertowService.SERVER.append(name);
         final Server service = new Server(name, defaultHost);
         final ServiceBuilder<Server> builder = context.getServiceTarget().addService(serverName, service)
-                .addDependency(UndertowService.SERVLET_CONTAINER.append(servletContainer), ServletContainerService.class, service.getServletContainer())
-                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowService());
+                .addDependency(UndertowService.SERVLET_CONTAINER.append(servletContainer), ServletContainerService.class, service.getServletContainerInjector())
+                .addDependency(UndertowService.UNDERTOW, UndertowService.class, service.getUndertowServiceInjector());
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
         builder.addListener(verificationHandler);

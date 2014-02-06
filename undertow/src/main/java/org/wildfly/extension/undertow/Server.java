@@ -35,6 +35,7 @@ import io.undertow.server.handlers.NameVirtualHostHandler;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.server.handlers.error.SimpleErrorPageHandler;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
@@ -122,15 +123,19 @@ public class Server implements Service<Server> {
         return this;
     }
 
-    protected InjectedValue<ServletContainerService> getServletContainer() {
+    Injector<ServletContainerService> getServletContainerInjector() {
         return servletContainer;
+    }
+
+    public ServletContainerService getServletContainer() {
+        return servletContainer.getValue();
     }
 
     protected HttpHandler getRoot() {
         return root;
     }
 
-    protected InjectedValue<UndertowService> getUndertowService() {
+    Injector<UndertowService> getUndertowServiceInjector() {
         return undertowService;
     }
 
