@@ -34,6 +34,7 @@ import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -44,7 +45,6 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 import org.xnio.Sequence;
 
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 import static org.xnio.Options.*;
 
 /**
@@ -82,7 +82,7 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
             // if nothing really wants to create a connection out of it.
             uri = this.getConnectionURI();
         } catch (URISyntaxException e) {
-            throw MESSAGES.couldNotConnect(e);
+            throw RemotingLogger.ROOT_LOGGER.couldNotConnect(e);
         }
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
 

@@ -25,13 +25,12 @@ package org.jboss.as.remoting;
 import java.io.IOException;
 import java.net.URI;
 
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
-
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * A {@link GenericOutboundConnectionService} manages a remote outbound connection which is configured via
@@ -52,7 +51,7 @@ public class GenericOutboundConnectionService extends AbstractOutboundConnection
         super(connectionName, connectionCreationOptions);
 
         if (destination == null) {
-            throw MESSAGES.destinationUriEmpty();
+            throw RemotingLogger.ROOT_LOGGER.destinationUriEmpty();
         }
         this.destination = destination;
     }

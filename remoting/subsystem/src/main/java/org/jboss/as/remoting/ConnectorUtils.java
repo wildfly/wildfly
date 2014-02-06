@@ -29,6 +29,7 @@ import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -182,7 +183,7 @@ public class ConnectorUtils {
         } else if ("high".equals(name)) {
             return SaslStrength.HIGH;
         } else {
-            throw RemotingMessages.MESSAGES.illegalStrength(name);
+            throw RemotingLogger.ROOT_LOGGER.illegalStrength(name);
         }
     }
 

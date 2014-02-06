@@ -33,6 +33,7 @@ import java.security.PrivilegedExceptionAction;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.HttpUpgradeHandshake;
 import io.undertow.util.HttpString;
+import org.jboss.as.remoting.logging.RemotingLogger;
 
 /**
  * Utility class to create a server-side HTTP Upgrade handshake.
@@ -55,7 +56,7 @@ public class SimpleHttpUpgradeHandshake implements HttpUpgradeHandshake {
     public boolean handleUpgrade(final HttpServerExchange exchange) throws IOException {
         String secretKey = exchange.getRequestHeaders().getFirst(keyHeader);
         if (secretKey == null) {
-            throw RemotingMessages.MESSAGES.upgradeRequestMissingKey();
+            throw RemotingLogger.ROOT_LOGGER.upgradeRequestMissingKey();
         }
         String response = createExpectedResponse(magicNumber, secretKey);
         exchange.getResponseHeaders().put(HttpString.tryFromString(acceptHeader), response);

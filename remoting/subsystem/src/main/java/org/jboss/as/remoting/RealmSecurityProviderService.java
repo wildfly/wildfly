@@ -25,14 +25,13 @@ import java.io.File;
 import javax.security.auth.callback.CallbackHandler;
 
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * The service to make the RealmAuthenticationProvider available.
@@ -59,13 +58,13 @@ public class RealmSecurityProviderService implements Service<RemotingSecurityPro
         File authDir = new File(path, "auth");
         if (authDir.exists()) {
             if (!authDir.isDirectory()) {
-                throw MESSAGES.unableToCreateTempDirForAuthTokensFileExists();
+                throw RemotingLogger.ROOT_LOGGER.unableToCreateTempDirForAuthTokensFileExists();
             }
         } else if (!authDir.mkdirs()) {
             //there is a race if multiple services are starting for the same
             //security realm
             if(!authDir.isDirectory()) {
-                throw MESSAGES.unableToCreateAuthDir(authDir.getAbsolutePath());
+                throw RemotingLogger.ROOT_LOGGER.unableToCreateAuthDir(authDir.getAbsolutePath());
             }
         } else {
             // As a precaution make perms user restricted for directories created (if the OS allows)

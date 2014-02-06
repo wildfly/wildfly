@@ -23,7 +23,6 @@ package org.jboss.as.remoting;
 
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.LOCAL_DEFAULT_USER;
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 import static org.xnio.Options.SASL_MECHANISMS;
 import static org.xnio.Options.SASL_POLICY_NOANONYMOUS;
 import static org.xnio.Options.SASL_POLICY_NOPLAINTEXT;
@@ -56,6 +55,7 @@ import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.core.security.UniqueIdUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.remoting3.Remoting;
 import org.jboss.remoting3.security.AuthorizingCallbackHandler;
 import org.jboss.remoting3.security.InetAddressPrincipal;
@@ -172,7 +172,7 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
         }
 
         if (mechanisms.size() == 0) {
-            throw MESSAGES.noSupportingMechanismsForRealm();
+            throw RemotingLogger.ROOT_LOGGER.noSupportingMechanismsForRealm();
         }
 
         builder.set(SASL_MECHANISMS, Sequence.of(mechanisms));
@@ -230,7 +230,7 @@ class RealmSecurityProvider implements RemotingSecurityProvider {
 
                 public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
                     for (Callback current : callbacks) {
-                        throw MESSAGES.anonymousMechanismNotExpected(current);
+                        throw RemotingLogger.ROOT_LOGGER.anonymousMechanismNotExpected(current);
                     }
                 }
 

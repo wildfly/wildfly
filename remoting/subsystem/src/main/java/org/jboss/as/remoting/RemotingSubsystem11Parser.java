@@ -36,7 +36,6 @@ import static org.jboss.as.remoting.CommonAttributes.AUTHENTICATION_PROVIDER;
 import static org.jboss.as.remoting.CommonAttributes.CONNECTOR;
 import static org.jboss.as.remoting.CommonAttributes.SECURITY_REALM;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -48,6 +47,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -362,10 +362,10 @@ class RemotingSubsystem11Parser extends RemotingSubsystem10Parser implements XML
 
     static ModelNode getConnectionAddOperation(final String connectionName, final String outboundSocketBindingRef, final ModelNode userName, final String securityRealm, PathAddress address) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
-            throw MESSAGES.connectionNameEmpty();
+            throw RemotingLogger.ROOT_LOGGER.connectionNameEmpty();
         }
         if (outboundSocketBindingRef == null || outboundSocketBindingRef.trim().isEmpty()) {
-            throw MESSAGES.outboundSocketBindingEmpty(connectionName);
+            throw RemotingLogger.ROOT_LOGGER.outboundSocketBindingEmpty(connectionName);
         }
         final ModelNode addOperation = new ModelNode();
         addOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);

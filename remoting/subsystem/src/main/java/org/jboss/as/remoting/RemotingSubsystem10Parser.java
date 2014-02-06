@@ -22,7 +22,6 @@ import static org.jboss.as.remoting.CommonAttributes.QOP;
 import static org.jboss.as.remoting.CommonAttributes.SOCKET_BINDING;
 import static org.jboss.as.remoting.CommonAttributes.STRENGTH;
 import static org.jboss.as.remoting.CommonAttributes.VALUE;
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -33,6 +32,7 @@ import javax.xml.stream.XMLStreamException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -250,7 +250,7 @@ class RemotingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<
                         try {
                             saslElement.get(QOP).add(SaslQop.fromString(q).getString().toLowerCase(Locale.ENGLISH));
                         } catch (IllegalArgumentException e) {
-                            throw MESSAGES.invalidQOPV(q);
+                            throw RemotingLogger.ROOT_LOGGER.invalidQOPV(q);
                         }
                     }
                     break;
@@ -272,7 +272,7 @@ class RemotingSubsystem10Parser implements XMLStreamConstants, XMLElementReader<
                         try {
                             saslElement.get(STRENGTH).add(SaslStrength.valueOf(s.toUpperCase(Locale.ENGLISH)).name().toLowerCase(Locale.ENGLISH));
                         } catch (IllegalArgumentException e) {
-                            throw MESSAGES.invalidStrength(s);
+                            throw RemotingLogger.ROOT_LOGGER.invalidStrength(s);
                         }
                     }
                     break;
