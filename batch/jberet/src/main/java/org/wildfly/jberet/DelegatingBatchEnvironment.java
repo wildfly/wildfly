@@ -25,7 +25,7 @@ package org.wildfly.jberet;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import javax.transaction.UserTransaction;
+import javax.transaction.TransactionManager;
 
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
@@ -67,8 +67,8 @@ public class DelegatingBatchEnvironment implements BatchEnvironment {
     }
 
     @Override
-    public UserTransaction getUserTransaction() {
-        return delegate.getUserTransaction();
+    public TransactionManager getTransactionManager() {
+        return delegate.getTransactionManager();
     }
 
     @Override

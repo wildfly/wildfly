@@ -27,7 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
-import javax.transaction.UserTransaction;
+import javax.transaction.TransactionManager;
 
 import org.jberet.spi.ArtifactFactory;
 import org.jberet.spi.BatchEnvironment;
@@ -68,7 +68,7 @@ public class BatchEnvironmentFactory {
         }
 
         @Override
-        public UserTransaction getUserTransaction() {
+        public TransactionManager getTransactionManager() {
             throw WildFlyBatchMessages.MESSAGES.invalidBatchEnvironment();
         }
 
