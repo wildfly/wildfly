@@ -29,19 +29,26 @@ import java.lang.reflect.Proxy;
 import java.security.SecureRandom;
 import java.util.Random;
 
+import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.arquillian.api.ServerSetupTask;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.process.protocol.StreamUtils;
+import org.jboss.as.test.integration.management.ManagementOperations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.ByteArrayAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -56,9 +63,8 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-//@ServerSetup(ClientCompatibilityUnitTestCase.ClientCompatibilityUnitTestCaseServerSetup.class)
+@ServerSetup(ClientCompatibilityUnitTestCase.ClientCompatibilityUnitTestCaseServerSetup.class)
 public class ClientCompatibilityUnitTestCase {
-    /* TODO: re-enable when the native interface is removed
     static class ClientCompatibilityUnitTestCaseServerSetup implements ServerSetupTask {
 
         @Override
@@ -83,8 +89,8 @@ public class ClientCompatibilityUnitTestCase {
 
         private ModelNode address() {
             return PathAddress.pathAddress()
-                    .append(CORE_SERVICE, MANAGEMENT)
-                    .append(MANAGEMENT_INTERFACE, NATIVE_INTERFACE).toModelNode();
+                    .append(ModelDescriptionConstants.CORE_SERVICE, ModelDescriptionConstants.MANAGEMENT)
+                    .append(ModelDescriptionConstants.MANAGEMENT_INTERFACE, ModelDescriptionConstants.NATIVE_INTERFACE).toModelNode();
         }
     }
 
@@ -93,7 +99,6 @@ public class ClientCompatibilityUnitTestCase {
     public static Archive fakeDeployment() {
         return ShrinkWrap.create(JavaArchive.class);
     }
-    */
 
     private static final String CONTROLLER_ADDRESS = System.getProperty("node0", "localhost");
 
