@@ -1,0 +1,2 @@
+org.wildfly.clustering.diagnostics.services.cache.CacheManagementClassTableContributor
+org.wildfly.clustering.diagnostics.services.channel.ChannelManagementClassTableContributor

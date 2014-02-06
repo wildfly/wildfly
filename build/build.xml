@@ -962,6 +962,14 @@
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-jgroups"/>
         </module-def>
 
+        <module-def name="org.wildfly.clustering.diagnostics.extension">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-diagnostics-extension"/>
+        </module-def>
+
+        <module-def name="org.wildfly.clustering.diagnostics.services">
+            <maven-resource group="org.wildfly" artifact="wildfly-clustering-diagnostics-services"/>
+        </module-def>
+
         <module-def name="org.wildfly.clustering.server">
             <maven-resource group="org.wildfly" artifact="wildfly-clustering-server"/>
         </module-def>
@@ -1531,6 +1539,8 @@
         <module-def name="org.wildfly.extension.batch">
             <maven-resource group="org.wildfly" artifact="wildfly-batch"/>
         </module-def>
+
+        <module-def name="org.wildfly.extension.clustering.diagnostics"/>
 
         <module-def name="org.wildfly.jberet">
             <maven-resource group="org.wildfly" artifact="wildfly-jberet"/>

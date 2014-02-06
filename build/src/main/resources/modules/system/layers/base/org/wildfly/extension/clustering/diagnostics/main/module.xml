@@ -1,0 +1,5 @@
+<module xmlns="urn:jboss:module:1.1" name="org.wildfly.extension.clustering.diagnostics">
+   <dependencies>
+      <module name="org.wildfly.clustering.diagnostics.extension" export="true" services="export"/>
+   </dependencies>
+</module>

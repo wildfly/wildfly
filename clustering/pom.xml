@@ -40,6 +40,7 @@
     <modules>
         <module>api</module>
         <module>common</module>
+        <module>diagnostics</module>
         <module>ejb</module>
         <module>infinispan</module>
         <module>jgroups</module>

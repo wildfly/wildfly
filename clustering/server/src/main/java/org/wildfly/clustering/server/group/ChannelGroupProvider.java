@@ -79,7 +79,7 @@ public class ChannelGroupProvider implements ChannelServiceProvider {
                 .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
                 .addDependency(EmbeddedCacheManagerService.getServiceName(cluster), EmbeddedCacheManager.class, config.getCacheManagerInjector())
                 .addDependency(ChannelNodeFactoryProvider.getServiceName(cluster), ChannelNodeFactory.class, config.getNodeFactoryInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
 
         BinderService binder = new BinderService(bindInfo.getBindName());

@@ -87,7 +87,7 @@ public class CommandDispatcherFactoryProvider implements ChannelServiceProvider 
                 .addDependency(ChannelNodeFactoryProvider.getServiceName(cluster), ChannelNodeFactory.class, config.getNodeFactoryInjector())
                 .addDependency(ChannelService.getServiceName(cluster), Channel.class, config.getChannelInjector())
                 .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, config.getModuleLoaderInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
 
         BinderService binder = new BinderService(bindInfo.getBindName());
