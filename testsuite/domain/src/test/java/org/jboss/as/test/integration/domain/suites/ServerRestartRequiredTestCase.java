@@ -23,6 +23,7 @@
 package org.jboss.as.test.integration.domain.suites;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONCURRENT_GROUPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
@@ -36,12 +37,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELOAD_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
@@ -50,7 +49,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
-import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getServerConfigAddress;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.startServer;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.waitUntilState;
 
@@ -58,7 +56,6 @@ import java.io.IOException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.test.integration.domain.AdminOnlyModeTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -68,7 +65,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -84,14 +80,22 @@ public class ServerRestartRequiredTestCase {
 
     private static final ModelNode reloadOneAddress = new ModelNode();
     private static final ModelNode reloadTwoAddress = new ModelNode();
+    private static final ModelNode reloadOneConfigAddress = new ModelNode();
+    private static final ModelNode reloadTwoConfigAddress = new ModelNode();
 
     static {
         // (host=slave),(server-config=reload-one)
+        reloadOneConfigAddress.add("host", "master");
+        reloadOneConfigAddress.add("server-config", "reload-one");
+        // (host=slave),(server=reload-one)
         reloadOneAddress.add("host", "master");
-        reloadOneAddress.add("server-config", "reload-one");
-        // (host=slave),(server=new-server)
+        reloadOneAddress.add("server", "reload-one");
+        // (host=slave),(server-config=reload-two)
+        reloadTwoConfigAddress.add("host", "slave");
+        reloadTwoConfigAddress.add("server-config", "reload-two");
+        // (host=slave),(server=reload-two)
         reloadTwoAddress.add("host", "slave");
-        reloadTwoAddress.add("server-config", "reload-two");
+        reloadTwoAddress.add("server", "reload-two");
     }
 
     @BeforeClass
@@ -119,8 +123,8 @@ public class ServerRestartRequiredTestCase {
         // Start reload-two
         startServer(client, "slave", "reload-two");
         // Check the states
-        waitUntilState(client, reloadOneAddress, "STARTED");
-        waitUntilState(client, reloadTwoAddress, "STARTED");
+        waitUntilState(client, reloadOneConfigAddress, "STARTED");
+        waitUntilState(client, reloadTwoConfigAddress, "STARTED");
     }
 
     @After
@@ -129,46 +133,41 @@ public class ServerRestartRequiredTestCase {
 
         final ModelNode stopServer = new ModelNode();
         stopServer.get(OP).set("stop");
-        stopServer.get(OP_ADDR).set(reloadOneAddress);
+        stopServer.get(OP_ADDR).set(reloadOneConfigAddress);
         client.execute(stopServer);
-        waitUntilState(client, reloadOneAddress, "DISABLED");
-        stopServer.get(OP_ADDR).set(reloadTwoAddress);
+        waitUntilState(client, reloadOneConfigAddress, "DISABLED");
+        stopServer.get(OP_ADDR).set(reloadTwoConfigAddress);
         client.execute(stopServer);
-        waitUntilState(client, reloadTwoAddress, "DISABLED");
+        waitUntilState(client, reloadTwoConfigAddress, "DISABLED");
     }
 
     @Test
     public void testSocketBinding() throws Exception {
         final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
-        try {
 
-            // add a custom socket binding, referencing a non-existent system property
-            final ModelNode socketBinding = new ModelNode();
-            socketBinding.add(SOCKET_BINDING_GROUP, "reload-sockets");
-            socketBinding.add(SOCKET_BINDING, "my-custom-binding");
+        // add a custom socket binding, referencing a non-existent system property
+        final ModelNode socketBinding = new ModelNode();
+        socketBinding.add(SOCKET_BINDING_GROUP, "reload-sockets");
+        socketBinding.add(SOCKET_BINDING, "my-custom-binding");
 
-            final ModelNode socketBindingAdd = new ModelNode();
-            socketBindingAdd.get(OP).set(ADD);
-            socketBindingAdd.get(OP_ADDR).set(socketBinding);
-            socketBindingAdd.get(PORT).setExpression("${my.custom.socket}");
+        final ModelNode socketBindingAdd = new ModelNode();
+        socketBindingAdd.get(OP).set(ADD);
+        socketBindingAdd.get(OP_ADDR).set(socketBinding);
+        socketBindingAdd.get(PORT).setExpression("${my.custom.socket}");
 
-            // Don't rollback server failures, rather mark them as restart-required
-            socketBindingAdd.get(OPERATION_HEADERS).get(ROLLOUT_PLAN)
-                    .get(IN_SERIES).add().get(CONCURRENT_GROUPS).get("reload-test-group").get(MAX_FAILURE_PERCENTAGE).set(100);
+        // Don't rollback server failures, rather mark them as restart-required
+        socketBindingAdd.get(OPERATION_HEADERS).get(ROLLOUT_PLAN)
+                .get(IN_SERIES).add().get(CONCURRENT_GROUPS).get("reload-test-group").get(MAX_FAILURE_PERCENTAGE).set(100);
 
-            executeOperation(socketBindingAdd, client);
+        executeOperation(socketBindingAdd, client);
 
-            checkReloadOneAndTwo(client);
-
-        } finally {
-            //
-        }
+        checkRestartOneAndTwo(client);
     }
 
     @Test
     public void testChangeGroup() throws Exception {
 
-        final ModelNode address = reloadTwoAddress;
+        final ModelNode address = reloadTwoConfigAddress;
 
         final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
         final ModelNode stopOP = new ModelNode();
@@ -192,6 +191,31 @@ public class ServerRestartRequiredTestCase {
         // Execute composite operation
         executeForResult(composite, client);
 
+        // Trigger a reload required operation
+        final ModelNode updateProfile = new ModelNode();
+        updateProfile.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
+        updateProfile.get(OP_ADDR).add(SERVER_GROUP, "reload-test-group");
+        updateProfile.get(NAME).set("profile");
+        updateProfile.get(VALUE).set("default");
+
+        try {
+            executeForResult(updateProfile, client);
+            // Check that server one is in reload-required (two is stopped)
+            assertServerState(reloadOneAddress, client, RELOAD_REQUIRED);
+        } finally {
+            final ModelNode restore = updateProfile.clone();
+            restore.get(VALUE).set("minimal");
+            executeForResult(restore, client);
+        }
+
+        final ModelNode reloadIfRequired = new ModelNode();
+        reloadIfRequired.get(OP).set("reload-servers");
+        reloadIfRequired.get(OP_ADDR).add(SERVER_GROUP, "reload-test-group");
+        reloadIfRequired.get(BLOCKING).set(true);
+
+        // Reload
+        executeForResult(reloadIfRequired, client);
+        assertServerState(reloadOneAddress, client, "running");
     }
 
     @Test
@@ -212,7 +236,7 @@ public class ServerRestartRequiredTestCase {
         // Update the JVM
         executeOperation(operation, client);
 
-        checkReloadOneAndTwo(client);
+        checkRestartOneAndTwo(client);
     }
 
     @Test
@@ -234,18 +258,13 @@ public class ServerRestartRequiredTestCase {
         executeOperation(operation, client);
 
         // check the process state for reload-one
-        final ModelNode serverOne = new ModelNode();
-        serverOne.add(HOST, "master");
-        serverOne.add(RUNNING_SERVER, "reload-one");
+        final ModelNode serverOne = reloadOneAddress;
 
         final ModelNode resultOne = getServerState(serverOne, client);
         Assert.assertEquals("running", resultOne.asString());
 
         // check the process state for reload-two
-        final ModelNode serverTwo = new ModelNode();
-        serverTwo.add(HOST, "slave");
-        serverTwo.add(SERVER, "reload-two");
-
+        final ModelNode serverTwo = reloadTwoAddress;
         final ModelNode resultTwo = getServerState(serverTwo, client);
         Assert.assertEquals(RESTART_REQUIRED, resultTwo.asString());
     }
@@ -254,9 +273,7 @@ public class ServerRestartRequiredTestCase {
     public void testServerConfigVM() throws Exception {
         final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
 
-        final ModelNode address = new ModelNode();
-        address.add(HOST, "slave");
-        address.add(SERVER_CONFIG, "reload-two");
+        final ModelNode address = reloadTwoConfigAddress.clone();
         address.add(JVM, "default");
 
         final ModelNode operation = new ModelNode();
@@ -269,18 +286,12 @@ public class ServerRestartRequiredTestCase {
         executeOperation(operation, client);
 
         // check the process state for reload-one
-        final ModelNode serverOne = new ModelNode();
-        serverOne.add(HOST, "master");
-        serverOne.add(RUNNING_SERVER, "reload-one");
-
+        final ModelNode serverOne = reloadOneAddress;
         final ModelNode resultOne = getServerState(serverOne, client);
         Assert.assertEquals("running", resultOne.asString());
 
         // check the process state for reload-two
-        final ModelNode serverTwo = new ModelNode();
-        serverTwo.add(HOST, "slave");
-        serverTwo.add(SERVER, "reload-two");
-
+        final ModelNode serverTwo = reloadTwoAddress;
         final ModelNode resultTwo = getServerState(serverTwo, client);
         Assert.assertEquals(RESTART_REQUIRED, resultTwo.asString());
     }
@@ -298,8 +309,8 @@ public class ServerRestartRequiredTestCase {
         executeOperation(operation, client);
 
         // Check the states
-        waitUntilState(client, reloadOneAddress, "STARTED");
-        waitUntilState(client, reloadTwoAddress, "STARTED");
+        waitUntilState(client, reloadOneConfigAddress, "STARTED");
+        waitUntilState(client, reloadTwoConfigAddress, "STARTED");
 
     }
 
@@ -316,27 +327,29 @@ public class ServerRestartRequiredTestCase {
         executeOperation(operation, client);
 
         // Check the states
-        waitUntilState(client, reloadOneAddress, "STARTED");
-        waitUntilState(client, reloadTwoAddress, "STARTED");
+        waitUntilState(client, reloadOneConfigAddress, "STARTED");
+        waitUntilState(client, reloadTwoConfigAddress, "STARTED");
 
     }
 
     private void checkReloadOneAndTwo(final ModelControllerClient client) throws Exception {
+        checkProcessStateOneAndTwo(client, RELOAD_REQUIRED);
+    }
+
+    private void checkRestartOneAndTwo(final ModelControllerClient client) throws Exception {
+        checkProcessStateOneAndTwo(client, RESTART_REQUIRED);
+    }
+
+    private void checkProcessStateOneAndTwo(final ModelControllerClient client, final String expected) throws Exception {
         // check the process state for reload-one
-        final ModelNode serverOne = new ModelNode();
-        serverOne.add(HOST, "master");
-        serverOne.add(RUNNING_SERVER, "reload-one");
-
-        final ModelNode resultOne = getServerState(serverOne, client);
-        Assert.assertEquals(RESTART_REQUIRED, resultOne.asString());
-
+        assertServerState(reloadOneAddress, client, expected);
         // check the process state for reload-two
-        final ModelNode serverTwo = new ModelNode();
-        serverTwo.add(HOST, "slave");
-        serverTwo.add(SERVER, "reload-two");
+        assertServerState(reloadTwoAddress, client, expected);
+    }
 
-        final ModelNode resultTwo = getServerState(serverTwo, client);
-        Assert.assertEquals(RESTART_REQUIRED, resultTwo.asString());
+    protected void assertServerState(final ModelNode address, final ModelControllerClient client, final String expected) throws Exception {
+        final ModelNode resultTwo = getServerState(address, client);
+        Assert.assertEquals(expected, resultTwo.asString());
     }
 
     private ModelNode getServerState(final ModelNode address, final ModelControllerClient client) throws Exception {
@@ -353,7 +366,7 @@ public class ServerRestartRequiredTestCase {
        ModelNode ret = modelControllerClient.execute(op);
 
        if (! SUCCESS.equals(ret.get(OUTCOME).asString())) {
-           throw new MgmtOperationException("Management operation failed.", op, ret);
+           throw new MgmtOperationException("Management operation failed: ", op, ret);
        }
        return ret.get(RESULT);
    }
