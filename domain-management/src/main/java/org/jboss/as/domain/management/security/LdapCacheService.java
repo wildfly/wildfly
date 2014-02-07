@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.NamingException;
@@ -53,16 +54,18 @@ import org.jboss.msc.service.StopContext;
  */
 class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
 
+    private static volatile int THREAD_COUNT = 1;
+
     private final LdapSearcher<R, K> searcher;
-    private CacheMode mode;
-    private int evictionTime;
-    private boolean cacheFailures;
-    private int maxCacheSize;
+    private volatile CacheMode mode;
+    private volatile int evictionTime;
+    private volatile boolean cacheFailures;
+    private volatile int maxCacheSize;
 
     /*
      * Controlled by the service lifecycle.
      */
-    private ExtendedLdapSearcherCache<R, K> cacheImplementation;
+    private volatile ExtendedLdapSearcherCache<R, K> cacheImplementation;
     private ScheduledExecutorService executorService;
 
     private LdapCacheService(final LdapSearcher<R, K> searcher, final CacheMode mode, final int evictionTime, final boolean cacheFailures, final int maxCacheSize) {
@@ -119,16 +122,39 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
          * having many threads concurrently waiting on the same lock.
          */
         if (evictionTime > 0) {
-            executorService = Executors.newSingleThreadScheduledExecutor();
+            executorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+
+                @Override
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, String.format("LDAP Cache Eviction Thread (%d)", THREAD_COUNT++));
+                }
+            });
         }
     }
 
     @Override
     public void stop(final StopContext context) {
-        cacheImplementation.clearAll();
-        cacheImplementation = null;
-        executorService.shutdown();
-        executorService = null;
+        try {
+            context.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+
+                        cacheImplementation.clearAll();
+                        cacheImplementation = null;
+                        if (executorService != null) {
+                            executorService.shutdown();
+                            executorService = null;
+                        }
+                    } finally {
+                        context.complete();
+                    }
+                }
+            });
+        } finally {
+            context.asynchronous();
+        }
     }
 
     /*
@@ -361,10 +387,25 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
                 }
             }
 
+            /**
+             * Set the {@link ScheduledFuture} for the eviction of this entry.
+             *
+             * Note: This method should only be called by a {@link Thread} that has already obtained a lock to the cache.
+             *
+             * @param future - The {@link ScheduledFuture} for the eviction of this entry.
+             */
             public void setFuture(ScheduledFuture<?> future) {
                 this.future = future;
             }
 
+            /**
+             * Cancel the {@link ScheduledFuture} for the eviction of this entry.
+             *
+             * This could be called either because the entry is being manually evicted from the cache or because eviction is
+             * being rescheduled.
+             *
+             * Note: This method should only be called by a {@link Thread} that has already obtained a lock to the cache.
+             */
             public void cancelFuture() {
                 if (future != null) {
                     future.cancel(true);

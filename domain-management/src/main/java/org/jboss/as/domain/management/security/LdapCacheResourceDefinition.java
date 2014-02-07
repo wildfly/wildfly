@@ -49,6 +49,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -81,6 +82,7 @@ public class LdapCacheResourceDefinition extends SimpleResourceDefinition {
             .setAllowExpression(true)
             .setDefaultValue(new ModelNode().set(900))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .build();
 
     public static final SimpleAttributeDefinition CACHE_FAILURES = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CACHE_FAILURES, ModelType.BOOLEAN, true)
@@ -102,6 +104,7 @@ public class LdapCacheResourceDefinition extends SimpleResourceDefinition {
     // Current Size - int
     public static final SimpleAttributeDefinition CACHE_SIZE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.CACHE_SIZE, ModelType.INT)
             .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .setMeasurementUnit(MeasurementUnit.SECONDS)
             .build();
 
     // (Other options are, max size, min size, max age, min age, average age.
