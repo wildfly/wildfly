@@ -149,6 +149,7 @@ import javax.servlet.SessionTrackingMode;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -441,7 +442,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             @Override
             public int getConfidentialPort(HttpServerExchange exchange) {
-                int port = exchange.getHostPort();
+                int port = exchange.getConnection().getLocalAddress(InetSocketAddress.class).getPort();
                 return host.getValue().getServer().getValue().lookupSecurePort(port);
             }
         };

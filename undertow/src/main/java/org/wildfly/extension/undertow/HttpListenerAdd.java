@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow;
 import io.undertow.server.ListenerRegistry;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -50,6 +51,8 @@ public class HttpListenerAdd extends ListenerAdd {
 
     @Override
     void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException {
+        String redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model).asString();
+        serviceBuilder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(redirectBindingRef), SocketBinding.class, service.getRedirectSocket());
         serviceBuilder.addDependency(REGISTRY_SERVICE_NAME, ListenerRegistry.class, ((HttpListenerService) service).getHttpListenerRegistry());
     }
 }

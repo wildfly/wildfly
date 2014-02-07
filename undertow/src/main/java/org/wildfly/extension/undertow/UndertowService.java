@@ -120,7 +120,7 @@ public class UndertowService implements Service<UndertowService> {
             }
         } else if (address.getLastElement().getKey().equals(Constants.HOST)) {
             String host = address.getLastElement().getValue();
-            String server = twoUp.getLastElement().getValue();
+            String server = oneUp.getLastElement().getValue();
             serviceName = UndertowService.filterRefName(server, host, name);
         } else {
             String location = address.getLastElement().getValue();

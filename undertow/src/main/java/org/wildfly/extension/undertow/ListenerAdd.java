@@ -67,7 +67,6 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         final PathAddress parent = address.subAddress(0, address.size() - 1);
         String name = address.getLastElement().getValue();
         String bindingRef = ListenerResourceDefinition.SOCKET_BINDING.resolveModelAttribute(context, model).asString();
-        String redirectBindingRef = ListenerResourceDefinition.REDIRECT_SOCKET.resolveModelAttribute(context, model).asString();
         String workerName = ListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
         String bufferPoolName = ListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
         boolean enabled = ListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
@@ -78,7 +77,6 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         final ServiceBuilder<? extends ListenerService> serviceBuilder = context.getServiceTarget().addService(listenerServiceName, service);
         serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
-                .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(redirectBindingRef), SocketBinding.class, service.getRedirectSocket())
                 .addDependency(IOServices.BUFFER_POOL.append(bufferPoolName), Pool.class, service.getBufferPool())
                 .addDependency(UndertowService.SERVER.append(serverName), Server.class, service.getServerService());
 

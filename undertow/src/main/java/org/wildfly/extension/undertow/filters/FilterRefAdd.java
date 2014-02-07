@@ -67,7 +67,7 @@ class FilterRefAdd extends AbstractAddStepHandler {
         final ServiceTarget target = context.getServiceTarget();
         ServiceController<?> sc = target.addService(UndertowService.getFilterRefServiceName(address, name), service)
                 .addDependency(UndertowService.FILTER.append(name), FilterService.class, service.getFilter())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .setInitialMode(ServiceController.Mode.ACTIVE)
                 .install();
 
         if (newControllers != null) {
