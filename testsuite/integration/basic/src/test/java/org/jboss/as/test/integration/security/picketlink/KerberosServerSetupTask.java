@@ -27,6 +27,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -136,7 +138,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         }
 
         final String hostname = Utils.getSecondaryTestAddress(managementClient, false);
-        createLdap1(hostname);
+        createLdap1(managementClient, hostname);
 
         origKrb5Conf = Utils.setSystemProperty("java.security.krb5.conf", KRB5_CONF_FILE.getAbsolutePath());
         origKrbDebug = Utils.setSystemProperty("sun.security.krb5.debug", "true");
@@ -180,9 +182,12 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         @CreateTransport( protocol = "TCP", port = KERBEROS_PORT )
     })
     //@formatter:on
-    public void createLdap1(final String hostname) throws Exception, IOException, ClassNotFoundException, FileNotFoundException {
+    public void createLdap1(ManagementClient managementClient, final String hostname) throws Exception, IOException, ClassNotFoundException, FileNotFoundException {
         final Map<String, String> map = new HashMap<String, String>();
-        map.put("hostname", NetworkUtils.formatPossibleIpv6Address(hostname));
+        final String cannonicalHost = getCannonicalHost(managementClient);
+        final String cannonicalIp = getFullCannonicalIp(managementClient);
+        map.put("hostname", cannonicalHost);
+        map.put("hostaddr", cannonicalIp);
         map.put("realm", KERBEROS_PRIMARY_REALM);
         directoryService1 = DSAnnotationProcessor.getDirectoryService();
         final String ldifContent = StrSubstitutor.replace(
@@ -207,13 +212,30 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         fos.close();
         
         createLdapServer.setKeyStore(KEYSTORE_FILE.getAbsolutePath());
-        fixTransportAddress(createLdapServer, hostname);
+        fixTransportAddress(createLdapServer, cannonicalHost);
 
         ldapServer1 = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService1);
-        krbServer1 = KDCServerAnnotationProcessor.getKdcServer(directoryService1, KERBEROS_PORT, hostname);
+        krbServer1 = KDCServerAnnotationProcessor.getKdcServer(directoryService1, KERBEROS_PORT, cannonicalHost);
         ldapServer1.start();
 
-        createKrb5Conf(hostname, KRB5_CONF_FILE, KERBEROS_PORT);
+        createKrb5Conf(cannonicalHost, KRB5_CONF_FILE, KERBEROS_PORT);
+    }
+
+    public static String getHttpServicePrincipal(ManagementClient managementClient) {
+        return "HTTP/" + getFullCannonicalIp(managementClient)+ "@" + KerberosServerSetupTask.KERBEROS_PRIMARY_REALM;
+    }
+
+    public static String getFullCannonicalIp(ManagementClient managementClient) {
+        String cannonicalIp = Utils.getSecondaryTestAddress(managementClient, false);
+        try {
+            return NetworkUtils.formatPossibleIpv6Address(InetAddress.getByName(cannonicalIp).getHostAddress());
+        } catch (UnknownHostException e) {
+            return NetworkUtils.formatPossibleIpv6Address(cannonicalIp);
+        }
+    }
+
+    public static String getCannonicalHost(ManagementClient managementClient) {
+        return NetworkUtils.formatPossibleIpv6Address(Utils.getSecondaryTestAddress(managementClient, true));
     }
 
     /**
@@ -225,7 +247,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
      * @throws IOException
      * @throws FileNotFoundException
      */
-    private void createKrb5Conf(final String hostname, final File outputFile, int port) throws IOException, FileNotFoundException {
+    private static void createKrb5Conf(final String hostname, final File outputFile, int port) throws IOException, FileNotFoundException {
         FileOutputStream krb5Conf = new FileOutputStream(outputFile);
         
         Map<String,String> properties = new HashMap<String, String>();
