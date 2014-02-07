@@ -136,7 +136,7 @@ public class NativeApiPatchingTestCase extends AbstractPatchingTestCase {
     }
 
     private ModelControllerClient getControllerClient() throws UnknownHostException {
-        return ModelControllerClient.Factory.create(System.getProperty("node0", "127.0.0.1"), 9999);
+        return ModelControllerClient.Factory.create("http-remoting", System.getProperty("node0", "127.0.0.1"), 9990);
     }
 
 }
