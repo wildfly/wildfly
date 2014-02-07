@@ -196,8 +196,12 @@ public class Host implements Service<Host> {
         return filters;
     }
 
-    void registerAdditionalAuthenticationMechanism(String name, AuthenticationMechanism authenticationMechanismFactory){
-        additionalAuthenticationMechanisms.put(name, authenticationMechanismFactory);
+    void registerAdditionalAuthenticationMechanism(String name, AuthenticationMechanism authenticationMechanism){
+        additionalAuthenticationMechanisms.put(name, authenticationMechanism);
+    }
+
+    void unregisterAdditionalAuthenticationMechanism(String name){
+        additionalAuthenticationMechanisms.remove(name);
     }
 
     public Map<String, AuthenticationMechanism> getAdditionalAuthenticationMechanisms() {

@@ -39,6 +39,8 @@ import org.wildfly.extension.undertow.security.sso.SingleSignOnAuthenticationMec
  */
 public class SingleSignOnService implements Service<SingleSignOnService> {
 
+    private static final String AUTHENTICATION_MECHANISM_NAME = "SSO";
+
     private final String domain;
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<SingleSignOnManager> manager = new InjectedValue<>();
@@ -54,11 +56,12 @@ public class SingleSignOnService implements Service<SingleSignOnService> {
             mechanism.setDomain(this.domain);
         }
 
-        host.getValue().registerAdditionalAuthenticationMechanism("sso", mechanism);
+        this.host.getValue().registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
     }
 
     @Override
     public void stop(StopContext stopContext) {
+        this.host.getValue().unregisterAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME);
     }
 
     @Override
@@ -67,7 +70,7 @@ public class SingleSignOnService implements Service<SingleSignOnService> {
     }
 
     Injector<Host> getHost() {
-        return host;
+        return this.host;
     }
 
     Injector<SingleSignOnManager> getSingleSignOnSessionManager() {
