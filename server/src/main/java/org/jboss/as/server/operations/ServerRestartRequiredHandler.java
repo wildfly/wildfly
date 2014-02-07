@@ -22,36 +22,22 @@
 
 package org.jboss.as.server.operations;
 
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
-import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.server.controller.descriptions.ServerDescriptions;
-import org.jboss.dmr.ModelNode;
 
 /**
  * Operation step handler responsible for putting a server into "restartRequired" mode.
  *
  * @author John Bailey
  */
-public class ServerRestartRequiredHandler implements OperationStepHandler {
-    public static final String OPERATION_NAME = "server-set-restart-required";
+@Deprecated
+public class ServerRestartRequiredHandler extends ServerProcessStateHandler {
 
-    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ServerDescriptions.getResourceDescriptionResolver())
-            .build();
-
+    public static final String OPERATION_NAME = REQUIRE_RESTART_OPERATION;
+    public static final SimpleOperationDefinition DEFINITION = ServerProcessStateHandler.RESTART_DEFINITION;
     public static final ServerRestartRequiredHandler INSTANCE = new ServerRestartRequiredHandler();
 
-    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
-        context.acquireControllerLock();
-        context.restartRequired();
-        context.completeStep(new OperationContext.RollbackHandler() {
-            @Override
-            public void handleRollback(OperationContext context, ModelNode operation) {
-                context.revertRestartRequired();
-            }
-        });
+    public ServerRestartRequiredHandler() {
+        super(false);
     }
 
 }
