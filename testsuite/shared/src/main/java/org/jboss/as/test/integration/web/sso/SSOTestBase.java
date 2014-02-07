@@ -354,9 +354,7 @@ public abstract class SSOTestBase {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         // SSO element name must be 'configuration'
-        ModelNode op = createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", ADD);
-        op.get("domain").set("${jboss.bind.address:127.0.0.1}");
-        updates.add(op);
+        updates.add(createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", ADD));
 
         applyUpdates(updates, client);
     }
@@ -364,9 +362,7 @@ public abstract class SSOTestBase {
     public static void removeSso(final ModelControllerClient client) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
-        ModelNode op = createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", REMOVE);
-        op.get("domain").set("${jboss.bind.address:127.0.0.1}");
-        updates.add(op);
+        updates.add(createOpNode("subsystem=undertow/server=default-server/host=default-host/setting=single-sign-on", REMOVE));
 
         applyUpdates(updates, client);
     }

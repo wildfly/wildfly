@@ -51,17 +51,17 @@ public class SingleSignOnService implements Service<SingleSignOnService> {
 
     @Override
     public void start(StartContext startContext) {
+        Host host = this.host.getValue();
         SingleSignOnAuthenticationMechanism mechanism = new SingleSignOnAuthenticationMechanism(this.manager.getValue());
-        if (this.domain != null) {
-            mechanism.setDomain(this.domain);
-        }
+        mechanism.setDomain((this.domain != null) ? this.domain : host.getName());
 
-        this.host.getValue().registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
+        host.registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
     }
 
     @Override
     public void stop(StopContext stopContext) {
-        this.host.getValue().unregisterAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME);
+        Host host = this.host.getValue();
+        host.unregisterAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME);
     }
 
     @Override
