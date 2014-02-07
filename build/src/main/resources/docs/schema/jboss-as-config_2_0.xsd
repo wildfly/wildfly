@@ -654,6 +654,20 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
+                <xs:attribute name="username-load" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            This attribute is independent of the filtering configuration, if this attribute is set then after
+                            the users entry in LDAP is identified this attribute will be read to discover the users actual username.
+
+                            This is optional but could be useful in a few scenarios e.g. authenticate with an e-mail address but be identified by a username,
+                            correcting the case of an entered username or even in the future ensuring consistency after a different
+                            authentication approach.
+                            
+                            Note: This value will become the username used for any subsequent group loading. 
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
                 <xs:attribute name="allow-empty-passwords" type="xs:boolean" default="false">
                     <xs:annotation>
                         <xs:documentation>

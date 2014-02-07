@@ -1519,6 +1519,10 @@ public class ManagementXml {
                         LdapAuthenticationResourceDefinition.ALLOW_EMPTY_PASSWORDS.parseAndSetParameter(value, ldapAuthentication, reader);
                         break;
                     }
+                    case USERNAME_LOAD: {
+                        LdapAuthenticationResourceDefinition.USERNAME_LOAD.parseAndSetParameter(value, ldapAuthentication, reader);
+                        break;
+                    }
                     default: {
                         throw unexpectedAttribute(reader, i);
                     }
@@ -3395,6 +3399,7 @@ public class ManagementXml {
             LdapAuthenticationResourceDefinition.RECURSIVE.marshallAsAttribute(userLdap, writer);
             LdapAuthenticationResourceDefinition.USER_DN.marshallAsAttribute(userLdap, writer);
             LdapAuthenticationResourceDefinition.ALLOW_EMPTY_PASSWORDS.marshallAsAttribute(userLdap, writer);
+            LdapAuthenticationResourceDefinition.USERNAME_LOAD.marshallAsAttribute(userLdap, writer);
 
             writeLdapCacheIfDefined(writer, userLdap);
 

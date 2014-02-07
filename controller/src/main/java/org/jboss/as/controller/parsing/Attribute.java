@@ -158,6 +158,7 @@ public enum Attribute {
     USER_DN_ATTRIBUTE("user-dn-attribute"),
     USERNAME("username"),
     USERNAME_ATTRIBUTE("username-attribute"),
+    USERNAME_LOAD("username-load"),
     VALUE("value"),
     WILDCARD("wildcard")
     ;

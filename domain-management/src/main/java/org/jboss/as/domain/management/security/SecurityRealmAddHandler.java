@@ -293,6 +293,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final String usernameAttribute = node.isDefined() ? node.asString() : null;
         node = LdapAuthenticationResourceDefinition.ADVANCED_FILTER.resolveModelAttribute(context, ldap);
         final String advancedFilter = node.isDefined() ? node.asString() : null;
+        node = LdapAuthenticationResourceDefinition.USERNAME_LOAD.resolveModelAttribute(context, ldap);
+        final String usernameLoad = node.isDefined() ? node.asString() : null;
         final boolean recursive = LdapAuthenticationResourceDefinition.RECURSIVE.resolveModelAttribute(context, ldap).asBoolean();
         final boolean allowEmptyPasswords = LdapAuthenticationResourceDefinition.ALLOW_EMPTY_PASSWORDS.resolveModelAttribute(context, ldap).asBoolean();
         final String userDn = LdapAuthenticationResourceDefinition.USER_DN.resolveModelAttribute(context, ldap).asString();
@@ -300,9 +302,9 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         final LdapSearcher<LdapEntry, String> userSearcher;
         if (usernameAttribute != null) {
-            userSearcher = LdapUserSearcherFactory.createForUsernameFilter(baseDn, recursive, userDn, usernameAttribute);
+            userSearcher = LdapUserSearcherFactory.createForUsernameFilter(baseDn, recursive, userDn, usernameAttribute, usernameLoad);
         } else {
-            userSearcher = LdapUserSearcherFactory.createForAdvancedFilter(baseDn, recursive, userDn, advancedFilter);
+            userSearcher = LdapUserSearcherFactory.createForAdvancedFilter(baseDn, recursive, userDn, advancedFilter, usernameLoad);
         }
         final LdapCacheService<LdapEntry, String> cacheService = createCacheService(context, userSearcher, ldap.get(CACHE));
 
@@ -464,7 +466,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 String userDnAttribute = UserSearchResourceDefintion.USER_DN_ATTRIBUTE.resolveModelAttribute(context, usernameFilter).asString();
                 String usernameAttribute = UserSearchResourceDefintion.ATTRIBUTE.resolveModelAttribute(context, usernameFilter).asString();
 
-                userSearcher = LdapUserSearcherFactory.createForUsernameFilter(baseDn, recursive, userDnAttribute, usernameAttribute);
+                userSearcher = LdapUserSearcherFactory.createForUsernameFilter(baseDn, recursive, userDnAttribute, usernameAttribute, null);
             } else if (usernameToDn.hasDefined(ADVANCED_FILTER)) {
                 ModelNode advancedFilter = usernameToDn.require(ADVANCED_FILTER);
                 userCache = advancedFilter.get(CACHE);
@@ -474,7 +476,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 String userDnAttribute = AdvancedUserSearchResourceDefintion.USER_DN_ATTRIBUTE.resolveModelAttribute(context, advancedFilter).asString();
                 String filter = AdvancedUserSearchResourceDefintion.FILTER.resolveModelAttribute(context, advancedFilter).asString();
 
-                userSearcher = LdapUserSearcherFactory.createForAdvancedFilter(baseDn, recursive, userDnAttribute, filter);
+                userSearcher = LdapUserSearcherFactory.createForAdvancedFilter(baseDn, recursive, userDnAttribute, filter, null);
             }
         }
 

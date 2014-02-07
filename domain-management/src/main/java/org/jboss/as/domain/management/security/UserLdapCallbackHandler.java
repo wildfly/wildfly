@@ -230,6 +230,9 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                         SECURITY_LOGGER.tracef("Password verified for user '%s' (using cached password)", username);
                         verifyPasswordCallback.setVerified(true);
                         sharedState.put(LdapEntry.class.getName(), ldapEntry);
+                        if (username.equals(ldapEntry.getSimpleName()) == false) {
+                            sharedState.put(SecurityRealmService.LOADED_USERNAME_KEY, ldapEntry.getSimpleName());
+                        }
                     } else {
                         SECURITY_LOGGER.tracef("Password verification failed for user (using cached password) '%s'", username);
                         verifyPasswordCallback.setVerified(false);
@@ -242,6 +245,9 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                             verifyPasswordCallback.setVerified(true);
                             searchResult.attach(PASSWORD_KEY, new PasswordCredential(password));
                             sharedState.put(LdapEntry.class.getName(), ldapEntry);
+                            if (username.equals(ldapEntry.getSimpleName()) == false) {
+                                sharedState.put(SecurityRealmService.LOADED_USERNAME_KEY, ldapEntry.getSimpleName());
+                            }
                         }
                     } catch (Exception e) {
                         SECURITY_LOGGER.tracef("Password verification failed for user (using connection attempt) '%s'",

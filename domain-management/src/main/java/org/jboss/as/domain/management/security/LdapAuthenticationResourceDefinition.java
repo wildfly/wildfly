@@ -92,8 +92,15 @@ public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
+    public static final SimpleAttributeDefinition USERNAME_LOAD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME_LOAD, ModelType.STRING, true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setValidateNull(false)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
-        CONNECTION, BASE_DN, RECURSIVE, USER_DN, ALLOW_EMPTY_PASSWORDS, USERNAME_FILTER, ADVANCED_FILTER
+        CONNECTION, BASE_DN, RECURSIVE, USER_DN, ALLOW_EMPTY_PASSWORDS, USERNAME_FILTER, ADVANCED_FILTER, USERNAME_LOAD
     };
 
     public LdapAuthenticationResourceDefinition() {

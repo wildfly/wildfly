@@ -411,6 +411,7 @@ public class ModelDescriptionConstants {
     public static final String USERNAME_ATTRIBUTE = "username-attribute";
     public static final String USERNAME_IS_DN = "username-is-dn";
     public static final String USERNAME_FILTER = "username-filter";
+    public static final String USERNAME_LOAD = "username-load";
     public static final String USERNAME_TO_DN = "username-to-dn";
     public static final String USERS = "users";
     public static final String VALIDATE_OPERATION = "validate-operation";

@@ -53,12 +53,12 @@ class LdapUserSearcherFactory {
         };
     }
 
-    static LdapSearcher<LdapEntry, String> createForUsernameFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String attribute) {
-        return new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, attribute, null);
+    static LdapSearcher<LdapEntry, String> createForUsernameFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String attribute, final String usernameLoad) {
+        return new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, attribute, null, usernameLoad);
     }
 
-    static LdapSearcher<LdapEntry, String> createForAdvancedFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String filter) {
-        return new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, null, filter);
+    static LdapSearcher<LdapEntry, String> createForAdvancedFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String filter, final String usernameLoad) {
+        return new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, null, filter, usernameLoad);
     }
 
     private static class LdapUserSearcherImpl implements LdapSearcher<LdapEntry, String> {
@@ -68,14 +68,16 @@ class LdapUserSearcherFactory {
         final String userDnAttribute;
         final String userNameAttribute;
         final String advancedFilter;
+        final String usernameLoad;
 
         private LdapUserSearcherImpl(final String baseDn, final boolean recursive, final String userDnAttribute,
-                final String userNameAttribute, final String advancedFilter) {
+                final String userNameAttribute, final String advancedFilter, final String usernameLoad) {
             this.baseDn = baseDn;
             this.recursive = recursive;
             this.userDnAttribute = userDnAttribute;
             this.userNameAttribute = userNameAttribute;
             this.advancedFilter = advancedFilter;
+            this.usernameLoad = usernameLoad;
 
             if (SECURITY_LOGGER.isTraceEnabled()) {
                 SECURITY_LOGGER.tracef("LdapUserSearcherImpl baseDn=%s", baseDn);
@@ -83,6 +85,7 @@ class LdapUserSearcherFactory {
                 SECURITY_LOGGER.tracef("LdapUserSearcherImpl userDnAttribute=%s", userDnAttribute);
                 SECURITY_LOGGER.tracef("LdapUserSearcherImpl userNameAttribute=%s", userNameAttribute);
                 SECURITY_LOGGER.tracef("LdapUserSearcherImpl advancedFilter=%s", advancedFilter);
+                SECURITY_LOGGER.tracef("LdapUserSearcherImpl usernameLoad=%s", usernameLoad);
             }
         }
 
@@ -99,7 +102,11 @@ class LdapUserSearcherFactory {
                     SECURITY_LOGGER.trace("Performing single level search");
                     searchControls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
                 }
-                searchControls.setReturningAttributes(new String[] { userDnAttribute });
+                if (usernameLoad == null) {
+                    searchControls.setReturningAttributes(new String[] { userDnAttribute });
+                } else {
+                    searchControls.setReturningAttributes(new String[] { userDnAttribute, usernameLoad });
+                }
                 searchControls.setTimeLimit(searchTimeLimit);
 
                 Object[] filterArguments = new Object[] { suppliedName };
@@ -113,6 +120,7 @@ class LdapUserSearcherFactory {
                 }
 
                 String distinguishedUserDN = null;
+                String username = usernameLoad == null ? suppliedName : null;
 
                 SearchResult result = searchEnumeration.next();
                 Attributes attributes = result.getAttributes();
@@ -120,6 +128,13 @@ class LdapUserSearcherFactory {
                     Attribute dn = attributes.get(userDnAttribute);
                     if (dn != null) {
                         distinguishedUserDN = (String) dn.get();
+                    }
+                    if (usernameLoad != null) {
+                        Attribute usernameAttr = attributes.get(usernameLoad);
+                        if (usernameAttr != null) {
+                            username = (String) usernameAttr.get();
+                            SECURITY_LOGGER.tracef("Converted username '%s' to '%s'", suppliedName, username);
+                        }
                     }
                 }
                 if (distinguishedUserDN == null) {
@@ -131,9 +146,12 @@ class LdapUserSearcherFactory {
                         throw MESSAGES.nameNotFound(suppliedName);
                     }
                 }
-                SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, suppliedName);
+                if (username == null) {
+                    throw MESSAGES.usernameNotLoaded(suppliedName);
+                }
+                SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, username);
 
-                return new LdapEntry(suppliedName, distinguishedUserDN);
+                return new LdapEntry(username, distinguishedUserDN);
             } finally {
                 if (searchEnumeration != null) {
                     try {

@@ -908,6 +908,16 @@ public interface DomainManagementMessages {
     @Message(id = 21003, value = "Configuration for security realm '%s' includes multiple cache definitions at the same position in the hierarchy. Only one is allowed")
     OperationFailedException multipleCacheConfigurationsDefined(String realmName);
 
+    /**
+     * Creates an exception indicating that is was not possible to load a username for the supplied username.
+     *
+     * @param name the supplied username.
+     *
+     * @return a {@link NamingException} for the error.
+     */
+    @Message(id = 21004, value = "Unable to load username for supplied username '%s'")
+    NamingException usernameNotLoaded(String name);
+
     /*
      * Logging IDs 15200-15299 and 21000-21099 are reserved for domain management
      *
