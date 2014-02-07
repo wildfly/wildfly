@@ -22,9 +22,6 @@
 
 package org.jboss.as.process;
 
-import static org.jboss.as.process.ProcessLogger.ROOT_LOGGER;
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,6 +37,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.jboss.as.process.logging.ProcessLogger;
 import org.jboss.as.process.protocol.Connection;
 import org.jboss.as.process.protocol.ProtocolServer;
 import org.jboss.as.process.protocol.StreamUtils;
@@ -102,7 +100,7 @@ public final class ProcessController {
     public void addProcess(final String processName, final byte[] authKey, final List<String> command, final Map<String, String> env, final String workingDirectory, final boolean isPrivileged, final boolean respawn) {
         for (String s : command) {
             if (s == null) {
-                throw MESSAGES.nullCommandComponent();
+                throw ProcessLogger.ROOT_LOGGER.nullCommandComponent();
             }
         }
         synchronized (lock) {
@@ -111,7 +109,7 @@ public final class ProcessController {
             }
             final Map<String, ManagedProcess> processes = this.processes;
             if (processes.containsKey(processName)) {
-                ROOT_LOGGER.duplicateProcessName(processName);
+                ProcessLogger.ROOT_LOGGER.duplicateProcessName(processName);
                 // ignore
                 return;
             }
@@ -130,7 +128,7 @@ public final class ProcessController {
             final Map<String, ManagedProcess> processes = this.processes;
             final ManagedProcess process = processes.get(processName);
             if (process == null) {
-                ROOT_LOGGER.attemptToStartNonExistentProcess(processName);
+                ProcessLogger.ROOT_LOGGER.attemptToStartNonExistentProcess(processName);
                 // ignore
                 return;
             }
@@ -143,7 +141,7 @@ public final class ProcessController {
             final Map<String, ManagedProcess> processes = this.processes;
             final ManagedProcess process = processes.get(processName);
             if (process == null) {
-                ROOT_LOGGER.attemptToStopNonExistentProcess(processName);
+                ProcessLogger.ROOT_LOGGER.attemptToStopNonExistentProcess(processName);
                 // ignore
                 return;
             }
@@ -180,7 +178,7 @@ public final class ProcessController {
             final Map<String, ManagedProcess> processes = this.processes;
             final ManagedProcess process = processes.get(processName);
             if (process == null) {
-                ROOT_LOGGER.attemptToRemoveNonExistentProcess(processName);
+                ProcessLogger.ROOT_LOGGER.attemptToRemoveNonExistentProcess(processName);
                 // ignore
                 return;
             }
@@ -213,7 +211,7 @@ public final class ProcessController {
             if (shutdown) {
                 return;
             }
-            ROOT_LOGGER.shuttingDown();
+            ProcessLogger.ROOT_LOGGER.shuttingDown();
             shutdown = true;
 
             // In order to do a controlled shutdown we stop the host controller first
@@ -240,7 +238,7 @@ public final class ProcessController {
                     // ignore
                 }
             }
-            ROOT_LOGGER.shutdownComplete();
+            ProcessLogger.ROOT_LOGGER.shutdownComplete();
         }
     }
 
@@ -263,7 +261,7 @@ public final class ProcessController {
                         StreamUtils.safeClose(os);
                     }
                 } catch (IOException e) {
-                    ROOT_LOGGER.failedToWriteMessage("PROCESS_ADDED", e);
+                    ProcessLogger.ROOT_LOGGER.failedToWriteMessage("PROCESS_ADDED", e);
                 }
             }
         }
@@ -282,7 +280,7 @@ public final class ProcessController {
                         StreamUtils.safeClose(os);
                     }
                 } catch (IOException e) {
-                    ROOT_LOGGER.failedToWriteMessage("PROCESS_STARTED", e);
+                    ProcessLogger.ROOT_LOGGER.failedToWriteMessage("PROCESS_STARTED", e);
                     removeManagedConnection(connection);
                 }
             }
@@ -303,7 +301,7 @@ public final class ProcessController {
                         StreamUtils.safeClose(os);
                     }
                 } catch (IOException e) {
-                    ROOT_LOGGER.failedToWriteMessage("PROCESS_STOPPED", e);
+                    ProcessLogger.ROOT_LOGGER.failedToWriteMessage("PROCESS_STOPPED", e);
                     removeManagedConnection(connection);
                 }
             }
@@ -323,7 +321,7 @@ public final class ProcessController {
                         StreamUtils.safeClose(os);
                     }
                 } catch (IOException e) {
-                    ROOT_LOGGER.failedToWriteMessage("PROCESS_REMOVED " + processName, e);
+                    ProcessLogger.ROOT_LOGGER.failedToWriteMessage("PROCESS_REMOVED " + processName, e);
                     removeManagedConnection(connection);
                 }
             }
@@ -350,7 +348,7 @@ public final class ProcessController {
                         StreamUtils.safeClose(os);
                     }
                 } catch (IOException e) {
-                    ROOT_LOGGER.failedToWriteMessage("PROCESS_INVENTORY", e);
+                    ProcessLogger.ROOT_LOGGER.failedToWriteMessage("PROCESS_INVENTORY", e);
                     removeManagedConnection(connection);
                 }
             }
@@ -361,7 +359,7 @@ public final class ProcessController {
         synchronized (lock) {
             ManagedProcess process = processes.get(processName);
             if (process == null) {
-                ROOT_LOGGER.attemptToReconnectNonExistentProcess(processName);
+                ProcessLogger.ROOT_LOGGER.attemptToReconnectNonExistentProcess(processName);
                 // ignore
                 return;
             }
@@ -383,7 +381,7 @@ public final class ProcessController {
                         StreamUtils.safeClose(os);
                     }
                 } catch (IOException e) {
-                    ROOT_LOGGER.failedToWriteMessage("OPERATION_FAILED", e);
+                    ProcessLogger.ROOT_LOGGER.failedToWriteMessage("OPERATION_FAILED", e);
                     removeManagedConnection(connection);
                 }
             }

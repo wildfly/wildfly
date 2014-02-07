@@ -1,5 +1,6 @@
 package org.jboss.as.process;
 
+import org.jboss.as.process.logging.ProcessLogger;
 import org.jboss.as.process.protocol.StreamUtils;
 
 import java.io.BufferedReader;

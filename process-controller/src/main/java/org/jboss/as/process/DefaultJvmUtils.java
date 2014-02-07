@@ -23,7 +23,7 @@ package org.jboss.as.process;
 
 import java.io.File;
 
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
+import org.jboss.as.process.logging.ProcessLogger;
 
 /**
  *
@@ -52,18 +52,18 @@ public class DefaultJvmUtils {
     public static String findJavaExecutable(String javaHome) {
         File file = new File(javaHome);
         if (!file.exists()) {
-            throw MESSAGES.invalidJavaHome(file.getAbsolutePath());
+            throw ProcessLogger.ROOT_LOGGER.invalidJavaHome(file.getAbsolutePath());
         }
         file = new File(file, "bin");
         if (!file.exists()) {
-            throw MESSAGES.invalidJavaHomeBin(file.getAbsolutePath(), file.getParentFile().getAbsolutePath());
+            throw ProcessLogger.ROOT_LOGGER.invalidJavaHomeBin(file.getAbsolutePath(), file.getParentFile().getAbsolutePath());
         }
         File java = new File(file, "java");
         if (!java.exists()) {
             java = new File(file, "java.exe");
         }
         if (!java.exists()) {
-            throw MESSAGES.cannotFindJavaExe(file.getAbsolutePath());
+            throw ProcessLogger.ROOT_LOGGER.cannotFindJavaExe(file.getAbsolutePath());
         }
         return java.getAbsolutePath();
     }

@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
-import static org.jboss.as.process.protocol.ProtocolMessages.MESSAGES;
+import org.jboss.as.process.logging.ProcessLogger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -163,7 +163,7 @@ final class Pipe {
             final Object lock = Pipe.this.lock;
             synchronized (lock) {
                 if (writeClosed) {
-                    throw MESSAGES.streamClosed();
+                    throw ProcessLogger.ROOT_LOGGER.streamClosed();
                 }
                 final byte[] buffer = Pipe.this.buffer;
                 final int bufLen = buffer.length;
@@ -171,7 +171,7 @@ final class Pipe {
                     try {
                         lock.wait();
                         if (writeClosed) {
-                            throw MESSAGES.streamClosed();
+                            throw ProcessLogger.ROOT_LOGGER.streamClosed();
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -190,7 +190,7 @@ final class Pipe {
             final Object lock = Pipe.this.lock;
             synchronized (lock) {
                 if (writeClosed) {
-                    throw MESSAGES.streamClosed();
+                    throw ProcessLogger.ROOT_LOGGER.streamClosed();
                 }
                 final byte[] buffer = Pipe.this.buffer;
                 final int bufLen = buffer.length;
@@ -202,7 +202,7 @@ final class Pipe {
                         try {
                             lock.wait();
                             if (writeClosed) {
-                                throw MESSAGES.streamClosed();
+                                throw ProcessLogger.ROOT_LOGGER.streamClosed();
                             }
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
