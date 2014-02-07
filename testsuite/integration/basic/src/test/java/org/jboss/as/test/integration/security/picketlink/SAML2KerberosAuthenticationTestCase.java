@@ -121,10 +121,6 @@ public class SAML2KerberosAuthenticationTestCase {
 
     private static final String DUKE_PASSWORD = "theduke";
 
-    private static String getHttpServicePrincipal(String hostName) {
-        return "HTTP/" + hostName + "@" + KerberosServerSetupTask.KERBEROS_PRIMARY_REALM;
-    }
-
     private static void consumeResponse(final HttpResponse response) {
         HttpEntity entity = response.getEntity();
         EntityUtils.consumeQuietly(entity);
@@ -327,8 +323,6 @@ public class SAML2KerberosAuthenticationTestCase {
         @Override
         protected SecurityDomain[] getSecurityDomains() {
             List<SecurityDomain> res = new LinkedList<SecurityDomain>();
-            
-            final String secondaryTestAddress = Utils.getSecondaryTestAddress(managementClient);
 
             // Add host security domain
             res.add(new SecurityDomain.Builder()
@@ -340,7 +334,7 @@ public class SAML2KerberosAuthenticationTestCase {
                                     .flag(Constants.REQUIRED)
                                     .options(
                                       Krb5LoginConfiguration.getOptions(
-                                        getHttpServicePrincipal(secondaryTestAddress),
+                                        KerberosServerSetupTask.getHttpServicePrincipal(managementClient),
                                         KerberosKeyTabSetup.getKeyTab(),
                                         true
                                       )
@@ -367,9 +361,9 @@ public class SAML2KerberosAuthenticationTestCase {
                                     .flag(Constants.REQUIRED)
                                     .putOption("password-stacking", "useFirstPass")
                                     .putOption(
-                                            "java.naming.provider.url",
+                                            Context.PROVIDER_URL,
                                             "ldap://"
-                                                    + secondaryTestAddress
+                                                    + KerberosServerSetupTask.getCannonicalHost(managementClient)
                                                     + ":"
                                                     + KerberosServerSetupTask.LDAP_PORT)
                                     .putOption("baseCtxDN", "ou=People,dc=jboss,dc=org")
@@ -547,9 +541,7 @@ public class SAML2KerberosAuthenticationTestCase {
         }
 
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            final String secondaryTestAddress = Utils.getSecondaryTestAddress(managementClient);
-
-            createKeytab(getHttpServicePrincipal(secondaryTestAddress), HTTP_SERVICE_PASSWORD, KEYTAB_FILE);
+            createKeytab(KerberosServerSetupTask.getHttpServicePrincipal(managementClient), HTTP_SERVICE_PASSWORD, KEYTAB_FILE);
         }
 
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
