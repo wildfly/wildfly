@@ -22,7 +22,7 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -57,7 +57,7 @@ public class MapConfig extends ValueConfig implements Serializable {
                 return new HashMap();
             }
         } catch (Exception e) {
-            throw PojoMessages.MESSAGES.cannotInstantiateMap(e);
+            throw PojoLogger.ROOT_LOGGER.cannotInstantiateMap(e);
         }
     }
 

@@ -22,7 +22,7 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
@@ -52,7 +52,7 @@ public abstract class ValueConfig extends AbstractConfigVisitorNode implements S
             ParameterizedType pt = (ParameterizedType) type;
             return getPtValue(pt);
         } else {
-            throw PojoMessages.MESSAGES.unknownType(type);
+            throw PojoLogger.ROOT_LOGGER.unknownType(type);
         }
     }
 

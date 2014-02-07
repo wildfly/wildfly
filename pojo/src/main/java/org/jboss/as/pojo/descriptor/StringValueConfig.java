@@ -22,7 +22,7 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.service.Configurator;
 
 /**
@@ -54,7 +54,7 @@ public class StringValueConfig extends ValueConfig {
         if (type == null)
             type = clazz;
         if (type == null)
-            throw PojoMessages.MESSAGES.cannotDetermineInjectedType(toString());
+            throw PojoLogger.ROOT_LOGGER.cannotDetermineInjectedType(toString());
 
         try {
             return Configurator.convertValue(type, value, replaceProperties, trim);

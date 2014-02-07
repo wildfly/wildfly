@@ -23,7 +23,7 @@
 package org.jboss.as.pojo.service;
 
 import org.jboss.as.pojo.BeanState;
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.descriptor.CallbackConfig;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.msc.value.ImmediateValue;
@@ -51,7 +51,7 @@ public class Callback {
         if (method == null) {
             final Method m = beanInfo.findMethod(config.getMethodName(), config.getSignature());
             if (m.getParameterTypes().length != 1)
-                throw PojoMessages.MESSAGES.illegalParameterLength(m);
+                throw PojoLogger.ROOT_LOGGER.illegalParameterLength(m);
             method = m;
         }
         return method;

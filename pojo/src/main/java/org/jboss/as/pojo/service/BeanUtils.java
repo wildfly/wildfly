@@ -22,7 +22,7 @@
 
 package org.jboss.as.pojo.service;
 
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.as.pojo.descriptor.ConstructorConfig;
 import org.jboss.as.pojo.descriptor.FactoryConfig;
@@ -74,7 +74,7 @@ public final class BeanUtils {
             if (factoryClass != null || factory != null) {
                 String factoryMethod = ctorConfig.getFactoryMethod();
                 if (factoryMethod == null)
-                    throw PojoMessages.MESSAGES.missingFactoryMethod(beanConfig);
+                    throw PojoLogger.ROOT_LOGGER.missingFactoryMethod(beanConfig);
 
                 if (factoryClass != null) {
                     // static factory
@@ -96,7 +96,7 @@ public final class BeanUtils {
         // plain bean's ctor
         if (instantiateJoinpoint == null) {
             if (beanInfo == null)
-                throw new StartException(PojoMessages.MESSAGES.missingBeanInfo(beanConfig));
+                throw new StartException(PojoLogger.ROOT_LOGGER.missingBeanInfo(beanConfig));
 
             Constructor ctor = (types.length == 0) ? beanInfo.getConstructor() : beanInfo.findConstructor(types);
             ConstructorJoinpoint constructorJoinpoint = new ConstructorJoinpoint(ctor);

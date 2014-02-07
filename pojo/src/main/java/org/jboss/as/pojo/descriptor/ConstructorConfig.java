@@ -22,7 +22,7 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.as.pojo.service.Configurator;
 
@@ -56,14 +56,14 @@ public class ConstructorConfig extends AbstractConfigVisitorNode implements Seri
     @Override
     public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
         if (factory != null)
-            throw PojoMessages.MESSAGES.tooDynamicFromFactory();
+            throw PojoLogger.ROOT_LOGGER.tooDynamicFromFactory();
         if (previous instanceof ValueConfig == false)
-            throw PojoMessages.MESSAGES.notValueConfig(previous);
+            throw PojoLogger.ROOT_LOGGER.notValueConfig(previous);
 
         ValueConfig vc = (ValueConfig) previous;
         if (factoryClass != null) {
             if (factoryMethod == null)
-                throw PojoMessages.MESSAGES.nullFactoryMethod();
+                throw PojoLogger.ROOT_LOGGER.nullFactoryMethod();
 
             BeanInfo beanInfo = getTempBeanInfo(visitor, factoryClass);
             Method m = beanInfo.findMethod(factoryMethod, Configurator.getTypes(parameters));
@@ -71,7 +71,7 @@ public class ConstructorConfig extends AbstractConfigVisitorNode implements Seri
         } else {
             BeanInfo beanInfo = visitor.getBeanInfo();
             if (beanInfo == null)
-                throw PojoMessages.MESSAGES.nullBeanInfo();
+                throw PojoLogger.ROOT_LOGGER.nullBeanInfo();
             Constructor ctor = beanInfo.findConstructor(Configurator.getTypes(parameters));
             return ctor.getParameterTypes()[vc.getIndex()];
         }

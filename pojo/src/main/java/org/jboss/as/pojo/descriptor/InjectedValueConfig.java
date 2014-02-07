@@ -23,7 +23,7 @@
 package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.pojo.BeanState;
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -53,7 +53,7 @@ public class InjectedValueConfig extends ValueConfig {
         if (result instanceof Set) {
             Set set = (Set) result;
             if (set.size() != 1)
-                throw PojoMessages.MESSAGES.invalidMatchSize(set, type);
+                throw PojoLogger.ROOT_LOGGER.invalidMatchSize(set, type);
             result = set.iterator().next();
         }
         if (property != null) {
@@ -92,7 +92,7 @@ public class InjectedValueConfig extends ValueConfig {
             if (type == null)
                 type = getType(visitor, this);
             if (type == null)
-                throw PojoMessages.MESSAGES.cannotDetermineInjectedType(toString());
+                throw PojoLogger.ROOT_LOGGER.cannotDetermineInjectedType(toString());
 
             ServiceName instancesName = BeanMetaDataConfig.toInstancesName(type, state);
             visitor.addDependency(instancesName, value);

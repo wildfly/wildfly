@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.msc.service.ServiceController;
 
 /**
@@ -62,7 +62,7 @@ public enum ModeConfig {
 
     static ModeConfig of(String value) {
         if (value == null)
-            throw PojoMessages.MESSAGES.nullValue();
+            throw PojoLogger.ROOT_LOGGER.nullValue();
 
         final ModeConfig controllerMode = MAP.get(value.toLowerCase(Locale.ENGLISH));
         return controllerMode == null ? PASSIVE : controllerMode;

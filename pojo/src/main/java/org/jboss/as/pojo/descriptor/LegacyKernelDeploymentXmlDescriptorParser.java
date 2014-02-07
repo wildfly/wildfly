@@ -23,7 +23,7 @@
 package org.jboss.as.pojo.descriptor;
 
 import org.jboss.as.pojo.ParseResult;
-import org.jboss.as.pojo.PojoLogger;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.logging.Logger;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
