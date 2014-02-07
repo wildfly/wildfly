@@ -53,7 +53,7 @@ import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.ServerOperationResolver;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.operations.ServerRestartRequiredServerConfigWriteAttributeHandler;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.operations.ServerProcessStateHandler;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -408,7 +408,7 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
 
                 ModelNode expectedOp = new ModelNode();
 
-                expectedOp.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
+                expectedOp.get(OP).set(ServerProcessStateHandler.REQUIRE_RELOAD_OPERATION);
                 expectedOp.get(OP_ADDR).setEmptyList();
                 Assert.assertEquals(expectedOp, serverOps.get(ids));
             } else {

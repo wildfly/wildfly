@@ -79,8 +79,8 @@ public class HostProcessReloadHandler extends ProcessReloadHandler<HostRunningMo
     }
 
     @Override
-    protected boolean skipReload(OperationContext context, ModelNode operation) {
-        final boolean ifRequired = operation.get(ModelDescriptionConstants.IF_REQUIRED).asBoolean(false);
+    protected boolean skipReload(OperationContext context, ModelNode operation) throws OperationFailedException {
+        final boolean ifRequired = IF_REQUIRED.resolveModelAttribute(context, operation).asBoolean();
         return ifRequired && !isReloadRequired();
     }
 
