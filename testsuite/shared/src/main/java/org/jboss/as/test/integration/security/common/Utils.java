@@ -795,23 +795,15 @@ public class Utils {
         final StringBuilder sb = new StringBuilder();
         sb.append("<jboss-web>");
         sb.append("\n\t<security-domain>").append(securityDomain).append("</security-domain>");
-        for (String valveClassName : valveClassNames) {
-            if (StringUtils.isNotEmpty(valveClassName)) {
-                sb.append("\n\t<valve><class-name>").append(valveClassName).append("</class-name></valve>");
+        if (valveClassNames != null) {
+            for (String valveClassName : valveClassNames) {
+                if (StringUtils.isNotEmpty(valveClassName)) {
+                    sb.append("\n\t<valve><class-name>").append(valveClassName).append("</class-name></valve>");
+                }
             }
         }
         sb.append("\n</jboss-web>");
         return new StringAsset(sb.toString());
-    }
-
-    /**
-     * Generates content of jboss-web.xml file as an ShrinkWrap asset with the given security domain name.
-     *
-     * @param securityDomain security domain name
-     * @return Asset instance
-     */
-    public static Asset getJBossWebXmlAsset(final String securityDomain) {
-        return getJBossWebXmlAsset(securityDomain, null);
     }
 
     /**

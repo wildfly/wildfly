@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,6 +56,7 @@ import org.apache.directory.shared.ldap.model.schema.SchemaManager;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
@@ -105,6 +107,8 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         QUERY_ROLES = URLEncodedUtils.format(qparams, "UTF-8");
     }
 
+    private boolean removeBouncyCastle = false;
+
     private String origKrb5Conf;
     private String origKrbDebug;
 
@@ -122,6 +126,15 @@ public class KerberosServerSetupTask implements ServerSetupTask {
      *      java.lang.String)
      */
     public void setup(ManagementClient managementClient, String containerId) throws Exception {
+        try {
+            if(Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                Security.addProvider(new BouncyCastleProvider());
+                removeBouncyCastle = true;
+            }
+        } catch(SecurityException ex) {
+            LOGGER.warn("Cannot register BouncyCastleProvider", ex);
+        }
+
         final String hostname = Utils.getSecondaryTestAddress(managementClient, false);
         createLdap1(hostname);
 
@@ -263,6 +276,14 @@ public class KerberosServerSetupTask implements ServerSetupTask {
 
         Utils.setSystemProperty("java.security.krb5.conf", origKrb5Conf);
         Utils.setSystemProperty("sun.security.krb5.debug", origKrbDebug);
+
+        if(removeBouncyCastle) {
+            try {
+                Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+            } catch(SecurityException ex) {
+                LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
+            }
+        }
     }
 
     /**
