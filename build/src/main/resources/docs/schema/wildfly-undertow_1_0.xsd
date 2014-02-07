@@ -304,7 +304,7 @@
     </xs:complexType>
 
     <xs:complexType name="singleSignOnType">
-        <xs:attribute name="domain" type="xs:string">
+        <xs:attribute name="domain" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[
