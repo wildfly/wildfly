@@ -41,11 +41,20 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.HttpClientUtils;
+import org.apache.http.cookie.ClientCookie;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.cookie.CookieOrigin;
+import org.apache.http.cookie.CookieSpec;
+import org.apache.http.cookie.CookieSpecFactory;
+import org.apache.http.cookie.CookieSpecRegistry;
+import org.apache.http.cookie.MalformedCookieException;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.cookie.BasicClientCookie;
+import org.apache.http.impl.cookie.BasicDomainHandler;
+import org.apache.http.impl.cookie.BrowserCompatSpec;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -83,7 +92,7 @@ public abstract class SSOTestBase {
         URL warB2 = new URL (serverB, "/war2/");
 
         // Start by accessing the secured index.html of war1
-        DefaultHttpClient httpclient = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        DefaultHttpClient httpclient = relaxedCookieHttpClient();
         try {
             checkAccessDenied(httpclient, warA1 + "index.html");
 
@@ -111,7 +120,7 @@ public abstract class SSOTestBase {
             HttpClientUtils.closeQuietly(httpclient);
         }
 
-        httpclient = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        httpclient = relaxedCookieHttpClient();
         try {
             // Reset Http client
             httpclient = new DefaultHttpClient();
@@ -132,7 +141,7 @@ public abstract class SSOTestBase {
         URL warB6 = new URL(serverB + "/war6/");
 
         // Start by accessing the secured index.html of war1
-        DefaultHttpClient httpclient = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
+        DefaultHttpClient httpclient = relaxedCookieHttpClient();
         try {
             checkAccessDenied(httpclient, warA1 + "index.html");
 
@@ -404,5 +413,36 @@ public abstract class SSOTestBase {
             throw new RuntimeException("Timeout on restart operation. " + e.getMessage());
         }
         log.info("Server is up.");
+    }
+
+    public static DefaultHttpClient relaxedCookieHttpClient() {
+        DefaultHttpClient client = new DefaultHttpClient();
+        final CookieSpecRegistry registry = new CookieSpecRegistry();
+        registry.register("best-match", new CookieSpecFactory() {
+            @Override
+            public CookieSpec newInstance(final HttpParams params) {
+                return new RelaxedBrowserCompatSpec();
+            }
+        });
+        client.setCookieSpecs(registry);
+        return client;
+    }
+
+    public static class RelaxedBrowserCompatSpec extends BrowserCompatSpec {
+
+        public RelaxedBrowserCompatSpec() {
+            super();
+            registerAttribHandler(ClientCookie.DOMAIN_ATTR, new BasicDomainHandler() {
+                @Override
+                public boolean match(final Cookie cookie, final CookieOrigin origin) {
+                    return true;
+                }
+
+                @Override
+                public void validate(Cookie cookie, CookieOrigin origin) throws MalformedCookieException {
+                    // Accept any domain
+                }
+            });
+        }
     }
 }
