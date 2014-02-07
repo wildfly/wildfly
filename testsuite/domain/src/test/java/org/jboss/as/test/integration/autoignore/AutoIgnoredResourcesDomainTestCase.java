@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_NAMES_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELOAD_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
@@ -163,7 +164,7 @@ public class AutoIgnoredResourcesDomainTestCase {
         checkSlaveServerGroups(GROUP1);
         checkSlaveSocketBindingGroups(SOCKETS1, SOCKETSA);
         checkSystemProperties(0);
-        Assert.assertEquals("restart-required", getSlaveServerStatus(SERVER1));
+        Assert.assertEquals(RELOAD_REQUIRED, getSlaveServerStatus(SERVER1));
 
         restartSlaveServer(SERVER1);
         Assert.assertEquals("running", getSlaveServerStatus(SERVER1));
@@ -178,7 +179,7 @@ public class AutoIgnoredResourcesDomainTestCase {
         checkSlaveServerGroups(GROUP1, GROUP2);
         checkSlaveSocketBindingGroups(SOCKETS1, SOCKETSA, SOCKETS2);
         checkSystemProperties(0);
-        Assert.assertEquals("restart-required", getSlaveServerStatus(SERVER1));
+        Assert.assertEquals(RELOAD_REQUIRED, getSlaveServerStatus(SERVER1));
 
         restartSlaveServer(SERVER1);
         Assert.assertEquals("running", getSlaveServerStatus(SERVER1));
@@ -232,7 +233,7 @@ public class AutoIgnoredResourcesDomainTestCase {
         checkSlaveServerGroups(GROUP1);
         checkSlaveSocketBindingGroups(SOCKETS1, SOCKETSA);
         checkSystemProperties(1); //Composite added a property
-        Assert.assertEquals("restart-required", getSlaveServerStatus(SERVER1));
+        Assert.assertEquals(RELOAD_REQUIRED, getSlaveServerStatus(SERVER1));
 
         restartSlaveServer(SERVER1);
         Assert.assertEquals("running", getSlaveServerStatus(SERVER1));
@@ -247,7 +248,7 @@ public class AutoIgnoredResourcesDomainTestCase {
         checkSlaveServerGroups(GROUP1, GROUP2);
         checkSlaveSocketBindingGroups(SOCKETS1, SOCKETSA, SOCKETS2);
         checkSystemProperties(2); //Composite added a property
-        Assert.assertEquals("restart-required", getSlaveServerStatus(SERVER1));
+        Assert.assertEquals(RELOAD_REQUIRED, getSlaveServerStatus(SERVER1));
 
         restartSlaveServer(SERVER1);
         Assert.assertEquals("running", getSlaveServerStatus(SERVER1));
@@ -315,7 +316,7 @@ public class AutoIgnoredResourcesDomainTestCase {
         checkSlaveServerGroups(GROUP1);
         checkSlaveSocketBindingGroups(SOCKETS1, SOCKETSA);
         checkSystemProperties(1); //Composite added a property
-        Assert.assertEquals("restart-required", getSlaveServerStatus(SERVER1));
+        Assert.assertEquals(RELOAD_REQUIRED, getSlaveServerStatus(SERVER1));
 
         restartSlaveServer(SERVER1);
         Assert.assertEquals("running", getSlaveServerStatus(SERVER1));
@@ -339,7 +340,7 @@ public class AutoIgnoredResourcesDomainTestCase {
         checkSlaveServerGroups(GROUP1, GROUP2);
         checkSlaveSocketBindingGroups(SOCKETS1, SOCKETSA, SOCKETS2);
         checkSystemProperties(2); //Composite added a property
-        Assert.assertEquals("restart-required", getSlaveServerStatus(SERVER1));
+        Assert.assertEquals(RELOAD_REQUIRED, getSlaveServerStatus(SERVER1));
 
         restartSlaveServer(SERVER1);
         Assert.assertEquals("running", getSlaveServerStatus(SERVER1));
@@ -399,7 +400,7 @@ public class AutoIgnoredResourcesDomainTestCase {
         checkSlaveExtensions(EXTENSION_LOGGING);
         checkSlaveServerGroups(GROUP1);
         checkSlaveSocketBindingGroups(SOCKETS1, SOCKETS2);
-        Assert.assertEquals("restart-required", getSlaveServerStatus(SERVER1));
+        Assert.assertEquals(RELOAD_REQUIRED, getSlaveServerStatus(SERVER1));
 
         restartSlaveServer(SERVER1);
         Assert.assertEquals("running", getSlaveServerStatus(SERVER1));
@@ -415,7 +416,7 @@ public class AutoIgnoredResourcesDomainTestCase {
         checkSlaveExtensions(EXTENSION_LOGGING, EXTENSION_MAIL, EXTENSION_NAMING, EXTENSION_POJO);
         checkSlaveServerGroups(GROUP1);
         checkSlaveSocketBindingGroups(SOCKETS1, SOCKETS2);
-        Assert.assertEquals("restart-required", getSlaveServerStatus(SERVER1));
+        Assert.assertEquals(RELOAD_REQUIRED, getSlaveServerStatus(SERVER1));
 
         restartSlaveServer(SERVER1);
         Assert.assertEquals("running", getSlaveServerStatus(SERVER1));
@@ -456,7 +457,7 @@ public class AutoIgnoredResourcesDomainTestCase {
         checkSlaveExtensions(EXTENSION_LOGGING, EXTENSION_MAIL, EXTENSION_NAMING, EXTENSION_POJO, EXTENSION_JMX, EXTENSION_SAR);
         checkSlaveServerGroups(GROUP1, GROUP2);
         checkSlaveSocketBindingGroups(SOCKETS1, SOCKETS2);
-        Assert.assertEquals("restart-required", getSlaveServerStatus(SERVER1));
+        Assert.assertEquals(RELOAD_REQUIRED, getSlaveServerStatus(SERVER1));
 
         Assert.assertFalse(testMarker.exists());
 

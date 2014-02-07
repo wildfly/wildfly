@@ -22,19 +22,18 @@
 
 package org.jboss.as.host.controller;
 
-import org.jboss.as.controller.client.OperationAttachments;
-import org.jboss.as.controller.client.OperationMessageHandler;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
+import java.io.IOException;
+
+import org.jboss.as.controller.client.OperationAttachments;
+import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.protocol.ProtocolMessages;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.operations.ServerProcessStateHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
-
-import java.io.IOException;
 
 /**
  * A proxy dispatching operations to the managed server.
@@ -77,7 +76,8 @@ class ManagedServerProxy implements TransactionalProtocolClient {
 
         if (remoteClient == DISCONNECTED) {
             // Handle the restartRequired operation also when disconnected
-            if(ServerRestartRequiredHandler.OPERATION_NAME.equals(op.get(OP).asString())) {
+            final String operationName = op.get(OP).asString();
+            if (ServerProcessStateHandler.REQUIRE_RESTART_OPERATION.equals(operationName)) {
                 server.requireReload();
             }
         }

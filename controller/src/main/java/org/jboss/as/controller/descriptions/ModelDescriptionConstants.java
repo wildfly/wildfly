@@ -296,6 +296,7 @@ public class ModelDescriptionConstants {
     public static final String RELATIVE_TO = "relative-to";
     public static final String RELEASE_CODENAME = "release-codename";
     public static final String RELEASE_VERSION = "release-version";
+    public static final String RELOAD_REQUIRED = "reload-required";
     public static final String REMOVE = "remove";
     public static final String REMOTE = "remote";
     public static final String REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING = "remote-destination-outbound-socket-binding";
