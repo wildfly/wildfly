@@ -42,6 +42,7 @@ import org.jboss.dmr.ModelType;
 class SingleSignOnDefinition extends PersistentResourceDefinition {
 
     static final SimpleAttributeDefinition DOMAIN = new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING)
+            .setAllowNull(true)
             .setAllowExpression(true)
             .build();
 
