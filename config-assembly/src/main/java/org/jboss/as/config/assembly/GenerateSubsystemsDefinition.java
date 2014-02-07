@@ -47,7 +47,7 @@ public class GenerateSubsystemsDefinition {
     private final File outputFile;
 
     /**
-     * arg[0] - subsystems definition spec (e.g logging:osgi,osgi:eager,configadmin,deployment-scanner)
+     * arg[0] - subsystems definition spec (e.g logging:osgi,osgi:eager,deployment-scanner)
      * arg[1] - subsytem profiles (e.g. default,ha,full,full-ha)
      * arg[2] - subsystem path prefix (e.g. configuration/subsystems)
      * arg[4] - the output file (e.g. domain-subsystems.xml)

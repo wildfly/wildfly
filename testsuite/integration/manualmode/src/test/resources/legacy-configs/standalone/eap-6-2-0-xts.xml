@@ -4,7 +4,6 @@
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
         <!--<extension module="org.jboss.as.cmp"/>-->
-        <!--<extension module="org.jboss.as.configadmin"/>-->
         <extension module="org.jboss.as.connector"/>
         <extension module="org.jboss.as.deployment-scanner"/>
         <extension module="org.jboss.as.ee"/>
@@ -128,7 +127,6 @@
             </root-logger>
         </subsystem>
         <!--<subsystem xmlns="urn:jboss:domain:cmp:1.1"/>-->
-        <!--<subsystem xmlns="urn:jboss:domain:configadmin:1.0"/>-->
         <subsystem xmlns="urn:jboss:domain:datasources:1.1">
             <datasources>
                 <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
@@ -332,27 +330,6 @@
         <subsystem xmlns="urn:jboss:domain:naming:1.4">
             <remote-naming/>
         </subsystem>
-        <!--<subsystem xmlns="urn:jboss:domain:osgi:1.2" activation="lazy">
-            <properties>
-                <property name="org.osgi.framework.startlevel.beginning">1</property>
-            </properties>
-            <capabilities>
-                <capability name="javax.jws.api"/>
-                <capability name="javax.persistence.api"/>
-                <capability name="javax.servlet.api"/>
-                <capability name="javax.transaction.api"/>
-                <capability name="javax.ws.rs.api"/>
-                <capability name="javax.xml.bind.api"/>
-                <capability name="javax.xml.ws.api"/>
-                <capability name="org.slf4j"/>
-                <capability name="org.apache.felix.log" startlevel="1"/>
-                <capability name="org.jboss.osgi.logging" startlevel="1"/>
-                <capability name="org.apache.felix.configadmin" startlevel="1"/>
-                <capability name="org.jboss.as.osgi.configadmin" startlevel="1"/>
-                <capability name="org.jboss.as.osgi.http" startlevel="1"/>
-                <capability name="org.jboss.as.osgi.jpa" startlevel="1"/>
-            </capabilities>
-        </subsystem>-->
         <subsystem xmlns="urn:jboss:domain:pojo:1.0"/>
         <subsystem xmlns="urn:jboss:domain:remoting:1.1">
             <connector name="remoting-connector" socket-binding="remoting" security-realm="ApplicationRealm"/>
