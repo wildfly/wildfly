@@ -197,7 +197,14 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>keytool-maven-plugin</artifactId>
-                        <version>1.2</version>
+                        <version>1.4</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>keytool-api-1.7</artifactId>
+                                <version>1.4</version>
+                            </dependency>
+                        </dependencies>
                         <executions>
                             <execution>
                                 <phase>generate-test-resources</phase>
@@ -210,7 +217,7 @@
                                 <phase>generate-test-resources</phase>
                                 <id>genkey-jcetest-keystore</id>
                                 <goals>
-                                    <goal>genkey</goal>
+                                    <goal>generateKeyPair</goal>
                                 </goals>
                             </execution>
                         </executions>
