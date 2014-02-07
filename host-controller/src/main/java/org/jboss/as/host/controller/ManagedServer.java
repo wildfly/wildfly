@@ -35,6 +35,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.controller.CurrentOperationIdHolder;
 import org.jboss.as.controller.PathAddress;
@@ -84,6 +85,15 @@ class ManagedServer {
         CONFIG = config;
     }
 
+    static enum SyncState {
+
+        IN_SYNC,
+        REQUIRES_RELOAD,
+        REQUIRES_RESTART,
+        ;
+
+    }
+
     /**
      * Prefix applied to a server's name to create it's process name.
      */
@@ -112,7 +122,7 @@ class ManagedServer {
     private final ManagedServerProxy protocolClient;
     private final TransformingProxyController proxyController;
 
-    private volatile boolean requiresReload;
+    private final AtomicReference<SyncState> syncState = new AtomicReference<SyncState>(SyncState.IN_SYNC);
 
     private volatile InternalState requiredState = InternalState.STOPPED;
     private volatile InternalState internalState = InternalState.STOPPED;
@@ -198,24 +208,36 @@ class ManagedServer {
         }
     }
 
-    protected boolean isRequiresReload() {
-        return requiresReload;
+    protected boolean isInSync() {
+        return syncState.get() == SyncState.IN_SYNC;
     }
 
-    /**
-     * Require a reload on the the next reconnect.
-     */
-    protected void requireReload() {
-        requiresReload = true;
+    protected void updateSyncState(final SyncState updated) {
+        final SyncState current = syncState.get();
+        switch (current) {
+            case REQUIRES_RESTART:
+                // no way back unless you restart!
+                break;
+            case REQUIRES_RELOAD:
+                if (updated != SyncState.REQUIRES_RESTART) {
+                    break;
+                }
+            default:
+                syncState.compareAndSet(current, updated);
+        }
     }
 
     /**
      * Reload a managed server.
      *
      * @param permit the controller permit
+     * @param ifRequired only reload if the state is reload-required
      * @return whether the state was changed successfully or not
      */
-    protected synchronized boolean reload(int permit) {
+    protected synchronized boolean reload(int permit, boolean ifRequired) {
+        if (ifRequired && syncState.get() != SyncState.REQUIRES_RELOAD ) {
+            return false;
+        }
         return internalSetState(new ReloadTask(permit), InternalState.SERVER_STARTED, InternalState.RELOADING);
     }
 
@@ -249,13 +271,30 @@ class ManagedServer {
      * Stop a managed server.
      */
     protected synchronized void stop() {
+        stop(false);
+    }
+
+    /**
+     * Stop a managed server.
+     *
+     * @param onlyStopIfOutOfSync only stop the server if it's out of sync
+     * @return {@code true} if the server had to be stopped, {@code false} otherwise
+     */
+    protected synchronized boolean stop(boolean onlyStopIfOutOfSync) {
         final InternalState required = this.requiredState;
+        // Stop if out of sync or in failure state
+        if (onlyStopIfOutOfSync && required == InternalState.SERVER_STARTED
+                && syncState.get() == SyncState.IN_SYNC) {
+            return false;
+        }
         if(required != InternalState.STOPPED) {
             this.requiredState = InternalState.STOPPED;
             ROOT_LOGGER.stoppingServer(serverName);
             // Transition, but don't wait for async notifications to complete
             transition(false);
+            return true;
         }
+        return false;
     }
 
     protected synchronized void destroy() {
@@ -374,7 +413,7 @@ class ManagedServer {
                     // Update the current remote connection
                     protocolClient.connected(remoteClient);
                     // clear reload required state
-                    requiresReload = false;
+                    syncState.compareAndSet(SyncState.REQUIRES_RELOAD, SyncState.IN_SYNC);
                     return true;
                 }
             }, InternalState.RELOADING, InternalState.SERVER_STARTING);

@@ -829,8 +829,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
 
         @Override
-        public ServerStatus reloadServer(String serverName, boolean blocking) {
-            return getServerInventory().reloadServer(serverName, blocking);
+        public ServerStatus reloadServer(String serverName, boolean blocking, boolean ifRequired) {
+            return getServerInventory().reloadServer(serverName, blocking, ifRequired);
         }
 
         public void processInventory(Map<String, ProcessInfo> processInfos) {
@@ -867,8 +867,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
         }
 
         @Override
-        public ServerStatus restartServer(String serverName, int gracefulTimeout, ModelNode domainModel, boolean blocking) {
-            return getServerInventory().restartServer(serverName, gracefulTimeout, domainModel, blocking);
+        public ServerStatus restartServer(String serverName, int gracefulTimeout, ModelNode domainModel, boolean blocking, boolean ifRequired) {
+            return getServerInventory().restartServer(serverName, gracefulTimeout, domainModel, blocking, ifRequired);
         }
 
         public ServerStatus stopServer(String serverName, int gracefulTimeout) {

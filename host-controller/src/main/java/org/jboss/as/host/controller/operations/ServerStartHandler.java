@@ -58,7 +58,8 @@ public class ServerStartHandler implements OperationStepHandler {
         .build();
 
     private static final AttributeDefinition BLOCKING = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.BLOCKING, ModelType.BOOLEAN, true)
-        .build();
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
     public static final OperationDefinition DEFINITION = getOperationDefinition(OPERATION_NAME);
 
@@ -93,7 +94,7 @@ public class ServerStartHandler implements OperationStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
-        final boolean blocking = operation.get("blocking").asBoolean(false);
+        final boolean blocking = BLOCKING.resolveModelAttribute(context, operation).asBoolean();
 
         final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
         context.addStep(new OperationStepHandler() {

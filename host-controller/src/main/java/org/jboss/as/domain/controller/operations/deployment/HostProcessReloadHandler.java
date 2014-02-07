@@ -62,9 +62,9 @@ public class HostProcessReloadHandler extends ProcessReloadHandler<HostRunningMo
     .setDefaultValue(new ModelNode(true)).build();
 
 
-    private static final AttributeDefinition[] MASTER_ATTRIBUTES = new AttributeDefinition[] {ADMIN_ONLY, RESTART_SERVERS, USE_CURRENT_DOMAIN_CONFIG, USE_CURRENT_HOST_CONFIG};
+    private static final AttributeDefinition[] MASTER_ATTRIBUTES = new AttributeDefinition[] {ADMIN_ONLY, RESTART_SERVERS, USE_CURRENT_DOMAIN_CONFIG, USE_CURRENT_HOST_CONFIG, IF_REQUIRED};
 
-    private static final AttributeDefinition[] SLAVE_ATTRIBUTES = new AttributeDefinition[] {ADMIN_ONLY, RESTART_SERVERS, USE_CURRENT_HOST_CONFIG};
+    private static final AttributeDefinition[] SLAVE_ATTRIBUTES = new AttributeDefinition[] {ADMIN_ONLY, RESTART_SERVERS, USE_CURRENT_HOST_CONFIG, IF_REQUIRED};
 
     public static OperationDefinition getDefinition(final LocalHostControllerInfo hostControllerInfo) {
         return new DeferredParametersOperationDefinitionBuilder(hostControllerInfo, OPERATION_NAME, HostModelUtil.getResourceDescriptionResolver())
@@ -76,6 +76,12 @@ public class HostProcessReloadHandler extends ProcessReloadHandler<HostRunningMo
 
     public HostProcessReloadHandler(final ServiceName rootService, final HostRunningModeControl runningModeControl, final ControlledProcessState processState) {
         super(rootService, runningModeControl, processState);
+    }
+
+    @Override
+    protected boolean skipReload(OperationContext context, ModelNode operation) {
+        final boolean ifRequired = operation.get(ModelDescriptionConstants.IF_REQUIRED).asBoolean(false);
+        return ifRequired && !isReloadRequired();
     }
 
     @Override
