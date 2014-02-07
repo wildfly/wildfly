@@ -26,6 +26,9 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
@@ -75,13 +78,36 @@ class ManagedServerProxy implements TransactionalProtocolClient {
         final TransactionalProtocolClient remoteClient = this.remoteClient;
         final ModelNode op = operation.getOperation();
 
+        TransactionalOperationListener<T> wrapped = listener;
         if (remoteClient == DISCONNECTED) {
             // Handle the restartRequired operation also when disconnected
             if(ServerRestartRequiredHandler.OPERATION_NAME.equals(op.get(OP).asString())) {
-                server.requireReload();
+                server.updateSyncState(ManagedServer.SyncState.REQUIRES_RELOAD);
             }
+        } else {
+            wrapped = new TransactionalOperationListener<T>() {
+                @Override
+                public void operationPrepared(PreparedOperation<T> prepared) {
+                    listener.operationPrepared(prepared);
+                }
+
+                @Override
+                public void operationFailed(T operation, ModelNode result) {
+                    listener.operationFailed(operation, result);
+                }
+
+                @Override
+                public void operationComplete(T operation, ModelNode result) {
+                    try {
+                        handleSyncState(result, server);
+                    } finally {
+                        listener.operationComplete(operation, result);
+                    }
+
+                }
+            };
         }
-        return remoteClient.execute(listener, operation);
+        return remoteClient.execute(wrapped, operation);
     }
 
 
@@ -99,6 +125,17 @@ class ManagedServerProxy implements TransactionalProtocolClient {
 
     }
 
+    static void handleSyncState(final ModelNode response, final ManagedServer server) {
+        if (response.hasDefined(RESPONSE_HEADERS)) {
+            final ModelNode headers = response.get(RESPONSE_HEADERS);
+            if (headers.hasDefined(OPERATION_REQUIRES_RESTART) && headers.get(OPERATION_REQUIRES_RESTART).asBoolean(false)) {
+                server.updateSyncState(ManagedServer.SyncState.REQUIRES_RESTART);
+            } else if (headers.hasDefined(OPERATION_REQUIRES_RELOAD) && headers.get(OPERATION_REQUIRES_RELOAD).asBoolean(false)) {
+                server.updateSyncState(ManagedServer.SyncState.REQUIRES_RELOAD);
+            }
+        }
+    }
+
 //    /**
 //     * Check if this is a user operation, or from the DC.
 //     *
@@ -108,5 +145,6 @@ class ManagedServerProxy implements TransactionalProtocolClient {
 //    static boolean isUserOperation(final ModelNode op) {
 //        return op.hasDefined(OPERATION_HEADERS) && op.get(OPERATION_HEADERS).hasDefined(CALLER_TYPE) && USER.equals(op.get(OPERATION_HEADERS, CALLER_TYPE).asString());
 //    }
+
 
 }

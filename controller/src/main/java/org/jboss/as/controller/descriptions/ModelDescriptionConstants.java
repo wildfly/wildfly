@@ -172,6 +172,7 @@ public class ModelDescriptionConstants {
     public static final String HOST_STATE = "host-state";
     public static final String HTTP_UPGRADE_ENABLED = "http-upgrade-enabled";
     public static final String HTTP_INTERFACE = "http-interface";
+    public static final String IF_REQUIRED = "if-required";
     public static final String IGNORED = "ignored-by-unaffected-host-controller";
     public static final String IGNORED_RESOURCES = "ignored-resources";
     public static final String IGNORED_RESOURCE_TYPE = "ignored-resource-type";
