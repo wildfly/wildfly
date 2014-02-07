@@ -30,7 +30,7 @@ import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
 import org.jboss.as.protocol.ProtocolConnectionManager;
 import org.jboss.as.protocol.ProtocolConnectionUtils;
-import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
@@ -98,7 +98,7 @@ class HostControllerConnection extends FutureManagementChannel {
         final Channel channel = super.getChannel();
         if(channel == null) {
             // Fail fast, don't try to await a new channel
-            throw ProtocolMessages.MESSAGES.channelClosed();
+            throw ProtocolLogger.ROOT_LOGGER.channelClosed();
         }
         return channel;
     }

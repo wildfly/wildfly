@@ -24,7 +24,7 @@ package org.jboss.as.protocol.mgmt;
 
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
 import org.jboss.as.protocol.ProtocolConnectionManager;
-import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -56,7 +56,7 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
     public Channel getChannel() throws IOException {
         final Channel channel = this.channel;
         if(channel == null && state != State.OPEN) {
-            throw ProtocolMessages.MESSAGES.channelClosed();
+            throw ProtocolLogger.ROOT_LOGGER.channelClosed();
         }
         return channel;
     }
@@ -96,14 +96,14 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
         synchronized (lock) {
             for(;;) {
                 if(state == State.CLOSED) {
-                    throw ProtocolMessages.MESSAGES.channelClosed();
+                    throw ProtocolLogger.ROOT_LOGGER.channelClosed();
                 }
                 channel = this.channel;
                 if(channel != null) {
                     return channel;
                 }
                 if(state == State.CLOSING) {
-                    throw ProtocolMessages.MESSAGES.channelClosed();
+                    throw ProtocolLogger.ROOT_LOGGER.channelClosed();
                 }
                 try {
                     lock.wait();
@@ -205,7 +205,7 @@ public abstract class FutureManagementChannel extends ManagementClientChannelStr
             // In case connect did not succeed the next getChannel() call needs to try to reconnect
             channel = super.getChannel();
             if(channel == null) {
-                throw ProtocolMessages.MESSAGES.channelClosed();
+                throw ProtocolLogger.ROOT_LOGGER.channelClosed();
             }
             return channel;
         }

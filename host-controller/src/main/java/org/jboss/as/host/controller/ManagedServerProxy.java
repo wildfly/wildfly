@@ -30,7 +30,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
-import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.server.operations.ServerProcessStateHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
@@ -94,7 +94,7 @@ class ManagedServerProxy implements TransactionalProtocolClient {
 
         @Override
         public <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
-            throw ProtocolMessages.MESSAGES.channelClosed();
+            throw ProtocolLogger.ROOT_LOGGER.channelClosed();
         }
 
     }

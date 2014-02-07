@@ -22,14 +22,13 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
-
 import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 
 /**
@@ -86,7 +85,7 @@ public final class ProtocolUtils {
 
     public static void expectHeader(final byte actual, int expected) throws IOException {
         if (actual != (byte) expected) {
-            throw MESSAGES.invalidByteToken(expected, actual);
+            throw ProtocolLogger.ROOT_LOGGER.invalidByteToken(expected, actual);
         }
     }
 

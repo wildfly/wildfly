@@ -26,7 +26,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 
 /**
  * ManagementProtocol header used for management operation responses. Provides the default header fields from
@@ -69,7 +69,7 @@ public class ManagementResponseHeader extends ManagementProtocolHeader {
             this.failed = true;
             error = input.readUTF();
         } else if (type != ManagementProtocol.RESPONSE_BODY) {
-            throw MESSAGES.invalidType("RESPONSE_ERROR", "RESPONSE_BODY", type);
+            throw ProtocolLogger.ROOT_LOGGER.invalidType("RESPONSE_ERROR", "RESPONSE_BODY", type);
         }
     }
 

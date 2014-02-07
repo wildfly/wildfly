@@ -50,7 +50,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.host.controller.ManagedServerOperationsFactory;
 import org.jboss.as.host.controller.ServerInventory;
-import org.jboss.as.protocol.ProtocolLogger;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
