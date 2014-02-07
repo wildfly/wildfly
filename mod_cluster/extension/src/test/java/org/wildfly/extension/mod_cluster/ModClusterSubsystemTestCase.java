@@ -92,31 +92,32 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformers712() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.V7_1_2_FINAL);
+        testTransformers_1_2_0(ModelTestControllerVersion.V7_1_2_FINAL, "1.2.1.Final");
     }
 
     @Test
     public void testTransformers713() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.V7_1_3_FINAL);
+        testTransformers_1_2_0(ModelTestControllerVersion.V7_1_3_FINAL, "1.2.1.Final");
     }
 
     @Test
     public void testTransformersEAP600() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_0);
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_0, "1.2.1.Final-redhat-1");
     }
 
     @Test
-    public void testTransformers601() throws Exception {
-        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_1);
+    public void testTransformersEAP601() throws Exception {
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_1, "1.2.3.Final-redhat-1");
     }
 
-    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
         String subsystemXml = readResource("subsystem_1_1.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
                 .configureReverseControllerCheck(null, new Undo71TransformModelFixer())
                 .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
         KernelServices mainServices = builder.build();
@@ -156,26 +157,27 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformers720() throws Exception {
-        testTransformers_1_3_0(ModelTestControllerVersion.V7_2_0_FINAL);
+        testTransformers_1_3_0(ModelTestControllerVersion.V7_2_0_FINAL, "1.2.3.Final");
     }
 
     @Test
     public void testTransformersEAP610() throws Exception {
-        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_0);
+        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_0, "1.2.4.Final-redhat-1");
     }
 
     @Test
-    public void testTransformers611() throws Exception {
-        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_1);
+    public void testTransformersEAP611() throws Exception {
+        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_1, "1.2.4.Final-redhat-1");
     }
 
-    private void testTransformers_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testTransformers_1_3_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
         String subsystemXml = readResource("subsystem_1_1.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
                 .configureReverseControllerCheck(null, new Undo71TransformModelFixer())
                 .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
         KernelServices mainServices = builder.build();
@@ -199,31 +201,32 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testExpressionsAreRejected712() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_2_FINAL);
+        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_2_FINAL, "1.2.1.Final");
     }
 
     @Test
     public void testExpressionsAreRejected713() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_3_FINAL);
+        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.V7_1_3_FINAL, "1.2.1.Final");
     }
 
     @Test
     public void testExpressionsAreRejectedEAP600() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_0);
+        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_0, "1.2.1.Final-redhat-1");
     }
 
     @Test
     public void testExpressionsAreRejectedEAP601() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_1);
+        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_1, "1.2.3.Final-redhat-1");
     }
 
-    private void testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
         String subsystemXml = readResource("subsystem_1_2.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
                 .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
 
         KernelServices mainServices = builder.build();
@@ -279,26 +282,27 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejection720() throws Exception {
-        testRejection1_3_0(ModelTestControllerVersion.V7_2_0_FINAL);
+        testRejection1_3_0(ModelTestControllerVersion.V7_2_0_FINAL, "1.2.3.Final");
     }
 
     @Test
     public void testRejectionEAP610() throws Exception {
-        testRejection1_3_0(ModelTestControllerVersion.EAP_6_1_0);
+        testRejection1_3_0(ModelTestControllerVersion.EAP_6_1_0, "1.2.4.Final-redhat-1");
     }
 
     @Test
     public void testRejectionEAP611() throws Exception {
-        testRejection1_3_0(ModelTestControllerVersion.EAP_6_1_1);
+        testRejection1_3_0(ModelTestControllerVersion.EAP_6_1_1, "1.2.4.Final-redhat-1");
     }
 
-    private void testRejection1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testRejection1_3_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
         String subsystemXml = readResource("subsystem_1_2.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
                 .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
 
         KernelServices mainServices = builder.build();
