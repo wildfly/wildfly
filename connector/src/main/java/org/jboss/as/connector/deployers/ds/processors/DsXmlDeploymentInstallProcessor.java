@@ -290,10 +290,13 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                         dataSourceService.getDriverRegistryInjector()).addDependency(NamingService.SERVICE_NAME);
 
         //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources
-        if (registration.isAllowsOverride() && registration.getOverrideModel(managementName) == null) {
-            registration.registerOverrideModel(managementName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC);
-        }
-        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, resource, managementName));
+        if (registration.isAllowsOverride()) {
+            ManagementResourceRegistration overrideRegistration = registration.getOverrideModel(managementName);
+            if (overrideRegistration == null) {
+                overrideRegistration = registration.registerOverrideModel(managementName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC);
+            }
+            dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(overrideRegistration, resource, managementName));
+        } // else should probably throw an ISE or something
 
         final ServiceName driverServiceName = ServiceName.JBOSS.append("jdbc-driver", driverName.replaceAll("\\.", "_"));
         if (driverServiceName != null) {
