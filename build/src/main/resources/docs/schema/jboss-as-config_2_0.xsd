@@ -602,34 +602,37 @@
         </xs:annotation>
         <xs:complexContent>
             <xs:extension base="baseLdapAuthType">
-		        <xs:choice>
-		            <xs:element name="username-filter">
-		                <xs:complexType>
-		                    <xs:attribute name="attribute" type="xs:string" use="required">
-		                        <xs:annotation>
-		                            <xs:documentation>
-		                                The name of the attribute to search for the user, this filter will then perform
-		                                a simple search where the username entered by the user matches the attribute
-		                                specified here.
-		                            </xs:documentation>
-		                        </xs:annotation>
-		                    </xs:attribute>
-		                </xs:complexType>
-		            </xs:element>
-		            <xs:element name="advanced-filter">
-		                <xs:complexType>
-		                    <xs:attribute name="filter" type="xs:string" use="required">
-		                        <xs:annotation>
-		                            <xs:documentation>
-		                                The fully defined filter to be used to search for the user based on their entered
-		                                user ID. The filter should contain a variable in the form {0} - this will be
-		                                replaced with the username supplied by the user.
-		                            </xs:documentation>
-		                        </xs:annotation>
-		                    </xs:attribute>
-		                </xs:complexType>
-		            </xs:element>
-		        </xs:choice>
+                <xs:sequence>
+                    <xs:element name="cache" type="ldapCacheType" minOccurs="0" />
+                    <xs:choice>
+                        <xs:element name="username-filter">
+                            <xs:complexType>
+                                <xs:attribute name="attribute" type="xs:string" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation>
+                                            The name of the attribute to search for the user, this filter will then perform
+                                            a simple search where the username entered by the user matches the attribute
+                                            specified here.
+                                        </xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:complexType>
+                        </xs:element>
+                        <xs:element name="advanced-filter">
+                            <xs:complexType>
+                                <xs:attribute name="filter" type="xs:string" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation>
+                                            The fully defined filter to be used to search for the user based on their entered
+                                            user ID. The filter should contain a variable in the form {0} - this will be
+                                            replaced with the username supplied by the user.
+                                        </xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:choice>
+                </xs:sequence>
                 <xs:attribute name="base-dn" type="xs:string" use="required">
                     <xs:annotation>
                         <xs:documentation>
@@ -654,20 +657,21 @@
                 <xs:attribute name="allow-empty-passwords" type="xs:boolean" default="false">
                     <xs:annotation>
                         <xs:documentation>
-                            Should users be allowed to supply an empty password?  Some LDAP servers will
-                            allow an anonymous bind so an empty password could appear as a successful authentication
+                            Should users be allowed to supply an empty password? Some LDAP servers will
+                            allow an anonymous bind
+                            so an empty password could appear as a successful authentication
                             even though no password was sent to verify.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-	   		</xs:extension>
+            </xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="ldapAuthorizationType">
         <xs:complexContent>
             <xs:extension base="baseLdapAuthType">
-                <xs:sequence>
+                <xs:sequence>                    
                     <xs:element name="username-to-dn" type="ldapUserSearchType" minOccurs="0" />
                     <xs:element name="group-search" type="ldapGroupSearchType" />
                 </xs:sequence>
@@ -705,57 +709,60 @@
                 the supplied username.
             </xs:documentation>
         </xs:annotation>
-        <xs:choice>
-            <xs:element name="username-is-dn" />
-            <xs:element name="username-filter">
-                <xs:complexType>
-                    <xs:complexContent>
-                        <xs:extension base="baseLdapSearchType">
-                            <xs:attribute name="user-dn-attribute" type="xs:string" use="optional" default="dn">
-                                <xs:annotation>
-                                    <xs:documentation>
-                                        The attribute on the user entry which is their distinguished name.
-                                    </xs:documentation>
-                                </xs:annotation>
-                            </xs:attribute>
-                            <xs:attribute name="attribute" type="xs:string" use="optional" default="uid">
-                                <xs:annotation>
-                                    <xs:documentation>
-                                        The name of the attribute to search for the user, this filter will then perform a
-                                        simple search where the username entered by the user matches the attribute specified here.
-                                    </xs:documentation>
-                                </xs:annotation>
-                            </xs:attribute>
-                        </xs:extension>
-                    </xs:complexContent>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="advanced-filter">
-                <xs:complexType>
-                    <xs:complexContent>
-                        <xs:extension base="baseLdapSearchType">
-                            <xs:attribute name="user-dn-attribute" type="xs:string" use="optional" default="dn">
-                                <xs:annotation>
-                                    <xs:documentation>
-                                        The attribute on the user entry which is their distinguished name.
-                                    </xs:documentation>
-                                </xs:annotation>
-                            </xs:attribute>
-                            <xs:attribute name="filter" type="xs:string" use="required">
-                                <xs:annotation>
-                                    <xs:documentation>
-                                        The fully defined filter to be used to search for the user based on their entered user
-                                        ID. The filter should contain a variable in
-                                        the form {0} - this will be replaced with the username
-                                        supplied by the user.
-                                    </xs:documentation>
-                                </xs:annotation>
-                            </xs:attribute>
-                        </xs:extension>
-                     </xs:complexContent>
-                </xs:complexType>
-            </xs:element>
-        </xs:choice>
+        <xs:sequence>
+            <xs:element name="cache" type="ldapCacheType" minOccurs="0" />
+            <xs:choice>
+                <xs:element name="username-is-dn" />
+                <xs:element name="username-filter">
+                    <xs:complexType>
+                        <xs:complexContent>
+                            <xs:extension base="baseLdapSearchType">
+                                <xs:attribute name="user-dn-attribute" type="xs:string" use="optional" default="dn">
+                                    <xs:annotation>
+                                        <xs:documentation>
+                                            The attribute on the user entry which is their distinguished name.
+                                        </xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="attribute" type="xs:string" use="optional" default="uid">
+                                    <xs:annotation>
+                                        <xs:documentation>
+                                            The name of the attribute to search for the user, this filter will then perform a
+                                            simple search where the username entered by the user matches the attribute specified here.
+                                        </xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:extension>
+                        </xs:complexContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="advanced-filter">
+                    <xs:complexType>
+                        <xs:complexContent>
+                            <xs:extension base="baseLdapSearchType">
+                                <xs:attribute name="user-dn-attribute" type="xs:string" use="optional" default="dn">
+                                    <xs:annotation>
+                                        <xs:documentation>
+                                            The attribute on the user entry which is their distinguished name.
+                                        </xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                                <xs:attribute name="filter" type="xs:string" use="required">
+                                    <xs:annotation>
+                                        <xs:documentation>
+                                            The fully defined filter to be used to search for the user based on their entered user
+                                            ID. The filter should contain a variable in
+                                            the form {0} - this will be replaced with the username
+                                            supplied by the user.
+                                        </xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:extension>
+                        </xs:complexContent>
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
         <xs:attribute name="force" type="xs:boolean" default="false">
             <xs:annotation>
                 <xs:documentation>
@@ -788,47 +795,50 @@
     </xs:complexType>
 
     <xs:complexType name="ldapGroupSearchType">
-        <xs:choice>
-            <xs:element name="group-to-principal">
-                <xs:annotation>
-                    <xs:documentation>
-                        Group search definition where an attribute on the group references the principal.
-                    </xs:documentation>
-                </xs:annotation>
-                <xs:complexType>
-                    <xs:complexContent>
-                        <xs:extension base="baseLdapSearchType">
-                            <xs:sequence>
-                                <xs:element name="membership-filter" type="membershipFilterType" minOccurs="1" />
-                            </xs:sequence>
-                            <xs:attribute name="search-by" type="groupMode" default="DISTINGUISHED_NAME">
-                                <xs:annotation>
-                                    <xs:documentation>
-                                        Should searching use the simple name or distinguished name of the principal.
-                                    </xs:documentation>
-                                </xs:annotation>
-                            </xs:attribute>
-                        </xs:extension>
-                    </xs:complexContent>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="principal-to-group">
-                <xs:annotation>
-                    <xs:documentation>
-                        Group search definition where an attribute on the principal references the group.
-                    </xs:documentation>
-                </xs:annotation>
-                <xs:complexType>
-                    <xs:attribute name="group-attribute" type="xs:string" default="memberOf">
-                        <xs:annotation>
-                            <xs:documentation>
-                                The name of the attribute on the principal that references the group.
-                            </xs:documentation>
-                        </xs:annotation>
-                    </xs:attribute>
-                </xs:complexType>
-            </xs:element>
-        </xs:choice>
+        <xs:sequence>
+            <xs:element name="cache" type="ldapCacheType" minOccurs="0" />
+            <xs:choice>
+                <xs:element name="group-to-principal">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Group search definition where an attribute on the group references the principal.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:complexContent>
+                            <xs:extension base="baseLdapSearchType">
+                                <xs:sequence>
+                                    <xs:element name="membership-filter" type="membershipFilterType" minOccurs="1" />
+                                </xs:sequence>
+                                <xs:attribute name="search-by" type="groupMode" default="DISTINGUISHED_NAME">
+                                    <xs:annotation>
+                                        <xs:documentation>
+                                            Should searching use the simple name or distinguished name of the principal.
+                                        </xs:documentation>
+                                    </xs:annotation>
+                                </xs:attribute>
+                            </xs:extension>
+                        </xs:complexContent>
+                    </xs:complexType>
+                </xs:element>
+                <xs:element name="principal-to-group">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Group search definition where an attribute on the principal references the group.
+                        </xs:documentation>
+                    </xs:annotation>
+                    <xs:complexType>
+                        <xs:attribute name="group-attribute" type="xs:string" default="memberOf">
+                            <xs:annotation>
+                                <xs:documentation>
+                                    The name of the attribute on the principal that references the group.
+                                </xs:documentation>
+                            </xs:annotation>
+                        </xs:attribute>
+                    </xs:complexType>
+                </xs:element>
+            </xs:choice>
+        </xs:sequence>
         <xs:attribute name="group-name" type="groupMode" use="optional" default="SIMPLE">
             <xs:annotation>
                 <xs:documentation>
@@ -856,6 +866,57 @@
             <xs:annotation>
                 <xs:documentation>
                     On the group entry which of it's attributes is it's simple name.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+    
+    <xs:simpleType name="cacheType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="by-search-time" />
+            <xs:enumeration value="by-access-time" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="ldapCacheType">
+        <xs:attribute name="type" type="cacheType" default="by-search-time">
+            <xs:annotation>
+                <xs:documentation>
+                    The type of cache, by-search-time and the entries are evicted based on search time and search order, by-access-time and
+                    the entires are evicted based on the time they were last accessed.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="eviction-time" type="xs:int" default="900">
+            <xs:annotation>
+                <xs:documentation>
+                    The time until an entry is evicted from the cache in seconds, a time of &lt;=0 means no eviction based
+                    on time.
+
+                    If items are not going to be evicted based on time then max-cache-size should be set otherwise the cache
+                    could grow without restriction.
+                    
+                    Note: The eviction time is handled on a best-efforts basis, during times of many concurrent authentications 
+                    there could be small delay before the evictions fire.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="cache-failures" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Should non IO failures be cached? e.g. should searches for a non-existant user be cached to avoid
+                    repeating the same search.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="max-cache-size" type="xs:int" default="0">
+            <xs:annotation>
+                <xs:documentation>
+                    The maximum number of items to hold in the cache before items are evicted, or &lt;=0 where the size of
+                    the cache is unlimited.
+
+                    This value should be higher than the anticipated cache size for current users otherwise items
+                    will be continually evicted.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>

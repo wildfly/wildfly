@@ -33,8 +33,17 @@ public class ModelDescriptionConstants {
     public static final String ALLOWED_USERS = "allowed-users";
     public static final String AUTHENTICATION = "authentication";
     public static final String AUTHORIZATION = "authorization";
+    public static final String BY_ACCESS_TIME = "by-access-time";
+    public static final String BY_SEARCH_TIME = "by-search-time";
+    public static final String CACHE = "cache";
+    public static final String CACHE_FAILURES = "cache-failures";
+    public static final String CACHE_SIZE = "cache-size";
+    public static final String CONTAINS = "contains";
     public static final String DEFAULT_USER = "default-user";
     public static final String DEFAULT_DEFAULT_USER = "$local";
+    public static final String DISTINGUISHED_NAME = "distinguished-name";
+    public static final String EVICTION_TIME = "eviction-time";
+    public static final String FLUSH_CACHE = "flush-cache";
     public static final String GROUPS = "groups";
     public static final String IDENTITY = "identity";
     public static final String IS_CALLER_IN_ROLE = "is-caller-in-role";
@@ -42,8 +51,10 @@ public class ModelDescriptionConstants {
     public static final String KEYSTORE_PASSWORD = "keystore-password";
     public static final String KEYSTORE_PATH = "keystore-path";
     public static final String KEYSTORE_RELATIVE_TO = "keystore-relative-to";
+    public static final String LDAP = "ldap";
     public static final String LOCAL = "local";
     public static final String MAPPED_ROLES = "mapped-roles";
+    public static final String MAX_CACHE_SIZE = "max-cache-size";
     public static final String MECHANISM = "mechanism";
     public static final String NAME = "name";
     public static final String PASSWORD = "password";
@@ -58,6 +69,6 @@ public class ModelDescriptionConstants {
     public static final String VERBOSE = "verbose";
     public static final String WHOAMI = "whoami";
 
-    // Prevent instantiation.
     private ModelDescriptionConstants() {}
+
 }

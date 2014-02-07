@@ -172,7 +172,7 @@ public interface DomainManagementMessages {
      * @return an {@link IOException} for the error.
      */
     @Message(id = 15231, value = "User '%s' not found in directory.")
-    IOException userNotFoundInDirectory(String username);
+    NamingException userNotFoundInDirectory(String username);
 
     /**
      * Creates an exception indicating that no java.io.Console is available.
@@ -896,6 +896,17 @@ public interface DomainManagementMessages {
      */
     @Message(id = 21002, value = "The KeyStore can not be found at %s")
     StartException keyStoreNotFound(String path);
+
+    /**
+     * Error message if more than one cache is defined.
+     *
+     * @param realmName the name of the security realm
+     * @param configurations the set of configurations .
+     *
+     * @return an {@link OperationFailedException} for the error.
+     */
+    @Message(id = 21003, value = "Configuration for security realm '%s' includes multiple cache definitions at the same position in the hierarchy. Only one is allowed")
+    OperationFailedException multipleCacheConfigurationsDefined(String realmName);
 
     /*
      * Logging IDs 15200-15299 and 21000-21099 are reserved for domain management
