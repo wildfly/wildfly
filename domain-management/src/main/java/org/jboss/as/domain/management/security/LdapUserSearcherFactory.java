@@ -34,71 +34,50 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-
 /**
- * Service for supplying the {@link LdapUserSearcher}
+ * Factory to create searchers for user in LDAP.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LdapUserSearcherService implements Service<LdapUserSearcher> {
-
-    private final LdapUserSearcher searcher;
+class LdapUserSearcherFactory {
 
     protected static final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
-    private LdapUserSearcherService(final LdapUserSearcher searcher) {
-        this.searcher = searcher;
-    }
-
-    @Override
-    public LdapUserSearcher getValue() throws IllegalStateException, IllegalArgumentException {
-        return searcher;
-    }
-
-    @Override
-    public void start(StartContext context) throws StartException {
-    }
-
-    @Override
-    public void stop(StopContext context) {
-    }
-
-    static Service<LdapUserSearcher> createForUsernameIsDn() {
-        return new LdapUserSearcherService(new LdapUserSearcher() {
+    static LdapSearcher<LdapEntry, String> createForUsernameIsDn() {
+        return new LdapSearcher<LdapEntry, String>() {
 
             @Override
-            public LdapEntry userSearch(DirContext dirContext, String suppliedName) {
+            public LdapEntry search(DirContext dirContext, String suppliedName) {
                 return new LdapEntry(suppliedName, suppliedName);
-            }});
+            }
+        };
     }
 
-    static Service<LdapUserSearcher> createForUsernameFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String attribute) {
-        return new LdapUserSearcherService(new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, attribute, null));
+    static LdapSearcher<LdapEntry, String> createForUsernameFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String attribute, final String usernameLoad) {
+        return new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, attribute, null, usernameLoad);
     }
 
-    static Service<LdapUserSearcher> createForAdvancedFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String filter) {
-        return new LdapUserSearcherService(new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, null, filter));
+    static LdapSearcher<LdapEntry, String> createForAdvancedFilter(final String baseDn, final boolean recursive, final String userDnAttribute, final String filter, final String usernameLoad) {
+        return new LdapUserSearcherImpl(baseDn, recursive, userDnAttribute, null, filter, usernameLoad);
     }
 
-    private static class LdapUserSearcherImpl implements LdapUserSearcher {
+    private static class LdapUserSearcherImpl implements LdapSearcher<LdapEntry, String> {
 
         final String baseDn;
         final boolean recursive;
         final String userDnAttribute;
         final String userNameAttribute;
         final String advancedFilter;
+        final String usernameLoad;
 
         private LdapUserSearcherImpl(final String baseDn, final boolean recursive, final String userDnAttribute,
-                final String userNameAttribute, final String advancedFilter) {
+                final String userNameAttribute, final String advancedFilter, final String usernameLoad) {
             this.baseDn = baseDn;
             this.recursive = recursive;
             this.userDnAttribute = userDnAttribute;
             this.userNameAttribute = userNameAttribute;
             this.advancedFilter = advancedFilter;
+            this.usernameLoad = usernameLoad;
 
             if (SECURITY_LOGGER.isTraceEnabled()) {
                 SECURITY_LOGGER.tracef("LdapUserSearcherImpl baseDn=%s", baseDn);
@@ -106,11 +85,12 @@ public class LdapUserSearcherService implements Service<LdapUserSearcher> {
                 SECURITY_LOGGER.tracef("LdapUserSearcherImpl userDnAttribute=%s", userDnAttribute);
                 SECURITY_LOGGER.tracef("LdapUserSearcherImpl userNameAttribute=%s", userNameAttribute);
                 SECURITY_LOGGER.tracef("LdapUserSearcherImpl advancedFilter=%s", advancedFilter);
+                SECURITY_LOGGER.tracef("LdapUserSearcherImpl usernameLoad=%s", usernameLoad);
             }
         }
 
         @Override
-        public LdapEntry userSearch(DirContext dirContext, String suppliedName) throws IOException, NamingException {
+        public LdapEntry search(DirContext dirContext, String suppliedName) throws IOException, NamingException {
             NamingEnumeration<SearchResult> searchEnumeration = null;
 
             try {
@@ -122,7 +102,11 @@ public class LdapUserSearcherService implements Service<LdapUserSearcher> {
                     SECURITY_LOGGER.trace("Performing single level search");
                     searchControls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
                 }
-                searchControls.setReturningAttributes(new String[] { userDnAttribute });
+                if (usernameLoad == null) {
+                    searchControls.setReturningAttributes(new String[] { userDnAttribute });
+                } else {
+                    searchControls.setReturningAttributes(new String[] { userDnAttribute, usernameLoad });
+                }
                 searchControls.setTimeLimit(searchTimeLimit);
 
                 Object[] filterArguments = new Object[] { suppliedName };
@@ -136,6 +120,7 @@ public class LdapUserSearcherService implements Service<LdapUserSearcher> {
                 }
 
                 String distinguishedUserDN = null;
+                String username = usernameLoad == null ? suppliedName : null;
 
                 SearchResult result = searchEnumeration.next();
                 Attributes attributes = result.getAttributes();
@@ -143,6 +128,13 @@ public class LdapUserSearcherService implements Service<LdapUserSearcher> {
                     Attribute dn = attributes.get(userDnAttribute);
                     if (dn != null) {
                         distinguishedUserDN = (String) dn.get();
+                    }
+                    if (usernameLoad != null) {
+                        Attribute usernameAttr = attributes.get(usernameLoad);
+                        if (usernameAttr != null) {
+                            username = (String) usernameAttr.get();
+                            SECURITY_LOGGER.tracef("Converted username '%s' to '%s'", suppliedName, username);
+                        }
                     }
                 }
                 if (distinguishedUserDN == null) {
@@ -154,9 +146,12 @@ public class LdapUserSearcherService implements Service<LdapUserSearcher> {
                         throw MESSAGES.nameNotFound(suppliedName);
                     }
                 }
-                SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, suppliedName);
+                if (username == null) {
+                    throw MESSAGES.usernameNotLoaded(suppliedName);
+                }
+                SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, username);
 
-                return new LdapEntry(suppliedName, distinguishedUserDN);
+                return new LdapEntry(username, distinguishedUserDN);
             } finally {
                 if (searchEnumeration != null) {
                     try {

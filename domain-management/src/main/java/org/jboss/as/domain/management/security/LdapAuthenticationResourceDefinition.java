@@ -39,6 +39,7 @@ import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.domain.management.security.LdapCacheResourceDefinition.CacheFor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -91,8 +92,15 @@ public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
             .build();
 
+    public static final SimpleAttributeDefinition USERNAME_LOAD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME_LOAD, ModelType.STRING, true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
+            .setValidateNull(false)
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
+
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
-        CONNECTION, BASE_DN, RECURSIVE, USER_DN, ALLOW_EMPTY_PASSWORDS, USERNAME_FILTER, ADVANCED_FILTER
+        CONNECTION, BASE_DN, RECURSIVE, USER_DN, ALLOW_EMPTY_PASSWORDS, USERNAME_FILTER, ADVANCED_FILTER, USERNAME_LOAD
     };
 
     public LdapAuthenticationResourceDefinition() {
@@ -106,6 +114,12 @@ public class LdapAuthenticationResourceDefinition extends LdapResourceDefinition
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         SecurityRealmChildWriteAttributeHandler handler = new LdapAuthenticationWriteHandler();
         handler.registerAttributes(resourceRegistration);
+    }
+
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(LdapCacheResourceDefinition.createByAccessTime(CacheFor.AuthUser));
+        resourceRegistration.registerSubModel(LdapCacheResourceDefinition.createBySearchTime(CacheFor.AuthUser));
     }
 
     protected static void validateAttributeCombination(ModelNode operation) throws OperationFailedException {

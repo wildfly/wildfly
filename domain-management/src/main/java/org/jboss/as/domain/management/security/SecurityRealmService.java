@@ -67,6 +67,8 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class SecurityRealmService implements Service<SecurityRealm>, SecurityRealm {
 
+    public static final String LOADED_USERNAME_KEY = SecurityRealmService.class.getName() + ".LOADED_USERNAME";
+
     private final InjectedValue<SubjectSupplementalService> subjectSupplemental = new InjectedValue<SubjectSupplementalService>();
     private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
     private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
@@ -180,9 +182,13 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
             public SubjectUserInfo createSubjectUserInfo(Collection<Principal> userPrincipals) throws IOException {
                 Subject subject = this.subject == null ? new Subject() : this.subject;
                 Collection<Principal> allPrincipals = subject.getPrincipals();
-                for (Principal userPrincipal : userPrincipals) {
-                    allPrincipals.add(userPrincipal);
-                    allPrincipals.add(new RealmUser(getName(), userPrincipal.getName()));
+                if (sharedState.containsKey(LOADED_USERNAME_KEY)) {
+                    allPrincipals.add(new RealmUser(getName(), (String) sharedState.get(LOADED_USERNAME_KEY)));
+                } else {
+                    for (Principal userPrincipal : userPrincipals) {
+                        allPrincipals.add(userPrincipal);
+                        allPrincipals.add(new RealmUser(getName(), userPrincipal.getName()));
+                    }
                 }
 
                 SubjectSupplementalService subjectSupplementalService = subjectSupplemental.getOptionalValue();
