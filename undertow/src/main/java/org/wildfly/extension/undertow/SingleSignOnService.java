@@ -25,13 +25,12 @@
 package org.wildfly.extension.undertow;
 
 import io.undertow.security.impl.SingleSignOnManager;
-
+import io.undertow.servlet.handlers.security.ServletSingleSignOnAuthenticationMechainism;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.wildfly.extension.undertow.security.sso.SingleSignOnAuthenticationMechanism;
 
 /**
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
@@ -52,7 +51,7 @@ public class SingleSignOnService implements Service<SingleSignOnService> {
     @Override
     public void start(StartContext startContext) {
         Host host = this.host.getValue();
-        SingleSignOnAuthenticationMechanism mechanism = new SingleSignOnAuthenticationMechanism(this.manager.getValue());
+        ServletSingleSignOnAuthenticationMechainism mechanism = new ServletSingleSignOnAuthenticationMechainism(this.manager.getValue());
         mechanism.setDomain((this.domain != null) ? this.domain : host.getName());
 
         host.registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
