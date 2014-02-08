@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.undertow.session;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-import io.undertow.server.session.SessionIdGenerator;
+package org.wildfly.extension.undertow.security.sso;
 
-import org.junit.Test;
-import org.wildfly.clustering.web.session.SessionIdentifierFactory;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 
-public class UndertowSessionIdentifierFactoryTestCase {
-    private final SessionIdGenerator generator = mock(SessionIdGenerator.class);
-    private final SessionIdentifierFactory factory = new UndertowSessionIdentifierFactory(this.generator);
-    
-    @Test
-    public void test() {
-        String expected = "expected";
-        when(this.generator.createSessionId()).thenReturn(expected);
-        
-        String result = this.factory.createSessionId();
-        
-        assertSame(expected, result);
-    }
+/**
+ * Builds a distrubutable {@link SingleSignOnManagerFactory} service.
+ * @author Paul Ferraro
+ */
+public interface DistributableSingleSignOnManagerFactoryBuilder {
+    /**
+     * Builds a SingleSignOnManagerFactory service for a host.
+     * @param target the service target
+     * @param name the service name
+     * @param hostServiceName the service name of the host
+     * @return a service builder
+     */
+    ServiceBuilder<SingleSignOnManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName hostServiceName);
 }

@@ -26,7 +26,7 @@ import java.util.Map;
 import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
-import org.wildfly.clustering.web.infinispan.session.CacheMutator;
+import org.wildfly.clustering.web.infinispan.session.MutableDetector;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
 import org.wildfly.clustering.web.session.SessionAttributes;
 
@@ -60,7 +60,7 @@ public class CoarseSessionAttributes extends CoarseImmutableSessionAttributes im
     @Override
     public Object getAttribute(String name) {
         Object value = super.getAttribute(name);
-        if (CacheMutator.isMutable(value)) {
+        if (MutableDetector.isMutable(value)) {
             this.mutator.mutate();
         }
         return value;

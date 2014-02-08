@@ -38,7 +38,7 @@ import org.jboss.dmr.ModelType;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class ServerDefinition extends PersistentResourceDefinition {
-    static final ServerDefinition INSTANCE = new ServerDefinition();
+
     static final SimpleAttributeDefinition DEFAULT_HOST = new SimpleAttributeDefinitionBuilder(Constants.DEFAULT_HOST, ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
@@ -54,6 +54,8 @@ class ServerDefinition extends PersistentResourceDefinition {
             HttpListenerResourceDefinition.INSTANCE,
             HttpsListenerResourceDefinition.INSTANCE,
             HostDefinition.INSTANCE);
+
+    static final ServerDefinition INSTANCE = new ServerDefinition();
 
     private ServerDefinition() {
         super(UndertowExtension.SERVER_PATH, UndertowExtension.getResolver(Constants.SERVER), new ServerAdd(), ReloadRequiredRemoveStepHandler.INSTANCE);

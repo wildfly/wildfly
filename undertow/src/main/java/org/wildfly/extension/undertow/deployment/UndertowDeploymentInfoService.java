@@ -25,6 +25,7 @@ package org.wildfly.extension.undertow.deployment;
 import io.undertow.Handlers;
 import io.undertow.jsp.JspFileHandler;
 import io.undertow.jsp.JspServletBuilder;
+import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.server.HandlerWrapper;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
@@ -244,6 +245,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleIdentityManager(deploymentInfo);
             handleJASPIMechanism(deploymentInfo);
             handleJACCAuthorization(deploymentInfo);
+            handleAdditionalAuthenticationMechanisms(deploymentInfo);
 
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             ServletSessionConfig config = null;
@@ -423,6 +425,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
                     }
                 }
             }
+        }
+    }
+
+    private void handleAdditionalAuthenticationMechanisms(final DeploymentInfo deploymentInfo){
+        for (Map.Entry<String,AuthenticationMechanism> am: host.getValue().getAdditionalAuthenticationMechanisms().entrySet()){
+            deploymentInfo.addFirstAuthenticationMechanism(am.getKey(), am.getValue());
         }
     }
 

@@ -25,17 +25,9 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.web.IdentifierFactory;
 
-public interface SessionManager<L> extends SessionIdentifierFactory {
-    /**
-     * Invoked prior to applicaion deployment.
-     */
-    void start();
-
-    /**
-     * Invoked prior to application undeployment.
-     */
-    void stop();
+public interface SessionManager<L> extends IdentifierFactory<String> {
 
     /**
      * Indicates whether or not the session with the specified identifier is known to this session manager.

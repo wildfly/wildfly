@@ -22,7 +22,6 @@
 package org.wildfly.clustering.web.infinispan.session;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
@@ -56,7 +55,6 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
         String templateCacheName = templateCacheServiceName.getSimpleName();
         ServiceName containerServiceName = templateCacheServiceName.getParent();
         String containerName = containerServiceName.getSimpleName();
-        ServiceName templateCacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, templateCacheName);
         String host = deploymentServiceName.getParent().getSimpleName();
         String contextPath = deploymentServiceName.getSimpleName();
         StringBuilder cacheNameBuilder = new StringBuilder(host).append(contextPath);
@@ -67,11 +65,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
         ServiceName cacheConfigurationServiceName = CacheConfigurationService.getServiceName(containerName, cacheName);
         ServiceName cacheServiceName = CacheService.getServiceName(containerName, cacheName);
 
-        InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
-        InjectedValue<Configuration> config = new InjectedValue<>();
-        target.addService(cacheConfigurationServiceName, new SessionCacheConfigurationService(cacheName, container, config, metaData))
-                .addDependency(containerServiceName, EmbeddedCacheManager.class, container)
-                .addDependency(templateCacheConfigurationServiceName, Configuration.class, config)
+        SessionCacheConfigurationService.build(target, containerName, cacheName, templateCacheName, metaData)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;

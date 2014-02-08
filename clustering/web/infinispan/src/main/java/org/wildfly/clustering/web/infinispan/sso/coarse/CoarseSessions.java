@@ -21,43 +21,43 @@
  */
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.wildfly.clustering.web.sso.Sessions;
-import org.wildfly.clustering.web.sso.WebApplication;
 
-public class CoarseSessions implements Sessions {
+public class CoarseSessions<D> implements Sessions<D> {
 
-    private final Map<WebApplication, String> sessions;
+    private final Map<D, String> sessions;
     private final Mutator mutator;
 
-    public CoarseSessions(Map<WebApplication, String> sessions, Mutator mutator) {
+    public CoarseSessions(Map<D, String> sessions, Mutator mutator) {
         this.sessions = sessions;
         this.mutator = mutator;
     }
 
     @Override
-    public Set<WebApplication> getApplications() {
-        return this.sessions.keySet();
+    public Set<D> getDeployments() {
+        return Collections.unmodifiableSet(this.sessions.keySet());
     }
 
     @Override
-    public String getSession(WebApplication application) {
-        return this.sessions.get(application);
+    public String getSession(D deployment) {
+        return this.sessions.get(deployment);
     }
 
     @Override
-    public void removeSession(WebApplication application) {
-        if (this.sessions.remove(application) != null) {
+    public void removeSession(D deployment) {
+        if (this.sessions.remove(deployment) != null) {
             this.mutator.mutate();
         }
     }
 
     @Override
-    public void addSession(WebApplication application, String id) {
-        if (this.sessions.put(application, id) == null) {
+    public void addSession(D deployment, String id) {
+        if (this.sessions.put(deployment, id) == null) {
             this.mutator.mutate();
         }
     }

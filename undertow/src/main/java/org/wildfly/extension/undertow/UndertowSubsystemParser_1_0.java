@@ -93,13 +93,15 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                                         .addAttributes(FilterRefDefinition.INSTANCE.getAttributes())
                                                         )
                                         ).addChild(
-                                        builder(AccessLogDefinition.INSTANCE)
-                                                .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
+                                                builder(AccessLogDefinition.INSTANCE)
+                                                    .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
                                         ).addChild(
-                                        builder(FilterRefDefinition.INSTANCE)
-                                            .addAttributes(FilterRefDefinition.INSTANCE.getAttributes())
-                                )
-
+                                                builder(FilterRefDefinition.INSTANCE)
+                                                    .addAttributes(FilterRefDefinition.INSTANCE.getAttributes())
+                                        ).addChild(
+                                                builder(SingleSignOnDefinition.INSTANCE)
+                                                    .addAttributes(SingleSignOnDefinition.INSTANCE.getAttributes())
+                                        )
                         )
                 )
                 .addChild(

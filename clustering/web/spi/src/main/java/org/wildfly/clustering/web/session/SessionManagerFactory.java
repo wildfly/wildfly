@@ -21,6 +21,7 @@
  */
 package org.wildfly.clustering.web.session;
 
+import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
 
 /**
@@ -34,5 +35,5 @@ public interface SessionManagerFactory {
      * @param idFactory a session identifier factory
      * @return a new session manager
      */
-    <C> SessionManager<C> createSessionManager(SessionContext context, SessionIdentifierFactory idFactory, LocalContextFactory<C> localContextFactory);
+    <C> SessionManager<C> createSessionManager(SessionContext context, IdentifierFactory<String> idFactory, LocalContextFactory<C> localContextFactory);
 }
