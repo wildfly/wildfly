@@ -152,11 +152,11 @@ public interface UndertowLogger extends BasicLogger {
 
 
     @LogMessage(level = INFO)
-    @Message(id = 17534, value = "Register web context: %s")
+    @Message(id = 17534, value = "Registered web context: %s")
     void registerWebapp(String webappPath);
 
     @LogMessage(level = INFO)
-    @Message(id = 17535, value = "Unregister web context: %s")
+    @Message(id = 17535, value = "Unregistered web context: %s")
     void unregisterWebapp(String webappPath);
 
     @LogMessage(level = INFO)
