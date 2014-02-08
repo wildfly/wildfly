@@ -25,12 +25,14 @@ import org.wildfly.clustering.group.Group;
 
 /**
  * Factory for creating a command dispatcher.
+ *
  * @author Paul Ferraro
  */
 public interface CommandDispatcherFactory {
 
     /**
      * Returns the group upon which the this command dispatcher operates.
+     *
      * @return a group
      */
     Group getGroup();
@@ -38,7 +40,8 @@ public interface CommandDispatcherFactory {
     /**
      * Creates a new command dispatcher using the specified identifier and context..
      * The resulting {@link CommandDispatcher} will communicate with those dispatchers within the group sharing the same identifier.
-     * @param id a unique identifier for this dispatcher.
+     *
+     * @param id      a unique identifier for this dispatcher
      * @param context the context used for executing commands
      * @return a new command dispatcher
      */

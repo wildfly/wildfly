@@ -23,12 +23,16 @@ package org.wildfly.clustering.registry;
 
 /**
  * Factory for creating a clustered registry.
+ *
+ * @param <K> the type of the registry entry key
+ * @param <V> the type of the registry entry value
  * @author Paul Ferraro
  */
 public interface RegistryFactory<K, V> {
 
     /**
      * Creates a registry for the group associated with this factory.
+     *
      * @param provider the provider of the local registry entry
      * @return a registry
      */

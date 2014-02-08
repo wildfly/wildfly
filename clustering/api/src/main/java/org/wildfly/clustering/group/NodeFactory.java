@@ -23,9 +23,16 @@ package org.wildfly.clustering.group;
 
 /**
  * Factory for creating nodes.
- * @author Paul Ferraro
+ *
  * @param <A> address type
+ * @author Paul Ferraro
  */
 public interface NodeFactory<A> {
+    /**
+     * Creates a node instance from the address.
+     *
+     * @param address address of a node to create
+     * @return node with the given address
+     */
     Node createNode(A address);
 }

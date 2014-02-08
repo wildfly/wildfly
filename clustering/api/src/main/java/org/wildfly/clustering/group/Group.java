@@ -25,50 +25,70 @@ import java.util.List;
 
 /**
  * Represents a groups of nodes.
+ *
  * @author Paul Ferraro
  */
 public interface Group {
 
+    /**
+     * Listener for membership changes.
+     */
     interface Listener {
         /**
          * Indicates that the membership of the group has changed.
-         * @param previousMembers previous group members.
-         * @param members new group members
-         * @param merged indicates whether the membership change is the result of a merge view
+         *
+         * @param previousMembers previous group members
+         * @param members         new group members
+         * @param merged          indicates whether the membership change is the result of a merge view
          */
         void membershipChanged(List<Node> previousMembers, List<Node> members, boolean merged);
     }
 
+    /**
+     * Registers a membership listener for the group.
+     *
+     * @param listener listener to be added
+     */
     void addListener(Listener listener);
 
+    /**
+     * Removes a registered listener from the group.
+     *
+     * @param listener listener to be removed
+     */
     void removeListener(Listener listener);
 
     /**
      * Returns the name of this group.
+     *
      * @return the group name
      */
     String getName();
 
     /**
      * Indicates whether or not we are the group coordinator.
-     * @return true, if we are the group coordinator, false otherwise.
+     *
+     * @return true, if we are the group coordinator, false otherwise
      */
     boolean isCoordinator();
 
     /**
      * Returns the local node.
-     * @return the local node.
+     *
+     * @return the local node
      */
     Node getLocalNode();
 
     /**
-     * Returns the group coordinator.
-     * @return the group coordinator.
+     * Returns the group coordinator node.
+     *
+     * @return the group coordinator node
      */
     Node getCoordinatorNode();
 
     /**
      * Returns the list of nodes that are members of this group.
+     *
      * @return a list of nodes
      */
     List<Node> getNodes();

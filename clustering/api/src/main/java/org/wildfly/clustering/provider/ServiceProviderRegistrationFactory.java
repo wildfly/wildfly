@@ -28,19 +28,22 @@ import org.wildfly.clustering.group.Node;
 
 /**
  * A factory for creating a service provider registration.
+ *
  * @author Paul Ferraro
  */
 public interface ServiceProviderRegistrationFactory {
 
     /**
      * Returns the group with which to register service providers.
+     *
      * @return a group
      */
     Group getGroup();
 
     /**
      * Registers the local node as providing the specified service, using the specified listener.
-     * @param id a service identifier
+     *
+     * @param service  a service to register
      * @param listener a registry listener
      * @return a new service provider registration
      */
@@ -48,8 +51,9 @@ public interface ServiceProviderRegistrationFactory {
 
     /**
      * Returns the set of nodes that provide the specified service.
-     * @param id a service identifier
-     * @return a set of nodes.
+     *
+     * @param service a service to obtain providers for
+     * @return a set of nodes
      */
     Set<Node> getProviders(Object service);
 }
