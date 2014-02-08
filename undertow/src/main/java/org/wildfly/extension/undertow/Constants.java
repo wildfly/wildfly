@@ -93,6 +93,7 @@ public interface Constants {
     String SCRATCH_DIR = "scratch-dir";
     String SECRET = "secret";
     String SENDFILE = "sendfile";
+    String SINGLE_SIGN_ON = "single-sign-on";
     String SMAP = "smap";
     String SOURCE_VM = "source-vm";
     String SSL = "ssl";

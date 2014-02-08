@@ -19,13 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.sso;
+package org.wildfly.clustering.web.infinispan;
 
-import java.util.concurrent.atomic.AtomicReference;
+import org.infinispan.Cache;
+import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.web.Batcher;
 
-import org.wildfly.clustering.web.sso.Credentials;
+/**
+ * A Batcher based on Infinispan's batch capability.
+ * @author Paul Ferraro
+ */
+public class InfinispanBatcher implements Batcher {
 
-public interface SSOCacheEntry<L> {
-    Credentials getCredentials();
-    AtomicReference<L> getLocalContext();
+    final Cache<?, ?> cache;
+
+    public InfinispanBatcher(Cache<?, ?> cache) {
+        this.cache = cache;
+    }
+
+    @Override
+    public Batch startBatch() {
+        final boolean started = this.cache.startBatch();
+        return new Batch() {
+            @Override
+            public void close() {
+                this.end(true);
+            }
+
+            @Override
+            public void discard() {
+                this.end(false);
+            }
+
+            private void end(boolean success) {
+                if (started) {
+                    InfinispanBatcher.this.cache.endBatch(success);
+                }
+            }
+        };
+    }
 }

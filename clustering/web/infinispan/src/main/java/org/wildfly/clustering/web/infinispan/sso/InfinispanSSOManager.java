@@ -21,57 +21,51 @@
  */
 package org.wildfly.clustering.web.infinispan.sso;
 
-import org.infinispan.Cache;
-import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 
-public class InfinispanSSOManager<V, L> implements SSOManager<L>, Batcher {
+public class InfinispanSSOManager<V, I, D, L> implements SSOManager<I, D, L> {
 
-    private final SSOFactory<V, L> factory;
-    final Cache<String, V> cache;
+    private final SSOFactory<V, I, D, L> factory;
+    private final Batcher batcher;
+    private final IdentifierFactory<String> identifierFactory;
 
-    public InfinispanSSOManager(SSOFactory<V, L> factory, Cache<String, V> cache) {
+    public InfinispanSSOManager(SSOFactory<V, I, D, L> factory, IdentifierFactory<String> identifierFactory, Batcher batcher) {
         this.factory = factory;
-        this.cache = cache;
+        this.batcher = batcher;
+        this.identifierFactory = identifierFactory;
     }
 
     @Override
-    public SSO<L> createSSO(String ssoId) {
+    public SSO<I, D, L> createSSO(String ssoId) {
         return this.factory.createSSO(ssoId, this.factory.createValue(ssoId));
     }
 
     @Override
-    public SSO<L> findSSO(String ssoId) {
+    public SSO<I, D, L> findSSO(String ssoId) {
         V value = this.factory.findValue(ssoId);
         return (value != null) ? this.factory.createSSO(ssoId, value) : null;
     }
 
     @Override
-    public Batch startBatch() {
-        final boolean started = this.cache.startBatch();
-        return new Batch() {
-            @Override
-            public void close() {
-                this.end(true);
-            }
-
-            @Override
-            public void discard() {
-                this.end(false);
-            }
-
-            private void end(boolean success) {
-                if (started) {
-                    InfinispanSSOManager.this.cache.endBatch(success);
-                }
-            }
-        };
+    public Batcher getBatcher() {
+        return this.batcher;
     }
 
     @Override
-    public Batcher getBatcher() {
-        return this;
+    public String createIdentifier() {
+        return this.identifierFactory.createIdentifier();
+    }
+
+    @Override
+    public void start() {
+        this.identifierFactory.start();
+    }
+
+    @Override
+    public void stop() {
+        this.identifierFactory.stop();
     }
 }

@@ -26,24 +26,35 @@ import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.subsystem.AbstractCacheConfigurationService;
+import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
+import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
 import org.jboss.metadata.web.jboss.ReplicationGranularity;
-import org.jboss.msc.value.Value;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Web session cache configuration service.
  * @author Paul Ferraro
  */
 public class SessionCacheConfigurationService extends AbstractCacheConfigurationService {
-    private final Value<Configuration> configuration;
-    private final Value<EmbeddedCacheManager> container;
+
+    public static ServiceBuilder<Configuration> build(ServiceTarget target, String containerName, String cacheName, String templateCacheName, JBossWebMetaData metaData) {
+        SessionCacheConfigurationService service = new SessionCacheConfigurationService(cacheName, metaData);
+        return target.addService(CacheConfigurationService.getServiceName(containerName, cacheName), service)
+                .addDependency(EmbeddedCacheManagerService.getServiceName(containerName), EmbeddedCacheManager.class, service.container)
+                .addDependency(CacheConfigurationService.getServiceName(containerName, templateCacheName), Configuration.class, service.configuration)
+        ;
+    }
+
+    private final InjectedValue<EmbeddedCacheManager> container = new InjectedValue<>();
+    private final InjectedValue<Configuration> configuration = new InjectedValue<>();
     private final JBossWebMetaData metaData;
 
-    public SessionCacheConfigurationService(String name, Value<EmbeddedCacheManager> container, Value<Configuration> configuration, JBossWebMetaData metaData) {
+    private SessionCacheConfigurationService(String name, JBossWebMetaData metaData) {
         super(name);
-        this.configuration = configuration;
-        this.container = container;
         this.metaData = metaData;
         ReplicationConfig config = this.metaData.getReplicationConfig();
         if (config == null) {

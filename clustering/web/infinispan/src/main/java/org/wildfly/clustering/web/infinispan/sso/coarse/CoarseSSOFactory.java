@@ -21,50 +21,71 @@
  */
 package org.wildfly.clustering.web.infinispan.sso.coarse;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSO;
 import org.wildfly.clustering.web.infinispan.sso.SSOFactory;
-import org.wildfly.clustering.web.infinispan.sso.SSOMutator;
+import org.wildfly.clustering.web.sso.Authentication;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
-public class CoarseSSOFactory<L> implements SSOFactory<CoarseSSOCacheEntry<L>, L> {
+public class CoarseSSOFactory<I, D, L> implements SSOFactory<CoarseSSOEntry<I, D, L>, I, D, L> {
 
-    private final Cache<String, CoarseSSOCacheEntry<L>> cache;
+    private final Cache<String, CoarseAuthenticationEntry<I, D, L>> authenticationCache;
+    private final Cache<CoarseSessionsKey, Map<D, String>> sessionsCache;
     private final CacheInvoker invoker;
     private final LocalContextFactory<L> localContextFactory;
 
-    public CoarseSSOFactory(Cache<String, CoarseSSOCacheEntry<L>> cache, CacheInvoker invoker, LocalContextFactory<L> localContextFactory) {
-        this.cache = cache;
+    public CoarseSSOFactory(Cache<String, CoarseAuthenticationEntry<I, D, L>> authenticationCache, Cache<CoarseSessionsKey, Map<D, String>> sessionsCache, CacheInvoker invoker, LocalContextFactory<L> localContextFactory) {
+        this.authenticationCache = authenticationCache;
+        this.sessionsCache = sessionsCache;
         this.invoker = invoker;
         this.localContextFactory = localContextFactory;
     }
 
     @Override
-    public SSO<L> createSSO(String id, CoarseSSOCacheEntry<L> value) {
-        Mutator mutator = new SSOMutator<>(this.cache, this.invoker, id, value);
-        Sessions sessions = new CoarseSessions(value.getSessions(), mutator);
-        return new InfinispanSSO<>(id, value, sessions, value.getLocalContext(), this.localContextFactory, this);
+    public SSO<I, D, L> createSSO(String id, CoarseSSOEntry<I, D, L> entry) {
+        CoarseAuthenticationEntry<I, D, L> authenticationEntry = entry.getAuthenticationEntry();
+        Mutator authenticationMutator = new CacheEntryMutator<>(this.authenticationCache, this.invoker, id, authenticationEntry);
+        Authentication<I> authentication = new CoarseAuthentication<>(authenticationEntry, authenticationMutator);
+        CoarseSessionsKey sessionsKey = new CoarseSessionsKey(id);
+        Map<D, String> sessionsValue = entry.getSessions();
+        Mutator sessionsMutator = new CacheEntryMutator<>(this.sessionsCache, this.invoker, sessionsKey, sessionsValue);
+        Sessions<D> sessions = new CoarseSessions<>(sessionsValue, sessionsMutator);
+        return new InfinispanSSO<>(id, authentication, sessions, authenticationEntry.getLocalContext(), this.localContextFactory, this);
     }
 
     @Override
-    public CoarseSSOCacheEntry<L> createValue(String id) {
-        CoarseSSOCacheEntry<L> entry = new CoarseSSOCacheEntry<>();
-        CoarseSSOCacheEntry<L> existing = this.invoker.invoke(this.cache, new CreateOperation<>(id, entry));
-        return (existing != null) ? existing : entry;
+    public CoarseSSOEntry<I, D, L> createValue(String id) {
+        CoarseAuthenticationEntry<I, D, L> entry = new CoarseAuthenticationEntry<>();
+        CoarseAuthenticationEntry<I, D, L> existingEntry = this.invoker.invoke(this.authenticationCache, new CreateOperation<>(id, entry));
+        if (existingEntry != null) {
+            Map<D, String> value = this.invoker.invoke(this.sessionsCache, new FindOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)), Flag.SKIP_LOCKING);
+            return new CoarseSSOEntry<>(existingEntry, value);
+        }
+        Map<D, String> map = new HashMap<>();
+        Map<D, String> existingMap = this.invoker.invoke(this.sessionsCache, new CreateOperation<>(new CoarseSessionsKey(id), map), Flag.SKIP_LOCKING);
+        return new CoarseSSOEntry<>(entry, (existingMap != null) ? existingMap : map);
     }
 
     @Override
-    public CoarseSSOCacheEntry<L> findValue(String id) {
-        return this.invoker.invoke(this.cache, new FindOperation<String, CoarseSSOCacheEntry<L>>(id));
+    public CoarseSSOEntry<I, D, L> findValue(String id) {
+        CoarseAuthenticationEntry<I, D, L> entry = this.invoker.invoke(this.authenticationCache, new FindOperation<String, CoarseAuthenticationEntry<I, D, L>>(id));
+        if (entry == null) return null;
+        Map<D, String> map =  this.invoker.invoke(this.sessionsCache, new FindOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)), Flag.SKIP_LOCKING);
+        return new CoarseSSOEntry<>(entry, map);
     }
 
     @Override
     public void remove(String id) {
-        this.invoker.invoke(this.cache, new RemoveOperation<String, CoarseSSOCacheEntry<L>>(id), Flag.IGNORE_RETURN_VALUES);
+        this.invoker.invoke(this.authenticationCache, new RemoveOperation<String, CoarseAuthenticationEntry<I, D, L>>(id), Flag.IGNORE_RETURN_VALUES);
+        this.invoker.invoke(this.sessionsCache, new RemoveOperation<CoarseSessionsKey, Map<D, String>>(new CoarseSessionsKey(id)), Flag.IGNORE_RETURN_VALUES, Flag.SKIP_LOCKING);
     }
 }

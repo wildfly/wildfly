@@ -19,16 +19,34 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+package org.wildfly.clustering.web.undertow;
+
+import io.undertow.server.session.SessionIdGenerator;
+
+import org.wildfly.clustering.web.IdentifierFactory;
 
 /**
- * Factory for creating unique session identifiers
+ * Adapts a {@link SessionIdGenerator} to a {@link SessionIdentifierFactory}.
  * @author Paul Ferraro
  */
-public interface SessionIdentifierFactory {
-    /**
-     * Generates a new web session identifier.
-     * @return a session id
-     */
-    String createSessionId();
+public class IdentifierFactoryAdapter implements IdentifierFactory<String> {
+
+    private final SessionIdGenerator generator;
+
+    public IdentifierFactoryAdapter(SessionIdGenerator generator) {
+        this.generator = generator;
+    }
+
+    @Override
+    public String createIdentifier() {
+        return this.generator.createSessionId();
+    }
+
+    @Override
+    public void start() {
+    }
+
+    @Override
+    public void stop() {
+    }
 }

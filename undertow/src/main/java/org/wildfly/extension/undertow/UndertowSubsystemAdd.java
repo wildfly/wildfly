@@ -144,8 +144,16 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         DistributableSessionIdentifierCodecBuilder builder = new DistributableSessionIdentifierCodecBuilderValue().getValue();
         if (builder != null) {
-            newControllers.add(builder.buildServerDependency(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
+            ServiceController<?> codecService = builder.buildServerDependency(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+            if (newControllers != null) {
+                newControllers.add(codecService);
+            }
         }
-        newControllers.add(RouteValueService.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install());
+
+        ServiceController<?> sc = RouteValueService.build(target).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        if (newControllers != null) {
+            newControllers.add(sc);
+        }
+
     }
 }

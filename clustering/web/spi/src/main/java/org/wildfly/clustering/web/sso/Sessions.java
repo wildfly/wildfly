@@ -24,33 +24,33 @@ package org.wildfly.clustering.web.sso;
 import java.util.Set;
 
 /**
- * Represents the sessions/applications for which a given user is authenticated.
+ * Represents the sessions per deployment for which a given user is authenticated.
  * @author Paul Ferraro
  */
-public interface Sessions {
+public interface Sessions<D> {
     /**
      * Returns the set of web applications for which the current user is authenticated.
      * @return a set of web applications.
      */
-    Set<WebApplication> getApplications();
+    Set<D> getDeployments();
 
     /**
      * Returns the corresponding session identifier for the specified web application.
      * @param application
      * @return
      */
-    String getSession(WebApplication application);
+    String getSession(D deployment);
 
     /**
      * Removes the specified web application from the set of authenticated web applications.
      * @param application
      */
-    void removeSession(WebApplication application);
+    void removeSession(D deployment);
 
     /**
      * Adds the specified web application and session identifier to the registry of authenticated web applications.
      * @param application a web application
      * @param id a session identifier
      */
-    void addSession(WebApplication application, String id);
+    void addSession(D deployment, String id);
 }

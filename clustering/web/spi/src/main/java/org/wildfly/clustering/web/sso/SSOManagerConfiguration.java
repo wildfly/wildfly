@@ -25,23 +25,11 @@ package org.wildfly.clustering.web.sso;
  * Configuration of an SSO manager.
  * @author Paul Ferraro
  */
-public class SSOManagerConfiguration {
-    private volatile String container = "web";
-    private volatile String cache = "sso";
+public interface SSOManagerConfiguration {
 
-    public String getContainer() {
-        return this.container;
-    }
+    String getHost();
 
-    public void setContainer(String container) {
-        this.container = container;
-    }
+    String getContainer();
 
-    public String getCache() {
-        return this.cache;
-    }
-
-    public void setCache(String cache) {
-        this.cache = cache;
-    }
+    String getCache();
 }

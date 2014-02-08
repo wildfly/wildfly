@@ -31,8 +31,8 @@ import org.jboss.as.clustering.infinispan.invoker.Mutator;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.web.LocalContextFactory;
+import org.wildfly.clustering.web.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
-import org.wildfly.clustering.web.infinispan.session.CacheMutator;
 import org.wildfly.clustering.web.infinispan.session.InfinispanImmutableSession;
 import org.wildfly.clustering.web.infinispan.session.InfinispanSession;
 import org.wildfly.clustering.web.infinispan.session.SessionAttributeMarshaller;
@@ -75,9 +75,9 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
         CoarseSessionCacheEntry<L> cacheEntry = entry.getCacheEntry();
         SessionMetaData metaData = cacheEntry.getMetaData();
         MarshalledValue<Map<String, Object>, MarshallingContext> value = entry.getAttributes();
-        Mutator attributesMutator = metaData.isNew() ? Mutator.PASSIVE : new CacheMutator<>(this.attributesCache, this.invoker, new SessionAttributesCacheKey(id), value, Flag.SKIP_LOCKING);
+        Mutator attributesMutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.attributesCache, this.invoker, new SessionAttributesCacheKey(id), value, Flag.SKIP_LOCKING);
         SessionAttributes attributes = new CoarseSessionAttributes(value, this.marshaller, attributesMutator);
-        Mutator sessionMutator = metaData.isNew() ? Mutator.PASSIVE : new CacheMutator<>(this.sessionCache, this.invoker, id, cacheEntry);
+        Mutator sessionMutator = metaData.isNew() ? Mutator.PASSIVE : new CacheEntryMutator<>(this.sessionCache, this.invoker, id, cacheEntry);
         return new InfinispanSession<>(id, metaData, attributes, cacheEntry.getLocalContext(), this.localContextFactory, this.context, sessionMutator, this);
     }
 

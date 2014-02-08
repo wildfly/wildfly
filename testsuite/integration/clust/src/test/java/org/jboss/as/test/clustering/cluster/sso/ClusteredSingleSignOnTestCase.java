@@ -41,8 +41,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.integration.web.sso.LogoutServlet;
 import org.jboss.as.test.integration.web.sso.SSOTestBase;
 import org.jboss.logging.Logger;
-import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.junit.Ignore;
+import org.jboss.shrinkwrap.api.Archive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -51,7 +50,6 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-@Ignore("AS7-5317")
 public class ClusteredSingleSignOnTestCase {
 
     @ArquillianResource
@@ -63,13 +61,17 @@ public class ClusteredSingleSignOnTestCase {
 
     @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
-    public static EnterpriseArchive deployment1() {
-        return SSOTestBase.createSsoEar();
+    public static Archive<?> deployment1() {
+        return createArchive();
     }
 
     @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
-    public static EnterpriseArchive deployment2() {
+    public static Archive<?> deployment2() {
+        return createArchive();
+    }
+
+    private static Archive<?> createArchive() {
         return SSOTestBase.createSsoEar();
     }
 
@@ -89,8 +91,8 @@ public class ClusteredSingleSignOnTestCase {
             @ArquillianResource @OperateOnDeployment(DEPLOYMENT_2) ManagementClient client2) throws Exception {
 
         // add sso valves
-        SSOTestBase.addClusteredSso(client1.getControllerClient());
-        SSOTestBase.addClusteredSso(client2.getControllerClient());
+        SSOTestBase.addSso(client1.getControllerClient());
+        SSOTestBase.addSso(client2.getControllerClient());
 
         controller.stop(CONTAINER_1);
         controller.stop(CONTAINER_2);

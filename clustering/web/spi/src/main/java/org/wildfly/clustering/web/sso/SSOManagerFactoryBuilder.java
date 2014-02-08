@@ -26,5 +26,5 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 public interface SSOManagerFactoryBuilder {
-    ServiceBuilder<SSOManagerFactory> build(ServiceTarget target, ServiceName name, SSOManagerConfiguration config);
+    <I, D> ServiceBuilder<SSOManagerFactory<I, D>> build(ServiceTarget target, ServiceName name, String host);
 }

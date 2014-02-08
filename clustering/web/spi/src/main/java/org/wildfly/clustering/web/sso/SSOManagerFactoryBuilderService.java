@@ -25,6 +25,10 @@ import java.util.ServiceLoader;
 
 import org.jboss.msc.service.AbstractService;
 
+/**
+ * Uses a service loader to load a distributable {@link SSOManagerFactoryBuilder} implementation.
+ * @author Paul Ferraro
+ */
 public class SSOManagerFactoryBuilderService extends AbstractService<SSOManagerFactoryBuilder> {
     private final SSOManagerFactoryBuilder builder;
 

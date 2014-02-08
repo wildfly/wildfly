@@ -24,50 +24,39 @@ package org.wildfly.clustering.web.infinispan.sso.coarse;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Map;
-import java.util.Set;
 
 import org.jboss.as.clustering.infinispan.io.AbstractSimpleExternalizer;
-import org.wildfly.clustering.web.sso.WebApplication;
 import org.wildfly.clustering.web.sso.AuthenticationType;
 
-public class CoarseSSOCacheEntryExternalizer extends AbstractSimpleExternalizer<CoarseSSOCacheEntry<?>> {
+/**
+ * Externalizer for {@link CoarseAuthenticationEntry}.
+ * @author Paul Ferraro
+ * @param <I>
+ * @param <D>
+ */
+public class CoarseAuthenticationEntryExternalizer<I, D> extends AbstractSimpleExternalizer<CoarseAuthenticationEntry<I, D, ?>> {
     private static final long serialVersionUID = 4667240286133879206L;
 
-    public CoarseSSOCacheEntryExternalizer() {
-        this(CoarseSSOCacheEntry.class);
+    public CoarseAuthenticationEntryExternalizer() {
+        this(CoarseAuthenticationEntry.class);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private CoarseSSOCacheEntryExternalizer(Class targetClass) {
+    private CoarseAuthenticationEntryExternalizer(Class targetClass) {
         super(targetClass);
     }
 
     @Override
-    public void writeObject(ObjectOutput output, CoarseSSOCacheEntry<?> entry) throws IOException {
-        output.writeByte(entry.getAuthenticationType().ordinal());
-        output.writeUTF(entry.getUser());
-        output.writeUTF(entry.getPassword());
-        Set<Map.Entry<WebApplication, String>> sessions = entry.getSessions().entrySet();
-        output.writeInt(sessions.size());
-        for (Map.Entry<WebApplication, String> session: sessions) {
-            WebApplication application = session.getKey();
-            output.writeUTF(application.getContext());
-            output.writeUTF(application.getHost());
-            output.writeUTF(session.getValue());
-        }
+    public void writeObject(ObjectOutput output, CoarseAuthenticationEntry<I, D, ?> entry) throws IOException {
+        output.writeObject(entry.getIdentity());
+        output.writeByte(entry.getType().ordinal());
     }
 
     @Override
-    public CoarseSSOCacheEntry<?> readObject(ObjectInput input) throws IOException {
-        CoarseSSOCacheEntry<?> entry = new CoarseSSOCacheEntry<>();
+    public CoarseAuthenticationEntry<I, D, ?> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        CoarseAuthenticationEntry<I, D, ?> entry = new CoarseAuthenticationEntry<>();
+        entry.setIdentity((I) input.readObject());
         entry.setAuthenticationType(AuthenticationType.values()[input.readByte()]);
-        entry.setUser(input.readUTF());
-        entry.setPassword(input.readUTF());
-        int size = input.readInt();
-        for (int i = 0; i < size; ++i) {
-            entry.getSessions().put(new WebApplication(input.readUTF(), input.readUTF()), input.readUTF());
-        }
         return entry;
     }
 }

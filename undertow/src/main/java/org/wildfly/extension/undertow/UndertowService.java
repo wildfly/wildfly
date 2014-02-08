@@ -90,6 +90,10 @@ public class UndertowService implements Service<UndertowService> {
         return virtualHostName(server, virtualHost).append(Constants.ACCESS_LOG);
     }
 
+    public static ServiceName ssoServiceName(final String server, final String virtualHost) {
+        return virtualHostName(server, virtualHost).append("single-sign-on");
+    }
+
     public static ServiceName consoleRedirectServiceName(final String server, final String virtualHost) {
         return virtualHostName(server, virtualHost).append("console", "redirect");
     }
