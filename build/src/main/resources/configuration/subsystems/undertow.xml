@@ -35,6 +35,8 @@
             <?AJP?>
             <host name="default-host" alias="localhost">
                 <location name="/" handler="welcome-content" />
+                <filter-ref name="server-header"/>
+                <filter-ref name="x-powered-by-header"/>
             </host>
         </server>
         <servlet-container name="default" default-buffer-cache="default" stack-trace-on-error="local-only" >
@@ -44,6 +46,10 @@
         <handlers>
             <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
         </handlers>
+        <filters>
+            <response-header name="server-header" header-name="Server" header-value="Wildfly 8"/>
+            <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow 1"/>
+        </filters>
     </subsystem>
     <supplement name="ha">
         <replacement placeholder="AJP">
