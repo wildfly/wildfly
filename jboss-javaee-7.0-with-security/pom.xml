@@ -71,6 +71,37 @@
                 <scope>provided</scope>
             </dependency>
 
+            <!-- PicketLink Dependencies -->
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-core-api</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-core-impl</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-api</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-impl</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.picketlink</groupId>
+                <artifactId>picketlink-idm-schema</artifactId>
+                <version>${version.org.picketlink}</version>
+            </dependency>
+
         </dependencies>
 
     </dependencyManagement>
