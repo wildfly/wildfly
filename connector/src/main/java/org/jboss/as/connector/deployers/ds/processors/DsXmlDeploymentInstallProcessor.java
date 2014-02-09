@@ -292,7 +292,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
         //Register an empty override model regardless of we're enabled or not - the statistics listener will add the relevant childresources
         if (registration.isAllowsOverride()) {
             ManagementResourceRegistration overrideRegistration = registration.getOverrideModel(managementName);
-            if (overrideRegistration == null) {
+            if (overrideRegistration == null || overrideRegistration.isAllowsOverride()) {
                 overrideRegistration = registration.registerOverrideModel(managementName, DataSourcesSubsystemProviders.OVERRIDE_DS_DESC);
             }
             dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(overrideRegistration, resource, managementName));

@@ -45,10 +45,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_RUNTIME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
@@ -63,6 +66,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAL
 public class DeployedXmlDataSourceManagementTestCase {
 
     public static final String TEST_DS_XML = "test-ds.xml";
+    public static final String JPA_DS_XML = "jpa-ds.xml";
 
     static class DeployedXmlDataSourceManagementTestCaseSetup implements ServerSetupTask {
 
@@ -70,10 +74,23 @@ public class DeployedXmlDataSourceManagementTestCase {
         public void setup(final ManagementClient managementClient, final String containerId) throws Exception {
             ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
             final String packageName = DeployedXmlDataSourceManagementTestCase.class.getPackage().getName().replace(".", "/");
-            final DeploymentPlan plan = manager.newDeploymentPlan().add(DeployedXmlDataSourceManagementTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy().build();
-            final Future<ServerDeploymentPlanResult> future = manager.execute(plan);
-            final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
-            final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
+            DeploymentPlan plan = manager.newDeploymentPlan()
+                    .add(DeployedXmlDataSourceManagementTestCase.class.getResource("/" + packageName + "/" + TEST_DS_XML)).andDeploy()
+                    .build();
+            Future<ServerDeploymentPlanResult> future = manager.execute(plan);
+            ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
+            ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
+            if (actionResult != null) {
+                if (actionResult.getDeploymentException() != null) {
+                    throw new RuntimeException(actionResult.getDeploymentException());
+                }
+            }
+            plan = manager.newDeploymentPlan()
+                    .add(DeployedXmlDataSourceManagementTestCase.class.getResource("/" + packageName + "/" + JPA_DS_XML)).andDeploy()
+                    .build();
+            future = manager.execute(plan);
+            future.get(20, TimeUnit.SECONDS);
+            actionResult = result.getDeploymentActionResult(plan.getId());
             if (actionResult != null) {
                 if (actionResult.getDeploymentException() != null) {
                     throw new RuntimeException(actionResult.getDeploymentException());
@@ -84,7 +101,14 @@ public class DeployedXmlDataSourceManagementTestCase {
         @Override
         public void tearDown(final ManagementClient managementClient, final String containerId) throws Exception {
             ServerDeploymentManager manager = ServerDeploymentManager.Factory.create(managementClient.getControllerClient());
-            final DeploymentPlan undeployPlan = manager.newDeploymentPlan().undeploy(TEST_DS_XML).andRemoveUndeployed().build();
+            DeploymentPlan undeployPlan = manager.newDeploymentPlan()
+                    .undeploy(TEST_DS_XML).andRemoveUndeployed()
+                    .build();
+            manager.execute(undeployPlan).get();
+
+            undeployPlan = manager.newDeploymentPlan()
+                    .undeploy(JPA_DS_XML).andRemoveUndeployed()
+                    .build();
             manager.execute(undeployPlan).get();
         }
     }
@@ -198,5 +222,38 @@ public class DeployedXmlDataSourceManagementTestCase {
         operation.get(OP_ADDR).set(jdbcAddress);
         result = managementClient.getControllerClient().execute(operation).get(RESULT);
         Assert.assertTrue("PreparedStatementCacheAccessCount", result.hasDefined("PreparedStatementCacheAccessCount"));
+    }
+
+    /** Test for https://issues.jboss.org/browse/WFLY-2203 */
+    @Test
+    public void testOverrideRegistrations() throws IOException {
+        ModelNode address = new ModelNode();
+        address.add("deployment", TEST_DS_XML);
+        address.add("subsystem", "datasources");
+
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("read-resource-description");
+        operation.get(OP_ADDR).set(address);
+        operation.get(RECURSIVE).set(true);
+        ModelNode result = managementClient.getControllerClient().execute(operation).get(RESULT);
+
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "*").isDefined());
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "java:jboss/datasources/DeployedDS", CHILDREN, "statistics", MODEL_DESCRIPTION, "pool").isDefined());
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "java:jboss/datasources/DeployedDS", CHILDREN, "statistics", MODEL_DESCRIPTION, "jdbc").isDefined());
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "*").isDefined());
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/H2XADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "pool").isDefined());
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/H2XADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "jdbc").isDefined());
+
+        address = new ModelNode();
+        address.add("deployment", JPA_DS_XML);
+        address.add("subsystem", "datasources");
+        operation.get(OP_ADDR).set(address);
+        result = managementClient.getControllerClient().execute(operation).get(RESULT);
+
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "data-source", MODEL_DESCRIPTION, "*").isDefined());
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "*").isDefined());
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/JPADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "pool").isDefined());
+        Assert.assertTrue(result.toString(), result.get(CHILDREN, "xa-data-source", MODEL_DESCRIPTION, "java:/JPADS", CHILDREN, "statistics", MODEL_DESCRIPTION, "jdbc").isDefined());
+
     }
 }
