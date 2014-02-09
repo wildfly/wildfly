@@ -58,8 +58,8 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
                 final PathAddress hostAddress = address.subAddress(0, address.size() - 1);
                 final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
 
-        ModelNode domainModelNode = SingleSignOnDefinition.DOMAIN.resolveModelAttribute(context, model);
-        String domain = domainModelNode.isDefined() ? domainModelNode.asString() : null;
+        final ModelNode domainModelNode = SingleSignOnDefinition.DOMAIN.resolveModelAttribute(context, model);
+        final String domain = domainModelNode.isDefined() ? domainModelNode.asString() : null;
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
         final ServiceName serviceName = UndertowService.ssoServiceName(serverName, hostName);
