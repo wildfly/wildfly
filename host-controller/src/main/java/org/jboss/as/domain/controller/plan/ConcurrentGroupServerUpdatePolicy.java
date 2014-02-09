@@ -27,6 +27,8 @@ import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.jboss.as.domain.controller.DomainControllerLogger;
+
 /**
  * Policy that controls whether concurrently executing updates to server groups
  * can proceed. Acts a parent to the {@link ServerUpdatePolicy} that controls
@@ -105,6 +107,8 @@ class ConcurrentGroupServerUpdatePolicy {
                 if (failed) {
                     this.failed = true;
                 }
+                DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER.tracef("Recorded group result for '%s': failed = %s",
+                        serverGroup, failed);
                 notifyAll();
             }
             else {

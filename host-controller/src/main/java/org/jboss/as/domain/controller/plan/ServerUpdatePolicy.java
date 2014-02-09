@@ -27,6 +27,7 @@ import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Set;
 
+import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
@@ -134,6 +135,10 @@ class ServerUpdatePolicy {
         }
 
         boolean serverFailed = response.has(FAILURE_DESCRIPTION);
+
+
+        DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER.tracef("Recording server result for '%s': failed = %s",
+                server, server);
 
         synchronized (this) {
             int previousFailed = failureCount;
