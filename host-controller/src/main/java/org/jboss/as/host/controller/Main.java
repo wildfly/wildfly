@@ -66,6 +66,9 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  * @author Brian Stansberry
  */
 public final class Main {
+    // Capture System.out and System.err before they are redirected by STDIO
+    private static final PrintStream STDOUT = System.out;
+    private static final PrintStream STDERR = System.err;
 
     private static final String PROCESS_NAME = "-D[Host Controller]";
 
@@ -87,7 +90,7 @@ public final class Main {
         try {
             StreamUtils.readFully(new Base64InputStream(System.in), authKey);
         } catch (IOException e) {
-            System.err.println(MESSAGES.failedToReadAuthenticationKey(e));
+            STDERR.println(MESSAGES.failedToReadAuthenticationKey(e));
             fail();
             return;
         }
@@ -178,7 +181,7 @@ public final class Main {
     }
 
     private static void usage() {
-        CommandLineArgumentUsageImpl.printUsage(System.out);
+        CommandLineArgumentUsageImpl.printUsage(STDOUT);
     }
 
     /**
@@ -239,7 +242,7 @@ public final class Main {
                     try {
                         pmPort = Integer.valueOf(port);
                     } catch (NumberFormatException e) {
-                        System.err.println(MESSAGES.invalidValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, "Integer", port, usageNote()));
+                        STDERR.println(MESSAGES.invalidValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT, "Integer", port, usageNote()));
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT)) {
@@ -257,7 +260,7 @@ public final class Main {
                     try {
                         pmAddress = InetAddress.getByName(addr);
                     } catch (UnknownHostException e) {
-                        System.err.println(MESSAGES.unknownHostValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr, usageNote()));
+                        STDERR.println(MESSAGES.unknownHostValue(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR, addr, usageNote()));
                         return null;
                     }
                 } else if (arg.startsWith(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR)) {
@@ -342,7 +345,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
+                        STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : checkValueIsNotAnArg(arg, args[++i]);
@@ -356,7 +359,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
+                        STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
@@ -387,7 +390,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
+                        STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : checkValueIsNotAnArg(arg, args[++i]);
@@ -411,7 +414,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
+                        STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : checkValueIsNotAnArg(arg, args[++i]);
@@ -427,11 +430,11 @@ public final class Main {
                         return null;
                     }
                 } else {
-                    System.err.println(MESSAGES.invalidOption(arg, usageNote()));
+                    STDERR.println(MESSAGES.invalidOption(arg, usageNote()));
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
-                System.err.println(MESSAGES.argumentExpected(arg, usageNote()));
+                STDERR.println(MESSAGES.argumentExpected(arg, usageNote()));
                 return null;
             }
         }
@@ -444,7 +447,7 @@ public final class Main {
     private static String parseValue(final String arg, final String key) {
         int splitPos = key.length();
         if (arg.length() <= splitPos + 1 || arg.charAt(splitPos) != '=') {
-            System.err.println(MESSAGES.argumentHasNoValue(arg, usageNote()));
+            STDERR.println(MESSAGES.argumentHasNoValue(arg, usageNote()));
             return null;
         } else {
             return arg.substring(splitPos + 1);
@@ -462,7 +465,7 @@ public final class Main {
      */
     private static String checkValueIsNotAnArg(String argument, String value) {
         if (value.startsWith("-")) {
-            System.err.println(MESSAGES.argumentHasNoValue(argument, usageNote()));
+            STDERR.println(MESSAGES.argumentHasNoValue(argument, usageNote()));
             return null;
         }
         return value;
@@ -481,10 +484,10 @@ public final class Main {
              }
              return true;
          } catch (MalformedURLException e) {
-             System.err.println(MESSAGES.malformedUrl(arg, usageNote()));
+             STDERR.println(MESSAGES.malformedUrl(arg, usageNote()));
              return false;
          } catch (IOException e) {
-             System.err.println(MESSAGES.unableToLoadProperties(url, usageNote()));
+             STDERR.println(MESSAGES.unableToLoadProperties(url, usageNote()));
              return false;
          }
     }
@@ -493,7 +496,7 @@ public final class Main {
          try {
              return Integer.valueOf(value);
          } catch (NumberFormatException e) {
-             System.err.println(MESSAGES.invalidValue(key, "Integer", value, usageNote()));
+             STDERR.println(MESSAGES.invalidValue(key, "Integer", value, usageNote()));
              return null;
          }
     }
@@ -502,7 +505,7 @@ public final class Main {
         try {
             return InetAddress.getByName(value);
         } catch (UnknownHostException e) {
-            System.err.println(MESSAGES.unknownHostValue(key, value, usageNote()));
+            STDERR.println(MESSAGES.unknownHostValue(key, value, usageNote()));
             return null;
         }
     }
@@ -561,7 +564,7 @@ public final class Main {
                 }
             }
         } catch (Exception e) {
-            System.err.println(MESSAGES.cannotAccessJvmInputArgument(e));
+            STDERR.println(MESSAGES.cannotAccessJvmInputArgument(e));
         }
         return hostSystemProperties;
     }
@@ -666,7 +669,7 @@ public final class Main {
                 bindAddress = InetAddress.getByName(value);
             } catch (UnknownHostException e) {
                 parseFailed = true;
-                System.err.println(MESSAGES.invalidValue(key, "InetAddress", value, usageNote()));
+                STDERR.println(MESSAGES.invalidValue(key, "InetAddress", value, usageNote()));
             }
         }
     }
