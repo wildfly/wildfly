@@ -50,14 +50,14 @@ public class AjpListenerService extends ListenerService<AjpListenerService> {
 
     @Override
     protected OpenListener createOpenListener() {
-        AjpOpenListener ajpOpenListener = new AjpOpenListener(getBufferPool().getValue(), getBufferSize());
+        AjpOpenListener ajpOpenListener = new AjpOpenListener(getBufferPool().getValue(), OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).getMap(), getBufferSize());
         ajpOpenListener.setScheme(scheme);
         return ajpOpenListener;
     }
 
     @Override
     void startListening(XnioWorker worker, InetSocketAddress socketAddress, ChannelListener<AcceptingChannel<StreamConnection>> acceptListener) throws IOException {
-        server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(commonOptions).addAll(listenerOptions).getMap());
+        server = worker.createStreamConnectionServer(socketAddress, acceptListener, OptionMap.builder().addAll(commonOptions).getMap());
         server.resumeAccepts();
         UndertowLogger.ROOT_LOGGER.listenerStarted("AJP", getName(), binding.getValue().getSocketAddress());
     }
