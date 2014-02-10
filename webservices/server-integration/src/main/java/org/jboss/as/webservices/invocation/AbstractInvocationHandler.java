@@ -36,6 +36,7 @@ import javax.xml.ws.soap.SOAPFaultException;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.naming.ManagedReference;
+import org.jboss.as.webservices.injection.WSComponent;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Endpoint;
@@ -45,6 +46,7 @@ import org.jboss.wsf.spi.invocation.Invocation;
  * Invocation abstraction for all endpoint types
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.AbstractInvocationHandler {
 
@@ -66,26 +68,28 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
     *
     * @return endpoint container
     */
-   protected ComponentView getComponentView() {
-       // we need to check both, otherwise it is possible for
-       // componentView to be initialized before reference
-      if (componentView == null || reference == null) {
-         synchronized(this) {
-            if (componentView == null) {
-               componentView = getMSCService(componentViewName, ComponentView.class);
-               if (componentView == null) {
-                  throw MESSAGES.cannotFindComponentView(componentViewName);
-               }
-                try {
-                    reference = componentView.createInstance();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+    protected ComponentView getComponentView() {
+        // we need to check both, otherwise it is possible for
+        // componentView to be initialized before reference
+        if (componentView == null) {
+            synchronized (this) {
+                if (componentView == null) {
+                    componentView = getMSCService(componentViewName, ComponentView.class);
+                    if (componentView == null) {
+                        throw MESSAGES.cannotFindComponentView(componentViewName);
+                    }
+                    if (reference == null) {
+                        try {
+                            reference = componentView.createInstance();
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
                 }
             }
-         }
-      }
-      return componentView;
-   }
+        }
+        return componentView;
+    }
 
    /**
     * Invokes WS endpoint.
@@ -98,17 +102,32 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
       try {
          // prepare for invocation
          onBeforeInvocation(wsInvocation);
+         //for spring integration we don't need to go into ee's interceptors
+         if(wsInvocation.getInvocationContext().getTargetBean() != null && endpoint.getProperty("SpringBus") != null) {
+             this.reference = new ManagedReference() {
+               public void release()
+               {
+               }
+               public Object getInstance()
+               {
+                  return wsInvocation.getInvocationContext().getTargetBean();
+               }               
+             };
+         }
          // prepare invocation data
          final ComponentView componentView = getComponentView();
+         Component component = componentView.getComponent();
+         if (component instanceof WSComponent && endpoint.getProperty("SpringBus") != null) {
+             ((WSComponent)component).setReference(reference);
+         }
          final Method method = getComponentViewMethod(wsInvocation.getJavaMethod(), componentView.getViewMethods());
          final InterceptorContext context = new InterceptorContext();
          prepareForInvocation(context, wsInvocation);
          context.setMethod(method);
          context.setParameters(wsInvocation.getArgs());
-         context.setTarget(reference.getInstance());
-         context.putPrivateData(Component.class, componentView.getComponent());
+         context.putPrivateData(Component.class, component);
          context.putPrivateData(ComponentView.class, componentView);
-          // invoke method
+         // invoke method
          final Object retObj = componentView.invoke(context);
          // set return value
          wsInvocation.setReturnValue(retObj);
@@ -192,3 +211,4 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
    }
 
 }
+

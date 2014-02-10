@@ -23,13 +23,16 @@ package org.jboss.as.webservices.injection;
 
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentInstance;
+import org.jboss.as.naming.ManagedReference;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public final class WSComponent extends BasicComponent {
 
     private volatile BasicComponentInstance wsComponentInstance;
+    private volatile ManagedReference reference;
 
     /**
      * We can't lock on <code>this</code> because the
@@ -45,12 +48,19 @@ public final class WSComponent extends BasicComponent {
     public BasicComponentInstance getComponentInstance() {
         if (wsComponentInstance == null) {
             synchronized (lock) {
-                if (wsComponentInstance == null) {
+                if (wsComponentInstance == null && reference == null) {
                     wsComponentInstance = (BasicComponentInstance) createInstance();
+                }
+                if (wsComponentInstance == null && reference != null) {
+                    wsComponentInstance = (BasicComponentInstance) this.createInstance(reference.getInstance());
                 }
             }
         }
         return wsComponentInstance;
+    }
+
+    public void setReference(ManagedReference reference) {
+        this.reference = reference;
     }
 
     @Override
