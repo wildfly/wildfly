@@ -18,7 +18,7 @@
       <subsystem>configuration/subsystems/naming.xml</subsystem>
       <subsystem>configuration/subsystems/pojo.xml</subsystem>
       <subsystem>configuration/subsystems/remoting.xml</subsystem>
-      <subsystem>configuration/subsystems/redhat-access-plugin-eap.xml</subsystem>
+      <subsystem>configuration/subsystems/redhat-access-plugin.xml</subsystem>
       <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
       <subsystem>configuration/subsystems/sar.xml</subsystem>
       <subsystem supplement="standalone">configuration/subsystems/security.xml</subsystem>

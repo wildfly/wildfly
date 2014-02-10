@@ -899,8 +899,8 @@
             <maven-resource group="org.jboss.as" artifact="jboss-as-jdr"/>
         </module-def>
         
-        <module-def name="com.redhat.gss.redhat-access-plugin-eap">
-            <maven-resource group="com.redhat.gss" artifact="redhat-access-plugin-eap"/>
+        <module-def name="com.redhat.gss.redhat-access-plugin">
+            <maven-resource group="com.redhat.gss" artifact="redhat-access-plugin"/>
         </module-def>
         
         <module-def name="com.redhat.gss.redhat-support-lib-java">

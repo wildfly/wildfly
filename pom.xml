@@ -1066,7 +1066,7 @@
             
             <dependency>
                 <groupId>com.redhat.gss</groupId>
-                <artifactId>redhat-access-plugin-eap</artifactId>
+                <artifactId>redhat-access-plugin</artifactId>
                 <version>${project.version}</version>
             </dependency>
             
@@ -6815,7 +6815,7 @@
                 <module>naming</module>
                 <module>osgi</module>
                 <module>pojo</module>
-                <module>redhat-access-plugin-eap</module>
+                <module>redhat-access-plugin</module>
                 <module>remoting-test</module>
                 <module>system-jmx</module>
                 <module>sar</module>

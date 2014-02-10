@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<<<<<<< HEAD
 <!--
   ~ JBoss, Home of Professional Open Source.
   ~ Copyright 2010, Red Hat, Inc., and individual contributors
@@ -247,7 +246,7 @@
                 
                 <dependency>
 					<groupId>com.redhat.gss</groupId>
-					<artifactId>redhat-access-plugin-eap</artifactId>
+					<artifactId>redhat-access-plugin</artifactId>
 				</dependency>
                 
 				<dependency>
@@ -273,7 +272,6 @@
 				<dependency>
 					<groupId>commons-net</groupId>
 					<artifactId>commons-net</artifactId>
-					<version>3.2</version>
 				</dependency>
 				
 				<dependency>
@@ -2381,8 +2379,9 @@
                                             <packages>org.h2:org.h2.api:org.h2.bnf:org.h2.command:org.h2.command.ddl:org.h2.command.dml:org.h2.compress:org.h2.constant:org.h2.constraint:org.h2.engine:org.h2.expression:org.h2.fulltext:org.h2.index:org.h2.jdbc:org.h2.jdbcx:org.h2.jmx:org.h2.message:org.h2.result:org.h2.schema:org.h2.security:org.h2.server:org.h2.server.pg:org.h2.server.web:org.h2.store:org.h2.store.fs:org.h2.table:org.h2.tools:org.h2.upgrade:org.h2.util:org.h2.value</packages>
                                         </group>
                                         <group>
-											<title>Module com.redhat.gss.redhat-access-plugin-eap</title>
-											<packages>com.redhat.gss.redhat-access-plugin-eap</packages>
+											<title>Module com.redhat.gss.redhat-access-plugin</title>
+											<packages>com.redhat.gss.redhat-access-plugin</packages>
+
 										</group>
 										<group>
 											<title>Module com.redhat.gss.redhat-support-lib-java</title>
