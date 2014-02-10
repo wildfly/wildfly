@@ -96,7 +96,8 @@ public class Host implements Service<Host> {
         //handle requests that use the Expect: 100-continue header
         rootHandler = Handlers.httpContinueRead(rootHandler);
         //we always need to add date header
-        rootHandler = Handlers.date(rootHandler);
+        //commented out for now as it causes issues with restEasy
+        //rootHandler = Handlers.date(rootHandler);
         Collections.reverse(filters);
         HttpHandler handler = rootHandler;
         for (FilterRef filter : filters) {
