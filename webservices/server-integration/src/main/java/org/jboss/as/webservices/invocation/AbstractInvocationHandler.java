@@ -105,13 +105,11 @@ abstract class AbstractInvocationHandler extends org.jboss.ws.common.invocation.
          //for spring integration we don't need to go into ee's interceptors
          if(wsInvocation.getInvocationContext().getTargetBean() != null && endpoint.getProperty("SpringBus") != null) {
              this.reference = new ManagedReference() {
-               public void release()
-               {
+               public void release() {
                }
-               public Object getInstance()
-               {
+               public Object getInstance() {
                   return wsInvocation.getInvocationContext().getTargetBean();
-               }               
+               }
              };
          }
          // prepare invocation data
