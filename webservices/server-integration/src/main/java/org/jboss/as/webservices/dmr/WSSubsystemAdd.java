@@ -131,21 +131,6 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
             ServiceName configServiceName = Constants.CLIENT_CONFIG.equals(configType) ? PackageUtils
                     .getClientConfigServiceName(re.getName()) : PackageUtils.getEndpointConfigServiceName(re.getName());
             serviceNames.add(configServiceName);
-            readHandlerChainServiceNames(serviceNames, re, Constants.PRE_HANDLER_CHAIN, configServiceName);
-            readHandlerChainServiceNames(serviceNames, re, Constants.POST_HANDLER_CHAIN, configServiceName);
-            for (String propertyName : re.getChildrenNames(Constants.PROPERTY)) {
-                serviceNames.add(PackageUtils.getPropertyServiceName(configServiceName, propertyName));
-            }
-        }
-    }
-
-    private static void readHandlerChainServiceNames(List<ServiceName> serviceNames, Resource configResource, String chainType, ServiceName configServiceName) {
-        for (ResourceEntry re : configResource.getChildren(chainType)) {
-            ServiceName handlerChainServiceName = PackageUtils.getHandlerChainServiceName(configServiceName, re.getName());
-            serviceNames.add(handlerChainServiceName);
-            for (String handlerName : re.getChildrenNames(Constants.HANDLER)) {
-                serviceNames.add(PackageUtils.getHandlerServiceName(handlerChainServiceName, handlerName));
-            }
         }
     }
 

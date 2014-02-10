@@ -92,7 +92,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
         }
 
         //extract SOAP-over-JMS 1.0 bindings
-        final JMSEndpointsMetaData endpointsMetaData = new JMSEndpointsMetaData();
+        List<JMSEndpointMetaData> list = new LinkedList<JMSEndpointMetaData>();
         if (!map.isEmpty()) {
 
             for (String wsdlLocation : map.keySet()) {
@@ -114,14 +114,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
                             ClassInfo webServiceClassInfo = (ClassInfo) ai.target();
                             String beanClassName = webServiceClassInfo.name().toString();
                             //service name ?
-                            JMSEndpointMetaData endpointMetaData = new JMSEndpointMetaData(endpointsMetaData);
-                            endpointMetaData.setEndpointName(port);
-                            endpointMetaData.setName(beanClassName);
-                            endpointMetaData.setImplementor(beanClassName);
-                            //endpointMetaData.setName(name);
-                            endpointMetaData.setSoapAddress(soapAddress);
-                            endpointMetaData.setWsdlLocation(wsdlLocation);
-                            endpointsMetaData.addEndpointMetaData(endpointMetaData);
+                            list.add(new JMSEndpointMetaData(beanClassName, port, beanClassName, wsdlLocation, soapAddress));
                         }
                     }
                 } catch (Exception ignore) {
@@ -130,7 +123,7 @@ public final class WSIntegrationProcessorJAXWS_JMS implements DeploymentUnitProc
             }
 
         }
-        unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, endpointsMetaData);
+        unit.putAttachment(JMS_ENDPOINT_METADATA_KEY, new JMSEndpointsMetaData(list));
     }
 
     @Override
