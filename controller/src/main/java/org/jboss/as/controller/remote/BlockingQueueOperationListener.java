@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller.remote;
 
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
@@ -59,6 +60,7 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
 
     @Override
     public void operationPrepared(final TransactionalProtocolClient.PreparedOperation<T> prepared) {
+        ControllerLogger.MGMT_OP_LOGGER.tracef("received prepared operation  %s", prepared.getOperation());
         if(! queue.offer(prepared)) {
             prepared.rollback();
         }
@@ -66,6 +68,7 @@ public class BlockingQueueOperationListener<T extends TransactionalProtocolClien
 
     @Override
     public void operationFailed(T operation, ModelNode result) {
+        ControllerLogger.MGMT_OP_LOGGER.tracef("received failed operation  %s", operation);
         queue.offer(new FailedOperation<T>(operation, result));
     }
 
