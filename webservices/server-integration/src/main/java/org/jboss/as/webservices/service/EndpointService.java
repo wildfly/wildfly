@@ -24,7 +24,6 @@ package org.jboss.as.webservices.service;
 import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 
 import java.security.AccessController;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.management.JMException;
@@ -34,6 +33,7 @@ import org.jboss.as.ejb3.security.service.EJBViewMethodSecurityAttributesService
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.SecurityDomainService;
 import org.jboss.as.server.CurrentServiceContainer;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.security.EJBMethodSecurityAttributesAdaptor;
@@ -253,6 +253,9 @@ public final class EndpointService implements Service<Endpoint> {
         }
         builder.setInitialMode(Mode.ACTIVE);
         builder.install();
+        //add a dependency on the endpoint service to web deployments, so that the
+        //endpoint servlet is not started before the endpoint is actually available
+        unit.addToAttachmentList(Attachments.WEB_DEPENDENCIES, serviceName);
     }
 
     public static void uninstall(final Endpoint endpoint, final DeploymentUnit unit) {

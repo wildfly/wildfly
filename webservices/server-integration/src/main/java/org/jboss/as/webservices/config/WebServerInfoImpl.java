@@ -27,7 +27,7 @@ import org.jboss.wsf.spi.management.WebServerInfo;
 
 public class WebServerInfoImpl implements WebServerInfo {
 
-    private WebServer webserver;
+    private final WebServer webserver;
 
     public WebServerInfoImpl(WebServer webServer) {
         webserver = webServer;
