@@ -379,6 +379,10 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         }
         PathElement pe = PathElement.pathElement(parent.getKeyName(),name);
 
+        // TODO https://issues.jboss.org/browse/WFLY-2883
+//        ManagementResourceRegistration candidate = parent.getParent().getSubModel(PathAddress.pathAddress(pe));
+//        // We may have gotten back the wildcard reg; detect this by checking for allowing override
+//        return candidate.isAllowsOverride() ? null : candidate;
         return parent.getParent().getSubModel(PathAddress.pathAddress(pe));
     }
 
