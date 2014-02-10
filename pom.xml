@@ -104,7 +104,7 @@
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.groovy-all>2.2.1</version.groovy-all>
         <version.io.netty>4.0.15.Final</version.io.netty>
-        <version.io.undertow>1.0.0.CR5</version.io.undertow>
+        <version.io.undertow>1.0.0.Final</version.io.undertow>
         <version.io.undertow.jastow>1.0.0.Final</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.1</version.javax.enterprise>
