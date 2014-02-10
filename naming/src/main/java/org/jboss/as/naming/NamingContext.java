@@ -519,7 +519,7 @@ public class NamingContext implements EventContext {
         try {
             final ObjectFactoryBuilder factoryBuilder = ObjectFactoryBuilder.INSTANCE;
             final ObjectFactory objectFactory = factoryBuilder.createObjectFactory(object, environment);
-            return objectFactory.getObjectInstance(object, name, this, environment);
+            return objectFactory == null ? null : objectFactory.getObjectInstance(object, name, this, environment);
         } catch(NamingException e) {
             throw e;
         } catch(Throwable t) {
