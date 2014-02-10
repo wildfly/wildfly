@@ -319,7 +319,8 @@ class MethodInvocationMessageHandler extends EJBIdentifierBasedMessageHandler {
             // keep track of the cancellation flag for this invocation
             this.remoteAsyncInvocationCancelStatus.registerAsyncInvocation(invocationId, asyncInvocationCancellationFlag);
             try {
-                return ((Future) componentView.invoke(interceptorContext)).get();
+                final Object result = componentView.invoke(interceptorContext);
+                return result == null ? null : ((Future) result).get();
             } finally {
                 // now that the async invocation is done, we no longer need to keep track of the
                 // cancellation flag for this invocation
