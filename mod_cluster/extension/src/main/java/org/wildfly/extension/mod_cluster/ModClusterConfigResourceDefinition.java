@@ -230,7 +230,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setXmlName(CommonAttributes.FACTOR)
                     //.setDefaultValue(new ModelNode(1))
             .setAllowExpression(true)
-            .setValidator(new IntRangeValidator(1, true, true))
+            .setValidator(new IntRangeValidator(0, true, true))
             .build();
 
     // order here controls the order of writing into xml, should follow xsd schema
