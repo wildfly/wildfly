@@ -1,4 +1,4 @@
-JBoss Java EE 7 with Hibernate 3
+WildFly JBoss Java EE 7 with Hibernate 3
 ================================
 
 This BOM builds on the Java EE full profile BOM, adding Hibernate Community projects including Hibernate 3 ORM, Hibernate

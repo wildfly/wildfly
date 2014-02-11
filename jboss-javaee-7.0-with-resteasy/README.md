@@ -1,4 +1,4 @@
-JBoss Java EE 7 with Resteasy
+WildFly JBoss Java EE 7 with Resteasy
 =============================
 
 This BOM builds on the Java EE full profile BOM, adding Resteasy.

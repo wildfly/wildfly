@@ -1,7 +1,7 @@
-JBoss Java EE 7 with Transactions
+WildFly JBoss Java EE 7 with Transactions
 =================================
 
-JBoss AS includes a world class transaction manager. In order to access it's full capabilites, including for example XTS, WS-AT and WS-BA, you need to use the JBossTS APIs.
+WildFly includes a world class transaction manager. In order to access it's full capabilities, including for example XTS, WS-AT and WS-BA, you need to use the JBossTS APIs.
  
 Usage
 -----

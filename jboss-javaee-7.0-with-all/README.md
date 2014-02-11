@@ -1,4 +1,4 @@
-JBoss Java EE 7 with ALL
+WildFly JBoss Java EE 7 with ALL
 ===============================
 
 This BOM builds on the Java EE full profile BOM, adding all JBoss BOMs.

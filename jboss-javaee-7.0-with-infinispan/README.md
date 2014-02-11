@@ -1,4 +1,4 @@
-JBoss Java EE 7 with Infinispan
+WildFly JBoss Java EE 7 with Infinispan
 ===============================
 
 This BOM builds on the Java EE full profile BOM, adding Infinispan. 

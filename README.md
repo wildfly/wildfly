@@ -1,17 +1,17 @@
-JBoss BOMs
-==========
+WildFly JBoss BOMs
+==================
 
-The JBoss BOM's project provides Maven BOM files enhancing Java EE 7 with deployment and test tooling. These files manage the version of the dependencies you use in your project, ensuring you always get a compatible stack.
+The WildFly JBoss BOM's project provides Maven BOM files enhancing Java EE 7 with deployment and test tooling. These files manage the version of the dependencies you use in your project, ensuring you always get a compatible stack.
 
 Usage
 -----
 
-To use the BOM, import into your dependency management. For example, if you wanted "Java EE with Tools recommended by JBoss", use:
+To use the BOM, import into your dependency management. For example, if you wanted "Java EE with Tools recommended by WildFly", use:
 
     <dependencyManagement>    
         <dependencies>
             <dependency>
-                <groupId>org.jboss.spec</groupId>
+                <groupId>org.wildfly.bom</groupId>
                 <artifactId>jboss-javaee-7.0-with-tools</artifactId>
                 <version>8.0.0-SNAPSHOT</version>
                 <scope>import</scope>
@@ -19,7 +19,7 @@ To use the BOM, import into your dependency management. For example, if you want
         </dependencies>
     </dependencyManagement> 
 	
-Unfortunately, Maven doesn't allow you to specify plugin versions this way. The readme for each BOM calls out any plugin versions you should use. For example, to use the plugins associated with "Java EE with Tools recommended by JBoss":
+Unfortunately, Maven doesn't allow you to specify plugin versions this way. The readme for each BOM calls out any plugin versions you should use. For example, to use the plugins associated with "Java EE with Tools recommended by WildFly":
 
     <pluginManagement>
         <plugins>
@@ -28,13 +28,13 @@ Unfortunately, Maven doesn't allow you to specify plugin versions this way. The 
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.10</version>
             </plugin>
-            <!-- The JBoss AS plugin deploys your war to a local JBoss AS container -->
+            <!-- The WildFly Maven Plugin deploys your war to a local WildFly container -->
             <!-- To use, set the JBOSS_HOME environment variable and run:
-                 mvn package jboss-as:deploy -->
+                 mvn package wildfly:deploy -->
             <plugin>
-                <groupId>org.jboss.as.plugins</groupId>
-                <artifactId>jboss-as-maven-plugin</artifactId>
-                <version>7.1.1.Final</version>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <version>1.0.0.Beta1</version>
             </plugin>
         </plugins>
     </pluginManagement>
