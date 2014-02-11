@@ -1,2 +1,2 @@
-JBoss Enterprise Application Platform - Version 6.2.0.GA
+JBoss Enterprise Application Platform - Version 6.3.0.Alpha1
 

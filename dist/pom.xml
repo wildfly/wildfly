@@ -49,7 +49,7 @@
         </dependency>
     </dependencies>
     <properties>
-        <package.finalName>jboss-eap-6.2</package.finalName>
+        <package.finalName>jboss-eap-6.3</package.finalName>
     </properties>
 
     <profiles>
