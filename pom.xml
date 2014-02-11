@@ -322,6 +322,14 @@
 
     <build>
         <plugins>
+           <!-- to deal with type 'bundle' dependencies -->
+           <plugin>
+               <groupId>org.apache.felix</groupId>
+               <artifactId>maven-bundle-plugin</artifactId>
+               <inherited>true</inherited>
+               <extensions>true</extensions>
+           </plugin>
+           
            <!-- Zanata translations -->
             <plugin>
               <groupId>org.zanata</groupId>
