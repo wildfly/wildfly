@@ -153,15 +153,19 @@ public class HornetQServerResourceDefinition extends SimpleResourceDefinition {
      */
     @Override
     public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-        return new DefaultResourceDescriptionProvider(resourceRegistration, getResourceDescriptionResolver()) {
-            @Override
-            public ModelNode getModelDescription(Locale locale) {
-                ModelNode result = super.getModelDescription(locale);
-                result.get(CHILDREN, PATH, MIN_OCCURS).set(4);
-                result.get(CHILDREN, PATH, MAX_OCCURS).set(4);
-                return result;
-            }
-        };
+        if (registerRuntimeOnly) {
+            return super.getDescriptionProvider(resourceRegistration);
+        } else {
+            return new DefaultResourceDescriptionProvider(resourceRegistration, getResourceDescriptionResolver()) {
+                @Override
+                public ModelNode getModelDescription(Locale locale) {
+                    ModelNode result = super.getModelDescription(locale);
+                    result.get(CHILDREN, PATH, MIN_OCCURS).set(4);
+                    result.get(CHILDREN, PATH, MAX_OCCURS).set(4);
+                    return result;
+                }
+            };
+        }
     }
 
 
