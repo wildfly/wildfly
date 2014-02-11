@@ -50,6 +50,18 @@ import javax.persistence.metamodel.Metamodel;
  * @author Scott Marlow (forked from jboss-jpa)
  */
 public abstract class AbstractEntityManager implements EntityManager {
+
+    // constants for TRACE lock mode logging
+    public static final String NULL_LOCK_MODE = "(null)";
+    public static final String OPTIMISTIC_LOCK_MODE = "optimistic";
+    public static final String OPTIMISTIC_FORCE_INCREMENT_LOCK_MODE = "optimistic_force_increment";
+    public static final String READ_LOCK_MODE = "read";
+    public static final String WRITE_LOCK_MODE = "write";
+    public static final String PESSIMISTIC_READ_LOCK_MODE = "pessimistic_read";
+    public static final String PESSIMISTIC_FORCE_INCREMENT_LOCK_MODE = "pessimistic_force_increment";
+    public static final String PESSIMISTIC_WRITE_LOCK_MODE = "pessimistic_write";
+    public static final String NONE_LOCK_MODE = "none";
+
     private final transient boolean isTraceEnabled = ROOT_LOGGER.isTraceEnabled();
 
     protected abstract EntityManager getEntityManager();
@@ -858,23 +870,25 @@ public abstract class AbstractEntityManager implements EntityManager {
 
     private static String getLockModeAsString(LockModeType lockMode) {
         if (lockMode == null)
-            return "(null)";
+            return NULL_LOCK_MODE;
         switch (lockMode) {
             case OPTIMISTIC:
-                return "optimistic";
+                return OPTIMISTIC_LOCK_MODE;
             case OPTIMISTIC_FORCE_INCREMENT:
-                return "optimistic_force_increment";
+                return OPTIMISTIC_FORCE_INCREMENT_LOCK_MODE;
             case READ:
-                return "read";
+                return READ_LOCK_MODE;
             case WRITE:
-                return "write";
+                return WRITE_LOCK_MODE;
             case PESSIMISTIC_READ:
-                return "pessimistic_read";
+                return PESSIMISTIC_READ_LOCK_MODE;
             case PESSIMISTIC_FORCE_INCREMENT:
-                return "pessimistic_force_increment";
+                return PESSIMISTIC_FORCE_INCREMENT_LOCK_MODE;
+            case PESSIMISTIC_WRITE:
+                return PESSIMISTIC_WRITE_LOCK_MODE;
             default:
             case NONE:
-                return "none";
+                return NONE_LOCK_MODE;
         }
     }
 
