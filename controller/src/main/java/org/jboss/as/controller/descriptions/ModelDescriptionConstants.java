@@ -172,6 +172,7 @@ public class ModelDescriptionConstants {
     public static final String HOST_STATE = "host-state";
     public static final String HTTP_UPGRADE_ENABLED = "http-upgrade-enabled";
     public static final String HTTP_INTERFACE = "http-interface";
+    public static final String IF_REQUIRED = "if-required";
     public static final String IGNORED = "ignored-by-unaffected-host-controller";
     public static final String IGNORED_RESOURCES = "ignored-resources";
     public static final String IGNORED_RESOURCE_TYPE = "ignored-resource-type";
@@ -296,6 +297,7 @@ public class ModelDescriptionConstants {
     public static final String RELATIVE_TO = "relative-to";
     public static final String RELEASE_CODENAME = "release-codename";
     public static final String RELEASE_VERSION = "release-version";
+    public static final String RELOAD_REQUIRED = "reload-required";
     public static final String REMOVE = "remove";
     public static final String REMOTE = "remote";
     public static final String REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING = "remote-destination-outbound-socket-binding";

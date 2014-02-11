@@ -91,7 +91,7 @@ final class BootstrapImpl implements Bootstrap {
         }
         final FutureServiceContainer future = new FutureServiceContainer(container);
         final ServiceTarget tracker = container.subTarget();
-        final ControlledProcessState processState = new ControlledProcessState(configuration.getServerEnvironment().isStandalone());
+        final ControlledProcessState processState = new ControlledProcessState(true);
         shutdownHook.setControlledProcessState(processState);
         ControlledProcessStateService.addService(tracker, processState);
         final Service<?> applicationServerService = new ApplicationServerService(extraServices, configuration, processState);

@@ -121,9 +121,10 @@ public interface ServerInventory {
      * @param gracefulTimeout time in ms the server should allow for graceful shutdown (if supported) before terminating all services
      * @param domainModel the configuration model for the domain
      * @param blocking whether to block until the server is restarted
+     * @param ifRequired only execute the operation if the server is in the restart-required state
      * @return the status of the server following the attempt to restart
      */
-    ServerStatus restartServer(String serverName, int gracefulTimeout, ModelNode domainModel, boolean blocking);
+    ServerStatus restartServer(String serverName, int gracefulTimeout, ModelNode domainModel, boolean blocking, boolean ifRequired);
 
     /**
      * Stop the server with the given name. Note that returning from this method does not mean the server
@@ -179,9 +180,11 @@ public interface ServerInventory {
      * Reload a server with the given name.
      *
      * @param serverName the name of the server
-     * @blockign whether to block until the server is started
+     * @param blocking whether to block until the server is started
+     * @param ifRequired only execute the operation if the server is in the reload-required state
+     * @retun the server state
      */
-    ServerStatus reloadServer(String serverName, boolean blocking);
+    ServerStatus reloadServer(String serverName, boolean blocking, boolean ifRequired);
 
     /**
      * Destroy a stopping server process. In case the the server is not stopping, this will attempt to stop the server

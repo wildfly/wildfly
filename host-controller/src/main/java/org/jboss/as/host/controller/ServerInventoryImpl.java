@@ -203,12 +203,16 @@ public class ServerInventoryImpl implements ServerInventory {
 
     @Override
     public ServerStatus restartServer(final String serverName, final int gracefulTimeout, final ModelNode domainModel) {
-        return restartServer(serverName, gracefulTimeout, domainModel, false);
+        return restartServer(serverName, gracefulTimeout, domainModel, false, false);
     }
 
     @Override
-    public ServerStatus restartServer(final String serverName, final int gracefulTimeout, final ModelNode domainModel, final boolean blocking) {
-        stopServer(serverName, gracefulTimeout);
+    public ServerStatus restartServer(final String serverName, final int gracefulTimeout, final ModelNode domainModel, final boolean blocking, final boolean ifRequired) {
+        final ServerStatus status = stopServer(serverName, gracefulTimeout, blocking, ifRequired);
+        if (status == ServerStatus.STARTED || status == ServerStatus.STARTING) {
+            // If the status did not change we don't need to restart
+            return determineServerStatus(serverName);
+        }
         synchronized (shutdownCondition) {
             for(;;) {
                 if(shutdown || connectionFinished) {
@@ -236,11 +240,18 @@ public class ServerInventoryImpl implements ServerInventory {
 
     @Override
     public ServerStatus stopServer(final String serverName, final int gracefulTimeout, final boolean blocking) {
+        return stopServer(serverName, gracefulTimeout, blocking, false);
+    }
+
+    public ServerStatus stopServer(final String serverName, final int gracefulTimeout, final boolean blocking, boolean ifRequired) {
         final ManagedServer server = servers.get(serverName);
         if(server == null) {
             return ServerStatus.STOPPED;
         }
-        server.stop();
+        if (!server.stop(ifRequired)) {
+            // If-required does not apply just return the current state
+            return server.getState();
+        }
         if(blocking) {
             server.awaitState(ManagedServer.InternalState.STOPPED);
         }
@@ -279,7 +290,7 @@ public class ServerInventoryImpl implements ServerInventory {
     }
 
     @Override
-    public ServerStatus reloadServer(final String serverName, final boolean blocking) {
+    public ServerStatus reloadServer(final String serverName, final boolean blocking, boolean ifRequired) {
         if (shutdown || connectionFinished) {
             throw HostControllerMessages.MESSAGES.hostAlreadyShutdown();
         }
@@ -287,7 +298,7 @@ public class ServerInventoryImpl implements ServerInventory {
         if (server == null) {
             return ServerStatus.STOPPED;
         }
-        if (server.reload(CurrentOperationIdHolder.getCurrentOperationID())) {
+        if (server.reload(CurrentOperationIdHolder.getCurrentOperationID(), ifRequired)) {
             // Reload with current permit
             if (blocking) {
                 server.awaitState(ManagedServer.InternalState.SERVER_STARTED);
@@ -424,8 +435,8 @@ public class ServerInventoryImpl implements ServerInventory {
         serverCommunicationRegistered(serverProcessName, channelHandler);
         // Mark the server as started
         serverStarted(serverProcessName);
-        // If the server requires a reload, means we are out of sync
-        return server.isRequiresReload() == false;
+        // If the server requires a reload or restart, means we are out of sync
+        return server.isInSync();
     }
 
     @Override

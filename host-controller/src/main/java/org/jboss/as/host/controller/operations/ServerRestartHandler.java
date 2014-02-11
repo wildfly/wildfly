@@ -22,6 +22,7 @@ package org.jboss.as.host.controller.operations;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -29,10 +30,16 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.RunningMode;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.host.controller.ServerInventory;
+import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * Restarts a server.
@@ -42,9 +49,27 @@ import org.jboss.dmr.ModelNode;
 public class ServerRestartHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = "restart";
-    public static final OperationDefinition DEFINITION = ServerStartHandler.getOperationDefinition(OPERATION_NAME);
 
     private final ServerInventory serverInventory;
+
+    private static final AttributeDefinition BLOCKING = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.BLOCKING, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+    private static final AttributeDefinition IF_REQUIRED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.IF_REQUIRED, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+    public static final OperationDefinition DEFINITION = getOperationDefinition(OPERATION_NAME);
+
+    static OperationDefinition getOperationDefinition(String name) {
+        return new SimpleOperationDefinitionBuilder(name, HostResolver.getResolver("host.server"))
+                .setParameters(BLOCKING, IF_REQUIRED)
+                .setReplyType(ModelType.STRING)
+                .setRuntimeOnly()
+                .withFlag(OperationEntry.Flag.HOST_CONTROLLER_ONLY)
+                .build();
+    }
 
     /**
      * Create the ServerRestartHandler
@@ -66,7 +91,8 @@ public class ServerRestartHandler implements OperationStepHandler {
         final PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
         final PathElement element = address.getLastElement();
         final String serverName = element.getValue();
-        final boolean blocking = operation.get("blocking").asBoolean(false);
+        final boolean blocking = BLOCKING.resolveModelAttribute(context, operation).asBoolean();
+        final boolean ifRequired = IF_REQUIRED.resolveModelAttribute(context, operation).asBoolean();
 
         final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
         context.addStep(new OperationStepHandler() {
@@ -79,7 +105,7 @@ public class ServerRestartHandler implements OperationStepHandler {
                 if (origStatus != ServerStatus.STARTED) {
                     throw new OperationFailedException(new ModelNode(MESSAGES.cannotRestartServer(serverName, origStatus)));
                 }
-                final ServerStatus status = serverInventory.restartServer(serverName, -1, model, blocking);
+                final ServerStatus status = serverInventory.restartServer(serverName, -1, model, blocking, ifRequired);
                 context.getResult().set(status.toString());
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
             }

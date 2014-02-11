@@ -96,7 +96,7 @@ import org.jboss.as.server.operations.RootResourceHack;
 import org.jboss.as.server.operations.RunningModeReadHandler;
 import org.jboss.as.server.operations.ServerDomainProcessReloadHandler;
 import org.jboss.as.server.operations.ServerProcessReloadHandler;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.operations.ServerProcessStateHandler;
 import org.jboss.as.server.operations.ServerShutdownHandler;
 import org.jboss.as.server.operations.ServerVersionOperations.DefaultEmptyListAttributeHandler;
 import org.jboss.as.server.operations.SetServerGroupHostHandler;
@@ -262,7 +262,11 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
             resourceRegistration.registerOperationHandler(SnapshotTakeHandler.DEFINITION, snapshotTake);
         }
 
-        resourceRegistration.registerOperationHandler(ServerRestartRequiredHandler.DEFINITION, ServerRestartRequiredHandler.INSTANCE);
+        if (isDomain) {
+            resourceRegistration.registerOperationHandler(ServerProcessStateHandler.RELOAD_DEFINITION, ServerProcessStateHandler.SET_RELOAD_REQUIRED_HANDLER);
+        }
+        // Keep the set-restart-required for backwards compatibility
+        resourceRegistration.registerOperationHandler(ServerProcessStateHandler.RESTART_DEFINITION, ServerProcessStateHandler.SET_RESTART_REQUIRED_HANDLER);
 
         resourceRegistration.registerOperationHandler(ResolveExpressionHandler.DEFINITION, ResolveExpressionHandler.INSTANCE, false);
 

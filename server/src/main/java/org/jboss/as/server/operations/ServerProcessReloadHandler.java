@@ -47,7 +47,7 @@ public class ServerProcessReloadHandler extends ProcessReloadHandler<RunningMode
     private static final AttributeDefinition USE_CURRENT_SERVER_CONFIG = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USE_CURRENT_SERVER_CONFIG, ModelType.BOOLEAN, true)
                     .setDefaultValue(new ModelNode(true)).build();
 
-    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {ADMIN_ONLY, USE_CURRENT_SERVER_CONFIG};
+    private static final AttributeDefinition[] ATTRIBUTES = new AttributeDefinition[] {ADMIN_ONLY, USE_CURRENT_SERVER_CONFIG, IF_REQUIRED};
 
     public static final OperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(OPERATION_NAME, ServerDescriptions.getResourceDescriptionResolver("server"))
                                                                 .setParameters(ATTRIBUTES)
@@ -57,6 +57,12 @@ public class ServerProcessReloadHandler extends ProcessReloadHandler<RunningMode
     public ServerProcessReloadHandler(ServiceName rootService, RunningModeControl runningModeControl,
             ControlledProcessState processState) {
         super(rootService, runningModeControl, processState);
+    }
+
+    @Override
+    protected boolean skipReload(OperationContext context, ModelNode operation) {
+        final boolean ifRequired = operation.get(ModelDescriptionConstants.IF_REQUIRED).asBoolean(false);
+        return ifRequired && !isReloadRequired();
     }
 
     @Override
