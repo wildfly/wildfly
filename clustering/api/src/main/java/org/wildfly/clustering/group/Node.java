@@ -25,17 +25,20 @@ import java.net.InetSocketAddress;
 
 /**
  * Identifies a member of a cluster.
+ *
  * @author Paul Ferraro
  */
 public interface Node {
     /**
      * Returns the logical name of this node.
+     *
      * @return a unique name
      */
     String getName();
 
     /**
      * Returns the unique socking binding address of this node.
+     *
      * @return a socket binding address
      */
     InetSocketAddress getSocketAddress();

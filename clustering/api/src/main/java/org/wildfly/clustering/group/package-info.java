@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,21 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.dispatcher;
-
-import java.util.concurrent.ExecutionException;
 
 /**
- * Remote command execution response.
- *
- * @param <R> the response type
- * @author Paul Ferraro
+ * Public clustering API which represent cluster group and its members.
  */
-public interface CommandResponse<R> {
-
-    /**
-     * @return response of the remote command execution
-     * @throws ExecutionException exception that was raised during execution
-     */
-    R get() throws ExecutionException;
-}
+package org.wildfly.clustering.group;

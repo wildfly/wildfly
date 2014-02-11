@@ -29,44 +29,70 @@ import org.wildfly.clustering.group.Node;
 
 /**
  * Clustered registry abstraction that stores a unique key/value per node.
+ *
+ * @param <K> the type of the registry entry key
+ * @param <V> the type of the registry entry value
  * @author Paul Ferraro
  */
 public interface Registry<K, V> extends AutoCloseable {
 
+    /**
+     * Listener for added, updated and removed entries.
+     */
     interface Listener<K, V> {
+        /**
+         * Called when new entries have been added.
+         *
+         * @param added a map of entries that have been added
+         */
         void addedEntries(Map<K, V> added);
 
+        /**
+         * Called when existing entries have been updated.
+         *
+         * @param updated a map of entries that have been updated
+         */
         void updatedEntries(Map<K, V> updated);
 
+        /**
+         * Called when entries have been removed.
+         *
+         * @param removed a map of entries that have been removed
+         */
         void removedEntries(Map<K, V> removed);
     }
 
     /**
      * Returns the group associated with this factory.
+     *
      * @return a group
      */
     Group getGroup();
 
     /**
-     * Adds a listener to this registry
+     * Adds a listener to this registry.
+     *
      * @param listener a registry listener
      */
     void addListener(Listener<K, V> listener);
 
     /**
-     * Adds a listener from this registry
+     * Adds a listener from this registry.
+     *
      * @param listener a registry listener
      */
     void removeListener(Listener<K, V> listener);
 
     /**
-     * Returns all registry entries in this group
-     * @return
+     * Returns all registry entries in this group.
+     *
+     * @return a map for entries
      */
     Map<K, V> getEntries();
 
     /**
-     * Returns the registry entry for the specified node
+     * Returns the registry entry for the specified node.
+     *
      * @param node a node
      * @return the node's registry entry, or null if undefined
      */
@@ -74,6 +100,7 @@ public interface Registry<K, V> extends AutoCloseable {
 
     /**
      * Refreshes and returns the local registry entry from the {@link RegistryEntryProvider}.
+     *
      * @return the registry entry of the local node
      */
     Map.Entry<K, V> getLocalEntry();

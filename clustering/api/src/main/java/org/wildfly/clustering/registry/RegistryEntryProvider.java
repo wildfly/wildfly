@@ -23,22 +23,24 @@ package org.wildfly.clustering.registry;
 
 /**
  * Provides the registry entry for the local node.
- * @author Paul Ferraro
  *
  * @param <K> the type of the registry entry key
  * @param <V> the type of the registry entry value
+ * @author Paul Ferraro
  */
 public interface RegistryEntryProvider<K, V> {
 
     /**
      * Supplies the unique key for this node's registry entry.
-     * @return a registry entry key.
+     *
+     * @return a registry entry key
      */
     K getKey();
 
     /**
      * Supplies the value for this node's registry entry.
-     * @return a registry entry value.
+     *
+     * @return a registry entry value
      */
     V getValue();
 }

@@ -28,39 +28,48 @@ import org.wildfly.clustering.group.Node;
 
 /**
  * A dispatcher for remote invocation of commands.
+ *
+ * @param <C> the command context type
  * @author Paul Ferraro
  */
 public interface CommandDispatcher<C> extends AutoCloseable {
+
     /**
      * Execute the specified command on the specified node.
-     * @param <R> the return value type
+     *
+     * @param <R>     the return value type
      * @param command the command to execute
+     * @param node    the node to execute the command on
      * @return the result of the command execution
      */
     <R> CommandResponse<R> executeOnNode(Command<R, C> command, Node node);
 
     /**
      * Execute the specified command on all nodes in the group, excluding the specified nodes
-     * @param <R> the return value type
-     * @param command the command to execute
-     * @param nodes the set of nodes to exclude
-     * @return a map of command execution results per node.
+     *
+     * @param <R>           the return value type
+     * @param command       the command to execute
+     * @param excludedNodes the set of nodes to exclude
+     * @return a map of command execution results per node
      */
     <R> Map<Node, CommandResponse<R>> executeOnCluster(Command<R, C> command, Node... excludedNodes);
 
     /**
      * Submits the specified command on the specified node for execution.
-     * @param <R> the return value type
+     *
+     * @param <R>     the return value type
      * @param command the command to execute
+     * @param node    the node to execute the command on
      * @return the result of the command execution
      */
     <R> Future<R> submitOnNode(Command<R, C> command, Node node);
 
     /**
      * Submits the specified command on all nodes in the group, excluding the specified nodes.
-     * @param <R> the return value type
-     * @param command the command to execute
-     * @param nodes the set of nodes to exclude
+     *
+     * @param <R>           the return value type
+     * @param command       the command to execute
+     * @param excludedNodes the set of nodes to exclude
      * @return a map of command execution results per node.
      */
     <R> Map<Node, Future<R>> submitOnCluster(Command<R, C> command, Node... excludedNodes);
