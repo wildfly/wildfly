@@ -43,17 +43,20 @@ import org.jboss.as.domain.http.server.security.SubjectDoAsHandler;
 class DomainApiCheckHandler implements HttpHandler {
 
     static String PATH = "/management";
-    private static final String UPLOAD_REQUEST = PATH + "/add-content";
+    private static final String GENERIC_CONTENT_REQUEST = PATH + "-upload";
+    private static final String ADD_CONTENT_REQUEST = PATH + "/add-content";
 
     private final ControlledProcessStateService controlledProcessStateService;
     private final HttpHandler domainApiHandler;
-    private final HttpHandler uploadHandler;
+    private final HttpHandler addContentHandler;
+    private final HttpHandler genericOperationHandler;
 
 
     DomainApiCheckHandler(final ModelController modelController, final ControlledProcessStateService controlledProcessStateService) {
         this.controlledProcessStateService = controlledProcessStateService;
         domainApiHandler = new BlockingHandler(new SubjectDoAsHandler(new DomainApiHandler(modelController)));
-        uploadHandler = new BlockingHandler(new SubjectDoAsHandler(new DomainApiUploadHandler(modelController)));
+        addContentHandler = new BlockingHandler(new SubjectDoAsHandler(new DomainApiUploadHandler(modelController)));
+        genericOperationHandler = new BlockingHandler(new SubjectDoAsHandler(new DomainApiGenericOperationHandler(modelController)));
     }
 
     @Override
@@ -62,16 +65,19 @@ class DomainApiCheckHandler implements HttpHandler {
             return;
         }
 
-        boolean isUpload = UPLOAD_REQUEST.equals(exchange.getRequestPath());
         if (Methods.POST.equals(exchange.getRequestMethod())) {
-            if (isUpload) {
-                uploadHandler.handleRequest(exchange);
+            boolean isAddContent = ADD_CONTENT_REQUEST.equals(exchange.getRequestPath());
+            boolean isGeneric = GENERIC_CONTENT_REQUEST.equals(exchange.getRequestPath());
+            if (isAddContent) {
+                addContentHandler.handleRequest(exchange);
+                return;
+            } else if (isGeneric) {
+                genericOperationHandler.handleRequest(exchange);
                 return;
             }
             if (!checkPostContentType(exchange)) {
                 return;
             }
-
         }
 
         domainApiHandler.handleRequest(exchange);
@@ -94,6 +100,9 @@ class DomainApiCheckHandler implements HttpHandler {
     }
 
     private String extractContentType(final String fullContentType) {
+        if (fullContentType == null) {
+            return "";
+        }
         int pos = fullContentType.indexOf(';');
         return pos < 0 ? fullContentType : fullContentType.substring(0, pos).trim();
     }

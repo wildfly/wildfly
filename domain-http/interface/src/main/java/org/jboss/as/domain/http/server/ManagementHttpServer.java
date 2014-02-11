@@ -223,6 +223,7 @@ public class ManagementHttpServer {
 
         HttpHandler readinessHandler = new DmrFailureReadinessHandler(securityRealm, secureDomainAccess(domainApiHandler, securityRealm), ErrorContextHandler.ERROR_CONTEXT);
         pathHandler.addPrefixPath(DomainApiCheckHandler.PATH, readinessHandler);
+        pathHandler.addExactPath("management-upload", readinessHandler);
 
         if (securityRealm != null) {
             pathHandler.addPrefixPath(LogoutHandler.PATH, new LogoutHandler(securityRealm.getName()));
