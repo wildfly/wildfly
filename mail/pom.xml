@@ -26,12 +26,12 @@
     <parent>
         <artifactId>wildfly-parent</artifactId>
         <groupId>org.wildfly</groupId>
-        <version>8.0.0.Final</version>
+        <version>8.0.1.Final-SNAPSHOT</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
     <artifactId>wildfly-mail</artifactId>
-    <version>8.0.0.Final</version>
+    <version>8.0.1.Final-SNAPSHOT</version>
 
     <name>WildFly: Mail subsystem</name>
 
