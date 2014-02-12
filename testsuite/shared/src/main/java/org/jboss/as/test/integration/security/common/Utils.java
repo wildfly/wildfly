@@ -925,9 +925,14 @@ public class Utils {
         }
     }
 
-
     public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword) {
-        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword);
+        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword, null);
+    }
+
+    public static String propertiesReplacer(String originalFile, File keystoreFile, File trustStoreFile, String keystorePassword,
+            File vaultConfig) {
+        return propertiesReplacer(originalFile, keystoreFile.getAbsolutePath(), trustStoreFile.getAbsolutePath(), keystorePassword,
+                vaultConfig.getAbsolutePath());
     }
 
     /**
@@ -938,9 +943,11 @@ public class Utils {
      * @param File keystoreFile
      * @param File trustStoreFile
      * @param String keystorePassword
+     * @param String vaultConfigPath - path to vault settings
      * @return String content
      */
-    public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile, String keystorePassword) {
+    public static String propertiesReplacer(String originalFile, String keystoreFile, String trustStoreFile, String keystorePassword,
+            String vaultConfigPath) {
         String hostname = System.getProperty("node0");
 
         // expand possible IPv6 address
@@ -954,6 +961,11 @@ public class Utils {
 
         final Map<String, String> map = new HashMap<String, String>();
         String content = "";
+        if (vaultConfigPath == null) {
+            map.put("vaultConfig", "");
+        } else {
+            map.put("vaultConfig", "<vault file=\"" + vaultConfigPath + "\"/>");
+        }
         map.put("hostname", hostname);
         map.put("keystore", keystoreFile);
         map.put("truststore", trustStoreFile);
