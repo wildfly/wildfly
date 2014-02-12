@@ -61,7 +61,7 @@ public class BoundedQueueThreadPoolMetricsHandler extends ThreadPoolMetricsHandl
             context.getResult().set(bounded.getQueueSize());
         } else {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
-            throw ThreadsMessages.MESSAGES.unsupportedBoundedQueueThreadPoolMetric(attributeName);
+            throw ThreadsLogger.ROOT_LOGGER.unsupportedBoundedQueueThreadPoolMetric(attributeName);
         }
     }
 }

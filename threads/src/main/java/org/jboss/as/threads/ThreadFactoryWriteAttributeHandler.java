@@ -51,7 +51,7 @@ public class ThreadFactoryWriteAttributeHandler extends ThreadsWriteAttributeOpe
         final ServiceName serviceName = ThreadsServices.threadFactoryName(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw ThreadsMessages.MESSAGES.threadFactoryServiceNotFound(serviceName);
+            throw ThreadsLogger.ROOT_LOGGER.threadFactoryServiceNotFound(serviceName);
         }
         return controller;
     }
@@ -72,7 +72,7 @@ public class ThreadFactoryWriteAttributeHandler extends ThreadsWriteAttributeOpe
             tf.setNamePattern(value.isDefined() ? value.asString() : null);
         } else if (!forRollback) {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
-            throw ThreadsMessages.MESSAGES.unsupportedThreadFactoryAttribute(attributeName);
+            throw ThreadsLogger.ROOT_LOGGER.unsupportedThreadFactoryAttribute(attributeName);
         }
     }
 }

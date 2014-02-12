@@ -65,7 +65,7 @@ public class ScheduledThreadPoolMetricsHandler extends ThreadPoolMetricsHandler 
             context.getResult().set(pool.getQueueSize());
         } else {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
-            throw ThreadsMessages.MESSAGES.unsupportedScheduledThreadPoolMetric(attributeName);
+            throw ThreadsLogger.ROOT_LOGGER.unsupportedScheduledThreadPoolMetric(attributeName);
         }
     }
 }

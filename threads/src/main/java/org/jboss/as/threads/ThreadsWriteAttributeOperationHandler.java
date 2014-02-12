@@ -125,7 +125,7 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
     static TimeSpec getTimeSpec(OperationContext context, ModelNode model, TimeUnit defaultUnit) throws OperationFailedException {
         ModelNode value = PoolAttributeDefinitions.KEEPALIVE_TIME.resolveModelAttribute(context, model);
         if (!value.hasDefined(TIME)) {
-            throw ThreadsMessages.MESSAGES.missingTimeSpecTime(TIME, KEEPALIVE_TIME);
+            throw ThreadsLogger.ROOT_LOGGER.missingTimeSpecTime(TIME, KEEPALIVE_TIME);
         }
         final TimeUnit unit;
         if (!value.hasDefined(UNIT)) {
@@ -134,7 +134,7 @@ public abstract class ThreadsWriteAttributeOperationHandler extends AbstractWrit
             try {
             unit = Enum.valueOf(TimeUnit.class, value.get(UNIT).asString());
             } catch(IllegalArgumentException e) {
-                throw ThreadsMessages.MESSAGES.failedToParseUnit(UNIT, Arrays.asList(TimeUnit.values()));
+                throw ThreadsLogger.ROOT_LOGGER.failedToParseUnit(UNIT, Arrays.asList(TimeUnit.values()));
             }
         }
         return new TimeSpec(unit, value.get(TIME).asLong());

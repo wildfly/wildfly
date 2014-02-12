@@ -76,7 +76,7 @@ public abstract class ThreadPoolMetricsHandler extends AbstractRuntimeOnlyHandle
         final String name = Util.getNameFromAddress(operation.require(OP_ADDR));
         ServiceController<?> controller = context.getServiceRegistry(false).getService(serviceNameBase.append(name));
         if (controller == null) {
-            throw ThreadsMessages.MESSAGES.threadPoolServiceNotFoundForMetrics(serviceNameBase.append(name));
+            throw ThreadsLogger.ROOT_LOGGER.threadPoolServiceNotFoundForMetrics(serviceNameBase.append(name));
         }
         return controller;
     }

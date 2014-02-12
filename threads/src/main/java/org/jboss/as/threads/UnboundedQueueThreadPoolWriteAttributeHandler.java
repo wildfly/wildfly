@@ -62,7 +62,7 @@ public class UnboundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteA
             pool.setMaxThreads(PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt());
         } else if (!forRollback) {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
-            throw ThreadsMessages.MESSAGES.unsupportedUnboundedQueueThreadPoolAttribute(attributeName);
+            throw ThreadsLogger.ROOT_LOGGER.unsupportedUnboundedQueueThreadPoolAttribute(attributeName);
         }
     }
 
@@ -72,7 +72,7 @@ public class UnboundedQueueThreadPoolWriteAttributeHandler extends ThreadsWriteA
         final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw ThreadsMessages.MESSAGES.unboundedQueueThreadPoolServiceNotFound(serviceName);
+            throw ThreadsLogger.ROOT_LOGGER.unboundedQueueThreadPoolServiceNotFound(serviceName);
         }
         return controller;
     }

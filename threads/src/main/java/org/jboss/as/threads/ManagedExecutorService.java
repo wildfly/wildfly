@@ -44,7 +44,7 @@ public abstract class ManagedExecutorService implements ExecutorService {
 
     public ManagedExecutorService(ExecutorService executor) {
         if(executor == null) {
-            throw ThreadsMessages.MESSAGES.nullExecutor();
+            throw ThreadsLogger.ROOT_LOGGER.nullExecutor();
         }
         this.executor = protectExecutor(executor);
     }

@@ -85,7 +85,7 @@ public class BoundedQueueThreadPoolService implements Service<ManagedQueueExecut
     public synchronized ManagedQueueExecutorService getValue() throws IllegalStateException {
         final ManagedQueueExecutorService value = this.executor;
         if (value == null) {
-            throw ThreadsMessages.MESSAGES.boundedQueueThreadPoolExecutorUninitialized();
+            throw ThreadsLogger.ROOT_LOGGER.boundedQueueThreadPoolExecutorUninitialized();
         }
         return value;
     }
