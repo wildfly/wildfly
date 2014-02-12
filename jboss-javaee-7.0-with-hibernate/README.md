@@ -1,4 +1,4 @@
-JBoss Java EE 7 with Hibernate
+WildFly JBoss Java EE 7 with Hibernate
 ==============================
 
 This BOM builds on the Java EE full profile BOM, adding Hibernate Community projects including Hibernate ORM, Hibernate Search and Hibernate Validator.

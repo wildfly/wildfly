@@ -1,26 +1,26 @@
-JBoss BOMs Contributing Guide
-=============================
+WildFly JBoss BOMs Contributing Guide
+=====================================
 
 BOMs are Maven pom.xml files that specify the versions of all runtime dependencies for a given module.  So by importing this BOM, you are specifying the versions of the dependencies required to use the specified stack.
 
 Basic Steps
 -----------
 
-To contribute to the JBoss BOMs, fork the JBoss BOMs repository to your own Git, clone your fork, commit your work on topic branches, and make pull requests. 
+To contribute to the WildFly BOMs, fork the WildFly BOMs repository to your own Git, clone your fork, commit your work on topic branches, and make pull requests.
 
 If you don't have the Git client (`git`), get it from: <http://git-scm.com/>
 
 Here are the steps in detail:
 
-1. [Fork](https://github.com/jboss-jdf/jboss-bom/fork_select) the project. This creates a the project in your own Git.
+1. [Fork](https://github.com/wildfly/boms/fork_select) the project. This creates a the project in your own Git.
 
 2. Clone your fork. This creates a directory in your local file system.
 
-        git clone git@github.com:<your-username>/jboss-bom.git
+        git clone git@github.com:<your-username>/boms.git
 
 3. Add the remote `upstream` repository.
 
-        git remote add upstream git@github.com:jboss-jdf/jboss-bom.git
+        git remote add upstream git@github.com:wildfly/boms.git
 
 4. Get the latest files from the `upstream` repository.
 
@@ -46,11 +46,11 @@ Here are the steps in detail:
 General Guidelines
 ------------------
 
-* It can be tricky to work out when to add a new stack, rather than extend an existing stack. We strongly encourage you to discuss your planned BOM on the [dev list](http://www.jboss.org/jdf/forums/jdf-dev/) before starting.
+* It can be tricky to work out when to add a new stack, rather than extend an existing stack. We strongly encourage you to discuss your planned BOM on the [dev list](https://lists.jboss.org/mailman/listinfo/wildfly-dev) before starting.
 
 * Each BOM is a child module of the parent BOM module. Copy an existing module as a template. Remember to give it a unique, and descriptive name. You should follow the conventions defined by the existing BOMs when naming it. All BOMs live in the same repository.
 
-* Most BOMs build on the base Java EE stack, and as such, import it. This is reflected in the name of the BOM "jboss-javaee6-with-XXX".
+* Most BOMs build on the base Java EE stack, and as such, import it. This is reflected in the name of the BOM "jboss-javaee-7.0-with-XXX".
 
 * All dependencies versions should references properties that is declared on root `pom.xml`
 
@@ -59,5 +59,5 @@ General Guidelines
    * An example of its usage
    * Any notes about plugins included in the stack
 
-* The BOM should be formatted using the JBoss AS profiles found at <https://github.com/jboss/ide-configs/tree/master/ide-configs>
+* The BOM should be formatted using the WildFly profiles found at <https://github.com/jboss/ide-configs/tree/master/ide-configs>
 

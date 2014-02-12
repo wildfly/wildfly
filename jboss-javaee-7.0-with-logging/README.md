@@ -1,4 +1,4 @@
-JBoss Java EE 7 with logging tools recommended by JBoss
+WildFly JBoss Java EE 7 with logging tools recommended by JBoss
 ========================================================
 
 This BOM builds on the Java EE full profile BOM, adding the JBoss Logging Tools and Log4 framework. 
