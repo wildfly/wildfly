@@ -36,7 +36,7 @@ public class Version {
     public static final String AS_RELEASE_CODENAME;
     public static final int MANAGEMENT_MAJOR_VERSION = 2;
     public static final int MANAGEMENT_MINOR_VERSION = 0;
-    public static final int MANAGEMENT_MICRO_VERSION = 0;
+    public static final int MANAGEMENT_MICRO_VERSION = 1;
 
     static {
         InputStream stream = Version.class.getClassLoader().getResourceAsStream("META-INF/MANIFEST.MF");

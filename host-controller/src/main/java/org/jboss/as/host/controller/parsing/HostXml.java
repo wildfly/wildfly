@@ -974,7 +974,7 @@ public class HostXml extends CommonXml {
         }
 
         if (requireDiscoveryOptions && !hasDiscoveryOptions) {
-            MESSAGES.discoveryOptionsMustBeDeclared(Element.DISCOVERY_OPTIONS.getLocalName(), Attribute.HOST.getLocalName(),
+            throw MESSAGES.discoveryOptionsMustBeDeclared(Element.DISCOVERY_OPTIONS.getLocalName(), Attribute.HOST.getLocalName(),
                     Attribute.PORT.getLocalName(), reader.getLocation());
         }
     }
