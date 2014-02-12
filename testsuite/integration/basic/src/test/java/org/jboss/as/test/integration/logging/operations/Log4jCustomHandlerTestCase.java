@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -112,7 +113,7 @@ public class Log4jCustomHandlerTestCase extends AbstractLoggingOperationsTestCas
             int statusCode = getResponse(new URL(url, "logger?msg=" + URLEncoder.encode(msg, "utf-8")));
             Assert.assertTrue("Invalid response statusCode: " + statusCode, statusCode == HttpServletResponse.SC_OK);
             // check logs
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(logFile), "utf-8"));
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(logFile), StandardCharsets.UTF_8));
             String line;
             boolean logFound = false;
 

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -93,7 +94,7 @@ public class WeldPortableExtensionProcessor implements DeploymentUnitProcessor {
                 URL resource = resources.nextElement();
                 final InputStream stream = resource.openStream();
                 try {
-                    final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, "UTF-8"));
+                    final BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
                     String line;
                     while ((line = reader.readLine()) != null) {
                         final int commentIdx = line.indexOf('#');

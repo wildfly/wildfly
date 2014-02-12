@@ -28,7 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,7 +50,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * 
+ *
  * @author Petr Křemenský <pkremens@redhat.com>
  */
 
@@ -64,7 +64,7 @@ public class LoggingPreferencesTestCase {
 	private static final File logDir = new File(
 			System.getProperty("jbossas.ts.submodule.dir"), "target" + FS
 					+ "jbossas" + FS + "standalone" + FS + "log");
-	
+
 	private static final File logFile = new File(logDir,
 			"jboss-logging-properties-test.log");
 
@@ -106,7 +106,7 @@ public class LoggingPreferencesTestCase {
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(
-					logFile), Charset.forName("UTF-8")));
+					logFile), StandardCharsets.UTF_8));
 		} catch (FileNotFoundException ex) {
 			Assert.fail("Log file specified in per-deploy configuration was not found");
 		}

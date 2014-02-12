@@ -37,7 +37,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -235,7 +235,7 @@ public class LoggingPreferencesPerDeployFalseTestCase extends
 				statusCode == HttpServletResponse.SC_OK);
 		// check logs
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(profileLog), Charset.forName("UTF-8")));
+				new FileInputStream(profileLog), StandardCharsets.UTF_8));
 		String line;
 		boolean logFound = false;
 		while ((line = br.readLine()) != null) {

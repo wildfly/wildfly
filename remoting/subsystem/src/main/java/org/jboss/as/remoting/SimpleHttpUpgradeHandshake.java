@@ -23,8 +23,8 @@
 package org.jboss.as.remoting;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
 import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -67,7 +67,7 @@ public class SimpleHttpUpgradeHandshake implements HttpUpgradeHandshake {
             final String concat = secretKey + magicNumber;
             final MessageDigest digest = MessageDigest.getInstance("SHA1");
 
-            digest.update(concat.getBytes("UTF-8"));
+            digest.update(concat.getBytes(StandardCharsets.UTF_8));
             final byte[] bytes = digest.digest();
             return FlexBase64.encodeString(bytes, false);
         } catch (NoSuchAlgorithmException e) {
@@ -85,11 +85,7 @@ public class SimpleHttpUpgradeHandshake implements HttpUpgradeHandshake {
         private static final Constructor<String> STRING_CONSTRUCTOR;
 
         static {
-            try {
-                ENCODING_TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".getBytes("ASCII");
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException();
-            }
+            ENCODING_TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".getBytes(StandardCharsets.US_ASCII);
 
             for (int i = 0; i < ENCODING_TABLE.length; i++) {
                 int v = (ENCODING_TABLE[i] & 0xFF) - 43;

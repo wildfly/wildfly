@@ -45,7 +45,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -173,7 +173,7 @@ public class PatchingTestUtil {
     public static void dump(File f, String content) throws IOException {
         final OutputStream os = new FileOutputStream(f);
         try {
-            os.write(content.getBytes(Charset.forName("UTF-8")));
+            os.write(content.getBytes(StandardCharsets.UTF_8));
             os.close();
         } finally {
             IoUtils.safeClose(os);

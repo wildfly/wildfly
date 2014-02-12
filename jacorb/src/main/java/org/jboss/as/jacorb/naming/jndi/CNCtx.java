@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -402,7 +403,7 @@ public class CNCtx implements javax.naming.Context {
                 URL u = new URL(url);
                 in = u.openStream();
                 if (in != null) {
-                    BufferedReader bufin = new BufferedReader(new InputStreamReader(in, "8859_1"));
+                    BufferedReader bufin = new BufferedReader(new InputStreamReader(in, StandardCharsets.ISO_8859_1));
                     String str;
                     while ((str = bufin.readLine()) != null) {
                         if (str.startsWith("IOR:")) {

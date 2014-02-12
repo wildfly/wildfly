@@ -58,8 +58,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -109,11 +109,7 @@ public abstract class StandardRolesBasicTestCase extends AbstractManagementInter
         war.addAsWebResource(new Asset() {
             @Override
             public InputStream openStream() {
-                try {
-                    return new ByteArrayInputStream(html.getBytes("UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
-                }
+                return new ByteArrayInputStream(html.getBytes(StandardCharsets.UTF_8));
             }
         }, "index.html");
         return war;

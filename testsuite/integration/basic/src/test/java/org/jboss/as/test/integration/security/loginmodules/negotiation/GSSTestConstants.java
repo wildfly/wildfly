@@ -21,9 +21,12 @@
  */
 package org.jboss.as.test.integration.security.loginmodules.negotiation;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 /**
  * A GSSTestConstants.
- * 
+ *
  * @author Josef Cacek
  */
 public interface GSSTestConstants {
@@ -36,7 +39,7 @@ public interface GSSTestConstants {
     public static final String PRINCIPAL = System.getProperty(PROPERTY_PRINCIPAL, "gsstestserver/xxx@JBOSS.ORG");
     public static final String PASSWORD = System.getProperty(PROPERTY_PASSWORD, "gsstestpwd");
 
-    public static final String CHAR_ENC = "UTF-8";
+    public static final Charset CHAR_ENC = StandardCharsets.UTF_8;
     public static final int CMD_NOOP = 0;
     public static final int CMD_NAME = 1;
     public static final int CMD_STOP = 2;

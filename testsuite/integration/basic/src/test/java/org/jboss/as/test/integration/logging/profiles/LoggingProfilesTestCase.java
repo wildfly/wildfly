@@ -38,7 +38,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,7 +70,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * 
+ *
  * @author Petr Křemenský <pkremens@redhat.com>
  */
 @ServerSetup(LoggingProfilesTestCase.LoggingProfilesTestCaseSetup.class)
@@ -302,7 +302,7 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 	@InSequence(1)
 	public void noWarningTest() throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(logFile), Charset.forName("UTF-8")));
+				new FileInputStream(logFile), StandardCharsets.UTF_8));
 		String line;
 		while ((line = br.readLine()) != null) {
 			// Look for message id in order to support all languages.
@@ -357,7 +357,7 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 		Assert.assertTrue("dummy-profile1.log was not created",
 				dummyLog1.exists());
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(dummyLog1), Charset.forName("UTF-8")));
+				new FileInputStream(dummyLog1), StandardCharsets.UTF_8));
 		String line = br.readLine();
 		Assert.assertTrue(
 				"\"LoggingServlet is logging fatal message\" should be presented in dummy-profile1.log",
@@ -374,7 +374,7 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 		Assert.assertTrue("dummy-profile2.log was not created",
 				dummyLog2.exists());
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(dummyLog2), Charset.forName("UTF-8")));
+				new FileInputStream(dummyLog2), StandardCharsets.UTF_8));
 		String line;
 		while ((line = br.readLine()) != null) {
 			if (!line.contains("DummyProfile2: LoggingServlet is logging")) {
@@ -389,7 +389,7 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 	@InSequence(3)
 	public void loggingTestLogTest() throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(logFile), Charset.forName("UTF-8")));
+				new FileInputStream(logFile), StandardCharsets.UTF_8));
 		String line;
 		while ((line = br.readLine()) != null) {
 			// look for message id in order to support all languages
@@ -431,7 +431,7 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 		// ... messages
 		BufferedReader br = new BufferedReader(
 				new InputStreamReader(new FileInputStream(dummyLog1Changed),
-						Charset.forName("UTF-8")));
+				                StandardCharsets.UTF_8));
 		String line = br.readLine();
 		Assert.assertTrue(
 				"\"LoggingServlet is logging fatal message\" should be presented in dummy-profile1.log",

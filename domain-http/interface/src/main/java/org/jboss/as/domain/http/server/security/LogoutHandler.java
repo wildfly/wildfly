@@ -40,10 +40,10 @@ import io.undertow.util.FlexBase64;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.StatusCodes;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -64,8 +64,6 @@ public class LogoutHandler implements HttpHandler {
     private static final String BASIC = "BASIC";
     private static final String DIGEST = "DIGEST";
     private static final String MECHANISM = "mechanism";
-
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     private final DigestAuthenticationMechanism digestMechanism;
     private final DigestAuthenticationMechanism fakeRealmdigestMechanism;

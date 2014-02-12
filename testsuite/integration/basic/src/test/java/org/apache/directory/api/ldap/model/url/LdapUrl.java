@@ -20,7 +20,7 @@
 package org.apache.directory.api.ldap.model.url;
 
 import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -253,13 +253,9 @@ public class LdapUrl {
             throw new LdapURLEncodingException(I18n.err(I18n.ERR_04408));
         }
 
-        try {
-            bytes = string.getBytes("UTF-8");
-            this.string = string;
-            parse(string.toCharArray());
-        } catch (UnsupportedEncodingException uee) {
-            throw new LdapURLEncodingException(I18n.err(I18n.ERR_04409, string));
-        }
+        bytes = string.getBytes(StandardCharsets.UTF_8);
+        this.string = string;
+        parse(string.toCharArray());
     }
 
     /**
@@ -482,11 +478,7 @@ public class LdapUrl {
             throw new IllegalArgumentException(I18n.err(I18n.ERR_04411));
         }
 
-        try {
-            return data.getBytes("US-ASCII");
-        } catch (UnsupportedEncodingException e) {
-            throw new UrlDecoderException(I18n.err(I18n.ERR_04413));
-        }
+        return data.getBytes(StandardCharsets.US_ASCII);
     }
 
     /**

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.jboss.as.jacorb.JacORBMessages;
 import org.omg.CORBA.ContainedPackage.Description;
@@ -131,10 +131,6 @@ abstract class ContainedImpl extends IRObjectImpl implements LocalContained {
      * "repository_name:".
      */
     protected byte[] getObjectId() {
-        try {
-            return (getRepository().getObjectIdPrefix() + id).getBytes("UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            throw JacORBMessages.MESSAGES.unsupportedUTF8Encoding();
-        }
+        return (getRepository().getObjectIdPrefix() + id).getBytes(StandardCharsets.UTF_8);
     }
 }

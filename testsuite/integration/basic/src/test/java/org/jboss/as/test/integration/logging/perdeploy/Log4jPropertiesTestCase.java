@@ -27,7 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * 
+ *
  * @author Petr Křemenský <pkremens@redhat.com>
  */
 @RunWith(Arquillian.class)
@@ -91,7 +91,7 @@ public class Log4jPropertiesTestCase {
 		BufferedReader br = null;
 		try {
 			br = new BufferedReader(new InputStreamReader(new FileInputStream(
-					logFile), Charset.forName("UTF-8")));
+					logFile), StandardCharsets.UTF_8));
 		} catch (FileNotFoundException ex) {
 			Assert.fail("Log file was not found");
 		}

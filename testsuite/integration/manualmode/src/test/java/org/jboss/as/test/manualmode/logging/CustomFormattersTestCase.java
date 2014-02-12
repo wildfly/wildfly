@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -206,7 +206,7 @@ public class CustomFormattersTestCase extends AbstractOperationsTestCase {
             doLog(url, "Test message: ", 5);
 
             // Read the log file
-            try (BufferedReader reader = Files.newBufferedReader(logFile, Charset.forName("utf-8"))) {
+            try (BufferedReader reader = Files.newBufferedReader(logFile, StandardCharsets.UTF_8)) {
                 final Pattern pattern = Pattern.compile("^(<message>)+(Test message: \\d)+(</message>)$");
                 final List<String> messages = new ArrayList<>(5);
                 String line;

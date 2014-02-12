@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -221,7 +222,7 @@ public final class PatchUtils {
     public static void writeProperties(final File file, final Properties properties) throws IOException {
         final OutputStream os = new FileOutputStream(file);
         try {
-            final Writer writer = new OutputStreamWriter(os, "UTF-8");
+            final Writer writer = new OutputStreamWriter(os, StandardCharsets.UTF_8);
             properties.store(writer, "read only");
             writer.close();
         } finally {
@@ -235,7 +236,7 @@ public final class PatchUtils {
         }
         Reader reader = null;
         try {
-            reader = new InputStreamReader(new FileInputStream(file), "UTF-8");
+            reader = new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8);
             final Properties props = new Properties();
             props.load(reader);
             return props;

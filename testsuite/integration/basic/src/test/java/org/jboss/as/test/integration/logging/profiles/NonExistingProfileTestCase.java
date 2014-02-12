@@ -36,7 +36,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,7 +65,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * 
+ *
  * @author Petr Křemenský <pkremens@redhat.com>
  */
 @ServerSetup(NonExistingProfileTestCase.NonExistingProfileTestCaseSetup.class)
@@ -188,7 +188,7 @@ public class NonExistingProfileTestCase extends AbstractLoggingTest {
 	@RunAsClient
 	public void warningMessageTest() throws IOException {
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(loggingTestLog), Charset.forName("UTF-8")));
+				new FileInputStream(loggingTestLog), StandardCharsets.UTF_8));
 		String line;
 		boolean warningFound = false;
 		while ((line = br.readLine()) != null) {
@@ -213,7 +213,7 @@ public class NonExistingProfileTestCase extends AbstractLoggingTest {
 				statusCode == HttpServletResponse.SC_OK);
 		// check logs
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new FileInputStream(loggingTestLog), Charset.forName("UTF-8")));
+				new FileInputStream(loggingTestLog), StandardCharsets.UTF_8));
 		String line;
 		boolean logFound = false;
 		while ((line = br.readLine()) != null) {

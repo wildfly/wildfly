@@ -35,7 +35,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -147,7 +147,7 @@ public class PropertiesFileLoader {
     protected void load() throws IOException {
         ROOT_LOGGER.debugf("Reloading properties file '%s'", propertiesFile.getAbsolutePath());
         Properties props = new Properties();
-        InputStreamReader is = new InputStreamReader(new FileInputStream(propertiesFile), Charset.forName("UTF-8"));
+        InputStreamReader is = new InputStreamReader(new FileInputStream(propertiesFile), StandardCharsets.UTF_8);
         try {
             props.load(is);
         } finally {
@@ -169,7 +169,7 @@ public class PropertiesFileLoader {
         // Shouldn't be so bad - it's a small file
         List<String> content = readFile(propertiesFile);
 
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), "UTF8"));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertiesFile), StandardCharsets.UTF_8));
 
         try {
             for (String line : content) {

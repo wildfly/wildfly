@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.csiv2;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
@@ -817,17 +817,9 @@ public final class CSIv2Util {
                 builder.append("AS_ContextSec[");
 
                 builder.append("client_authentication_mech: ");
-                try {
-                    builder.append(new String(asMech.client_authentication_mech, "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    builder.append(e.getMessage());
-                }
+                builder.append(new String(asMech.client_authentication_mech, StandardCharsets.UTF_8));
                 builder.append(", target_name: ");
-                try {
-                    builder.append(new String(asMech.target_name, "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    builder.append(e.getMessage());
-                }
+                builder.append(new String(asMech.target_name, StandardCharsets.UTF_8));
                 builder.append(", target_requires: ");
                 builder.append(asMech.target_requires);
                 builder.append(", target_supports: ");
