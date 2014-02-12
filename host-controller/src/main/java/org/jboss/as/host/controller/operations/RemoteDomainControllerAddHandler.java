@@ -65,15 +65,17 @@ public class RemoteDomainControllerAddHandler implements OperationStepHandler {
     public static final String OPERATION_NAME = "write-remote-domain-controller";
 
     public static final SimpleAttributeDefinition PORT = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.PORT, ModelType.INT)
+            .setAllowNull(true)
             .setAllowExpression(true)
-            .setValidator(new IntRangeValidator(1, 65535, false, true))
-            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setValidator(new IntRangeValidator(1, 65535, true, true))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition HOST = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HOST, ModelType.STRING)
+            .setAllowNull(true)
             .setAllowExpression(true)
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
-            .setFlags(AttributeAccess.Flag.RESTART_JVM)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, true))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .build();
 
     public static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.USERNAME, STRING, true)

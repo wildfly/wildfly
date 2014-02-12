@@ -45,7 +45,6 @@ import org.jboss.as.host.controller.discovery.S3Util.GetResponse;
 import org.jboss.as.host.controller.discovery.S3Util.ListAllMyBucketsResponse;
 import org.jboss.as.host.controller.discovery.S3Util.PreSignedUrlParser;
 import org.jboss.as.host.controller.discovery.S3Util.S3Object;
-import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -126,10 +125,12 @@ public class S3Discovery implements DiscoveryOption {
             String host = data.getHost();
             int port = data.getPort();
             try {
-                RemoteDomainControllerAddHandler.HOST.getValidator()
-                    .validateParameter(RemoteDomainControllerAddHandler.HOST.getName(), new ModelNode(host));
-                RemoteDomainControllerAddHandler.PORT.getValidator()
-                    .validateParameter(RemoteDomainControllerAddHandler.PORT.getName(), new ModelNode(port));
+                // Use the static discovery AD's. They don't allow undefined.
+                StaticDiscoveryResourceDefinition.HOST.getValidator()
+                    .validateParameter(StaticDiscoveryResourceDefinition.HOST.getName(),
+                            host == null? new ModelNode() : new ModelNode(host));
+                StaticDiscoveryResourceDefinition.PORT.getValidator()
+                    .validateParameter(StaticDiscoveryResourceDefinition.PORT.getName(), new ModelNode(port));
             } catch (OperationFailedException e) {
                 throw new IllegalStateException(e.getFailureDescription().asString());
             }
