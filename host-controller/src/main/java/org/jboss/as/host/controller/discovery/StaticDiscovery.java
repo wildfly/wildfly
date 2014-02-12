@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.POR
 
 import java.util.Map;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.host.controller.operations.RemoteDomainControllerAddHandler;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -65,10 +64,10 @@ public class StaticDiscovery implements DiscoveryOption {
     public void discover() {
         // Validate the host and port
         try {
-            RemoteDomainControllerAddHandler.HOST.getValidator()
-                .validateParameter(RemoteDomainControllerAddHandler.HOST.getName(), new ModelNode(remoteDcHost));
-            RemoteDomainControllerAddHandler.PORT.getValidator()
-                .validateParameter(RemoteDomainControllerAddHandler.PORT.getName(), new ModelNode(remoteDcPort));
+            StaticDiscoveryResourceDefinition.HOST.getValidator()
+                .validateParameter(StaticDiscoveryResourceDefinition.HOST.getName(), new ModelNode(remoteDcHost));
+            StaticDiscoveryResourceDefinition.PORT.getValidator()
+                .validateParameter(StaticDiscoveryResourceDefinition.PORT.getName(), new ModelNode(remoteDcPort));
         } catch (OperationFailedException e) {
             throw new IllegalStateException(e.getFailureDescription().asString());
         }
