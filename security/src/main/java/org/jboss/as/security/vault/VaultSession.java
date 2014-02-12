@@ -24,6 +24,7 @@ package org.jboss.as.security.vault;
 
 import java.io.File;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +49,7 @@ public final class VaultSession {
 
     public static final String VAULT_ENC_ALGORITHM = "PBEwithMD5andDES";
 
-    static final Charset CHARSET = Charset.forName("UTF-8");
+    static final Charset CHARSET = StandardCharsets.UTF_8;
 
     private String keystoreURL;
     private String keystorePassword;

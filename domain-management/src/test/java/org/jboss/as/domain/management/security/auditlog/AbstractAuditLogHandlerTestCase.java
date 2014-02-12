@@ -38,8 +38,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -115,14 +115,14 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
         Assert.assertEquals(disabled, handler.get(AuditLogHandlerResourceDefinition.DISABLED_DUE_TO_FAILURE.getName()).asBoolean());
     }
 
-    protected String stripSyslogHeader(byte[] bytes) throws UnsupportedEncodingException {
-        String s = new String(bytes, "utf-8");
+    protected String stripSyslogHeader(byte[] bytes) {
+        String s = new String(bytes, StandardCharsets.UTF_8);
         int i = s.indexOf(" - - ");
         return s.substring(i + 6);
     }
 
-    protected ModelNode getSyslogRecord(byte[] bytes) throws UnsupportedEncodingException {
-        String msg = new String(bytes, "utf-8");
+    protected ModelNode getSyslogRecord(byte[] bytes) {
+        String msg = new String(bytes, StandardCharsets.UTF_8);
         return getSyslogRecord(msg);
     }
 

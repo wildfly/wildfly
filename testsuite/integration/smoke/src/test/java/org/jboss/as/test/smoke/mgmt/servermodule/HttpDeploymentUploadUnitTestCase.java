@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.NoSuchElementException;
 
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -151,7 +152,7 @@ public class HttpDeploymentUploadUnitTestCase {
     private void writeUploadRequest(final InputStream is, final OutputStream os) throws IOException {
         os.write(buildUploadPostRequestHeader());
         writePostRequestPayload(is, os);
-        os.write((CRLF + BOUNDARY + "--" + CRLF).getBytes("US-ASCII"));
+        os.write((CRLF + BOUNDARY + "--" + CRLF).getBytes(StandardCharsets.US_ASCII));
         os.flush();
     }
 

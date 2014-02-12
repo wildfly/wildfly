@@ -24,6 +24,7 @@ package org.jboss.as.test.integration.jaxb;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -81,7 +82,7 @@ public class JAXBUsageServlet extends HttpServlet {
                     "   </items>\n" +
                     "</purchaseOrder>";
 
-            PurchaseOrderType order = ((JAXBElement<PurchaseOrderType>)unmarshaller.unmarshal(new ByteArrayInputStream(xml.getBytes("utf-8")))).getValue();
+            PurchaseOrderType order = ((JAXBElement<PurchaseOrderType>)unmarshaller.unmarshal(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))).getValue();
             resp.getOutputStream().println(order.getShipTo().getCity());
         } catch (JAXBException e) {
             throw new RuntimeException(e);

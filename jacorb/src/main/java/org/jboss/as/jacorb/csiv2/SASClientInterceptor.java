@@ -22,6 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 
 import org.jacorb.orb.MinorCodes;
@@ -112,22 +113,22 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
                     String name = p.getName();
                     if (name.indexOf('@') < 0) {
                         byte[] decodedTargetName = CSIv2Util.decodeGssExportedName(encodedTargetName);
-                        String targetName = new String(decodedTargetName, "UTF-8");
+                        String targetName = new String(decodedTargetName, StandardCharsets.UTF_8);
                         name += "@" + targetName; // "@default"
                     }
-                    byte[] username = name.getBytes("UTF-8");
+                    byte[] username = name.getBytes(StandardCharsets.UTF_8);
                     // I don't know why there is not a better way to go from char[] -> byte[].
 
                     Object credential = SecurityActions.getCredential();
                     byte[] password = {};
                     if (credential instanceof char[]) {
                         String tmp = new String((char[]) credential);
-                        password = tmp.getBytes("UTF-8");
+                        password = tmp.getBytes(StandardCharsets.UTF_8);
                     } else if (credential instanceof byte[])
                         password = (byte[]) credential;
                     else if (credential != null) {
                         String tmp = credential.toString();
-                        password = tmp.getBytes("UTF-8");
+                        password = tmp.getBytes(StandardCharsets.UTF_8);
                     }
 
                     // create authentication token.
@@ -152,8 +153,6 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
                     ri.add_request_service_context(sc, true /*replace existing context*/);
                 }
             }
-        } catch (java.io.UnsupportedEncodingException e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
         } catch (org.omg.IOP.CodecPackage.InvalidTypeForEncoding e) {
             throw JacORBMessages.MESSAGES.unexpectedException(e);
         }

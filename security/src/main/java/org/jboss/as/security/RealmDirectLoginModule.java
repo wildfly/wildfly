@@ -22,11 +22,11 @@
 
 package org.jboss.as.security;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -71,7 +71,6 @@ import org.jboss.security.auth.spi.UsernamePasswordLoginModule;
  */
 public class RealmDirectLoginModule extends UsernamePasswordLoginModule {
 
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
     private static final String DEFAULT_REALM = "ApplicationRealm";
     private static final String REALM_OPTION = "realm";
 

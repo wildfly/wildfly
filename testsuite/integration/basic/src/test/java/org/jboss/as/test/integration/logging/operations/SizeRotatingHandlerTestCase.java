@@ -47,6 +47,7 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
 
@@ -231,7 +232,7 @@ public class SizeRotatingHandlerTestCase extends AbstractLoggingOperationsTestCa
         BufferedReader reader = null;
         // check logs
         try {
-            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "utf-8"));
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8));
             String line;
             boolean logFound = false;
 

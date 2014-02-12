@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -57,11 +57,7 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
 
         this.orb = orb;
         this.poa = poa;
-        try {
-            oid = (name).getBytes("UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            throw JacORBMessages.MESSAGES.unsupportedUTF8Encoding();
-        }
+        oid = name.getBytes(StandardCharsets.UTF_8);
         oidPrefix = name + ":";
         anonOidPrefix = oidPrefix + "anon";
 
@@ -225,11 +221,7 @@ class RepositoryImpl extends ContainerImpl implements RepositoryOperations, Loca
      */
     protected byte[] getAnonymousObjectId(long n) {
         String s = anonOidPrefix + Long.toString(n);
-        try {
-            return s.getBytes("UTF-8");
-        } catch (UnsupportedEncodingException ex) {
-            throw JacORBMessages.MESSAGES.unsupportedUTF8Encoding();
-        }
+        return s.getBytes(StandardCharsets.UTF_8);
     }
 
     /**

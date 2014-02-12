@@ -46,7 +46,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -108,7 +108,7 @@ public class TestUtils {
     public static void dump(File f, String content) throws IOException {
         final OutputStream os = new FileOutputStream(f);
         try {
-            os.write(content.getBytes(Charset.forName("UTF-8")));
+            os.write(content.getBytes(StandardCharsets.UTF_8));
             os.close();
         } finally {
             IoUtils.safeClose(os);

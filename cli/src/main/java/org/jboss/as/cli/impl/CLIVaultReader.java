@@ -22,7 +22,7 @@
 
 package org.jboss.as.cli.impl;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
@@ -38,7 +38,6 @@ import org.picketbox.plugins.vault.PicketBoxSecurityVault;
 class CLIVaultReader {
 
     private static final Pattern VAULT_PATTERN = Pattern.compile("VAULT::.*::.*::.*");
-    private static final Charset CHARSET = Charset.forName("UTF-8");
 
     private volatile SecurityVault vault;
 
@@ -70,7 +69,7 @@ class CLIVaultReader {
         byte[] sharedKey = null;
         if (tokens.length > 2) {
             // only in case of conversion of old vault implementation
-            sharedKey = tokens[3].getBytes(CHARSET);
+            sharedKey = tokens[3].getBytes(StandardCharsets.UTF_8);
         }
         return vault.retrieve(tokens[1], tokens[2], sharedKey);
     }

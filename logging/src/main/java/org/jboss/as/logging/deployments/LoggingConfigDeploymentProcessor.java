@@ -25,6 +25,8 @@ package org.jboss.as.logging.deployments;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -59,7 +61,7 @@ public class LoggingConfigDeploymentProcessor extends AbstractLoggingDeploymentP
     @Deprecated
     public static final String PER_DEPLOYMENT_LOGGING = "org.jboss.as.logging.per-deployment";
 
-    private static final String ENCODING = "utf-8";
+    private static final Charset ENCODING = StandardCharsets.UTF_8;
     private static final String LOG4J_PROPERTIES = "log4j.properties";
     private static final String LOG4J_XML = "log4j.xml";
     private static final String JBOSS_LOG4J_XML = "jboss-log4j.xml";

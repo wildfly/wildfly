@@ -21,7 +21,7 @@
  */
 package org.jboss.as.test.integration.security.common.config.realm;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import org.jboss.util.Base64;
 
@@ -90,12 +90,7 @@ public class ServerIdentity {
                 return this;
             }
 
-            byte[] secretBytes;
-            try {
-                secretBytes = plainSecret.getBytes("UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                secretBytes = plainSecret.getBytes();
-            }
+            byte[] secretBytes = plainSecret.getBytes(StandardCharsets.UTF_8);
             this.secret = Base64.encodeBytes(secretBytes, Base64.DONT_BREAK_LINES);
             return this;
         }

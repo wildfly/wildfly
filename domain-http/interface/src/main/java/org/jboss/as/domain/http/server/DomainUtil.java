@@ -28,6 +28,7 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
@@ -75,7 +76,7 @@ public class DomainUtil {
             return baos.toByteArray();
         } else {
             String json = modelNode.toJSONString(!operationParameter.isPretty());
-            return json.getBytes(Common.UTF_8);
+            return json.getBytes(StandardCharsets.UTF_8);
         }
     }
 

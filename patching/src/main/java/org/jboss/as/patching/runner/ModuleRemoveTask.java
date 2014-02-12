@@ -27,7 +27,7 @@ import static org.jboss.as.patching.IoUtils.copy;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
@@ -87,7 +87,7 @@ class ModuleRemoveTask extends AbstractModuleTask {
         builder.append(" name=\"").append(item.getName()).append("\"");
         builder.append(" slot=\"").append(item.getSlot()).append("\"");
         builder.append(" />\n");
-        return builder.toString().getBytes(Charset.forName("UTF-8"));
+        return builder.toString().getBytes(StandardCharsets.UTF_8);
     }
 
 }

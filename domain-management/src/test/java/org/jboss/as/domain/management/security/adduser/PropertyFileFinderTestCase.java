@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import static java.lang.System.getProperty;
@@ -60,7 +61,7 @@ public class PropertyFileFinderTestCase extends PropertyTestHelper {
         File propertyUserFile = new File(domainDir, filename);
         propertyUserFile.createNewFile();
         propertyUserFile.deleteOnExit();
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertyUserFile),"UTF8"));
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(propertyUserFile), StandardCharsets.UTF_8));
         try {
           Properties domainPropeties = new Properties();
           domainPropeties.setProperty(USER_NAME,"mypassword");

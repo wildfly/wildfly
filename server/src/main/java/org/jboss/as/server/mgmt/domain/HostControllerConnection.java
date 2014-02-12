@@ -22,6 +22,8 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.controller.remote.TransactionalProtocolOperationHandler;
@@ -54,7 +56,6 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -69,7 +70,6 @@ import java.util.concurrent.TimeUnit;
 class HostControllerConnection extends FutureManagementChannel {
 
     private static final String SERVER_CHANNEL_TYPE = ManagementRemotingServices.SERVER_CHANNEL;
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
 
     private final String userName;
     private final String serverProcessName;

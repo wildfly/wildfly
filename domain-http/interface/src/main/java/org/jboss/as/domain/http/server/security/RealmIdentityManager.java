@@ -21,6 +21,7 @@
  */
 package org.jboss.as.domain.http.server.security;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
@@ -34,7 +35,6 @@ import io.undertow.util.HexConverter;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -63,7 +63,6 @@ import org.jboss.sasl.callback.VerifyPasswordCallback;
  */
 public class RealmIdentityManager implements IdentityManager {
 
-    private static final Charset UTF_8 = Charset.forName("UTF-8");
     private static final ThreadLocal<ThreadLocalStore> requestSpecific = new ThreadLocal<ThreadLocalStore>();
 
     static void setRequestSpecific(final AuthMechanism mechanism, final InetAddress clientAddress) {

@@ -51,6 +51,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -424,7 +425,7 @@ public class AuditLogTestCase {
     private ModelNode expectSyslogData(PathAddress pathAddress, ModelNode op, boolean masterOnlyOp) throws Exception {
         byte[] data = server.receiveData(5 * ADJUSTED_SECOND, TimeUnit.MILLISECONDS);
         Assert.assertNotNull(data);
-        String msg = new String(data, "utf-8");
+        String msg = new String(data, StandardCharsets.UTF_8);
         msg = msg.substring(msg.indexOf('{')).replace("#012", "\n");
         ModelNode syslogData =  ModelNode.fromJSONString(msg);
 

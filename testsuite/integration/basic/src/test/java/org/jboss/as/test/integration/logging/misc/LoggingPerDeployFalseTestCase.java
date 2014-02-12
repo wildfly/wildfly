@@ -35,7 +35,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
@@ -206,7 +206,7 @@ public class LoggingPerDeployFalseTestCase extends AbstractLoggingTest {
                 statusCode == HttpServletResponse.SC_OK);
         // check logs
         BufferedReader br = new BufferedReader(new InputStreamReader(
-                new FileInputStream(logFile), Charset.forName("UTF-8")));
+                new FileInputStream(logFile), StandardCharsets.UTF_8));
         String line;
         boolean logFound = false;
         while ((line = br.readLine()) != null) {
