@@ -71,8 +71,8 @@ class WorkCacheManager {
             throw JacORBMessages.MESSAGES.unexpectedException(ex);
         }
 
-        workDone = new WeakHashMap();
-        workInProgress = new HashMap();
+        workDone = new WeakHashMap<Class, SoftReference<ContainerAnalysis>>();
+        workInProgress = new HashMap<InProgressKey, ContainerAnalysis>();
     }
 
     /**
@@ -81,36 +81,37 @@ class WorkCacheManager {
      * class, an unfinished analysis is returned.
      */
     ContainerAnalysis getAnalysis(final Class cls) throws RMIIIOPViolationException {
-        ContainerAnalysis ret;
+        ContainerAnalysis ret = null;
+        try {
+            synchronized (this) {
+                ret = lookupDone(cls);
+                if (ret != null)
+                    return ret;
 
-        synchronized (this) {
-            ret = lookupDone(cls);
-            if (ret != null)
-                return ret;
+                // is it work-in-progress?
+                final ContainerAnalysis inProgress = workInProgress.get(new InProgressKey(cls, Thread.currentThread()));
+                if (inProgress != null) {
+                        return inProgress; // return unfinished
 
-            // is it work-in-progress?
-            final InProgress inProgress = (InProgress) workInProgress.get(cls);
-            if (inProgress != null) {
-                if (inProgress.thread == Thread.currentThread())
-                    return inProgress.analysis; // return unfinished
+                    // Do not wait for the other thread: We may deadlock
+                    // Double work is better that deadlock...
+                }
 
-                // Do not wait for the other thread: We may deadlock
-                // Double work is better that deadlock...
+                ret = createWorkInProgress(cls);
             }
 
-            ret = createWorkInProgress(cls);
+            // Do the work
+            doTheWork(cls, ret);
+        } finally {
+            // We did it
+            synchronized (this) {
+                workInProgress.remove(new InProgressKey(cls, Thread.currentThread()));
+                if(ret != null) {
+                    workDone.put(cls, new SoftReference<ContainerAnalysis>(ret));
+                }
+                notifyAll();
+            }
         }
-
-        // Do the work
-        doTheWork(cls, ret);
-
-        // We did it
-        synchronized (this) {
-            workInProgress.remove(cls);
-            workDone.put(cls, new SoftReference(ret));
-            notifyAll();
-        }
-
         return ret;
     }
 
@@ -130,13 +131,13 @@ class WorkCacheManager {
      * This maps the classes of completely done analyses to soft
      * references of their analysis.
      */
-    private final Map workDone;
+    private final Map<Class, SoftReference<ContainerAnalysis>> workDone;
 
     /**
      * This maps the classes of analyses in progress to their
      * analysis.
      */
-    private final Map workInProgress;
+    private final Map<InProgressKey, ContainerAnalysis> workInProgress;
 
     /**
      * Lookup an analysis in the fully done map.
@@ -166,7 +167,7 @@ class WorkCacheManager {
             throw new RuntimeException(ex.toString());
         }
 
-        workInProgress.put(cls, new InProgress(analysis, Thread.currentThread()));
+        workInProgress.put(new InProgressKey(cls, Thread.currentThread()), analysis);
 
         return analysis;
     }
@@ -177,7 +178,7 @@ class WorkCacheManager {
             initializer.invoke(ret);
         } catch (Throwable t) {
             synchronized (this) {
-                workInProgress.remove(cls);
+                workInProgress.remove(new InProgressKey(cls, Thread.currentThread()));
             }
             if (t instanceof InvocationTargetException) // unwrap
                 t = ((InvocationTargetException) t).getTargetException();
@@ -192,16 +193,33 @@ class WorkCacheManager {
         }
     }
 
-    /**
-     * A simple aggregate of work-in-progress, and the thread doing the work.
-     */
-    private static class InProgress {
-        ContainerAnalysis analysis;
-        Thread thread;
+    private static class InProgressKey {
+        final Class<?> clazz;
+        final Thread thread;
 
-        InProgress(final ContainerAnalysis analysis, final Thread thread) {
-            this.analysis = analysis;
+        private InProgressKey(Class<?> clazz, Thread thread) {
+            this.clazz = clazz;
             this.thread = thread;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            InProgressKey that = (InProgressKey) o;
+
+            if (clazz != null ? !clazz.equals(that.clazz) : that.clazz != null) return false;
+            if (thread != null ? !thread.equals(that.thread) : that.thread != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = clazz != null ? clazz.hashCode() : 0;
+            result = 31 * result + (thread != null ? thread.hashCode() : 0);
+            return result;
         }
     }
 }
