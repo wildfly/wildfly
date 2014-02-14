@@ -27,7 +27,7 @@
 <config>
     <extension-module>org.wildfly.extension.io</extension-module>
     <subsystem xmlns="urn:jboss:domain:io:1.0">
-        <worker name="default" io-threads="3"/>
+        <worker name="default" />
         <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
     </subsystem>
 </config>

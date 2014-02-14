@@ -65,7 +65,6 @@ class WorkerAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-
         final OptionMap.Builder builder = OptionMap.builder();
 
         for (OptionAttributeDefinition attr : WorkerResourceDefinition.ATTRIBUTES) {
@@ -80,7 +79,6 @@ class WorkerAdd extends AbstractAddStepHandler {
             }
         }
         builder.set(Options.WORKER_NAME, name);
-
         final WorkerService workerService = new WorkerService(builder.getMap());
         final ServiceBuilder<XnioWorker> serviceBuilder = context.getServiceTarget().
                 addService(IOServices.WORKER.append(name), workerService);
@@ -91,7 +89,5 @@ class WorkerAdd extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(serviceController);
         }
-
-
     }
 }
