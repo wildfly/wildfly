@@ -209,6 +209,11 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     private final InjectedValue<POA> irPoa = new InjectedValue<POA>();
 
     /**
+     * Default IOR security config metadata (defined in the jacorb subsystem).
+     */
+    private final InjectedValue<IORSecurityConfigMetaData> iorSecConfigMetaData = new InjectedValue<IORSecurityConfigMetaData>();
+
+    /**
      * The IIOP metadata, configured in the assembly descriptor.
      */
     private IIOPMetaData iiopMetaData;
@@ -273,8 +278,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 EjbLogger.ROOT_LOGGER.cobraInterfaceRepository(name, orb.object_to_string(iri.getReference()));
             }
 
-            IORSecurityConfigMetaData iorSecurityConfigMetaData = null;
-            if (this.iiopMetaData != null)
+            IORSecurityConfigMetaData iorSecurityConfigMetaData = this.iorSecConfigMetaData.getOptionalValue();
+            if (this.iiopMetaData != null && this.iiopMetaData.getIorSecurityConfigMetaData() != null)
                 iorSecurityConfigMetaData = this.iiopMetaData.getIorSecurityConfigMetaData();
 
             // Create security policies if security metadata has been provided.
@@ -568,5 +573,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
     public InjectedValue<ServiceModuleLoader> getServiceModuleLoaderInjectedValue() {
         return serviceModuleLoaderInjectedValue;
+    }
+
+    public InjectedValue<IORSecurityConfigMetaData> getIORSecConfigMetaDataInjectedValue() {
+        return iorSecConfigMetaData;
     }
 }

@@ -56,6 +56,7 @@ import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.jacorb.service.CorbaPOAService;
+import org.jboss.as.jacorb.service.IORSecConfigMetaDataService;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -68,6 +69,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.metadata.ejb.jboss.IIOPMetaData;
+import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
@@ -255,6 +257,7 @@ public class EjbIIOPDeploymentUnitProcessor implements DeploymentUnitProcessor {
         builder.addDependency(POARegistry.SERVICE_NAME, POARegistry.class, service.getPoaRegistry());
         builder.addDependency(CorbaPOAService.INTERFACE_REPOSITORY_SERVICE_NAME, POA.class, service.getIrPoa());
         builder.addDependency(CorbaNamingService.SERVICE_NAME, NamingContextExt.class, service.getCorbaNamingContext());
+        builder.addDependency(IORSecConfigMetaDataService.SERVICE_NAME, IORSecurityConfigMetaData.class, service.getIORSecConfigMetaDataInjectedValue());
         builder.addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ServiceModuleLoader.class, service.getServiceModuleLoaderInjectedValue());
 
         //we need the arjunta transaction manager to be up, as it performs some initialization that is required by the orb interceptors

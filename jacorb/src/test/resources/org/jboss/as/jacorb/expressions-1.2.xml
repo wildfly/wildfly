@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:jacorb:1.3">
+<subsystem xmlns="urn:jboss:domain:jacorb:1.4">
     <orb name="${test.exp:JBoss}" print-version="${test.exp:off}" use-imr="${test.exp:off}" use-bom="${test.exp:off}"  cache-typecodes="${test.exp:off}"
         cache-poa-names="${test.exp:off}" giop-minor-version ="${test.exp:2}" socket-binding="jacorb" ssl-socket-binding="jacorb-ssl">
         <connection retries="${test.exp:5}" retry-interval="${test.exp:500}" client-timeout="${test.exp:0}" server-timeout="${test.exp:0}"

@@ -99,6 +99,23 @@ public final class JacORBSubsystemConstants {
     public static final String PROPERTY_KEY = "key";
     public static final String PROPERTY_VALUE = "value";
 
+    public static final String SETTING = "setting";
+    public static final String DEFAULT = "default";
+    public static final String IOR_SETTINGS = "ior-settings";
+    public static final String IOR_TRANSPORT_CONFIG = "transport-config";
+    public static final String IOR_TRANSPORT_INTEGRITY = "integrity";
+    public static final String IOR_TRANSPORT_CONFIDENTIALITY = "confidentiality";
+    public static final String IOR_TRANSPORT_TRUST_IN_TARGET = "trust-in-target";
+    public static final String IOR_TRANSPORT_TRUST_IN_CLIENT = "trust-in-client";
+    public static final String IOR_TRANSPORT_DETECT_REPLAY = "detect-replay";
+    public static final String IOR_TRANSPORT_DETECT_MISORDERING = "detect-misordering";
+    public static final String IOR_AS_CONTEXT = "as-context";
+    public static final String IOR_AS_CONTEXT_AUTH_METHOD = "auth-method";
+    public static final String IOR_AS_CONTEXT_REALM = "realm";
+    public static final String IOR_AS_CONTEXT_REQUIRED = "required";
+    public static final String IOR_SAS_CONTEXT = "sas-context";
+    public static final String IOR_SAS_CONTEXT_CALLER_PROPAGATION = "caller-propagation";
+
     // constants for common org.omg properties.
     public static final String ORB_ADDRESS = "OAIAddr";
     public static final String ORB_PORT = "OAPort";
