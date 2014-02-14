@@ -27,6 +27,7 @@ import javax.security.auth.callback.CallbackHandler;
 import java.io.DataInput;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -251,21 +252,30 @@ class RemoteDomainConnection extends FutureManagementChannel {
                 for(;;) {
                     // Try to connect to the remote host controller by looping through all
                     // discovery options
-                    String host = null;
-                    int port = -1;
                     reconnectPolicy.wait(reconnectionCount);
-                    for (DiscoveryOption discoveryOption : discoveryOptions) {
+                    HostControllerLogger.ROOT_LOGGER.reconnectingToMaster();
+                    for (Iterator<DiscoveryOption> i = discoveryOptions.iterator(); i.hasNext(); ) {
+                        DiscoveryOption discoveryOption = i.next();
+                        URI masterURI = null;
                         try {
                             discoveryOption.discover();
-                            host = discoveryOption.getRemoteDomainControllerHost();
-                            port = discoveryOption.getRemoteDomainControllerPort();
-                            setUri(new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port));
-                            HostControllerLogger.ROOT_LOGGER.debugf("trying to reconnect to remote host-controller");
-                            return connectionManager.connect();
-                        } catch (IOException e) {
-                            HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to reconnect to the remote host-controller");
-                        } catch (IllegalStateException e) {
-                            HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to reconnect to the remote host-controller");
+                            String host = discoveryOption.getRemoteDomainControllerHost();
+                            int port = discoveryOption.getRemoteDomainControllerPort();
+                            masterURI = new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port);
+                            setUri(masterURI);
+                            HostControllerLogger.ROOT_LOGGER.debugf("trying to reconnect to remote host-controller at %s", masterURI);
+                            try {
+                                Connection connection = connectionManager.connect();
+                                HostControllerLogger.ROOT_LOGGER.connectedToMaster(masterURI);
+                                return connection;
+                            } catch (IOException ioe) {
+                                // If the cause is one of the irrecoverable ones, unwrap and throw it on
+                                RemoteDomainConnectionService.rethrowIrrecoverableConnectionFailures(ioe);
+                                // Something else; throw it on
+                                throw ioe;
+                            }
+                        } catch (Exception e) {
+                            RemoteDomainConnectionService.logConnectionException(masterURI, discoveryOption, i.hasNext(), e);
                         }
                     }
                     reconnectionCount++;
@@ -610,9 +620,7 @@ class RemoteDomainConnection extends FutureManagementChannel {
 
         @Override
         public Connection connect() throws IOException {
-            final Connection connection = openConnection();
-            HostControllerLogger.ROOT_LOGGER.reconnectedToMaster();
-            return connection;
+            return openConnection();
         }
 
         @Override

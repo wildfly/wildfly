@@ -156,6 +156,12 @@ public class S3Discovery implements DiscoveryOption {
         return remoteDcPort;
     }
 
+    @Override
+    public String toString() {
+        // TODO consider including 'location' but that may be sensitive data not wanted in logs
+        return getClass().getSimpleName();
+    }
+
     /**
      * Determine whether or not pre-signed URLs will be used.
      */
