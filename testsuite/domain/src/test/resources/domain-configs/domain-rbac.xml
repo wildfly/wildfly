@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<domain xmlns="urn:jboss:domain:2.0">
+<domain xmlns="urn:jboss:domain:2.1">
 
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
