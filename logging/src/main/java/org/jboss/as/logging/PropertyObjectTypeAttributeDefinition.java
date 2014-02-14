@@ -25,6 +25,7 @@ package org.jboss.as.logging;
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -53,9 +54,9 @@ public class PropertyObjectTypeAttributeDefinition extends ObjectTypeAttributeDe
                                                   final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
                                                   final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecationData,
                                                   final AccessConstraintDefinition[] accessConstraints,
-                                                  final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
+                                                  final Boolean nullSignificant, final AttributeParser parser, final AttributeAccess.Flag... flags) {
         super(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller,
-                resourceOnly, deprecationData, accessConstraints, nullSignificant, flags);
+                resourceOnly, deprecationData, accessConstraints, nullSignificant, parser, flags);
         this.propertyName = propertyName;
         this.resolver = resolver;
     }
@@ -116,7 +117,7 @@ public class PropertyObjectTypeAttributeDefinition extends ObjectTypeAttributeDe
                 validator = new ObjectTypeValidator(allowNull, valueTypes);
             }
             return new PropertyObjectTypeAttributeDefinition(name, xmlName, propertyName, suffix, valueTypes, allowNull, resolver, validator, corrector, alternatives, requires,
-                        attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, flags);
+                        attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, parser, flags);
         }
 
         public Builder setSuffix(final String suffix) {

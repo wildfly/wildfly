@@ -63,6 +63,7 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
     protected DeprecationData deprecated = null;
     protected AccessConstraintDefinition[] accessConstraints;
     protected Boolean nullSignficant;
+    protected AttributeParser parser;
 
     /**
      * Creates a builder for an attribute with the give name and type. Equivalent to
@@ -118,6 +119,7 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
         Set<AttributeAccess.Flag> basisFlags = basis.getFlags();
         this.flags = basisFlags.toArray(new AttributeAccess.Flag[basisFlags.size()]);
         this.attributeMarshaller = basis.getAttributeMarshaller();
+        this.parser = basis.getParser();
     }
 
     /**
@@ -399,6 +401,16 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
      */
     public BUILDER setAttributeMarshaller(AttributeMarshaller marshaller) {
         this.attributeMarshaller = marshaller;
+        return (BUILDER) this;
+    }
+    /**
+     * Sets a custom {@link org.jboss.as.controller.AttributeParser} to use for parsing attribute from xml.
+     * If not set, a {@link org.jboss.as.controller.AttributeParser#SIMPLE} will be used.
+     * @param parser the parser. Can be {@code null}
+     * @return a builder that can be used to continue building the attribute definition
+     */
+    public BUILDER setAttributeParser(AttributeParser parser) {
+        this.parser = parser;
         return (BUILDER) this;
     }
 

@@ -54,14 +54,14 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
 
     public MapAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator) {
         this(name, name, allowNull, false, 0, Integer.MAX_VALUE, null, elementValidator,
-                null, null, null, false, null, null, (Boolean) null);
+                null, null, null, false, null, null, (Boolean) null, null);
     }
 
     @Deprecated
     public MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                   final int minSize, final int maxSize, final ParameterValidator elementValidator) {
         this(name, xmlName, allowNull, false, minSize, maxSize, null, elementValidator, null, null, null,
-                false, null, null, (Boolean) null);
+                false, null, null, (Boolean) null, null);
     }
 
     @Deprecated
@@ -69,7 +69,7 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
                                   final int minSize, final int maxSize, final ParameterValidator elementValidator,
                                   final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
         this(name, xmlName, allowNull, false, minSize, maxSize, null, elementValidator, alternatives, requires, null,
-                false, null, null, null, flags);
+                false, null, null, null, null, flags);
     }
 
     @Deprecated
@@ -78,7 +78,7 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
             final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated,
             final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
         this(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, elementValidator,
-                alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, flags);
+                alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, null, flags);
     }
 
     protected MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
@@ -86,9 +86,11 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
                                      final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,
                                      final boolean resourceOnly, final DeprecationData deprecated,
                                      final AccessConstraintDefinition[] accessConstraints,
-                                     final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
+                                     final Boolean nullSignificant,
+                                     final AttributeParser parser,
+                                     final AttributeAccess.Flag... flags) {
         super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, corrector, new MapValidator(elementValidator, allowNull, minSize, maxSize), false,
-                alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
+                alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser, flags);
         this.elementValidator = elementValidator;
     }
 

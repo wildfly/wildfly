@@ -95,6 +95,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .addOption(UndertowOptions.ALWAYS_SET_KEEP_ALIVE, "always-set-keep-alive", new ModelNode(true))
             .addOption(UndertowOptions.MAX_BUFFERED_REQUEST_SIZE, "max-buffered-request-size", new ModelNode(16384))
             .addOption(UndertowOptions.RECORD_REQUEST_START_TIME, "record-request-start-time", new ModelNode(false))
+            .addOption(UndertowOptions.ALLOW_EQUALS_IN_COOKIE_VALUE, "allow-equals-in-cookie-value", new ModelNode(false))
             .build();
 
     protected static final Collection ATTRIBUTES;

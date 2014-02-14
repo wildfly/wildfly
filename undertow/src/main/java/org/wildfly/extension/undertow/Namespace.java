@@ -33,12 +33,13 @@ enum Namespace {
     // must be first
     UNKNOWN(null),
 
-    UNDERTOW_1_0("urn:jboss:domain:undertow:1.0");
+    UNDERTOW_1_0("urn:jboss:domain:undertow:1.0"),
+    UNDERTOW_1_1("urn:jboss:domain:undertow:1.1");
 
     /**
      * The current namespace version.
      */
-    public static final Namespace CURRENT = UNDERTOW_1_0;
+    public static final Namespace CURRENT = UNDERTOW_1_1;
 
     private final String name;
 

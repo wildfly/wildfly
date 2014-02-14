@@ -1,31 +1,32 @@
 <!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2013, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ /*
+  ~ * JBoss, Home of Professional Open Source.
+  ~ * Copyright 2014, Red Hat, Inc., and individual contributors
+  ~ * as indicated by the @author tags. See the copyright.txt file in the
+  ~ * distribution for a full listing of individual contributors.
+  ~ *
+  ~ * This is free software; you can redistribute it and/or modify it
+  ~ * under the terms of the GNU Lesser General Public License as
+  ~ * published by the Free Software Foundation; either version 2.1 of
+  ~ * the License, or (at your option) any later version.
+  ~ *
+  ~ * This software is distributed in the hope that it will be useful,
+  ~ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ * Lesser General Public License for more details.
+  ~ *
+  ~ * You should have received a copy of the GNU Lesser General Public
+  ~ * License along with this software; if not, write to the Free
+  ~ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~ */
   -->
 
-<subsystem xmlns="urn:jboss:domain:undertow:1.0" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
+<subsystem xmlns="urn:jboss:domain:undertow:1.1" default-virtual-host="default-virtual-host" default-servlet-container="myContainer"
            default-server="some-server" instance-id="some-id">
 
-    <buffer-caches>
-        <buffer-cache name="default" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
-    </buffer-caches>
+    <buffer-cache name="default" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
+    <buffer-cache name="extra" buffer-size="1025" buffers-per-region="1054" max-regions="15"/>
 
     <server name="default-server" default-host="localhost" servlet-container="myContainer">
         <ajp-listener name="ajp-connector" socket-binding="ajp" redirect-socket="ajps" max-parameters="5000"/>
@@ -53,7 +54,7 @@
     </server>
 
 
-    <servlet-container name="myContainer" default-buffer-cache="extra" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8" ignore-flush="true">
+    <servlet-container name="myContainer" default-buffer-cache="extra" use-listener-encoding="${prop.foo:false}" default-encoding="utf-8" ignore-flush="true" eager-filter-initialization="true">
         <jsp-config
                 disabled="${prop.disabled:false}"
                 keep-generated="${prop.keep-generated:true}"

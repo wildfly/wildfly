@@ -109,7 +109,7 @@ class PermissionResourceDefinition extends PersistentResourceDefinition {
                                                    final String xmlWrapperElement, final LinkedHashMap<String, AttributeDefinition> attributes,
                                                    final List<PersistentResourceXMLDescription> children, final boolean useValueAsElementName,
                                                    final boolean noAddOperation, final AdditionalOperationsGenerator additionalOperationsGenerator) {
-            super(resourceDefinition, xmlElementName, xmlWrapperElement, attributes, children, useValueAsElementName, noAddOperation, additionalOperationsGenerator);
+            super(resourceDefinition, xmlElementName, xmlWrapperElement, attributes, children, useValueAsElementName, noAddOperation, additionalOperationsGenerator, null);
         }
 
         /**

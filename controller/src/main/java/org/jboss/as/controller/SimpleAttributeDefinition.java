@@ -113,7 +113,7 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
                 corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, null, false, null, null, flags);
     }
-
+    @Deprecated
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterCorrector corrector, final ParameterValidator validator,
@@ -121,7 +121,7 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
                 corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, null, flags);
     }
-
+    @Deprecated
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
             final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
             final ParameterCorrector corrector, final ParameterValidator validator,
@@ -130,7 +130,7 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
             final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
                 corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, flags);
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints,null,AttributeParser.SIMPLE, flags);
     }
 
     @Deprecated
@@ -151,9 +151,23 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
                                      final boolean resourceOnly, final DeprecationData deprecated,
                                      final AccessConstraintDefinition[] accessConstraints, final Boolean nullSignificant,
                                      final AttributeAccess.Flag... flags) {
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires,
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, null, flags);
+    }
+
+    protected SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
+                                     final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+                                     final ParameterCorrector corrector, final ParameterValidator validator,
+                                     boolean validateNull, String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller,
+                                     final boolean resourceOnly, final DeprecationData deprecated,
+                                     final AccessConstraintDefinition[] accessConstraints,
+                                     final Boolean nullSignificant,
+                                     final AttributeParser parser,
+                                     final AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
                 corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser, flags);
     }
 
     private static ParameterValidator createParameterValidator(final ParameterValidator existing, final ModelType type,final boolean allowNull, final boolean allowExpression) {

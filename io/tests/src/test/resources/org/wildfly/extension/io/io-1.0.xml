@@ -23,6 +23,6 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:io:1.0">
-    <worker name="default" io-threads="3" task-keepalive="100" stack-size="5000" task-max-threads="100"/>
-    <buffer-pool name="default" buffer-size="2048" buffers-per-slice="2048"/>
+    <worker name="default" io-threads="3"/>
+    <buffer-pool name="default" buffer-size="16384" buffers-per-slice="128"/>
 </subsystem>

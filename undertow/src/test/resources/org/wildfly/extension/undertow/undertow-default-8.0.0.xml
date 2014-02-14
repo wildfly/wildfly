@@ -1,0 +1,24 @@
+<subsystem xmlns="urn:jboss:domain:undertow:1.0">
+      <buffer-caches>
+          <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
+      </buffer-caches>
+      <server name="default-server">
+          <http-listener name="default" socket-binding="http" />
+          <?AJP?>
+          <host name="default-host" alias="localhost">
+              <location name="/" handler="welcome-content" />
+              <filter-ref name="server-header"/>
+              <filter-ref name="x-powered-by-header"/>
+          </host>
+      </server>
+      <servlet-container name="default" default-buffer-cache="default" stack-trace-on-error="local-only" >
+          <jsp-config/>
+      </servlet-container>
+      <handlers>
+          <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
+      </handlers>
+      <filters>
+          <response-header name="server-header" header-name="Server" header-value="Wildfly 8"/>
+          <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow 1"/>
+      </filters>
+  </subsystem>

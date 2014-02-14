@@ -521,6 +521,9 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             //in most cases flush just hurts performance for no good reason
             d.setIgnoreFlush(servletContainer.isIgnoreFlush());
 
+            //controlls initizalization of filters on start of application
+            d.setEagerFilterInit(servletContainer.isEagerFilterInit());
+
             d.setAllowNonStandardWrappers(servletContainer.isAllowNonStandardWrappers());
             d.setServletStackTraces(servletContainer.getStackTraces());
 
