@@ -56,7 +56,6 @@ import java.util.Map;
 public class ProtocolConnectionUtils {
 
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
-    private static final String REMOTE_PROTOCOL = "remote";
 
     /**
      * Connect.
@@ -80,7 +79,7 @@ public class ProtocolConnectionUtils {
         } else {
             InetSocketAddress bindAddr = new InetSocketAddress(clientBindAddress, 0);
             InetSocketAddress destAddr = new InetSocketAddress(configuration.getUri().getHost(), configuration.getUri().getPort());
-            return endpoint.connect(REMOTE_PROTOCOL, bindAddr, destAddr, options, actualHandler, configuration.getSslContext());
+            return endpoint.connect(configuration.getUri().getScheme(), bindAddr, destAddr, options, actualHandler, configuration.getSslContext());
         }
     }
 
