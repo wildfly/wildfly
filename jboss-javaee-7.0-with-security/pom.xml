@@ -93,13 +93,13 @@
             <!-- PicketLink Dependencies -->
             <dependency>
                 <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-core-api</artifactId>
+                <artifactId>picketlink-api</artifactId>
                 <version>${version.org.picketlink}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.picketlink</groupId>
-                <artifactId>picketlink-core-impl</artifactId>
+                <artifactId>picketlink-impl</artifactId>
                 <version>${version.org.picketlink}</version>
             </dependency>
 
