@@ -69,11 +69,10 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
     public void installRuntimeServices(OperationContext context, ModelNode model, List<ServiceController<?>> newControllers, String name) throws OperationFailedException {
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
-        SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
-        boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(PersistentSessionsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        final SessionCookieConfig config = SessionCookieDefinition.INSTANCE.getConfig(context, fullModel.get(SessionCookieDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        final boolean persistentSessions = PersistentSessionsDefinition.isEnabled(context, fullModel.get(PersistentSessionsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         final boolean allowNonStandardWrappers = ServletContainerDefinition.ALLOW_NON_STANDARD_WRAPPERS.resolveModelAttribute(context, model).asBoolean();
-        final ModelNode bufferCacheValue = ServletContainerDefinition.DEFAULT_BUFFER_CACHE.resolveModelAttribute(context, model);
-        final String bufferCache = bufferCacheValue.isDefined() ? bufferCacheValue.asString() : null;
+        final String bufferCache = ServletContainerDefinition.DEFAULT_BUFFER_CACHE.resolveModelAttribute(context, model).asString();
 
         JSPConfig jspConfig = JspDefinition.INSTANCE.getConfig(context, fullModel.get(JspDefinition.INSTANCE.getPathElement().getKeyValuePair()));
 
@@ -82,8 +81,16 @@ final class ServletContainerAdd extends AbstractBoottimeAddStepHandler {
         final String defaultEncoding = defaultEncodingValue.isDefined()? defaultEncodingValue.asString() : null;
         final boolean useListenerEncoding = ServletContainerDefinition.USE_LISTENER_ENCODING.resolveModelAttribute(context, model).asBoolean();
         final boolean ignoreFlush = ServletContainerDefinition.IGNORE_FLUSH.resolveModelAttribute(context, model).asBoolean();
+        final boolean eagerFilterInit = ServletContainerDefinition.EAGER_FILTER_INIT.resolveModelAttribute(context, model).asBoolean();
 
-        final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers, ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')), config, jspConfig, defaultEncoding, useListenerEncoding, ignoreFlush);
+        final ServletContainerService container = new ServletContainerService(allowNonStandardWrappers,
+                ServletStackTraces.valueOf(stackTracesString.toUpperCase().replace('-', '_')),
+                config,
+                jspConfig,
+                defaultEncoding,
+                useListenerEncoding,
+                ignoreFlush,
+                eagerFilterInit);
         final ServiceTarget target = context.getServiceTarget();
         final ServiceBuilder<ServletContainerService> builder = target.addService(UndertowService.SERVLET_CONTAINER.append(name), container);
         if(bufferCache != null) {

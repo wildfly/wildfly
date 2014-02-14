@@ -45,7 +45,7 @@ import java.util.List;
  */
 public class ReverseProxyHandler extends Handler {
 
-    public static final ReverseProxyHandler INSTANCE = new ReverseProxyHandler();
+
 
     public static final AttributeDefinition PROBLEM_SERVER_RETRY = new SimpleAttributeDefinitionBuilder(Constants.PROBLEM_SERVER_RETRY, ModelType.INT)
             .setAllowNull(true)
@@ -68,7 +68,10 @@ public class ReverseProxyHandler extends Handler {
     public static final AttributeDefinition MAX_REQUEST_TIME = new SimpleAttributeDefinitionBuilder(Constants.MAX_REQUEST_TIME, ModelType.INT)
             .setAllowNull(true)
             .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(-1))
             .build();
+
+    public static final ReverseProxyHandler INSTANCE = new ReverseProxyHandler();
 
     private ReverseProxyHandler() {
         super(Constants.REVERSE_PROXY);
@@ -90,11 +93,8 @@ public class ReverseProxyHandler extends Handler {
         String sessionCookieNames = SESSION_COOKIE_NAMES.resolveModelAttribute(context, model).asString();
         int connectionsPerThread = CONNECTIONS_PER_THREAD.resolveModelAttribute(context, model).asInt();
         int problemServerRetry = PROBLEM_SERVER_RETRY.resolveModelAttribute(context, model).asInt();
-        ModelNode maxTimeNode = MAX_REQUEST_TIME.resolveModelAttribute(context, model);
-        int maxTime = -1;
-        if (maxTimeNode.isDefined()) {
-            maxTime = maxTimeNode.asInt();
-        }
+        int maxTime = MAX_REQUEST_TIME.resolveModelAttribute(context, model).asInt();
+
         final LoadBalancingProxyClient lb = new LoadBalancingProxyClient()
                 .setConnectionsPerThread(connectionsPerThread)
                 .setProblemServerRetry(problemServerRetry);

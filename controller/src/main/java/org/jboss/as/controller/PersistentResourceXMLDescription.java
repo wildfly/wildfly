@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 /**
  * A representation of a resource as needed by the XML parser.
  *
+ * @author Tomaz Cerar
  * @author Stuart Douglas
  */
 public class PersistentResourceXMLDescription {
@@ -40,8 +41,9 @@ public class PersistentResourceXMLDescription {
     protected final boolean noAddOperation;
     protected final AdditionalOperationsGenerator additionalOperationsGenerator;
     private boolean flushRequired = true;
+    private final Map<String,AttributeParser> attributeParsers;
 
-    protected PersistentResourceXMLDescription(final PersistentResourceDefinition resourceDefinition, final String xmlElementName, final String xmlWrapperElement, final LinkedHashMap<String, AttributeDefinition> attributes, final List<PersistentResourceXMLDescription> children, final boolean useValueAsElementName, final boolean noAddOperation, final AdditionalOperationsGenerator additionalOperationsGenerator) {
+    protected PersistentResourceXMLDescription(final PersistentResourceDefinition resourceDefinition, final String xmlElementName, final String xmlWrapperElement, final LinkedHashMap<String, AttributeDefinition> attributes, final List<PersistentResourceXMLDescription> children, final boolean useValueAsElementName, final boolean noAddOperation, final AdditionalOperationsGenerator additionalOperationsGenerator, Map<String, AttributeParser> attributeParsers) {
         this.resourceDefinition = resourceDefinition;
         this.xmlElementName = xmlElementName;
         this.xmlWrapperElement = xmlWrapperElement;
@@ -50,6 +52,7 @@ public class PersistentResourceXMLDescription {
         this.useValueAsElementName = useValueAsElementName;
         this.noAddOperation = noAddOperation;
         this.additionalOperationsGenerator = additionalOperationsGenerator;
+        this.attributeParsers = attributeParsers;
     }
 
     public void parse(final XMLExtendedStreamReader reader, PathAddress parentAddress, List<ModelNode> list) throws XMLStreamException {
@@ -75,13 +78,9 @@ public class PersistentResourceXMLDescription {
                 name = value;
             } else if (attributes.containsKey(attributeName)) {
                 AttributeDefinition def = attributes.get(attributeName);
-                if (def instanceof SimpleAttributeDefinition) {
-                    ((SimpleAttributeDefinition) def).parseAndSetParameter(value, op, reader);
-                } else if (def instanceof StringListAttributeDefinition) {
-                    ((StringListAttributeDefinition) def).parseAndSetParameter(value, op, reader);
-                } else {
-                    throw new IllegalArgumentException("we should know how to handle " + def);
-                }
+                AttributeParser parser = attributeParsers.containsKey(attributeName)? attributeParsers.get(attributeName) : def.getParser();
+                assert parser != null;
+                parser.parseAndSetParameter(def,value,op,reader);
             } else {
                 throw ParseUtils.unexpectedAttribute(reader, i);
             }
@@ -248,6 +247,7 @@ public class PersistentResourceXMLDescription {
         protected AdditionalOperationsGenerator additionalOperationsGenerator;
         protected final LinkedHashMap<String, AttributeDefinition> attributes = new LinkedHashMap<>();
         protected final List<PersistentResourceXMLBuilder> children = new ArrayList<>();
+        protected final LinkedHashMap<String, AttributeParser> attributeParsers = new LinkedHashMap<>();
 
         protected PersistentResourceXMLBuilder(final PersistentResourceDefinition resourceDefinition) {
             this.resourceDefinition = resourceDefinition;
@@ -260,20 +260,25 @@ public class PersistentResourceXMLDescription {
         }
 
         public PersistentResourceXMLBuilder addAttribute(AttributeDefinition attribute) {
-            this.attributes.put(attribute.getName(), attribute);
+            this.attributes.put(attribute.getXmlName(), attribute);
+            return this;
+        }
+        public PersistentResourceXMLBuilder addAttribute(AttributeDefinition attribute, AttributeParser attributeParser) {
+            this.attributes.put(attribute.getXmlName(), attribute);
+            this.attributeParsers.put(attribute.getXmlName(),attributeParser);
             return this;
         }
 
         public PersistentResourceXMLBuilder addAttributes(AttributeDefinition... attributes) {
             for (final AttributeDefinition at : attributes) {
-                this.attributes.put(at.getName(), at);
+                this.attributes.put(at.getXmlName(), at);
             }
             return this;
         }
 
         public PersistentResourceXMLBuilder addAttributes(Collection<? extends AttributeDefinition> attributes) {
             for (final AttributeDefinition at : attributes) {
-                this.attributes.put(at.getName(), at);
+                this.attributes.put(at.getXmlName(), at);
             }
             return this;
         }
@@ -309,7 +314,7 @@ public class PersistentResourceXMLDescription {
             for (PersistentResourceXMLBuilder b : children) {
                 builtChildren.add(b.build());
             }
-            return new PersistentResourceXMLDescription(resourceDefinition, xmlElementName, xmlWrapperElement, attributes, builtChildren, useValueAsElementName, noAddOperation, additionalOperationsGenerator);
+            return new PersistentResourceXMLDescription(resourceDefinition, xmlElementName, xmlWrapperElement, attributes, builtChildren, useValueAsElementName, noAddOperation, additionalOperationsGenerator, attributeParsers);
         }
     }
 

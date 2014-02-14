@@ -1,7 +1,7 @@
 /*
  *
  *  JBoss, Home of Professional Open Source.
- *  Copyright 2013, Red Hat, Inc., and individual contributors
+ *  Copyright 2014, Red Hat, Inc., and individual contributors
  *  as indicated by the @author tags. See the copyright.txt file in the
  *  distribution for a full listing of individual contributors.
  *
@@ -40,16 +40,20 @@ import org.xnio.XnioWorker;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
-public class IOSubsystemTestCase extends AbstractSubsystemBaseTest {
+public class IOSubsystem10TestCase extends AbstractSubsystemBaseTest {
 
-    public IOSubsystemTestCase() {
+    public IOSubsystem10TestCase() {
         super(IOExtension.SUBSYSTEM_NAME, new IOExtension());
     }
 
+    @Override
+    protected void compareXml(String configId, String original, String marshalled) throws Exception {
+        super.compareXml(configId, marshalled, readResource("shipped-default.xml"));
+    }
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("io-1.1.xml");
+        return readResource("io-1.0.xml");
     }
 
     @Test

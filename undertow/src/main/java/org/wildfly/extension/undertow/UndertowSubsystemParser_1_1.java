@@ -1,7 +1,7 @@
 /*
  *
  *  JBoss, Home of Professional Open Source.
- *  Copyright 2013, Red Hat, Inc., and individual contributors
+ *  Copyright 2014, Red Hat, Inc., and individual contributors
  *  as indicated by the @author tags. See the copyright.txt file in the
  *  distribution for a full listing of individual contributors.
  *
@@ -30,13 +30,15 @@ import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.wildfly.extension.undertow.errorhandler.ErrorPageDefinition;
 import org.wildfly.extension.undertow.filters.BasicAuthHandler;
 import org.wildfly.extension.undertow.filters.ConnectionLimitHandler;
@@ -52,8 +54,8 @@ import org.wildfly.extension.undertow.handlers.ReverseProxyHandlerHost;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
-public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
-    protected static final UndertowSubsystemParser_1_0 INSTANCE = new UndertowSubsystemParser_1_0();
+public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+    protected static final UndertowSubsystemParser_1_1 INSTANCE = new UndertowSubsystemParser_1_1();
     private static final PersistentResourceXMLDescription xmlDescription;
 
     static {
@@ -61,11 +63,8 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 .addAttributes(UndertowRootDefinition.DEFAULT_VIRTUAL_HOST, UndertowRootDefinition.DEFAULT_SERVLET_CONTAINER, UndertowRootDefinition.DEFAULT_SERVER, UndertowRootDefinition.INSTANCE_ID)
                 .addAttribute(UndertowRootDefinition.STATISTICS_ENABLED)
                 .addChild(
-
                         builder(BufferCacheDefinition.INSTANCE)
-                                //.addAttribute(BufferCacheDefinition.BUFFER_SIZE, new AttributeParser.DiscardOldDefaultValueParser("blah"))
                                 .addAttributes(BufferCacheDefinition.BUFFER_SIZE, BufferCacheDefinition.BUFFERS_PER_REGION, BufferCacheDefinition.MAX_REGIONS)
-                                .setXmlWrapperElement(Constants.BUFFER_CACHES)
                 )
                 .addChild(builder(ServerDefinition.INSTANCE)
                         .addAttributes(ServerDefinition.DEFAULT_HOST, ServerDefinition.SERVLET_CONTAINER)
@@ -92,15 +91,15 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                                         .addAttributes(FilterRefDefinition.INSTANCE.getAttributes())
                                                         )
                                         ).addChild(
-                                        builder(AccessLogDefinition.INSTANCE)
-                                                .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
-                                ).addChild(
-                                        builder(FilterRefDefinition.INSTANCE)
-                                                .addAttributes(FilterRefDefinition.INSTANCE.getAttributes())
-                                ).addChild(
-                                        builder(SingleSignOnDefinition.INSTANCE)
-                                                .addAttributes(SingleSignOnDefinition.INSTANCE.getAttributes())
-                                )
+                                                builder(AccessLogDefinition.INSTANCE)
+                                                    .addAttributes(AccessLogDefinition.PATTERN, AccessLogDefinition.DIRECTORY, AccessLogDefinition.PREFIX, AccessLogDefinition.WORKER, AccessLogDefinition.ROTATE)
+                                        ).addChild(
+                                                builder(FilterRefDefinition.INSTANCE)
+                                                    .addAttributes(FilterRefDefinition.INSTANCE.getAttributes())
+                                        ).addChild(
+                                                builder(SingleSignOnDefinition.INSTANCE)
+                                                    .addAttributes(SingleSignOnDefinition.INSTANCE.getAttributes())
+                                        )
                         )
                 )
                 .addChild(
@@ -111,6 +110,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 .addAttribute(ServletContainerDefinition.USE_LISTENER_ENCODING)
                                 .addAttribute(ServletContainerDefinition.DEFAULT_ENCODING)
                                 .addAttribute(ServletContainerDefinition.IGNORE_FLUSH)
+                                .addAttribute(ServletContainerDefinition.EAGER_FILTER_INIT)
                                 .addChild(
                                         builder(JspDefinition.INSTANCE)
                                                 .setXmlElementName(Constants.JSP_CONFIG)
@@ -164,12 +164,11 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                 .setNoAddOperation(true)
                                 .addChild(
                                         builder(FileHandler.INSTANCE)
-                                                .addAttribute(FileHandler.DIRECTORY_LISTING, new AttributeParser.DiscardOldDefaultValueParser("true"))
                                                 .addAttributes(
                                                         FileHandler.PATH,
                                                         FileHandler.CACHE_BUFFER_SIZE,
-                                                        FileHandler.CACHE_BUFFERS
-                                                )
+                                                        FileHandler.CACHE_BUFFERS,
+                                                        FileHandler.DIRECTORY_LISTING)
                                 )
                                 .addChild(
                                         builder(ReverseProxyHandler.INSTANCE)
@@ -180,7 +179,7 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                                         ReverseProxyHandler.MAX_REQUEST_TIME)
                                                 .addChild(builder(ReverseProxyHandlerHost.INSTANCE)
                                                         .setXmlElementName(Constants.HOST)
-                                                        .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID))
+                                                .addAttributes(ReverseProxyHandlerHost.INSTANCE_ID))
                                 )
 
 
@@ -197,15 +196,15 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                                         builder(ConnectionLimitHandler.INSTANCE)
                                                 .addAttributes(ConnectionLimitHandler.MAX_CONCURRENT_REQUESTS, ConnectionLimitHandler.QUEUE_SIZE)
                                 ).addChild(
-                                builder(ResponseHeaderFilter.INSTANCE)
-                                        .addAttributes(ResponseHeaderFilter.INSTANCE.getAttributes())
-                        ).addChild(
-                                builder(GzipFilter.INSTANCE)
-                                        .addAttributes(GzipFilter.INSTANCE.getAttributes())
-                        )
+                                        builder(ResponseHeaderFilter.INSTANCE)
+                                                .addAttributes(ResponseHeaderFilter.INSTANCE.getAttributes())
+                                ).addChild(
+                                        builder(GzipFilter.INSTANCE)
+                                                .addAttributes(GzipFilter.INSTANCE.getAttributes())
+                                )
 
                 )
-                        //todo why do we really need this?
+                //todo why do we really need this?
                 .setAdditionalOperationsGenerator(new PersistentResourceXMLDescription.AdditionalOperationsGenerator() {
                     @Override
                     public void additionalOperations(final PathAddress address, final ModelNode addOperation, final List<ModelNode> operations) {
@@ -216,9 +215,18 @@ public class UndertowSubsystemParser_1_0 implements XMLStreamConstants, XMLEleme
                 .build();
     }
 
-    private UndertowSubsystemParser_1_0() {
+    private UndertowSubsystemParser_1_1() {
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
+        ModelNode model = new ModelNode();
+        model.get(UndertowRootDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
+        xmlDescription.persist(writer, model, Namespace.CURRENT.getUriString());
+    }
 
     /**
      * {@inheritDoc}

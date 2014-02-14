@@ -49,7 +49,7 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
             final String[] alternatives, final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller,
             final boolean resourceOnly, final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
         this(name, xmlName, allowNull, allowExpressions, valueType, minSize, maxSize, elementValidator, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, flags);
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, null, flags);
     }
 
     protected PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
@@ -58,10 +58,12 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
                                                final String[] alternatives, final String[] requires,
                                                final AttributeMarshaller attributeMarshaller,
                                                final boolean resourceOnly, final DeprecationData deprecated,
-                                               final AccessConstraintDefinition[] accessConstraints, final Boolean nullSignificant,
+                                               final AccessConstraintDefinition[] accessConstraints,
+                                               final Boolean nullSignificant,
+                                               final AttributeParser parser,
                                                final AttributeAccess.Flag... flags) {
         super(name, xmlName, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser,flags);
         this.valueType = valueType;
     }
 
@@ -135,7 +137,7 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
             }
             return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, allowExpression, valueType, minSize,
                     maxSize, validator, alternatives, requires,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, flags);
+                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, parser, flags);
         }
     }
 }

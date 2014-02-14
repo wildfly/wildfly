@@ -24,6 +24,7 @@ package org.jboss.as.logging;
 
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -52,16 +53,16 @@ public class PropertyAttributeDefinition extends SimpleAttributeDefinition imple
                                        final ParameterValidator validator, final boolean validateNull, final String[] alternatives, final String[] requires,
                                        final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecationData, final Flag... flags) {
         this(name, xmlName, propertyName, resolver, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires, attributeMarshaller,
-                resourceOnly, deprecationData, null, null, flags);
+                resourceOnly, deprecationData, null, null, null, flags);
     }
 
     private PropertyAttributeDefinition(final String name, final String xmlName, final String propertyName, final ModelNodeResolver<String> resolver, final ModelNode defaultValue, final ModelType type,
             final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit, final ParameterCorrector corrector,
             final ParameterValidator validator, final boolean validateNull, final String[] alternatives, final String[] requires,
             final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecationData,
-            final AccessConstraintDefinition[] accessConstraints, Boolean nullSignificant, final Flag... flags) {
+            final AccessConstraintDefinition[] accessConstraints, Boolean nullSignificant, final AttributeParser parser, final Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires, attributeMarshaller,
-                resourceOnly, deprecationData, accessConstraints, nullSignificant, flags);
+                resourceOnly, deprecationData, accessConstraints, nullSignificant, parser, flags);
         this.propertyName = propertyName;
         this.resolver = resolver;
     }
@@ -164,7 +165,7 @@ public class PropertyAttributeDefinition extends SimpleAttributeDefinition imple
             if (propertyName == null) propertyName = name;
             return new PropertyAttributeDefinition(name, xmlName, propertyName, resolver, defaultValue, type, allowNull, allowExpression, measurementUnit,
                     corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly,
-                    deprecated, accessConstraints, nullSignficant, flags);
+                    deprecated, accessConstraints, nullSignficant, parser, flags);
         }
 
         public Builder setPropertyName(final String propertyName) {

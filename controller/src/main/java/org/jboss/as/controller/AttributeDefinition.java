@@ -76,6 +76,7 @@ public abstract class AttributeDefinition {
     private final DeprecationData deprecationData;
     private final List<AccessConstraintDefinition> accessConstraints;
     private final Boolean nilSignificant;
+    private final AttributeParser parser;
 
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
@@ -83,9 +84,10 @@ public abstract class AttributeDefinition {
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
                                final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                null, validator, true, alternatives, requires, null, false, null, null, null, flags);
+                null, validator, true, alternatives, requires, null, false, null, null, null, AttributeParser.SIMPLE, flags);
     }
 
+    @Deprecated
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
             final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
             final ParameterCorrector valueCorrector, final ParameterValidator validator,
@@ -93,7 +95,7 @@ public abstract class AttributeDefinition {
             boolean resourceOnly, DeprecationData deprecationData, final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, valueCorrector, validator,
                 validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecationData,
-                null, null, flags);
+                null, null, AttributeParser.SIMPLE, flags);
     }
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
@@ -104,7 +106,7 @@ public abstract class AttributeDefinition {
                                   final AttributeAccess.Flag... flags) {
         this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, valueCorrector, validator,
                 validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecationData,
-                accessConstraints, null, flags);
+                accessConstraints, null, AttributeParser.SIMPLE, flags);
     }
 
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
@@ -112,13 +114,14 @@ public abstract class AttributeDefinition {
                                   final ParameterCorrector valueCorrector, final ParameterValidator validator,
                                   boolean validateNull, final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
                                   boolean resourceOnly, DeprecationData deprecationData, final AccessConstraintDefinition[] accessConstraints,
-                                  Boolean nilSignificant, final AttributeAccess.Flag... flags) {
+                                  Boolean nilSignificant, AttributeParser parser, final AttributeAccess.Flag... flags) {
 
         this.name = name;
         this.xmlName = xmlName;
         this.type = type;
         this.allowNull = allowNull;
         this.allowExpression = allowExpression;
+        this.parser = parser != null ? parser : AttributeParser.SIMPLE;
         this.defaultValue = new ModelNode();
         if (defaultValue != null) {
             this.defaultValue.set(defaultValue);
@@ -841,5 +844,9 @@ public abstract class AttributeDefinition {
 
     protected void addAccessConstraints(ModelNode result, Locale locale) {
         AccessConstraintDescriptionProviderUtil.addAccessConstraints(result, accessConstraints, locale);
+    }
+
+    public AttributeParser getParser() {
+        return parser;
     }
 }

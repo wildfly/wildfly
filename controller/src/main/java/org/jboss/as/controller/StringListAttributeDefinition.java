@@ -44,9 +44,9 @@ public final class StringListAttributeDefinition extends PrimitiveListAttributeD
                                           final int minSize, final int maxSize, ParameterValidator elementValidator, final String[] alternatives,
                                           final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
                                           final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints,
-                                          final Boolean nullSignificant, final AttributeAccess.Flag... flags) {
+                                          final Boolean nullSignificant, final AttributeParser parser, final AttributeAccess.Flag... flags) {
         super(name, xmlName, allowNull, allowExpressions, ModelType.STRING, minSize, maxSize, elementValidator, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, flags);
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser, flags);
     }
 
     public List<String> unwrap(final OperationContext context, final ModelNode model) throws OperationFailedException {
@@ -72,6 +72,7 @@ public final class StringListAttributeDefinition extends PrimitiveListAttributeD
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, StringListAttributeDefinition> {
         public Builder(final String name) {
             super(name, ModelType.STRING);
+            parser = AttributeParser.STRING_LIST;
             validator = new ModelTypeValidator(ModelType.STRING);
         }
 
@@ -86,7 +87,7 @@ public final class StringListAttributeDefinition extends PrimitiveListAttributeD
         public StringListAttributeDefinition build() {
             return new StringListAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize,
                     validator, alternatives, requires,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, flags);
+                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, parser, flags);
         }
     }
 }

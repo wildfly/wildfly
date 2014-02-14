@@ -81,6 +81,7 @@ public class SimpleAttributeDefinitionBuilder extends AbstractAttributeDefinitio
 
     public SimpleAttributeDefinitionBuilder(final String attributeName, final ModelType type, final boolean allowNull) {
         super(attributeName, type, allowNull);
+        parser = AttributeParser.SIMPLE;
     }
 
     public SimpleAttributeDefinitionBuilder(final SimpleAttributeDefinition basis) {
@@ -94,7 +95,7 @@ public class SimpleAttributeDefinitionBuilder extends AbstractAttributeDefinitio
     public SimpleAttributeDefinition build() {
         return new SimpleAttributeDefinition(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
                 corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly,deprecated,
-                accessConstraints, nullSignficant, flags);
+                accessConstraints, nullSignficant, parser, flags);
     }
 
     /*

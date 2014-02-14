@@ -26,10 +26,8 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config>
     <extension-module>org.wildfly.extension.undertow</extension-module>
-    <subsystem xmlns="urn:jboss:domain:undertow:1.0">
-        <buffer-caches>
-            <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
-        </buffer-caches>
+    <subsystem xmlns="urn:jboss:domain:undertow:1.1">
+        <buffer-cache name="default" />
         <server name="default-server">
             <http-listener name="default" socket-binding="http" />
             <?AJP?>
@@ -39,11 +37,11 @@
                 <filter-ref name="x-powered-by-header"/>
             </host>
         </server>
-        <servlet-container name="default" default-buffer-cache="default" stack-trace-on-error="local-only" >
+        <servlet-container name="default" >
             <jsp-config/>
         </servlet-container>
         <handlers>
-            <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
+            <file name="welcome-content" path="${jboss.home.dir}/welcome-content" />
         </handlers>
         <filters>
             <response-header name="server-header" header-name="Server" header-value="Wildfly 8"/>

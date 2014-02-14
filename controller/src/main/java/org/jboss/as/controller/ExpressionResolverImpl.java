@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.dmr.ValueExpression;
 
 /**
  * Basic {@link ExpressionResolver} implementation.
@@ -135,7 +136,7 @@ public class ExpressionResolverImpl implements ExpressionResolver {
         if (EXPRESSION_PATTERN.matcher(possibleExpression).matches()) {
             // Keep resolving, but don't fail on unresolvable strings
             ModelNode expression = new ModelNode();
-            expression.setExpression(possibleExpression);
+            expression.set(new ValueExpression(possibleExpression));
             return resolveExpressionType(expression, true);
         }
         return new ModelNode(possibleExpression);

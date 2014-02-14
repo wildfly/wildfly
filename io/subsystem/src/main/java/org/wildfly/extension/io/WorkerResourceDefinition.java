@@ -39,16 +39,11 @@ import org.xnio.Options;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 class WorkerResourceDefinition extends PersistentResourceDefinition {
-    //The defaults for these come from XnioWorker
 
-    /*static final OptionAttributeDefinition THREAD_DAEMON = new OptionAttributeDefinition.Builder(Constants.THREAD_DAEMON, Options.THREAD_DAEMON)
-            .setDefaultValue(new ModelNode(false))
-            .build();*/
     static final OptionAttributeDefinition WORKER_TASK_CORE_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_CORE_THREADS, Options.WORKER_TASK_CORE_THREADS)
-            .setDefaultValue(new ModelNode(4))
+            .setDefaultValue(new ModelNode(2))
             .build();
     static final OptionAttributeDefinition WORKER_TASK_MAX_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_MAX_THREADS, Options.WORKER_TASK_MAX_THREADS)
-            .setDefaultValue(new ModelNode(15))
             .build();
     static final OptionAttributeDefinition WORKER_TASK_KEEPALIVE = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_KEEPALIVE, Options.WORKER_TASK_KEEPALIVE)
             .setDefaultValue(new ModelNode(60))
@@ -57,24 +52,10 @@ class WorkerResourceDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(0L))
             .build();
     static final OptionAttributeDefinition WORKER_IO_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_IO_THREADS, Options.WORKER_IO_THREADS)
-            .setDefaultValue(new ModelNode(4))
             .build();
     /*static final OptionAttributeDefinition WORKER_TASK_LIMIT = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_LIMIT, Options.WORKER_TASK_LIMIT)
             .setDefaultValue(new ModelNode(0x4000))
             .build();*/
-
-    /*
-    workers support...
-    WORKER_NAME THREAD_DAEMON WORKER_TASK_CORE_THREADS WORKER_TASK_MAX_THREADS WORKER_TASK_KEEPALIVE STACK_SIZE WORKER_READ_THREADS WORKER_WRITE_THREADS
-    WORKER_NAME should be derived from the resource name for ease of debugging and whatnot
-    maybe something like "%s I/O" where %s is the name of the resource
-    in current upstream, WORKER_TASK_CORE_THREADS and WORKER_TASK_KEEPALIVE have no effect
-    or WORKER_TASK_LIMIT which should also be supported
-    actually, forget that last one
-    WORKER_TASK_LIMIT should diaf
-    limiting the work queue will just lead to 500 errors and other problems
-     */
-
 
     static OptionAttributeDefinition[] ATTRIBUTES = new OptionAttributeDefinition[]{
             WORKER_IO_THREADS,

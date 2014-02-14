@@ -25,6 +25,8 @@
 package org.wildfly.extension.io;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.wildfly.extension.io.WorkerResourceDefinition.WORKER_IO_THREADS;
+import static org.wildfly.extension.io.WorkerResourceDefinition.WORKER_TASK_MAX_THREADS;
 
 import java.util.List;
 
@@ -65,12 +67,14 @@ class WorkerAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final String name = address.getLastElement().getValue();
-
         final OptionMap.Builder builder = OptionMap.builder();
 
         for (OptionAttributeDefinition attr : WorkerResourceDefinition.ATTRIBUTES) {
             Option option = attr.getOption();
             ModelNode value = attr.resolveModelAttribute(context, model);
+            if (!value.isDefined()) {
+                continue;
+            }
             if (attr.getType() == ModelType.INT) {
                 builder.set((Option<Integer>) option, value.asInt());
             } else if (attr.getType() == ModelType.LONG) {
@@ -80,6 +84,15 @@ class WorkerAdd extends AbstractAddStepHandler {
             }
         }
         builder.set(Options.WORKER_NAME, name);
+
+        ModelNode ioThreadsModel = WORKER_IO_THREADS.resolveModelAttribute(context, model);
+        ModelNode maxTaskThreadsModel = WORKER_TASK_MAX_THREADS.resolveModelAttribute(context, model);
+        if (!ioThreadsModel.isDefined()) {
+            builder.set((Option<Integer>) WORKER_IO_THREADS.getOption(), Runtime.getRuntime().availableProcessors() * 2);
+        }
+        if (!maxTaskThreadsModel.isDefined()) {
+            builder.set((Option<Integer>) WORKER_TASK_MAX_THREADS.getOption(), Runtime.getRuntime().availableProcessors() * 16);
+        }
 
         final WorkerService workerService = new WorkerService(builder.getMap());
         final ServiceBuilder<XnioWorker> serviceBuilder = context.getServiceTarget().
@@ -91,7 +104,5 @@ class WorkerAdd extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(serviceController);
         }
-
-
     }
 }

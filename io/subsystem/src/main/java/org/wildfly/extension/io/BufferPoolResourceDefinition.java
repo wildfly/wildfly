@@ -51,17 +51,39 @@ import org.xnio.Pool;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
 class BufferPoolResourceDefinition extends PersistentResourceDefinition {
+    private static final int defaultBufferSize;
+    private static final int defaultBuffersPerRegion;
+    private static final boolean defaultDirectBuffers;
 
-    static final SimpleAttributeDefinition BUFFER_SIZE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_SIZE, ModelType.INT)
-            .setDefaultValue(new ModelNode(1024))
+    static {
+        long maxMemory = Runtime.getRuntime().maxMemory();
+        //smaller than 64mb of ram we use 512b buffers
+        if (maxMemory < 64 * 1024 * 1024) {
+            //use 512b buffers
+            defaultDirectBuffers = false;
+            defaultBufferSize = 512;
+            defaultBuffersPerRegion = 10;
+        } else if (maxMemory < 128 * 1024 * 1024) {
+            //use 1k buffers
+            defaultDirectBuffers = true;
+            defaultBufferSize = 1024;
+            defaultBuffersPerRegion = 10;
+        } else {
+            //use 16k buffers for best performance
+            //as 16k is generally the max amount of data that can be sent in a single write() call
+            defaultDirectBuffers = true;
+            defaultBufferSize = 1024 * 16;
+            defaultBuffersPerRegion = 20;
+        }
+    }
+
+    static final SimpleAttributeDefinition BUFFER_SIZE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_SIZE, ModelType.INT, true)
             .setAllowExpression(true)
             .build();
-    static final SimpleAttributeDefinition BUFFER_PER_SLICE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_PER_SLICE, ModelType.INT)
-            .setDefaultValue(new ModelNode(1024))
+    static final SimpleAttributeDefinition BUFFER_PER_SLICE = new SimpleAttributeDefinitionBuilder(Constants.BUFFER_PER_SLICE, ModelType.INT, true)
             .setAllowExpression(true)
             .build();
     static final SimpleAttributeDefinition DIRECT_BUFFERS = new SimpleAttributeDefinitionBuilder(Constants.DIRECT_BUFFERS, ModelType.BOOLEAN, true)
-            .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
             .build();
 
@@ -103,13 +125,13 @@ class BufferPoolResourceDefinition extends PersistentResourceDefinition {
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
             final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
             final String name = address.getLastElement().getValue();
-            int bufferSize = BUFFER_SIZE.resolveModelAttribute(context, model).asInt();
-            int bufferPerSlice = BUFFER_PER_SLICE.resolveModelAttribute(context, model).asInt();
-            boolean direct = true;
-            ModelNode directBuffersModel = DIRECT_BUFFERS.resolveModelAttribute(context, model);
-            if(directBuffersModel.isDefined()) {
-                direct = directBuffersModel.asBoolean();
-            }
+            final ModelNode bufferSizeModel = BUFFER_SIZE.resolveModelAttribute(context, model);
+            final ModelNode bufferPerSliceModel = BUFFER_PER_SLICE.resolveModelAttribute(context, model);
+            final ModelNode directModel = DIRECT_BUFFERS.resolveModelAttribute(context, model);
+
+            final int bufferSize = bufferSizeModel.isDefined() ? bufferSizeModel.asInt() : defaultBufferSize;
+            final int bufferPerSlice = bufferPerSliceModel.isDefined() ? bufferPerSliceModel.asInt() : defaultBuffersPerRegion;
+            final boolean direct = directModel.isDefined() ? directModel.asBoolean() : defaultDirectBuffers;
 
             final BufferPoolService service = new BufferPoolService(bufferSize, bufferPerSlice, direct);
             final ServiceBuilder<Pool<ByteBuffer>> serviceBuilder = context.getServiceTarget().addService(IOServices.BUFFER_POOL.append(name), service);
@@ -120,8 +142,6 @@ class BufferPoolResourceDefinition extends PersistentResourceDefinition {
             if (newControllers != null) {
                 newControllers.add(serviceController);
             }
-
-
         }
     }
 }

@@ -1,73 +1,21 @@
-<!--
-  ~ JBoss, Home of Professional Open Source.
-  ~ Copyright 2013, Red Hat, Inc., and individual contributors
-  ~ as indicated by the @author tags. See the copyright.txt file in the
-  ~ distribution for a full listing of individual contributors.
-  ~
-  ~ This is free software; you can redistribute it and/or modify it
-  ~ under the terms of the GNU Lesser General Public License as
-  ~ published by the Free Software Foundation; either version 2.1 of
-  ~ the License, or (at your option) any later version.
-  ~
-  ~ This software is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-  ~ Lesser General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU Lesser General Public
-  ~ License along with this software; if not, write to the Free
-  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
-  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
-  -->
-
-<subsystem xmlns="urn:jboss:domain:undertow:1.0" default-virtual-host="default-virtual-host" default-servlet-container="default-servlet-container"
-           default-server="some-server" instance-id="some-id">
-
-
-    <buffer-caches>
-        <buffer-cache name="default" buffer-size="1024" buffers-per-region="1024" max-regions="10"/>
-    </buffer-caches>
-
-    <server name="default-server" default-host="localhost" servlet-container="blah">
-        <http-listener name="default" socket-binding="http"/>
-        <ajp-listener name="ajp-connector" socket-binding="ajp"/>
-
-        <host name="default-host" alias="localhost">
-            <location name="/" handler="welcome-content">
-            </location>
-
-        </host>
-
-    </server>
-     <server name="test" default-host="test-context" servlet-container="blah">
-           <host name="default-host"/>
+<subsystem xmlns="urn:jboss:domain:undertow:1.1">
+       <buffer-cache name="default" />
+       <server name="default-server">
+           <http-listener name="default" socket-binding="http" />
+           <host name="default-host" alias="localhost">
+               <location name="/" handler="welcome-content" />
+               <filter-ref name="server-header"/>
+               <filter-ref name="x-powered-by-header"/>
+           </host>
        </server>
-
-    <servlet-container name="default" >
-        <jsp-config
-                    disabled="${prop.disabled:false}"
-                    development="${prop.development:false}"
-                    keep-generated="${prop.keep-generated:true}"
-                    trim-spaces="${prop.trim-spaces:true}"
-                    tag-pooling="${prop.tag-pooling:true}"
-                    mapped-file="${prop.mapped-file:true}"
-                    check-interval="${prop.check-interval:20}"
-                    modification-test-interval="${prop.modification-test-interval:1000}"
-                    recompile-on-fail="${prop.recompile-on-fail:true}"
-                    smap="${prop.smap:true}"
-                    dump-smap="${prop.dump-smap:true}"
-                    generate-strings-as-char-arrays="${prop.generate-strings-as-char-arrays:true}"
-                    error-on-use-bean-invalid-class-attribute="${prop.error-on-use-bean-invalid-class-attribute:true}"
-                    scratch-dir="${prop.scratch-dir:/some/dir}"
-                    source-vm="${prop.source-vm:1.7}"
-                    target-vm="${prop.target-vm:1.7}"
-                    java-encoding="${prop.java-encoding:utf-8}"
-                    x-powered-by="${prop.x-powered-by:true}"
-                    display-source-fragment="${prop.display-source-fragment:true}"/>
-    </servlet-container>
-
-    <handlers>
-        <file name="welcome-content" path="${jboss.home.dir}/welcome-content" directory-listing="true"/>
-    </handlers>
-
-</subsystem>
+       <servlet-container name="default" >
+           <jsp-config/>
+       </servlet-container>
+       <handlers>
+           <file name="welcome-content" path="${jboss.home.dir}/welcome-content" />
+       </handlers>
+       <filters>
+           <response-header name="server-header" header-name="Server" header-value="Wildfly 8"/>
+           <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow 1"/>
+       </filters>
+   </subsystem>

@@ -22,58 +22,45 @@
 
 package org.wildfly.extension.io;
 
-import java.util.List;
+import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
+import java.util.List;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
-import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import static org.jboss.as.controller.PersistentResourceXMLDescription.builder;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class IOSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>>, XMLElementWriter<SubsystemMarshallingContext> {
+class IOSubsystemParser_1_0 implements XMLStreamConstants, XMLElementReader<List<ModelNode>> {
+
     static final IOSubsystemParser_1_0 INSTANCE = new IOSubsystemParser_1_0();
 
+    private final PersistentResourceXMLDescription xmlDescription;
 
-    private static final PersistentResourceXMLDescription xmlDescription;
-
-    static {
+    private IOSubsystemParser_1_0() {
         xmlDescription = builder(IORootDefinition.INSTANCE)
                 .addChild(
                         builder(WorkerResourceDefinition.INSTANCE)
+                                .addAttribute(WorkerResourceDefinition.WORKER_IO_THREADS, new AttributeParser.DiscardOldDefaultValueParser("3"))
                                 .addAttributes(
-                                        WorkerResourceDefinition.WORKER_IO_THREADS,
                                         WorkerResourceDefinition.WORKER_TASK_KEEPALIVE,
                                         WorkerResourceDefinition.WORKER_TASK_MAX_THREADS,
                                         WorkerResourceDefinition.STACK_SIZE)
                 )
                 .addChild(
                         builder(BufferPoolResourceDefinition.INSTANCE)
-                                .addAttributes(BufferPoolResourceDefinition.BUFFER_SIZE,
-                                        BufferPoolResourceDefinition.BUFFER_PER_SLICE,
-                                        BufferPoolResourceDefinition.DIRECT_BUFFERS)
+                                .addAttribute(BufferPoolResourceDefinition.BUFFER_SIZE, new AttributeParser.DiscardOldDefaultValueParser("16384"))
+                                .addAttribute(BufferPoolResourceDefinition.BUFFER_PER_SLICE, new AttributeParser.DiscardOldDefaultValueParser("128"))
+                                .addAttribute(BufferPoolResourceDefinition.DIRECT_BUFFERS)
                 )
                 .build();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void writeContent(XMLExtendedStreamWriter writer, SubsystemMarshallingContext context) throws XMLStreamException {
-        ModelNode model = new ModelNode();
-        model.get(IORootDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(context.getModelNode());//this is bit of workaround for SPRD to work properly
-        xmlDescription.persist(writer, model, Namespace.CURRENT.getUriString());
     }
 
     /**

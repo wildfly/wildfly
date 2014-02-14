@@ -151,7 +151,6 @@
         <version.org.glassfish.javax.json>1.0.3</version.org.glassfish.javax.json>
         <version.org.hibernate>4.3.4.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.4.Final</version.org.hibernate.commons.annotations>
-        <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>5.1.0.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
         <version.org.hibernate.hql>1.0.0.Alpha6</version.org.hibernate.hql>
