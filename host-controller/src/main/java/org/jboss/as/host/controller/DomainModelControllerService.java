@@ -499,6 +499,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 } else {
 
                     if (environment.isUseCachedDc()) {
+                        ROOT_LOGGER.usingCachedDC(CommandLineConstants.CACHED_DC, ConfigurationPersisterFactory.CACHED_DOMAIN_XML);
                         remoteFileRepository.setRemoteFileRepositoryExecutor(new RemoteDomainConnectionService.RemoteFileRepositoryExecutor() {
                             @Override
                             public File getFile(String relativePath, byte repoId, HostFileRepository localFileRepository) {

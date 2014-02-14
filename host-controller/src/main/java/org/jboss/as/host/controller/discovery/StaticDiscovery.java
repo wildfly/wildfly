@@ -38,10 +38,10 @@ import org.jboss.dmr.ModelNode;
 public class StaticDiscovery implements DiscoveryOption {
 
     // The host name of the domain controller
-    private String remoteDcHost;
+    private final String remoteDcHost;
 
     // The port number of the domain controller
-    private int remoteDcPort;
+    private final int remoteDcPort;
 
     /**
      * Create the StaticDiscovery option.
@@ -87,5 +87,10 @@ public class StaticDiscovery implements DiscoveryOption {
     @Override
     public int getRemoteDomainControllerPort() {
         return remoteDcPort;
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{host=" + remoteDcHost + ",port=" + remoteDcPort + '}';
     }
 }
