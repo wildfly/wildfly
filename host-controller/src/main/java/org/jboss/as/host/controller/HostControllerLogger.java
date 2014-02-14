@@ -24,6 +24,7 @@ package org.jboss.as.host.controller;
 
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
+import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.as.host.controller.model.host.AdminOnlyDomainConfigPolicy;
 import org.jboss.as.host.controller.model.jvm.JvmType;
 import org.jboss.as.server.ServerState;
@@ -37,7 +38,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 import org.jboss.remoting3.Channel;
 
-import java.io.IOException;
+import java.net.URI;
 
 /**
  * This module is using message IDs in the range 10800-10999. This file is using the subset 10900-10939 for host
@@ -74,13 +75,12 @@ public interface HostControllerLogger extends BasicLogger {
     /**
      * Logs a warning message indicating the remote domain controller could not connect.
      *
-     * @param hostAddress the host name.
-     * @param port        the port.
+     * @param uri         the URI to which the connection attempt was made
      * @param cause       the cause
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 10900, value = "Could not connect to remote domain controller %s:%d: %s")
-    void cannotConnect(String hostAddress, int port, IOException cause);
+    @Message(id = 10900, value = "Could not connect to remote domain controller at %s -- %s")
+    void cannotConnect(URI uri, Exception cause);
 
     /**
      * Logs an error message indicating this host is a slave and cannot connect to the master host controller.
@@ -185,8 +185,6 @@ public interface HostControllerLogger extends BasicLogger {
     /**
      * Logs an error message indicating this host had no domain controller configuration and cannot start if not in
      * {@link org.jboss.as.controller.RunningMode#ADMIN_ONLY} mode.
-     *
-     * @return a message for the error.
      */
     @LogMessage(level = Level.ERROR)
     @Message(id = 10911, value = "No <domain-controller> configuration was provided and the current running mode ('%s') " +
@@ -216,7 +214,7 @@ public interface HostControllerLogger extends BasicLogger {
      * Logs an error message indicating the connection to the remote host controller closed.
      */
     @LogMessage(level = Level.WARN)
-    @Message(id = 10914, value = "Connection to remote host-controller closed. Trying to reconnect.")
+    @Message(id = 10914, value = "Connection to remote host-controller closed.")
     void lostRemoteDomainConnection();
 
     /**
@@ -233,9 +231,9 @@ public interface HostControllerLogger extends BasicLogger {
     /**
      * Logs an informational message indicating a reconnection to master.
      */
-    @LogMessage(level = Level.INFO)
-    @Message(id = 10916, value = "Reconnected to master")
-    void reconnectedToMaster();
+//    @LogMessage(level = Level.INFO)
+//    @Message(id = 10916, value = "Reconnected to master")
+//    void reconnectedToMaster();
 
     /**
      * Logs an informational message indicating the server is being reconnected.
@@ -407,9 +405,9 @@ public interface HostControllerLogger extends BasicLogger {
      *
      * @param e the cause of the error.
      */
-    @LogMessage(level = Level.WARN)
-    @Message(id=16534, value = "Could not connect to master. Trying another domain controller discovery option. Error was: %s")
-    void tryingAnotherDiscoveryOption(Exception e);
+//    @LogMessage(level = Level.WARN)
+//    @Message(id=16534, value = "Could not connect to master. Trying another domain controller discovery option. Error was: %s")
+//    void tryingAnotherDiscoveryOption(Exception e);
 
     /**
      * Logs a warning message indicating that the slave host controller could not
@@ -417,9 +415,9 @@ public interface HostControllerLogger extends BasicLogger {
      *
      * @param e the cause of the error.
      */
-    @LogMessage(level = Level.WARN)
-    @Message(id=16535, value = "Could not connect to master. No domain controller discovery options left. Error was: %s")
-    void noDiscoveryOptionsLeft(Exception e);
+//    @LogMessage(level = Level.WARN)
+//    @Message(id=16535, value = "Could not connect to master at URI %s. No domain controller discovery options left. Error was: %s")
+//    void noDiscoveryOptionsLeft(Exception e);
 
     /**
      * Logs an error message indicating that the master host controller could not write its
@@ -441,7 +439,7 @@ public interface HostControllerLogger extends BasicLogger {
     @Message(id=16537, value = "Could not remove S3 file. Error was: %s")
     void cannotRemoveS3File(Exception e);
 
-    // WARNING -- THE MESSAGE NUMBERS ABOVE SHOULD NOT BE IN THIS FILE, BUT NOW THEY ARE OUT IN THE WILD
+    // END WARNING -- THE MESSAGE NUMBERS *ABOVE* SHOULD NOT BE IN THIS FILE, BUT NOW THEY ARE OUT IN THE WILD
 
     // BEGIN WITH 16576
 
@@ -472,7 +470,40 @@ public interface HostControllerLogger extends BasicLogger {
                                                AdminOnlyDomainConfigPolicy policy,
                                                String cachedDcCmdLineArg, RunningMode desiredRunningMode);
 
+    /**
+     * Logs a warning message indicating that the slave host controller could not
+     * discover the remote domain controller using the given {@link org.jboss.as.host.controller.discovery.DiscoveryOption}.
+     *
+     * @param e the cause of the error.
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id=16580, value = "Could not discover master using discovery option %s. Error was: %s")
+    void failedDiscoveringMaster(DiscoveryOption option, Exception e);
 
+    /**
+     * Logs a warning message indicating that there are no discovery options left.
+     *
+     */
+    @LogMessage(level = Level.WARN)
+    @Message(id=16581, value = "No domain controller discovery options remain.")
+    void noDiscoveryOptionsLeft();
+
+    /**
+     * Logs a message indicating that the slave host controller connected with the master HC.
+     *
+     * @param uri the URI at which the master was reached
+     */
+    @LogMessage(level = Level.INFO)
+    @Message(id=16582, value = "Connected to master host controller at %s")
+    void connectedToMaster(URI uri);
+
+    @LogMessage(level = Level.INFO)
+    @Message(id=16583, value = "Option %s was set; obtaining domain-wide configuration from %s")
+    void usingCachedDC(String configOption, String cachedXmlFile);
+
+    @LogMessage(level = Level.INFO)
+    @Message(id=16584, value = "Trying to reconnect to master host controller.")
+    void reconnectingToMaster();
 
     // END WITH 16599
 }

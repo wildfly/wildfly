@@ -232,58 +232,52 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
            final long timeout = CONNECTION_TIMEOUT;
            final long endTime = System.currentTimeMillis() + timeout;
            int retries = 0;
-           String host = null;
-           int port = -1;
+           URI masterURI = null;
            try {
                // Determine the remote DC host and port to use
                discoveryOption.discover();
-               host = discoveryOption.getRemoteDomainControllerHost();
-               port = discoveryOption.getRemoteDomainControllerPort();
-               connection.setUri(new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port));
-
+               String host = discoveryOption.getRemoteDomainControllerHost();
+               int port = discoveryOption.getRemoteDomainControllerPort();
+               masterURI = new URI("remote://" + NetworkUtils.formatPossibleIpv6Address(host) + ":" + port);
+               connection.setUri(masterURI);
                while (!connected) {
                    try {
                        // Try to connect to the domain controller
                        connection.connect();
                        connected = true;
                    } catch (IOException e) {
-                       Throwable cause = e;
-                       HostControllerLogger.ROOT_LOGGER.debugf(e, "failed to connect to %s:%d", host, port);
-                       while ((cause = cause.getCause()) != null) {
-                           if (cause instanceof SaslException) {
-                               throw MESSAGES.authenticationFailureUnableToConnect(cause);
-                           } else if (cause instanceof SSLHandshakeException) {
-                               throw MESSAGES.sslFailureUnableToConnect(cause);
-                           } else if (cause instanceof SlaveRegistrationException) {
-                               throw new IOException(cause);
-                           }
-                       }
+                       // If the cause is one of the irrecoverable ones, unwrap and throw it on
+                       rethrowIrrecoverableConnectionFailures(e);
+
+                       // Something else; we can retry if time remains
+                       HostControllerLogger.ROOT_LOGGER.cannotConnect(masterURI, e);
                        if (System.currentTimeMillis() > endTime) {
                            throw MESSAGES.connectionToMasterTimeout(e, retries, timeout);
                        }
+
                        try {
-                           HostControllerLogger.ROOT_LOGGER.cannotConnect(host, port, e);
                            ReconnectPolicy.CONNECT.wait(retries);
                            retries++;
                        } catch (InterruptedException ie) {
+                           Thread.currentThread().interrupt();
                            throw MESSAGES.connectionToMasterInterrupted();
                        }
                    }
                }
-               if(connected) {
-                   // Setup the transaction protocol handler
-                   handler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, handler));
-                   // Use the existing channel strategy
-                   masterProxy = ExistingChannelModelControllerClient.createAndAdd(handler);
-                   txMasterProxy = new TransactionalDomainControllerClient(handler);
-                   break;
-               }
+
+               HostControllerLogger.ROOT_LOGGER.connectedToMaster(masterURI);
+
+               // Setup the transaction protocol handler
+               handler.addHandlerFactory(new TransactionalProtocolOperationHandler(controller, handler));
+               // Use the existing channel strategy
+               masterProxy = ExistingChannelModelControllerClient.createAndAdd(handler);
+               txMasterProxy = new TransactionalDomainControllerClient(handler);
+               break;
+
            } catch (Exception e) {
-               if (i.hasNext()) {
-                   HostControllerLogger.ROOT_LOGGER.tryingAnotherDiscoveryOption(e);
-               } else {
-                   // All discovery options have been exhausted
-                   HostControllerLogger.ROOT_LOGGER.noDiscoveryOptionsLeft(e);
+               boolean moreOptions = i.hasNext();
+               logConnectionException(masterURI, discoveryOption, moreOptions, e);
+               if (!moreOptions) {
                    throw MESSAGES.discoveryOptionsFailureUnableToConnect(e);
                }
            }
@@ -508,6 +502,47 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     @Override
     public synchronized MasterDomainControllerClient getValue() throws IllegalStateException, IllegalArgumentException {
         return this;
+    }
+
+    /**
+     * Analyzes a failure thrown connecting to the master for causes that indicate
+     * some problem not likely to be resolved by immediately retrying. If found,
+     * throws an exception highlighting the underlying cause. If the cause is not
+     * one of the ones understood by this method, the method returns normally.
+     *
+     * @throws org.jboss.as.domain.controller.SlaveRegistrationException if the remote HC rejected the request
+     * @throws IllegalStateException for other failures understood by this method
+     */
+    static void rethrowIrrecoverableConnectionFailures(IOException e) throws SlaveRegistrationException {
+        Throwable cause = e;
+        while ((cause = cause.getCause()) != null) {
+            if (cause instanceof SaslException) {
+                throw MESSAGES.authenticationFailureUnableToConnect(cause);
+            } else if (cause instanceof SSLHandshakeException) {
+                throw MESSAGES.sslFailureUnableToConnect(cause);
+            } else if (cause instanceof SlaveRegistrationException) {
+                throw (SlaveRegistrationException) cause;
+            }
+        }
+    }
+
+    /**
+     * Handles logging tasks related to a failure to connect to a remote HC.
+     * @param uri the URI at which the connection attempt was made. Can be {@code null} indicating a failure to discover the HC
+     * @param discoveryOption the {@code DiscoveryOption} used to determine {@code uri}
+     * @param moreOptions {@code true} if there are more untried discovery options
+     * @param e the exception
+     */
+    static void logConnectionException(URI uri, DiscoveryOption discoveryOption, boolean moreOptions, Exception e) {
+        if (uri == null) {
+            HostControllerLogger.ROOT_LOGGER.failedDiscoveringMaster(discoveryOption, e);
+        } else {
+            HostControllerLogger.ROOT_LOGGER.cannotConnect(uri, e);
+        }
+        if (!moreOptions) {
+            // All discovery options have been exhausted
+            HostControllerLogger.ROOT_LOGGER.noDiscoveryOptionsLeft();
+        }
     }
 
     private class GetFileRequest extends AbstractManagementRequest<File, Void> {
