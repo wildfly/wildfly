@@ -295,4 +295,49 @@ public class JacORBTransformersTestCase extends AbstractSubsystemTest {
 
         checkSubsystemModelTransformation(mainServices, version_1_2_0);
     }
+
+    @Test
+    public void testTransformersIORSettings712() throws Exception {
+        testTransformersIORSettings(ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+
+    @Test
+    public void testTransformersIORSettings713() throws Exception {
+        testTransformersIORSettings(ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
+    private void testTransformersIORSettings(ModelTestControllerVersion controllerVersion) throws Exception {
+
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        ModelVersion version = ModelVersion.create(1, 1, 0);
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(AdditionalInitialization.MANAGEMENT, controllerVersion, version)
+                .addMavenResourceURL("org.jboss.as:jboss-as-jacorb:" + controllerVersion.getMavenGavVersion());
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(version);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version,
+                builder.parseXmlResource("subsystem-1.4-ior-settings.xml"),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(PathAddress.pathAddress(JacORBSubsystemResource.INSTANCE.getPathElement(),
+                                    IORSettingsDefinition.INSTANCE.getPathElement()),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(PathAddress.pathAddress(JacORBSubsystemResource.INSTANCE.getPathElement(),
+                                    IORSettingsDefinition.INSTANCE.getPathElement(),
+                                    IORTransportConfigDefinition.INSTANCE.getPathElement()),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(PathAddress.pathAddress(JacORBSubsystemResource.INSTANCE.getPathElement(),
+                                    IORSettingsDefinition.INSTANCE.getPathElement(),
+                                    IORASContextDefinition.INSTANCE.getPathElement()),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(PathAddress.pathAddress(JacORBSubsystemResource.INSTANCE.getPathElement(),
+                                    IORSettingsDefinition.INSTANCE.getPathElement(),
+                                    IORSASContextDefinition.INSTANCE.getPathElement()),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE));
+    }
 }

@@ -235,4 +235,9 @@ public class JacORBSubsystemTestCase extends AbstractSubsystemBaseTest {
         super.standardSubsystemTest("subsystem-security-client.xml");
     }
 
+    @Test
+    public void testSubsystemWithIORSettings() throws Exception {
+        super.standardSubsystemTest("subsystem-1.4-ior-settings.xml");
+    }
+
 }
