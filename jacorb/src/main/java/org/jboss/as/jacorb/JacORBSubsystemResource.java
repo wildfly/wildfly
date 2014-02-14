@@ -46,7 +46,7 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
 
     private JacORBSubsystemResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JacORBExtension.SUBSYSTEM_NAME),
-                JacORBExtension.getResourceDescriptionResolver(JacORBExtension.SUBSYSTEM_NAME),
+                JacORBExtension.getResourceDescriptionResolver(),
                 JacORBSubsystemAdd.INSTANCE,
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }
@@ -58,6 +58,12 @@ public class JacORBSubsystemResource extends SimpleResourceDefinition {
         for (AttributeDefinition attr : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
             registry.registerReadWriteAttribute(attr, null, attributeHander);
         }
+    }
+
+    @Override
+    public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
+        super.registerChildren(resourceRegistration);
+        resourceRegistration.registerSubModel(IORSettingsDefinition.INSTANCE);
     }
 
     private static class JacorbReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
