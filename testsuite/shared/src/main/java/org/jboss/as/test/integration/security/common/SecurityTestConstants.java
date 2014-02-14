@@ -28,6 +28,17 @@ package org.jboss.as.test.integration.security.common;
  */
 public class SecurityTestConstants {
 
+    public static final String SERVER_KEYSTORE = "server.keystore";
+    public static final String SERVER_TRUSTSTORE = "server.truststore";
+    public static final String SERVER_CRT = "server.crt";
+    public static final String CLIENT_KEYSTORE = "client.keystore";
+    public static final String CLIENT_TRUSTSTORE = "client.truststore";
+    public static final String CLIENT_CRT = "client.crt";
+    public static final String UNTRUSTED_KEYSTORE = "untrusted.keystore";
+    public static final String UNTRUSTED_CRT = "untrusted.crt";
+
+    public static final String KEYSTORE_PASSWORD = "123456";
+
     /**
      * A web.xml content (web-app version=3.0), which sets authentication method to BASIC.
      */
