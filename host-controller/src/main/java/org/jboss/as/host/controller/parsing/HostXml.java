@@ -830,13 +830,15 @@ public class HostXml extends CommonXml {
                         case DOMAIN_1_1:
                         case DOMAIN_1_2:
                         case DOMAIN_1_3:
-                        case DOMAIN_1_4:
-                        case DOMAIN_1_5: {
+                        case DOMAIN_1_4: {
                             parseRemoteDomainController1_1(reader, address, expectedNs, list);
                             break;
                         }
+                        case DOMAIN_1_5: {
+                            parseRemoteDomainController1_5(reader, address, expectedNs, list, false);
+                        }
                         default: {
-                            parseRemoteDomainController1_6(reader, address, expectedNs, list);
+                            parseRemoteDomainController1_5(reader, address, expectedNs, list, true);
                             break;
                         }
                     }
@@ -898,12 +900,8 @@ public class HostXml extends CommonXml {
             case DOMAIN_1_2:
                 parseRemoteDomainControllerAttributes_1_0(reader, address, list);
                 break;
-            case DOMAIN_1_3:
-            case DOMAIN_1_4:
-                parseRemoteDomainControllerAttributes_1_3(reader, address, list);
-                break;
             default:
-                parseRemoteDomainControllerAttributes_1_5(reader, address, list);
+                parseRemoteDomainControllerAttributes_1_3(reader, address, list);
                 break;
         }
 
@@ -922,11 +920,24 @@ public class HostXml extends CommonXml {
         }
     }
 
-    private void parseRemoteDomainController1_6(final XMLExtendedStreamReader reader, final ModelNode address,
-                                                Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+    private void parseRemoteDomainController1_5(final XMLExtendedStreamReader reader, final ModelNode address,
+                                                Namespace expectedNs, final List<ModelNode> list,
+                                                boolean allowDiscoveryOptions) throws XMLStreamException {
+        boolean requireDiscoveryOptions = false;
         boolean hasDiscoveryOptions = false;
-        boolean requireDiscoveryOptions = parseRemoteDomainControllerAttributes_1_6(reader, address, list);
-
+        switch (expectedNs) {
+            case DOMAIN_1_1:
+            case DOMAIN_1_2:
+                parseRemoteDomainControllerAttributes_1_0(reader, address, list);
+                break;
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:
+                parseRemoteDomainControllerAttributes_1_3(reader, address, list);
+                break;
+            default:
+                requireDiscoveryOptions = parseRemoteDomainControllerAttributes_1_5(reader, address, list, allowDiscoveryOptions);
+                break;
+        }
         Set<String> types = new HashSet<String>();
         Set<String> staticDiscoveryOptionNames = new HashSet<String>();
         Set<String> discoveryOptionNames = new HashSet<String>();
@@ -939,6 +950,9 @@ public class HostXml extends CommonXml {
                     break;
                 }
                 case DISCOVERY_OPTIONS: { // Different from parseRemoteDomainController1_1
+                    if (!allowDiscoveryOptions) {
+                        throw unexpectedElement(reader);
+                    }
                     if (hasDiscoveryOptions) {
                         throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
@@ -1078,17 +1092,13 @@ public class HostXml extends CommonXml {
     }
 
     private boolean parseRemoteDomainControllerAttributes_1_5(final XMLExtendedStreamReader reader, final ModelNode address,
-            final List<ModelNode> list) throws XMLStreamException {
+                                                              final List<ModelNode> list, boolean allowDiscoveryOptions) throws XMLStreamException {
 
         final ModelNode update = new ModelNode();
         update.get(OP_ADDR).set(address);
         update.get(OP).set("write-remote-domain-controller");
 
         // Handle attributes
-        String host = null;
-        ModelNode port = null;
-        String securityRealm = null;
-        String username = null;
         boolean requireDiscoveryOptions = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -1099,29 +1109,19 @@ public class HostXml extends CommonXml {
                 final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
                 switch (attribute) {
                     case HOST: {
-                        host = value;
+                        RemoteDomainControllerAddHandler.HOST.parseAndSetParameter(value, update, reader);
                         break;
                     }
                     case PORT: {
-                        port = parsePossibleExpression(value);
-                        if(port.getType() != ModelType.EXPRESSION) {
-                            try {
-                                Integer portNo = Integer.valueOf(value);
-                                if (portNo.intValue() < 1) {
-                                    throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
-                                }
-                            }catch(NumberFormatException e) {
-                                throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
-                            }
-                        }
+                        RemoteDomainControllerAddHandler.PORT.parseAndSetParameter(value, update, reader);
                         break;
                     }
                     case SECURITY_REALM: {
-                        securityRealm = value;
+                        RemoteDomainControllerAddHandler.SECURITY_REALM.parseAndSetParameter(value, update, reader);
                         break;
                     }
                     case USERNAME: {
-                        username = value;
+                        RemoteDomainControllerAddHandler.USERNAME.parseAndSetParameter(value, update, reader);
                         break;
                     }
                     case ADMIN_ONLY_POLICY: {
@@ -1134,93 +1134,21 @@ public class HostXml extends CommonXml {
             }
         }
 
-        // Different from parseRemoteDomainControllerAttributes_1_3
-        if ((host == null) || (port == null)) {
-            requireDiscoveryOptions = true;
-        } else {
-            update.get(HOST).set(parsePossibleExpression(host));
-            update.get(PORT).set(port);
-        }
-        if (securityRealm != null) {
-            update.get(SECURITY_REALM).set(securityRealm);
-        }
-        if (username != null) {
-            update.get(USERNAME).set(username);
-        }
-        list.add(update);
-        return requireDiscoveryOptions;
-    }
-
-    private boolean parseRemoteDomainControllerAttributes_1_6(final XMLExtendedStreamReader reader, final ModelNode address,
-            final List<ModelNode> list) throws XMLStreamException {
-
-        final ModelNode update = new ModelNode();
-        update.get(OP_ADDR).set(address);
-        update.get(OP).set("write-remote-domain-controller");
-
-        // Handle attributes
-        String host = null;
-        ModelNode port = null;
-        String securityRealm = null;
-        String username = null;
-        boolean requireDiscoveryOptions = false;
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            final String value = reader.getAttributeValue(i);
-            if (!isNoNamespaceAttribute(reader, i)) {
-                throw unexpectedAttribute(reader, i);
+        if (!update.hasDefined(RemoteDomainControllerAddHandler.HOST.getName())) {
+            if (allowDiscoveryOptions) {
+                requireDiscoveryOptions = true;
             } else {
-                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-                switch (attribute) {
-                    case HOST: {
-                        host = value;
-                        break;
-                    }
-                    case PORT: {
-                        port = parsePossibleExpression(value);
-                        if(port.getType() != ModelType.EXPRESSION) {
-                            try {
-                                Integer portNo = Integer.valueOf(value);
-                                if (portNo.intValue() < 1) {
-                                    throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
-                                }
-                            }catch(NumberFormatException e) {
-                                throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
-                            }
-                        }
-                        break;
-                    }
-                    case SECURITY_REALM: {
-                        securityRealm = value;
-                        break;
-                    }
-                    case USERNAME: {
-                        username = value;
-                        break;
-                    }
-                    case ADMIN_ONLY_POLICY: {
-                        RemoteDomainControllerAddHandler.ADMIN_ONLY_POLICY.parseAndSetParameter(value, update, reader);
-                        break;
-                    }
-                    default:
-                        throw unexpectedAttribute(reader, i);
-                }
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.HOST.getLocalName()));
+            }
+        }
+        if (!update.hasDefined(RemoteDomainControllerAddHandler.PORT.getName())) {
+            if (allowDiscoveryOptions) {
+                requireDiscoveryOptions = true;
+            } else {
+                throw ParseUtils.missingRequired(reader, Collections.singleton(Attribute.PORT.getLocalName()));
             }
         }
 
-        // Different from parseRemoteDomainControllerAttributes_1_3
-        if ((host == null) || (port == null)) {
-            requireDiscoveryOptions = true;
-        } else {
-            update.get(HOST).set(parsePossibleExpression(host));
-            update.get(PORT).set(port);
-        }
-        if (securityRealm != null) {
-            update.get(SECURITY_REALM).set(securityRealm);
-        }
-        if (username != null) {
-            update.get(USERNAME).set(username);
-        }
         list.add(update);
         return requireDiscoveryOptions;
     }
