@@ -250,13 +250,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
      * @param attachment
      * @return
      */
-    // This information is already present in (undertow) SecurityContext, but there is no getter for it, so we cannot reuse it
     private Boolean isMandatory(final ServletRequestContext attachment) {
-        return attachment.getCurrentServlet() != null
-                && attachment.getCurrentServlet().getManagedServlet() != null
-                && attachment.getCurrentServlet().getManagedServlet().getServletInfo() != null
-                && attachment.getCurrentServlet().getManagedServlet().getServletInfo().getServletSecurityInfo() != null
-                && attachment.getCurrentServlet().getManagedServlet().getServletInfo().getServletSecurityInfo().getRolesAllowed() != null
-                && !attachment.getCurrentServlet().getManagedServlet().getServletInfo().getServletSecurityInfo().getRolesAllowed().isEmpty();
+        return attachment.getExchange().getSecurityContext() != null && attachment.getExchange().getSecurityContext().isAuthenticationRequired();
     }
 }
