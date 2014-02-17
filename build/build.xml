@@ -1093,6 +1093,10 @@
 
         <module-def name="org.jboss.as.modcluster"/>
 
+        <module-def name="org.jboss.as.picketlink">
+            <maven-resource group="org.wildfly" artifact="wildfly-picketlink"/>
+        </module-def>
+
         <module-def name="org.jboss.as.pojo">
             <maven-resource group="org.wildfly" artifact="wildfly-pojo"/>
         </module-def>
@@ -1461,6 +1465,10 @@
 
         <module-def name="org.picketlink.idm">
             <maven-resource group="org.picketlink" artifact="picketlink-idm-impl"/>
+        </module-def>
+
+        <module-def name="org.picketlink.idm.schema">
+            <maven-resource group="org.picketlink" artifact="picketlink-idm-simple-schema"/>
         </module-def>
 
         <module-def name="org.picketbox">
