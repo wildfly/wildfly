@@ -505,7 +505,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "User '%s' already exits and is enabled, would you like to... %n a) Update the existing user password and roles %n b) Disable the existing user %n c) Type a new username")
+    @Message(id = Message.NONE, value = "User '%s' already exists and is enabled, would you like to... %n a) Update the existing user password and roles %n b) Disable the existing user %n c) Type a new username")
     String aboutToUpdateEnabledUser(String user);
 
     /**
@@ -515,7 +515,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "User '%s' already exits and is disabled, would you like to... %n a) Update the existing user password and roles %n b) Enable the existing user %n c) Type a new username")
+    @Message(id = Message.NONE, value = "User '%s' already exists and is disabled, would you like to... %n a) Update the existing user password and roles %n b) Enable the existing user %n c) Type a new username")
     String aboutToUpdateDisabledUser(String user);
 
     /**
