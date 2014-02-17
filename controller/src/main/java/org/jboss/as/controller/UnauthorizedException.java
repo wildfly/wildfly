@@ -23,7 +23,7 @@
 package org.jboss.as.controller;
 
 /**
- * {@link OperationFailedRuntimeException} thrown when a operation is not authorized.
+ * {@link OperationFailedRuntimeException} thrown when an operation is not authorized.
  *
  * @author Brian Stansberry (c) 2013 Red Hat Inc.
  */

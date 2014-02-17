@@ -115,7 +115,7 @@
                 "operations" => undefined,
                 "children" => {
                     "configuration" => {
-                        "description" => "configuration of virutal server",
+                        "description" => "configuration of virtual server",
                         "model-description" => undefined
                     },
                     "rewrite" => {

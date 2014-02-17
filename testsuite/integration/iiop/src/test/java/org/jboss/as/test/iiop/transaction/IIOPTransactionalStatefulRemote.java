@@ -11,7 +11,7 @@ public interface IIOPTransactionalStatefulRemote extends EJBObject {
 
     int transactionStatus() throws RemoteException;
 
-    public Boolean getCommitSuceeded() throws RemoteException;
+    public Boolean getCommitSucceeded() throws RemoteException;
 
     public boolean isBeforeCompletion() throws RemoteException;
 

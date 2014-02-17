@@ -54,7 +54,7 @@ public class SimpleServlet extends HttpServlet {
 
         Writer writer = resp.getWriter();
 
-        // This is how a servlet could get an entity manager from a entity manager factory
+        // This is how a servlet could get an entity manager from an entity manager factory
         EntityManager localEntityManager = emf.createEntityManager();
         Query query = localEntityManager.createQuery("select count(*) from WebLink");
         Long count = (Long)query.getSingleResult();

@@ -41,7 +41,7 @@ import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
 
 /**
- * DeploymentUnitProcessor responsible for parsing a iron-jacamar.xml descriptor
+ * DeploymentUnitProcessor responsible for parsing an iron-jacamar.xml descriptor
  * and attaching the corresponding IronJacamar metadata. It take care also to
  * register this metadata into IronJacamar0s MetadataRepository
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano

@@ -45,7 +45,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that security configurations on a EJB, overriden through the use of ejb-jar.xml work as expected
+ * Tests that security configurations on an EJB, overriden through the use of ejb-jar.xml work as expected
  * <p/>
  * User: Jaikiran Pai
  */
@@ -72,7 +72,7 @@ public class SecurityDDOverrideTestCase {
     }
 
     /**
-     * Tests that the overriden roles allowed, via ejb-jar.xml, on a EJB method are taken into account for EJB method
+     * Tests that the overriden roles allowed, via ejb-jar.xml, on an EJB method are taken into account for EJB method
      * invocations
      *
      * @throws Exception

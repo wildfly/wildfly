@@ -47,7 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Testcase for testing the basic functionality of a EJB3 singleton session bean.
+ * Testcase for testing the basic functionality of an EJB3 singleton session bean.
  *
  * @author Jaikiran Pai
  */
@@ -126,7 +126,7 @@ public class SingletonBeanTestCase {
         final int NUM_THREADS = 10;
         final ExecutorService nextTenInvocations = Executors.newFixedThreadPool(NUM_THREADS);
         Future<?>[] results = new Future[NUM_THREADS];
-        // let the 10 threads invoke on the bean's method (which has WRITE lock semantics) which has a accesstimeout value
+        // let the 10 threads invoke on the bean's method (which has WRITE lock semantics) which has an accesstimeout value
         // set on it
         for (int i = 0; i < NUM_THREADS; i++) {
             results[i] = nextTenInvocations.submit(new LongWritesSingletonBeanInvoker(longWritesSingletonBean));

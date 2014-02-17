@@ -100,7 +100,7 @@ public class TransactionInvocationTestCase {
 
     @Test
     @OperateOnDeployment("client")
-    public void testSynchronizationSuceeded() throws IOException, NamingException, NotSupportedException, SystemException, RollbackException, HeuristicMixedException, HeuristicRollbackException {
+    public void testSynchronizationSucceeded() throws IOException, NamingException, NotSupportedException, SystemException, RollbackException, HeuristicMixedException, HeuristicRollbackException {
         final ClientEjb ejb = getClient();
         ejb.testSynchronization(true);
     }

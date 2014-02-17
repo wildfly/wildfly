@@ -222,7 +222,7 @@ public class TelnetServer implements TtyCodes {
         } else {
             final Cmd cmd = cmds.get(arg);
             if (cmd == null) {
-                sb.append("Unkown command: ").append(arg);
+                sb.append("Unknown command: ").append(arg);
             } else {
                 final Method method = cmd.getMethod();
 

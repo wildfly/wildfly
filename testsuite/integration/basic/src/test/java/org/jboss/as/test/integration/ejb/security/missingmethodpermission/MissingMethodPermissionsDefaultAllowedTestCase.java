@@ -192,7 +192,7 @@ public class MissingMethodPermissionsDefaultAllowedTestCase {
     }
 
     /**
-     * Tests that methods without any explicit security permissions or any entry in the descriptor are alowed
+     * Tests that methods without any explicit security permissions or any entry in the descriptor are allowed
      *
      * @throws Exception
      */

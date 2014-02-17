@@ -114,7 +114,7 @@ public final class CSIv2Util {
 
     /**
      * <p>
-     * Return a top-level {@code IOP::TaggedComponent} to be stuffed into an IOR, containing an structure
+     * Return a top-level {@code IOP::TaggedComponent} to be stuffed into an IOR, containing a structure
      * {@code SSLIOP::SSL}, tagged as {@code TAG_SSL_SEC_TRANS}.
      * </p>
      * <p>
@@ -560,7 +560,7 @@ public final class CSIv2Util {
      * <p>
      * ASN.1-encode an {@code InitialContextToken} as defined in RFC 2743, Section 3.1, "Mechanism-Independent Token
      * Format", pp. 81-82. The encoded token contains the ASN.1 tag 0x60, followed by a token length (which is itself
-     * stored in a variable-lenght format and takes 1 to 5 bytes), the GSSUP mechanism identifier, and a mechanism-specific
+     * stored in a variable-length format and takes 1 to 5 bytes), the GSSUP mechanism identifier, and a mechanism-specific
      * token, which in this case is a CDR encapsulation of the GSSUP {@code InitialContextToken} in the {@code authToken}
      * parameter.
      * </p>

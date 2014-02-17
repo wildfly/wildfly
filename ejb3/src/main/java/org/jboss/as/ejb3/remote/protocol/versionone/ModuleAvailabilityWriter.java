@@ -76,7 +76,7 @@ class ModuleAvailabilityWriter {
             // write the app name
             final String appName = modules[i].getApplicationName();
             if (appName == null) {
-                // write out a empty string
+                // write out an empty string
                 output.writeUTF("");
             } else {
                 output.writeUTF(appName);

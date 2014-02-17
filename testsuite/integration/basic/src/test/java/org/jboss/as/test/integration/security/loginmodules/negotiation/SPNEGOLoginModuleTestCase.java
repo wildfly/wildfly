@@ -181,7 +181,7 @@ public class SPNEGOLoginModuleTestCase {
     @OperateOnDeployment("WEB")
     public void testAuthn(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
-        LOGGER.info("Testing successfull authentication " + servletUri);
+        LOGGER.info("Testing successful authentication " + servletUri);
         final String responseBody = Utils.makeCallWithKerberosAuthn(servletUri, "jduke", "theduke", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
     }
@@ -193,7 +193,7 @@ public class SPNEGOLoginModuleTestCase {
      */
     @Test
     @OperateOnDeployment("WEB")
-    public void testUnsucessfulAuthn(@ArquillianResource URL webAppURL) throws Exception {
+    public void testUnsuccessfulAuthn(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
         LOGGER.info("Testing failed authentication " + servletUri);
         try {
@@ -217,7 +217,7 @@ public class SPNEGOLoginModuleTestCase {
      */
     @Test
     @OperateOnDeployment("WEB")
-    public void testUnsucessfulAuthz(@ArquillianResource URL webAppURL) throws Exception {
+    public void testUnsuccessfulAuthz(@ArquillianResource URL webAppURL) throws Exception {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
         LOGGER.info("Testing correct authentication, but failed authorization " + servletUri);
         Utils.makeCallWithKerberosAuthn(servletUri, "hnelson", "secret", HttpServletResponse.SC_FORBIDDEN);
@@ -262,11 +262,11 @@ public class SPNEGOLoginModuleTestCase {
         final URI servletUri = getServletURI(webAppURL, SimpleSecuredServlet.SERVLET_PATH);
         LOGGER.info("Testing fallback to FORM authentication. " + servletUri);
 
-        LOGGER.info("Testing successfull SPNEGO authentication");
+        LOGGER.info("Testing successful SPNEGO authentication");
         String responseBody = Utils.makeCallWithKerberosAuthn(servletUri, "jduke", "theduke", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);
 
-        LOGGER.info("Testing successfull FORM authentication");
+        LOGGER.info("Testing successful FORM authentication");
         responseBody = Utils.makeHttpCallWoSPNEGO(webAppURL.toExternalForm(), SimpleSecuredServlet.SERVLET_PATH,
                 "jduke@JBOSS.ORG", "fallback", HttpServletResponse.SC_OK);
         assertEquals("Unexpected response body", SimpleSecuredServlet.RESPONSE_BODY, responseBody);

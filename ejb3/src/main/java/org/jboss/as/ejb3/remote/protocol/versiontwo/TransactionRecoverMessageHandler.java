@@ -45,7 +45,7 @@ import org.jboss.remoting3.MessageOutputStream;
 import org.xnio.IoUtils;
 
 /**
- * Responsible for handling a transaction "recover" message from a EJB remote client
+ * Responsible for handling a transaction "recover" message from an EJB remote client
  *
  * @author Jaikiran Pai
  */

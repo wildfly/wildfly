@@ -204,7 +204,7 @@ public class WritableAuthorizerConfiguration implements AuthorizerConfiguration,
      * Undo a prior removal using the supplied undo key.
      *
      * @param removalKey - The key returned from the call to removeRoleMapping.
-     * @return true if the undo was successfull, false otherwise.
+     * @return true if the undo was successful, false otherwise.
      */
     public synchronized boolean undoRoleMappingRemove(final Object removalKey) {
         HashMap<String, RoleMappingImpl> newRoles = new HashMap<String, RoleMappingImpl>(roleMappings);

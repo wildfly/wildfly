@@ -103,7 +103,7 @@ public interface ControllerClientMessages {
     IOException channelClosed(@Cause IOException cause);
 
     /**
-     * A message indicating the a deployment with the {@code name} is already present in the domain.
+     * A message indicating a deployment with the {@code name} is already present in the domain.
      *
      * @param name the name of the deployment.
      *
@@ -312,7 +312,7 @@ public interface ControllerClientMessages {
     RollbackCancelledException rollbackTimedOut();
 
     /**
-     * A message indicating the a deployment with the {@code name} is already present in the domain.
+     * A message indicating a deployment with the {@code name} is already present in the domain.
      *
      * @param name the name of the deployment.
      *

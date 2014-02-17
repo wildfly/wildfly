@@ -364,7 +364,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         if (metaData.getContextRoot() == null) {
             final EEModuleDescription description = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
             if (description != null) {
-                // if there is a EEModuleDescription we need to take into account that the module name may have been overridden
+                // if there is an EEModuleDescription we need to take into account that the module name may have been overridden
                 pathName = "/" + description.getModuleName();
             } else {
                 pathName = "/" + deploymentUnit.getName().substring(0, deploymentUnit.getName().length() - 4);

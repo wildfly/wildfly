@@ -114,7 +114,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 return;
             }
             // If the recurring timer running longer than the interval is, we don't want to allow another
-            // execution until the it is complete. See JIRA AS7-3119
+            // execution until it is complete. See JIRA AS7-3119
             if (timer.getState() == TimerState.IN_TIMEOUT && !timer.isCalendarTimer()) {
                 ROOT_LOGGER.skipOverlappingInvokeTimeout(timer.getTimedObjectId(), timer.getId(), now);
                 timer.setNextTimeout(this.calculateNextTimeout(timer));
@@ -133,7 +133,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
                 return;
             }
             // If the recurring timer running longer than the interval is, we don't want to allow another
-            // execution until the it is complete. See JIRA AS7-3119
+            // execution until it is complete. See JIRA AS7-3119
             if (timer.getState() == TimerState.IN_TIMEOUT && !timer.isCalendarTimer()) {
                 ROOT_LOGGER.skipOverlappingInvokeTimeout(timer.getTimedObjectId(), timer.getId(), now);
                 timer.setNextTimeout(this.calculateNextTimeout(timer));

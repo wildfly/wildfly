@@ -62,7 +62,7 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             }
         }
 
-        //make the deployment content availble to any additional modules
+        //make the deployment content available to any additional modules
         for(AdditionalModuleSpecification module : deploymentUnit.getAttachmentList(Attachments.ADDITIONAL_MODULES)) {
             module.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
         }

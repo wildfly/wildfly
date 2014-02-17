@@ -197,8 +197,8 @@ public class UndertowJSRWebSocketDeploymentProcessor implements DeploymentUnitPr
 
         deploymentUnit.addToAttachmentList(ServletContextAttribute.ATTACHMENT_KEY, new ServletContextAttribute(WebSocketDeploymentInfo.ATTRIBUTE_NAME, webSocketDeploymentInfo));
 
-        //bind the container to JNDI to make it availble for resource injection
-        //this is not request by the spec, but is an convenient extension
+        //bind the container to JNDI to make it available for resource injection
+        //this is not request by the spec, but is a convenient extension
         final ServiceName moduleContextServiceName = ContextNames.contextServiceNameOfModule(moduleDescription.getApplicationName(), moduleDescription.getModuleName());
         bindJndiServices(deploymentUnit, phaseContext.getServiceTarget(), moduleContextServiceName, serviceName, webSocketDeploymentInfo);
 

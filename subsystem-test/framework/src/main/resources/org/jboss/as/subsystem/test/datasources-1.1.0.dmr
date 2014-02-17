@@ -263,7 +263,7 @@
                     },
                     "wrap-xa-resource" => {
                         "type" => BOOLEAN,
-                        "description" => "Should the XAResource instances be wrapped in a org.jboss.tm.XAResourceWrapper instance",
+                        "description" => "Should the XAResource instances be wrapped in an org.jboss.tm.XAResourceWrapper instance",
                         "expressions-allowed" => true,
                         "nillable" => true,
                         "default" => true

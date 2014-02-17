@@ -51,7 +51,7 @@ public class StatefulComponentCreateServiceFactory extends EJBComponentCreateSer
         if (this.ejbJarConfiguration == null) {
             throw MESSAGES.ejbJarConfigNotBeenSet(this,configuration.getComponentName());
         }
-        // setup a injection dependency to inject the DefaultAccessTimeoutService in the stateful bean
+        // setup an injection dependency to inject the DefaultAccessTimeoutService in the stateful bean
         // component create service
         configuration.getCreateDependencies().add(new DependencyConfigurator<StatefulSessionComponentCreateService>() {
             @Override

@@ -31,8 +31,8 @@ DESCRIPTION
 
   The host may be any of these formats:
   - a host name, e.g. localhost
-  - an ipv4 address, e.g. 127.0.0.1
-  - an ipv6 address, e.g. [::1]
+  - an IPv4 address, e.g. 127.0.0.1
+  - an IPv6 address, e.g. [::1]
 
 
 

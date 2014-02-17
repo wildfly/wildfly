@@ -34,7 +34,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
 
 /**
- * {@link org.jboss.as.controller.ResourceDefinition} for a individual user resource in the management security realm's
+ * {@link org.jboss.as.controller.ResourceDefinition} for an individual user resource in the management security realm's
  * domain-configuration-user-registry-based authentication mechanism.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.

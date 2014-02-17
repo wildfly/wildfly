@@ -71,9 +71,9 @@ public class UDPSyslogServer extends UDPNetSyslogServer {
                     eventHandler.event(this, event);
                 }
             } catch (SocketException se) {
-                LOGGER.warn("SocketException occured", se);
+                LOGGER.warn("SocketException occurred", se);
             } catch (IOException ioe) {
-                LOGGER.warn("IOException occured", ioe);
+                LOGGER.warn("IOException occurred", ioe);
             }
         }
     }

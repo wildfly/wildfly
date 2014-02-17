@@ -33,7 +33,7 @@ import org.jboss.msc.service.ServiceTarget;
 
 /**
  * Resolves the service name of the executor service a thread pool service should use if it cannot itself accept
- * a task. Optionally provides a executor service for the thread pool to use in case the thread pool does not have a
+ * a task. Optionally provides an executor service for the thread pool to use in case the thread pool does not have a
  * specifically configured handoff executor. The absence of a specifically configured thread pool would be typical.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
@@ -45,7 +45,7 @@ public interface HandoffExecutorResolver {
      * executor in case the thread pool does not have a specifically configured handoff executor.
      *
      *
-     * @param handoffExecutorName the simple name of the handoff executor. Typically the a reference value from
+     * @param handoffExecutorName the simple name of the handoff executor. Typically a reference value from
      *                          the thread pool resource's configuration. Can be {@code null} in which case a
      *                          default handoff executor may be returned.
      * @param threadPoolName the name of the thread pool
@@ -68,7 +68,7 @@ public interface HandoffExecutorResolver {
      * Releases the handoff executor, doing any necessary cleanup, such as removing a default executor that
      * was installed by {@link #resolveHandoffExecutor(String, String, ServiceName, ServiceTarget, List, ServiceListener[])}.
      *
-     * @param handoffExecutorName the simple name of the thread factory. Typically the a reference value from
+     * @param handoffExecutorName the simple name of the thread factory. Typically a reference value from
      *                          the thread pool resource's configuration. Can be {@code null} in which case a
      *                          default thread factory should be released.
      * @param threadPoolName the name of the thread pool

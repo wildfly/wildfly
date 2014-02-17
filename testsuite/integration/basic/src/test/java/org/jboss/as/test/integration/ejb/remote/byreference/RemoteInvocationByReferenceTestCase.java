@@ -83,7 +83,7 @@ public class RemoteInvocationByReferenceTestCase {
     }
 
     /**
-     * Test that invocation on a remote interface of a EJB uses pass-by-reference semantics
+     * Test that invocation on a remote interface of an EJB uses pass-by-reference semantics
      *
      * @throws Exception
      */
@@ -94,6 +94,6 @@ public class RemoteInvocationByReferenceTestCase {
         final String newValue = "foo";
         // invoke on the remote interface
         remote.modifyFirstElementOfArray(array, newValue);
-        Assert.assertEquals("Invocation on remote interface of a EJB did *not* use pass-by-reference semantics", newValue, array[0]);
+        Assert.assertEquals("Invocation on remote interface of an EJB did *not* use pass-by-reference semantics", newValue, array[0]);
     }
 }

@@ -49,7 +49,7 @@ public class DefaultAttributeTestCase extends AbstractControllerTestBase {
 
     @Test
     public void testCannotAccessAttributeWhenResourceDoesNotExist() throws Exception {
-        //Just make sure it works as expected for an existant resource
+        //Just make sure it works as expected for an existent resource
         ModelNode op = Util.createAddOperation(PathAddress.pathAddress(new ModelNode().add("test", "exists")));
         executeForResult(op);
 

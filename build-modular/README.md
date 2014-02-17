@@ -6,7 +6,7 @@ This module contains a number of profiles each dedicated to a custom WildFly bui
 Defining the Subsystems
 -----------------------
 
-Subsystems are defined by a simple comma seperated list of identifiers
+Subsystems are defined by a simple comma separated list of identifiers
 Each identifier can be qualified with a supplement identifier.
 
 	<standalone.subsystems>logging:minimal,deployment-scanner</standalone.subsystems>

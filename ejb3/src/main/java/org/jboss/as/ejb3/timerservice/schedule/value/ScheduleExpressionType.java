@@ -80,7 +80,7 @@ public enum ScheduleExpressionType {
     RANGE,
 
     /**
-     * Represents a value represented as a increment.
+     * Represents a value represented as an increment.
      * <p>
      * For example:
      * <ul>

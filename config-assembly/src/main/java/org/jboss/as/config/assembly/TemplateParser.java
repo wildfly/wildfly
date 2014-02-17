@@ -103,7 +103,7 @@ public class TemplateParser extends NodeParser {
                 throw new IllegalStateException("<?" + TemplateParser.EXTENSIONS_PI + "?> should not take any data");
             }
             if (extensionPlaceholder != null) {
-                throw new IllegalStateException("Can only have one occurance of <?" + TemplateParser.EXTENSIONS_PI + "?>");
+                throw new IllegalStateException("Can only have one occurrence of <?" + TemplateParser.EXTENSIONS_PI + "?>");
             }
             node = new ProcessingInstructionNode(TemplateParser.EXTENSIONS_PI, null);
             extensionPlaceholder = node;

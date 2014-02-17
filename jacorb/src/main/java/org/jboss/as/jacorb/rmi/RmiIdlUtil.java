@@ -125,7 +125,7 @@ public class RmiIdlUtil {
     }
 
     /*
-    * checks if a class's memeber (method, constructor or field) has a 'public'
+    * checks if a class's member (method, constructor or field) has a 'public'
     * modifier.
     */
     public static boolean isPublic(Member member) {

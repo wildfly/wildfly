@@ -73,7 +73,7 @@ import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
  * A {@link ViewConfigurator} which sets up the EJB view with the relevant {@link Interceptor}s
- * which will carry out invocation on the container-interceptor(s) applicable for a EJB, during a EJB method invocation
+ * which will carry out invocation on the container-interceptor(s) applicable for an EJB, during an EJB method invocation
  *
  * @author Jaikiran Pai
  */
@@ -90,7 +90,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
     @Override
     public void configure(DeploymentPhaseContext deploymentPhaseContext, ComponentConfiguration componentConfiguration, ViewDescription viewDescription, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
         final ComponentDescription componentDescription = componentConfiguration.getComponentDescription();
-        // ideally it should always be a EJBComponentDescription when this view configurator is invoked, but let's just make sure
+        // ideally it should always be an EJBComponentDescription when this view configurator is invoked, but let's just make sure
         if (!(componentDescription instanceof EJBComponentDescription)) {
             return;
         }
@@ -313,7 +313,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
             final CachedValue cachedInterceptorInstanceValue = new CachedValue(interceptorInstanceValue);
             // ultimately create the managed reference which is backed by the CachedValue
             final ManagedReference interceptorInstanceRef = new ValueManagedReference(cachedInterceptorInstanceValue);
-            // return the ContainerInterceptorMethodInterceptorFactory which is responsible for creating a Interceptor
+            // return the ContainerInterceptorMethodInterceptorFactory which is responsible for creating an Interceptor
             // which can invoke the container-interceptor's around-invoke/around-timeout methods
             return new ContainerInterceptorMethodInterceptorFactory(interceptorInstanceRef, method);
         }

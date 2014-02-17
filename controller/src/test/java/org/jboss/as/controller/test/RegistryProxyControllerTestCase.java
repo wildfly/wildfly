@@ -204,7 +204,7 @@ public class RegistryProxyControllerTestCase {
     }
 
     @Test
-    public void testRemoveNonExistantProxyController() {
+    public void testRemoveNonExistentProxyController() {
         PathElement element = PathElement.pathElement("profile", "profileA");
         root.unregisterProxyController(element);
         Set<PathAddress> addresses = getProxyAddresses(PathAddress.EMPTY_ADDRESS);

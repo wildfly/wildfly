@@ -32,7 +32,7 @@ import org.jboss.as.security.service.JaccService;
 import org.jboss.as.server.deployment.AttachmentList;
 
 /**
- * A service that creates JACC permissions for a ejb deployment
+ * A service that creates JACC permissions for an ejb deployment
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author Scott.Stark@jboss.org

@@ -153,7 +153,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
                     }
                 }
             }
-            clearUnkownProperties(reflectionIndex, clazz, props);
+            clearUnknownProperties(reflectionIndex, clazz, props);
             populateProperties(reflectionIndex, clazz, props);
             DsSecurityImpl dsSecurity = new DsSecurityImpl(user, password, null, null);
 
@@ -190,7 +190,7 @@ public class DirectDataSourceInjectionSource extends InjectionSource {
         }
     }
 
-    private void clearUnkownProperties(final DeploymentReflectionIndex reflectionIndex, final Class<?> dataSourceClass, final Map<String, String> props) {
+    private void clearUnknownProperties(final DeploymentReflectionIndex reflectionIndex, final Class<?> dataSourceClass, final Map<String, String> props) {
         final Iterator<Map.Entry<String, String>> it = props.entrySet().iterator();
         while (it.hasNext()) {
             final Map.Entry<String, String> entry = it.next();

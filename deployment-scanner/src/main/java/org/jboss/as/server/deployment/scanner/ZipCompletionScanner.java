@@ -53,7 +53,7 @@ public class ZipCompletionScanner {
     public static final int LOCLEN = 30;
     /** Length of the fixed portion of a central directory file header */
     public static final int CENLEN = 46;
-    /** Length of the fixed portion of a End of central directory record */
+    /** Length of the fixed portion of an End of central directory record */
     public static final int ENDLEN = 22;
 
     /** Position of the filename length in a local file header */
@@ -66,11 +66,11 @@ public class ZipCompletionScanner {
     /** Position of the associated local file's offset in the central directory file header */
     public static final int CEN_LOC_OFFSET = 32;
 
-    /** Position of the 'start of central directory' field in a end of central directory record */
+    /** Position of the 'start of central directory' field in an end of central directory record */
     public static final int END_CENSTART = 16;
     /**  END_CENSTART value that indicates the zip is in ZIP 64 format */
     public static final long ZIP64_MARKER = 0xFFFFFFFFL;
-    /** Position of the comment length in a end of central directory record */
+    /** Position of the comment length in an end of central directory record */
     public static final int END_COMMENTLEN = 20;
 
 

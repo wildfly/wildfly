@@ -31,15 +31,15 @@ import javax.annotation.Resource;
 public class EnvEntryManagedBean {
 
     @Resource
-    private String nonExistantString = "hi";
+    private String nonExistentString = "hi";
 
     @Resource
     private String existingString = "hi";
 
     private byte byteField;
 
-    public String getNonExistantString() {
-        return nonExistantString;
+    public String getNonExistentString() {
+        return nonExistentString;
     }
 
     public String getExistingString() {

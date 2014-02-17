@@ -93,7 +93,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
         final EEApplicationClasses applicationClassesDescription = deploymentUnit.getAttachment(Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);
         final CompositeIndex compositeIndex = deploymentUnit.getAttachment(org.jboss.as.server.deployment.Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (moduleDescription == null) {
-            return; //not an ee deployment
+            return; //not an EE deployment
         }
         for (ComponentDescription component : moduleDescription.getComponentDescriptions()) {
             componentByClass.put(component.getComponentClassName(), component);

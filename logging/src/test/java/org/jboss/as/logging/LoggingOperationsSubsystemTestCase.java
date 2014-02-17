@@ -452,7 +452,7 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         // check generated log file
         assertTrue(FileUtils.readFileToString(logFile).contains("Test123"));
 
-        // verify that the logger is stopped, no more logs are comming to the file
+        // verify that the logger is stopped, no more logs are coming to the file
         long checksum = FileUtils.checksumCRC32(logFile);
         doLog(loggingProfile, LEVELS, "Test123");
         assertEquals(checksum, FileUtils.checksumCRC32(logFile));

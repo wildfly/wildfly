@@ -237,7 +237,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         MBeanInfo info = connection.getMBeanInfo(LEGACY_ROOT_NAME);
         Assert.assertNotNull(info);
 
-        //Make sure all occurrances of "-" have gone
+        //Make sure all occurrences of "-" have gone
         for (MBeanAttributeInfo attr : info.getAttributes()) {
             Assert.assertFalse(attr.getName().contains("-"));
         }
@@ -320,7 +320,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         MBeanInfo info = connection.getMBeanInfo(LEGACY_ROOT_NAME);
         Assert.assertNotNull(info);
 
-        //Make sure all occurrances of "-" have gone
+        //Make sure all occurrences of "-" have gone
         for (MBeanAttributeInfo attr : info.getAttributes()) {
             Assert.assertFalse(attr.getName().contains("-"));
         }
@@ -363,7 +363,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         MBeanInfo info = connection.getMBeanInfo(EXPR_ROOT_NAME);
         Assert.assertNotNull(info);
 
-        //Make sure all occurrances of "-" have gone
+        //Make sure all occurrences of "-" have gone
         for (MBeanAttributeInfo attr : info.getAttributes()) {
             Assert.assertFalse(attr.getName().contains("-"));
         }
@@ -1082,7 +1082,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
         try {
             connection.invoke(LEGACY_ROOT_NAME, "resolveExpression", new String[] {"${jboss.test.resolve.expressions.test}"}, new String[] {String.class.getName()});
-            Assert.fail("Should not have been able to resolve non-existant property");
+            Assert.fail("Should not have been able to resolve non-existent property");
         } catch (Exception expected) {
         }
 

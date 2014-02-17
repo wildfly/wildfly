@@ -59,8 +59,8 @@ public class ServiceDeploymentParsingProcessor implements DeploymentUnitProcesso
     }
 
     /**
-     * Process a deployment for jboss-service.xml files. Will parse the xml file and attach an configuration discovered
-     * durring processing.
+     * Process a deployment for jboss-service.xml files. Will parse the xml file and attach a configuration discovered
+     * during processing.
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException

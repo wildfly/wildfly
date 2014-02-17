@@ -26,7 +26,7 @@ import javax.ejb.LockType;
 import java.lang.reflect.Method;
 
 /**
- * A {@link LockableComponent} represents the runtime component of a EJB. It is meant to provide access to EJB
+ * A {@link LockableComponent} represents the runtime component of an EJB. It is meant to provide access to EJB
  * metadata for {@link javax.ejb.Lock} management interceptors.
  * <p/>
  *

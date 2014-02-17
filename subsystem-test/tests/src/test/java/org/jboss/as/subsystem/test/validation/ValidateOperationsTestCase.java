@@ -115,7 +115,7 @@ public class ValidateOperationsTestCase extends AbstractSubsystemTest {
     }
 
     @Test
-    public void testNonExistantParameter() throws Exception {
+    public void testNonExistentParameter() throws Exception {
         getMainExtension().setAddDescriptionProvider(new DescriptionProvider() {
 
             @Override

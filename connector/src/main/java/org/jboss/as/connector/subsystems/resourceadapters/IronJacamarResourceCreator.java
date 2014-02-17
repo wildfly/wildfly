@@ -353,7 +353,7 @@ public class IronJacamarResourceCreator {
 
         // Get the iron-jacamar resource
         final IronJacamarResource ironJacamarResource = new IronJacamarResource();
-        // Replace the current model with a updated one
+        // Replace the current model with an updated one
         final Resource storeModel = getIronJacamarResource(mdr);
 
         ironJacamarResource.update(storeModel);

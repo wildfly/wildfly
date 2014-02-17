@@ -41,7 +41,7 @@ import org.jboss.msc.service.ServiceName;
 public class ConnectorServices {
 
     /**
-     * A map whose key corresponds to a ra name and whose value is a identifier with which the RA is registered in the
+     * A map whose key corresponds to a ra name and whose value is an identifier with which the RA is registered in the
      * {@link org.jboss.jca.core.spi.rar.ResourceAdapterRepository}
      */
     private static Map<String, String> resourceAdapterRepositoryIdentifiers = new HashMap<String, String>();

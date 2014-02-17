@@ -123,7 +123,7 @@ public class TransactionIIOPInvocationTestCase {
 
     @Test
     @OperateOnDeployment("client")
-    public void testSynchronizationSuceeded() throws IOException, NamingException, NotSupportedException, SystemException, RollbackException, HeuristicMixedException, HeuristicRollbackException {
+    public void testSynchronizationSucceeded() throws IOException, NamingException, NotSupportedException, SystemException, RollbackException, HeuristicMixedException, HeuristicRollbackException {
         final InitialContext context = new InitialContext();
         final ClientEjb ejb = (ClientEjb) context.lookup("java:module/" + ClientEjb.class.getSimpleName());
         ejb.testSynchronization(true);

@@ -40,7 +40,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * A EJB client context selector which returns a {@link EJBClientContext} based on the thread context classloader
+ * An EJB client context selector which returns an {@link EJBClientContext} based on the thread context classloader
  * that's present when the {@link #getCurrent()} is invoked. This {@link TCCLEJBClientContextSelectorService} is also
  * capable of managing {@link EJBClientContext}s identifiable by {@link EJBClientContextIdentifier}s
  *

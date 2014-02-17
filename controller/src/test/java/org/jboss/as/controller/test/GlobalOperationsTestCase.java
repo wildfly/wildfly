@@ -234,10 +234,10 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         assertEquals("l1A", list.get(0).asString());
         assertEquals("l1B", list.get(1).asString());
 
-        operation.get(NAME).set("non-existant-attribute");
+        operation.get(NAME).set("non-existent-attribute");
         try {
             result = executeForResult(operation);
-            fail("Expected error for non-existant attribute");
+            fail("Expected error for non-existent attribute");
         } catch (OperationFailedException expected) {
         }
 
@@ -332,16 +332,16 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         assertTrue(names.contains("other"));
 
 
-        operation.get(CHILD_TYPE).set("non-existant-child");
+        operation.get(CHILD_TYPE).set("non-existent-child");
         try {
             result = executeForResult(operation);
-            fail("Expected error for non-existant child");
+            fail("Expected error for non-existent child");
         } catch (OperationFailedException expected) {
         }
 
         operation = createOperation(READ_CHILDREN_NAMES_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(CHILD_TYPE).set("type1");
-        // BES 2011/06/06 These assertions make no sense; as they are no different from "non-existant-child" case
+        // BES 2011/06/06 These assertions make no sense; as they are no different from "non-existent-child" case
         // Replacing with a fail check
 //          result = executeForResult(operation);
 //        assertNotNull(result);
@@ -386,10 +386,10 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         assertTrue(Arrays.asList("type1", "type2").containsAll(stringList));
 
 
-        operation = createOperation(READ_CHILDREN_TYPES_OPERATION, "profile", "profileA", "subsystem", "non-existant");
+        operation = createOperation(READ_CHILDREN_TYPES_OPERATION, "profile", "profileA", "subsystem", "non-existent");
         try {
             result = executeForResult(operation);
-            fail("Expected error for non-existant child");
+            fail("Expected error for non-existent child");
         } catch (OperationFailedException expected) {
         }
 
@@ -446,16 +446,16 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         assertNotNull(other);
         assertEquals("Name2", other.require(NAME).asString());
 
-        operation.get(CHILD_TYPE).set("non-existant-child");
+        operation.get(CHILD_TYPE).set("non-existent-child");
         try {
             result = executeForResult(operation);
-            fail("Expected error for non-existant child");
+            fail("Expected error for non-existent child");
         } catch (OperationFailedException expected) {
         }
 
         operation = createOperation(READ_CHILDREN_RESOURCES_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(CHILD_TYPE).set("type1");
-        // BES 2011/06/06 These assertions make no sense; as they are no different from "non-existant-child" case
+        // BES 2011/06/06 These assertions make no sense; as they are no different from "non-existent-child" case
         // Replacing with a fail check
 //          result = executeForResult(operation);
 //        assertNotNull(result);
@@ -514,16 +514,16 @@ public class GlobalOperationsTestCase extends AbstractGlobalOperationsTestCase {
         assertNotNull(other);
         assertEquals("Name2", other.require(NAME).asString());
 
-        operation.get(CHILD_TYPE).set("non-existant-child");
+        operation.get(CHILD_TYPE).set("non-existent-child");
         try {
             result = executeForResult(operation);
-            fail("Expected error for non-existant child");
+            fail("Expected error for non-existent child");
         } catch (OperationFailedException expected) {
         }
 
         operation = createOperation(READ_CHILDREN_RESOURCES_OPERATION, "profile", "profileC", "subsystem", "subsystem4");
         operation.get(CHILD_TYPE).set("type1");
-        // BES 2011/06/06 These assertions make no sense; as they are no different from "non-existant-child" case
+        // BES 2011/06/06 These assertions make no sense; as they are no different from "non-existent-child" case
         // Replacing with a fail check
 //          result = executeForResult(operation);
 //        assertNotNull(result);

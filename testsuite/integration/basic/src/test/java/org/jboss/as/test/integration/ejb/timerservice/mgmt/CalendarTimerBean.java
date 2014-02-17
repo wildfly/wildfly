@@ -34,9 +34,9 @@ public class CalendarTimerBean extends AbstractTimerBean {
         final int base = calendar.get(Calendar.SECOND);
         int current = base;
         List<Integer> list = new ArrayList<Integer>();
-        final int boundry = base + 60;
+        final int boundary = base + 60;
         final int delay = super.delay / 1000;
-        for (; current < boundry;) {
+        for (; current < boundary;) {
             list.add(current % 60);
             current += delay;
         }

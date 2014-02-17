@@ -89,7 +89,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * {@link EJBReceiver} for local same-VM invocations. This handles all invocations on remote interfaces
- * withing the server JVM.
+ * within the server JVM.
  *
  * @author Stuart Douglas
  */

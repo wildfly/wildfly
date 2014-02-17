@@ -30,7 +30,7 @@ import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 
 /**
- * A interceptor for MDBs, which will invoke the {@link MessageDrivenBean#setMessageDrivenContext(javax.ejb.MessageDrivenContext)}
+ * An interceptor for MDBs, which will invoke the {@link MessageDrivenBean#setMessageDrivenContext(javax.ejb.MessageDrivenContext)}
  * method.
  *
  * @author Jaikiran Pai

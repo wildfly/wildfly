@@ -111,12 +111,12 @@ public class TestSuiteEnvironment {
         return "[" + address + "]";
     }
 
-    public static String getSecondaryTestAddress(final boolean useCannonicalHost) {
+    public static String getSecondaryTestAddress(final boolean useCanonicalHost) {
         String address = System.getProperty("secondary.test.address");
         if (StringUtils.isBlank(address)) {
             address = getServerAddress();
         }
-        if (useCannonicalHost) {
+        if (useCanonicalHost) {
             address = StringUtils.strip(address, "[]");
         }
         return address;

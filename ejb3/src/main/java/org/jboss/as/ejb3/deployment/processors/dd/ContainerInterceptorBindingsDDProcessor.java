@@ -234,7 +234,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                 for (final InterceptorBindingMetaData binding : classLevelBindings) {
                     // Find the class level container interceptor binding which specifies the total ordering (there will
                     // only be one since we have already validated in an earlier step, then more than one binding cannot
-                    // specify a ordering
+                    // specify an ordering
                     if (binding.isTotalOrdering()) {
                         for (final String interceptor : binding.getInterceptorOrder()) {
                             classLevelInterceptors.add(new InterceptorDescription(interceptor));

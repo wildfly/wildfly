@@ -102,7 +102,7 @@ class TransactionRequestHandler extends AbstractMessageHandler {
                 default:
                     throw EjbMessages.MESSAGES.unknownTransactionRequestType(this.txRequestType.name());
             }
-            // submit to a seperate thread for processing the request
+            // submit to a separate thread for processing the request
             this.executorService.submit(userTransactionManagementTask);
 
         } else if (transactionID instanceof XidTransactionID) {

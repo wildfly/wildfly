@@ -103,7 +103,7 @@ public class InitialContext extends InitialLdapContext {
     @Override
     protected Context getDefaultInitCtx() throws NamingException {
         if (!gotDefault) {
-            // if there is a initial context factory prop in the env use it to create the default ctx
+            // if there is an initial context factory prop in the env use it to create the default ctx
             final String factoryClassName = myProps != null ? (String) myProps.get(Context.INITIAL_CONTEXT_FACTORY) : null;
             if(factoryClassName == null || InitialContextFactory.class.getName().equals(factoryClassName)) {
                 defaultInitCtx = new DefaultInitialContext(myProps);

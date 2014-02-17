@@ -109,7 +109,7 @@ public class PassivationTestCase {
     }
 
     /**
-     * Tests that a EJB 3.2 stateful bean which is marked as <code>passivationCapable=false</code> isn't passivated or activated
+     * Tests that an EJB 3.2 stateful bean which is marked as <code>passivationCapable=false</code> isn't passivated or activated
      *
      * @throws Exception
      */
@@ -139,7 +139,7 @@ public class PassivationTestCase {
     }
 
     /**
-     * Tests that a EJB 3.2 stateful bean which is marked as <code>passivationCapable=true</code> is passivated or activated
+     * Tests that an EJB 3.2 stateful bean which is marked as <code>passivationCapable=true</code> is passivated or activated
      *
      * @throws Exception
      */
@@ -169,7 +169,7 @@ public class PassivationTestCase {
     }
 
     /**
-     * Tests that a EJB 3.2 stateful bean which is marked as <code>passivationCapable=true</code> via annotation but overridden
+     * Tests that an EJB 3.2 stateful bean which is marked as <code>passivationCapable=true</code> via annotation but overridden
      * as passivation disabled via deployment descriptor, isn't passivated or activated
      *
      * @throws Exception

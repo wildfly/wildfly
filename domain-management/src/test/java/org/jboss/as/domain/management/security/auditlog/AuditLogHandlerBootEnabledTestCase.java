@@ -472,7 +472,7 @@ public class AuditLogHandlerBootEnabledTestCase extends AbstractAuditLogHandlerT
         file.delete();
         ModelNode op = Util.getWriteAttributeOperation(createFileHandlerAddress("test-file"),
                 FileAuditLogHandlerResourceDefinition.FORMATTER.getName(),
-                new ModelNode("non-existant"));
+                new ModelNode("non-existent"));
         executeForFailure(op);
         fullRecord = readFullFileRecord(file);
         Assert.assertTrue(Pattern.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d \\d\\d:\\d\\d:\\d\\d - \\{[\\s\\S]*", fullRecord)); //This regexp allows for new lines
@@ -574,7 +574,7 @@ public class AuditLogHandlerBootEnabledTestCase extends AbstractAuditLogHandlerT
 
             op = Util.getWriteAttributeOperation(createFileHandlerAddress("test-file"),
                     FileAuditLogHandlerResourceDefinition.FORMATTER.getName(),
-                    new ModelNode("non-existant"));
+                    new ModelNode("non-existent"));
             executeForFailure(op);
             bytes = server.receiveData();
             String fullRecord = stripSyslogHeader(bytes);

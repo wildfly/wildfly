@@ -50,7 +50,7 @@ class ClusterTopologyWriter {
     private static final byte HEADER_NODES_REMOVED = 0x18;
 
     /**
-     * Writes out a EJB remoting protocol message containing the cluster topology information for the passed <code>clusters</code>
+     * Writes out an EJB remoting protocol message containing the cluster topology information for the passed <code>clusters</code>
      *
      * @param output                   The {@link DataOutput} into which the message will be written
      * @param clientMappingsRegistries
@@ -77,7 +77,7 @@ class ClusterTopologyWriter {
     }
 
     /**
-     * Writes out a EJB remoting protocol message containing the names of the <code>clusters</code> which have been removed
+     * Writes out an EJB remoting protocol message containing the names of the <code>clusters</code> which have been removed
      * from the server.
      *
      * @param output     The {@link DataOutput} to which the message will be written
@@ -165,10 +165,10 @@ class ClusterTopologyWriter {
                 final int netMask = clientMapping.getSourceNetworkMaskBits();
                 final int netMaskAndIPFamilyDifferentiator;
                 if (clientNetworkAddress instanceof Inet4Address) {
-                    // add a trailing 1 bit to indicate it's a ipv4 address
+                    // add a trailing 1 bit to indicate it's an IPv4 address
                     netMaskAndIPFamilyDifferentiator = (netMask << 1) | 1;
                 } else {
-                    // add a trailing 0 bit to indicate it's a ipv6 address
+                    // add a trailing 0 bit to indicate it's an IPv6 address
                     netMaskAndIPFamilyDifferentiator = (netMask << 1);
                 }
                 // write the netMask with the ipv6/ipv4 differentiator

@@ -72,7 +72,7 @@ class PatchModuleInvalidationUtils {
      */
     public static final int CENLEN = 46;
     /**
-     * Length of the fixed portion of a End of central directory record
+     * Length of the fixed portion of an End of central directory record
      */
     public static final int ENDLEN = 22;
 
@@ -95,7 +95,7 @@ class PatchModuleInvalidationUtils {
     public static final int CEN_LOC_OFFSET = 32;
 
     /**
-     * Position of the 'start of central directory' field in a end of central directory record
+     * Position of the 'start of central directory' field in an end of central directory record
      */
     public static final int END_CENSTART = 16;
     /**
@@ -103,7 +103,7 @@ class PatchModuleInvalidationUtils {
      */
     public static final long ZIP64_MARKER = 0xFFFFFFFFL;
     /**
-     * Position of the comment length in a end of central directory record
+     * Position of the comment length in an end of central directory record
      */
     public static final int END_COMMENTLEN = 20;
 

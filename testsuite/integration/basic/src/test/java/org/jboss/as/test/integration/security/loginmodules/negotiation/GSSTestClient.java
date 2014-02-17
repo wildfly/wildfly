@@ -115,19 +115,19 @@ public class GSSTestClient {
             final byte[] nameBytes = gssContext.unwrap(token, 0, token.length, msgProp);
             return new String(nameBytes, GSSTestConstants.CHAR_ENC);
         } catch (IOException e) {
-            LOGGER.error("IOException occured.", e);
+            LOGGER.error("IOException occurred.", e);
             throw e;
         } finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                LOGGER.error("IOException occured", e);
+                LOGGER.error("IOException occurred", e);
             }
             if (gssContext != null) {
                 try {
                     gssContext.dispose();
                 } catch (GSSException e) {
-                    LOGGER.error("GSSException occured", e);
+                    LOGGER.error("GSSException occurred", e);
                 }
             }
         }

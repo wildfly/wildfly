@@ -605,7 +605,7 @@ final class HandlerOperations {
         } else if (attribute.getName().equals(NAMED_FORMATTER.getName())) {
             final String formatterName = configuration.getName();
             final ModelNode valueNode = (resolveValue ? NAMED_FORMATTER.resolveModelAttribute(context, model) : model);
-            // If the value not is undefined, this may have come from a undefine-attribute operation
+            // If the value not is undefined, this may have come from an undefine-attribute operation
             if (valueNode.isDefined()) {
                 final String resolvedValue = valueNode.asString();
                 configuration.setFormatterName(resolvedValue);

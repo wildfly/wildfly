@@ -505,7 +505,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
         if (schedule == null) {
             throw MESSAGES.scheduleIsNull();
         }
-        // generate a id for the timer
+        // generate an id for the timer
         UUID uuid = UUID.randomUUID();
         // create the timer
         TimerImpl timer = CalendarTimer.builder()
@@ -740,10 +740,10 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
 
     /**
      * Registers a timer with a transaction (if any in progress) and then moves
-     * the timer to a active state, so that it becomes eligible for timeouts
+     * the timer to an active state, so that it becomes eligible for timeouts
      */
     protected void startTimer(TimerImpl timer) {
-        // if there's no transaction, then trigger a schedule immidiately.
+        // if there's no transaction, then trigger a schedule immediately.
         // Else, the timer will be scheduled on tx synchronization callback
         if (!transactionActive()) {
             this.timers.put(timer.getId(), timer);
@@ -832,7 +832,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
             // it's a lifecycle callback
             return true;
         }
-        // not an lifecycle callback
+        // not a lifecycle callback
         return false;
     }
 

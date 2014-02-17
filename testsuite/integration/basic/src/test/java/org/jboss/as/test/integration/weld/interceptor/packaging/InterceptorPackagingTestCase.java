@@ -37,7 +37,7 @@ import javax.inject.Inject;
 
 /**
  *
- * Tests that interceptors that are packaged in seperate jar files.
+ * Tests that interceptors that are packaged in separate jar files.
  *
  * @author Stuart Douglas
  */

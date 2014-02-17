@@ -53,7 +53,7 @@ public class BeanClassValidityTestCase {
     }
 
     /**
-     * Tests a simple invocation on a correct bean contained within the same deployment as a invalid bean class.
+     * Tests a simple invocation on a correct bean contained within the same deployment as an invalid bean class.
      * This test asserts that the presence of an invalid bean class doesn't prevent the correct bean from deploying.
      *
      * @throws Exception

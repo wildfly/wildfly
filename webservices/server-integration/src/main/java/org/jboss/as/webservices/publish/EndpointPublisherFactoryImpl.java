@@ -24,7 +24,7 @@ import org.jboss.wsf.spi.publish.EndpointPublisher;
 import org.jboss.wsf.spi.publish.EndpointPublisherFactory;
 
 /**
- * Factory for retrieving a EndpointPublisher instance for the currently running JBoss Application Server container.
+ * Factory for retrieving an EndpointPublisher instance for the currently running JBoss Application Server container.
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */

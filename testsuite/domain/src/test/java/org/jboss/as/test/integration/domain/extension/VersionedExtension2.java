@@ -78,7 +78,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
 
     void processTestSubsystem(final SubsystemRegistration subsystem, final ManagementResourceRegistration registration) {
 
-        // Register a update operation, which requires the transformer to create composite operation
+        // Register an update operation, which requires the transformer to create composite operation
         registration.registerOperationHandler("update", new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {

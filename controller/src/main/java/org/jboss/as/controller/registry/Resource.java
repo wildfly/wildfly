@@ -32,7 +32,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
- * A addressable resource in the management model, representing a local model and child resources.
+ * An addressable resource in the management model, representing a local model and child resources.
  * <p>Instances of this class are <b>not</b> thread-safe and need to be synchronized externally.
  *
  * @author Emanuel Muckenhuber

@@ -106,7 +106,7 @@
                         "nillable" => true,
                         "value-type" => {"alias" => {
                             "type" => STRING,
-                            "description" => "The virutal server alias",
+                            "description" => "The virtual server alias",
                             "expressions-allowed" => false,
                             "nillable" => true,
                             "min-length" => 1L,

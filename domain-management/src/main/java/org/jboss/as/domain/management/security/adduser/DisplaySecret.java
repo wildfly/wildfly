@@ -28,7 +28,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
 
 /**
- * A state to display the secret element needed for server to server password defintion.
+ * A state to display the secret element needed for server to server password definition.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */

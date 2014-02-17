@@ -82,16 +82,16 @@ public class EnvEntryInjectionTestCase {
     }
 
     @Test
-    public void testEnvEntryNonExistantManagedBean() throws NamingException {
+    public void testEnvEntryNonExistentManagedBean() throws NamingException {
         final InitialContext initialContext = new InitialContext();
         final EnvEntryManagedBean bean = (EnvEntryManagedBean) initialContext.lookup("java:module/" + EnvEntryManagedBean.class.getName());
-        Assert.assertEquals("hi", bean.getNonExistantString());
+        Assert.assertEquals("hi", bean.getNonExistentString());
     }
 
     @Test(expected = NamingException.class)
-    public void testNonExistantResourceCannotBeLookedUp() throws NamingException {
+    public void testNonExistentResourceCannotBeLookedUp() throws NamingException {
         final InitialContext initialContext = new InitialContext();
-        initialContext.lookup("java:module/env/" + EnvEntryManagedBean.class.getName() + "/nonExistantString");
+        initialContext.lookup("java:module/env/" + EnvEntryManagedBean.class.getName() + "/nonExistentString");
     }
 
     @Test

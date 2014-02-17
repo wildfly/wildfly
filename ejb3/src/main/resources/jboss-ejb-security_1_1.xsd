@@ -44,7 +44,7 @@
                     <xs:annotation>
                         <xs:documentation>
                             <![CDATA[
-                                    If a EJB is secured but certain methods haven't been marked with explicit roles or @PermitAll/@DenyAll
+                                    If an EJB is secured but certain methods haven't been marked with explicit roles or @PermitAll/@DenyAll
                                     then the EJB container uses this missing-method-permissions-deny-access element to decide whether or not
                                     access is allowed to such methods.
                                     Setting this element to true will prevent access to this by any role (i.e.

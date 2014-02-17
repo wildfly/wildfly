@@ -39,7 +39,7 @@ import java.util.Iterator;
 public interface PathAddressTransformer {
 
     /**
-     * Transform a address.
+     * Transform an address.
      *
      * @param current the current path element
      * @param builder the address builder
@@ -109,7 +109,7 @@ public interface PathAddressTransformer {
         PathAddress getRemaining();
 
         /**
-         * Append a element to the current address and continue to the next transformer in the chain.
+         * Append an element to the current address and continue to the next transformer in the chain.
          *
          * @param elements the elements to append
          * @return the transformed address

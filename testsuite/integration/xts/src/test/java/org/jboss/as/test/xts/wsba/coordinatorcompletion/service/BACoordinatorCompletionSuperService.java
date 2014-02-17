@@ -64,7 +64,7 @@ public abstract class BACoordinatorCompletionSuperService implements BACoordinat
         try {
             transactionId = activityManager.currentTransaction().toString();
         } catch (SystemException e) {
-            throw new RuntimeException("Unable to lookup existing busines activity", e);
+            throw new RuntimeException("Unable to lookup existing business activity", e);
         }
 
          // Lookup existing participant or register new participant (

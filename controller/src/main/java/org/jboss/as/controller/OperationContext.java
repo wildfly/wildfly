@@ -472,7 +472,7 @@ public interface OperationContext extends ExpressionResolver {
     Resource readResource(PathAddress relativeAddress, boolean recursive);
 
     /**
-     * Read a addressable resource from the root of the model. Reads never block. If a write action was previously performed,
+     * Read an addressable resource from the root of the model. Reads never block. If a write action was previously performed,
      * the value read will be from an uncommitted copy of the the management model.<br/>
      *
      * Note: By default the returned resource is read-only copy of the entire sub-model. In case this is not required use
@@ -484,7 +484,7 @@ public interface OperationContext extends ExpressionResolver {
     Resource readResourceFromRoot(PathAddress address);
 
     /**
-     * Read a addressable resource from the root of the model. Reads never block. If a write action was previously performed,
+     * Read an addressable resource from the root of the model. Reads never block. If a write action was previously performed,
      * the value read will be from an uncommitted copy of the the management model.
      *
      * @param address the (possibly empty) address

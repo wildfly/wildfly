@@ -119,7 +119,7 @@ public abstract class ServerTaskExecutor {
     }
 
     /**
-     * Record a executed request.
+     * Record an executed request.
      *
      * @param task the executed task
      */

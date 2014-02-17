@@ -241,7 +241,7 @@ public class SASClientIdentityInterceptor extends LocalObject implements ClientR
             Any msg = codec.decode_value(sc.context_data, SASContextBodyHelper.type());
             SASContextBody contextBody = SASContextBodyHelper.extract(msg);
 
-            // At this point contextBody may contain a either a CompleteEstablishContext message or a ContextError message.
+            // At this point contextBody may contain either a CompleteEstablishContext message or a ContextError message.
             // Neither message requires any treatment. We decoded the contextbody just to check that it contains a
             // well-formed message.
             JacORBLogger.ROOT_LOGGER.traceReceiveException(contextBody.discriminator());

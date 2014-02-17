@@ -38,7 +38,7 @@ import org.jboss.metadata.javaee.spec.SecurityRoleMetaData;
 import org.jboss.metadata.javaee.spec.SecurityRolesMetaData;
 
 /**
- * Processes the assembly-descriptor section of a ejb-jar.xml of a EJB deployment and updates the {@link EjbJarDescription}
+ * Processes the assembly-descriptor section of a ejb-jar.xml of an EJB deployment and updates the {@link EjbJarDescription}
  * appropriately with this info.
  *
  * @author Jaikiran Pai

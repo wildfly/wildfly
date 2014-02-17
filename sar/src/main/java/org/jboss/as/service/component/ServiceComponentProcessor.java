@@ -54,7 +54,7 @@ public class ServiceComponentProcessor implements DeploymentUnitProcessor {
         final EEModuleDescription moduleDescription = deploymentUnit
                 .getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
         if (moduleDescription == null) {
-            return; // not an ee deployment
+            return; // not an EE deployment
         }
         final EEApplicationClasses applicationClassesDescription = deploymentUnit
                 .getAttachment(org.jboss.as.ee.component.Attachments.EE_APPLICATION_CLASSES_DESCRIPTION);

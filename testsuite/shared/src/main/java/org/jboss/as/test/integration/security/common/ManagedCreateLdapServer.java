@@ -56,7 +56,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     private Class<?>[] extendedOpHandlers;
     /** supported set of SASL mechanisms */
     private SaslMechanism[] saslMechanisms;
-    /** NTLM provider class, default value is a invalid class */
+    /** NTLM provider class, default value is an invalid class */
     private Class<?> ntlmProvider;
     /** The name of this host, validated during SASL negotiation. */
     private String saslHost;

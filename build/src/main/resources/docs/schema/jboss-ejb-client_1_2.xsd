@@ -89,7 +89,7 @@
                     The fully qualified classname of the class which implements the
                     org.jboss.ejb.client.DeploymentNodeSelector
                     interface. The instance of this class will be used for selecting nodes, from among multiple eligible
-                    nodes within a EJB client context, which can handle a particular deployment
+                    nodes within an EJB client context, which can handle a particular deployment
                 </documentation>
             </annotation>
         </xsd:attribute>

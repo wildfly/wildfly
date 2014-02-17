@@ -29,7 +29,7 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
 /**
- * Return the value of a burried env entry.
+ * Return the value of a buried env entry.
  * 
  * @author <a href="mailto:carlo.dewolf@jboss.com">Carlo de Wolf</a>
  */

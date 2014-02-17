@@ -138,7 +138,7 @@
     <system-properties>
         <!-- RMI Servers without client socket factory overrides need this to be consistent
              the interface they are bound on (e.g. jmx-connector-service)
-             Since the current domain binds to the any addres though, we don't need this
+             Since the current domain binds to the any address though, we don't need this
              <property name="java.rmi.server.hostname" value="127.0.0.1"/>
         -->
         <property name="prop1" value="value1"/>

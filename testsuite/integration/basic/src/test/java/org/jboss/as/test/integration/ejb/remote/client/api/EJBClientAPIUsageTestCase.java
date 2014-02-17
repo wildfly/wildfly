@@ -131,7 +131,7 @@ public class EJBClientAPIUsageTestCase {
 
 
     /**
-     * Test a invocation on the remote view of a stateless bean which is configured for user interceptors
+     * Test an invocation on the remote view of a stateless bean which is configured for user interceptors
      *
      * @throws Exception
      */
@@ -147,7 +147,7 @@ public class EJBClientAPIUsageTestCase {
     }
 
     /**
-     * Test a invocation on a stateless bean method which accepts and returns custom objectss
+     * Test an invocation on a stateless bean method which accepts and returns custom objects
      *
      * @throws Exception
      */
@@ -216,7 +216,7 @@ public class EJBClientAPIUsageTestCase {
         // invoke the bean without creating a session
         try {
             final int initialCount = counter.getCount();
-            Assert.fail("Expected a EJBException for calling a stateful session bean without creating a session");
+            Assert.fail("Expected an EJBException for calling a stateful session bean without creating a session");
         } catch (EJBException ejbe) {
             // expected
             logger.info("Received the expected exception", ejbe);
@@ -238,7 +238,7 @@ public class EJBClientAPIUsageTestCase {
         // invoke on the (non-existent) bean
         try {
             nonExistentBean.echo("Hello world to a non-existent bean");
-            Assert.fail("Expected a IllegalStateException");
+            Assert.fail("Expected an IllegalStateException");
         } catch (IllegalStateException ise) {
             // expected
             logger.info("Received the expected exception", ise);
@@ -258,7 +258,7 @@ public class EJBClientAPIUsageTestCase {
         // invoke on the (non-existent) view of a bean
         try {
             nonExistentBean.echo("Hello world to a non-existent view of a bean");
-            Assert.fail("Expected a IllegalStateException");
+            Assert.fail("Expected an IllegalStateException");
         } catch (IllegalStateException nsee) {
             // expected
             logger.info("Received the expected exception", nsee);

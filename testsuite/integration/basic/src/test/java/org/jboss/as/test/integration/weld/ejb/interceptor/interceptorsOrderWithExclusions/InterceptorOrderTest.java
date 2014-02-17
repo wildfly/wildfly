@@ -67,7 +67,7 @@ public class InterceptorOrderTest {
         EjbInterceptor.count = 0;
         EjbInterceptor2.count = 0;
 
-        int sum = processor.substract(34, 13);
+        int sum = processor.subtract(34, 13);
 
         Assert.assertEquals(21, sum);
         Assert.assertEquals(0, EjbInterceptor.count);

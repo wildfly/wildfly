@@ -89,7 +89,7 @@ public interface InfinispanMessages {
     IllegalArgumentException invalidDefaultCache(String cacheName, String cacheContainerName);
 
     /**
-     * Creates an exception indicating the an executor property is invalid.
+     * Creates an exception indicating an executor property is invalid.
      *
      * @param id         the id of the property.
      * @param properties the properties that were searched.
@@ -100,7 +100,7 @@ public interface InfinispanMessages {
     IllegalStateException invalidExecutorProperty(String id, Properties properties);
 
     /**
-     * Creates an exception indicating the an transport property is invalid.
+     * Creates an exception indicating a transport property is invalid.
      *
      * @param id         the id of the property.
      * @param properties the properties that were searched.
@@ -122,7 +122,7 @@ public interface InfinispanMessages {
     RuntimeException abortingCacheOperation(@Cause Throwable cause, int numberOfRetries);
 
     /**
-     * Creates an exception indicating the an operation parameter is invalid.
+     * Creates an exception indicating an operation parameter is invalid.
      *
      * @param id         the id of the parameter.
      * @param allowableValues the allowable values for the parameter
@@ -133,7 +133,7 @@ public interface InfinispanMessages {
     String invalidParameterValue(String id, String allowableValues);
 
     /**
-     * Creates an exception indicating the a cache store cannot be added as one already exists.
+     * Creates an exception indicating a cache store cannot be added as one already exists.
      *
      * @param existingStoreName the store which already exists.
      *
@@ -143,7 +143,7 @@ public interface InfinispanMessages {
     OperationFailedException cacheStoreAlreadyDefined(String existingStoreName);
 
     /**
-     * Creates an exception indicating the a cache store cannot be added as one already exists.
+     * Creates an exception indicating a cache store cannot be added as one already exists.
      *
      * @param propertyKey the name of the property.
      *

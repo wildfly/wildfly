@@ -33,7 +33,7 @@
     <xsd:element name="jboss-deployment-dependencies" type="jbossDependenciesType">
         <xsd:annotation>
             <xsd:documentation>
-                Root element for a a jboss-dependencies file.
+                Root element for a jboss-dependencies file.
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>

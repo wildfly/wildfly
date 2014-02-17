@@ -545,7 +545,7 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
     }
 
     /**
-     * A Attribute.
+     * An Attribute.
      *
      * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
      */

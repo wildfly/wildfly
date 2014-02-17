@@ -71,7 +71,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
         // Initialize the subsystem
         final ManagementResourceRegistration registration = initializeSubsystem(subsystem);
 
-        // Register a update operation, which requires the transformer to create composite operation
+        // Register an update operation, which requires the transformer to create composite operation
         OperationDefinition def = new SimpleOperationDefinitionBuilder("update", TEST_RESOURCE_DESCRIPTION_RESOLVER)
                 .build();
 

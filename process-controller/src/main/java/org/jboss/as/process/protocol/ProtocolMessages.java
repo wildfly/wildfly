@@ -96,7 +96,7 @@ public interface ProtocolMessages {
     IOException invalidByteToken(int expected, byte actual);
 
     /**
-     * Creates an exception indicating the an invalid command byte was read.
+     * Creates an exception indicating an invalid command byte was read.
      *
      * @param commandByte the command byte read.
      *
@@ -205,7 +205,7 @@ public interface ProtocolMessages {
     IllegalStateException threadCreationRefused();
 
     /**
-     * Creates an exception indicating the an unexpected end of stream was detected.
+     * Creates an exception indicating an unexpected end of stream was detected.
      *
      * @return an {@link java.io.EOFException} for the error.
      */

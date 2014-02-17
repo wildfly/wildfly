@@ -47,7 +47,7 @@ public class EJBClientDescriptorMetaData {
 
 
     /**
-     * Adds a outbound connection reference used by a remoting receivers in the client context represented
+     * Adds an outbound connection reference used by a remoting receiver in the client context represented
      * by this {@link EJBClientDescriptorMetaData}
      *
      * @param outboundConnectionRef The name of the outbound connection. Cannot be null or empty string.

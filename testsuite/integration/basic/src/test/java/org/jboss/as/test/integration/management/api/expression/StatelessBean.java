@@ -57,7 +57,7 @@ public class StatelessBean implements IStatelessBean {
 	public String getJBossProperty(String name) {
 		ModelControllerClient client = getClient();
 		String result = Utils.getProperty(name, client);
-		log.debug("JBoss sytem property " + name + " was resolved to be " + result);
+		log.debug("JBoss system property " + name + " was resolved to be " + result);
 		return result;
 	}
 	
@@ -82,7 +82,7 @@ public class StatelessBean implements IStatelessBean {
     @Override
     public String getSystemProperty(String name) {
         String result = System.getProperty(name);
-        log.debug("Sytem property " + name + " has value " + result);
+        log.debug("System property " + name + " has value " + result);
         return result;
     }
 

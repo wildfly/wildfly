@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Handles a message corresponding to a invocation cancellation request
+ * Handles a message corresponding to an invocation cancellation request
  *
  * @author Jaikiran Pai
  */

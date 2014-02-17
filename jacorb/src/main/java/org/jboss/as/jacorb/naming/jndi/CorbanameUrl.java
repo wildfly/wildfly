@@ -35,7 +35,7 @@ import org.jboss.as.jacorb.JacORBMessages;
 /**
  * Extract components of a "corbaname" URL.
  *
- * The format of an corbaname URL is defined in INS 99-12-03 as follows.
+ * The format of a corbaname URL is defined in INS 99-12-03 as follows.
  *<p>
  * corbaname url = "corbaname:" <corbaloc_obj> ["#" <string_name>]
  * corbaloc_obj  = <obj_addr_list> ["/" <key_string>]

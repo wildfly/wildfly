@@ -116,7 +116,7 @@ public final class ParticipantTestCase extends AbstractTestCase {
 
         txSupport.commitTx();
 
-        // One of the participants was only prepared, while other two were prepared and commited.
+        // One of the participants was only prepared, while other two were prepared and committed.
         Assert.assertEquals(5, participants.get(0).getInvocations().size() + participants.get(1).getInvocations().size()
                 + participants.get(2).getInvocations().size());
 

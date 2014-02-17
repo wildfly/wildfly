@@ -68,7 +68,7 @@ public class ClientEjb {
             }
         }
         Assert.assertEquals(succeeded, remote.isBeforeCompletion());
-        Assert.assertEquals((Boolean) succeeded, remote.getCommitSuceeded());
+        Assert.assertEquals((Boolean) succeeded, remote.getCommitSucceeded());
     }
 
     public void testRollbackOnly() throws RemoteException, SystemException, NotSupportedException {
@@ -82,7 +82,7 @@ public class ClientEjb {
             userTransaction.rollback();
         }
         Assert.assertFalse(remote.isBeforeCompletion());
-        Assert.assertFalse(remote.getCommitSuceeded());
+        Assert.assertFalse(remote.getCommitSucceeded());
     }
 
     public void testRollbackOnlyBeforeCompletion() throws RemoteException, SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException {
@@ -94,7 +94,7 @@ public class ClientEjb {
             userTransaction.commit();
         } catch (RollbackException expected) {
         }
-        Assert.assertFalse(remote.getCommitSuceeded());
+        Assert.assertFalse(remote.getCommitSucceeded());
         Assert.assertEquals(Status.STATUS_NO_TRANSACTION, remote.transactionStatus());
     }
 

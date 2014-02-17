@@ -24,7 +24,7 @@ class CompressedMessageRequestHandler extends AbstractMessageHandler {
     @Override
     public void processMessage(final ChannelAssociation channelAssociation, final InputStream inputStream) throws IOException {
         EjbLogger.EJB3_INVOCATION_LOGGER.trace("Received a compressed message stream");
-        // use a inflater inputstream to inflate the contents
+        // use an inflater inputstream to inflate the contents
         final InputStream inflaterInputStream = new InflaterInputStream(inputStream);
         // let the EJB protocol handler process the stream
         this.ejbProtocolHandler.processMessage(channelAssociation.getChannel(), inflaterInputStream);

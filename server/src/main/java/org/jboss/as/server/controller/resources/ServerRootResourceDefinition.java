@@ -305,7 +305,7 @@ public class ServerRootResourceDefinition extends SimpleResourceDefinition {
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        if (serverEnvironment != null) { // TODO eliminate test cases that result in serverEnviroment == null
+        if (serverEnvironment != null) { // TODO eliminate test cases that result in serverEnvironment == null
             if (isDomain) {
                 resourceRegistration.registerReadOnlyAttribute(NAME, serverEnvironment.getProcessNameReadHandler());
                 resourceRegistration.registerReadWriteAttribute(PROFILE_NAME, null, new ModelOnlyWriteAttributeHandler(PROFILE_NAME));

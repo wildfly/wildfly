@@ -28,7 +28,7 @@ import javax.security.jacc.PolicyContextException;
 import org.jboss.metadata.ear.spec.EarMetaData;
 
 /**
- * A service that creates JACC permissions for a ear deployment
+ * A service that creates JACC permissions for an ear deployment
  *
  * @author <a href="mailto:mmoyses@redhat.com">Marcus Moyses</a>
  * @author Scott.Stark@jboss.org

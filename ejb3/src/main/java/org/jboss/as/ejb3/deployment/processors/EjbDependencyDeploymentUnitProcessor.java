@@ -56,7 +56,7 @@ public class EjbDependencyDeploymentUnitProcessor implements DeploymentUnitProce
 
 
     /**
-     * Adds Java EE module as a dependency to any deployment unit which is a EJB deployment
+     * Adds Java EE module as a dependency to any deployment unit which is an EJB deployment
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException

@@ -62,7 +62,7 @@ public class TCPSyslogServer extends TCPNetSyslogServer {
                 }
                 new Thread(new TCPSyslogSocketHandler(this.sockets, this, socket)).start();
             } catch (IOException e) {
-                LOGGER.error("IOException occured.", e);
+                LOGGER.error("IOException occurred.", e);
             }
         }
     }

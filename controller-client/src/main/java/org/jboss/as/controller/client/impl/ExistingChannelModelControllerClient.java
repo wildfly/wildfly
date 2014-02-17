@@ -54,7 +54,7 @@ public class ExistingChannelModelControllerClient extends AbstractModelControlle
     }
 
     /**
-     * Create and add model controller handler to a existing management channel handler.
+     * Create and add model controller handler to an existing management channel handler.
      *
      * @param handler the channel handler
      * @return the created client
@@ -66,10 +66,10 @@ public class ExistingChannelModelControllerClient extends AbstractModelControlle
     }
 
     /**
-     * Create a model controller client which is exclusively receiving messages on a existing channel.
+     * Create a model controller client which is exclusively receiving messages on an existing channel.
      *
      * @param channel the channel
-     * @param executorService a executor
+     * @param executorService an executor
      * @return the created client
      */
     public static ModelControllerClient createReceiving(final Channel channel, final ExecutorService executorService) {

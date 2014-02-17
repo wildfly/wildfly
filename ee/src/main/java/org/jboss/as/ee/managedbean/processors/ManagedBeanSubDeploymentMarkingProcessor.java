@@ -64,7 +64,7 @@ public class ManagedBeanSubDeploymentMarkingProcessor implements DeploymentUnitP
             final Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
             if (index != null) {
                 if (!index.getAnnotations(MANAGED_BEAN).isEmpty()) {
-                    //this is an managed bean deployment
+                    //this is a managed bean deployment
                     SubDeploymentMarker.mark(resourceRoot);
                     ModuleRootMarker.mark(resourceRoot);
                 }

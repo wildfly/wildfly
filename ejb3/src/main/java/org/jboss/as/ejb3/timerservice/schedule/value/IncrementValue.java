@@ -26,7 +26,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Represents a value for a {@link ScheduleExpression} which is expressed as an increment type. An
- * {@link IncrementValue} comprises of a start value and a interval, separated by a "/"
+ * {@link IncrementValue} comprises of a start value and an interval, separated by a "/"
  * <p/>
  * <p>
  * An {@link IncrementValue} is specified in the form of x&#47;y to mean "Every N { seconds | minutes | hours }

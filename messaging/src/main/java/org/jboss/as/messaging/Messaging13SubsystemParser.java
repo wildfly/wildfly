@@ -76,7 +76,7 @@ public class Messaging13SubsystemParser extends Messaging12SubsystemParser {
     @Override
     protected void checkClusterConnectionConstraints(XMLExtendedStreamReader reader, Set<Element> seen) throws XMLStreamException {
         // AS7-5598 relax constraints on the cluster-connection to accept one without static-connectors or discovery-group-ref
-        // howver it is still not valid to have both
+        // however it is still not valid to have both
         checkNotBothElements(reader, seen, STATIC_CONNECTORS, DISCOVERY_GROUP_REF);
     }
 

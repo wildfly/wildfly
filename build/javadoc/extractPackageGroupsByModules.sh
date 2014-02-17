@@ -75,7 +75,7 @@ echo "<groups>"
       continue;
     fi;
 
-    ##  Otherwise, it's an groupId:artifactId. Get it, unzip it, get a list of packages.
+    ##  Otherwise, it's a groupId:artifactId. Get it, unzip it, get a list of packages.
     #ART_PATH=$LINE
     #	PACKAGES="$PACKAGES:$LINE"
   done < $TARGET/modulesList.tmp.txt

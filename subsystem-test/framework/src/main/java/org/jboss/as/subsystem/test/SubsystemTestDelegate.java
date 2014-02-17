@@ -437,7 +437,7 @@ final class SubsystemTestDelegate {
      *
      *
      * @param kernelServices the main kernel services
-     * @param modelVersion   the model version of the targetted legacy subsystem
+     * @param modelVersion   the model version of the targeted legacy subsystem
      * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
      * @param includeDefaults  whether the legacy controller model and the transformed model should include default values for undefined attributes
      * @return the whole model of the legacy controller

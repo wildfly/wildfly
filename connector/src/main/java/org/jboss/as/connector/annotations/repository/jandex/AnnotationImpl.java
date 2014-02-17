@@ -33,7 +33,7 @@ import org.jboss.jca.common.spi.annotations.repository.Annotation;
 
 /**
  *
- * A AnnotationImpl.
+ * An AnnotationImpl.
  *
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  *

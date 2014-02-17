@@ -146,7 +146,7 @@ class ActiveOperationSupport {
             assert ! shutdown;
             final Integer operationId;
             if(id == null) {
-                // If we did not get a operationId, create a new one
+                // If we did not get an operationId, create a new one
                 operationId = operationIdManager.createBatchId();
             } else {
                 // Check that the operationId is not already taken

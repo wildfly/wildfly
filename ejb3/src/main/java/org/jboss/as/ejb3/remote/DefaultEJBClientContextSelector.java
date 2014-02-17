@@ -58,7 +58,7 @@ class DefaultEJBClientContextSelector implements ContextSelector<EJBClientContex
     }
 
     /**
-     * Cleans up any reference to a the TCCL based context service and the default EJB client context
+     * Cleans up any reference to the TCCL based context service and the default EJB client context
      */
     void destroy() {
         this.tcclEJBClientContextService = null;

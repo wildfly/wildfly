@@ -151,7 +151,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
             TransactionUtil.putEntityManagerInTransactionRegistry(scopedPuName, entityManager);
         }
         else {
-            testForMixedSyncronizationTypes(entityManager, puScopedName, synchronizationType);
+            testForMixedSynchronizationTypes(entityManager, puScopedName, synchronizationType);
             if (JPA_LOGGER.isDebugEnabled()) {
                 JPA_LOGGER.debugf("%s: reuse entity manager session already in tx %s", TransactionUtil.getEntityManagerDetails(entityManager),
                     TransactionUtil.getTransaction().toString());
@@ -190,7 +190,7 @@ public class TransactionScopedEntityManager extends AbstractEntityManager implem
      * throw error if jta transaction already has an UNSYNCHRONIZED persistence context and a SYNCHRONIZED persistence context
      * is requested.  We are only fussy in this test, if the target component persistence context is SYNCHRONIZED.
      */
-    private static void testForMixedSyncronizationTypes(EntityManager entityManager, String scopedPuName, final SynchronizationType targetSynchronizationType) {
+    private static void testForMixedSynchronizationTypes(EntityManager entityManager, String scopedPuName, final SynchronizationType targetSynchronizationType) {
         if (SynchronizationType.SYNCHRONIZED.equals(targetSynchronizationType)
                 && entityManager instanceof AbstractEntityManager
                 && SynchronizationType.UNSYNCHRONIZED.equals( ((AbstractEntityManager)entityManager).getSynchronizationType())) {

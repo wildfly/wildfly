@@ -197,7 +197,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
     private boolean assertMDBClassValidity(final ClassInfo mdbClass) {
         final short flags = mdbClass.flags();
         final String className = mdbClass.name().toString();
-        // must *not* be a interface
+        // must *not* be an interface
         if (Modifier.isInterface(flags)) {
             EjbLogger.EJB3_LOGGER.mdbClassCannotBeAnInterface(className);
             return false;

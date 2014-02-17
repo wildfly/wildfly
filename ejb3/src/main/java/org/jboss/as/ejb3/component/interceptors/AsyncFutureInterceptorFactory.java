@@ -91,7 +91,7 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
                     }
                 };
                 asyncInterceptorContext.putPrivateData(CancellationFlag.class, flag);
-                // This interceptor runs in user application's context classloader. Triggering an execute via a executor service from here can potentially lead to
+                // This interceptor runs in user application's context classloader. Triggering an execute via an executor service from here can potentially lead to
                 // new thread creation which will assign themselves the context classloader of the parent thread (i.e. this thread). This effectively can lead to
                 // deployment's classloader leak. See https://issues.jboss.org/browse/WFLY-1375
                 // To prevent this, we set the TCCL of this thread to null and then trigger the "execute" before "finally" setting the TCCL back to the original one.

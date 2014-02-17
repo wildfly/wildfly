@@ -3,7 +3,7 @@
         "description" => "The configuration of the JMX subsystem.",
         "attributes" => {"show-model" => {
             "type" => BOOLEAN,
-            "description" => "Alias for the existance of the 'resolved' model controller jmx facade. When writing, if set to 'true' it will add the 'resolved' model controller jmx facade resource with the default domain name.  ",
+            "description" => "Alias for the existence of the 'resolved' model controller jmx facade. When writing, if set to 'true' it will add the 'resolved' model controller jmx facade resource with the default domain name.  ",
             "expressions-allowed" => false,
             "nillable" => true
         }},

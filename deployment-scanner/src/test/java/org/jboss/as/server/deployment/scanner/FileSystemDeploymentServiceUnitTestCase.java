@@ -1438,7 +1438,7 @@ public class FileSystemDeploymentServiceUnitTestCase {
         // make sure the deployed marker exists
         assertTrue(deployed.getAbsolutePath() + " marker file not found after deployment", deployed.exists());
 
-        // now trigger a undeployment by removed the "deployed" marker file
+        // now trigger an undeployment by removing the "deployed" marker file
         assertTrue("Could not delete " + deployed.getAbsolutePath() + " marker file", deployed.delete());
         ts.controller.addCompositeSuccessResponse(1);
         ts.testee.scan();

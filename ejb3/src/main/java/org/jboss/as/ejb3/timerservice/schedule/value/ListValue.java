@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
- * Represents a value for a {@link javax.ejb.ScheduleExpression} which is expressed as an list type. An
+ * Represents a value for a {@link javax.ejb.ScheduleExpression} which is expressed as a list type. A
  * {@link ListValue} comprises of values separated by a ",".
  * <p/>
  * <p>

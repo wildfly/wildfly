@@ -904,7 +904,7 @@ public interface CmpMessages {
 //    @Message(id = 18685, value = "Creation is not allowed because a primary key field is read only.")
 //    CreateException creationNotAllowedPKReadOnly();
 //
-//    @Message(id = 18686, value = "An error occured while getting the transaction associated with the current thread")
+//    @Message(id = 18686, value = "An error occurred while getting the transaction associated with the current thread")
 //    IllegalStateException errorGettingCurrentTransaction(@Cause SystemException e);
 //
 //    @Message(id = 18687, value = "The instance of %s with pk=%s was not stored to prevent potential inconsistency of data in the database:" +
@@ -1206,7 +1206,7 @@ public interface CmpMessages {
 //    IllegalArgumentException illegalNumberOfArgumentsForFindByPrimaryKey(int noOfArguments);
 
     /*
-    * Note id's 18910 and higher are availble for use. 18900-18910 are used for id's that were duplicates for id's in
+    * Note id's 18910 and higher are available for use. 18900-18910 are used for id's that were duplicates for id's in
     * the server module.
     */
 }

@@ -5,7 +5,7 @@
         "operations" => undefined,
         "children" => {
             "size-rotating-file-handler" => {
-                "description" => "Defines a handler which writes to a file, rotating the log after a the size of the file grows beyond a certain point and keeping a fixed number of backups.",
+                "description" => "Defines a handler which writes to a file, rotating the log after the size of the file grows beyond a certain point and keeping a fixed number of backups.",
                 "model-description" => undefined
             },
             "async-handler" => {
@@ -2385,7 +2385,7 @@
                 "operations" => undefined,
                 "children" => {
                     "size-rotating-file-handler" => {
-                        "description" => "Defines a handler which writes to a file, rotating the log after a the size of the file grows beyond a certain point and keeping a fixed number of backups.",
+                        "description" => "Defines a handler which writes to a file, rotating the log after the size of the file grows beyond a certain point and keeping a fixed number of backups.",
                         "model-description" => undefined
                     },
                     "async-handler" => {

@@ -68,7 +68,7 @@ public class ConnectDialog extends JInternalFrame {
 
     static final String DEFAULT_REMOTE = "http-remoting://localhost:9990"; // TODO - Can this sync up with config somehow?
     // NOTE: CLI has no Message IDs assigned, hence Resources.getText(...);
-    // This will probably require a i18n
+    // This will probably requirean i18n
     static final String HINT_CONNECT = "<protocol>://<hostname>:<port> OR empty";
     static final String HINT_CONNECT_BUTTON = "Connect to server CLI";
     static final String TEXT_CONNECT = "Connect";

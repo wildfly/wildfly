@@ -55,7 +55,7 @@ public class BusinessViewAnnotationProcessorTestCase {
     }
 
     /**
-     * Tests a bean marked with a explicit view
+     * Tests a bean marked with an explicit view
      *
      * @throws Exception
      */

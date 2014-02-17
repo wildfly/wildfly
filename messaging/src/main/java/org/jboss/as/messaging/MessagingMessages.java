@@ -490,7 +490,7 @@ public interface MessagingMessages {
     OperationFailedException failedToRecover(@Cause Throwable cause, String name);
 
     /**
-     * Create an failure description message indicating that an attribute is not supported by a given model version.
+     * Create a failure description message indicating that an attribute is not supported by a given model version.
      *
      * @param attributes the name(s) of the unsupported attribute(s)
      * @param version the model version that does not support the attribute
@@ -501,7 +501,7 @@ public interface MessagingMessages {
     String unsupportedAttributeInVersion(String attributes, ModelVersion version);
 
     /**
-     * Create an failure description message indicating that the clustered attribute is deprecated.
+     * Create a failure description message indicating that the clustered attribute is deprecated.
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
@@ -509,7 +509,7 @@ public interface MessagingMessages {
     UnsupportedOperationException canNotWriteClusteredAttribute();
 
     /**
-     * Create an failure description message indicating that the resource of given type can not be registered.
+     * Create a failure description message indicating that the resource of given type can not be registered.
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
@@ -517,7 +517,7 @@ public interface MessagingMessages {
     UnsupportedOperationException canNotRegisterResourceOfType(String childType);
 
     /**
-     * Create an failure description message indicating that the resource of given type can not be removed.
+     * Create a failure description message indicating that the resource of given type can not be removed.
      *
      * @return an {@link UnsupportedOperationException} for the error.
      */
@@ -549,7 +549,7 @@ public interface MessagingMessages {
 
 
     /**
-     * Create a exception when calling a method not allowed on injected JMSContext.
+     * Create an exception when calling a method not allowed on injected JMSContext.
      *
      * @return an {@link IllegalStateRuntimeException} for the error.
      */

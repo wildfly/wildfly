@@ -126,7 +126,7 @@ public class EEJndiViewExtension implements JndiViewExtension, Service<Void> {
 
     private void handleModule(final JndiViewExtensionContext context, final DeploymentUnit deploymentUnit, final ModelNode modulesNode, final ServiceRegistry serviceRegistry) throws OperationFailedException {
         final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
-        // If it isn't a EE module, just return
+        // If it isn't an EE module, just return
         if (moduleDescription == null) {
             return;
         }

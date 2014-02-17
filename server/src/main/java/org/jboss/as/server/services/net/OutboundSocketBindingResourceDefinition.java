@@ -37,7 +37,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Represents a {@link org.jboss.as.controller.ResourceDefinition} for a outbound-socket-binding
+ * Represents a {@link org.jboss.as.controller.ResourceDefinition} for an outbound-socket-binding
  *
  * @author Jaikiran Pai
  */
