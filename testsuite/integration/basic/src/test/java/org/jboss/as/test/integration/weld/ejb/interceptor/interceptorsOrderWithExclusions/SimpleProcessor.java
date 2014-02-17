@@ -40,7 +40,7 @@ public class SimpleProcessor implements Processor {
 
     @Secured
     @ExcludeClassInterceptors
-    public int substract(int x, int y) {
+    public int subtract(int x, int y) {
         count = Counter.next();
         return x - y;
     }

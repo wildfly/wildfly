@@ -81,7 +81,7 @@ public class ContainerInterceptorsTestCase {
     }
 
     /**
-     * Tests that the container-interceptor(s) are invoked when a EJB method on a local view is invoked
+     * Tests that the container-interceptor(s) are invoked when an EJB method on a local view is invoked
      * 
      * @throws Exception
      */
@@ -106,7 +106,7 @@ public class ContainerInterceptorsTestCase {
     }
 
     /**
-     * Tests that the container-interceptor(s) are invoked when a EJB method on a remote view is invoked
+     * Tests that the container-interceptor(s) are invoked when an EJB method on a remote view is invoked
      * 
      * @throws Exception
      */
@@ -179,7 +179,7 @@ public class ContainerInterceptorsTestCase {
     }
 
     /**
-     * Tests that class level and method level container-interceptors (and other eligible interceptors) are invoked during a EJB
+     * Tests that class level and method level container-interceptors (and other eligible interceptors) are invoked during an EJB
      * invocation
      * 
      * @throws Exception

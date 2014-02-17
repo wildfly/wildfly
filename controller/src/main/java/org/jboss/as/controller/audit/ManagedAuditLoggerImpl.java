@@ -762,7 +762,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
 
     /**
-     * When we add an handler(reference) we want that to be part of the current write.
+     * When we add a handler(reference) we want that to be part of the current write.
      * If we remove/change and handler, and or reference, we don't want that to take effect until the next write.
      */
     private class HandlerUpdateTask {

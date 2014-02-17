@@ -69,7 +69,7 @@ public class LocalDestinationOutboundSocketBindingService extends OutboundSocket
     private int getDestinationPort() {
         final SocketBinding localDestinationSocketBinding = this.localDestinationSocketBindingInjectedValue.getValue();
         // instead of directly using SocketBinding.getPort(), we go via the SocketBinding.getSocketAddress()
-        // since the getPort() method doesn't take into account whether the port is a fixed port or whether a offset
+        // since the getPort() method doesn't take into account whether the port is a fixed port or whether an offset
         // needs to be added. Alternatively, we could introduce a getAbsolutePort() in the SocketBinding class.
         final InetSocketAddress socketAddress = localDestinationSocketBinding.getSocketAddress();
         return socketAddress.getPort();

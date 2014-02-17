@@ -55,7 +55,7 @@ import org.jboss.msc.service.ServiceName;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
- * {@link ViewConfigurator} responsible for setting up necessary security interceptors on a EJB view.
+ * {@link ViewConfigurator} responsible for setting up necessary security interceptors on an EJB view.
  * <p/>
  * User: Jaikiran Pai
  */

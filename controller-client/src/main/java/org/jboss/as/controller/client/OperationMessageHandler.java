@@ -61,7 +61,7 @@ public interface OperationMessageHandler {
 
 
     /**
-     * An noop operation message handler, which discards all received messages.
+     * A noop operation message handler, which discards all received messages.
      */
     OperationMessageHandler DISCARD = new OperationMessageHandler() {
 

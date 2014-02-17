@@ -157,7 +157,7 @@ public class LdapLoginModuleTestCase {
      */
     private void testAccess(@ArquillianResource URL webAppURL) throws Exception {
         final URL servletURL = new URL(webAppURL.toExternalForm() + SimpleSecuredServlet.SERVLET_PATH.substring(1));
-        LOGGER.info("Testing successfull authentication - " + servletURL);
+        LOGGER.info("Testing successful authentication - " + servletURL);
         assertEquals("Expected response body doesn't match the returned one.", SimpleSecuredServlet.RESPONSE_BODY,
                 Utils.makeCallWithBasicAuthn(servletURL, "jduke", "theduke", 200));
 

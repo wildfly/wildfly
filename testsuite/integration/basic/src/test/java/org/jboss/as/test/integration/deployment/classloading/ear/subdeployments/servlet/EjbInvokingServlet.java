@@ -57,7 +57,7 @@ public class EjbInvokingServlet extends HttpServlet {
         }
         try {
             bean.loadClass(classInWar);
-            // .war class shouldn't have been visible to a EJB in a .jar
+            // .war class shouldn't have been visible to an EJB in a .jar
             resp.getOutputStream().print(FAILURE_MESSAGE);
         } catch (ClassNotFoundException cnfe) {
             // the ClassNotFoundException is expected since the class in the .war isn't expected to be visible to the

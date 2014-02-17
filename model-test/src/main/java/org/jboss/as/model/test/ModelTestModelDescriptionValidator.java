@@ -446,7 +446,7 @@ public class ModelTestModelDescriptionValidator {
                 try {
                     currentNode.get(descriptor).asLong();
                 } catch (Exception e) {
-                    return "'" + descriptor + "' is not a int/long";
+                    return "'" + descriptor + "' is not an int/long";
                 }
             }
             return null;
@@ -589,7 +589,7 @@ public class ModelTestModelDescriptionValidator {
         private Map<ModelNode, Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>> operationParameterDescriptors = new HashMap<ModelNode, Map<String, Map<String, Map<String, AttributeOrParameterArbitraryDescriptorValidator>>>>();
 
         /**
-         * Allow undefined value-types for a OBJECT or LIST type attribute. This should be used
+         * Allow undefined value-types for an OBJECT or LIST type attribute. This should be used
          * sparingly since an undefined value-type is normally a problem with your model.
          *
          * @param address the address of the attribute

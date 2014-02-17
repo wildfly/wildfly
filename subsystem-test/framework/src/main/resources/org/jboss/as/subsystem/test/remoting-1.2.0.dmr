@@ -123,7 +123,7 @@
         },
         {
             "model-description" => {
-                "description" => "Remoting outbound connection with a implicit remote:// URI scheme.",
+                "description" => "Remoting outbound connection with an implicit remote:// URI scheme.",
                 "attributes" => {
                     "outbound-socket-binding-ref" => {
                         "type" => STRING,
@@ -389,7 +389,7 @@
         },
         {
             "model-description" => {
-                "description" => "Remoting outbound connection with a implicit local:// URI scheme.",
+                "description" => "Remoting outbound connection with an implicit local:// URI scheme.",
                 "attributes" => {"outbound-socket-binding-ref" => {
                     "type" => STRING,
                     "description" => "Name of the outbound-socket-binding which will be used to determine the destination address and port for the connection.",

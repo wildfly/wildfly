@@ -49,7 +49,7 @@ public class DMRUtil {
         operation.get("value").set(maxSize);
         // ModelNode result = client.execute(operation);
         ModelNode result = ManagementOperations.executeOperationRaw(client, operation);
-        Assert.assertEquals("Setting of max-size attribute was not sucessful", SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("Setting of max-size attribute was not successful", SUCCESS, result.get(OUTCOME).asString());
     }
 
     /**
@@ -62,7 +62,7 @@ public class DMRUtil {
         operation.get(OP_ADDR).set(address);
         operation.get("name").set(attrName);
         ModelNode result = client.execute(operation);
-        Assert.assertEquals("Unset of attribute " + attrName + " on server was not sucessful", SUCCESS, result.get(OUTCOME).asString());
+        Assert.assertEquals("Unset of attribute " + attrName + " on server was not successful", SUCCESS, result.get(OUTCOME).asString());
         log.info("unset modelnode operation " + UNDEFINE_ATTRIBUTE_OPERATION + " on " + attrName + ": " + result);
     }
 

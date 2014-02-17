@@ -309,13 +309,13 @@ public abstract class AnnSBTest {
         private EJBClientContext context;
         private Endpoint endpoint;
         private Connection connection;
-        private EJBReceiver reciever;
+        private EJBReceiver receiver;
 
         private ClosableContextSelector(EJBClientContext context, Endpoint endpoint, Connection connection, EJBReceiver receiver) {
             this.context = context;
             this.endpoint = endpoint;
             this.connection = connection;
-            this.reciever = receiver;
+            this.receiver = receiver;
         }
 
         public EJBClientContext getCurrent() {
@@ -323,7 +323,7 @@ public abstract class AnnSBTest {
         }
 
         public void close() throws IOException {
-            context.unregisterEJBReceiver(reciever);
+            context.unregisterEJBReceiver(receiver);
             safeClose(connection);
             safeClose(endpoint);
             this.context = null;

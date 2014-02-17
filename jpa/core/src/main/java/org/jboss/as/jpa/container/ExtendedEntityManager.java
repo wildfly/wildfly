@@ -38,7 +38,7 @@ import org.jboss.as.jpa.transaction.TransactionUtil;
  * created/deleted/updated/loaded entities will remain associated with the entity manager until it is joined with a
  * transaction (commit will save the changes, rollback will lose them).
  * <p/>
- * At injection time, a instance of this class is associated with the SFSB.
+ * At injection time, an instance of this class is associated with the SFSB.
  * During a SFSB1 invocation, if a new SFSB2 is created with an XPC referencing the same
  * persistence unit, the new SFSB2 will inherit the same persistence context from SFSB1.
  * Both SFSB1 + SFSB2 will maintain a reference to the underlying persistence context, such that

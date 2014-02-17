@@ -250,7 +250,7 @@
     <xs:simpleType name="nameType">
         <xs:annotation>
             <xs:documentation>
-                The name for a EE Concurrency resource.
+                The name for an EE Concurrency resource.
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="nonEmptyTokenType" />

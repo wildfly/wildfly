@@ -171,7 +171,7 @@ public class JMXExtension implements Extension {
                     throws OperationFailedException {
                 ModelNode model = resource.getModel();
 
-                // The existance of the expose-model=>resolved child is
+                // The existence of the expose-model=>resolved child is
                 // translated into the show-model=>true attribute
                 Resource exposeResolvedResource = resource.getChild(PathElement.pathElement(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED));
                 boolean showModel = false;

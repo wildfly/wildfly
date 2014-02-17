@@ -155,8 +155,8 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
 
     private String getServerGroupName(ModelNode operation) {
         if(operation.hasDefined(ADDRESS)) {
-            List<Property> adress = operation.get(ADDRESS).asPropertyList();
-            for(Property prop : adress) {
+            List<Property> address = operation.get(ADDRESS).asPropertyList();
+            for(Property prop : address) {
                 if(SERVER_GROUP.equals(prop.getName())) {
                     return prop.getValue().asString();
                 }

@@ -102,7 +102,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     /**
      * a collection of all the context and associated endpoint information for the XTS JaxWS endpoints.
-     * this is the bits of the variosu web.xml files whcih are necessary to deploy via the endpoint
+     * this is the bits of the variosu web.xml files which are necessary to deploy via the endpoint
      * publisher API rather than via war files containing web.xml descriptors
      */
     private static final ContextInfo[] contextDefinitions = {
@@ -177,7 +177,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         // endpoints specific to client, coordinator or participant and then deploy
         // and redeploy the relevant endpoints as needed/ the same switches can be used
         // byte the XTS service to decide whether to perfomr client, coordinator or
-        // participant initialisation. we shoudl also provide config switches which
+        // participant initialisation. we should also provide config switches which
         // decide whether to initialise classes and deploy services for AT, BA or both.
         // for now we will just deploy all the endpoints and always do client, coordinator
         // and participant init for both AT and BA.

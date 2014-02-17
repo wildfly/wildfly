@@ -45,7 +45,7 @@ public class ExceptionMapperProvider implements ExceptionMapper<Exception> {
 
     private static Logger LOGGER = Logger.getLogger(ExceptionMapperProvider.class);
 
-    public static final String ERROR_MESSAGE = "ERROR OCCURED";
+    public static final String ERROR_MESSAGE = "ERROR OCCURRED";
     public static final String PATH_EXCEPTION = "/exception";
 
     // Public methods --------------------------------------------------------

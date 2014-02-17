@@ -1650,7 +1650,7 @@ public class S3Util {
         }
 
         /**
-         * Concatenates a bunch of header values, seperating them with a comma.
+         * Concatenates a bunch of header values, separating them with a comma.
          * @param values List of header values.
          * @return String of all headers, with commas.
          */

@@ -17,7 +17,7 @@ in order to decide to deploy (or redeploy) it.
 
 1) Auto-deploy mode: The scanner will directly monitor the deployment content,
 automatically deploying new content and redeploying content whose timestamp
-has changed. This is similiar to the behavior of previous AS releases, although
+has changed. This is similar to the behavior of previous AS releases, although
 there are differences:
 
 a) A change in any file in an exploded deployment triggers redeploy. Because

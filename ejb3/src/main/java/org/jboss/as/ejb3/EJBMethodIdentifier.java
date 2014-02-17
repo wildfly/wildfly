@@ -29,7 +29,7 @@ import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
 /**
- * Identifier for a method on a EJB and is classloader agnostic.
+ * Identifier for a method on an EJB and is classloader agnostic.
  * <p/>
  * Unlike the {@link MethodIdentifier} this {@link EJBMethodIdentifier} takes into the account the declaring class of the
  * method.

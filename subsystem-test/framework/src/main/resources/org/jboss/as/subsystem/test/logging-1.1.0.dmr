@@ -15,7 +15,7 @@
             "console-handler" => {"description" => "Defines a handler which writes to the console."},
             "file-handler" => {"description" => "Defines a handler which writes to a file."},
             "periodic-rotating-file-handler" => {"description" => "Defines a handler which writes to a file, rotating the log after a time period derived from the given suffix string, which should be in a format understood by java.text.SimpleDateFormat."},
-            "size-rotating-file-handler" => {"description" => "Defines a handler which writes to a file, rotating the log after a the size of the file grows beyond a certain point and keeping a fixed number of backups."},
+            "size-rotating-file-handler" => {"description" => "Defines a handler which writes to a file, rotating the log after the size of the file grows beyond a certain point and keeping a fixed number of backups."},
             "custom-handler" => {"description" => "Defines a custom logging handler. The custom handler must extend java.util.logging.Handler."}
         }
     },
@@ -23,7 +23,7 @@
     "children" => [
         {
             "model-description" => {
-                "description" => "Defines a handler which writes to a file, rotating the log after a the size of the file grows beyond a certain point and keeping a fixed number of backups.",
+                "description" => "Defines a handler which writes to a file, rotating the log after the size of the file grows beyond a certain point and keeping a fixed number of backups.",
                 "attributes" => {
                     "encoding" => {
                         "type" => STRING,

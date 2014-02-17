@@ -59,7 +59,7 @@ public class RemoveMethodOnSFSBTestCase {
     private SFSBWithRemoveMethods sfsbWithRemoveMethods;
 
     /**
-     * Tests that a invocation on a SFSB method annotated with @Remove results in the removal of the bean instance
+     * Tests that an invocation on a SFSB method annotated with @Remove results in the removal of the bean instance
      */
     @Test
     public void testSimpleRemoveOnSFSB() {
@@ -76,12 +76,12 @@ public class RemoveMethodOnSFSBTestCase {
     }
 
     /**
-     * Tests that a invocation on SFSB method annotated with @Remove and with "retainIfException = true" *doesn't* result
-     * in removal of the bean when a application exception is thrown.
+     * Tests that an invocation on SFSB method annotated with @Remove and with "retainIfException = true" *doesn't* result
+     * in removal of the bean when an application exception is thrown.
      */
     @Test
     public void testRemoveWithRetainIfExceptionOnSFSB() {
-        // invoke the remove method which throws a app exception
+        // invoke the remove method which throws an app exception
         try {
             sfsbWithRemoveMethods.retainIfAppException();
             Assert.fail("Did not get the expected app exception");
@@ -100,13 +100,13 @@ public class RemoveMethodOnSFSBTestCase {
     }
 
     /**
-     * Tests that a invocation on SFSB method annotated with @Remove (and without the retainIfException set to true) results in
+     * Tests that an invocation on SFSB method annotated with @Remove (and without the retainIfException set to true) results in
      * removal of the bean even in case of application exception.
      */
     @Test
     public void testRemoveEvenIfAppExceptionOnSFSB() throws Exception {
 
-        // invoke the remove method which throws a app exception
+        // invoke the remove method which throws an app exception
         try {
             sfsbWithRemoveMethods.removeEvenIfAppException();
             Assert.fail("Did not get the expected app exception");
@@ -137,12 +137,12 @@ public class RemoveMethodOnSFSBTestCase {
     }
 
     /**
-     * Tests that a invocation on SFSB base class method annotated with @Remove (and without the retainIfException set to true) results in
+     * Tests that an invocation on SFSB base class method annotated with @Remove (and without the retainIfException set to true) results in
      * removal of the bean even in case of application exception.
      */
     @Test
     public void testRemoveEvenIfAppExceptionOnSFSBBaseClass() {
-        // invoke the remove method which throws a app exception
+        // invoke the remove method which throws an app exception
         try {
             sfsbWithRemoveMethods.baseRemoveEvenIfAppException();
             Assert.fail("Did not get the expected app exception");
@@ -161,7 +161,7 @@ public class RemoveMethodOnSFSBTestCase {
     }
 
     /**
-     * Tests that a invocation on a SFSB base class method annotated with @Remove results in the removal of the bean instance
+     * Tests that an invocation on a SFSB base class method annotated with @Remove results in the removal of the bean instance
      */
     @Test
     public void testSimpleRemoveOnSFSBBaseClass() {
@@ -178,12 +178,12 @@ public class RemoveMethodOnSFSBTestCase {
     }
 
     /**
-     * Tests that a invocation on SFSB base class method annotated with @Remove and with "retainIfException = true" *doesn't* result
-     * in removal of the bean when a application exception is thrown.
+     * Tests that an invocation on SFSB base class method annotated with @Remove and with "retainIfException = true" *doesn't* result
+     * in removal of the bean when an application exception is thrown.
      */
     @Test
     public void testRemoveWithRetainIfExceptionOnSFSBBaseClass() {
-        // invoke the remove method which throws a app exception
+        // invoke the remove method which throws an app exception
         try {
             sfsbWithRemoveMethods.baseRetainIfAppException();
             Assert.fail("Did not get the expected app exception");

@@ -183,7 +183,7 @@ public interface PatchTool {
         }
 
         /**
-         * Create a offline local patch tool.
+         * Create an offline local patch tool.
          *
          * @param manager the installation manager
          * @return the patch tool

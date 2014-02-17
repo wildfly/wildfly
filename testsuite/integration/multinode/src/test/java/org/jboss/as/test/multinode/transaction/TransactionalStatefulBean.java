@@ -34,7 +34,7 @@ import java.rmi.RemoteException;
 @Stateful
 public class TransactionalStatefulBean implements SessionSynchronization, TransactionalStatefulRemote {
 
-    private Boolean commitSuceeded;
+    private Boolean commitSucceeded;
     private boolean beforeCompletion = false;
     private Object transactionKey = null;
     private boolean rollbackOnlyBeforeCompletion = false;
@@ -53,7 +53,7 @@ public class TransactionalStatefulBean implements SessionSynchronization, Transa
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void resetStatus() {
-        commitSuceeded = null;
+        commitSucceeded = null;
         beforeCompletion = false;
         transactionKey = null;
     }
@@ -96,12 +96,12 @@ public class TransactionalStatefulBean implements SessionSynchronization, Transa
     }
 
     public void afterCompletion(final boolean committed) throws EJBException, RemoteException {
-        commitSuceeded = committed;
+        commitSucceeded = committed;
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public Boolean getCommitSuceeded() {
-        return commitSuceeded;
+    public Boolean getCommitSucceeded() {
+        return commitSucceeded;
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)

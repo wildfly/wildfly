@@ -129,7 +129,7 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
     }
 
     /**
-     * Returns all the deployments that are in a started state, i.e. all components are ready to recieve invocations.
+     * Returns all the deployments that are in a started state, i.e. all components are ready to receive invocations.
      * @return All the started deployments
      */
     public Map<DeploymentModuleIdentifier, ModuleDeployment> getStartedModules() {

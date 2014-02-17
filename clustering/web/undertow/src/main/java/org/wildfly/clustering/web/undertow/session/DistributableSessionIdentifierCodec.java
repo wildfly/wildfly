@@ -27,7 +27,7 @@ import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.wildfly.clustering.web.session.RouteLocator;
 
 /**
- * {@link SessionIdentifierCodec} that encodes the route determined by the a {@link RouteLocator}.
+ * {@link SessionIdentifierCodec} that encodes the route determined by a {@link RouteLocator}.
  * @author Paul Ferraro
  */
 public class DistributableSessionIdentifierCodec implements SessionIdentifierCodec {

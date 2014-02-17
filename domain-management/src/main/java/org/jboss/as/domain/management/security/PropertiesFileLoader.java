@@ -65,7 +65,7 @@ public class PropertiesFileLoader {
      * <li>{@code #key=value}</li>
      * <li>{@code key=value}</li>
      * </ul>
-     * {@code value} must be a any character except "=" and {@code key} must be any character except "#".<br/>
+     * {@code value} must be any character except "=" and {@code key} must be any character except "#".<br/>
      * {@code group(1)} returns the key of the property.<br/>
      * {@code group(2)} returns the value of the property.
      */

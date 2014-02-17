@@ -36,7 +36,7 @@ public class BafAroundConstructInterceptor {
     @AroundConstruct
     public void intercept(InvocationContext ctx) {
         aroundConstructCalled = true;
-        throw new Error("Do not supress me.");
+        throw new Error("Do not suppress me.");
     }
     public static void reset() {
         aroundConstructCalled = false;

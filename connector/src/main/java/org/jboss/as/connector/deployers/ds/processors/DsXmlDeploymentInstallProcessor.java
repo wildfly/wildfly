@@ -102,7 +102,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
 
     /**
      * Process a deployment for standard ra deployment files. Will parse the xml
-     * file and attach an configuration discovered during processing.
+     * file and attach a configuration discovered during processing.
      *
      * @param phaseContext the deployment unit context
      * @throws org.jboss.as.server.deployment.DeploymentUnitProcessingException

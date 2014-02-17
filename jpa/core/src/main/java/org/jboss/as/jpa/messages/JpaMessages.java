@@ -481,7 +481,7 @@ public interface JpaMessages {
     //String objectAlreadyDefined(Class<?> cls, Object previous);
 
     /**
-     * Creates an exception indicating the parameter must be a ExtendedEntityManager
+     * Creates an exception indicating the parameter must be an ExtendedEntityManager
      *
      * @param gotClass
      * @return a {@link RuntimeException} for the error.

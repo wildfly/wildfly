@@ -98,7 +98,7 @@ public class ClientEjb {
             }
         }
         Assert.assertEquals("The beforeCompletion method invalid invocation!", succeeded, statefulRemote.isBeforeCompletion());
-        Assert.assertEquals("The result of the transaction does not match the input of afterCompletion!", (Boolean) succeeded, statefulRemote.getCommitSuceeded());
+        Assert.assertEquals("The result of the transaction does not match the input of afterCompletion!", (Boolean) succeeded, statefulRemote.getCommitSucceeded());
     }
 
     public void testRollbackOnly() throws RemoteException, SystemException, NotSupportedException, NamingException {
@@ -112,7 +112,7 @@ public class ClientEjb {
             userTransaction.rollback();
         }
         Assert.assertFalse("The beforeCompletion method invoked even in case of rollback-only transaction!", statefulRemote.isBeforeCompletion());
-        Assert.assertFalse("The result of the transaction does not match the input of afterCompletion!", statefulRemote.getCommitSuceeded());
+        Assert.assertFalse("The result of the transaction does not match the input of afterCompletion!", statefulRemote.getCommitSucceeded());
     }
 
     public void testRollbackOnlyBeforeCompletion() throws RemoteException, SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException, NamingException {
@@ -128,7 +128,7 @@ public class ClientEjb {
                 userTransaction.rollback();
             }
         }
-        Assert.assertFalse("The result of the transaction does not match the input of afterCompletion!", statefulRemote.getCommitSuceeded());
+        Assert.assertFalse("The result of the transaction does not match the input of afterCompletion!", statefulRemote.getCommitSucceeded());
         Assert.assertEquals("No transaction expected!", Status.STATUS_NO_TRANSACTION, statefulRemote.transactionStatus());
     }
 

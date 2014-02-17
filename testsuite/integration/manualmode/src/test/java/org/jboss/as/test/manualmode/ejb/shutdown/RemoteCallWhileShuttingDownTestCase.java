@@ -138,7 +138,7 @@ public class RemoteCallWhileShuttingDownTestCase {
             Assert.assertEquals("Real hello", latch.getEchoMessage());
             // we don't want to "wait" for a response since the server is in shutdown mode and waiting for a result can result in intermittent connection/channel close issues
             // where when the client has sent a request and is waiting for a server response and the server in the meantime closed the channel.
-            // So create a asynchronous proxy and invoke the "void" method which acts as fully asynchronous by *not* waiting for a response from the server. Kind of fire and forget.
+            // So create an asynchronous proxy and invoke the "void" method which acts as fully asynchronous by *not* waiting for a response from the server. Kind of fire and forget.
             // see https://issues.jboss.org/browse/WFLY-1532 for more details.
             final RemoteLatch asynchronousProxy = EJBClient.asynchronous(latch);
             asynchronousProxy.testDone();

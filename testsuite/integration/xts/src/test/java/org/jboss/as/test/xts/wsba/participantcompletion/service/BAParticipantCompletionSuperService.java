@@ -74,7 +74,7 @@ public abstract class BAParticipantCompletionSuperService implements BAParticipa
         try {
             txid = activityManager.currentTransaction().toString();
         } catch (SystemException se) {
-            throw new RuntimeException("Error on getting TX id from BussinessActivityManager", se);
+            throw new RuntimeException("Error on getting TX id from BusinessActivityManager", se);
         }
         
         if(participantRegistry.keySet().contains(txid) && ServiceCommand.isPresent(REUSE_BA_PARTICIPANT, serviceCommands)) {

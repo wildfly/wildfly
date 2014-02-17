@@ -34,7 +34,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import javax.sql.DataSource;
 
 /**
- * Processor responsible for adding a EEResourceReferenceProcessor, which defaults @resource datasource injection to java:comp/DefaultDataSource.
+ * Processor responsible for adding an EEResourceReferenceProcessor, which defaults @resource datasource injection to java:comp/DefaultDataSource.
  *
  * @author Eduardo Martins
  */

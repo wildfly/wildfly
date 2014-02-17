@@ -40,7 +40,7 @@ public interface Pool<T> {
     void discard(T obj);
 
     /**
-     * Get the an object from the pool. This will mark
+     * Get an object from the pool. This will mark
      * the object as being in use.
      *
      * @return the object

@@ -54,7 +54,7 @@ public class StatefulInitMethodInterceptor implements Interceptor {
     public Object processInvocation(final InterceptorContext context) throws Exception {
         final Method method = SessionBeanHomeInterceptorFactory.INIT_METHOD.get();
         final Object[] params = SessionBeanHomeInterceptorFactory.INIT_PARAMETERS.get();
-        //we remove them immediatly, so they are not set for the rest of the invocation
+        //we remove them immediately, so they are not set for the rest of the invocation
         //TODO: find a better way to handle this
         SessionBeanHomeInterceptorFactory.INIT_METHOD.remove();
         SessionBeanHomeInterceptorFactory.INIT_PARAMETERS.remove();

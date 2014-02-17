@@ -77,7 +77,7 @@ public class ControllerServlet extends HttpServlet {
         } catch (ClassNotFoundException e) {
             throw new ServletException("This requires being run on Oracle JDK 7.", e);
         } catch (Exception e) {
-            throw new ServletException("Cannot install the a certificate to the validator.", e);
+            throw new ServletException("Cannot install the certificate to the validator.", e);
         }
 
         java.security.Security.addProvider(new DummyProvider());

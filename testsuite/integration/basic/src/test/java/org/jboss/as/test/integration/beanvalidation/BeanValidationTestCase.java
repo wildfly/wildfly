@@ -52,7 +52,7 @@ public class BeanValidationTestCase {
     }
 
     /**
-     * Test that {@link javax.validation.Validation#buildDefaultValidatorFactory()} works fine within a EJB
+     * Test that {@link javax.validation.Validation#buildDefaultValidatorFactory()} works fine within an EJB
      */
     @Test
     public void testBuildDefaultValidatorFactory() {

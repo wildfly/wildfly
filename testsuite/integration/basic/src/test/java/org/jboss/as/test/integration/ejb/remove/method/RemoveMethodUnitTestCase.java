@@ -131,7 +131,7 @@ public class RemoveMethodUnitTestCase {
 
     /**
      * Test that ejbRemove() method was invoked on the bean when the remove() is invoked on the EJBObject
-     * of a EJB2.x view of a bean
+     * of an EJB2.x view of a bean
      *
      * @throws Exception
      */

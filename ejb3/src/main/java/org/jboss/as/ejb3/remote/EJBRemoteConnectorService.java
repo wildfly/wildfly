@@ -104,7 +104,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         // get the remoting server (which allows remoting connector to connect to it) service
         final ServiceContainer serviceContainer = context.getController().getServiceContainer();
 
-        // Register a EJB channel open listener
+        // Register an EJB channel open listener
         final OpenListener channelOpenListener = new ChannelOpenListener(serviceContainer);
         try {
             registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, this.channelCreationOptions);
@@ -112,7 +112,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
             throw new StartException(e);
         }
 
-        // setup a EJBClientTransactionContext backed the transaction manager on this server.
+        // setup an EJBClientTransactionContext backed the transaction manager on this server.
         // This will be used to propagate the transactions from this server to remote servers during EJB invocations
         final EJBClientTransactionContext ejbClientTransactionContext = EJBClientTransactionContext.create(this.txManager.getValue(), this.txSyncRegistry.getValue());
         EJBClientTransactionContext.setSelector(new ConstantContextSelector<EJBClientTransactionContext>(ejbClientTransactionContext));

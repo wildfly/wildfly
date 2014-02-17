@@ -89,27 +89,27 @@ public class SimplePasswordStrengthCheckResult implements PasswordStrengthCheckR
         restrictionFailures.add(pve);
     }
 
-    private static final float BOUNDRY_EXCEPTIONAL = 0.03f;
-    private static final float BOUNDRY_VERY_STRONG = 0.1f;
-    private static final float BOUNDRY_STRONG = 0.15f;
-    private static final float BOUNDRY_MEDIUM = 0.5f;
-    private static final float BOUNDRY_MODERATE = 0.7f;
-    private static final float BOUNDRY_WEAK = 0.9f;
+    private static final float BOUNDARY_EXCEPTIONAL = 0.03f;
+    private static final float BOUNDARY_VERY_STRONG = 0.1f;
+    private static final float BOUNDARY_STRONG = 0.15f;
+    private static final float BOUNDARY_MEDIUM = 0.5f;
+    private static final float BOUNDARY_MODERATE = 0.7f;
+    private static final float BOUNDARY_WEAK = 0.9f;
 
     void calculateStrength() {
         float f = (float) negative / positive;
 
-        if (f <= BOUNDRY_EXCEPTIONAL) {
+        if (f <= BOUNDARY_EXCEPTIONAL) {
             this.strength = PasswordStrength.EXCEPTIONAL;
-        } else if (f <= BOUNDRY_VERY_STRONG) {
+        } else if (f <= BOUNDARY_VERY_STRONG) {
             this.strength = PasswordStrength.VERY_STRONG;
-        } else if (f <= BOUNDRY_STRONG) {
+        } else if (f <= BOUNDARY_STRONG) {
             this.strength = PasswordStrength.STRONG;
-        } else if (f <= BOUNDRY_MEDIUM) {
+        } else if (f <= BOUNDARY_MEDIUM) {
             this.strength = PasswordStrength.MEDIUM;
-        } else if (f <= BOUNDRY_MODERATE) {
+        } else if (f <= BOUNDARY_MODERATE) {
             this.strength = PasswordStrength.MODERATE;
-        } else if (f <= BOUNDRY_WEAK) {
+        } else if (f <= BOUNDARY_WEAK) {
             this.strength = PasswordStrength.WEAK;
         } else {
             this.strength = PasswordStrength.VERY_WEAK;

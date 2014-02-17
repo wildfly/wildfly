@@ -62,7 +62,7 @@ public class SFSBMandatoryTransactionTestCase {
     public void testSFSBNotDestroyed() throws SystemException, NotSupportedException {
         try {
             sfsb.doStuff();
-            throw new RuntimeException("Expected a EJBTransactionRequiredException");
+            throw new RuntimeException("Expected an EJBTransactionRequiredException");
         } catch (EJBTransactionRequiredException e) {
             //ignore
         }

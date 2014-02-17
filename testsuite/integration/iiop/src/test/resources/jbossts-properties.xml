@@ -32,7 +32,7 @@
     in which case the token values are substituted for the values of the corresponding system
     properties as follows:
 
-    - Any occurance of ${p} with the System.getProperty(p) value.
+    - Any occurrence of ${p} with the System.getProperty(p) value.
     If there is no such property p defined, then the ${p} reference will remain unchanged.
 
     - If the property reference is of the form ${p:v} and there is no such property p,

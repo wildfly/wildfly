@@ -180,7 +180,7 @@ class HornetQService implements Service<HornetQServer> {
                             }
                             InetSocketAddress sa = socketBinding.getSocketAddress();
                             port = sa.getPort();
-                            // resolve the host name of the address only if a loopback adress has been set
+                            // resolve the host name of the address only if a loopback address has been set
                             if (sa.getAddress().isLoopbackAddress()) {
                                 host = sa.getAddress().getHostName();
                             } else {

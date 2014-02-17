@@ -116,8 +116,8 @@ public class EJBReadWriteLockTest {
         // before the 2 second timeout
         try {
             // try a read lock with 2 second timeout
-            boolean readLockAquired = readLock.tryLock(2, TimeUnit.SECONDS);
-            Assert.assertFalse("Unexpected obtained a read lock", readLockAquired);
+            boolean readLockAcquired = readLock.tryLock(2, TimeUnit.SECONDS);
+            Assert.assertFalse("Unexpected obtained a read lock", readLockAcquired);
         } catch (ConcurrentAccessTimeoutException cate) {
             // expected
         } finally {
@@ -149,12 +149,12 @@ public class EJBReadWriteLockTest {
         // lock it! (should work, because we are going from a write to read and *not*
         // the other way round)
         try {
-            boolean readLockAquired = readLock.tryLock(2, TimeUnit.SECONDS);
+            boolean readLockAcquired = readLock.tryLock(2, TimeUnit.SECONDS);
             // unlock the read lock, because we don't need it anymore
-            if (readLockAquired) {
+            if (readLockAcquired) {
                 readLock.unlock();
             }
-            Assert.assertTrue("Could not obtain read lock when write lock was held by the same thread!", readLockAquired);
+            Assert.assertTrue("Could not obtain read lock when write lock was held by the same thread!", readLockAcquired);
         } finally {
             // unlock our write lock
             writeLock.unlock();

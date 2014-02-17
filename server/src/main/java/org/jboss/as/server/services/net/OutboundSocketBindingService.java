@@ -33,7 +33,7 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
 /**
- * Service that represents a outbound socket binding
+ * Service that represents an outbound socket binding
  *
  * @author Jaikiran Pai
  */

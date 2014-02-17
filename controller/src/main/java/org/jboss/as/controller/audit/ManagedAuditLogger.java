@@ -196,7 +196,7 @@ public interface ManagedAuditLogger extends AuditLogger {
      * If a handler is removed, the operations causing the removal will be logged to the handler, before removing it.
      * </p>
      * <p>
-     * If an handler is changed, for example to change the location of a file handler or the protocol of a syslog
+     * If a handler is changed, for example to change the location of a file handler or the protocol of a syslog
      * handler, the operations causing the change will be logged to the current handler location. The next incoming
      * log message will be written to the new handler location.
      * </p>
@@ -210,7 +210,7 @@ public interface ManagedAuditLogger extends AuditLogger {
         void addHandler(AuditLogHandler handler);
 
         /**
-         * Update an handler. The update will only take place if the handler has actually been changed. The
+         * Update a handler. The update will only take place if the handler has actually been changed. The
          * changes to the handler will only take effect after the current operation has been logged.
          *
          * @param handler the updated handler
@@ -218,7 +218,7 @@ public interface ManagedAuditLogger extends AuditLogger {
         void updateHandler(AuditLogHandler handler);
 
         /**
-         * Remove an handler. The removal will only take effect after the current operation has been logged.
+         * Remove a handler. The removal will only take effect after the current operation has been logged.
          *
          * @param name the name of the handler to be removed
          * @throws IllegalStateException if the handler still has references to it
@@ -226,7 +226,7 @@ public interface ManagedAuditLogger extends AuditLogger {
         void removeHandler(String name);
 
         /**
-         * Add an handler reference. This reference will take effect when logging the current operation
+         * Add a handler reference. This reference will take effect when logging the current operation
          *
          * @param referenceAddress the address of the handler reference (the value of the last element is the name of
          *                         the referenced handler)
@@ -234,7 +234,7 @@ public interface ManagedAuditLogger extends AuditLogger {
         void addHandlerReference(PathAddress referenceAddress);
 
         /**
-         * Add an handler reference. This reference removal will only take effect after the current operation has been
+         * Add a handler reference. This reference removal will only take effect after the current operation has been
          * logged.
          *
          * @param referenceAddress the address of the handler reference (the value of the last element is the name of

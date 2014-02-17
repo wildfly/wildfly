@@ -123,7 +123,7 @@ class IdentityPatchContext implements PatchContentProvider {
      * Get a patch entry for either a layer or add-on.
      *
      * @param name  the layer name
-     * @param addOn whether the target is a add-on
+     * @param addOn whether the target is an add-on
      * @return the patch entry, {@code null} if it there is no such layer
      */
     PatchEntry getEntry(final String name, boolean addOn) {

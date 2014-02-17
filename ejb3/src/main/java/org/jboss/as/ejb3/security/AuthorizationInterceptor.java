@@ -128,7 +128,7 @@ public class AuthorizationInterceptor implements Interceptor {
      * Returns the method roles as a set of {@code Principal} instances. All roles specified in the method-permissions or
      * via {@code RolesAllowed} for this method are wrapped by a {@code SimplePrincipal}. If the method has been added to
      * the exclude-list or annotated with {@code DenyAll}, a NOBODY_PRINCIPAL is returned. If the method has been added
-     * to the unchecked list or annotated with {@code PermitAll}, a ANYBODY_PRINCIPAL is returned.
+     * to the unchecked list or annotated with {@code PermitAll}, an ANYBODY_PRINCIPAL is returned.
      * </p>
      *
      * @return the constructed set of role principals.

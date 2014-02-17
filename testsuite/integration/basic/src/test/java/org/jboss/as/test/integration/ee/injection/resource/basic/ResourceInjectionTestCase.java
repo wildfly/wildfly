@@ -90,41 +90,41 @@ public class ResourceInjectionTestCase {
     /**
      * Test scenario:
      * <p/>
-     * A @Resource backed by a env-entry should be injected only if the corresponding env-entry has a env-entry-value specified.
+     * A @Resource backed by an env-entry should be injected only if the corresponding env-entry has an env-entry-value specified.
      * If the env-entry-value is missing, then the injection of @Resource should not happen.
      */
     @Test
     public void testOptionalEnvEntryInjection() {
         int defaultInt = this.slsb.getUnInjectedInt();
-        Assert.assertEquals("env-entry of type int without an value was *not* expected to be injected", defaultInt,
+        Assert.assertEquals("env-entry of type int without a value was *not* expected to be injected", defaultInt,
                 SimpleSLSB.DEFAULT_UNINJECTED_INT_VAL);
 
         String defaultString = this.slsb.getUnInjectedString();
-        Assert.assertEquals("env-entry of type String without an value was *not* expected to be injected", defaultString,
+        Assert.assertEquals("env-entry of type String without a value was *not* expected to be injected", defaultString,
                 SimpleSLSB.DEFAULT_UNINJECTED_STRING_VAL);
     }
 
     /**
      * Test scenario:
      * <p/>
-     * A @Resource backed by a env-entry should be made available in ENC only if the corresponding env-entry has a
+     * A @Resource backed by an env-entry should be made available in ENC only if the corresponding env-entry has an
      * env-entry-value specified. If the env-entry-value is missing, then there should be no corresponding ENC entry for that
      * env-entry
      */
     @Test
     public void testOptionalEnvEntryEncAvailability() {
         boolean intEnvEntryAvailableInEnc = this.slsb.isUnInjectedIntEnvEntryPresentInEnc();
-        Assert.assertFalse("env-entry of type int, without a env-entry-value was *not* expected to be available in ENC",
+        Assert.assertFalse("env-entry of type int, without an env-entry-value was *not* expected to be available in ENC",
                 intEnvEntryAvailableInEnc);
 
         boolean stringEnvEntryAvailableInEnc = this.slsb.isUnInjectedStringEnvEntryPresentInEnc();
-        Assert.assertFalse("env-entry of type String, without a env-entry-value was *not* expected to be available in ENC",
+        Assert.assertFalse("env-entry of type String, without an env-entry-value was *not* expected to be available in ENC",
                 stringEnvEntryAvailableInEnc);
 
     }
 
     /**
-     * Tests that a EJB with a @Resource of type {@link javax.ejb.TimerService} deploys fine and the
+     * Tests that an EJB with a @Resource of type {@link javax.ejb.TimerService} deploys fine and the
      * {@link javax.ejb.TimerService} is injected in the bean
      */
     @Test

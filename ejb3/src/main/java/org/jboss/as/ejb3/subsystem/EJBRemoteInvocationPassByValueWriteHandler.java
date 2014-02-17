@@ -90,7 +90,7 @@ class EJBRemoteInvocationPassByValueWriteHandler extends AbstractWriteAttributeH
             context.removeService(existingDefaultLocalEJBReceiverServiceController);
         }
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        // now install the new default local EJB receiver service which points to a existing Local EJB receiver service
+        // now install the new default local EJB receiver service which points to an existing Local EJB receiver service
         final ValueInjectionService<LocalEjbReceiver> newDefaultLocalEJBReceiverService = new ValueInjectionService<LocalEjbReceiver>();
         final ServiceBuilder defaultLocalEJBReceiverServiceBuilder = serviceTarget.addService(LocalEjbReceiver.DEFAULT_LOCAL_EJB_RECEIVER_SERVICE_NAME, newDefaultLocalEJBReceiverService);
         defaultLocalEJBReceiverServiceBuilder.addDependency(localEJBReceiverServiceName, LocalEjbReceiver.class, newDefaultLocalEJBReceiverService.getInjector());

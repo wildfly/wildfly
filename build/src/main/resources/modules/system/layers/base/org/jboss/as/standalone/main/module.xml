@@ -36,7 +36,7 @@
     <dependencies>
         <module name="javax.api"/>
         <!--
-        Xalan is optional dependancy and would need to be present in cases where runtime code needs xslt transformation otherwise
+        Xalan is optional dependency and would need to be present in cases where runtime code needs xslt transformation otherwise
         xslt parser will fallback to JDK provided xalan, which can cause issues.
          -->
         <module name="org.apache.xalan" services="import" optional="true"/>

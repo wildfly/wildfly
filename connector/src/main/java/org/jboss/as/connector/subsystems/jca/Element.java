@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A Element.
+ * An Element.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 

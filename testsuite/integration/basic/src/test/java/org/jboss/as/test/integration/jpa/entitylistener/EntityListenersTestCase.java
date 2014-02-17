@@ -71,7 +71,7 @@ public class EntityListenersTestCase {
 
     /**
      * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
-     * when a entity is persisted via a stateful BMT bean
+     * when an entity is persisted via a stateful BMT bean
      *
      * @throws Exception
      */
@@ -84,7 +84,7 @@ public class EntityListenersTestCase {
 
     /**
      * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
-     * when a entity is persisted via a stateful CMT bean
+     * when an entity is persisted via a stateful CMT bean
      *
      * @throws Exception
      */
@@ -111,7 +111,7 @@ public class EntityListenersTestCase {
 
     /**
      * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
-     * when a entity is persisted via a stateless CMT bean
+     * when an entity is persisted via a stateless CMT bean
      *
      * @throws Exception
      */
@@ -125,7 +125,7 @@ public class EntityListenersTestCase {
 
     /**
      * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
-     * when a entity is persisted via a stateless BMT bean
+     * when an entity is persisted via a stateless BMT bean
      *
      * @throws Exception
      */
@@ -139,7 +139,7 @@ public class EntityListenersTestCase {
 
     /**
      * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
-     * when a entity is persisted via a singleton CMT bean
+     * when an entity is persisted via a singleton CMT bean
      *
      * @throws Exception
      */
@@ -153,7 +153,7 @@ public class EntityListenersTestCase {
 
     /**
      * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
-     * when a entity is persisted via a singleton BMT bean
+     * when an entity is persisted via a singleton BMT bean
      *
      * @throws Exception
      */
@@ -167,7 +167,7 @@ public class EntityListenersTestCase {
 
     /**
      * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
-     * when a entity is persisted via a BMT bean
+     * when an entity is persisted via a BMT bean
      *
      * @param bmtBean The BMT bean
      * @throws Exception
@@ -182,7 +182,7 @@ public class EntityListenersTestCase {
 
     /**
      * Tests that the entity listeners are correctly invoked and have access to the java:comp/EJBContext
-     * when a entity is persisted via a CMT bean
+     * when an entity is persisted via a CMT bean
      *
      * @param cmtBean The CMT bean
      * @throws Exception

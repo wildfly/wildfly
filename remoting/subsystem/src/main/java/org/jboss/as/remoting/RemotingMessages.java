@@ -75,7 +75,7 @@ public interface RemotingMessages {
     @Message(id = 17117, value = "Outbound socket binding reference cannot be null or empty for connection named: %s")
     IllegalStateException outboundSocketBindingEmpty(String connectionName);
 
-    @Message(id = 17118, value = "Destination URI cannot be null while creating a outbound remote connection service")
+    @Message(id = 17118, value = "Destination URI cannot be null while creating an outbound remote connection service")
     IllegalStateException destinationUriEmpty();
 
     @Message(id = 17119, value = "A security realm has been specified but no supported mechanism identified")

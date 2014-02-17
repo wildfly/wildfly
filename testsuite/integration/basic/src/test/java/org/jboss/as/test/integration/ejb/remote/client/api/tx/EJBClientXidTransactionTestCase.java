@@ -187,7 +187,7 @@ public class EJBClientXidTransactionTestCase {
         txManager.begin();
         try {
             batchBean.appExceptionFailingStep2(batchName, appExceptionStep2);
-            Assert.fail("Expected a application exception");
+            Assert.fail("Expected an application exception");
         } catch (SimpleAppException sae) {
             // expected
             txManager.rollback();

@@ -36,7 +36,7 @@
    <xs:complexType name="security-roleType">
       <xs:annotation>
          <xs:documentation> The security-role element contains the definition of a security role.
-            The definition consists of an the security role name and principal name element(s). </xs:documentation>
+            The definition consists of the security role name and principal name element(s). </xs:documentation>
       </xs:annotation>
       <xs:sequence>
          <xs:element name="description"

@@ -160,7 +160,7 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
     }
 
     @Test
-    public void testAdminstratorSensitiveMBeans() throws Exception {
+    public void testAdministratorSensitiveMBeans() throws Exception {
         checkMBeanAccess(StandardRole.ADMINISTRATOR, true);
     }
 
@@ -370,7 +370,7 @@ public abstract class JmxRbacTestCase extends AbstractControllerTestBase {
                         }
                     }
 
-                    //Special methods, which only superuser or adminstrator can call
+                    //Special methods, which only superuser or administrator can call
                     ByteArrayOutputStream bout = new ByteArrayOutputStream();
                     ObjectOutputStream out = new ObjectOutputStream(bout);
                     try {

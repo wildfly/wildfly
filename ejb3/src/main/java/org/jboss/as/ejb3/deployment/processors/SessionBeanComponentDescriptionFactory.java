@@ -198,7 +198,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
     private static boolean assertSessionBeanClassValidity(final ClassInfo sessionBeanClass) {
         final short flags = sessionBeanClass.flags();
         final String className = sessionBeanClass.name().toString();
-        // must *not* be a interface
+        // must *not* be an interface
         if (Modifier.isInterface(flags)) {
             EjbLogger.EJB3_LOGGER.sessionBeanClassCannotBeAnInterface(className);
             return false;

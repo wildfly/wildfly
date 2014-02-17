@@ -25,7 +25,7 @@ import org.jboss.dmr.ModelType;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 /**
- * Validates that the given parameter is a int in a given range.
+ * Validates that the given parameter is an int in a given range.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */

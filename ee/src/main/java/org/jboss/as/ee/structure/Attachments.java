@@ -56,7 +56,7 @@ public final class Attachments {
     public static final AttachmentKey<VirtualFile> ALTERNATE_CONNECTOR_DEPLOYMENT_DESCRIPTOR = AttachmentKey.create(VirtualFile.class);
 
     /**
-     * A Marker that identifies the a type of deployment
+     * A Marker that identifies the type of deployment
      */
     public static final AttachmentKey<DeploymentType> DEPLOYMENT_TYPE = AttachmentKey.create(DeploymentType.class);
 

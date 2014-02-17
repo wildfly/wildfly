@@ -41,7 +41,7 @@ interface DeploymentRepositoryMessages {
     DeploymentRepositoryMessages MESSAGES = Messages.getBundle(DeploymentRepositoryMessages.class);
 
     /**
-     * Creates an exception indicating the a failure to create the directory represented by the {@code path} parameter.
+     * Creates an exception indicating a failure to create the directory represented by the {@code path} parameter.
      *
      * @param path the path name.
      *

@@ -70,7 +70,7 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
 
     /**
      * Process a deployment for jboss-beans.xml files.
-     * Will parse the xml file and attach an configuration discovered during processing.
+     * Will parse the xml file and attach a configuration discovered during processing.
      *
      * @param phaseContext the deployment unit context
      * @throws DeploymentUnitProcessingException

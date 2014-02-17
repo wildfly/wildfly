@@ -39,7 +39,7 @@ import org.jboss.logging.Messages;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * A AbstractParser.
+ * An AbstractParser.
  *
  * @author <a href="stefano.maestri@jboss.com">Stefano Maestri</a>
  */

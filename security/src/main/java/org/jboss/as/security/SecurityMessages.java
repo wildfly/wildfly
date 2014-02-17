@@ -64,7 +64,7 @@ public interface SecurityMessages {
     /**
      * Creates an exception indicating the inability to get the {@link org.jboss.modules.ModuleClassLoader}
      *
-     * @return a {@link IllegalStateException} for the error.
+     * @return an {@link IllegalStateException} for the error.
      */
     @Message(id = 13300, value = "Unable to get the Module Class Loader")
     IllegalStateException unableToGetModuleClassLoader(@Cause Throwable e);
@@ -72,7 +72,7 @@ public interface SecurityMessages {
     /**
      * Creates an exception indicating that the operation is not supported
      *
-     * @return a {@link OperationNotSupportedException} for the error.
+     * @return an {@link OperationNotSupportedException} for the error.
      */
     @Message(id = 13301, value = "Operation not supported : %s")
     OperationNotSupportedException operationNotSupported(Method method);
@@ -282,7 +282,7 @@ public interface SecurityMessages {
     LoginException failureCallingSecurityRealm(String cause);
 
     /**
-     * Create a OperationFailedException to indicate a failure to find an authentication cache
+     * Create an OperationFailedException to indicate a failure to find an authentication cache
      * @return the exception
      */
     @Message(id = 13328, value = "No authentication cache for security domain '%s' available")

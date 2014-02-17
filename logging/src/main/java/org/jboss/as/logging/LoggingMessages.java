@@ -267,7 +267,7 @@ public interface LoggingMessages {
     String invalidPath(String relativeTo, String path);
 
     /**
-     * A message indicating an suffix is invalid.
+     * A message indicating a suffix is invalid.
      *
      * @param suffix the suffix.
      *
@@ -611,7 +611,7 @@ public interface LoggingMessages {
     IllegalArgumentException truncatedFilterExpression();
 
     /**
-     * Creates an exception indicating the an invalid escape was found in the filter expression string.
+     * Creates an exception indicating an invalid escape was found in the filter expression string.
      *
      * @return an {@link IllegalArgumentException} for the error
      */

@@ -145,7 +145,7 @@ public final class AttributeMarshallers {
     };
 
     /**
-     * XML marshaller for connector attribute to wrap a list of attributes in a optional XML element.
+     * XML marshaller for connector attribute to wrap a list of attributes in an optional XML element.
      */
     public static final class WrappedListAttributeMarshaller extends AttributeMarshaller {
 

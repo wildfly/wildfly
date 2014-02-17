@@ -86,7 +86,7 @@ public class TimerServiceDeploymentProcessor implements DeploymentUnitProcessor 
 
         ServiceName defaultTimerPersistenceService = TimerPersistence.SERVICE_NAME.append(defaultTimerDataStore);
         final Map<String, ServiceName> timerPersistenceServices = new HashMap<String, ServiceName>();
-        // if this is a EJB deployment then create a EJB module level TimerServiceRegistry which can be used by the timer services
+        // if this is an EJB deployment then create an EJB module level TimerServiceRegistry which can be used by the timer services
         // of all EJB components that belong to this EJB module.
         final TimerServiceRegistry timerServiceRegistry = EjbDeploymentMarker.isEjbDeployment(deploymentUnit) ? new TimerServiceRegistry() : null;
 

@@ -179,7 +179,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
 
     /**
      * @param incommingMappedRoles The principal vs roles mapping (if any). Can be null.
-     * @param roleLinks            The role link map where the key is a alias role name and the value is the collection of
+     * @param roleLinks            The role link map where the key is an alias role name and the value is the collection of
      *                             role names, that alias represents. Can be null.
      * @param roleNames            The role names for which the caller is being checked for
      * @return true if the user is in <b>any</b> one of the <code>roleNames</code>. Else returns false
@@ -433,7 +433,7 @@ public class SimpleSecurityManager implements ServerSecurityManager {
      * role name doesn't have any aliases
      *
      * @param roleName  The role name
-     * @param roleLinks The role link map where the key is a alias role name and the value is the collection of
+     * @param roleLinks The role link map where the key is an alias role name and the value is the collection of
      *                  role names, that alias represents
      * @return
      */

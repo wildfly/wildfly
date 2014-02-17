@@ -157,7 +157,7 @@ public class CMTTxInterceptor implements Interceptor {
                 t = new EJBTransactionRolledbackException("Unexpected Error");
                 t.initCause(cause);
             } else if (t instanceof NoSuchEJBException || t instanceof NoSuchEntityException) {
-                // If this is an NoSuchEJBException, pass through to the caller
+                // If this is a NoSuchEJBException, pass through to the caller
 
             } else if (t instanceof RuntimeException) {
                 t = new EJBTransactionRolledbackException(t.getMessage(), (Exception) t);

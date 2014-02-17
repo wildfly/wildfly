@@ -39,7 +39,7 @@ import org.junit.runner.RunWith;
 
 
 /**
- * Test that a EJB jar can reference the persistence provider classes
+ * Test that an EJB jar can reference the persistence provider classes
  *
  */
 @RunWith(Arquillian.class)

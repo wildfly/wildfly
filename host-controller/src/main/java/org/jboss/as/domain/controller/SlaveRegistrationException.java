@@ -24,7 +24,7 @@ package org.jboss.as.domain.controller;
 import org.jboss.as.controller.RunningMode;
 
 /**
- * Used to propogate error codes as part of the error message when an error occurs registering the a slave host controller.
+ * Used to propagate error codes as part of the error message when an error occurs registering a slave host controller.
  * I do not want to modify the protocol at the moment to support error codes natively.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>

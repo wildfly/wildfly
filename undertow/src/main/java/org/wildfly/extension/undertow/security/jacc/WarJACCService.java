@@ -59,7 +59,7 @@ import org.jboss.metadata.web.spec.WebResourceCollectionsMetaData;
  */
 public class WarJACCService extends JaccService<WarMetaData> {
 
-    /** An prefix pattern "/prefix/*" */
+    /** A prefix pattern "/prefix/*" */
     private static final int PREFIX = 1;
 
     /** An extension pattern "*.ext" */
@@ -68,7 +68,7 @@ public class WarJACCService extends JaccService<WarMetaData> {
     /** The "/" default pattern */
     private static final int DEFAULT = 3;
 
-    /** An prefix pattern "/prefix/*" */
+    /** A prefix pattern "/prefix/*" */
     private static final int EXACT = 4;
 
     private static final String ANY_AUTHENTICATED_USER_ROLE = "**";

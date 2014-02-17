@@ -26,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A Attribute.
+ * An Attribute.
  * @author <a href="mailto:stefano.maestri@redhat.com">Stefano Maestri</a>
  */
 public enum Attribute {

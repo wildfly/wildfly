@@ -45,7 +45,7 @@ public class BMTStateless {
     private EJBContext ejbContext;
 
     /**
-     * This method leaks a transaction, and should result in a exception
+     * This method leaks a transaction, and should result in an exception
      */
     public void leakTransaction(){
         try {

@@ -53,7 +53,7 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
-    // FIXME GroupingHanderConfiguration timeout is a int (instead of a long). Use a INT until HornetQ conf is fixed
+    // FIXME GroupingHanderConfiguration timeout is an int (instead of a long). Use an int until HornetQ conf is fixed
     // [HORNETQ-885]
     public static final SimpleAttributeDefinition TIMEOUT = create("timeout", INT)
             .setDefaultValue(new ModelNode(GroupingHandlerConfiguration.DEFAULT_TIMEOUT))
@@ -64,7 +64,7 @@ public class GroupingHandlerDefinition extends SimpleResourceDefinition {
             .build();
 
     public static final SimpleAttributeDefinition GROUP_TIMEOUT = create("group-timeout", LONG)
-            // FIXME GroupingHanderConfiguration.DEFAULT_GROUP_TIMEOUT is a int (instead of a long). Cast to a long until HornetQ conf is fixed
+            // FIXME GroupingHanderConfiguration.DEFAULT_GROUP_TIMEOUT is an int (instead of a long). Cast to a long until HornetQ conf is fixed
             .setDefaultValue(new ModelNode(1L * GroupingHandlerConfiguration.DEFAULT_GROUP_TIMEOUT))
             .setMeasurementUnit(MILLISECONDS)
             .setAllowNull(true)

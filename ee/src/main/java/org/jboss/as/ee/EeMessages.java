@@ -842,7 +842,7 @@ public interface EeMessages {
     DeploymentUnitProcessingException failedToProcessEJBClientDescriptor(@Cause Throwable cause);
 
     /**
-     * Creates an exception indicating that there was a exception while parsing a jboss-ejb-client.xml
+     * Creates an exception indicating that there was an exception while parsing a jboss-ejb-client.xml
      *
      *
      * @param fileLocation the location of jboss-ejb-client.xml
@@ -853,7 +853,7 @@ public interface EeMessages {
     DeploymentUnitProcessingException xmlErrorParsingEJBClientDescriptor(@Cause XMLStreamException cause, String fileLocation);
 
     /**
-     * Creates an exception indicating that there was a exception while parsing a jboss-ejb-client.xml
+     * Creates an exception indicating that there was an exception while parsing a jboss-ejb-client.xml
      *
      * @param message The error message
      * @param location The location of the error

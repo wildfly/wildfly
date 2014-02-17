@@ -104,7 +104,7 @@ public interface TransactionalProtocolClient {
     }
 
     /**
-     * A operation wrapper.
+     * An operation wrapper.
      */
     interface Operation {
 

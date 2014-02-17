@@ -41,7 +41,7 @@ import org.jboss.as.test.manualmode.security.TrustAndStoreTrustManager;
  *
  * @author Josef Cacek
  */
-//todo this class needs to go currently it is only here to override the orginal class that is part of apacheds and it only add TrustAndStoreTrustManager
+//todo this class needs to go currently it is only here to override the original class that is part of apacheds and it only add TrustAndStoreTrustManager
 public class LdapsInitializer {
 
     public static IoFilterChainBuilder init(LdapServer server) throws LdapException {

@@ -52,7 +52,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Tests that a EJB client context containing a reference to a remote outbound connection, has the ability to
+ * Tests that an EJB client context containing a reference to a remote outbound connection, has the ability to
  * reconnect a failed connection
  *
  * @author Jaikiran Pai
@@ -130,7 +130,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
         this.container.start(JBOSSAS_WITH_REMOTE_OUTBOUND_CONNECTION);
         boolean defaultContainerStarted = false;
         try {
-            // deploy a deployment which contains jboss-ejb-client.xml that contains a EJB receiver pointing
+            // deploy a deployment which contains jboss-ejb-client.xml that contains an EJB receiver pointing
             // to a server which hasn't yet started. Should succeed without throwing deployment error
             this.deployer.deploy(DEPLOYMENT_WITH_JBOSS_EJB_CLIENT_XML);
             // To make sure deployment succeeded and invocations are possible, call an independent bean
@@ -202,7 +202,7 @@ public class RemoteOutboundConnectionReconnectTestCase {
 
         boolean defaultContainerStarted = true;
         try {
-            // To make sure deployment succeeded and invocations are possible, call a independent bean
+            // To make sure deployment succeeded and invocations are possible, call an independent bean
             final RemoteEcho independentBean = (RemoteEcho) context.lookup("ejb:/" + SERVER_ONE_MODULE_NAME + "//" + IndependentBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
             final String msg = "Hellooooo!";
             final String echoFromIndependentBean = independentBean.echo(msg);

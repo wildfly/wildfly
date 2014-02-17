@@ -25,7 +25,7 @@ package org.jboss.as.ejb3.subsystem.deployment;
 import org.jboss.as.controller.PathAddress;
 
 /**
- * utility class that tracks components registered with the managment API
+ * utility class that tracks components registered with the management API
  *
  * @author Stuart Douglas
  */

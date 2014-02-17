@@ -790,12 +790,12 @@ public interface EjbMessages {
     IllegalStateException methodNotImplemented();
 
     /**
-     * Creates an exception indicating a class was attached to a view that is not an EJBObject or a EJBLocalObject
+     * Creates an exception indicating a class was attached to a view that is not an EJBObject or an EJBLocalObject
      *
      * @param aClass the attached class
      * @return a {@link RuntimeException} for the error.
      */
-    @Message(id = 14339, value = "%s was attached to a view that is not an EJBObject or a EJBLocalObject")
+    @Message(id = 14339, value = "%s was attached to a view that is not an EJBObject or an EJBLocalObject")
     RuntimeException classAttachToViewNotEjbObject(Class<?> aClass);
 
     /**
@@ -824,7 +824,7 @@ public interface EjbMessages {
 
 
     /**
-     * Creates an exception indicating a invocation was not associated with an instance, primary key was null, instance may have been removed
+     * Creates an exception indicating an invocation was not associated with an instance, primary key was null, instance may have been removed
      *
      * @return a {@link NoSuchEJBException} for the error.
      */
@@ -832,7 +832,7 @@ public interface EjbMessages {
     NoSuchEJBException primaryKeyIsNull();
 
     /**
-     * Creates an exception indicating a instance has been removed
+     * Creates an exception indicating an instance has been removed
      *
      * @return a {@link NoSuchEJBException} for the error.
      */
@@ -1328,11 +1328,11 @@ public interface EjbMessages {
     DeploymentUnitProcessingException invalidEjbEntityTimeout(String versionId, Class<?> componentClass);
 
     /**
-     * Creates an exception indicating component does not have a EJB 2.x local interface
+     * Creates an exception indicating component does not have an EJB 2.x local interface
      *
      * @return an {@link RuntimeException} for the error.
      */
-    @Message(id = 14411, value = "% does not have a EJB 2.x local interface")
+    @Message(id = 14411, value = "% does not have an EJB 2.x local interface")
     RuntimeException invalidEjbLocalInterface(String componentName);
 
     /**
@@ -1944,11 +1944,11 @@ public interface EjbMessages {
     RuntimeException failToLoadViewClassEjb(String beanName, @Cause Throwable e);
 
     /**
-     * Creates an exception indicating the component named with component class is not a EJB component
+     * Creates an exception indicating the component named with component class is not an EJB component
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 14488, value = "Component named %s with component class %s is not a EJB component")
+    @Message(id = 14488, value = "Component named %s with component class %s is not an EJB component")
     IllegalArgumentException invalidEjbComponent(String componentName, Class<?> componentClass);
 
     /**
@@ -1984,7 +1984,7 @@ public interface EjbMessages {
     UnsupportedOperationException runtimeAttributeNotMarshallable(String name);
 
     /**
-     * Creates an exception indicating a invalid value for the specified element
+     * Creates an exception indicating an invalid value for the specified element
      *
      * @return an {@link String} for the error.
      */
@@ -2196,7 +2196,7 @@ public interface EjbMessages {
     IllegalStateException unknownMessageListenerType(String resourceAdapterName, String messageListenerType);
 
     /**
-     * Thrown when a EJB 2 EJB does not implement a method on an EJB 2
+     * Thrown when an EJB 2 EJB does not implement a method on an EJB 2
      *
      * @param method    The method
      * @param viewClass The view
@@ -2314,7 +2314,7 @@ public interface EjbMessages {
 
     /**
      * Returns a {@link DeploymentUnitProcessingException} to indicate that the {@link org.jboss.ejb3.annotation.Clustered}
-     * annotation cannot be used on a entity bean
+     * annotation cannot be used on an entity bean
      *
      * @param unit               The deployment unit
      * @param componentName      The entity bean component name

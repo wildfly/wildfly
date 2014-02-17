@@ -25,7 +25,7 @@ package org.jboss.as.core.security;
 import java.security.Principal;
 
 /**
- * An interfaces to be implemented by all {@link Principal} instances that are also assoicated with a realm.
+ * An interfaces to be implemented by all {@link Principal} instances that are also associated with a realm.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */

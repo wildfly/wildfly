@@ -24,7 +24,7 @@ package org.jboss.as.server.deployment;
 
 
 /**
- * Marks a {@link DeploymentUnit} as a EJB deployment.
+ * Marks a {@link DeploymentUnit} as an EJB deployment.
  *
  * @author Jaikiran Pai
  */

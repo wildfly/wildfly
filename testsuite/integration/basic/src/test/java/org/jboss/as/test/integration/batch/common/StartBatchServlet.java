@@ -85,7 +85,7 @@ public class StartBatchServlet extends AbstractBatchServlet {
                     break;
             }
             if (timeout <= 0) {
-                throw new IllegalStateException(String.format("Batch job '%s' did not complete withing allotted time.", jobXml));
+                throw new IllegalStateException(String.format("Batch job '%s' did not complete within allotted time.", jobXml));
             }
         }
         if (waitForCompletion)

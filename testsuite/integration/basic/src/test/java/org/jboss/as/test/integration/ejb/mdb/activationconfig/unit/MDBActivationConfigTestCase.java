@@ -100,7 +100,7 @@ public class MDBActivationConfigTestCase {
     }
 
     /**
-     * Tests that deployment of a MDB containing a unknown/unsupported activation config property doesn't throw
+     * Tests that deployment of a MDB containing an unknown/unsupported activation config property doesn't throw
      * a deployment error.
      *
      * @throws Exception

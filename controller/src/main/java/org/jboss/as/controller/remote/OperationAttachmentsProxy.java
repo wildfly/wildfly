@@ -41,7 +41,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 
 /**
- * A attachment proxy, lazily initializing the streams.
+ * An attachment proxy, lazily initializing the streams.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */

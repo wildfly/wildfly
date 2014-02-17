@@ -68,7 +68,7 @@ public class Attachments {
 
     /**
      * Unlike the EE spec which says application name is the name of the top level deployment (even if it is just
-     * a jar and not a ear), the EJB spec semantics (for JNDI) expect that the application name is the
+     * a jar and not an ear), the EJB spec semantics (for JNDI) expect that the application name is the
      * .ear name (or any configured value in application.xml). Absence of the .ear is expected to mean
      * there's no application name. This attachement key, provides the application name which is follows the
      * EJB spec semantics.

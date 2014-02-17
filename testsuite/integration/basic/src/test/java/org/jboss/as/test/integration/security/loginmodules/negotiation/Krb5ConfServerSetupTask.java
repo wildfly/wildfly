@@ -81,13 +81,13 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
         LOGGER.info("(Re)Creating workdir: " + WORK_DIR.getAbsolutePath());
         FileUtils.deleteDirectory(WORK_DIR);
         WORK_DIR.mkdirs();
-        final String cannonicalHost = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
+        final String canonicalHost = NetworkUtils.formatPossibleIpv6Address(Utils.getCannonicalHost(managementClient));
         final Map<String, String> map = new HashMap<String, String>();
-        map.put("hostname", cannonicalHost);
+        map.put("hostname", canonicalHost);
         FileUtils.write(KRB5_CONF_FILE,
                 StrSubstitutor.replace(IOUtils.toString(getClass().getResourceAsStream(KRB5_CONF), "UTF-8"), map), "UTF-8");
 
-        createKeytab("HTTP/" + cannonicalHost + "@JBOSS.ORG", "httppwd", HTTP_KEYTAB_FILE);
+        createKeytab("HTTP/" + canonicalHost + "@JBOSS.ORG", "httppwd", HTTP_KEYTAB_FILE);
         createKeytab("hnelson@JBOSS.ORG", "secret", HNELSON_KEYTAB_FILE);
         createKeytab("jduke@JBOSS.ORG", "theduke", JDUKE_KEYTAB_FILE);
 

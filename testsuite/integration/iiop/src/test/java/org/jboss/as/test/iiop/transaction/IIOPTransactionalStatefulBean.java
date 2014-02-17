@@ -19,7 +19,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 @Stateful
 public class IIOPTransactionalStatefulBean implements SessionSynchronization {
 
-    private Boolean commitSuceeded;
+    private Boolean commitSucceeded;
     private boolean beforeCompletion = false;
     private Object transactionKey = null;
     private boolean rollbackOnlyBeforeCompletion = false;
@@ -41,7 +41,7 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void resetStatus() {
-        commitSuceeded = null;
+        commitSucceeded = null;
         beforeCompletion = false;
         transactionKey = null;
     }
@@ -83,12 +83,12 @@ public class IIOPTransactionalStatefulBean implements SessionSynchronization {
 
     @Override
     public void afterCompletion(final boolean committed) throws EJBException, RemoteException {
-        commitSuceeded = committed;
+        commitSucceeded = committed;
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public Boolean getCommitSuceeded() {
-        return commitSuceeded;
+    public Boolean getCommitSucceeded() {
+        return commitSucceeded;
     }
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)

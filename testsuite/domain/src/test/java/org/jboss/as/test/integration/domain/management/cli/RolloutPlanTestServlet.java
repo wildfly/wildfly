@@ -99,7 +99,7 @@ public class RolloutPlanTestServlet extends HttpServlet {
     }    
     
  private void bind() throws ServletException {
-        if (socket != null) throw new ServletException("Allready boud.");
+        if (socket != null) throw new ServletException("Already bound.");
         
         try {
             socket = new ServerSocket();

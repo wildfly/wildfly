@@ -89,7 +89,7 @@ public class EJBClientUserTransactionTestCase {
     }
 
     /**
-     * Tests a empty begin()/commit()
+     * Tests an empty begin()/commit()
      *
      * @throws Exception
      */
@@ -101,7 +101,7 @@ public class EJBClientUserTransactionTestCase {
     }
 
     /**
-     * Tests a empty begin()/rollback()
+     * Tests an empty begin()/rollback()
      *
      * @throws Exception
      */
@@ -191,7 +191,7 @@ public class EJBClientUserTransactionTestCase {
         userTransaction.begin();
         try {
             batchBean.appExceptionFailingStep2(batchName, appExceptionStep2);
-            Assert.fail("Expected a application exception");
+            Assert.fail("Expected an application exception");
         } catch (SimpleAppException sae) {
             // expected
             userTransaction.rollback();

@@ -523,7 +523,7 @@ public final class Main {
                 url = file.toURI().toURL();
             }
         } catch (Exception e) {
-            // make sure we have a absolute & canonical file url
+            // make sure we have an absolute & canonical file url
             try {
                 File file = new File(urlspec).getCanonicalFile();
                 url = file.toURI().toURL();

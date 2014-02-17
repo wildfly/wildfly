@@ -143,7 +143,7 @@ public class IIOPStubCompiler {
                 ca.aastore();
             }
         }
-        // Generate the call to a invoke* method ot the superclass
+        // Generate the call to an invoke* method ot the superclass
         String invoke = "invoke";
         String ret = "Ljava/lang/Object;";
         if (returnType.isPrimitive() && returnType != Void.TYPE) {

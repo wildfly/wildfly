@@ -151,12 +151,12 @@ public class CustomLoginModuleTestCase {
     }
 
     @Test
-    public void testSucessfulAuth() throws Exception {
+    public void testSuccessfulAuth() throws Exception {
         makeCall("anil", "anil", 200);
     }
 
     @Test
-    public void testUnsucessfulAuth() throws Exception {
+    public void testUnsuccessfulAuth() throws Exception {
         makeCall("marcus", "marcus", 403);
     }
 

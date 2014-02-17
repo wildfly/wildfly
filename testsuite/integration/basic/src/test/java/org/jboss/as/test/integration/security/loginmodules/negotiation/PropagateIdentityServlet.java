@@ -69,7 +69,7 @@ public class PropagateIdentityServlet extends HttpServlet {
      */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        LOGGER.debug("New request comming.");
+        LOGGER.debug("New request coming.");
         final GSSCredential credential = DelegationCredentialContext.getDelegCredential();
         if (credential == null) {
             resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "GSSCredential not found");

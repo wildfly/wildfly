@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
 
 /**
- * Service responsible for binding and unbinding a entry into a naming context.  This service can be used as a dependency for
+ * Service responsible for binding and unbinding an entry into a naming context.  This service can be used as a dependency for
  * any service that needs to retrieve this entry from the context.
  *
  * @author John E. Bailey

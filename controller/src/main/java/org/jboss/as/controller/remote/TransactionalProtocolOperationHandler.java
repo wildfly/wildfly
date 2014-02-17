@@ -352,7 +352,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
 
         synchronized void failed(final ModelNode response) {
             if(prepared) {
-                // in case commit or rollback throws an exception, to conform with the API we still send a operation-completed message
+                // in case commit or rollback throws an exception, to conform with the API we still send an operation-completed message
                 completed(response);
             } else {
                 assert responseChannel != null;
@@ -383,7 +383,7 @@ public class TransactionalProtocolOperationHandler implements ManagementRequestH
     }
 
     /**
-     * Send a operation response.
+     * Send an operation response.
      *
      * @param context the request context
      * @param responseType the response type

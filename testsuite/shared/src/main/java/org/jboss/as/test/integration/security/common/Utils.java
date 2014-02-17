@@ -350,20 +350,20 @@ public class Utils {
 
     /**
      * Returns "secondary.test.address" system property if such exists. If not found, then there is a fallback to
-     * {@link ManagementClient#getMgmtAddress()}. Returned value can be converted to cannonical hostname if
-     * useCannonicalHost==true. Returned value is not formatted for URLs (i.e. square brackets are not placed around IPv6 addr -
+     * {@link ManagementClient#getMgmtAddress()}. Returned value can be converted to canonical hostname if
+     * useCanonicalHost==true. Returned value is not formatted for URLs (i.e. square brackets are not placed around IPv6 addr -
      * for instance "::1")
      *
      * @param mgmtClient management client instance (may be <code>null</code>)
-     * @param useCannonicalHost
+     * @param useCanonicalHost
      * @return
      */
-    public static String getSecondaryTestAddress(final ManagementClient mgmtClient, final boolean useCannonicalHost) {
+    public static String getSecondaryTestAddress(final ManagementClient mgmtClient, final boolean useCanonicalHost) {
         String address = System.getProperty("secondary.test.address");
         if (StringUtils.isBlank(address) && mgmtClient != null) {
             address = mgmtClient.getMgmtAddress();
         }
-        if (useCannonicalHost) {
+        if (useCanonicalHost) {
             address = getCannonicalHost(address);
         }
         return stripSquareBrackets(address);
@@ -701,7 +701,7 @@ public class Utils {
     }
 
     /**
-     * Returns cannonical hostname retrieved from management address of the givem {@link ManagementClient}.
+     * Returns canonical hostname retrieved from management address of the givem {@link ManagementClient}.
      *
      * @param managementClient
      * @return
@@ -711,7 +711,7 @@ public class Utils {
     }
 
     /**
-     * Returns cannonical hostname form of the given address.
+     * Returns canonical hostname form of the given address.
      *
      * @param address hosname or IP address
      * @return
@@ -721,7 +721,7 @@ public class Utils {
         try {
             host = InetAddress.getByName(host).getCanonicalHostName();
         } catch (UnknownHostException e) {
-            LOGGER.warn("Unable to get cannonical host name", e);
+            LOGGER.warn("Unable to get canonical host name", e);
         }
         return host.toLowerCase(Locale.ENGLISH);
     }
@@ -749,21 +749,21 @@ public class Utils {
      * @param webAppURL web application context URL (e.g. injected by Arquillian)
      * @param servletPath Servlet path starting with slash (must be not-<code>null</code>)
      * @param mgmtClient Management Client (may be null)
-     * @param useCannonicalHost flag which says if host in URI should be replaced by the cannonical host.
+     * @param useCanonicalHost flag which says if host in URI should be replaced by the canonical host.
      * @return
      * @throws URISyntaxException
      */
     public static final URI getServletURI(final URL webAppURL, final String servletPath, final ManagementClient mgmtClient,
-            boolean useCannonicalHost) throws URISyntaxException {
+            boolean useCanonicalHost) throws URISyntaxException {
         URI resultURI = new URI(webAppURL.toExternalForm() + servletPath.substring(1));
-        if (useCannonicalHost) {
+        if (useCanonicalHost) {
             resultURI = replaceHost(resultURI, getCannonicalHost(mgmtClient));
         }
         return resultURI;
     }
 
     /**
-     * Generates content of jboss-ejb3.xml file as an ShrinkWrap asset with the given security domain name.
+     * Generates content of jboss-ejb3.xml file as a ShrinkWrap asset with the given security domain name.
      *
      * @param securityDomain security domain name
      * @return Asset instance
@@ -784,7 +784,7 @@ public class Utils {
     }
 
     /**
-     * Generates content of jboss-web.xml file as an ShrinkWrap asset with the given security domain name and given valve class.
+     * Generates content of jboss-web.xml file as a ShrinkWrap asset with the given security domain name and given valve class.
      *
      * @param securityDomain security domain name (not-<code>null</code>)
      * @param valveClassNames valve class (e.g. an Authenticator) which should be added to jboss-web file (may be
@@ -807,7 +807,7 @@ public class Utils {
     }
 
     /**
-     * Generates content of the jboss-deployment-structure.xml deployment descriptor as an ShrinkWrap asset. It fills the given
+     * Generates content of the jboss-deployment-structure.xml deployment descriptor as a ShrinkWrap asset. It fills the given
      * dependencies (module names) into it.
      *
      * @param dependencies AS module names

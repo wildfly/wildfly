@@ -763,7 +763,7 @@
             <xs:annotation>
               <xs:documentation>
                 <![CDATA[[
-                   Should the XAResource instances be wrapped in a org.jboss.tm.XAResourceWrapper
+                   Should the XAResource instances be wrapped in an org.jboss.tm.XAResourceWrapper
                    instance
                    Ex: <wrap-xa-resource>true</wrap-xa-resource>
                  ]]>
@@ -931,7 +931,7 @@
       <xs:annotation>
         <xs:documentation>
           <![CDATA[[
-            Specifies the major version of this driver. If the major and minor version is obmitted the fist availabe
+            Specifies the major version of this driver. If the major and minor versions are omitted the first available
             Driver in module will be used.
            ]]>
         </xs:documentation>
@@ -941,7 +941,7 @@
     <xs:annotation>
         <xs:documentation>
           <![CDATA[[
-            Specifies the minor version of this driver. If the major and minor version is obmitted the fist availabe
+            Specifies the minor version of this driver. If the major and minor versions are omitted the first available
             Driver in module will be used.
            ]]>
         </xs:documentation>

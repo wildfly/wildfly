@@ -41,7 +41,7 @@ import org.jboss.jca.common.spi.annotations.repository.AnnotationRepository;
 
 /**
  *
- * A AnnotationRepositoryImpl.
+ * An AnnotationRepositoryImpl.
  *
  * @author <a href="mailto:stefano.maestri@redhat.comdhat.com">Stefano Maestri</a>
  *

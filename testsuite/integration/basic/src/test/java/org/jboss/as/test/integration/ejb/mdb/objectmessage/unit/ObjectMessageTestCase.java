@@ -116,7 +116,7 @@ public class ObjectMessageTestCase {
      * |      |
      * |      |--- util.jar
      * |      |        |
-     * |      |        |--- <classes including the Class whose object is wrapped in a ObjectMessage>
+     * |      |        |--- <classes including the Class whose object is wrapped in an ObjectMessage>
      *
      * @return
      */

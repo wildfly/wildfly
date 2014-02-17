@@ -132,7 +132,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
 /**
- * Factory creating a the boot operations for a {@linkplain ManagedServer}.
+ * Factory creating the boot operations for a {@linkplain ManagedServer}.
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

@@ -265,7 +265,7 @@ class LayersFactory {
      */
     static InstalledConfiguration createInstalledConfig(final InstalledImage image) {
         final InstalledConfiguration conf = new InstalledConfiguration(image);
-        // Would be nice to have a installed inventory or smth like that
+        // Would be nice to have an installed inventory or smth like that
         return conf;
     }
 

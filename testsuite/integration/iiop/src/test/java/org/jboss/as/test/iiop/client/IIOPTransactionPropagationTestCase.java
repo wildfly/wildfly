@@ -285,7 +285,7 @@ public class IIOPTransactionPropagationTestCase {
                     Thread.sleep(2000);
                     if (managementClient.isServerInRunningState()) {
                         reloaded = true;
-                        log.info("Server was sucessfully reloaded");
+                        log.info("Server was successfully reloaded");
                     }
                 } catch (Throwable t) {
                     // nothing to do, just waiting

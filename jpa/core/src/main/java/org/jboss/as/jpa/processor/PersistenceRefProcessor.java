@@ -183,7 +183,7 @@ public class PersistenceRefProcessor extends AbstractDeploymentDescriptorBinding
                             }
                         }
                         PersistenceContextType type = puRef.getPersistenceContextType() == null ? PersistenceContextType.TRANSACTION : puRef.getPersistenceContextType();
-                        // create a EE 7 branch of
+                        // create an EE 7 branch of
                         SynchronizationType synchronizationType =  SynchronizationType.SYNCHRONIZED;
 //                                (puRef.()== null || SynchronizationType.SYNCHRONIZED.name().equals(stType.asString()))?
 //                                        SynchronizationType.SYNCHRONIZED: SynchronizationType.UNSYNCHRONIZED;

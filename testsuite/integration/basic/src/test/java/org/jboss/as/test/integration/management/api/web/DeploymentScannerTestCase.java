@@ -74,7 +74,7 @@ public class DeploymentScannerTestCase extends ContainerResourceMgmtTestBase {
     }
 
     /**
-     * 1) Executes a add operation for a test deployment scanner. This is expected to pass
+     * 1) Executes an add operation for a test deployment scanner. This is expected to pass
      * 2) Tests that the test deployment scanner resource added in step#1, exists
      * 3) Finally, removes the test deployment scanner
      *

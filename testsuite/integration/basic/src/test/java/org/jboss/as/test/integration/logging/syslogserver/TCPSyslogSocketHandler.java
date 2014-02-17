@@ -110,7 +110,7 @@ public class TCPSyslogSocketHandler implements Runnable {
                 }
             } while (b != -1);
         } catch (IOException e) {
-            LOGGER.warn("IOException occured", e);
+            LOGGER.warn("IOException occurred", e);
         } finally {
             IOUtils.closeQuietly(socket);
             sockets.remove(socket);

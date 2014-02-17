@@ -149,7 +149,7 @@ public class EJBClientDescriptorTestCase {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_ONE + "/" + DISTINCT_NAME
                     + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
             Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
-            final String msg = "Hello world from a EJB client descriptor test!!!";
+            final String msg = "Hello world from an EJB client descriptor test!!!";
             final String echo = remoteEcho.echo(MODULE_NAME_ONE, msg);
             logger.info("Received echo " + echo);
             Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
@@ -171,7 +171,7 @@ public class EJBClientDescriptorTestCase {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_TWO + "/" + DISTINCT_NAME
                     + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
             Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
-            final String msg = "Hello world from a EJB client descriptor test!!!";
+            final String msg = "Hello world from an EJB client descriptor test!!!";
             try {
                 remoteEcho.echo(MODULE_NAME_TWO, msg);
                 Assert.fail("Exepcted to fail due to no EJB receivers availability");
@@ -202,7 +202,7 @@ public class EJBClientDescriptorTestCase {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + MODULE_NAME_THREE + "/" + DISTINCT_NAME
                     + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
             Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
-            final String msg = "Hello world from a EJB client descriptor test!!!";
+            final String msg = "Hello world from an EJB client descriptor test!!!";
             final String echo = remoteEcho.echo(MODULE_NAME_THREE, msg);
             logger.info("Received echo " + echo);
             Assert.assertEquals("Unexpected echo returned from remote bean", msg, echo);
@@ -225,7 +225,7 @@ public class EJBClientDescriptorTestCase {
             final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + JBOSS_EJB_CLIENT_1_2_MODULE_NAME + "/" + DISTINCT_NAME
                     + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
             Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
-            final String msg = "Hello world from a EJB client descriptor test!!!";
+            final String msg = "Hello world from an EJB client descriptor test!!!";
             try {
                 remoteEcho.twoSecondEcho(JBOSS_EJB_CLIENT_1_2_MODULE_NAME, msg);
                 Assert.fail("Expected to receive a timeout for the invocation");

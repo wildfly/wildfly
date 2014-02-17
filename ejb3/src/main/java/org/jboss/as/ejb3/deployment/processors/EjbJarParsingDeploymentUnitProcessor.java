@@ -71,7 +71,7 @@ import org.jboss.vfs.VirtualFile;
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
- * Processes a {@link DeploymentUnit} containing a ejb-jar.xml and creates {@link EjbJarMetaData}
+ * Processes a {@link DeploymentUnit} containing an ejb-jar.xml and creates {@link EjbJarMetaData}
  * for that unit.
  * <p/>
  * This {@link DeploymentUnitProcessor deployment unit processor} looks for ejb-jar.xml in META-INF of a .jar
@@ -100,7 +100,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
     private static final String WEB_INF = "WEB-INF";
 
     /**
-     * Finds a ejb-jar.xml (at WEB-INF of a .war or META-INF of a .jar) parses the file and creates
+     * Finds an ejb-jar.xml (at WEB-INF of a .war or META-INF of a .jar) parses the file and creates
      * metadata out of it. The metadata is then attached to the deployment unit.
      *
      * @param deploymentPhase
@@ -131,7 +131,7 @@ public class EjbJarParsingDeploymentUnitProcessor implements DeploymentUnitProce
             ejbJarMetaData = jbossMetaData.createMerged(specMetaData);
         }
 
-        // Mark it as a EJB deployment
+        // Mark it as an EJB deployment
         EjbDeploymentMarker.mark(deploymentUnit);
         if (!deploymentUnit.hasAttachment(EjbDeploymentAttachmentKeys.EJB_JAR_DESCRIPTION)) {
             final EEModuleDescription moduleDescription = deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);

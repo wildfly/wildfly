@@ -32,7 +32,7 @@ import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
 /**
- * A outbound socket binding represents the client end of a socket. It represents binding from a local "host"
+ * An outbound socket binding represents the client end of a socket. It represents binding from a local "host"
  * to a remote "host". In some special cases the remote host can itself be the same local host.
  * Unlike the {@link SocketBinding} which represents a {@link java.net.ServerSocket} that opens a socket for "listening",
  * the {@link OutboundSocketBinding} represents a {@link Socket} which "connects" to a remote/local host
@@ -58,7 +58,7 @@ public class OutboundSocketBinding {
     private InetAddress resolvedDestinationAddress;
 
     /**
-     * Creates a outbound socket binding
+     * Creates an outbound socket binding
      *
      * @param name                   Name of the outbound socket binding
      * @param socketBindingManager   The socket binding manager
@@ -95,7 +95,7 @@ public class OutboundSocketBinding {
     }
 
     /**
-     * Creates a outbound socket binding
+     * Creates an outbound socket binding
      *
      * @param name                   Name of the outbound socket binding
      * @param socketBindingManager   The socket binding manager

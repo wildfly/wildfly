@@ -52,7 +52,7 @@ public final class ResourceAdapterDeploymentRegistryService implements Service<R
 
     @Override
     public void start(StartContext context) throws StartException {
-        DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.debugf("Starting sevice %s", ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE);
+        DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.debugf("Starting service %s", ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE);
     }
 
     /**
@@ -60,6 +60,6 @@ public final class ResourceAdapterDeploymentRegistryService implements Service<R
      */
     @Override
     public void stop(StopContext context) {
-        DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.debugf("Stopping sevice %s", ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE);
+        DEPLOYMENT_CONNECTOR_REGISTRY_LOGGER.debugf("Stopping service %s", ConnectorServices.RESOURCE_ADAPTER_REGISTRY_SERVICE);
     }
 }

@@ -24,5 +24,5 @@ public interface Processor {
     @Secured
     int add(int x, int y);
 
-    int substract(int x, int y);
+    int subtract(int x, int y);
 }

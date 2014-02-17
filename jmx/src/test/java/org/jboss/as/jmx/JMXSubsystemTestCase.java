@@ -200,7 +200,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "<subsystem xmlns=\"" + Namespace.CURRENT.getUriString() + "\">" +
                 "<remoting-connector/>" +
                 "</subsystem>";
-        KernelServices services = createKernelServicesBuilder(new BaseAdditionalInitalization())
+        KernelServices services = createKernelServicesBuilder(new BaseAdditionalInitialization())
                 .setSubsystemXml(subsystemXml)
                 .build();
 
@@ -249,7 +249,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "</subsystem>";
         String finishedSubsystemXml =
                         "<subsystem xmlns=\"" + Namespace.JMX_1_0.getUriString() + "\"/>";
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+        AdditionalInitialization additionalInit = new BaseAdditionalInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
@@ -282,7 +282,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "    <expose-resolved-model proper-property-format=\"false\"/>" +
                 "</subsystem>";
 
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+        AdditionalInitialization additionalInit = new BaseAdditionalInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
@@ -311,7 +311,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "</subsystem>";
 
 
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+        AdditionalInitialization additionalInit = new BaseAdditionalInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
@@ -344,7 +344,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "    <remoting-connector/>" +
                 "</subsystem>";
 
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+        AdditionalInitialization additionalInit = new BaseAdditionalInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
@@ -372,7 +372,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "</subsystem>";
 
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+        AdditionalInitialization additionalInit = new BaseAdditionalInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
@@ -400,7 +400,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "</subsystem>";
 
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+        AdditionalInitialization additionalInit = new BaseAdditionalInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         Assert.assertTrue(servicesA.isSuccessfulBoot());
@@ -432,7 +432,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "   <expose-expression-model domain-name=\"jboss.EXPRESSION\"/>" +
                 "</subsystem>";
 
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+        AdditionalInitialization additionalInit = new BaseAdditionalInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         //Get the model and the persisted xml from the first controller
@@ -461,7 +461,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "   <sensitivity non-core-mbeans=\"true\"/>" +
                 "</subsystem>";
 
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+        AdditionalInitialization additionalInit = new BaseAdditionalInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         Assert.assertTrue(servicesA.isSuccessfulBoot());
@@ -493,7 +493,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                 "   <sensitivity non-core-mbeans=\"true\"/>" +
                 "</subsystem>";
 
-        AdditionalInitialization additionalInit = new BaseAdditionalInitalization();
+        AdditionalInitialization additionalInit = new BaseAdditionalInitialization();
 
         KernelServices servicesA = createKernelServicesBuilder(additionalInit).setSubsystemXml(subsystemXml).build();
         Assert.assertTrue(servicesA.isSuccessfulBoot());
@@ -653,7 +653,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
                     @Override
                     public ModelNode fixModel(ModelNode modelNode) {
                         //This is slightly weird...
-                        //The reason is that in 7.2 the default behaviour is 'true' which is the a new feature, while 7.1.x uses 'false' under the scenes
+                        //The reason is that in 7.2 the default behaviour is 'true' which is a new feature, while 7.1.x uses 'false' under the scenes
                         //So the ops from 7.1.x can never result in 'true'
                         modelNode.get(CommonAttributes.EXPOSE_MODEL, CommonAttributes.RESOLVED, CommonAttributes.PROPER_PROPERTY_FORMAT).set(false);
 
@@ -1078,7 +1078,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         return Util.getEmptyOperation(name, addr);
     }
 
-    private static class BaseAdditionalInitalization extends AdditionalInitialization {
+    private static class BaseAdditionalInitialization extends AdditionalInitialization {
 
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
@@ -1108,7 +1108,7 @@ public class JMXSubsystemTestCase extends AbstractSubsystemTest {
         }
     }
 
-    private static class AuditLogInitialization extends BaseAdditionalInitalization {
+    private static class AuditLogInitialization extends BaseAdditionalInitialization {
 
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,

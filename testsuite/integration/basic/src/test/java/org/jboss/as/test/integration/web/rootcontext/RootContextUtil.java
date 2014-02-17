@@ -57,14 +57,14 @@ public class RootContextUtil {
     private static String ENABLE_WELCOME_ROOT = "enable-welcome-root";
     private static final String WEB_SUBSYSTEM_NAME = "undertow";
 
-    public static void createVirutalHost(ModelControllerClient client, String virutalHost) throws Exception {
+    public static void createVirutalHost(ModelControllerClient client, String virtualHost) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
         op.get(OP_ADDR).add(SERVER, "default-server");
-        op.get(OP_ADDR).add(HOST, virutalHost);
+        op.get(OP_ADDR).add(HOST, virtualHost);
 
         updates.add(op);
 

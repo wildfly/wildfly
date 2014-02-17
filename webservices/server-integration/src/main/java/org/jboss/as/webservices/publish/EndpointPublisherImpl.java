@@ -182,7 +182,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
         Deployment deployment = unit.getAttachment(WSAttachmentKeys.DEPLOYMENT_KEY);
         List<Endpoint> endpoints = deployment.getService().getEndpoints();
         //If we're running in a Service, that will already have proper dependencies set on the installed endpoint services,
-        //otherwise we need to explictly wait for the endpoint services to be started before creating the webapp.
+        //otherwise we need to explicitly wait for the endpoint services to be started before creating the webapp.
         if (!runningInService) {
             final ServiceRegistry registry = unit.getServiceRegistry();
             for (Endpoint ep : endpoints) {

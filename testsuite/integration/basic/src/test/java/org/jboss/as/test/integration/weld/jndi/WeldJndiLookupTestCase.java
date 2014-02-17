@@ -61,7 +61,7 @@ public class WeldJndiLookupTestCase {
     }
 
     @Test
-    public void testOtherJNDIbindingsAreAvailbleAtStartup() {
+    public void testOtherJNDIbindingsAreAvailableAtStartup() {
         Assert.assertEquals("WeldJndiLookupTestCase", ejb.getName());
     }
 

@@ -620,7 +620,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     }
 
     /**
-     * Send a operation response.
+     * Send an operation response.
      *
      * @param context the request context
      * @param responseType the response type

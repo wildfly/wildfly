@@ -71,7 +71,7 @@ public class Utils {
         }
         
         if(!SUCCESS.equals(modelNodeResult.get(OUTCOME).asString())) {
-            throw new RuntimeException("Management operation: " + op + " was not succesful. Result was: " + modelNodeResult);
+            throw new RuntimeException("Management operation: " + op + " was not successful. Result was: " + modelNodeResult);
         }
         return modelNodeResult;
     }

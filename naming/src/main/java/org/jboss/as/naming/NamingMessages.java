@@ -458,7 +458,7 @@ public interface NamingMessages {
     String failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation(String modelVersion);
 
     /**
-     * A external context binding add operation was failed by the operation transformer.
+     * An external context binding add operation was failed by the operation transformer.
      * @param modelVersion the model version related with the transformer.
      * @return
      */

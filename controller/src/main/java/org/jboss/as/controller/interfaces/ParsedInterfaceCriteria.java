@@ -48,7 +48,7 @@ import org.jboss.dmr.Property;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
- * Utility class to create a interface criteria based on a {@link ModelNode} description
+ * Utility class to create an interface criteria based on a {@link ModelNode} description
  *
  * @author Brian Stansberry
  * @author Emanuel Muckenhuber

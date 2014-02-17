@@ -222,7 +222,7 @@ public class JASPIAuthenticationMechanism implements AuthenticationMechanism {
     }
 
     private void secureResponse(final HttpServerExchange exchange, final SecurityContext securityContext, final JASPIServerAuthenticationManager sam, final GenericMessageInfo messageInfo, final JASPICallbackHandler cbh) {
-        // we add the a response wrapper to properly invoke the secureResponse, after processing the destination
+        // we add a response wrapper to properly invoke the secureResponse, after processing the destination
         exchange.addResponseWrapper(new ConduitWrapper<StreamSinkConduit>() {
             @Override
             public StreamSinkConduit wrap(final ConduitFactory<StreamSinkConduit> factory, final HttpServerExchange exchange) {

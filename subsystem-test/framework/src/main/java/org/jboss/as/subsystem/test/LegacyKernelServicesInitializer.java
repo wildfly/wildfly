@@ -144,7 +144,7 @@ public interface LegacyKernelServicesInitializer {
          *
          * @param additionalInit the additional initialization to use
          * @param modelFixer a model fixer to fix up the booted subsystem model
-         * @param operationFixer a operation fixer to fix up the operations to be booted
+         * @param operationFixer an operation fixer to fix up the operations to be booted
          * @return this initializer
          */
     LegacyKernelServicesInitializer configureReverseControllerCheck(AdditionalInitialization additionalInit,

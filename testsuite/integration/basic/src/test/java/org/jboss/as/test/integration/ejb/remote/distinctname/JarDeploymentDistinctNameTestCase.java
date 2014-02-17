@@ -30,7 +30,7 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that the distinct-name configured in the jboss-ejb3.xml of a EJB jar deployment is taken into
+ * Tests that the distinct-name configured in the jboss-ejb3.xml of an EJB jar deployment is taken into
  * consideration during remote EJB invocations.
  *
  * @author Jaikiran Pai

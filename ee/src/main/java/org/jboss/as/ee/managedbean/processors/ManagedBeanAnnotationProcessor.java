@@ -125,7 +125,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
             componentDescription.getViews().add(viewDescription);
             moduleDescription.addComponent(componentDescription);
 
-            // register a EEResourceReferenceProcessor which can process @Resource references to this managed bean.
+            // register an EEResourceReferenceProcessor which can process @Resource references to this managed bean.
             registry.registerResourceReferenceProcessor(new ManagedBeanResourceReferenceProcessor(beanClassName));
         }
     }
@@ -144,7 +144,7 @@ public class ManagedBeanAnnotationProcessor implements DeploymentUnitProcessor {
     private static boolean assertManagedBeanClassValidity(final ClassInfo managedBeanClass) {
         final short flags = managedBeanClass.flags();
         final String className = managedBeanClass.name().toString();
-        // must *not* be a interface
+        // must *not* be an interface
         if (Modifier.isInterface(flags)) {
             ROOT_LOGGER.invalidManagedBeanInterface("MB.2.1.1", className);
             return false;

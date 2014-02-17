@@ -91,7 +91,7 @@ public class Util {
     }
     
     public static InitialContext getContext() throws NamingException {
-        // this is needed to get the iiop call sucessfull
+        // this is needed to get the iiop call successful
     	System.setProperty("com.sun.CORBA.ORBUseDynamicStub", "true");
     	final Properties prope = new Properties();
     	

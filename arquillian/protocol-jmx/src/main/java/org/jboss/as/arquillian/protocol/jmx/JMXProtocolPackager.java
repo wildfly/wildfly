@@ -239,7 +239,7 @@ public class JMXProtocolPackager implements DeploymentPackager {
 
         final Manifest manifest = ManifestUtils.getOrCreateManifest(appArchive);
 
-        // Don't enrich with Modules Dependencies if this is a OSGi bundle
+        // Don't enrich with Modules Dependencies if this is an OSGi bundle
         if (OSGiApplicationArchiveProcessor.isValidOSGiBundleArchive(appArchive)) {
             return;
         }

@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
 import javax.naming.InitialContext;
 
 /**
- * Test for EE's default data source on a EJB
+ * Test for EE's default data source on an EJB
  *
  * @author Eduardo Martins
  */

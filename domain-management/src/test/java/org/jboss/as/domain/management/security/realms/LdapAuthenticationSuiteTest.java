@@ -144,7 +144,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
 
 
     @Test
-    public void testVerifyNonExistantUser() throws Exception {
+    public void testVerifyNonExistentUser() throws Exception {
         AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
 
         NameCallback ncb = new NameCallback("Username", "UserThree");

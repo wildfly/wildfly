@@ -45,7 +45,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.web.security.WebSecurityPasswordBasedBase;
 
 /**
- * A Abstract parent of the FORM based authentication tests. <br/>
+ * An Abstract parent of the FORM based authentication tests. <br/>
  * <i>This class was introduced as a workaround for JBPAPP-9018 - {@link Class#getMethods()} method returns different values in
  * Oracle JDK and IBM JDK.</i>
  * 

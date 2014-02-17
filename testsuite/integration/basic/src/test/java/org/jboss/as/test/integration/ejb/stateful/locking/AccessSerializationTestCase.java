@@ -39,7 +39,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Tests that multiple calls to a SFSB are serialized correctly in both the presence and the absense of a transaction
+ * Tests that multiple calls to a SFSB are serialized correctly in both the presence and the absence of a transaction
  *
  * @author Stuart Douglas
  */

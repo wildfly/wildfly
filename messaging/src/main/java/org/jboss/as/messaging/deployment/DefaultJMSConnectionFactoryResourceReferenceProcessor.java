@@ -34,7 +34,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import javax.jms.ConnectionFactory;
 
 /**
- * Processor responsible for adding a EEResourceReferenceProcessor, which defaults @resource ConnectionFactory injection to the default JMS Connection Factory.
+ * Processor responsible for adding an EEResourceReferenceProcessor, which defaults @resource ConnectionFactory injection to the default JMS Connection Factory.
  *
  * @author Eduardo Martins
  */

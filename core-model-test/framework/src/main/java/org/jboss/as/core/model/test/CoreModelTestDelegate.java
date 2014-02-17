@@ -215,7 +215,7 @@ public class CoreModelTestDelegate {
      * and that the transformed model is valid according to the resource definition in the legacy subsystem controller.
      *
      * @param kernelServices the main kernel services
-     * @param modelVersion   the model version of the targetted legacy subsystem
+     * @param modelVersion   the model version of the targeted legacy subsystem
      * @param legacyModelFixer use to touch up the model read from the legacy controller, use sparingly when the legacy model is just wrong. May be {@code null}
      * @return the whole model of the legacy controller
      */

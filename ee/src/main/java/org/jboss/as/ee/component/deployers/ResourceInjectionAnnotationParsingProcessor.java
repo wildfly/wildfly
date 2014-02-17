@@ -87,7 +87,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         locations.put("org.osgi.framework.BundleContext", "java:jboss/osgi/BundleContext");
 
         //we have to be careful with java:comp lookups here
-        //as they will not work in entries in application.xml, as there is no comp context availble
+        //as they will not work in entries in application.xml, as there is no comp context available
         //so we can only use it for resources that are not valid to be entries in application.xml
         locations.put("javax.enterprise.inject.spi.BeanManager", "java:comp/BeanManager");
         locations.put("javax.ejb.TimerService", "java:comp/TimerService");
@@ -225,13 +225,13 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
         if (!isEmpty(lookup)) {
             valueSource = InjectionUtils.getInjectionSource(lookup,injectionType);
         } else if (isEnvEntryType) {
-            // if it's a env-entry type then we do *not* create a BindingConfiguration to bind to the ENC
+            // if it's an env-entry type then we do *not* create a BindingConfiguration to bind to the ENC
             // since the binding (value) for env-entry is always driven from a deployment descriptor.
             // The deployment descriptor processing and subsequent binding in the ENC is taken care off by a
             // different Deployment unit processor. If the value isn't specified in the deployment descriptor,
             // then there will be no binding the ENC and that's what is expected by the Java EE 6 spec. Furthermore,
-            // if the @Resource is a env-entry binding then the injection target will be optional since in the absence of
-            // a env-entry-value, there won't be a binding and effectively no injection. This again is as expected by spec.
+            // if the @Resource is an env-entry binding then the injection target will be optional since in the absence of
+            // an env-entry-value, there won't be a binding and effectively no injection. This again is as expected by spec.
         } else {
             //otherwise we just try and handle it
             //if we don't have a value source we will try and inject from a lookup

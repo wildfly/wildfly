@@ -276,7 +276,7 @@ public interface AppClientMessages {
     IllegalStateException multipleNodesFound(String nodeName);
 
     /**
-     * A message indicating an known option.
+     * A message indicating a known option.
      *
      * @param option the unknown option.
      *

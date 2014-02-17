@@ -94,7 +94,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
             try {
                 socket.close();
             } catch (IOException e) {
-                LOGGER.error("Problem occured during closing socket", e);
+                LOGGER.error("Problem occurred during closing socket", e);
             }
         }
 
@@ -146,7 +146,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
             try {
                 gssTestServer.start();
             } catch (Exception e) {
-                LOGGER.error("Problem occured", e);
+                LOGGER.error("Problem occurred", e);
                 System.exit(1);
             }
         }
@@ -169,12 +169,12 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
             dos.flush();
             LOGGER.debug("STOP command sent.");
         } catch (IOException e) {
-            LOGGER.error("Problem occured during sending stop command", e);
+            LOGGER.error("Problem occurred during sending stop command", e);
         } finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                LOGGER.error("Problem occured during closing socket", e);
+                LOGGER.error("Problem occurred during closing socket", e);
             }
         }
     }
@@ -261,22 +261,22 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
                     } catch (EOFException e) {
                         LOGGER.info("Client didn't send a correct message.");
                     } catch (IOException e) {
-                        LOGGER.error("IOException occured", e);
+                        LOGGER.error("IOException occurred", e);
                     } catch (GSSException e) {
-                        LOGGER.error("GSSException occured", e);
+                        LOGGER.error("GSSException occurred", e);
                     } finally {
                         if (gssContext != null) {
                             try {
                                 gssContext.dispose();
                             } catch (GSSException e) {
-                                LOGGER.error("Problem occured during disposing GSS context", e);
+                                LOGGER.error("Problem occurred during disposing GSS context", e);
                             }
                         }
                         if (socket != null) {
                             try {
                                 socket.close();
                             } catch (IOException e) {
-                                LOGGER.error("Problem occured during closing a Socket", e);
+                                LOGGER.error("Problem occurred during closing a Socket", e);
                             }
                         }
 
@@ -284,7 +284,7 @@ public class GSSTestServer implements ServerSetupTask, Runnable {
                 } while (command != GSSTestConstants.CMD_STOP);
                 LOGGER.info("Stop command received.");
             } catch (IOException e) {
-                LOGGER.error("IOException occured", e);
+                LOGGER.error("IOException occurred", e);
                 return e.getMessage();
             }
             return null;

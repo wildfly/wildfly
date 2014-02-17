@@ -35,7 +35,7 @@ import org.jboss.metadata.javaee.spec.SecurityRoleRefsMetaData;
 
 import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
- * Sets up the {@link EJBComponentDescription} with the &lt;security-role-ref&gt;s declared for a EJB
+ * Sets up the {@link EJBComponentDescription} with the &lt;security-role-ref&gt;s declared for an EJB
  *
  * User: Jaikiran Pai
  */

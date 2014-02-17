@@ -51,7 +51,7 @@ import org.junit.runner.RunWith;
  * Note that the servlet uses a reflection hack to get the size of the log context map. This is fragile and may break,
  * but should be rather obvious if it does.
  * <p/>
- * This tests that after a undeploy the {@link org.jboss.logmanager.LogContext log contexts} and class loaders are
+ * This tests that after an undeploy the {@link org.jboss.logmanager.LogContext log contexts} and class loaders are
  * cleaned up during an undeploy. Attempts to find leaking class loaders.
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>

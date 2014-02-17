@@ -81,7 +81,7 @@ public class TLSSyslogServer extends TCPSyslogServer {
             sslContext = SSLContext.getInstance("TLS");
             sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
         } catch (Exception e) {
-            LOGGER.error("Exception occured during SSLContext for TLS syslog server initialization", e);
+            LOGGER.error("Exception occurred during SSLContext for TLS syslog server initialization", e);
             throw new SyslogRuntimeException(e);
         }
     }

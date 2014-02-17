@@ -73,7 +73,7 @@ public interface EjbLogger extends BasicLogger {
     EjbLogger EJB3_INVOCATION_LOGGER = Logger.getMessageLogger(EjbLogger.class, "org.jboss.as.ejb3.invocation");
 
     /**
-     * Logs an error message indicating an exception occurred while removing the an inactive bean.
+     * Logs an error message indicating an exception occurred while removing an inactive bean.
      *
      * @param id the session id that could not be removed
      */
@@ -82,7 +82,7 @@ public interface EjbLogger extends BasicLogger {
     void cacheRemoveFailed(Object id);
 
     /**
-     * Logs an warning message indicating the it could not find a EJB for the specific id
+     * Logs a warning message indicating an EJB for the specific id could not be found
      *
      * @param id the session id that could not be released
      */
@@ -118,7 +118,7 @@ public interface EjbLogger extends BasicLogger {
     void setRollbackOnlyFailed(@Cause Throwable se);
 
     /**
-     * Logs an warning message indicating ActivationConfigProperty will be ignored since it is not allowed by resource adapter
+     * Logs a warning message indicating ActivationConfigProperty will be ignored since it is not allowed by resource adapter
      *
      * @param propName
      * @param resourceAdapterName
@@ -159,35 +159,35 @@ public interface EjbLogger extends BasicLogger {
     void failToFindSfsbWithId(SessionID sessionId, String componentName);
 
     /**
-     * Logs an warning message indicating Default interceptor class is not listed in the <interceptors> section of ejb-jar.xml and will not be applied"
+     * Logs a warning message indicating Default interceptor class is not listed in the <interceptors> section of ejb-jar.xml and will not be applied"
      */
     @LogMessage(level = WARN)
     @Message(id = 14110, value = "Default interceptor class %s is not listed in the <interceptors> section of ejb-jar.xml and will not be applied")
     void defaultInterceptorClassNotListed(String clazz);
 
     /**
-     * Logs an warning message indicating No method found on EJB while processing exclude-list element in ejb-jar.xml
+     * Logs a warning message indicating No method found on EJB while processing exclude-list element in ejb-jar.xml
      */
     @LogMessage(level = WARN)
     @Message(id = 14111, value = "No method named: %s found on EJB: %s while processing exclude-list element in ejb-jar.xml")
     void noMethodFoundOnEjbExcludeList(String methodName, String ejbName);
 
     /**
-     * Logs an warning message indicating No method with param types found on EJB while processing exclude-list element in ejb-jar.xml
+     * Logs a warning message indicating No method with param types found on EJB while processing exclude-list element in ejb-jar.xml
      */
     @LogMessage(level = WARN)
     @Message(id = 14112, value = "No method named: %s with param types: %s found on EJB: %s while processing exclude-list element in ejb-jar.xml")
     void noMethodFoundOnEjbWithParamExcludeList(String methodName, String s, String ejbName);
 
     /**
-     * Logs an warning message indicating no method named found on EJB while processing method-permission element in ejb-jar.xml
+     * Logs a warning message indicating no method named found on EJB while processing method-permission element in ejb-jar.xml
      */
     @LogMessage(level = WARN)
     @Message(id = 14113, value = "No method named: %s found on EJB: %s while processing method-permission element in ejb-jar.xml")
     void noMethodFoundOnEjbPermission(String methodName, String ejbName);
 
     /**
-     * Logs an warning message indicating No method with param type found on EJB while processing method-permission element in ejb-jar.xml
+     * Logs a warning message indicating No method with param type found on EJB while processing method-permission element in ejb-jar.xml
      */
     @LogMessage(level = WARN)
     @Message(id = 14114, value = "No method named: %s with param types: %s found on EJB: %s while processing method-permission element in ejb-jar.xml")
@@ -195,14 +195,14 @@ public interface EjbLogger extends BasicLogger {
 
 
     /**
-     * Logs an warning message indicating Unknown timezone id found in schedule expression. Ignoring it and using server's timezone
+     * Logs a warning message indicating Unknown timezone id found in schedule expression. Ignoring it and using server's timezone
      */
     @LogMessage(level = WARN)
     @Message(id = 14115, value = "Unknown timezone id: %s found in schedule expression. Ignoring it and using server's timezone: %s")
     void unknownTimezoneId(String timezoneId, String id);
 
     /**
-     * Logs an warning message indicating the timer persistence is not enabled, persistent timers will not survive JVM restarts
+     * Logs a warning message indicating the timer persistence is not enabled, persistent timers will not survive JVM restarts
      */
     @LogMessage(level = WARN)
     @Message(id = 14116, value = "Timer persistence is not enabled, persistent timers will not survive JVM restarts")
@@ -223,7 +223,7 @@ public interface EjbLogger extends BasicLogger {
     void ignoringException(@Cause Throwable e);
 
     /**
-     * Logs an warning message indicating the unregistered an already registered Timerservice with id %s and a new instance will be registered
+     * Logs a warning message indicating the unregistered an already registered Timerservice with id %s and a new instance will be registered
      */
     @LogMessage(level = WARN)
     @Message(id = 14119, value = "Unregistered an already registered Timerservice with id %s and a new instance will be registered")
@@ -265,7 +265,7 @@ public interface EjbLogger extends BasicLogger {
     void timerNotActive(Timer timer);
 
     /**
-     * Logs an warning message indicating could not read timer information for EJB component
+     * Logs a warning message indicating could not read timer information for EJB component
      */
     @LogMessage(level = WARN)
     @Message(id = 14126, value = "Could not read timer information for EJB component %s")
@@ -357,7 +357,7 @@ public interface EjbLogger extends BasicLogger {
     void exceptionReleasingEntity(@Cause Throwable t);
 
     /**
-     * Log message indicating that a unsupported client marshalling strategy was received from a remote client
+     * Log message indicating that an unsupported client marshalling strategy was received from a remote client
      *
      * @param strategy The client marshalling strategy
      * @param channel  The channel on which the client marshalling strategy was received
@@ -453,7 +453,7 @@ public interface EjbLogger extends BasicLogger {
     void failedToSendClusterNodeRemovalMessageToClient(@Cause Exception e, Channel channel);
 
     @LogMessage(level = WARN)
-    @Message(id = 14218, value = "[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST NOT be a interface - %s is an interface, hence won't be considered as a session bean")
+    @Message(id = 14218, value = "[EJB3.1 spec, section 4.9.2] Session bean implementation class MUST NOT be an interface - %s is an interface, hence won't be considered as a session bean")
     void sessionBeanClassCannotBeAnInterface(String className);
 
     @LogMessage(level = WARN)
@@ -461,7 +461,7 @@ public interface EjbLogger extends BasicLogger {
     void sessionBeanClassMustBePublicNonAbstractNonFinal(String className);
 
     @LogMessage(level = WARN)
-    @Message(id = 14220, value = "[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST NOT be a interface - %s is an interface, hence won't be considered as a message driven bean")
+    @Message(id = 14220, value = "[EJB3.1 spec, section 5.6.2] Message driven bean implementation class MUST NOT be an interface - %s is an interface, hence won't be considered as a message driven bean")
     void mdbClassCannotBeAnInterface(String className);
 
     @LogMessage(level = WARN)
@@ -469,7 +469,7 @@ public interface EjbLogger extends BasicLogger {
     void mdbClassMustBePublicNonAbstractNonFinal(String className);
 
     @LogMessage(level = WARN)
-    @Message(id = 14222, value = "Method %s was a async method but the client could not be informed about the same. This will mean that the client might block till the method completes")
+    @Message(id = 14222, value = "Method %s was an async method but the client could not be informed about the same. This will mean that the client might block till the method completes")
     void failedToSendAsyncMethodIndicatorToClient(@Cause Throwable t, Method invokedMethod);
 
     @LogMessage(level = WARN)

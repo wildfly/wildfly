@@ -179,7 +179,7 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
             assert resource instanceof LogStoreResource;
             final LogStoreResource logStore = (LogStoreResource) resource;
-            // Replace the current model with a updated one
+            // Replace the current model with an updated one
             context.acquireControllerLock();
             final Resource storeModel = probeTransactions(mbs);
 
