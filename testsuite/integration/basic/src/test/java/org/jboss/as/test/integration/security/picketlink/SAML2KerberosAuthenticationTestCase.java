@@ -29,12 +29,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.naming.Context;
 import javax.security.auth.Subject;
@@ -42,12 +40,6 @@ import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.directory.server.kerberos.shared.crypto.encryption.KerberosKeyFactory;
-import org.apache.directory.server.kerberos.shared.keytab.Keytab;
-import org.apache.directory.server.kerberos.shared.keytab.KeytabEntry;
-import org.apache.directory.shared.kerberos.KerberosTime;
-import org.apache.directory.shared.kerberos.codec.types.EncryptionType;
-import org.apache.directory.shared.kerberos.components.EncryptionKey;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -78,8 +70,9 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateSchemeFactory;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.RolePrintingServlet;
+import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
+import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
+import org.jboss.as.test.integration.security.loginmodules.negotiation.Krb5ConfServerSetupTask;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.callback.UsernamePasswordHandler;
 import org.jboss.security.negotiation.spnego.SPNEGOLoginModule;
@@ -87,6 +80,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertThat;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -103,6 +97,7 @@ import org.junit.runner.RunWith;
     SAML2KerberosAuthenticationTestCase.SecurityDomainsSetup.class
 })
 @RunAsClient
+@Ignore("AS7-6796 - Undertow SPNEGO")
 public class SAML2KerberosAuthenticationTestCase {
 
     private static final String SERVICE_PROVIDER_NAME = "SP_DEPLOYMENT";
@@ -210,7 +205,7 @@ public class SAML2KerberosAuthenticationTestCase {
             final HttpGet httpGet = new HttpGet(webAppURL.toURI());
             final HttpResponse response = httpClient.execute(httpGet);
 
-            assertThat("Unexpected status code.", response.getStatusLine().getStatusCode(), equalTo(HttpServletResponse.SC_UNAUTHORIZED));
+            assertThat("Unexpected status code when expecting negotiation challenge.", response.getStatusLine().getStatusCode(), equalTo(HttpServletResponse.SC_UNAUTHORIZED));
 
             final Header[] authnHeaders = response.getHeaders("WWW-Authenticate");
             assertThat("WWW-Authenticate header is present",   authnHeaders, notNullValue());
@@ -508,40 +503,12 @@ public class SAML2KerberosAuthenticationTestCase {
 
         public static final String HTTP_SERVICE_PASSWORD = "httppwd";
 
-        /**
-         * Creates a keytab file for given principal.
-         *
-         * @param principalName
-         * @param passPhrase
-         * @param keytabFile
-         * @throws IOException
-         *
-         * @author Josef Cacek
-         */
-        public static void createKeytab(final String principalName, final String passPhrase, final File keytabFile)
-                throws IOException {
-            final KerberosTime timeStamp = new KerberosTime();
-            final long principalType = 1L; //KRB5_NT_PRINCIPAL
-
-            final Keytab keytab = Keytab.getInstance();
-            final List<KeytabEntry> entries = new ArrayList<KeytabEntry>();
-            for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName, passPhrase)
-                    .entrySet()) {
-                final EncryptionKey key = keyEntry.getValue();
-                final byte keyVersion = (byte) key.getKeyVersion();
-                entries.add(new KeytabEntry(principalName, principalType, timeStamp, keyVersion, key));
-            }
-            keytab.setEntries(entries);
-            keytab.write(keytabFile);
-        }
-
-
         public static File getKeyTab() {
             return KEYTAB_FILE;
         }
 
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            createKeytab(KerberosServerSetupTask.getHttpServicePrincipal(managementClient), HTTP_SERVICE_PASSWORD, KEYTAB_FILE);
+            Krb5ConfServerSetupTask.createKeytab(KerberosServerSetupTask.getHttpServicePrincipal(managementClient), HTTP_SERVICE_PASSWORD, KEYTAB_FILE);
         }
 
         public void tearDown(ManagementClient managementClient, String containerId) throws Exception {

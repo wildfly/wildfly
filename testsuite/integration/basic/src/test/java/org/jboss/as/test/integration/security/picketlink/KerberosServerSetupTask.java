@@ -51,10 +51,11 @@ import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
 import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
 import org.apache.directory.server.ldap.LdapServer;
-import org.apache.directory.shared.ldap.model.entry.DefaultEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifReader;
-import org.apache.directory.shared.ldap.model.schema.SchemaManager;
+import org.apache.directory.api.ldap.model.entry.DefaultEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifReader;
+import org.apache.directory.api.ldap.model.schema.SchemaManager;
+import org.apache.directory.server.annotations.CreateKdcServer;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.message.BasicNameValuePair;
@@ -63,12 +64,10 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
-import org.jboss.as.test.integration.security.common.ExtCreateKdcServer;
-import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcessor;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.RolePrintingServlet;
+import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
 
 /**
@@ -83,9 +82,6 @@ public class KerberosServerSetupTask implements ServerSetupTask {
 
     public static final String SECURITY_CREDENTIALS = "secret";
     public static final String SECURITY_PRINCIPAL = "uid=admin,ou=system";
-
-    private static final String KEYSTORE_FILENAME = "ldaps.jks";
-    private static final File KEYSTORE_FILE = new File(KEYSTORE_FILENAME);
 
     private static final String KRB5_CONF_RESOURCE_FILENAME = "krb5.conf";
     private static final String KRB5_CONF_1_FILENAME = "krb5-server1.conf";
@@ -170,10 +166,9 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         transports =
         {
             @CreateTransport( protocol = "LDAP",  port = LDAP_PORT),
-            @CreateTransport( protocol = "LDAPS", port = LDAPS_PORT)
         },
         certificatePassword="secret")
-    @ExtCreateKdcServer(
+    @CreateKdcServer(
       primaryRealm = KERBEROS_PRIMARY_REALM,
       kdcPrincipal = "krbtgt/" + KERBEROS_PRIMARY_REALM + "@" + KERBEROS_PRIMARY_REALM,
       searchBaseDn = "dc=jboss,dc=org",
@@ -207,15 +202,10 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         }
         final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer(
                 (CreateLdapServer) AnnotationUtils.getInstance(CreateLdapServer.class));
-        FileOutputStream fos = new FileOutputStream(KEYSTORE_FILE);
-        IOUtils.copy(getClass().getResourceAsStream(KEYSTORE_FILENAME), fos);
-        fos.close();
-        
-        createLdapServer.setKeyStore(KEYSTORE_FILE.getAbsolutePath());
         fixTransportAddress(createLdapServer, cannonicalHost);
 
         ldapServer1 = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService1);
-        krbServer1 = KDCServerAnnotationProcessor.getKdcServer(directoryService1, KERBEROS_PORT, cannonicalHost);
+        krbServer1 = ServerAnnotationProcessor.getKdcServer(directoryService1, KERBEROS_PORT);
         ldapServer1.start();
 
         createKrb5Conf(cannonicalHost, KRB5_CONF_FILE, KERBEROS_PORT);
@@ -291,7 +281,6 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         ldapServer1.stop();
         directoryService1.shutdown();
         
-        KEYSTORE_FILE.delete();
         KRB5_CONF_FILE.delete();
 
         FileUtils.deleteDirectory(directoryService1.getInstanceLayout().getInstanceDirectory());
@@ -319,7 +308,6 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         @Override
         protected SystemProperty[] getSystemProperties() {
             return new SystemProperty[] { 
-              new DefaultSystemProperty("javax.net.ssl.trustStore", KEYSTORE_FILE.getAbsolutePath()),
               new DefaultSystemProperty("java.security.krb5.conf", KRB5_CONF_FILE.getAbsolutePath()),
               new DefaultSystemProperty("sun.security.krb5.debug", "true")
             };

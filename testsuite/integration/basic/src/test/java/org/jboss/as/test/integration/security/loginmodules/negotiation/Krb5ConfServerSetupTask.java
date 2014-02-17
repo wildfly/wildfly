@@ -140,7 +140,7 @@ public class Krb5ConfServerSetupTask implements ServerSetupTask {
      * @param keytabFile
      * @throws IOException
      */
-    private void createKeytab(final String principalName, final String passPhrase, final File keytabFile) throws IOException {
+    public static void createKeytab(final String principalName, final String passPhrase, final File keytabFile) throws IOException {
         LOGGER.info("Principal name: " + principalName);
         final KerberosTime timeStamp = new KerberosTime();
 
