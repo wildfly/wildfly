@@ -267,7 +267,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
                 if(conflicts.has(Constants.MISC)) {
                     formatConflictsList(buf, conflicts, title, Constants.MISC);
                 }
-                buf.append(lineSeparator).append("Use the --override or --preserve arguments in order to resolve the conflict.");
+                buf.append(lineSeparator).append("Use the --override-all, --override=[] or --preserve=[] arguments in order to resolve the conflict.");
                 throw new CommandLineException(buf.toString());
             } else {
                 throw new CommandLineException(Util.getFailureDescription(result));
