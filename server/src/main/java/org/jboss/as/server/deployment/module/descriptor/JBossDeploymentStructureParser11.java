@@ -42,6 +42,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.MountedDeploymentOverlay;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParser;
 import org.jboss.as.server.deployment.module.FilterSpecification;
 import org.jboss.as.server.deployment.module.ModuleDependency;
@@ -748,8 +749,14 @@ public class JBossDeploymentStructureParser11 implements XMLElementReader<ParseR
                         final ResourceRoot deploymentRoot = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_ROOT);
                         final VirtualFile deploymentRootFile = deploymentRoot.getRoot();
                         final VirtualFile child = deploymentRootFile.getChild(path);
-                        final Closeable closable = child.isFile() ? VFS.mountZip(child, child, TempFileProviderService
-                                .provider()) : null;
+                        Map<String, MountedDeploymentOverlay> overlays = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_OVERLAY_LOCATIONS);
+                        MountedDeploymentOverlay overlay = overlays.get(path);
+                        Closeable closable = null;
+                        if(overlay != null) {
+                            overlay.remountAsZip(false);
+                        } else if(child.isFile()) {
+                            closable = VFS.mountZip(child, child, TempFileProviderService.provider());
+                        }
                         final MountHandle mountHandle = new MountHandle(closable);
                         final ResourceRoot resourceRoot = new ResourceRoot(name, child, mountHandle);
                         for (final FilterSpecification filter : resourceFilters) {

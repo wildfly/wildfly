@@ -40,6 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
+import org.jboss.as.server.deployment.MountedDeploymentOverlay;
 import org.jboss.as.server.deployment.SubDeploymentMarker;
 import org.jboss.as.server.deployment.annotation.ResourceRootIndexer;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
@@ -218,7 +219,7 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
     }
 
     private ModuleIdentifier createAdditionalModule(final ResourceRoot resourceRoot, final DeploymentUnit topLevelDeployment, final VirtualFile topLevelRoot, final Map<VirtualFile, AdditionalModuleSpecification> additionalModules, final VirtualFile classPathFile, final ArrayDeque<RootEntry> resourceRoots) throws DeploymentUnitProcessingException {
-        final ResourceRoot root = createResourceRoot(classPathFile);
+        final ResourceRoot root = createResourceRoot(classPathFile, topLevelDeployment, topLevelRoot);
         final String pathName = root.getRoot().getPathNameRelativeTo(topLevelRoot);
         ModuleIdentifier identifier = ModuleIdentifier.create(ServiceModuleLoader.MODULE_PREFIX + topLevelDeployment.getName() + "." + pathName);
         AdditionalModuleSpecification module = new AdditionalModuleSpecification(identifier, root);
@@ -261,9 +262,18 @@ public final class ManifestClassPathProcessor implements DeploymentUnitProcessor
      * @return Returns the created {@link ResourceRoot}
      * @throws java.io.IOException
      */
-    private synchronized ResourceRoot createResourceRoot(final VirtualFile file) throws DeploymentUnitProcessingException {
+    private synchronized ResourceRoot createResourceRoot(final VirtualFile file, final DeploymentUnit deploymentUnit, final VirtualFile deploymentRoot) throws DeploymentUnitProcessingException {
         try {
-            final Closeable closable = file.isFile() ? VFS.mountZip(file, file, TempFileProviderService.provider()) : null;
+            Map<String, MountedDeploymentOverlay> overlays = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_OVERLAY_LOCATIONS);
+
+            String relativeName = file.getPathNameRelativeTo(deploymentRoot);
+            MountedDeploymentOverlay overlay = overlays.get(relativeName);
+            Closeable closable = null;
+            if(overlay != null) {
+                overlay.remountAsZip(false);
+            } else if(file.isFile()) {
+                closable = VFS.mountZip(file, file, TempFileProviderService.provider());
+            }
             final MountHandle mountHandle = new MountHandle(closable);
             final ResourceRoot resourceRoot = new ResourceRoot(file, mountHandle);
             ModuleRootMarker.mark(resourceRoot);

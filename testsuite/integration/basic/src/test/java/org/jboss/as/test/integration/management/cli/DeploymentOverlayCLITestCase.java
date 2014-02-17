@@ -43,6 +43,7 @@ import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -64,10 +65,12 @@ import org.junit.runner.RunWith;
 public class DeploymentOverlayCLITestCase {
 
     private static File replacedLibrary;
+    private static File addedLibrary;
     private static File war1;
     private static File war2;
     private static File war3;
     private static File ear1;
+    private static File ear2;
     private static File webXml;
     private static File overrideXml;
     private static File replacedAjsp;
@@ -95,8 +98,15 @@ public class DeploymentOverlayCLITestCase {
 
         jar = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         jar.addClass(ReplacedLibraryServlet.class);
+        jar.add(new StringAsset("replaced library"),"jar-info.txt");
         replacedLibrary = new File(tempDir + File.separator + jar.getName());
         new ZipExporterImpl(jar).exportTo(replacedLibrary, true);
+
+
+        jar = ShrinkWrap.create(JavaArchive.class, "addedlib.jar");
+        jar.addClass(AddedLibraryServlet.class);
+        addedLibrary = new File(tempDir + File.separator + jar.getName());
+        new ZipExporterImpl(jar).exportTo(addedLibrary, true);
 
         jar = ShrinkWrap.create(JavaArchive.class, "lib.jar");
         jar.addClass(OriginalLibraryServlet.class);
@@ -124,10 +134,26 @@ public class DeploymentOverlayCLITestCase {
         war3 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war3, true);
 
-        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "eardeployment.ear");
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, "eardeployment1.ear");
         ear.addAsModule(war1);
         ear1 = new File(tempDir + File.separator + ear.getName());
         new ZipExporterImpl(ear).exportTo(ear1, true);
+
+        war = ShrinkWrap.create(WebArchive.class, "deployment0.war");
+        war.addClass(SimpleServlet.class);
+        war.addClass(EarServlet.class);
+        war.addAsWebResource(DeploymentOverlayCLITestCase.class.getPackage(), "a.jsp", "a.jsp");
+        war.addAsWebInfResource(DeploymentOverlayCLITestCase.class.getPackage(), "web.xml", "web.xml");
+
+        jar = ShrinkWrap.create(JavaArchive.class, "lib.jar");
+        jar.add(new StringAsset("original library"),"jar-info.txt");
+
+
+        ear = ShrinkWrap.create(EnterpriseArchive.class, "eardeployment2.ear");
+        ear.addAsModule(war);
+        ear.addAsLibraries(jar);
+        ear2 = new File(tempDir + File.separator + ear.getName());
+        new ZipExporterImpl(ear).exportTo(ear2, true);
 
         final URL overrideXmlUrl = DeploymentOverlayCLITestCase.class.getResource("override.xml");
         if(overrideXmlUrl == null) {
@@ -163,6 +189,11 @@ public class DeploymentOverlayCLITestCase {
         war1.delete();
         war2.delete();
         war3.delete();
+        ear1.delete();
+        ear2.delete();
+        replacedLibrary.delete();
+        replacedAjsp.delete();
+        addedLibrary.delete();
     }
 
     protected final String getBaseURL(URL url) throws MalformedURLException {
@@ -183,6 +214,7 @@ public class DeploymentOverlayCLITestCase {
             ctx.handleSafe("undeploy " + war2.getName());
             ctx.handleSafe("undeploy " + war3.getName());
             ctx.handleSafe("undeploy " + ear1.getName());
+            ctx.handleSafe("undeploy " + ear2.getName());
             ctx.handleSafe("deployment-overlay remove --name=overlay-test");
             ctx.terminateSession();
         }
@@ -196,6 +228,7 @@ public class DeploymentOverlayCLITestCase {
 
         ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
                 + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                 + ",WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath()
                 + " --deployments=" + war1.getName());
 
         String response = readResponse("deployment0");
@@ -216,6 +249,7 @@ public class DeploymentOverlayCLITestCase {
 
         //now test Libraries
         assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
+        assertEquals("Added Library Servlet", HttpRequest.get(baseUrl + "deployment0/AddedLibraryServlet", 10, TimeUnit.SECONDS).trim());
 
 
 
@@ -245,6 +279,24 @@ public class DeploymentOverlayCLITestCase {
         //now test Libraries
         assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
 
+    }
+
+
+    @Test
+    public void testSimpleOverrideInEarAtEarLevel() throws Exception {
+
+        ctx.handle("deploy " + ear2.getAbsolutePath());
+
+        ctx.handle("deployment-overlay add --name=overlay-test --content=lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                + " --deployments=" + ear2.getName());
+
+        //now test Libraries
+        assertEquals("original library", HttpRequest.get(baseUrl + "deployment0/EarServlet", 10, TimeUnit.SECONDS).trim());
+
+        ctx.handle("/deployment=" + ear2.getName() + ":redeploy");
+
+        //now test Libraries
+        assertEquals("replaced library", HttpRequest.get(baseUrl + "deployment0/EarServlet", 10, TimeUnit.SECONDS).trim());
     }
 
     @Test
