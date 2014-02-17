@@ -50,7 +50,7 @@ objectClass: krb5principal
 objectClass: krb5kdcentry
 cn: HTTP
 sn: Service
-uid: HTTP
+uid: HTTPaddr
 userPassword: httppwd
 krb5PrincipalName: HTTP/${hostaddr}@${realm}
 krb5KeyVersionNumber: 0
