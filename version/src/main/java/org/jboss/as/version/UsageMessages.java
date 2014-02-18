@@ -27,22 +27,18 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 
 /**
- * This module is using message IDs in the range 12000-12099.
- * This file is using the subset 12040-12099 for non-logger messages.
- * See http://community.jboss.org/docs/DOC-16810 for the full list of
- * currently reserved JBAS message id blocks.
- *
  * Date: 29.06.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageBundle(projectCode = "JBAS")
+@MessageBundle(projectCode = "<<none>>")
 interface UsageMessages {
     /**
      * The default messages.
      */
     UsageMessages MESSAGES = Messages.getBundle(UsageMessages.class);
 
-    @Message(id = Message.NONE, value = "Usage: %s [args...]%nwhere args include:")
+    @Message(id = Message.NONE, value = "Usage: %s [args...] where args include:")
     String argUsage(String executableName);
 }
