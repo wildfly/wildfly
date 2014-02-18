@@ -204,6 +204,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
         config.setSmax(SMAX.resolveModelAttribute(context, model).asInt());
         config.setTtl(TTL.resolveModelAttribute(context, model).asInt());
         config.setNodeTimeout(NODE_TIMEOUT.resolveModelAttribute(context, model).asInt());
+        config.setSessionDrainingStrategy(SESSION_DRAINING_STRATEGY.resolveModelAttribute(context, model).asString());
 
         if (model.hasDefined(CommonAttributes.BALANCER)) {
             config.setBalancer(BALANCER.resolveModelAttribute(context, model).asString());

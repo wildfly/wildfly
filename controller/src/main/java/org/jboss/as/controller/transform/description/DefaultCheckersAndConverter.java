@@ -22,10 +22,12 @@
 package org.jboss.as.controller.transform.description;
 
 import java.util.Collections;
+import java.util.regex.Pattern;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 
 /**
@@ -35,6 +37,8 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class DefaultCheckersAndConverter extends DiscardAttributeChecker.DefaultDiscardAttributeChecker implements RejectAttributeChecker, AttributeConverter {
+
+    private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
 
     private volatile String logMessageId;
 
@@ -95,6 +99,12 @@ public abstract class DefaultCheckersAndConverter extends DiscardAttributeChecke
         logMessageId = id;
         return logMessageId;
     }
+
+    protected boolean checkForExpression(final ModelNode node) {
+        return (node.getType() == ModelType.EXPRESSION || node.getType() == ModelType.STRING)
+                && EXPRESSION_PATTERN.matcher(node.asString()).matches();
+    }
+
     /**
      * Gets called by the default implementations of {@link #rejectOperationParameter(String, ModelNode, ModelNode, TransformationContext)} and
      * {@link #rejectResourceAttribute(String, ModelNode, TransformationContext)}.

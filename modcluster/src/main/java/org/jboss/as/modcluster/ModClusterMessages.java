@@ -82,4 +82,16 @@ interface ModClusterMessages {
 
     @Message(id = 11735, value = "'property' can not have more than one entry")
     String propertyCanOnlyHaveOneEntry();
+
+    /**
+     * A message indicating a valid port and host are needed.
+    *
+    * @return the message.
+    */
+   //@Message(id = 11736, value = "need valid host and port")
+   //String needHostAndPort();
+
+   @Message(id = 11737, value = "session-draining-strategy must either be undefined or have the value \"DEFAULT\"")
+   String sessionDrainingStrategyMustBeUndefinedOrDefault();
+
 }

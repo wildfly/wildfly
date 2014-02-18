@@ -62,6 +62,14 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .setRestartAllServices()
             .build();
 
+
+    static final SimpleAttributeDefinition SESSION_DRAINING_STRATEGY = SimpleAttributeDefinitionBuilder.create(CommonAttributes.SESSION_DRAINING_STRATEGY, ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setAlternatives("DEFAULT", "ALWAYS", "NEVER")
+            .setDefaultValue(new ModelNode("DEFAULT"))
+            .setRestartAllServices()
+            .build();
+
     // TODO: Convert into xs:list of outbound socket binding names
     static final SimpleAttributeDefinition PROXY_LIST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PROXY_LIST, ModelType.STRING, true)
             .setAllowExpression(true)
@@ -244,6 +252,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             NODE_TIMEOUT,
             LOAD_BALANCING_GROUP, // was called "domain" in the 1.0 xsd
             CONNECTOR, // not in the 1.0 xsd
+            SESSION_DRAINING_STRATEGY, // not in the 1.1 xsd
     };
 
 

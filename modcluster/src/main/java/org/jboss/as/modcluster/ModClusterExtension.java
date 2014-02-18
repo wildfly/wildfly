@@ -33,6 +33,7 @@ import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.ADVERTI
 import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.AUTO_ENABLE_CONTEXTS;
 import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.FLUSH_PACKETS;
 import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.PING;
+import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.SESSION_DRAINING_STRATEGY;
 import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STICKY_SESSION;
 import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STICKY_SESSION_FORCE;
 import static org.jboss.as.modcluster.ModClusterConfigResourceDefinition.STICKY_SESSION_REMOVE;
@@ -43,8 +44,6 @@ import static org.jboss.as.modcluster.ModClusterSSLResourceDefinition.PROTOCOL;
 
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-
 import javax.xml.stream.XMLStreamConstants;
 
 import org.jboss.as.controller.Extension;
@@ -66,7 +65,6 @@ import org.jboss.as.controller.transform.description.ResourceTransformationDescr
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
 
@@ -75,12 +73,13 @@ import org.jboss.staxmapper.XMLElementReader;
  *
  * @author Jean-Frederic Clere
  * @author Tomaz Cerar
+ * @author Radoslav Husar
  */
 public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 5;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
@@ -110,13 +109,9 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
     static final SensitiveTargetAccessConstraintDefinition MOD_CLUSTER_PROXIES_DEF = new SensitiveTargetAccessConstraintDefinition(MOD_CLUSTER_PROXIES);
 
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void initialize(ExtensionContext context) {
-        ROOT_LOGGER.debugf("Activating Mod_cluster Extension");
+        ROOT_LOGGER.debugf("Activating mod_cluster extension");
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
@@ -133,6 +128,8 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         if (context.isRegisterTransformers()) {
             registerTransformers_1_2_0(subsystem);
+            registerTransformers_1_3_0(subsystem); // AS 7.2.0
+            registerTransformers_1_4_0(subsystem); // EAP 6.2.0
         }
     }
 
@@ -146,13 +143,19 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         }
     }
 
+    /**
+     * Transformation that rejects expressions, discards/rejects session draining strategy, and converts load provider capacity.
+     *
+     * @param subsystem
+     */
     private static void registerTransformers_1_2_0(SubsystemRegistration subsystem) {
-
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         ResourceTransformationDescriptionBuilder configurationBuilder = builder.addChildResource(CONFIGURATION_PATH);
         ResourceTransformationDescriptionBuilder dynamicLoadProvider = configurationBuilder
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, ADVERTISE, AUTO_ENABLE_CONTEXTS, FLUSH_PACKETS, STICKY_SESSION, STICKY_SESSION_REMOVE, STICKY_SESSION_FORCE, PING)
+                .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
+                .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
                 .end()
             .addChildResource(DYNAMIC_LOAD_PROVIDER_PATH)
                 .getAttributeBuilder()
@@ -176,7 +179,35 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CIPHER_SUITE, KEY_ALIAS, PROTOCOL)
                 .end();
+
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 2, 0));
+    }
+
+    private static void registerTransformers_1_3_0(SubsystemRegistration subsystem) {
+        TransformationDescription.Tools.register(get1_3_0_1_4_0Description(), subsystem, ModelVersion.create(1, 3, 0));
+    }
+
+    private static void registerTransformers_1_4_0(SubsystemRegistration subsystem) {
+        TransformationDescription.Tools.register(get1_3_0_1_4_0Description(), subsystem, ModelVersion.create(1, 4, 0));
+    }
+
+    /**
+     * Transformation that discards/rejects session draining strategy.
+     *
+     * @return TransformationDescription
+     */
+    private static TransformationDescription get1_3_0_1_4_0Description() {
+
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        ResourceTransformationDescriptionBuilder configurationBuilder = builder.addChildResource(CONFIGURATION_PATH);
+
+        configurationBuilder
+                .getAttributeBuilder()
+                .addRejectCheck(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
+                .setDiscard(SessionDrainingStrategyChecker.INSTANCE, SESSION_DRAINING_STRATEGY)
+                .end();
+
+        return builder.build();
     }
 
     /**
@@ -187,7 +218,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
     static class CapacityCheckerAndConverter extends DefaultCheckersAndConverter {
 
         static final CapacityCheckerAndConverter INSTANCE = new CapacityCheckerAndConverter();
-        private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\$\\{.*\\}.*");
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
@@ -228,11 +258,6 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
             return null;
         }
 
-        private boolean checkForExpression(final ModelNode node) {
-            return (node.getType() == ModelType.EXPRESSION || node.getType() == ModelType.STRING)
-                    && EXPRESSION_PATTERN.matcher(node.asString()).matches();
-        }
-
         private boolean isIntegerValue(double raw) {
             return raw == Double.valueOf(Math.round(raw)).doubleValue();
         }
@@ -269,6 +294,45 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         @Override
         protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
             //Not used for discard
+            return false;
+        }
+    }
+
+    private static class SessionDrainingStrategyChecker extends DefaultCheckersAndConverter {
+        private static final SessionDrainingStrategyChecker INSTANCE = new SessionDrainingStrategyChecker();
+
+        @Override
+        public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+            return ModClusterMessages.MESSAGES.sessionDrainingStrategyMustBeUndefinedOrDefault();
+        }
+
+        @Override
+        protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            if (attributeValue.isDefined()) {
+                if (checkForExpression(attributeValue)) {
+                    return true;
+                }
+                return !attributeValue.asString().equals("DEFAULT");
+            }
+            return false;
+        }
+
+        @Override
+        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            //No conversion needed
+        }
+
+        @Override
+        protected boolean isValueDiscardable(PathAddress address, String attributeName, ModelNode attributeValue,
+                TransformationContext context) {
+            if (attributeValue.isDefined()) {
+                if (checkForExpression(attributeValue)) {
+                    return false;
+                }
+                return attributeValue.asString().equals("DEFAULT");
+            }
             return false;
         }
     }

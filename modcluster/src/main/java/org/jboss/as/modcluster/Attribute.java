@@ -82,7 +82,9 @@ enum Attribute {
     CIPHER_SUITE(CommonAttributes.CIPHER_SUITE),
     PROTOCOL(CommonAttributes.PROTOCOL),
     CA_CERTIFICATE_FILE(CommonAttributes.CA_CERTIFICATE_FILE),
-    CA_REVOCATION_URL(CommonAttributes.CA_REVOCATION_URL),;
+    CA_REVOCATION_URL(CommonAttributes.CA_REVOCATION_URL),
+    SESSION_DRAINING_STRATEGY(CommonAttributes.SESSION_DRAINING_STRATEGY),
+    ;
 
     private final String name;
 
