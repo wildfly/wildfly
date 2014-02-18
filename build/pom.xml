@@ -1171,6 +1171,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-picketlink</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-pojo</artifactId>
                 </dependency>
 
@@ -1954,7 +1959,12 @@
                     <groupId>org.picketlink</groupId>
                     <artifactId>picketlink-idm-impl</artifactId>
                 </dependency>
-    
+
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-idm-simple-schema</artifactId>
+                </dependency>
+
                 <dependency>
                     <groupId>org.picketlink.distribution</groupId>
                     <artifactId>picketlink-jbas7</artifactId>
