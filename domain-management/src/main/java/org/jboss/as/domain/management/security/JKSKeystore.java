@@ -35,10 +35,6 @@ import java.security.UnrecoverableEntryException;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
 
-import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartException;
 
 /**
@@ -48,7 +44,7 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  *
  */
-final class FileKeystore {
+final class JKSKeystore {
 
     private KeyStore keyStore;
     private final String path;
@@ -60,7 +56,7 @@ final class FileKeystore {
     private final char[] keyPassword;
     private final String alias;
 
-    private FileKeystore(final String path, final char[] keystorePassword) {
+    private JKSKeystore(final String path, final char[] keystorePassword) {
         this.path = path;
         this.keystorePassword = keystorePassword;
         this.keyPassword = null;
@@ -69,7 +65,7 @@ final class FileKeystore {
         this.isKeyStore = false;
     }
 
-    private FileKeystore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
+    private JKSKeystore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
         this.path = path;
         this.keystorePassword = keystorePassword;
         this.keyPassword = keyPassword;
@@ -78,12 +74,12 @@ final class FileKeystore {
         this.isKeyStore = true;
     }
 
-    static FileKeystore newKeyStore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
-        return new FileKeystore(path, keystorePassword, keyPassword, alias);
+    static JKSKeystore newKeyStore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
+        return new JKSKeystore(path, keystorePassword, keyPassword, alias);
     }
 
-    static FileKeystore newTrustStore(final String path, final char[] keystorePassword) {
-        return new FileKeystore(path, keystorePassword);
+    static JKSKeystore newTrustStore(final String path, final char[] keystorePassword) {
+        return new JKSKeystore(path, keystorePassword);
     }
 
     /**
@@ -206,32 +202,6 @@ final class FileKeystore {
             } catch (IOException ignored) {
             }
         }
-    }
-
-    public static final class ServiceUtil {
-
-        private static final String KEYSTORE_SUFFIX = "keystore";
-        private static final String TRUSTSTORE_SUFFIX = "truststore";
-
-        private ServiceUtil() {
-        }
-
-        public static ServiceName createKeystoreServiceName(final String realmName) {
-            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(KEYSTORE_SUFFIX);
-        }
-
-        public static ServiceName createTrusttoreServiceName(final String realmName) {
-            return SecurityRealm.ServiceUtil.createServiceName(realmName).append(TRUSTSTORE_SUFFIX);
-        }
-
-        public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, Injector<FileKeystore> injector,
-                ServiceName serviceName, boolean optional) {
-            ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
-            sb.addDependency(type, serviceName, FileKeystore.class, injector);
-
-            return sb;
-        }
-
     }
 
 }
