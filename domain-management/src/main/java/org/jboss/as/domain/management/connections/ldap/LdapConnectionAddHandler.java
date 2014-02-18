@@ -37,8 +37,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.domain.management.SSLIdentity;
+import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService.Config;
+import org.jboss.as.domain.management.security.SSLContextService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -83,7 +84,9 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
 
         ModelNode securityRealm = SECURITY_REALM.resolveModelAttribute(context, model);
         if (securityRealm.isDefined()) {
-            SSLIdentity.ServiceUtil.addDependency(sb, connectionManagerService.getSSLIdentityInjector(), securityRealm.asString(), false);
+            String realmName = securityRealm.asString();
+            SSLContextService.ServiceUtil.addDependency(sb, connectionManagerService.getFullSSLContextInjector(), SecurityRealm.ServiceUtil.createServiceName(realmName), false);
+            SSLContextService.ServiceUtil.addDependency(sb, connectionManagerService.getTrustOnlySSLContextInjector(), SecurityRealm.ServiceUtil.createServiceName(realmName), true);
         }
 
         ServiceController<LdapConnectionManagerService> sc = sb.install();

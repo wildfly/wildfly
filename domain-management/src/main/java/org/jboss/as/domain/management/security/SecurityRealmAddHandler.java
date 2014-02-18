@@ -55,6 +55,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.SSLContext;
+
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -64,7 +66,6 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.ServerSecurityManager;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
-import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
 import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource.GroupName;
@@ -181,7 +182,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
 
         if (ssl != null || authTruststore != null) {
-            addSSLService(context, ssl, authTruststore, realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSSLIdentityInjector());
+            addSSLServices(context, ssl, authTruststore, realmName, serviceTarget, newControllers, realmBuilder, securityRealmService.getSSLContextInjector());
         }
 
         realmBuilder.setInitialMode(Mode.ACTIVE);
@@ -543,92 +544,113 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         SubjectSupplementalService.ServiceUtil.addDependency(realmBuilder, injector, ldapName, false);
     }
 
-    private void addSSLService(OperationContext context, ModelNode ssl, ModelNode trustStore, String realmName,
-            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers, ServiceBuilder<?> realmBuilder,
-            InjectedValue<SSLIdentity> injector) throws OperationFailedException {
+    private void addSSLServices(OperationContext context, ModelNode ssl, ModelNode trustStore, String realmName,
+            ServiceTarget serviceTarget, List<ServiceController<?>> controllers, ServiceBuilder<?> realmBuilder,
+            InjectedValue<SSLContext> injector) throws OperationFailedException {
 
         // Use undefined structures for null ssl model
         ssl = (ssl == null) ? new ModelNode() : ssl;
 
-        ServiceName sslServiceName = SSLIdentity.ServiceUtil.createServiceName(realmName);
-
-        ServiceName keystoreServiceName = null;
-        KeyPair pair = null;
+        ServiceName keyManagerServiceName = null;
         if (ssl.hasDefined(KEYSTORE_PATH)) {
-            keystoreServiceName = FileKeystore.ServiceUtil.createKeystoreServiceName(realmName);
-            pair = addFileKeystoreService(context, ssl, true, keystoreServiceName, serviceTarget, newControllers);
+            keyManagerServiceName = AbstractKeyManagerService.ServiceUtil.createServiceName(SecurityRealm.ServiceUtil.createServiceName(realmName));
+            addFileKeyManagerService(context, ssl, keyManagerServiceName, serviceTarget, controllers);
         }
-        ServiceName truststoreServiceName = null;
+        ServiceName trustManagerServiceName = null;
         if (trustStore != null) {
-            truststoreServiceName = FileKeystore.ServiceUtil.createTrusttoreServiceName(realmName);
-            addFileKeystoreService(context, trustStore, false, truststoreServiceName, serviceTarget, newControllers);
+            trustManagerServiceName = AbstractTrustManagerService.ServiceUtil.createServiceName(SecurityRealm.ServiceUtil.createServiceName(realmName));
+            addFileTrustManagerService(context, trustStore, trustManagerServiceName, serviceTarget, controllers);
         }
 
         String protocol = SSLServerIdentityResourceDefinition.PROTOCOL.resolveModelAttribute(context, ssl).asString();
-        SSLIdentityService sslIdentityService = new SSLIdentityService(protocol, pair == null ? null : pair.keystorePassword,
-                pair == null ? null : pair.keyPassword);
 
-        ServiceBuilder<?> sslBuilder = serviceTarget.addService(sslServiceName, sslIdentityService);
+        /*
+         * At this point we register two SSLContextService instances, one linked to both the key and trust store and the other just for trust.
+         *
+         * Subsequent dependencies will trigger which (or both) are actually started.
+         */
+        ServiceName fullServiceName = SSLContextService.ServiceUtil.createServiceName(SecurityRealm.ServiceUtil.createServiceName(realmName), false);
+        ServiceName trustOnlyServiceName = SSLContextService.ServiceUtil.createServiceName(SecurityRealm.ServiceUtil.createServiceName(realmName), true);
 
-        if (keystoreServiceName != null) {
-            FileKeystore.ServiceUtil.addDependency(sslBuilder, sslIdentityService.getKeyStoreInjector(), keystoreServiceName, false);
+        if (keyManagerServiceName != null) {
+            // An alias will not be set on the trust based SSLContext.
+            SSLContextService fullSSLContextService = new SSLContextService(protocol);
+            ServiceBuilder<SSLContext> fullBuilder = serviceTarget.addService(fullServiceName, fullSSLContextService);
+            AbstractKeyManagerService.ServiceUtil.addDependency(fullBuilder, fullSSLContextService.getKeyManagerInjector(), SecurityRealm.ServiceUtil.createServiceName(realmName));
+            if (trustManagerServiceName != null) {
+                AbstractTrustManagerService.ServiceUtil.addDependency(fullBuilder, fullSSLContextService.getTrustManagerInjector(), SecurityRealm.ServiceUtil.createServiceName(realmName));
+            }
+
+            ServiceController<SSLContext> fullController = fullBuilder.setInitialMode(ON_DEMAND).install();
+            controllers.add(fullController);
         }
-        if (truststoreServiceName != null) {
-            FileKeystore.ServiceUtil.addDependency(sslBuilder, sslIdentityService.getTrustStoreInjector(), truststoreServiceName, false);
-        }
 
-        final ServiceController<?> serviceController = sslBuilder.setInitialMode(ON_DEMAND).install();
-        if(newControllers != null) {
-            newControllers.add(serviceController);
+        // Always register this one - if no KeyStore is defined we can add an alias to this.
+        SSLContextService trustOnlySSLContextService = new SSLContextService(protocol);
+        ServiceBuilder<SSLContext> trustBuilder = serviceTarget.addService(trustOnlyServiceName, trustOnlySSLContextService);
+        if (keyManagerServiceName == null) {
+            // No KeyStore so just alias to this.
+            trustBuilder.addAliases(fullServiceName);
         }
+        if (trustManagerServiceName != null) {
+            AbstractTrustManagerService.ServiceUtil.addDependency(trustBuilder, trustOnlySSLContextService.getTrustManagerInjector(), SecurityRealm.ServiceUtil.createServiceName(realmName));
+        }
+        ServiceController<SSLContext> trustController = trustBuilder.setInitialMode(ON_DEMAND).install();
+        controllers.add(trustController);
 
-        SSLIdentity.ServiceUtil.addDependency(realmBuilder, injector, realmName, false);
+        SSLContextService.ServiceUtil.addDependency(realmBuilder, injector, SecurityRealm.ServiceUtil.createServiceName(realmName), false);
     }
 
-    private static class KeyPair {
-        private char[] keystorePassword;
-        private char[] keyPassword;
-    }
+    private void addFileKeyManagerService(OperationContext context, ModelNode ssl, ServiceName serviceName,
+            ServiceTarget serviceTarget, List<ServiceController<?>> controllers) throws OperationFailedException {
 
-    private KeyPair addFileKeystoreService(OperationContext context, ModelNode ssl, boolean forKeyStore, ServiceName serviceName,
-            ServiceTarget serviceTarget, List<ServiceController<?>> newControllers) throws OperationFailedException {
         char[] keystorePassword = KeystoreAttributes.KEYSTORE_PASSWORD.resolveModelAttribute(context, ssl).asString().toCharArray();
         String path = KeystoreAttributes.KEYSTORE_PATH.resolveModelAttribute(context, ssl).asString();
 
-        final FileKeystoreService fileKeystoreService;
         final char[] keyPassword;
-
-        if (forKeyStore) {
-            ModelNode pwordNode = KeystoreAttributes.KEY_PASSWORD.resolveModelAttribute(context, ssl);
-            if (pwordNode.isDefined()) {
-                keyPassword = pwordNode.asString().toCharArray();
-            } else {
-                keyPassword = null;
-            }
-            ModelNode aliasNode = KeystoreAttributes.ALIAS.resolveModelAttribute(context, ssl);
-            String alias = aliasNode.isDefined() ? aliasNode.asString() : null;
-            fileKeystoreService = FileKeystoreService.newKeyStoreService(path, keystorePassword, alias, keyPassword);
+        ModelNode pwordNode = KeystoreAttributes.KEY_PASSWORD.resolveModelAttribute(context, ssl);
+        if (pwordNode.isDefined()) {
+            keyPassword = pwordNode.asString().toCharArray();
         } else {
             keyPassword = null;
-            fileKeystoreService = FileKeystoreService.newTrustStoreService(path, keystorePassword);
         }
+        ModelNode aliasNode = KeystoreAttributes.ALIAS.resolveModelAttribute(context, ssl);
+        String alias = aliasNode.isDefined() ? aliasNode.asString() : null;
 
-        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, fileKeystoreService);
+        JKSKeyManagerService keyManagerService = new JKSKeyManagerService(path, keystorePassword, keyPassword, alias);
+
+        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, keyManagerService);
         ModelNode relativeTo = KeystoreAttributes.KEYSTORE_RELATIVE_TO.resolveModelAttribute(context, ssl);
         if (relativeTo.isDefined()) {
             serviceBuilder.addDependency(pathName(relativeTo.asString()), String.class,
-                    fileKeystoreService.getRelativeToInjector());
+                    keyManagerService.getRelativeToInjector());
         }
 
         final ServiceController<?> serviceController = serviceBuilder.setInitialMode(ON_DEMAND).install();
-        if(newControllers != null) {
-            newControllers.add(serviceController);
+        if(controllers != null) {
+            controllers.add(serviceController);
+        }
+    }
+
+    private void addFileTrustManagerService(OperationContext context, ModelNode ssl, ServiceName serviceName,
+            ServiceTarget serviceTarget, List<ServiceController<?>> controllers) throws OperationFailedException {
+
+        char[] keystorePassword = KeystoreAttributes.KEYSTORE_PASSWORD.resolveModelAttribute(context, ssl).asString().toCharArray();
+        String path = KeystoreAttributes.KEYSTORE_PATH.resolveModelAttribute(context, ssl).asString();
+
+        JKSTrustManagerService trustManagerService = new JKSTrustManagerService(path, keystorePassword);
+
+        ServiceBuilder<?> serviceBuilder = serviceTarget.addService(serviceName, trustManagerService);
+        ModelNode relativeTo = KeystoreAttributes.KEYSTORE_RELATIVE_TO.resolveModelAttribute(context, ssl);
+        if (relativeTo.isDefined()) {
+            serviceBuilder.addDependency(pathName(relativeTo.asString()), String.class,
+                    trustManagerService.getRelativeToInjector());
         }
 
-        KeyPair pair = new KeyPair();
-        pair.keystorePassword = keystorePassword;
-        pair.keyPassword = keyPassword;
-        return pair;
+        final ServiceController<?> serviceController = serviceBuilder.setInitialMode(ON_DEMAND).install();
+        if(controllers != null) {
+            controllers.add(serviceController);
+        }
     }
 
     private void addSecretService(OperationContext context, ModelNode secret, String realmName, ServiceTarget serviceTarget,
