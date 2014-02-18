@@ -50,8 +50,8 @@ import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServ
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
-import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
-import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
+import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
+import org.jboss.as.test.integration.security.loginmodules.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.LdapExtLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;

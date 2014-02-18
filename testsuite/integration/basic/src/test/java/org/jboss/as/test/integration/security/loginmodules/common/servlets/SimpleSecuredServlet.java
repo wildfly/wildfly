@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.common.servlets;
+package org.jboss.as.test.integration.security.loginmodules.common.servlets;
 
 import javax.annotation.security.DeclareRoles;
 import javax.servlet.annotation.HttpConstraint;
@@ -28,7 +28,7 @@ import javax.servlet.annotation.WebServlet;
 
 /**
  * Protected version of {@link SimpleServlet}. Only {@value #ALLOWED_ROLE} role has access right.
- *
+ * 
  * @author Josef Cacek
  */
 @DeclareRoles({ SimpleSecuredServlet.ALLOWED_ROLE })

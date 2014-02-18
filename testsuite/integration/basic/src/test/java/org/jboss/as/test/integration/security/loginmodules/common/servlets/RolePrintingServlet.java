@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.common.servlets;
+package org.jboss.as.test.integration.security.loginmodules.common.servlets;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletResponse;
  * A RolePrintingServlet gets list of role names as (GET) request parameters and returns a comma separated sublist of such role
  * names for which {@link HttpServletRequest#isUserInRole(String)} returns <code>true</code>. Don't forget to declare the tested
  * roles in the web.xml file.
- *
+ * 
  * @author Josef Cacek
  */
 @WebServlet(urlPatterns = { RolePrintingServlet.SERVLET_PATH })
@@ -55,7 +55,7 @@ public class RolePrintingServlet extends HttpServlet {
 
     /**
      * Writes plain-text response with the comma-separated role names (subset of the names retrieved as GET parameters).
-     *
+     * 
      * @param req
      * @param resp
      * @throws ServletException
@@ -67,7 +67,7 @@ public class RolePrintingServlet extends HttpServlet {
         resp.setContentType("text/plain");
         final PrintWriter writer = resp.getWriter();
         final String[] roleNames = req.getParameterValues(PARAM_ROLE_NAME);
-        //start with the comma to simplify exact search (e.g. for role 'admin' an user can search for ',admin,')
+        //start with the comma to simplify exact search (e.g. for role 'admin' an user can search for ',admin,')  
         writer.write(",");
         if (roleNames != null) {
             for (final String role : roleNames) {

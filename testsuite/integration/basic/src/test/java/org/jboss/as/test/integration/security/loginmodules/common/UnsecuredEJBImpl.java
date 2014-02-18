@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,24 +19,47 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
-package org.jboss.as.test.integration.security.common;
-
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.jboss.as.arquillian.container.ManagementClient;
+package org.jboss.as.test.integration.security.loginmodules.common;
 
 /**
- * ServerSetupTask implementation which enables TRACE log-level for security related packages.
+ * @author Jan Lanik
  *
- * @author Josef Cacek
+ * Simple unsecured EJB implementation example.
  */
-public class SecurityTraceLoggingServerSetupTask extends AbstractTraceLoggingServerSetupTask {
 
-    @Override
-    protected Collection<String> getCategories(ManagementClient managementClient, String containerId) {
-        return Arrays.asList("org.jboss.security", "org.jboss.as.security", "org.picketbox",
-                "org.apache.catalina.authenticator", "org.jboss.as.web.security", "org.jboss.as.domain.management.security");
-    }
+import org.jboss.as.test.integration.security.loginmodules.common.UnsecuredEJB;
+
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Named;
+import java.security.Principal;
+
+
+@Named("unsecuredEJB")
+@RequestScoped
+@Stateless
+public class UnsecuredEJBImpl implements UnsecuredEJB {
+
+   @Resource
+   protected SessionContext ctx;
+
+   public String getUser() {
+
+      if(null == ctx){
+         return "NO SESSION CONTEXT";
+      }
+      Principal principal;
+      try{
+         principal = ctx.getCallerPrincipal();
+      } catch (IllegalStateException ex) {
+         return "NO PRINCIPAL";
+      }
+
+      return principal.getName();
+
+   }
 }
+
+
