@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.http.server;
 
+import java.io.IOException;
+
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
@@ -184,6 +186,9 @@ public interface HttpServerMessages {
 
     @Message(id = 15136, value = "No console module available with module name %s")
     ModuleNotFoundException consoleModuleNotFound(final String moduleName);
+
+    @Message(id = 15137, value = "Content-Disposition not supported %s")
+    IOException unsupportedContentDisposition(String contentDisposition);
 
     /*
      * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HttpServerLogger also contains messages in this

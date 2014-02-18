@@ -33,17 +33,10 @@ import static org.jboss.as.domain.http.server.Constants.CONTENT_DISPOSITION;
 import static org.jboss.as.domain.http.server.Constants.CONTENT_TYPE;
 import static org.jboss.as.domain.http.server.Constants.FORBIDDEN;
 import static org.jboss.as.domain.http.server.Constants.GET;
-import static org.jboss.as.domain.http.server.Constants.HOST;
-import static org.jboss.as.domain.http.server.Constants.HTTP;
-import static org.jboss.as.domain.http.server.Constants.HTTPS;
 import static org.jboss.as.domain.http.server.Constants.INTERNAL_SERVER_ERROR;
 import static org.jboss.as.domain.http.server.Constants.METHOD_NOT_ALLOWED;
 import static org.jboss.as.domain.http.server.Constants.OK;
-import static org.jboss.as.domain.http.server.Constants.OPTIONS;
-import static org.jboss.as.domain.http.server.Constants.ORIGIN;
 import static org.jboss.as.domain.http.server.Constants.POST;
-import static org.jboss.as.domain.http.server.Constants.RETRY_AFTER;
-import static org.jboss.as.domain.http.server.Constants.SERVICE_UNAVAILABLE;
 import static org.jboss.as.domain.http.server.Constants.TEXT_HTML;
 import static org.jboss.as.domain.http.server.Constants.UNSUPPORTED_MEDIA_TYPE;
 import static org.jboss.as.domain.http.server.Constants.US_ASCII;
@@ -69,7 +62,6 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
@@ -85,7 +77,6 @@ import org.jboss.com.sun.net.httpserver.Headers;
 import org.jboss.com.sun.net.httpserver.HttpContext;
 import org.jboss.com.sun.net.httpserver.HttpExchange;
 import org.jboss.com.sun.net.httpserver.HttpServer;
-import org.jboss.com.sun.net.httpserver.HttpsServer;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -97,7 +88,7 @@ import org.jboss.dmr.ModelNode;
 class DomainApiHandler implements ManagementHttpHandler {
 
     private static final String DOMAIN_API_CONTEXT = "/management";
-    private static final String UPLOAD_REQUEST = DOMAIN_API_CONTEXT + "/add-content";
+    private static final String ADD_CONTENT_REQUEST = DOMAIN_API_CONTEXT + "/add-content";
 
     private static Pattern MULTIPART_FD_BOUNDARY =  Pattern.compile("^multipart/form-data.*;\\s*boundary=(.*)$");
     private static Pattern DISPOSITION_FILE =  Pattern.compile("^form-data.*filename=\"?([^\"]*)?\"?.*$");
@@ -142,66 +133,15 @@ class DomainApiHandler implements ManagementHttpHandler {
 
     private void doHandle(HttpExchange http) throws IOException {
 
-        // AS7-2284 If we are starting or stopping, tell caller the service is unavailable and to try again
-        // later. If "stopping" it's either a reload, in which case trying again will eventually succeed,
-        // or it's a true process stop eventually the server will have stopped.
-        @SuppressWarnings("deprecation")
-        ControlledProcessState.State currentState = controlledProcessStateService.getCurrentState();
-        if (currentState == ControlledProcessState.State.STARTING
-                || currentState == ControlledProcessState.State.STOPPING) {
-            http.getResponseHeaders().add(RETRY_AFTER, "2"); //  2 secs is just a guesstimate
-            http.sendResponseHeaders(SERVICE_UNAVAILABLE, -1);
-            return;
-        }
-
-        /**
-         *  Request Verification - before the request is handled a set of checks are performed for
-         *  CSRF and XSS
-         */
-
-        /*
-         * Completely disallow OPTIONS - if the browser suspects this is a cross site request just reject it.
-         */
-        final String requestMethod = http.getRequestMethod();
-        if (OPTIONS.equals(requestMethod)) {
-            drain(http);
-            ROOT_LOGGER.debug("Request rejected due to 'OPTIONS' method which is not supported.");
-            http.sendResponseHeaders(METHOD_NOT_ALLOWED, -1);
-
-            return;
-        }
-
-        /*
-         *  Origin check, if it is set the Origin header should match the Host otherwise reject the request.
-         *
-         *  This check is for cross site scripted GET and POST requests.
-         */
-        final Headers headers = http.getRequestHeaders();
-        final URI request = http.getRequestURI();
-        if (headers.containsKey(ORIGIN)) {
-            String origin = headers.getFirst(ORIGIN);
-            String host = headers.getFirst(HOST);
-            String protocol = http.getHttpContext().getServer() instanceof HttpsServer ? HTTPS : HTTP;
-            //This browser set header should not need IPv6 escaping
-            String allowedOrigin = protocol + "://" + host;
-
-            // This will reject multi-origin Origin headers due to the exact match.
-            if (origin.equals(allowedOrigin) == false) {
-                drain(http);
-                ROOT_LOGGER.debug("Request rejected due to HOST/ORIGIN mis-match.");
-                http.sendResponseHeaders(FORBIDDEN, -1);
-
-                return;
-            }
-        }
-
         /*
          *  Cross Site Request Forgery makes use of a specially constructed form to pass in what appears to be
          *  a valid operation request - except for upload requests any inbound requests where the Content-Type
          *  is not application/json or application/dmr-encoded will be rejected.
          */
 
-        final boolean uploadRequest = UPLOAD_REQUEST.equals(request.getPath());
+        final String requestMethod = http.getRequestMethod();
+        final URI request = http.getRequestURI();
+        final boolean uploadRequest = ADD_CONTENT_REQUEST.equals(request.getPath());
         if (POST.equals(requestMethod)) {
             if (uploadRequest) {
                 // This type of request doesn't need the content type check.
@@ -209,8 +149,8 @@ class DomainApiHandler implements ManagementHttpHandler {
 
                 return;
             }
-
-            String contentType = extractContentType(headers.getFirst(CONTENT_TYPE));
+            final Headers headers = http.getRequestHeaders();
+            final String contentType = extractContentType(headers.getFirst(CONTENT_TYPE));
             if (!(APPLICATION_JSON.equals(contentType) || APPLICATION_DMR_ENCODED.equals(contentType))) {
                 drain(http);
                 // RFC 2616: 14.11 Content-Encoding
@@ -222,8 +162,6 @@ class DomainApiHandler implements ManagementHttpHandler {
 
                 return;
             }
-
-
         }
 
         processRequest(http);
@@ -527,9 +465,16 @@ class DomainApiHandler implements ManagementHttpHandler {
     }
 
     public void start(HttpServer httpServer, SecurityRealm securityRealm) {
-        // The SubjectAssociationHandler wraps all calls to this HttpHandler to ensure the Subject has been associated
-        // with the security context.
-        HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, new SubjectAssociationHandler(this));
+        // The DomainApiCheckHandler wraps all calls to the http handlers in order to perform the necessary common operations
+        // Normal /management context
+        HttpContext context = httpServer.createContext(DOMAIN_API_CONTEXT, new DomainApiCheckHandler(this, controlledProcessStateService));
+        addAuthenticator(authenticator, context, securityRealm);
+        // /management-upload context
+        HttpContext upload = httpServer.createContext("/management-upload", new DomainApiCheckHandler(new DomainApiUploadHandler(modelController), controlledProcessStateService));
+        addAuthenticator(authenticator, upload, securityRealm);
+    }
+
+    protected void addAuthenticator(final Authenticator authenticator, final HttpContext context, final SecurityRealm securityRealm) {
         // Once there is a trust store we can no longer rely on users being defined so skip
         // any redirects.
         if (authenticator != null) {
