@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2011, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,26 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.security.common;
+package org.jboss.as.test.integration.security.loginmodules.common;
+
+import javax.ejb.Remote;
 
 /**
- * Common constants for AS security tests.
+ * @author Jan Lanik
  *
- * @author Josef Cacek
+ * Simple Unsecured EJB example.
  */
-public class SecurityTestConstants {
-
-    /**
-     * A web.xml content (web-app version=3.0), which sets authentication method to BASIC.
-     */
-    public static final String WEB_XML_BASIC_AUTHN = "<?xml version='1.0'?>\n"
-            + "<web-app xmlns='http://java.sun.com/xml/ns/javaee' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'\n"
-            + "    xsi:schemaLocation='http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd'\n"
-            + "    version='3.0'>\n" //
-            + "  <login-config>\n" //
-            + "    <auth-method>BASIC</auth-method>\n" //
-            + "    <realm-name>Test realm</realm-name>\n" //
-            + "  </login-config>\n" //
-            + "</web-app>\n";
-
+@Remote
+public interface UnsecuredEJB {
+   public String getUser();
 }
