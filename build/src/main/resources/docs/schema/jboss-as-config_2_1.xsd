@@ -440,10 +440,17 @@
                 The keystore configuration for the server.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="path" type="xs:string" use="required">
+        <xs:attribute name="provider" type="xs:string" default="JKS">
             <xs:annotation>
                 <xs:documentation>
-                    The path of the keystore.
+                    The provider for the store, the default is a file based JKS store.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="path" type="xs:string" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    The path of the keystore, this is required if the provider is JKS otherwise it will be ignored.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -453,7 +460,8 @@
                     The name of another previously named path, or of one of the
                     standard paths provided by the system. If 'relative-to' is
                     provided, the value of the 'path' attribute is treated as
-                    relative to the path specified by this attribute.
+                    relative to the path specified by this
+                    attribute.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -480,6 +488,8 @@
                         <xs:documentation>
                             The alias of the entry to use from the keystore, if specified all remaining
                             entries in the keystore will be ignored.
+
+                            Note: The use of aliases is only available for JKS based stores, for other store types this will be ignored.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
