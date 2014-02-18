@@ -50,7 +50,6 @@ import org.jboss.as.core.security.SubjectUserInfo;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
-import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -70,7 +69,8 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
     public static final String LOADED_USERNAME_KEY = SecurityRealmService.class.getName() + ".LOADED_USERNAME";
 
     private final InjectedValue<SubjectSupplementalService> subjectSupplemental = new InjectedValue<SubjectSupplementalService>();
-    private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
+    private final InjectedValue<SSLContext> sslContext = new InjectedValue<SSLContext>();
+
     private final InjectedValue<CallbackHandlerFactory> secretCallbackFactory = new InjectedValue<CallbackHandlerFactory>();
     private final InjectedSetValue<CallbackHandlerService> callbackHandlerServices = new InjectedSetValue<CallbackHandlerService>();
 
@@ -235,8 +235,8 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
         return subjectSupplemental;
     }
 
-    public InjectedValue<SSLIdentity> getSSLIdentityInjector() {
-        return sslIdentity;
+    public InjectedValue<SSLContext> getSSLContextInjector() {
+        return sslContext;
     }
 
     public InjectedValue<CallbackHandlerFactory> getSecretCallbackFactory() {
@@ -248,12 +248,7 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
     }
 
     public SSLContext getSSLContext() {
-        SSLIdentity service = sslIdentity.getOptionalValue();
-        if (service != null) {
-            return service.getFullContext();
-        }
-
-        return null;
+        return sslContext.getOptionalValue();
     }
 
     public CallbackHandlerFactory getSecretCallbackHandlerFactory() {
