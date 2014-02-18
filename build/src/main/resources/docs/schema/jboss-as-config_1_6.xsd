@@ -420,7 +420,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="keystore" type="extendedKeyStoreType" />
+            <xs:element name="keystore" type="realmExtendedKeyStoreType" />
         </xs:sequence>
         <xs:attribute name="protocol" type="xs:string" default="TLS">
             <xs:annotation>
@@ -437,23 +437,6 @@
                 The keystore configuration for the server.
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="path" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    The path of the keystore.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="relative-to" use="optional" type="xs:string">
-            <xs:annotation>
-                <xs:documentation>
-                    The name of another previously named path, or of one of the
-                    standard paths provided by the system. If 'relative-to' is
-                    provided, the value of the 'path' attribute is treated as
-                    relative to the path specified by this attribute.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
         <xs:attribute name="keystore-password" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
@@ -477,6 +460,8 @@
                         <xs:documentation>
                             The alias of the entry to use from the keystore, if specified all remaining
                             entries in the keystore will be ignored.
+
+                            Note: The use of aliases is only available for JKS based stores, for other store types this will be ignored.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
@@ -487,8 +472,142 @@
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
-		    </xs:extension>
-	    </xs:complexContent>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="realmKeyStoreType">
+        <xs:annotation>
+            <xs:documentation>
+                An extension of keyStoreType used by realms.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="keyStoreType">
+                <xs:attribute name="provider" type="xs:string" default="JKS">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The provider for the store, the default is a file based JKS store.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="path" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The path of the keystore, this is required if the provider is JKS otherwise it will be ignored.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="relative-to" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The name of another previously named path, or of one of the
+                            standard paths provided by the system. If 'relative-to' is
+                            provided, the value of the 'path' attribute is treated as
+                            relative to the path specified by this
+                            attribute.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    
+    <xs:complexType name="realmExtendedKeyStoreType">
+        <xs:annotation>
+            <xs:documentation>
+                An extension of keyStoreType used by realms.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="extendedKeyStoreType">
+                <xs:attribute name="provider" type="xs:string" default="JKS">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The provider for the store, the default is a file based JKS store.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="path" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The path of the keystore, this is required if the provider is JKS otherwise it will be ignored.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="relative-to" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The name of another previously named path, or of one of the
+                            standard paths provided by the system. If 'relative-to' is
+                            provided, the value of the 'path' attribute is treated as
+                            relative to the path specified by this
+                            attribute.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>    
+
+    <xs:complexType name="auditKeyStoreType">
+        <xs:annotation>
+            <xs:documentation>
+                An extension of keyStoreType used for audit logging configuration.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="keyStoreType">
+                <xs:attribute name="path" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The path of the keystore, this is required if the provider is JKS otherwise it will be ignored.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="relative-to" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The name of another previously named path, or of one of the
+                            standard paths provided by the system. If 'relative-to' is
+                            provided, the value of the 'path' attribute is treated as
+                            relative to the path specified by this
+                            attribute.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="auditExtendedKeyStoreType">
+        <xs:annotation>
+            <xs:documentation>
+                An audit specific extension of the extended key store type.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="extendedKeyStoreType">
+                <xs:attribute name="path" type="xs:string" use="required">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The path of the keystore, this is required if the provider is JKS otherwise it will be ignored.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+                <xs:attribute name="relative-to" use="optional" type="xs:string">
+                    <xs:annotation>
+                        <xs:documentation>
+                            The name of another previously named path, or of one of the
+                            standard paths provided by the system. If 'relative-to' is
+                            provided, the value of the 'path' attribute is treated as
+                            relative to the path specified by this
+                            attribute.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="localType">
@@ -536,7 +655,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="truststore" type="keyStoreType" minOccurs="0">
+            <xs:element name="truststore" type="realmKeyStoreType" minOccurs="0">
                 <xs:annotation>
                     <xs:documentation>
                         Configuration of a keystore to use to create a trust manager to verify clients.
@@ -1364,7 +1483,7 @@
         <xs:complexContent>
             <xs:extension base="tcp-audit-log-protocolType">
                 <xs:sequence>
-                    <xs:element name="truststore" type="keyStoreType" minOccurs="0">
+                    <xs:element name="truststore" type="auditKeyStoreType" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>
                                 Configuration of a keystore to use to create a trust manager to verify the server
@@ -1373,7 +1492,7 @@
                             </xs:documentation>
                         </xs:annotation>
                     </xs:element>
-                    <xs:element name="client-certificate-store" type="extendedKeyStoreType" minOccurs="0">
+                    <xs:element name="client-certificate-store" type="auditExtendedKeyStoreType" minOccurs="0">
                         <xs:annotation>
                             <xs:documentation>
                                 Configuration of a keystore containing a client certificate and a private key, e.g. in

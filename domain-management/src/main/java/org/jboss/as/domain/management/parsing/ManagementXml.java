@@ -84,6 +84,8 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PROVIDER;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.JKS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
@@ -756,8 +758,13 @@ public class ManagementXml {
                         case DOMAIN_1_2:
                             parseKeystore_1_0(reader, ssl);
                             break;
-                        default:
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                        case DOMAIN_1_5:
                             parseKeystore_1_3(reader, ssl, true);
+                            break;
+                        default:
+                            parseKeystore_1_6(reader, ssl, true);
                     }
                     break;
                 }
@@ -867,6 +874,86 @@ public class ManagementXml {
 
         if (required.size() > 0) {
             throw missingRequired(reader, required);
+        }
+
+        requireNoContent(reader);
+    }
+
+    private static void parseKeystore_1_6(final XMLExtendedStreamReader reader, final ModelNode addOperation, final boolean extended)
+            throws XMLStreamException {
+        boolean pathSet = false;
+        boolean nonFileProvider = false;
+        boolean keystorePasswordSet = false;
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                switch (attribute) {
+                    case PROVIDER:
+                        KeystoreAttributes.KEYSTORE_PROVIDER.parseAndSetParameter(value, addOperation, reader);
+                        if (value.equals(KeystoreAttributes.KEYSTORE_PROVIDER.getDefaultValue().asString()) == false) {
+                            nonFileProvider = true;
+                        }
+                        break;
+                    case PATH:
+                        KeystoreAttributes.KEYSTORE_PATH.parseAndSetParameter(value, addOperation, reader);
+                        pathSet = true;
+                        break;
+                    case KEYSTORE_PASSWORD: {
+                        KeystoreAttributes.KEYSTORE_PASSWORD.parseAndSetParameter(value, addOperation, reader);
+                        keystorePasswordSet = true;
+                        break;
+                    }
+                    case RELATIVE_TO: {
+                        KeystoreAttributes.KEYSTORE_RELATIVE_TO.parseAndSetParameter(value, addOperation, reader);
+                        break;
+                    }
+                    /*
+                     * The 'extended' attributes when a true keystore and not just a keystore acting as a truststore.
+                     */
+                    case ALIAS: {
+                        if (extended) {
+                            KeystoreAttributes.ALIAS.parseAndSetParameter(value, addOperation, reader);
+                        } else {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        break;
+                    }
+                    case KEY_PASSWORD: {
+                        if (extended) {
+                            KeystoreAttributes.KEY_PASSWORD.parseAndSetParameter(value, addOperation, reader);
+                        } else {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                        break;
+                    }
+
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        /*
+         * Get as many listed in the error as possible taking into account the configuration that was read.
+         */
+        if (nonFileProvider) {
+            if (keystorePasswordSet == false) {
+                throw missingRequired(reader, EnumSet.of(Attribute.KEYSTORE_PASSWORD));
+            }
+        } else if (pathSet == false || keystorePasswordSet == false) {
+            Set<Attribute> missing = new HashSet<Attribute>();
+            if (pathSet == false) {
+                missing.add(Attribute.PATH);
+            }
+            if (keystorePasswordSet == false) {
+                missing.add(Attribute.KEYSTORE_PASSWORD);
+            }
+            throw missingRequired(reader, missing);
         }
 
         requireNoContent(reader);
@@ -1490,8 +1577,13 @@ public class ManagementXml {
             case DOMAIN_1_2:
                 parseKeystore_1_0(reader, op);
                 break;
-            default:
+            case DOMAIN_1_3:
+            case DOMAIN_1_4:
+            case DOMAIN_1_5:
                 parseKeystore_1_3(reader, op, true);
+                break;
+            default:
+                parseKeystore_1_6(reader, op, true);
         }
 
         list.add(op);
@@ -2808,8 +2900,11 @@ public class ManagementXml {
             writer.writeStartElement(Element.SSL.getLocalName());
             ModelNode ssl = serverIdentities.get(SSL);
             SSLServerIdentityResourceDefinition.PROTOCOL.marshallAsAttribute(ssl, writer);
-            if (ssl.hasDefined(KeystoreAttributes.KEYSTORE_PATH.getName())) {
+            boolean hasProvider = ssl.hasDefined(KEYSTORE_PROVIDER)
+                    && (JKS.equals(ssl.require(KEYSTORE_PROVIDER).asString()) == false);
+            if (hasProvider || ssl.hasDefined(KeystoreAttributes.KEYSTORE_PATH.getName())) {
                 writer.writeEmptyElement(Element.KEYSTORE.getLocalName());
+                KeystoreAttributes.KEYSTORE_PROVIDER.marshallAsAttribute(ssl, writer);
                 KeystoreAttributes.KEYSTORE_PATH.marshallAsAttribute(ssl, writer);
                 KeystoreAttributes.KEYSTORE_RELATIVE_TO.marshallAsAttribute(ssl, writer);
                 KeystoreAttributes.KEYSTORE_PASSWORD.marshallAsAttribute(ssl, writer);
@@ -2834,6 +2929,7 @@ public class ManagementXml {
         if (authentication.hasDefined(TRUSTSTORE)) {
             ModelNode truststore = authentication.require(TRUSTSTORE);
             writer.writeEmptyElement(Element.TRUSTSTORE.getLocalName());
+            KeystoreAttributes.KEYSTORE_PROVIDER.marshallAsAttribute(truststore, writer);
             KeystoreAttributes.KEYSTORE_PATH.marshallAsAttribute(truststore, writer);
             KeystoreAttributes.KEYSTORE_RELATIVE_TO.marshallAsAttribute(truststore, writer);
             KeystoreAttributes.KEYSTORE_PASSWORD.marshallAsAttribute(truststore, writer);

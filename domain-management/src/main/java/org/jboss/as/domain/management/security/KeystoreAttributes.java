@@ -28,6 +28,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -53,7 +54,7 @@ public class KeystoreAttributes {
             .setXmlName(ModelDescriptionConstants.KEYSTORE_PASSWORD).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
-    public static final SimpleAttributeDefinition KEYSTORE_PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PATH, ModelType.STRING, false)
+    public static final SimpleAttributeDefinition KEYSTORE_PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PATH, ModelType.STRING, true)
             .setXmlName(ModelDescriptionConstants.PATH)
             .setAllowExpression(true)
             .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
@@ -62,6 +63,14 @@ public class KeystoreAttributes {
     public static final SimpleAttributeDefinition KEYSTORE_RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_RELATIVE_TO, ModelType.STRING, true)
             .setXmlName(ModelDescriptionConstants.RELATIVE_TO).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, true, false))
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+
+    public static final SimpleAttributeDefinition KEYSTORE_PROVIDER = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PROVIDER, ModelType.STRING, true)
+            .setXmlName(ModelDescriptionConstants.PROVIDER)
+            .setDefaultValue(new ModelNode(ModelDescriptionConstants.JKS))
+            .setAllowExpression(true)
+            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
 
     /** Prevent instantiation */
     private KeystoreAttributes() {}

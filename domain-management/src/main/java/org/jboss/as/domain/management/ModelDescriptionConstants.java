@@ -38,9 +38,11 @@ public class ModelDescriptionConstants {
     public static final String GROUPS = "groups";
     public static final String IDENTITY = "identity";
     public static final String IS_CALLER_IN_ROLE = "is-caller-in-role";
+    public static final String JKS = "JKS";
     public static final String KEY_PASSWORD = "key-password";
     public static final String KEYSTORE_PASSWORD = "keystore-password";
     public static final String KEYSTORE_PATH = "keystore-path";
+    public static final String KEYSTORE_PROVIDER = "keystore-provider";
     public static final String KEYSTORE_RELATIVE_TO = "keystore-relative-to";
     public static final String LOCAL = "local";
     public static final String MAPPED_ROLES = "mapped-roles";
@@ -50,6 +52,7 @@ public class ModelDescriptionConstants {
     public static final String PATH = "path";
     public static final String PLUG_IN = "plug-in";
     public static final String PROPERTY = "property";
+    public static final String PROVIDER = "provider";
     public static final String REALM = "realm";
     public static final String RELATIVE_TO = "relative-to";
     public static final String ROLES = "roles";
