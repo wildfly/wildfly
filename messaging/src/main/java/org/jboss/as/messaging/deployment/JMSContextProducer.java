@@ -56,12 +56,9 @@ import javax.jms.XAJMSContext;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.transaction.Status;
 import javax.transaction.Synchronization;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
-import org.jboss.as.messaging.jms.TransactionManagerLocator;
+import javax.transaction.TransactionSynchronizationRegistry;
 
 /**
  * Producer factory for JMSContext resources.
@@ -72,14 +69,14 @@ import org.jboss.as.messaging.jms.TransactionManagerLocator;
  */
 public class JMSContextProducer {
 
-    public static final String DEFAULT_JMS_CONNECTION_FACTORY_LOCATION = "java:comp/DefaultJMSConnectionFactory";
+    private static final String TRANSACTION_SYNCHRONIZATION_REGISTRY_LOOKUP = "java:comp/TransactionSynchronizationRegistry";
 
     /**
      * CDI Producer method for injected {@link JMSContext}.
      */
     @Produces
     public JMSContext getJMSContext(InjectionPoint injectionPoint) throws NamingException {
-        String connectionFactoryLookup = DEFAULT_JMS_CONNECTION_FACTORY_LOCATION;
+        String connectionFactoryLookup = DefaultJMSConnectionFactoryBindingProcessor.COMP_DEFAULT_JMS_CONNECTION_FACTORY;
         String userName = null;
         String password = null;
         int ackMode = AUTO_ACKNOWLEDGE;
@@ -167,52 +164,27 @@ public class JMSContextProducer {
 
         private final JMSInfo info;
         private JMSContext delegate;
-        private boolean inTx = false;
+        private boolean inTransaction = false;
 
         JMSContextWrapper(JMSInfo info) {
             this.info = info;
         }
 
-        private JMSContext create(JMSInfo info, Transaction tx) throws Exception {
-            Context ctx = null;
-            try {
-                ctx = new InitialContext();
-                ConnectionFactory cf = (ConnectionFactory) ctx.lookup(info.connectionFactoryLookup);
-                if (tx != null) {
-                    inTx = true;
-                    XAJMSContext xaContext = ((XAConnectionFactory) cf).createXAContext(info.userName, info.password);
-                    return xaContext.getContext();
-                } else {
-                    return cf.createContext(info.userName, info.password, info.ackMode);
-                }
-            } finally {
-                if (ctx != null) {
-                    try {
-                        ctx.close();
-                    } catch (NamingException e) {
-                    }
-                }
-            }
-        }
-
-        /**
-         * Return the current transaction or {@code null} if there is none.
-         */
-        private Transaction getCurrentTransaction() {
-            TransactionManager transactionManager = TransactionManagerLocator.getTransactionManager();
-            try {
-                return (transactionManager == null) ? null : transactionManager.getTransaction();
-            } catch (SystemException e) {
-                return null;
+        private JMSContext create(JMSInfo info, boolean inTx, Context ctx) throws Exception {
+            inTransaction = inTx;
+            ConnectionFactory cf = (ConnectionFactory) ctx.lookup(info.connectionFactoryLookup);
+            if (inTransaction) {
+                XAJMSContext xaContext = ((XAConnectionFactory) cf).createXAContext(info.userName, info.password);
+                return xaContext.getContext();
+            } else {
+                return cf.createContext(info.userName, info.password, info.ackMode);
             }
         }
 
         private void internalClose() {
-            if (delegate != null) {
-                if (!inTx) {
-                    delegate.close();
-                    delegate = null;
-                }
+            if (delegate != null && !inTransaction) {
+                delegate.close();
+                delegate = null;
             }
         }
 
@@ -220,12 +192,15 @@ public class JMSContextProducer {
          * create the underlying JMSContext or return it if there is already one create.
          */
         private synchronized JMSContext getDelegate() {
-            try {
-                final Transaction transaction = getCurrentTransaction();
-                if (delegate == null) {
-                    delegate = create(info, transaction);
-                    if (transaction != null) {
-                        transaction.registerSynchronization(new Synchronization() {
+            if (delegate == null) {
+                Context ctx = null;
+                try {
+                    ctx = new InitialContext();
+                    TransactionSynchronizationRegistry registry = (TransactionSynchronizationRegistry) ctx.lookup(TRANSACTION_SYNCHRONIZATION_REGISTRY_LOOKUP);
+                    boolean inTx = registry.getTransactionStatus() == Status.STATUS_ACTIVE;
+                    delegate = create(info, inTx, ctx);
+                    if (inTx) {
+                        registry.registerInterposedSynchronization(new Synchronization() {
                             @Override
                             public void beforeCompletion() {
                             }
@@ -234,13 +209,20 @@ public class JMSContextProducer {
                             public synchronized void afterCompletion(int status) {
                                 delegate.close();
                                 delegate = null;
-                                inTx = false;
+                                inTransaction = false;
                             }
                         });
                     }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    if (ctx != null) {
+                        try {
+                            ctx.close();
+                        } catch (NamingException e) {
+                        }
+                    }
                 }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
             }
             return delegate;
         }

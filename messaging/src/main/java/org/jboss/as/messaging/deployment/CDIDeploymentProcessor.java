@@ -43,7 +43,6 @@ public class CDIDeploymentProcessor implements DeploymentUnitProcessor {
             WeldPortableExtensions extensions = WeldPortableExtensions.getPortableExtensions(parent);
             extensions.registerExtensionInstance(new JMSCDIExtension(), parent);
         }
-
     }
 
     public void undeploy(DeploymentUnit context) {
