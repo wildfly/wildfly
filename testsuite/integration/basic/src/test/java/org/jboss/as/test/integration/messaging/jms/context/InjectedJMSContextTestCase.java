@@ -64,12 +64,6 @@ public class InjectedJMSContextTestCase {
 
     public static final String QUEUE_NAME = "java:app/InjectedJMSContextTestCaseQueue";
 
-    @Inject
-    @JMSConnectionFactory("/JmsXA")
-    @JMSPasswordCredential(userName="guest",password="guest")
-    @JMSSessionMode(JMSContext.AUTO_ACKNOWLEDGE)
-    private JMSContext context;
-
     @Resource(mappedName = "/JmsXA")
     private ConnectionFactory factory;
 
@@ -91,7 +85,8 @@ public class InjectedJMSContextTestCase {
     @After
     public void tearDown() throws JMSException {
         // drain the queue to remove any pending messages from it
-        try (JMSConsumer consumer = context.createConsumer(queue)) {
+        try(JMSContext context = factory.createContext()) {
+            JMSConsumer consumer = context.createConsumer(queue);
             Message m;
             do {
                 m = consumer.receiveNoWait();
@@ -101,26 +96,18 @@ public class InjectedJMSContextTestCase {
     }
 
     @Test
-    public void testSendAndReceiveWithInjectedContext() throws JMSException {
-        sendAndReceiveWithContext(context);
-    }
-
-    @Test
-    public void testSendAndReceiveWithCreatedContext() throws JMSException {
-        try (JMSContext ctx = factory.createContext()) {
-            sendAndReceiveWithContext(ctx);
-        }
-    }
-
-    private void sendAndReceiveWithContext(JMSContext ctx) throws JMSException {
+    public void sendAndReceiveWithContext() throws JMSException {
         String text = UUID.randomUUID().toString();
 
-        TemporaryQueue tempQueue = ctx.createTemporaryQueue();
+        try (JMSContext context = factory.createContext()) {
 
-        ctx.createProducer()
-                .send(tempQueue, text);
+            TemporaryQueue tempQueue = context.createTemporaryQueue();
 
-        assertMessageIsReceived(tempQueue, ctx, text, false);
+            context.createProducer()
+                    .send(tempQueue, text);
+
+            assertMessageIsReceived(tempQueue, context, text, false);
+        }
     }
 
     @Test
@@ -136,11 +123,13 @@ public class InjectedJMSContextTestCase {
     private void sendWith_REQUIRED_transaction(boolean rollback) throws JMSException {
         String text = UUID.randomUUID().toString();
 
-        TemporaryQueue tempQueue = context.createTemporaryQueue();
+        try (JMSContext context = factory.createContext()) {
+            TemporaryQueue tempQueue = context.createTemporaryQueue();
 
-        producerBean.sendToDestination(tempQueue, text, rollback);
+            producerBean.sendToDestination(tempQueue, text, rollback);
 
-        assertMessageIsReceived(tempQueue, context, text, rollback);
+            assertMessageIsReceived(tempQueue, context, text, rollback);
+        }
     }
 
     @Test
@@ -156,14 +145,16 @@ public class InjectedJMSContextTestCase {
     private void sendAndReceiveFromMDB(boolean rollback) throws JMSException {
         String text = "sendAndReceiveFromMDB " + rollback;
 
-        TemporaryQueue replyTo = context.createTemporaryQueue();
+        try (JMSContext context = factory.createContext()) {
+            TemporaryQueue replyTo = context.createTemporaryQueue();
 
-        context.createProducer()
-                .setJMSReplyTo(replyTo)
-                .setProperty("rollback", rollback)
-                .send(queue, text);
+            context.createProducer()
+                    .setJMSReplyTo(replyTo)
+                    .setProperty("rollback", rollback)
+                    .send(queue, text);
 
-        assertMessageIsReceived(replyTo, context, text, rollback);
+            assertMessageIsReceived(replyTo, context, text, rollback);
+        }
     }
 
     private void assertMessageIsReceived(Destination destination, JMSContext ctx, String expectedText, boolean rollback) {
