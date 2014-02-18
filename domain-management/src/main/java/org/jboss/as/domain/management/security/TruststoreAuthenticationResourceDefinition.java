@@ -38,7 +38,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 public class TruststoreAuthenticationResourceDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = {
-            KeystoreAttributes.KEYSTORE_PASSWORD, KeystoreAttributes.KEYSTORE_PATH, KeystoreAttributes.KEYSTORE_RELATIVE_TO
+            KeystoreAttributes.KEYSTORE_PASSWORD, KeystoreAttributes.KEYSTORE_PATH, KeystoreAttributes.KEYSTORE_RELATIVE_TO, KeystoreAttributes.KEYSTORE_PROVIDER
     };
 
     public TruststoreAuthenticationResourceDefinition() {
