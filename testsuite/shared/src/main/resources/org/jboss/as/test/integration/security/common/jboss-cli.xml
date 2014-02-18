@@ -1,14 +1,15 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
 <!--
-   JBoss AS7 Command-line Interface configuration.
+   WildFly Command-line Interface configuration.
 -->
-<jboss-cli xmlns="urn:jboss:cli:1.2">
+<jboss-cli xmlns="urn:jboss:cli:2.0">
 
     <!-- The default controller to connect to when 'connect' command is executed w/o arguments -->
     <default-controller>
+    	<protocol>http-remoting</protocol>
         <host>${hostname}</host>
-        <port>9999</port>
+        <port>9990</port>
     </default-controller>
     
     <validate-operation-requests>true</validate-operation-requests>
@@ -28,13 +29,16 @@
     <!-- Whether to write info and error messages to the terminal output -->
     <silent>false</silent>
     
-    <ssl>	  
+    <!-- Whether to filter out commands and attributes based on user's permissions -->
+    <access-control>false</access-control>
+    
+    <ssl>	
+      ${vaultConfig}  
 	  <key-store>${keystore}</key-store>
 	  <key-store-password>${password}</key-store-password>
 	  <trust-store>${truststore}</trust-store>
 	  <trust-store-password>${password}</trust-store-password>
 	  <modify-trust-store>true</modify-trust-store>
-	</ssl>
-    
+	</ssl>    
        
 </jboss-cli>
