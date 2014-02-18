@@ -29,7 +29,6 @@ import javax.naming.Context;
 import javax.naming.directory.InitialDirContext;
 import javax.net.ssl.SSLContext;
 
-import org.jboss.as.domain.management.SSLIdentity;
 import org.jboss.as.domain.management.connections.ConnectionManager;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -50,7 +49,8 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
 
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
 
-    private final InjectedValue<SSLIdentity> sslIdentity = new InjectedValue<SSLIdentity>();
+    private final InjectedValue<SSLContext> fullSSLContext = new InjectedValue<SSLContext>();
+    private final InjectedValue<SSLContext> trustSSLContext = new InjectedValue<SSLContext>();
 
     private volatile Config configuration;
     private volatile Hashtable<String, String> properties = new Hashtable<String, String>();
@@ -90,8 +90,12 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         return this;
     }
 
-    public InjectedValue<SSLIdentity> getSSLIdentityInjector() {
-        return sslIdentity;
+    public InjectedValue<SSLContext> getFullSSLContextInjector() {
+        return fullSSLContext;
+    }
+
+    public InjectedValue<SSLContext> getTrustOnlySSLContextInjector() {
+        return trustSSLContext;
     }
 
     /*
@@ -162,12 +166,15 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     }
 
     private SSLContext getSSLContext(final boolean trustOnly) {
-        SSLIdentity sslIdentityValue = sslIdentity.getOptionalValue();
-        if (sslIdentityValue != null) {
-            return trustOnly ? sslIdentityValue.getTrustOnlyContext() : sslIdentityValue.getFullContext();
+        if (trustOnly) {
+            return trustSSLContext.getOptionalValue();
         }
 
-        return null;
+        SSLContext sslContext = fullSSLContext.getOptionalValue();
+        if (sslContext == null) {
+            sslContext = trustSSLContext.getOptionalValue();
+        }
+        return sslContext;
     }
 
     private Hashtable<String, String> getConnectionOnlyProperties(final Config configuration) {
