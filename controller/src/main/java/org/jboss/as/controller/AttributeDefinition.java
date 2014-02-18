@@ -48,7 +48,8 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
- * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource}, with utility
+ * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource} or a
+ * parameter or reply value type field in an {@link org.jboss.as.controller.OperationDefinition}, with utility
  * methods for conversion to and from xml and for validation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
@@ -155,22 +156,55 @@ public abstract class AttributeDefinition {
         this.nilSignificant = nilSignificant;
     }
 
+    /**
+     * The attribute's name in the management model.
+     *
+     * @return the name. Will not be {@code null}
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * The attribute's name in the xml configuration. Not relevant for operation parameters and reply value types.
+     *
+     * @return the name. Will not be {@code null}, although it may not be relevant
+     */
     public String getXmlName() {
         return xmlName;
     }
 
+    /**
+     * The expected {@link org.jboss.dmr.ModelType type} of the {@link org.jboss.dmr.ModelNode} that holds the
+     * attribute data.
+     * @return the type. Will not be {@code null}
+     */
     public ModelType getType() {
         return type;
     }
 
+    /**
+     * Whether a {@link org.jboss.dmr.ModelNode} holding the value of this attribute can be
+     * {@link org.jboss.dmr.ModelType#UNDEFINED}.
+     *
+     * @return {@code true} if an {@code undefined ModelNode} is valid; {@code false} if not
+     */
     public boolean isAllowNull() {
         return allowNull;
     }
 
+    /**
+     * Gets whether an access control check is required to implicitly set an attribute to {@code undefined}
+     * in a resource "add" operation. "Implicitly" setting an attribute refers to not providing a value for
+     * it in the add operation, leaving the attribute in an undefined state. So, if a user attempts to
+     * add a resource but does not define some attributes, a write permission check will be performed for
+     * any attributes where this method returns {@code true}.
+     * <p>
+     * Generally this is {@code true} if {@link #isAllowNull() undefined is allowed} and a
+     * {@link #getDefaultValue() default value} exists, although some instances may have a different setting.
+     *
+     * @return {@code true} if an {@code undefined} value is significant
+     */
     public boolean isNullSignificant() {
         if (nilSignificant != null) {
             return nilSignificant;
@@ -178,30 +212,69 @@ public abstract class AttributeDefinition {
         return allowNull && defaultValue != null && defaultValue.isDefined();
     }
 
+    /**
+     * Whether a {@link org.jboss.dmr.ModelNode} holding the value of this attribute can be
+     * {@link org.jboss.dmr.ModelType#EXPRESSION}.
+     *
+     * @return {@code true} if an {@code expression ModelNode} is valid; {@code false} if not
+     */
     public boolean isAllowExpression() {
         return allowExpression;
     }
 
+    /**
+     * Gets the default value to use for the attribute if a value was not provided.
+     *
+     * @return the default value, or {@code null} if no defined value was provided
+     */
     public ModelNode getDefaultValue() {
         return defaultValue.isDefined() ? defaultValue : null;
     }
 
+    /**
+     * The unit of measure in which an attribute with a numerical value is expressed.
+     *
+     * @return the measurement unit, or {@code null} if none is relevant
+     */
     public MeasurementUnit getMeasurementUnit() {
         return measurementUnit;
     }
 
+    /**
+     * Gets the validator used to validate that values comply with the attribute's definition.
+     *
+     * @return the validator. Will not be {@code null}
+     */
     public ParameterValidator getValidator() {
         return validator;
     }
 
+    /**
+     * Gets the names of other attributes whose value must be {@code undefined} if this attribute's value is
+     * defined, and vice versa.
+     *
+     * @return the alternative attribute names, or {@code null} if there are no such attributes
+     */
     public String[] getAlternatives() {
         return alternatives;
     }
 
+    /**
+     * Gets the names of other attributes whose value must not be {@code undefined} if this attribute's value is
+     * defined.
+     *
+     * @return the required attribute names, or {@code null} if there are no such attributes
+     */
     public String[] getRequires() {
         return requires;
     }
 
+    /**
+     * Gets any {@link org.jboss.as.controller.registry.AttributeAccess.Flag flags} used to indicate special
+     * characteristics of the attribute
+     *
+     * @return the flags. Will not be {@code null} but may be empty.
+     */
     public EnumSet<AttributeAccess.Flag> getFlags() {
         return EnumSet.copyOf(flags);
     }
@@ -355,6 +428,13 @@ public abstract class AttributeDefinition {
         return resolved;
     }
 
+    /**
+     * Inverse of {@link #hasAlternative(org.jboss.dmr.ModelNode)}.
+     *
+     * @param operationObject an object {@code ModelNode} whose keys are attribute names.
+     *
+     * @return {@code true} if {@code operationObject} has no defined values for attributes configured as our alternatives
+     */
     public boolean isAllowed(final ModelNode operationObject) {
         if(alternatives != null) {
             for(final String alternative : alternatives) {
@@ -366,11 +446,25 @@ public abstract class AttributeDefinition {
         return true;
     }
 
+    /**
+     * Gets whether this attribute must be defined in the given {@code operationObject}
+     * @param operationObject an object {@code ModelNode} whose keys are attribute names.
+     * @return {@code true} if this attribute does not {@link #isAllowNull() allow null} and the given
+     *         {@code operationObject} does not have any defined attributes configured as
+     *         {@link #getAlternatives() alternatives} to this attribute
+     */
     public boolean isRequired(final ModelNode operationObject) {
-        final boolean required = ! allowNull;
-        return required ? ! hasAlternative(operationObject) : required;
+        return !allowNull && !hasAlternative(operationObject);
     }
 
+    /**
+     * Gets whether this attribute has {@link #getAlternatives() alternatives} configured and the given
+     * {@code operationObject} has any of those alternatives defined.
+     *
+     * @param operationObject an object {@code ModelNode} whose keys are attribute names.
+     *
+     * @return {@code true} if {@code operationObject} has any defined values for attributes configured as our alternatives
+     */
     public boolean hasAlternative(final ModelNode operationObject) {
         if(alternatives != null) {
             for(final String alternative : alternatives) {
@@ -501,17 +595,36 @@ public abstract class AttributeDefinition {
         return result;
     }
 
+    /**
+     * Gets localized text from the given {@link java.util.ResourceBundle} for the attribute.
+     *
+     * @param bundle the resource bundle. Cannot be {@code null}
+     * @param prefix a prefix to dot-prepend to the attribute name to form a key to resolve in the bundle
+     * @return the resolved text
+     */
     public String getAttributeTextDescription(final ResourceBundle bundle, final String prefix) {
         final String bundleKey = prefix == null ? name : (prefix + "." + name);
         return bundle.getString(bundleKey);
     }
 
+    /**
+     * Gets localized deprecation text from the given {@link java.util.ResourceBundle} for the attribute.
+     *
+     * @param bundle the resource bundle. Cannot be {@code null}
+     * @param prefix a prefix to dot-prepend to the attribute name to form a key to resolve in the bundle
+     * @return the resolved text
+     */
     public String getAttributeDeprecatedDescription(final ResourceBundle bundle, final String prefix) {
         String bundleKey = prefix == null ? name : (prefix + "." + name);
         bundleKey += "." + ModelDescriptionConstants.DEPRECATED;
         return bundle.getString(bundleKey);
     }
 
+    /**
+     * Adds attribute deprecation information, if relevant, to the given attribute description node
+     * @param model the attribute description
+     * @return the node added to {@code model} or {@code null} if no deprecation data was needed
+     */
     public ModelNode addDeprecatedInfo(final ModelNode model) {
         if (deprecationData == null) { return null; }
         ModelNode deprecated = model.get(ModelDescriptionConstants.DEPRECATED);
@@ -523,6 +636,14 @@ public abstract class AttributeDefinition {
         return deprecated;
     }
 
+    /**
+     * Gets descriptive metadata for this attribute, excluding free-from text
+     * {@code description} fields.
+     *
+     * @param forOperation {@code true} if the metadata is for an operation parameter
+     *                                 or reply value type
+     * @return object node containing the descriptive metadata
+     */
     public ModelNode getNoTextDescription(boolean forOperation) {
         final ModelNode result = new ModelNode();
         result.get(ModelDescriptionConstants.TYPE).set(type);

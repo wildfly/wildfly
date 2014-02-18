@@ -38,7 +38,8 @@ import org.jboss.dmr.ModelType;
 
 
 /**
- * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource}, with utility
+ * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource} or a
+ * parameter or reply value type field in an {@link org.jboss.as.controller.OperationDefinition}, with utility
  * methods for conversion to and from xml and for validation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
