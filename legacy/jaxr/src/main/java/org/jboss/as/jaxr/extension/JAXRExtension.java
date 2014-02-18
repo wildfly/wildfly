@@ -33,7 +33,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.extension.AbstractLegacyExtension;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.jaxr.JAXRLogger;
 import org.jboss.as.jaxr.extension.JAXRConstants.Namespace;
 
 
@@ -50,14 +49,14 @@ public class JAXRExtension extends AbstractLegacyExtension {
     static final String SUBSYSTEM_NAME = "jaxr";
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, SUBSYSTEM_NAME);
 
-    private static final String RESOURCE_NAME = JAXRLogger.class.getPackage().getName() + ".LocalDescriptions";
+    private static final String RESOURCE_NAME = "org.jboss.as.jaxr.LocalDescriptions";
 
     static ResourceDescriptionResolver getResolver(final String... keyPrefix) {
         StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
         for (String kp : keyPrefix) {
             prefix.append('.').append(kp);
         }
-        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JAXRLogger.class.getClassLoader(), true, false);
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JAXRExtension.class.getClassLoader(), true, false);
     }
 
     public JAXRExtension() {
