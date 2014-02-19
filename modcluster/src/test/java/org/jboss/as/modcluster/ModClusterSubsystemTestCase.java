@@ -1,25 +1,23 @@
-/*
+/**
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2013, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
- *  JBoss, Home of Professional Open Source.
- *  Copyright 2013, Red Hat, Inc., and individual contributors
- *  as indicated by the @author tags. See the copyright.txt file in the
- *  distribution for a full listing of individual contributors.
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
  *
- *  This is free software; you can redistribute it and/or modify it
- *  under the terms of the GNU Lesser General Public License as
- *  published by the Free Software Foundation; either version 2.1 of
- *  the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  *
- *  This software is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this software; if not, write to the Free
- *  Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
- *  02110-1301 USA, or see the FSF site: http://www.fsf.org.
- * /
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
 package org.jboss.as.modcluster;
@@ -54,8 +52,18 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
+ * Quick versions overview:
+ * <p/>
+ * AS version / model version / schema version
+ * 7.1.1 / 1.1.0 / 1_0
+ * 7.1.2 / 1.2.0 / 1_1
+ * 7.1.3 / 1.2.0 / 1_1
+ * 7.2.0 / 1.3.0 / 1_1
+ * 8.0.0 / 2.0.0 / 1_2
+ *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
- * @author Jean-Frederic Clere.
+ * @author Jean-Frederic Clere
+ * @author Radoslav Husar
  */
 public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
@@ -63,38 +71,47 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         super(ModClusterExtension.SUBSYSTEM_NAME, new ModClusterExtension());
     }
 
+    // --------------------------------------------------- Standard Subsystem tests
+
     @Test
     public void testXsd10() throws Exception {
         standardSubsystemTest("subsystem_1_0.xml", false);
     }
 
+    @Test
+    public void testXsd11() throws Exception {
+        standardSubsystemTest("subsystem_1_1.xml", false);
+    }
+
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("subsystem_1_1-expressions.xml");
+        return readResource("subsystem_1_2.xml");
     }
+
+    // --------------------------------------------------- Transformers for 1.2 & 1.3
 
     @Test
     public void testTransformersEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_0);
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_0, "1.2.1.Final-redhat-1");
     }
 
     @Test
-    public void testTransformers601() throws Exception {
+    public void testTransformersEAP601() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_1);
+        testTransformers_1_2_0(ModelTestControllerVersion.EAP_6_0_1, "1.2.3.Final-redhat-1");
     }
 
-    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
+    private void testTransformers_1_2_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
         String subsystemXml = readResource("subsystem_1_1.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
-
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
-                .configureReverseControllerCheck(null, new Undo71TransformModelFixer());
-
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
+                .configureReverseControllerCheck(null, new Undo71TransformModelFixer())
+                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
@@ -133,51 +150,63 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformersEAP610() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_0);
+        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_0, "1.2.4.Final-redhat-1");
     }
 
     @Test
-    public void testTransformers611() throws Exception {
+    public void testTransformersEAP611() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_1);
+        testTransformers_1_3_0(ModelTestControllerVersion.EAP_6_1_1, "1.2.4.Final-redhat-1");
     }
 
-    private void testTransformers_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = readResource("subsystem_1_1-expressions.xml");
+    private void testTransformers_1_3_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_1_1.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
-
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
-                .configureReverseControllerCheck(null, new Undo71TransformModelFixer());
-
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
+                .configureReverseControllerCheck(null, new Undo71TransformModelFixer())
+                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
         Assert.assertNotNull(legacyServices);
         Assert.assertTrue(mainServices.isSuccessfulBoot());
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        ModelNode legacySubsystem = checkSubsystemModelTransformation(mainServices, modelVersion);
+
+        ModelNode mainSessionCapacity = mainServices.readWholeModel().get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, MOD_CLUSTER_CONFIG, CONFIGURATION,
+                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
+        ModelNode legacySessionCapacity = legacySubsystem.get(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME, MOD_CLUSTER_CONFIG, CONFIGURATION,
+                CommonAttributes.DYNAMIC_LOAD_PROVIDER, CONFIGURATION, CommonAttributes.LOAD_METRIC, "sessions", CommonAttributes.CAPACITY);
+        Assert.assertEquals(legacySessionCapacity.getType(), mainSessionCapacity.getType());
+        Assert.assertTrue(mainSessionCapacity.asString().equals(legacySessionCapacity.asString()));
+        Assert.assertEquals(mainSessionCapacity.asInt(), legacySessionCapacity.asInt());
     }
+
+    // --------------------------------------------------- Expressions Rejected prior to 7.1.2 and 7.1.3
 
     @Test
     public void testExpressionsAreRejectedEAP600() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_0);
+        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_0, "1.2.1.Final-redhat-1");
     }
 
     @Test
     public void testExpressionsAreRejectedEAP601() throws Exception {
-        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_1);
+        testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion.EAP_6_0_1, "1.2.3.Final-redhat-1");
     }
 
-    private void testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion controllerVersion) throws Exception {
-        String subsystemXml = readResource("subsystem_1_1-expressions.xml");
+    private void testExpressionsAreRejectedByVersion_1_2(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_1_2.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 2, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion());
+                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
+                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
@@ -195,7 +224,7 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(subsystemXml),
                 new FailedOperationTransformationConfig()
                         .addFailedAttribute(metrAddr,
-                                ChainedConfig.createBuilder(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT, CommonAttributes.PROPERTY)
+                                ChainedConfig.createBuilder(CommonAttributes.CAPACITY, CommonAttributes.WEIGHT, CommonAttributes.PROPERTY, CommonAttributes.SESSION_DRAINING_STRATEGY)
                                     .addConfig(CapacityConfig.INSTANCE)
                                     .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.WEIGHT))
                                     .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.PROPERTY))
@@ -213,63 +242,94 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
                                         CommonAttributes.CIPHER_SUITE, CommonAttributes.KEY_ALIAS,
                                         CommonAttributes.PROTOCOL))
                         .addFailedAttribute(confAddr,
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.ADVERTISE,
+                                ChainedConfig.createBuilder(CommonAttributes.ADVERTISE,
                                         CommonAttributes.ADVERTISE_SOCKET, CommonAttributes.ADVERTISE_SOCKET,
                                         CommonAttributes.AUTO_ENABLE_CONTEXTS, CommonAttributes.FLUSH_PACKETS,
                                         CommonAttributes.PING,
-                                        CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE
-                                ))
+                                        CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE,
+                                        CommonAttributes.SESSION_DRAINING_STRATEGY)
+                                        .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(CommonAttributes.ADVERTISE,
+                                                CommonAttributes.ADVERTISE_SOCKET, CommonAttributes.ADVERTISE_SOCKET,
+                                                CommonAttributes.AUTO_ENABLE_CONTEXTS, CommonAttributes.FLUSH_PACKETS,
+                                                CommonAttributes.PING,
+                                                CommonAttributes.STICKY_SESSION, CommonAttributes.STICKY_SESSION_FORCE, CommonAttributes.STICKY_SESSION_REMOVE,
+                                                CommonAttributes.SESSION_DRAINING_STRATEGY))
+                                        .addConfig(new NeverToDefaultConfig(CommonAttributes.SESSION_DRAINING_STRATEGY)).build())
+
         );
     }
 
-    @Override
-    protected String getSubsystemXml(String configId) throws IOException {
-        return readResource(configId);
+    @Test
+    public void testRejectionEAP610() throws Exception {
+        testRejection1_3_0(ModelTestControllerVersion.EAP_6_1_0, "1.2.4.Final-redhat-1");
     }
 
+    @Test
+    public void testRejectionEAP611() throws Exception {
+        testRejection1_3_0(ModelTestControllerVersion.EAP_6_1_1, "1.2.4.Final-redhat-1");
+    }
 
-    @Override
-    protected AdditionalInitialization createAdditionalInitialization() {
-        return AdditionalInitialization.MANAGEMENT;
+    private void testRejection1_3_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_1_2.xml");
+        ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
+
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-modcluster:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.mod_cluster:mod_cluster-core:" + modClusterJarVersion)
+                .setExtensionClassName("org.jboss.as.modcluster.ModClusterExtension");
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        PathAddress rootAddr = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME));
+        PathAddress confAddr = rootAddr.append(PathElement.pathElement(MOD_CLUSTER_CONFIG, CONFIGURATION));
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, parse(subsystemXml),
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(confAddr,
+                                ChainedConfig.createBuilder(CommonAttributes.SESSION_DRAINING_STRATEGY)
+                                        .addConfig(new NeverToDefaultConfig(CommonAttributes.SESSION_DRAINING_STRATEGY)).build())
+
+        );
     }
 
     @Test
     public void testSSL() throws Exception {
-        KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization())
-                .setSubsystemXml(getSubsystemXml());
+        KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization()).setSubsystemXml(getSubsystemXml());
         KernelServices services = builder.build();
         ModelNode model = services.readWholeModel();
         ModelNode config = model.get(SUBSYSTEM, getMainSubsystemName()).get(MOD_CLUSTER_CONFIG, CONFIGURATION);
         ModelNode ssl = config.get(SSL, CONFIGURATION);
-        Assert.assertEquals(ssl.get("ca-certificate-file").resolve().asString(), "/home/rhusar/client-keystore.jks");
-        Assert.assertEquals(ssl.get("ca-revocation-url").resolve().asString(), "/home/rhusar/revocations");
-        Assert.assertEquals(ssl.get("certificate-key-file").resolve().asString(), "/home/rhusar/client-keystore.jks");
-        Assert.assertEquals(ssl.get("cipher-suite").resolve().asString(), "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA");
-        Assert.assertEquals(ssl.get("key-alias").resolve().asString(), "mykeyalias");
-        Assert.assertEquals(ssl.get("password").resolve().asString(), "mypassword");
-        Assert.assertEquals(ssl.get("protocol").resolve().asString(), "TLS");
+        Assert.assertEquals("/home/rhusar/client-keystore.jks", ssl.get("ca-certificate-file").resolve().asString());
+        Assert.assertEquals("/home/rhusar/revocations", ssl.get("ca-revocation-url").resolve().asString());
+        Assert.assertEquals("/home/rhusar/client-keystore.jks", ssl.get("certificate-key-file").resolve().asString());
+        Assert.assertEquals("SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA", ssl.get("cipher-suite").resolve().asString());
+        Assert.assertEquals("mykeyalias", ssl.get("key-alias").resolve().asString());
+        Assert.assertEquals("mypassword", ssl.get("password").resolve().asString());
+        Assert.assertEquals("TLS", ssl.get("protocol").resolve().asString());
         ServiceController<ModCluster> service = (ServiceController<ModCluster>) services.getContainer().getService(ModClusterService.NAME);
         ModClusterService modCluster = (ModClusterService) service.getService().getValue();
-        ModClusterConfig modClusterConfig = modCluster.getConfig();
-        Assert.assertTrue(modClusterConfig.isSsl());
-        Assert.assertEquals(modClusterConfig.getSslKeyAlias(), "mykeyalias");
-        Assert.assertEquals(modClusterConfig.getSslTrustStorePassword(), "mypassword");
-        Assert.assertEquals(modClusterConfig.getSslKeyStorePassword(), "mypassword");
-        Assert.assertEquals(modClusterConfig.getSslKeyStore(), "/home/rhusar/client-keystore.jks");
-        Assert.assertEquals(modClusterConfig.getSslCiphers(), "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA");
-        Assert.assertEquals(modClusterConfig.getSslProtocol(), "TLS");
-        Assert.assertEquals(modClusterConfig.getSslTrustStore(), "/home/rhusar/client-keystore.jks");
-        Assert.assertEquals(modClusterConfig.getSslCrlFile(), "/home/rhusar/revocations");
+        ModClusterConfig sslConfig = modCluster.getConfig();
+        Assert.assertTrue(sslConfig.isSsl());
+        Assert.assertEquals("mykeyalias", sslConfig.getSslKeyAlias());
+        Assert.assertEquals("mypassword", sslConfig.getSslTrustStorePassword());
+        Assert.assertEquals("mypassword", sslConfig.getSslKeyStorePassword());
+        Assert.assertEquals("/home/rhusar/client-keystore.jks", sslConfig.getSslKeyStore());
+        Assert.assertEquals("SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA,SSL_RSA_WITH_RC4_128_MD5,SSL_RSA_WITH_RC4_128_SHA,SSL_RSA_WITH_3DES_EDE_CBC_SHA", sslConfig.getSslCiphers());
+        Assert.assertEquals("TLS", sslConfig.getSslProtocol());
+        Assert.assertEquals("/home/rhusar/client-keystore.jks", sslConfig.getSslTrustStore());
+        Assert.assertEquals("/home/rhusar/revocations", sslConfig.getSslCrlFile());
     }
-
 
     /**
      * Checks that the attribute list only has one entry
-     *
      */
     private static class OnlyOnePropertyConfig extends AttributesPathAddressConfig<OnlyOnePropertyConfig> {
 
-        public OnlyOnePropertyConfig(String...attributes) {
+        public OnlyOnePropertyConfig(String... attributes) {
             super(attributes);
         }
 
@@ -301,6 +361,33 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
         protected boolean isAttributeWritable(String attributeName) {
             return false;
         }
+    }
+
+
+    private static class NeverToDefaultConfig extends AttributesPathAddressConfig<NeverToDefaultConfig> {
+        public NeverToDefaultConfig(String... attributes) {
+            super(attributes);
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            if (!attribute.isDefined()) {
+                return false;
+            }
+            return !attribute.asString().equals("DEFAULT");
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode("DEFAULT");
+        }
+
+
     }
 
     /**
