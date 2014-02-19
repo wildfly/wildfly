@@ -53,6 +53,7 @@ public class AS7Plugin implements JdrPlugin {
             new CollectFiles("*/domain/configuration/*").sanitizer(xmlSanitizer, passwordSanitizer),
             new CollectFiles("*server.log").limit(50 * Utils.ONE_MB),
             new CollectFiles("*.log").omit("*server.log"),
+            new CollectFiles("*gc.log.*"),
             new CollectFiles("*.properties").sanitizer(passwordSanitizer),
             new CollectFiles("*.xml").sanitizer(xmlSanitizer)
         );

@@ -113,51 +113,6 @@ if [ "x$JAVA" = "x" ]; then
     fi
 fi
 
-if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
-    # Check for -d32/-d64 in JAVA_OPTS
-    JVM_D64_OPTION=`echo $JAVA_OPTS | $GREP "\-d64"`
-    JVM_D32_OPTION=`echo $JAVA_OPTS | $GREP "\-d32"`
-
-    # Check If server or client is specified
-    SERVER_SET=`echo $JAVA_OPTS | $GREP "\-server"`
-    CLIENT_SET=`echo $JAVA_OPTS | $GREP "\-client"`
-
-    if [ "x$JVM_D32_OPTION" != "x" ]; then
-        JVM_OPTVERSION="-d32"
-    elif [ "x$JVM_D64_OPTION" != "x" ]; then
-        JVM_OPTVERSION="-d64"
-    elif $darwin && [ "x$SERVER_SET" = "x" ]; then
-        # Use 32-bit on Mac, unless server has been specified or the user opts are incompatible
-        "$JAVA" -d32 $JAVA_OPTS -version > /dev/null 2>&1 && PREPEND_JAVA_OPTS="-d32" && JVM_OPTVERSION="-d32"
-    fi
-
-    CLIENT_VM=false
-    if [ "x$CLIENT_SET" != "x" ]; then
-        CLIENT_VM=true
-    elif [ "x$SERVER_SET" = "x" ]; then
-        if $darwin && [ "$JVM_OPTVERSION" = "-d32" ]; then
-            # Prefer client for Macs, since they are primarily used for development
-            CLIENT_VM=true
-            PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -client"
-        else
-            PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -server"
-        fi
-    fi
-
-    if [ $CLIENT_VM = false ]; then
-        NO_COMPRESSED_OOPS=`echo $JAVA_OPTS | $GREP "\-XX:\-UseCompressedOops"`
-        if [ "x$NO_COMPRESSED_OOPS" = "x" ]; then
-            "$JAVA" $JVM_OPTVERSION -server -XX:+UseCompressedOops -version >/dev/null 2>&1 && PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -XX:+UseCompressedOops"
-        fi
-    fi
-
-    JAVA_OPTS="$PREPEND_JAVA_OPTS $JAVA_OPTS"
-fi
-
-if [ "x$JBOSS_MODULEPATH" = "x" ]; then
-    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
-fi
-
 if $linux; then
     # consolidate the server and command line opts
     CONSOLIDATED_OPTS="$JAVA_OPTS $SERVER_OPTS"
@@ -236,6 +191,62 @@ fi
 # determine the default configuration dir, if not set
 if [ "x$JBOSS_CONFIG_DIR" = "x" ]; then
    JBOSS_CONFIG_DIR="$JBOSS_BASE_DIR/configuration"
+fi
+
+if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
+    # Check for -d32/-d64 in JAVA_OPTS
+    JVM_D64_OPTION=`echo $JAVA_OPTS | $GREP "\-d64"`
+    JVM_D32_OPTION=`echo $JAVA_OPTS | $GREP "\-d32"`
+
+    # Check If server or client is specified
+    SERVER_SET=`echo $JAVA_OPTS | $GREP "\-server"`
+    CLIENT_SET=`echo $JAVA_OPTS | $GREP "\-client"`
+
+    if [ "x$JVM_D32_OPTION" != "x" ]; then
+        JVM_OPTVERSION="-d32"
+    elif [ "x$JVM_D64_OPTION" != "x" ]; then
+        JVM_OPTVERSION="-d64"
+    elif $darwin && [ "x$SERVER_SET" = "x" ]; then
+        # Use 32-bit on Mac, unless server has been specified or the user opts are incompatible
+        "$JAVA" -d32 $JAVA_OPTS -version > /dev/null 2>&1 && PREPEND_JAVA_OPTS="-d32" && JVM_OPTVERSION="-d32"
+    fi
+
+    CLIENT_VM=false
+    if [ "x$CLIENT_SET" != "x" ]; then
+        CLIENT_VM=true
+    elif [ "x$SERVER_SET" = "x" ]; then
+        if $darwin && [ "$JVM_OPTVERSION" = "-d32" ]; then
+            # Prefer client for Macs, since they are primarily used for development
+            CLIENT_VM=true
+            PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -client"
+        else
+            PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -server"
+        fi
+    fi
+
+    if [ $CLIENT_VM = false ]; then
+        NO_COMPRESSED_OOPS=`echo $JAVA_OPTS | $GREP "\-XX:\-UseCompressedOops"`
+        if [ "x$NO_COMPRESSED_OOPS" = "x" ]; then
+            "$JAVA" $JVM_OPTVERSION -server -XX:+UseCompressedOops -version >/dev/null 2>&1 && PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -XX:+UseCompressedOops"
+        fi
+    fi
+
+    # Enable rotating GC logs if the JVM supports it and GC logs are not already enabled
+    NO_GC_LOG_ROTATE=`echo $JAVA_OPTS | $GREP "\-verbose:gc"`
+    if [ "x$NO_GC_LOG_ROTATE" = "x" ]; then
+        # backup prior logs
+        for file in $JBOSS_LOG_DIR/gc.log.*
+        do
+            mv "$file" "$JBOSS_LOG_DIR/backupgc.log${file#*/gc.log}" >/dev/null 2>&1
+        done
+        "$JAVA" $JVM_OPTVERSION -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -version >/dev/null 2>&1 && mkdir -p $JBOSS_LOG_DIR && PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -verbose:gc -Xloggc:$JBOSS_LOG_DIR/gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M"
+    fi
+
+    JAVA_OPTS="$PREPEND_JAVA_OPTS $JAVA_OPTS"
+fi
+
+if [ "x$JBOSS_MODULEPATH" = "x" ]; then
+    JBOSS_MODULEPATH="$JBOSS_HOME/modules"
 fi
 
 # For Cygwin, switch paths to Windows format before running java
