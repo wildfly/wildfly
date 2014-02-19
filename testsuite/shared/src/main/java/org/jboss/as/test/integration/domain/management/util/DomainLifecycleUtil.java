@@ -28,7 +28,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -95,12 +94,14 @@ public class DomainLifecycleUtil {
         this(configuration, DomainControllerClientConfig.create());
     }
 
-    public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration, final DomainControllerClientConfig clientConfiguration) {
+    public DomainLifecycleUtil(final JBossAsManagedConfiguration configuration,
+            final DomainControllerClientConfig clientConfiguration) {
         assert configuration != null : "configuration is null";
         assert clientConfiguration != null : "clientConfiguration is null";
         this.configuration = configuration;
         this.clientConfiguration = clientConfiguration;
-        this.address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST, configuration.getHostName()));
+        this.address = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.HOST,
+                configuration.getHostName()));
     }
 
     public JBossAsManagedConfiguration getConfiguration() {
@@ -117,8 +118,8 @@ public class DomainLifecycleUtil {
 
             final String address = NetworkUtils.formatPossibleIpv6Address(configuration.getHostControllerManagementAddress());
             final int port = configuration.getHostControllerManagementPort();
-            final URI connectionURI = new URI(configuration.getHostControllerManagementProtocol() + "://"
-                    + address + ":" + port);
+            final URI connectionURI = new URI(configuration.getHostControllerManagementProtocol() + "://" + address + ":"
+                    + port);
             // Create the connection - this will try to connect on the first request
             connection = clientConfiguration.createConnection(connectionURI, configuration.getCallbackHandler());
 
@@ -132,6 +133,7 @@ public class DomainLifecycleUtil {
             if (configuration.getJavaVmArguments() != null) {
                 Collections.addAll(additionalJavaOpts, configuration.getJavaVmArguments().split("\\s+"));
             }
+            additionalJavaOpts.add("-Djboss.home.dir=" + jbossHomeDir);
 
             File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
             if (!modulesJar.exists())
@@ -141,10 +143,11 @@ public class DomainLifecycleUtil {
             String java = (javaHome != null) ? javaHome + File.separatorChar + "bin" + File.separatorChar + "java" : "java";
 
             String controllerJavaHome = configuration.getControllerJavaHome();
-            String controllerJava = (controllerJavaHome != null) ?
-                    controllerJavaHome + File.separatorChar + "bin" + File.separatorChar + "java" : "java";
+            String controllerJava = (controllerJavaHome != null) ? controllerJavaHome + File.separatorChar + "bin"
+                    + File.separatorChar + "java" : "java";
 
-            File domainDir = configuration.getDomainDirectory() != null ? new File(configuration.getDomainDirectory()) : new File(new File(jbossHomeDir), "domain");
+            File domainDir = configuration.getDomainDirectory() != null ? new File(configuration.getDomainDirectory())
+                    : new File(new File(jbossHomeDir), "domain");
             String domainPath = domainDir.getAbsolutePath();
 
             final String modulePath;
@@ -155,18 +158,22 @@ public class DomainLifecycleUtil {
             }
 
             if (configuration.getMgmtUsersFile() != null) {
-                copyConfigFile(new File(configuration.getMgmtUsersFile()), new File(configuration.getDomainDirectory(), "configuration"), null);
+                copyConfigFile(new File(configuration.getMgmtUsersFile()), new File(configuration.getDomainDirectory(),
+                        "configuration"), null);
             } else {
                 // No point backing up the file in a test scenario, just write what we need.
                 File usersFile = new File(domainPath + "/configuration/mgmt-users.properties");
                 FileOutputStream fos = new FileOutputStream(usersFile);
                 PrintWriter pw = new PrintWriter(fos, true);
-                pw.println("slave=" + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm", SLAVE_HOST_PASSWORD.toCharArray()));
+                pw.println("slave="
+                        + new UsernamePasswordHashUtil().generateHashedHexURP("slave", "ManagementRealm",
+                                SLAVE_HOST_PASSWORD.toCharArray()));
                 pw.close();
                 fos.close();
             }
             if (configuration.getMgmtGroupsFile() != null) {
-                copyConfigFile(new File(configuration.getMgmtGroupsFile()), new File(configuration.getDomainDirectory(), "configuration"), null);
+                copyConfigFile(new File(configuration.getMgmtGroupsFile()), new File(configuration.getDomainDirectory(),
+                        "configuration"), null);
             } else {
                 // Put out empty mgmt-groups.properties.
                 File mgmtGroupsProps = new File(domainPath + "/configuration/mgmt-groups.properties");
@@ -181,7 +188,9 @@ public class DomainLifecycleUtil {
             FileOutputStream fos = new FileOutputStream(appUsersProps);
             PrintWriter pw = new PrintWriter(fos, true);
             pw.println("# Application users");
-            pw.println("user1=" + new UsernamePasswordHashUtil().generateHashedHexURP("user1", "ApplicationRealm", "password1".toCharArray()));
+            pw.println("user1="
+                    + new UsernamePasswordHashUtil().generateHashedHexURP("user1", "ApplicationRealm",
+                            "password1".toCharArray()));
             pw.close();
             fos.close();
             File appRolesProps = new File(domainPath + "/configuration/application-roles.properties");
@@ -196,15 +205,14 @@ public class DomainLifecycleUtil {
             cmd.add(controllerJava);
             cmd.addAll(additionalJavaOpts);
             TestSuiteEnvironment.getIpv6Args(cmd);
-            cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + domainPath + "/log/process-controller.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/domain/configuration/logging.properties");
             cmd.add("-jar");
             cmd.add(modulesJar.getAbsolutePath());
             cmd.add("-mp");
             cmd.add(modulePath);
-            //cmd.add("-jaxpmodule");
-            //cmd.add("javax.xml.jaxp-provider");
+            // cmd.add("-jaxpmodule");
+            // cmd.add("javax.xml.jaxp-provider");
             cmd.add("org.jboss.as.process-controller");
             cmd.add("-jboss-home");
             cmd.add(jbossHomeDir);
@@ -232,12 +240,14 @@ public class DomainLifecycleUtil {
                 domainDirectory = domainPath;
             }
             if (configuration.getDomainConfigFile() != null) {
-                String name = copyConfigFile(new File(configuration.getDomainConfigFile()), new File(domainDirectory, "configuration"));
+                String name = copyConfigFile(new File(configuration.getDomainConfigFile()), new File(domainDirectory,
+                        "configuration"));
                 cmd.add("-domain-config");
                 cmd.add(name);
             }
             if (configuration.getHostConfigFile() != null) {
-                String name = copyConfigFile(new File(configuration.getHostConfigFile()), new File(domainDirectory, "configuration"));
+                String name = copyConfigFile(new File(configuration.getHostConfigFile()), new File(domainDirectory,
+                        "configuration"));
                 cmd.add("-host-config");
                 cmd.add(name);
             }
@@ -251,7 +261,11 @@ public class DomainLifecycleUtil {
             final String workingDir = configuration.getDomainDirectory();
 
             // Start the process
-            final ProcessWrapper wrapper = new ProcessWrapper(configuration.getHostName(), cmd, Collections.<String, String>emptyMap(), workingDir);
+            final ProcessWrapper wrapper = new ProcessWrapper(configuration.getHostName(), cmd,
+                    Collections.<String, String> emptyMap(), workingDir);
+            if (log.isLoggable(Level.INFO)) {
+                log.info("Starting process: " + wrapper);
+            }
             wrapper.start();
             process = wrapper;
 
@@ -338,20 +352,20 @@ public class DomainLifecycleUtil {
     public ModelNode executeAwaitConnectionClosed(final ModelNode operation) throws IOException {
         final DomainTestClient client = internalGetOrCreateClient();
         final Channel channel = client.getChannel();
-        if( null == channel )
+        if (null == channel)
             throw new IllegalStateException("Didn't get a remoting channel from the DomainTestClient.");
         final Connection ref = channel.getConnection();
         ModelNode result = new ModelNode();
         try {
             result = client.execute(operation);
             // IN case the operation wasn't successful, don't bother waiting
-            if(! "success".equals(result.get("outcome").asString())) {
+            if (!"success".equals(result.get("outcome").asString())) {
                 return result;
             }
-        } catch(Exception e) {
-            if(e instanceof IOException) {
+        } catch (Exception e) {
+            if (e instanceof IOException) {
                 final Throwable cause = e.getCause();
-                if(cause instanceof ExecutionException) {
+                if (cause instanceof ExecutionException) {
                     // ignore, this might happen if the channel gets closed before we got the response
                 } else {
                     throw (IOException) e;
@@ -361,7 +375,7 @@ public class DomainLifecycleUtil {
             }
         }
         try {
-            if(channel != null) {
+            if (channel != null) {
                 // Wait for the channel to close
                 channel.awaitClosed();
             }
@@ -390,13 +404,13 @@ public class DomainLifecycleUtil {
      */
     public void connect(final long timeout, final TimeUnit timeUnit) throws IOException {
         final DomainTestConnection connection = this.connection;
-        if(connection == null) {
+        if (connection == null) {
             throw new IllegalStateException();
         }
         final long deadline = System.currentTimeMillis() + timeUnit.toMillis(timeout);
-        for(;;) {
+        for (;;) {
             long remaining = deadline - System.currentTimeMillis();
-            if(remaining <= 0) {
+            if (remaining <= 0) {
                 return;
             }
             try {
@@ -405,7 +419,7 @@ public class DomainLifecycleUtil {
                 return;
             } catch (IOException e) {
                 remaining = deadline - System.currentTimeMillis();
-                if(remaining <= 0) {
+                if (remaining <= 0) {
                     throw e;
                 }
             }
@@ -419,7 +433,7 @@ public class DomainLifecycleUtil {
      */
     public DomainClient createDomainClient() {
         final DomainTestConnection connection = this.connection;
-        if(connection == null) {
+        if (connection == null) {
             throw new IllegalStateException();
         }
         return DomainClient.Factory.create(connection.createClient());
@@ -441,7 +455,7 @@ public class DomainLifecycleUtil {
         long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
         while (!serversAvailable) {
             long remaining = deadline - System.currentTimeMillis();
-            if(remaining <= 0) {
+            if (remaining <= 0) {
                 break;
             }
             TimeUnit.MILLISECONDS.sleep(250);
@@ -450,7 +464,8 @@ public class DomainLifecycleUtil {
         }
 
         if (!serversAvailable) {
-            throw new TimeoutException(String.format("Managed servers were not started within [%d] seconds", configuration.getStartupTimeoutInSeconds()));
+            throw new TimeoutException(String.format("Managed servers were not started within [%d] seconds",
+                    configuration.getStartupTimeoutInSeconds()));
         }
     }
 
@@ -460,7 +475,7 @@ public class DomainLifecycleUtil {
         long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
         while (!hcAvailable) {
             long remaining = deadline - System.currentTimeMillis();
-            if(remaining <= 0) {
+            if (remaining <= 0) {
                 break;
             }
             if (!hcAvailable) {
@@ -469,7 +484,8 @@ public class DomainLifecycleUtil {
             hcAvailable = isHostControllerStarted();
         }
         if (!hcAvailable) {
-            throw new TimeoutException(String.format("HostController was not started within [%d] seconds", configuration.getStartupTimeoutInSeconds()));
+            throw new TimeoutException(String.format("HostController was not started within [%d] seconds",
+                    configuration.getStartupTimeoutInSeconds()));
         }
     }
 
@@ -517,7 +533,8 @@ public class DomainLifecycleUtil {
             ModelNode address = new ModelNode();
             address.add("host", configuration.getHostName());
 
-            ControlledProcessState.State status = Enum.valueOf(ControlledProcessState.State.class, readAttribute("host-state", address).asString().toUpperCase(Locale.ENGLISH));
+            ControlledProcessState.State status = Enum.valueOf(ControlledProcessState.State.class,
+                    readAttribute("host-state", address).asString().toUpperCase(Locale.ENGLISH));
             return status == ControlledProcessState.State.RUNNING;
         } catch (Exception ignored) {
             //
@@ -566,7 +583,8 @@ public class DomainLifecycleUtil {
             address.add("host", configuration.getHostName());
             address.add("server", server);
 
-            ControlledProcessState.State status = Enum.valueOf(ControlledProcessState.State.class, readAttribute("server-state", address).asString().toUpperCase(Locale.ENGLISH));
+            ControlledProcessState.State status = Enum.valueOf(ControlledProcessState.State.class,
+                    readAttribute("server-state", address).asString().toUpperCase(Locale.ENGLISH));
             result.put(id, status);
         }
 
@@ -648,6 +666,5 @@ public class DomainLifecycleUtil {
         }
         return newFile.getName();
     }
-
 
 }

@@ -22,19 +22,16 @@
 
 package org.jboss.as.test.integration.domain.management.util;
 
-import org.jboss.as.process.protocol.StreamUtils;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.process.protocol.StreamUtils;
 
 /**
  * Basic process test wrapper.
@@ -51,7 +48,8 @@ class ProcessWrapper {
     private Process process;
     private volatile boolean stopped;
 
-    ProcessWrapper(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory) {
+    ProcessWrapper(final String processName, final List<String> command, final Map<String, String> env,
+            final String workingDirectory) {
         assert processName != null;
         assert command != null;
         assert env != null;
@@ -76,7 +74,7 @@ class ProcessWrapper {
 
     void start() throws Exception {
         synchronized (this) {
-            if(stopped) {
+            if (stopped) {
                 throw new IllegalStateException();
             }
             final ProcessBuilder builder = new ProcessBuilder(command);
@@ -96,7 +94,7 @@ class ProcessWrapper {
         synchronized (this) {
             process = this.process;
         }
-        if(process != null) {
+        if (process != null) {
             return process.waitFor();
         }
         return 0;
@@ -105,14 +103,20 @@ class ProcessWrapper {
     void stop() {
         synchronized (this) {
             boolean stopped = this.stopped;
-            if(! stopped) {
+            if (!stopped) {
                 this.stopped = true;
                 final Process process = this.process;
-                if(process != null) {
+                if (process != null) {
                     process.destroy();
                 }
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessWrapper [processName=" + processName + ", command=" + command + ", env=" + env + ", workingDirectory="
+                + workingDirectory + ", stopped=" + stopped + "]";
     }
 
     /**
@@ -142,15 +146,15 @@ class ProcessWrapper {
         public void run() {
             final InputStream source = this.source;
             try {
-               byte[] buf = new byte[32];
-               int num;
-               // Do not try reading a line cos it considers '\r' end of line
-               while((num = source.read(buf)) != -1){
-                  if (writeOutput)
-                     System.out.write(buf, 0, num);
-               }
+                byte[] buf = new byte[32];
+                int num;
+                // Do not try reading a line cos it considers '\r' end of line
+                while ((num = source.read(buf)) != -1) {
+                    if (writeOutput)
+                        System.out.write(buf, 0, num);
+                }
             } catch (IOException e) {
-                if(! ProcessWrapper.this.stopped) {
+                if (!ProcessWrapper.this.stopped) {
                     e.printStackTrace(target);
                 }
             } finally {
