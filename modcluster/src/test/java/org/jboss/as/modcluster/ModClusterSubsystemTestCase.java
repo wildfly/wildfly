@@ -160,8 +160,23 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     private void testTransformers_1_3_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
-        String subsystemXml = readResource("subsystem_1_1.xml");
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
+        testTransformers_1_3_0_1_4_0(modelVersion, controllerVersion, modClusterJarVersion);
+    }
+
+    @Test
+    public void testTransformersEAP620() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformers_1_4_0(ModelTestControllerVersion.EAP_6_2_0, "1.2.6.Final-redhat-1");
+    }
+
+    private void testTransformers_1_4_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 4, 0);
+        testTransformers_1_3_0_1_4_0(modelVersion, controllerVersion, modClusterJarVersion);
+    }
+
+    private void testTransformers_1_3_0_1_4_0(ModelVersion modelVersion, ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_1_1.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
@@ -261,17 +276,32 @@ public class ModClusterSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testRejectionEAP610() throws Exception {
-        testRejection1_3_0(ModelTestControllerVersion.EAP_6_1_0, "1.2.4.Final-redhat-1");
+        testRejection_1_3_0(ModelTestControllerVersion.EAP_6_1_0, "1.2.4.Final-redhat-1");
     }
 
     @Test
     public void testRejectionEAP611() throws Exception {
-        testRejection1_3_0(ModelTestControllerVersion.EAP_6_1_1, "1.2.4.Final-redhat-1");
+        testRejection_1_3_0(ModelTestControllerVersion.EAP_6_1_1, "1.2.4.Final-redhat-1");
     }
 
-    private void testRejection1_3_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
-        String subsystemXml = readResource("subsystem_1_2.xml");
+    private void testRejection_1_3_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
+        testRejection_1_3_0_1_4_0(modelVersion, controllerVersion, modClusterJarVersion);
+    }
+
+    @Test
+    public void testRejectionEAP620() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testRejection_1_4_0(ModelTestControllerVersion.EAP_6_2_0, "1.2.6.Final-redhat-1");
+    }
+
+    private void testRejection_1_4_0(ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 4, 0);
+        testRejection_1_3_0_1_4_0(modelVersion, controllerVersion, modClusterJarVersion);
+    }
+
+    private void testRejection_1_3_0_1_4_0(ModelVersion modelVersion, ModelTestControllerVersion controllerVersion, String modClusterJarVersion) throws Exception {
+        String subsystemXml = readResource("subsystem_1_2.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
