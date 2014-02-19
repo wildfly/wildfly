@@ -26,56 +26,19 @@
 	<groupId>com.redhat.gss</groupId>
 	<artifactId>redhat-access-plugin</artifactId>
 
-	<name>JBoss Application Server: Subsystem Artifact</name>
-
-	<packaging>jar</packaging>
-
-
-	<properties>
-		<!-- <version.jboss.as>7.4.0.Final-redhat-SNAPSHOT</version.jboss.as> -->
-		<version.junit>4.8.2</version.junit>
-		<module.name>com.redhat.gss.redhat-access-plugin</module.name>
-	</properties>
-
-
-	<build>
-		<!-- Maven will append the version to the finalName (which is the name 
-			given to the generated war, and hence the context root) -->
-		<finalName>${project.artifactId}</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-					<enableAssertions>true</enableAssertions>
-					<argLine>-Xmx512m</argLine>
-					<systemProperties>
-						<property>
-							<name>jboss.home</name>
-							<value>${jboss.home}</value>
-						</property>
-					</systemProperties>
-					<includes>
-						<include>**/*TestCase.java</include>
-					</includes>
-					<forkMode>once</forkMode>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+	<name>JBoss Application Server: Red Hat Access Plugin</name>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.jboss.as</groupId>
 			<artifactId>jboss-as-controller</artifactId>
 		</dependency>
+        
 		<dependency>
 			<groupId>org.jboss.as</groupId>
 			<artifactId>jboss-as-server</artifactId>
 		</dependency>
-		<!-- <dependency> <groupId>org.jboss.as</groupId> <artifactId>jboss-as-subsystem-test</artifactId> 
-			<scope>test</scope> </dependency> -->
+        
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

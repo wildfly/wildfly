@@ -87,6 +87,7 @@
         <version.com.sun.codemodel>2.6-redhat-2</version.com.sun.codemodel>
         <version.com.sun.faces>2.1.27.redhat-8</version.com.sun.faces>
         <version.com.sun.istack>2.6.1-redhat-2</version.com.sun.istack>
+        <version.com.sun.jersey>1.17.1</version.com.sun.jersey>
         <version.com.sun.xml.txw2>20110809-redhat-2</version.com.sun.xml.txw2>
         <version.com.sun.xsom>20110809-redhat-3</version.com.sun.xsom>
         <version.commons-beanutils>1.8.3.redhat-6</version.commons-beanutils>
@@ -245,6 +246,7 @@
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.2.12.Final-redhat-1</version.org.jgroups>
+        <version.org.jvnet>1.6</version.org.jvnet>
         <version.org.kohsuke.rngom>201103-redhat-2</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.3.redhat-2</version.org.opensaml.opensaml>
@@ -720,6 +722,17 @@
         <dependencies>
 
             <!-- Modules in this project -->
+            <dependency>
+                <groupId>com.redhat.gss</groupId>
+                <artifactId>redhat-access-plugin</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.redhat.gss</groupId>
+                <artifactId>redhat-support-lib-java</artifactId>
+                <version>${version.com.redhat.gss.redhat-support-lib-java}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
@@ -1062,18 +1075,6 @@
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-jdr</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>com.redhat.gss</groupId>
-                <artifactId>redhat-access-plugin</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            
-            <dependency>
-                <groupId>com.redhat.gss</groupId>
-                <artifactId>redhat-support-lib-java</artifactId>
-                <version>${version.com.redhat.gss.redhat-support-lib-java}</version>
             </dependency>
 
             <dependency>
@@ -1451,6 +1452,30 @@
                         <artifactId>ant</artifactId>
                     </exclusion>
                 </exclusions>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${version.com.sun.jersey}</version>
+            </dependency>
+                
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-core</artifactId>
+                <version>${version.com.sun.jersey}</version>
+            </dependency>
+                
+            <dependency>
+                <groupId>com.sun.jersey.contribs</groupId>
+                <artifactId>jersey-apache-client4</artifactId>
+                <version>${version.com.sun.jersey}</version>
+            </dependency>
+                
+            <dependency>
+                <groupId>com.sun.jersey.contribs</groupId>
+                <artifactId>jersey-multipart</artifactId>
+                <version>${version.com.sun.jersey}</version>
             </dependency>
 
             <dependency>
@@ -6339,6 +6364,12 @@
                 <groupId>org.jgroups</groupId>
                 <artifactId>jgroups</artifactId>
                 <version>${version.org.jgroups}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>org.jvnet</groupId>
+                <artifactId>mimepull</artifactId>
+                <version>${version.org.jvnet}</version>
             </dependency>
 
             <dependency>

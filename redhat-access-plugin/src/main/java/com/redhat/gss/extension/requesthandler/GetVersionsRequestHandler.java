@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,9 +29,10 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
+
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import java.net.MalformedURLException;
@@ -39,26 +40,24 @@ import java.util.List;
 
 public class GetVersionsRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-
+    public static final Logger logger = Logger.getLogger(GetVersionsRequestHandler.class);
     public static final String OPERATION_NAME = "get-versions";
     public static final GetVersionsRequestHandler INSTANCE = new GetVersionsRequestHandler();
 
     private static final SimpleAttributeDefinition PRODUCT = new SimpleAttributeDefinitionBuilder(
-            "product", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("product")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "product", ModelType.STRING).build();
 
-    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
             OPERATION_NAME,
             RedhatAccessPluginExtension.getResourceDescriptionResolver())
-            .setParameters(getParameters(PRODUCT)).build();
+            .setParameters(getParameters(PRODUCT))
+            .setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.STRING).build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        // In MODEL stage, just validate the request. Unnecessary if the request
-        // has no parameters
-        validator.validate(operation);
+
         context.addStep(new OperationStepHandler() {
 
             @Override
@@ -68,6 +67,7 @@ public class GetVersionsRequestHandler extends BaseRequestHandler implements
                 try {
                     api = getAPI(context, operation);
                 } catch (MalformedURLException e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -77,6 +77,7 @@ public class GetVersionsRequestHandler extends BaseRequestHandler implements
                 try {
                     versions = api.getProducts().getVersions(productString);
                 } catch (Exception e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

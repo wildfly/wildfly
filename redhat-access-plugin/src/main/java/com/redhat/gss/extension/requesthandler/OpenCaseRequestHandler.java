@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,9 +29,10 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
+
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Case;
@@ -39,44 +40,46 @@ import java.net.MalformedURLException;
 
 public class OpenCaseRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-
+    public static final Logger logger = Logger.getLogger(OpenCaseRequestHandler.class);
     public static final String OPERATION_NAME = "open-case";
     public static final OpenCaseRequestHandler INSTANCE = new OpenCaseRequestHandler();
 
     private static final SimpleAttributeDefinition SUMMARY = new SimpleAttributeDefinitionBuilder(
-            "Summary", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("Summary")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "summary", ModelType.STRING).build();
     private static final SimpleAttributeDefinition DESCRIPTION = new SimpleAttributeDefinitionBuilder(
-            "Description", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("Description")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "description", ModelType.STRING).build();
     private static final SimpleAttributeDefinition SEVERITY = new SimpleAttributeDefinitionBuilder(
-            "Severity", ModelType.STRING, true).setAllowExpression(true)
-            .setXmlName("Severity")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "severity", ModelType.STRING, true).build();
     private static final SimpleAttributeDefinition PRODUCT = new SimpleAttributeDefinitionBuilder(
-            "Product", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("Product")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "product", ModelType.STRING).build();
     private static final SimpleAttributeDefinition VERSION = new SimpleAttributeDefinitionBuilder(
-            "Version", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("Version")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "version", ModelType.STRING).build();
 
-    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
             OPERATION_NAME,
             RedhatAccessPluginExtension.getResourceDescriptionResolver())
             .setParameters(
                     getParameters(SUMMARY, DESCRIPTION, SEVERITY, PRODUCT,
-                            VERSION)).build();
+                            VERSION))
+            .setReplyType(ModelType.OBJECT)
+            .setReplyParameters(
+                    new SimpleAttributeDefinitionBuilder("case-number",
+                            ModelType.STRING).build(),
+                    new SimpleAttributeDefinitionBuilder("summary",
+                            ModelType.STRING).build(),
+                    new SimpleAttributeDefinitionBuilder("description",
+                            ModelType.STRING).build(),
+                    new SimpleAttributeDefinitionBuilder("product",
+                            ModelType.STRING).build(),
+                    new SimpleAttributeDefinitionBuilder("version",
+                            ModelType.STRING).build(),
+                    new SimpleAttributeDefinitionBuilder("severity",
+                            ModelType.STRING, true).build()).build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        // In MODEL stage, just validate the request. Unnecessary if the request
-        // has no parameters
-        validator.validate(operation);
+
         context.addStep(new OperationStepHandler() {
 
             @Override
@@ -86,6 +89,7 @@ public class OpenCaseRequestHandler extends BaseRequestHandler implements
                 try {
                     api = getAPI(context, operation);
                 } catch (MalformedURLException e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -106,17 +110,18 @@ public class OpenCaseRequestHandler extends BaseRequestHandler implements
                 try {
                     cas = api.getCases().add(cas);
                 } catch (Exception e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
                 ModelNode response = context.getResult();
-                response.get("CaseNumber").set(cas.getCaseNumber());
-                response.get("Summary").set(cas.getSummary());
-                response.get("Description").set(cas.getDescription());
-                response.get("Product").set(cas.getProduct());
-                response.get("Version").set(cas.getVersion());
+                response.get("case-number").set(cas.getCaseNumber());
+                response.get("summary").set(cas.getSummary());
+                response.get("description").set(cas.getDescription());
+                response.get("product").set(cas.getProduct());
+                response.get("version").set(cas.getVersion());
                 if (cas.getSeverity() != null) {
-                    response.get("Severity").set(cas.getSeverity());
+                    response.get("severity").set(cas.getSeverity());
                 }
 
                 context.stepCompleted();

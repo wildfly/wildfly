@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,9 +29,10 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
+
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Comment;
@@ -39,31 +40,27 @@ import java.net.MalformedURLException;
 
 public class AddCommentRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-
+    public static final Logger logger = Logger.getLogger(AddCommentRequestHandler.class);
     public static final String OPERATION_NAME = "add-comment";
     public static final AddCommentRequestHandler INSTANCE = new AddCommentRequestHandler();
 
-    private static final SimpleAttributeDefinition CASENUMBER = new SimpleAttributeDefinitionBuilder(
-            "caseNumber", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("caseNumber")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
-
     private static final SimpleAttributeDefinition COMMENTTEXT = new SimpleAttributeDefinitionBuilder(
-            "commentText", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("commentText")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "comment-text", ModelType.STRING).build();
 
-    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
             OPERATION_NAME,
             RedhatAccessPluginExtension.getResourceDescriptionResolver())
-            .setParameters(getParameters(CASENUMBER, COMMENTTEXT)).build();
+            .setParameters(getParameters(CASENUMBER, COMMENTTEXT)).setReplyType(ModelType.OBJECT)
+            .setReplyParameters(
+                    new SimpleAttributeDefinitionBuilder("author", ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("date", ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("text", ModelType.STRING, true).build()
+                )
+                .build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        // In MODEL stage, just validate the request. Unnecessary if the request
-        // has no parameters
-        validator.validate(operation);
         context.addStep(new OperationStepHandler() {
 
             @Override
@@ -73,6 +70,7 @@ public class AddCommentRequestHandler extends BaseRequestHandler implements
                 try {
                     api = getAPI(context, operation);
                 } catch (MalformedURLException e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -87,20 +85,21 @@ public class AddCommentRequestHandler extends BaseRequestHandler implements
                 try {
                     comment = api.getComments().add(comment);
                 } catch (Exception e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
                 ModelNode response = context.getResult();
 
                 if (comment.getCreatedBy() != null) {
-                    response.get("Author").set(comment.getCreatedBy());
+                    response.get("author").set(comment.getCreatedBy());
                 }
                 if (comment.getCreatedDate() != null) {
-                    response.get("Date").set(
+                    response.get("date").set(
                             comment.getCreatedDate().getTime().toString());
                 }
                 if (comment.getText() != null) {
-                    response.get("Text").set(comment.getText());
+                    response.get("text").set(comment.getText());
                 }
 
                 context.stepCompleted();

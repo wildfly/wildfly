@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,9 +25,13 @@ package com.redhat.gss.extension.requesthandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
+
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Case;
@@ -36,22 +40,45 @@ import java.util.List;
 
 public class ListCasesRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-
+    public static final Logger logger = Logger.getLogger(ListCasesRequestHandler.class);
     public static final String OPERATION_NAME = "list-cases";
     public static final ListCasesRequestHandler INSTANCE = new ListCasesRequestHandler();
 
-    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
             OPERATION_NAME,
-            RedhatAccessPluginExtension
-                    .getResourceDescriptionResolver())
-            .setParameters(getParameters()).build();
+            RedhatAccessPluginExtension.getResourceDescriptionResolver())
+            .setParameters(getParameters())
+            .setReplyType(ModelType.LIST)
+            .setReplyParameters(
+                    new SimpleAttributeDefinitionBuilder("case-number",
+                            ModelType.STRING).build(),
+                    new SimpleAttributeDefinitionBuilder("summary",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("case-type",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("severity",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("status",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("alternate-id",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("product",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("owner",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("opened",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("last-updated",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("account-number",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("description",
+                            ModelType.STRING, true).build()).build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        // In MODEL stage, just validate the request. Unnecessary if the request
-        // has no parameters
-        validator.validate(operation);
+
         context.addStep(new OperationStepHandler() {
 
             @Override
@@ -61,6 +88,7 @@ public class ListCasesRequestHandler extends BaseRequestHandler implements
                 try {
                     api = getAPI(context, operation);
                 } catch (MalformedURLException e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -69,6 +97,7 @@ public class ListCasesRequestHandler extends BaseRequestHandler implements
                     cases = api.getCases().list(null, false, true, null, null,
                             null, null, null, null);
                 } catch (Exception e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -77,44 +106,44 @@ public class ListCasesRequestHandler extends BaseRequestHandler implements
                 for (Case cas : cases) {
                     if (cas.getCaseNumber() != null) {
                         ModelNode caseNode = response.get(i);
-                        caseNode.get("Case").set(cas.getCaseNumber());
+                        caseNode.get("case-number").set(cas.getCaseNumber());
                         if (cas.getSummary() != null) {
-                            caseNode.get("Summary").set(cas.getSummary());
+                            caseNode.get("summary").set(cas.getSummary());
                         }
                         if (cas.getType() != null) {
-                            caseNode.get("Case Type").set(cas.getType());
+                            caseNode.get("case-type").set(cas.getType());
                         }
                         if (cas.getSeverity() != null) {
-                            caseNode.get("Severity").set(cas.getSeverity());
+                            caseNode.get("severity").set(cas.getSeverity());
                         }
                         if (cas.getStatus() != null) {
-                            caseNode.get("Status").set(cas.getStatus());
+                            caseNode.get("status").set(cas.getStatus());
                         }
                         if (cas.getAlternateId() != null) {
-                            caseNode.get("Alternate Id").set(
+                            caseNode.get("alternate-id").set(
                                     cas.getAlternateId());
                         }
                         if (cas.getProduct() != null) {
-                            caseNode.get("Product").set(cas.getProduct());
+                            caseNode.get("product").set(cas.getProduct());
                         }
                         if (cas.getOwner() != null) {
-                            caseNode.get("Owner").set(cas.getOwner());
+                            caseNode.get("owner").set(cas.getOwner());
                         }
                         if (cas.getCreatedDate() != null) {
-                            caseNode.get("Opened").set(
+                            caseNode.get("opened").set(
                                     cas.getCreatedDate().getTime().toString());
                         }
                         if (cas.getLastModifiedDate() != null) {
-                            caseNode.get("Last Updated").set(
+                            caseNode.get("last-updated").set(
                                     cas.getLastModifiedDate().getTime()
                                             .toString());
                         }
                         if (cas.getAccountNumber() != null) {
-                            caseNode.get("Account Number").set(
+                            caseNode.get("account-number").set(
                                     cas.getAccountNumber());
                         }
                         if (cas.getDescription() != null) {
-                            caseNode.get("Description").set(
+                            caseNode.get("description").set(
                                     cas.getDescription());
                         }
                     }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,9 +29,10 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
+
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Solution;
@@ -41,26 +42,30 @@ import java.util.List;
 
 public class SearchSolutionsRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-
+    public static final Logger logger = Logger.getLogger(SearchSolutionsRequestHandler.class);
     public static final String OPERATION_NAME = "search-solutions";
     public static final SearchSolutionsRequestHandler INSTANCE = new SearchSolutionsRequestHandler();
 
     private static final SimpleAttributeDefinition SEARCHSTRING = new SimpleAttributeDefinitionBuilder(
-            "searchString", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("searchString")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "searchString", ModelType.STRING).build();
 
-    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
             OPERATION_NAME,
             RedhatAccessPluginExtension.getResourceDescriptionResolver())
-            .setParameters(getParameters(SEARCHSTRING)).build();
+            .setParameters(getParameters(SEARCHSTRING))
+            .setReplyType(ModelType.LIST)
+            .setReplyParameters(
+                    new SimpleAttributeDefinitionBuilder("id", ModelType.STRING)
+                            .build(),
+                    new SimpleAttributeDefinitionBuilder("title",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("view-uri",
+                            ModelType.STRING, true).build()).build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        // In MODEL stage, just validate the request. Unnecessary if the request
-        // has no parameters
-        validator.validate(operation);
+
         context.addStep(new OperationStepHandler() {
 
             @Override
@@ -70,6 +75,7 @@ public class SearchSolutionsRequestHandler extends BaseRequestHandler implements
                 try {
                     api = getAPI(context, operation);
                 } catch (MalformedURLException e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -79,6 +85,7 @@ public class SearchSolutionsRequestHandler extends BaseRequestHandler implements
                 try {
                     solutions = api.getSolutions().list(searchStr, null);
                 } catch (Exception e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -88,14 +95,14 @@ public class SearchSolutionsRequestHandler extends BaseRequestHandler implements
                     if (solution.getId() != null) {
                         ModelNode solutionNode = response.get(i);
 
-                        solutionNode.get("ID").set(solution.getId());
+                        solutionNode.get("id").set(solution.getId());
 
                         if (solution.getTitle() != null) {
-                            solutionNode.get("Title").set(solution.getTitle());
+                            solutionNode.get("title").set(solution.getTitle());
                         }
                         i++;
                         if (solution.getViewUri() != null) {
-                            solutionNode.get("ViewUri").set(
+                            solutionNode.get("view-uri").set(
                                     solution.getViewUri());
                         }
                     }

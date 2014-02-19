@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -28,6 +28,9 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
+
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Values.Value;
@@ -37,21 +40,20 @@ import java.util.List;
 
 public class ListSeveritiesRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-
+    public static final Logger logger = Logger.getLogger(ListSeveritiesRequestHandler.class);
     public static final String OPERATION_NAME = "list-severities";
     public static final ListSeveritiesRequestHandler INSTANCE = new ListSeveritiesRequestHandler();
 
-    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
             OPERATION_NAME,
             RedhatAccessPluginExtension.getResourceDescriptionResolver())
-            .setParameters(getParameters()).build();
+            .setParameters(getParameters()).setReplyType(ModelType.LIST)
+            .setReplyValueType(ModelType.STRING).build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        // In MODEL stage, just validate the request. Unnecessary if the request
-        // has no parameters
-        validator.validate(operation);
+
         context.addStep(new OperationStepHandler() {
 
             @Override
@@ -61,6 +63,7 @@ public class ListSeveritiesRequestHandler extends BaseRequestHandler implements
                 try {
                     api = getAPI(context, operation);
                 } catch (MalformedURLException e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -68,6 +71,7 @@ public class ListSeveritiesRequestHandler extends BaseRequestHandler implements
                 try {
                     severities = api.getCases().getSeverities();
                 } catch (Exception e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

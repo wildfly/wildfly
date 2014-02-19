@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -24,7 +24,6 @@ package com.redhat.gss.extension;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import java.util.EnumSet;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.PathAddress;
@@ -34,7 +33,6 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.dmr.ModelNode;
 import com.redhat.gss.extension.requesthandler.AddCommentRequestHandler;
 import com.redhat.gss.extension.requesthandler.DiagnoseFileRequestHandler;
@@ -125,9 +123,5 @@ public class RedhatAccessPluginExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME,
                 Namespace.CURRENT.getUriString(),
                 RedhatAccessPluginSubsystemParser.INSTANCE);
-    }
-
-    private static ModelNode pathAddress(PathElement... elements) {
-        return PathAddress.pathAddress(elements).toModelNode();
     }
 }

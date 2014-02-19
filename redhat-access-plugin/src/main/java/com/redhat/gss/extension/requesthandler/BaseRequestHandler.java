@@ -1,3 +1,24 @@
+/*
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2014, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
 package com.redhat.gss.extension.requesthandler;
 
 import java.net.MalformedURLException;
@@ -10,44 +31,30 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
-import org.jboss.as.controller.operations.validation.ParametersValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
+import com.redhat.gss.extension.Constants;
 import com.redhat.gss.redhat_support_lib.api.API;
 
 public class BaseRequestHandler {
-    protected final ParametersValidator validator = new ParametersValidator();
-
     protected static final SimpleAttributeDefinition USERNAME = new SimpleAttributeDefinitionBuilder(
-            "username", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("username")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "username", ModelType.STRING).build();
     protected static final SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(
-            "password", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("password")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "password", ModelType.STRING).build();
     protected static final SimpleAttributeDefinition URL = new SimpleAttributeDefinitionBuilder(
-            "url", ModelType.STRING, true).setAllowExpression(true)
-            .setXmlName("url")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "url", ModelType.STRING, true).build();
     protected static final SimpleAttributeDefinition PROXYUSER = new SimpleAttributeDefinitionBuilder(
-            "proxyUser", ModelType.STRING, true).setAllowExpression(true)
-            .setXmlName("proxyUser")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "proxy-user", ModelType.STRING, true).build();
     protected static final SimpleAttributeDefinition PROXYPASSWORD = new SimpleAttributeDefinitionBuilder(
-            "proxyPassword", ModelType.STRING, true).setAllowExpression(true)
-            .setXmlName("proxyPassword")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "proxy-password", ModelType.STRING, true).build();
     protected static final SimpleAttributeDefinition PROXYURL = new SimpleAttributeDefinitionBuilder(
-            "proxyUrl", ModelType.STRING, true).setAllowExpression(true)
-            .setXmlName("proxyUrl")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "proxy-url", ModelType.STRING, true).build();
     protected static final SimpleAttributeDefinition PROXYPORT = new SimpleAttributeDefinitionBuilder(
-            "proxyPort", ModelType.INT, true).setAllowExpression(true)
-            .setXmlName("proxyPort")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "proxy-port", ModelType.INT, true).build();
+    // Not included by default
+    protected static final SimpleAttributeDefinition CASENUMBER = new SimpleAttributeDefinitionBuilder(
+            "case-number", ModelType.STRING).build();
 
     protected static AttributeDefinition[] getParameters(
             AttributeDefinition... parameters) {
@@ -89,14 +96,14 @@ public class BaseRequestHandler {
 
         API api = null;
         if (urlStr.isDefined()
-                && !urlStr.asString().equals("http://api.access.redhat.com")) {
+                && !urlStr.asString().equals(Constants.RHAccessURL)) {
             api = new API(
                     usernameStr,
                     passwordStr,
                     (urlStr.isDefined() ? urlStr.asString() : null),
                     (proxyUserStr.isDefined() ? proxyUserStr.asString() : null),
                     (proxyPasswordStr.isDefined() ? proxyPasswordStr.asString()
-                            : null), proxyUrlUrl, proxyPortInt, "eap", true);
+                            : null), proxyUrlUrl, proxyPortInt, Constants.userAgent, true);
         } else {
             api = new API(
                     usernameStr,

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -29,7 +29,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
-import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.logging.Logger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
@@ -40,26 +40,29 @@ import java.util.List;
 
 public class SymptomsFileRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-
+    public static final Logger logger = Logger.getLogger(SymptomsFileRequestHandler.class);
     public static final String OPERATION_NAME = "symptoms";
     public static final SymptomsFileRequestHandler INSTANCE = new SymptomsFileRequestHandler();
 
     private static final SimpleAttributeDefinition SYMPTIONSFILE = new SimpleAttributeDefinitionBuilder(
-            "symptoms-file", ModelType.STRING).setAllowExpression(true)
-            .setXmlName("symptoms-file")
-            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES).build();
+            "symptoms-file", ModelType.STRING).build();
 
-    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
             OPERATION_NAME,
             RedhatAccessPluginExtension.getResourceDescriptionResolver())
-            .setParameters(getParameters(SYMPTIONSFILE)).build();
+            .setParameters(getParameters(SYMPTIONSFILE))
+            .setReplyType(ModelType.LIST)
+            .setReplyParameters(
+                    new SimpleAttributeDefinitionBuilder("summary",
+                            ModelType.STRING).build(),
+                    new SimpleAttributeDefinitionBuilder("category",
+                            ModelType.STRING, true).build(),
+                    new SimpleAttributeDefinitionBuilder("verbatim",
+                            ModelType.STRING, true).build()).build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        // In MODEL stage, just validate the request. Unnecessary if the request
-        // has no parameters
-        validator.validate(operation);
         context.addStep(new OperationStepHandler() {
 
             @Override
@@ -69,6 +72,7 @@ public class SymptomsFileRequestHandler extends BaseRequestHandler implements
                 try {
                     api = getAPI(context, operation);
                 } catch (MalformedURLException e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -79,6 +83,7 @@ public class SymptomsFileRequestHandler extends BaseRequestHandler implements
                     symptoms = api.getSymptoms().retrieveSymptoms(
                             symptomsFileString);
                 } catch (Exception e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -87,14 +92,14 @@ public class SymptomsFileRequestHandler extends BaseRequestHandler implements
                 for (ExtractedSymptom symptom : symptoms) {
                     if (symptom.getSummary() != null) {
                         ModelNode symptomNode = response.get(i);
-                        symptomNode.get("Summary").set(symptom.getSummary());
+                        symptomNode.get("summary").set(symptom.getSummary());
 
                         if (symptom.getCategory() != null) {
-                            symptomNode.get("Category").set(
+                            symptomNode.get("category").set(
                                     symptom.getCategory());
                         }
                         if (symptom.getVerbatim() != null) {
-                            symptomNode.get("Verbatim").set(
+                            symptomNode.get("verbatim").set(
                                     symptom.getVerbatim());
                         }
                         i++;

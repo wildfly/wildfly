@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,9 +25,13 @@ package com.redhat.gss.extension.requesthandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.logging.Logger;
+
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Product;
@@ -36,21 +40,23 @@ import java.util.List;
 
 public class ListProductsRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-
+    public static final Logger logger = Logger.getLogger(ListProductsRequestHandler.class);
     public static final String OPERATION_NAME = "list-products";
     public static final ListProductsRequestHandler INSTANCE = new ListProductsRequestHandler();
 
-    public static SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
+    public static final SimpleOperationDefinition DEFINITION = new SimpleOperationDefinitionBuilder(
             OPERATION_NAME,
             RedhatAccessPluginExtension.getResourceDescriptionResolver())
-            .setParameters(getParameters()).build();
+            .setParameters(getParameters())
+            .setReplyType(ModelType.LIST)
+            .setReplyParameters(
+                    new SimpleAttributeDefinitionBuilder("product",
+                            ModelType.STRING).build()).build();
 
     @Override
     public void execute(OperationContext context, ModelNode operation)
             throws OperationFailedException {
-        // In MODEL stage, just validate the request. Unnecessary if the request
-        // has no parameters
-        validator.validate(operation);
+
         context.addStep(new OperationStepHandler() {
 
             @Override
@@ -60,6 +66,7 @@ public class ListProductsRequestHandler extends BaseRequestHandler implements
                 try {
                     api = getAPI(context, operation);
                 } catch (MalformedURLException e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -67,6 +74,7 @@ public class ListProductsRequestHandler extends BaseRequestHandler implements
                 try {
                     products = api.getProducts().list(null);
                 } catch (Exception e) {
+                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }
@@ -75,7 +83,7 @@ public class ListProductsRequestHandler extends BaseRequestHandler implements
                 for (Product product : products) {
                     if (product.getName() != null) {
                         ModelNode productNode = response.get(i);
-                        productNode.get("Product").set(product.getName());
+                        productNode.get("product").set(product.getName());
                         i++;
                     }
                 }

@@ -1,4 +1,8 @@
 <module xmlns="urn:jboss:module:1.0" name="com.redhat.gss.redhat-access-plugin">
+    
+    <properties>
+        <property name="jboss.api" value="private"/>
+    </properties>
     <resources>
         <!-- Insert resources here -->
     </resources>

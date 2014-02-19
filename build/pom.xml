@@ -253,56 +253,6 @@
 					<groupId>com.redhat.gss</groupId>
 					<artifactId>redhat-support-lib-java</artifactId>
 				</dependency>
-				
-				<dependency>
-					<groupId>commons-codec</groupId>
-					<artifactId>commons-codec</artifactId>
-				</dependency>
-				
-				<dependency>
-					<groupId>org.apache.httpcomponents</groupId>
-					<artifactId>httpclient</artifactId>
-				</dependency>
-				
-				<dependency>
-					<groupId>org.apache.httpcomponents</groupId>
-					<artifactId>httpcore</artifactId>
-				</dependency>
-				
-				<dependency>
-					<groupId>commons-net</groupId>
-					<artifactId>commons-net</artifactId>
-				</dependency>
-				
-				<dependency>
-					<groupId>com.sun.jersey.contribs</groupId>
-					<artifactId>jersey-apache-client4</artifactId>
-					<version>1.17.1</version>
-				</dependency>
-				
-				<dependency>
-					<groupId>com.sun.jersey.contribs</groupId>
-					<artifactId>jersey-multipart</artifactId>
-					<version>1.17.1</version>
-				</dependency>
-				
-				<dependency>
-					<groupId>com.sun.jersey</groupId>
-					<artifactId>jersey-client</artifactId>
-					<version>1.17.1</version>
-				</dependency>
-				
-				<dependency>
-					<groupId>com.sun.jersey</groupId>
-					<artifactId>jersey-core</artifactId>
-					<version>1.17.1</version>
-				</dependency>
-				
-				<dependency>
-					<groupId>org.jvnet</groupId>
-					<artifactId>mimepull</artifactId>
-					<version>1.6</version>
-				</dependency>
 
                 <dependency>
                     <groupId>com.sun.codemodel</groupId>
@@ -322,6 +272,26 @@
                 <dependency>
                     <groupId>com.sun.istack</groupId>
                     <artifactId>istack-commons-tools</artifactId>
+                </dependency>
+                
+                <dependency>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-client</artifactId>
+                </dependency>
+                
+                <dependency>
+                    <groupId>com.sun.jersey</groupId>
+                    <artifactId>jersey-core</artifactId>
+                </dependency>
+                
+                <dependency>
+                    <groupId>com.sun.jersey.contribs</groupId>
+                    <artifactId>jersey-apache-client4</artifactId>
+                </dependency>
+                
+                <dependency>
+                    <groupId>com.sun.jersey.contribs</groupId>
+                    <artifactId>jersey-multipart</artifactId>
                 </dependency>
 
                 <dependency>
@@ -383,6 +353,11 @@
                     <groupId>commons-lang</groupId>
                     <artifactId>commons-lang</artifactId>
                 </dependency>
+                
+                <dependency>
+                    <groupId>commons-net</groupId>
+                    <artifactId>commons-net</artifactId>
+                </dependency>
 
                 <dependency>
                     <groupId>commons-pool</groupId>
@@ -407,6 +382,11 @@
                 <dependency>
                     <groupId>org.jacorb</groupId>
                     <artifactId>jacorb</artifactId>
+                </dependency>
+                
+                <dependency>
+                    <groupId>org.jvnet</groupId>
+                    <artifactId>mimepull</artifactId>
                 </dependency>
 
                 <dependency>
