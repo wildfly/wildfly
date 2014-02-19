@@ -2988,4 +2988,11 @@ public interface EjbLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 456, value = "Failed to refresh timers for %s")
     void failedToRefreshTimers(String timedObjectId);
+
+    @Message(id = 457, value = "Unexpected Error")
+    String convertUnexpectedError();
+
+    @LogMessage(level = ERROR)
+    @Message(id = 458, value = "Failure in caller transaction.")
+    void failureInCallerTransaction(@Cause Throwable cause);
 }
