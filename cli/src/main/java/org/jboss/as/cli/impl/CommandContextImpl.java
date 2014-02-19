@@ -707,6 +707,14 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         }
     }
 
+    /**
+     * Set the exit code of the process to indicate an error and output the error message.
+     *
+     * WARNING This method should only be called for unrecoverable errors as once the exit code is set subsequent operations may
+     * not be possible.
+     *
+     * @param message The message to display.
+     */
     protected void error(String message) {
         this.exitCode = 1;
         printLine(message);
@@ -884,7 +892,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
         if (trustManager == null || (lastChain = trustManager.getLastFailedCertificateChain()) == null) {
             return false;
         }
-        error("Unable to connect due to unrecognised server certificate");
+        printLine("Unable to connect due to unrecognised server certificate");
         for (Certificate current : lastChain) {
             if (current instanceof X509Certificate) {
                 X509Certificate x509Current = (X509Certificate) current;
