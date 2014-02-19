@@ -22,11 +22,14 @@
 
 package org.wildfly.test.integration.security.picketlink.idm;
 
-import org.jboss.arquillian.junit.InSequence;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.picketlink.idm.IdentityManager;
 import org.picketlink.idm.PartitionManager;
 import org.picketlink.idm.RelationshipManager;
+import org.picketlink.idm.config.IdentityConfiguration;
+import org.picketlink.idm.config.IdentityStoreConfiguration;
 import org.picketlink.idm.credential.Credentials;
 import org.picketlink.idm.credential.Password;
 import org.picketlink.idm.credential.UsernamePasswordCredentials;
@@ -51,25 +54,31 @@ import static org.picketlink.idm.model.basic.BasicModel.hasRole;
  */
 public abstract class AbstractBasicIdentityManagementTestCase {
 
+    @Before
+    public void onBefore() {
+        if (isPartitionSupported(getPartitionManager())) {
+            createDefaultPartition();
+        }
+    }
+
+    @After
+    public void onAfter() {
+        if (isPartitionSupported(getPartitionManager())) {
+            removeDefaultPartition();
+        }
+    }
+
     @Test
-    @InSequence(1)
     public void testPartitionManagement() throws Exception {
         PartitionManager partitionManager = getPartitionManager();
-        Realm partition = partitionManager.getPartition(Realm.class, Realm.DEFAULT_REALM);
-
-        if (partition != null) {
-            partitionManager.remove(partition);
-        }
-
-        partitionManager.add(new Realm(Realm.DEFAULT_REALM));
 
         assertNotNull(partitionManager.getPartition(Realm.class, Realm.DEFAULT_REALM));
     }
 
     @Test
-    @InSequence(2)
     public void testUserManagement() throws Exception {
         PartitionManager partitionManager = getPartitionManager();
+
         IdentityManager identityManager = partitionManager.createIdentityManager();
         String loginName = "johny";
         User user = getUser(identityManager, loginName);
@@ -84,11 +93,21 @@ public abstract class AbstractBasicIdentityManagementTestCase {
     }
 
     @Test
-    @InSequence(3)
     public void testCredentialManagement() throws Exception {
         PartitionManager partitionManager = getPartitionManager();
+
         IdentityManager identityManager = partitionManager.createIdentityManager();
-        User user = getUser(identityManager, "johny");
+        String loginName = "johny";
+        User user = getUser(identityManager, loginName);
+
+        if (user != null) {
+            identityManager.remove(user);
+        }
+
+        identityManager.add(new User(loginName));
+
+        user = getUser(identityManager, "johny");
+
         Password password = new Password("abcd1234");
 
         identityManager.updateCredential(user, password);
@@ -101,9 +120,9 @@ public abstract class AbstractBasicIdentityManagementTestCase {
     }
 
     @Test
-    @InSequence(4)
     public void testRoleManagement() throws Exception {
         PartitionManager partitionManager = getPartitionManager();
+
         IdentityManager identityManager = partitionManager.createIdentityManager();
         String roleName = "admin";
         Role role = getRole(identityManager, roleName);
@@ -118,12 +137,31 @@ public abstract class AbstractBasicIdentityManagementTestCase {
     }
 
     @Test
-    @InSequence(5)
     public void testRelationshipManagement() throws Exception {
         PartitionManager partitionManager = getPartitionManager();
+
         IdentityManager identityManager = partitionManager.createIdentityManager();
-        User user = getUser(identityManager, "johny");
-        Role role = getRole(identityManager, "admin");
+        String loginName = "johny";
+        User user = getUser(identityManager, loginName);
+
+        if (user != null) {
+            identityManager.remove(user);
+        }
+
+        identityManager.add(new User(loginName));
+
+        user = getUser(identityManager, "johny");
+
+        String roleName = "admin";
+        Role role = getRole(identityManager, roleName);
+
+        if (role != null) {
+            identityManager.remove(role);
+        }
+
+        identityManager.add(new Role(roleName));
+
+        role = getRole(identityManager, "admin");
 
         RelationshipManager relationshipManager = partitionManager.createRelationshipManager();
 
@@ -133,11 +171,20 @@ public abstract class AbstractBasicIdentityManagementTestCase {
     }
 
     @Test
-    @InSequence(6)
     public void testAttributeManagement() throws Exception {
         PartitionManager partitionManager = getPartitionManager();
+
         IdentityManager identityManager = partitionManager.createIdentityManager();
-        User user = getUser(identityManager, "johny");
+        String loginName = "johny";
+        User user = getUser(identityManager, loginName);
+
+        if (user != null) {
+            identityManager.remove(user);
+        }
+
+        identityManager.add(new User(loginName));
+
+        user = getUser(identityManager, "johny");
 
         assertNull(user.getAttribute("testAttribute"));
 
@@ -149,5 +196,33 @@ public abstract class AbstractBasicIdentityManagementTestCase {
         assertEquals("value", user.getAttribute("testAttribute").getValue());
     }
 
+    protected void createDefaultPartition() {
+        getPartitionManager().add(new Realm(Realm.DEFAULT_REALM));
+    }
+
+    protected void removeDefaultPartition() {
+        PartitionManager partitionManager = getPartitionManager();
+        Realm partition = partitionManager.getPartition(Realm.class, Realm.DEFAULT_REALM);
+
+        if (partition != null) {
+            partitionManager.remove(partition);
+        }
+    }
+
     protected abstract PartitionManager getPartitionManager();
+
+    private boolean isPartitionSupported(final PartitionManager partitionManager) {
+        for (IdentityConfiguration configuration : partitionManager.getConfigurations()) {
+            if (configuration.supportsPartition()) {
+                for (IdentityStoreConfiguration storeConfig : configuration.getStoreConfiguration()) {
+                    if (storeConfig.supportsType(Realm.class, IdentityStoreConfiguration.IdentityOperation.create)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
 }

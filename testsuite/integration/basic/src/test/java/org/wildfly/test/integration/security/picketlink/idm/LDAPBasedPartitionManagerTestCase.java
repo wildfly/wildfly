@@ -27,19 +27,20 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.wildfly.extension.picketlink.idm.model.AttributedTypeEnum;
-import org.wildfly.extension.picketlink.idm.model.ModelElement;
-import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
-import org.wildfly.test.integration.security.picketlink.idm.util.LdapMapping;
-import org.wildfly.test.integration.security.picketlink.idm.util.LdapServerSetupTask;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.picketlink.idm.PartitionManager;
+import org.wildfly.extension.picketlink.idm.model.AttributedTypeEnum;
+import org.wildfly.extension.picketlink.idm.model.ModelElement;
+import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
+import org.wildfly.test.integration.security.picketlink.idm.util.LdapMapping;
+import org.wildfly.test.integration.security.picketlink.idm.util.LdapServerSetupTask;
 
 import javax.annotation.Resource;
 
@@ -76,6 +77,7 @@ public class LDAPBasedPartitionManagerTestCase extends AbstractBasicIdentityMana
 
     @Override
     @Test
+    @Ignore ("LDAP Identity Store does not support partition management.")
     public void testPartitionManagement() throws Exception {
         // ldap store does not support partition management
     }

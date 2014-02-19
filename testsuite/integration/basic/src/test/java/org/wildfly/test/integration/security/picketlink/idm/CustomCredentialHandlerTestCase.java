@@ -24,27 +24,10 @@ package org.wildfly.test.integration.security.picketlink.idm;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.junit.InSequence;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
-import org.wildfly.test.integration.security.picketlink.idm.credentials.CustomCredential;
-import org.wildfly.test.integration.security.picketlink.idm.credentials.CustomCredentialHandler;
-import org.wildfly.test.integration.security.picketlink.idm.entities.AbstractCredentialTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.AccountEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.AttributeTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.AttributedTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.GroupTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.IdentityTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.PartitionTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.PasswordCredentialTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.RelationshipIdentityTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.RelationshipIdentityTypeReferenceEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.RelationshipTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.entities.RoleTypeEntity;
-import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
-import org.wildfly.test.integration.security.picketlink.util.TestModule;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -62,9 +45,14 @@ import org.wildfly.test.integration.security.picketlink.idm.entities.AccountEnti
 import org.wildfly.test.integration.security.picketlink.idm.entities.AttributeTypeEntity;
 import org.wildfly.test.integration.security.picketlink.idm.entities.AttributedTypeEntity;
 import org.wildfly.test.integration.security.picketlink.idm.entities.GroupTypeEntity;
+import org.wildfly.test.integration.security.picketlink.idm.entities.IdentityTypeEntity;
+import org.wildfly.test.integration.security.picketlink.idm.entities.PartitionTypeEntity;
+import org.wildfly.test.integration.security.picketlink.idm.entities.PasswordCredentialTypeEntity;
+import org.wildfly.test.integration.security.picketlink.idm.entities.RelationshipIdentityTypeEntity;
 import org.wildfly.test.integration.security.picketlink.idm.entities.RelationshipIdentityTypeReferenceEntity;
 import org.wildfly.test.integration.security.picketlink.idm.entities.RelationshipTypeEntity;
 import org.wildfly.test.integration.security.picketlink.idm.entities.RoleTypeEntity;
+import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
 import org.wildfly.test.integration.security.picketlink.util.TestModule;
 
 import javax.annotation.Resource;
@@ -72,12 +60,12 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.junit.Assert.assertEquals;
 import static org.wildfly.extension.picketlink.idm.model.ModelElement.COMMON_CLASS_NAME;
 import static org.wildfly.extension.picketlink.idm.model.ModelElement.COMMON_MODULE;
 import static org.wildfly.extension.picketlink.idm.model.ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER;
 import static org.wildfly.extension.picketlink.idm.model.ModelElement.JPA_STORE;
 import static org.wildfly.extension.picketlink.idm.model.ModelElement.JPA_STORE_DATASOURCE;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author Pedro Igor
@@ -107,10 +95,10 @@ public class CustomCredentialHandlerTestCase extends AbstractBasicIdentityManage
         return this.partitionManager;
     }
 
-    @InSequence(99)
     @Test
     public void testCustomCredential() {
         PartitionManager partitionManager = getPartitionManager();
+
         IdentityManager identityManager = partitionManager.createIdentityManager();
         CustomCredential credentials = new CustomCredential("valid_token");
 
