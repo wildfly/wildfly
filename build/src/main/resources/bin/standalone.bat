@@ -103,55 +103,6 @@ if "%DEBUG_MODE%" == "true" (
 set DIRNAME=
 
 rem Setup JBoss specific properties
-set "JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%"
-
-if "x%JAVA_HOME%" == "x" (
-  set  JAVA=java
-  echo JAVA_HOME is not set. Unexpected results may occur.
-  echo Set JAVA_HOME to the directory of your local JDK to avoid this message.
-) else (
-  if not exist "%JAVA_HOME%" (
-    echo JAVA_HOME "%JAVA_HOME%" path doesn't exist
-    goto END
-  ) else (
-    echo Setting JAVA property to "%JAVA_HOME%\bin\java"
-    set "JAVA=%JAVA_HOME%\bin\java"
-  )
-)
-
-if not "%PRESERVE_JAVA_OPTS%" == "true" (
-  rem Add -client to the JVM options, if supported (32 bit VM), and not overriden
-  echo "%JAVA_OPTS%" | findstr /I \-server > nul
-  if errorlevel == 1 (
-    "%JAVA%" -client -version 2>&1 | findstr /I /C:"Client VM" > nul
-    if not errorlevel == 1 (
-      set "JAVA_OPTS=-client %JAVA_OPTS%"
-    )
-  )
-)
-
-if not "%PRESERVE_JAVA_OPTS%" == "true" (
-  rem Add compressed oops, if supported (64 bit VM), and not overriden
-  echo "%JAVA_OPTS%" | findstr /I "\-XX:\-UseCompressedOops \-client" > nul
-  if errorlevel == 1 (
-    "%JAVA%" -XX:+UseCompressedOops -version > nul 2>&1
-    if not errorlevel == 1 (
-      set "JAVA_OPTS=-XX:+UseCompressedOops %JAVA_OPTS%"
-    )
-  )
-)
-
-
-rem Find jboss-modules.jar, or we can't continue
-if exist "%JBOSS_HOME%\jboss-modules.jar" (
-    set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
-) else (
-  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
-  echo Please check that you are in the bin directory when running this script.
-  goto END
-)
-
-rem Setup JBoss specific properties
 
 rem Setup directories, note directories with spaces do not work
 set "CONSOLIDATED_OPTS=%JAVA_OPTS% %SERVER_OPTS%"
@@ -200,6 +151,73 @@ rem Set the standalone configuration dir
 if "x%JBOSS_CONFIG_DIR%" == "x" (
   set  "JBOSS_CONFIG_DIR=%JBOSS_BASE_DIR%\configuration"
 )
+
+rem Setup JBoss specific properties
+set "JAVA_OPTS=-Dprogram.name=%PROGNAME% %JAVA_OPTS%"
+
+if "x%JAVA_HOME%" == "x" (
+  set  JAVA=java
+  echo JAVA_HOME is not set. Unexpected results may occur.
+  echo Set JAVA_HOME to the directory of your local JDK to avoid this message.
+) else (
+  if not exist "%JAVA_HOME%" (
+    echo JAVA_HOME "%JAVA_HOME%" path doesn't exist
+    goto END
+  ) else (
+    echo Setting JAVA property to "%JAVA_HOME%\bin\java"
+    set "JAVA=%JAVA_HOME%\bin\java"
+  )
+)
+
+if not "%PRESERVE_JAVA_OPTS%" == "true" (
+  rem Add -client to the JVM options, if supported (32 bit VM), and not overriden
+  echo "%JAVA_OPTS%" | findstr /I \-server > nul
+  if errorlevel == 1 (
+    "%JAVA%" -client -version 2>&1 | findstr /I /C:"Client VM" > nul
+    if not errorlevel == 1 (
+      set "JAVA_OPTS=-client %JAVA_OPTS%"
+    )
+  )
+)
+
+if not "%PRESERVE_JAVA_OPTS%" == "true" (
+  rem Add compressed oops, if supported (64 bit VM), and not overriden
+  echo "%JAVA_OPTS%" | findstr /I "\-XX:\-UseCompressedOops \-client" > nul
+  if errorlevel == 1 (
+    "%JAVA%" -XX:+UseCompressedOops -version > nul 2>&1
+    if not errorlevel == 1 (
+      set "JAVA_OPTS=-XX:+UseCompressedOops %JAVA_OPTS%"
+    )
+  )
+)
+
+rem EAP6-121 feature disabled
+rem if not "%PRESERVE_JAVA_OPTS%" == "true" (
+  rem Add rotating GC logs, if supported, and not already defined
+  rem echo "%JAVA_OPTS%" | findstr /I "\-verbose:gc" > nul
+  rem if errorlevel == 1 (
+    rem "%JAVA%" -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -version > nul 2>&1
+    rem if not errorlevel == 1 (
+      rem if not exist "%JBOSS_LOG_DIR" > nul 2>&1 (
+        rem mkdir "%JBOSS_LOG_DIR%"
+      rem )
+      rem Back up any prior logs
+      rem rename "%JBOSS_LOG_DIR%\gc.log.*" "backupgc.log.?"
+      rem set "JAVA_OPTS=-verbose:gc -Xloggc:%JBOSS_LOG_DIR%\gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M %JAVA_OPTS%"
+    rem )
+  rem )
+rem )
+
+rem Find jboss-modules.jar, or we can't continue
+if exist "%JBOSS_HOME%\jboss-modules.jar" (
+    set "RUNJAR=%JBOSS_HOME%\jboss-modules.jar"
+) else (
+  echo Could not locate "%JBOSS_HOME%\jboss-modules.jar".
+  echo Please check that you are in the bin directory when running this script.
+  goto END
+)
+
+
 
 echo ===============================================================================
 echo.
