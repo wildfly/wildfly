@@ -149,26 +149,28 @@ public class CMTTxInterceptor implements Interceptor {
             throw (Exception) t;
         }
 
-        // if it's not EJBTransactionRolledbackException
+        Exception toThrow;
         if (!(t instanceof EJBTransactionRolledbackException)) {
             if (t instanceof Error) {
                 //t = new EJBTransactionRolledbackException(formatException("Unexpected Error", t));
-                Throwable cause = t;
-                t = new EJBTransactionRolledbackException("Unexpected Error");
-                t.initCause(cause);
+                toThrow = EjbMessages.MESSAGES.convertUnexpectedError(t);
             } else if (t instanceof NoSuchEJBException || t instanceof NoSuchEntityException) {
                 // If this is an NoSuchEJBException, pass through to the caller
-
+                toThrow = (Exception) t;
+                // TODO WFLY-2967 even if we log-and-throw some stuff should this case be one?
             } else if (t instanceof RuntimeException) {
-                t = new EJBTransactionRolledbackException(t.getMessage(), (Exception) t);
+                toThrow = new EJBTransactionRolledbackException(t.getMessage(), (Exception) t);
             } else {// application exception
                 throw (Exception) t;
             }
+        } else {
+            toThrow= (Exception) t;
         }
 
         setRollbackOnly(tx);
-        EjbLogger.ROOT_LOGGER.error(t);
-        throw (Exception) t;
+        // TODO WFLY-2967 remove this log-and-throw below, change msg to DEBUG or limit its scope to certain cases
+        EjbLogger.ROOT_LOGGER.failureInCallerTransaction(t); // log orig 't' not noisier wrapper created above
+        throw toThrow;
     }
 
     public void handleExceptionInOurTx(InterceptorContext invocation, Throwable t, Transaction tx, final EJBComponent component) throws Exception {
