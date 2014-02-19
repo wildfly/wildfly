@@ -138,6 +138,7 @@ public class DomainLifecycleUtil {
             if (configuration.getJavaVmArguments() != null) {
                 Collections.addAll(additionalJavaOpts, configuration.getJavaVmArguments().split("\\s+"));
             }
+            additionalJavaOpts.add("-Djboss.home.dir=" + jbossHomeDir);
 
             File modulesJar = new File(jbossHomeDir + File.separatorChar + "jboss-modules.jar");
             if (!modulesJar.exists())
@@ -200,7 +201,6 @@ public class DomainLifecycleUtil {
             cmd.add(controllerJava);
             cmd.addAll(additionalJavaOpts);
             TestSuiteEnvironment.getIpv6Args(cmd);
-            cmd.add("-Djboss.home.dir=" + jbossHomeDir);
             cmd.add("-Dorg.jboss.boot.log.file=" + domainPath + "/log/process-controller.log");
             cmd.add("-Dlogging.configuration=file:" + jbossHomeDir + "/domain/configuration/logging.properties");
             cmd.add("-jar");
