@@ -194,7 +194,10 @@ class HornetQService implements Service<HornetQServer> {
                                 host = binding.getDestinationAddress().getHostAddress();
                             }
                         }
-                        tc.getParams().put(HOST, host);
+                        // [WFLY-2963] use the resolved host only if the HOST parameter is not already set
+                        if (!tc.getParams().containsKey(HOST)) {
+                            tc.getParams().put(HOST, host);
+                        }
                         tc.getParams().put(PORT, String.valueOf(port));
                     }
                 }
