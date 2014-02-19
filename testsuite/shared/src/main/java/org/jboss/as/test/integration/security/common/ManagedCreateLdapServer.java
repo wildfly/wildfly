@@ -63,6 +63,8 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
     /** The service principal, used by GSSAPI. */
     private String saslPrincipal;
 
+    private String[] saslRealms;
+
     // Constructors ----------------------------------------------------------
 
     /**
@@ -86,6 +88,7 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
         ntlmProvider = createLdapServer.ntlmProvider();
         saslHost = createLdapServer.saslHost();
         saslPrincipal = createLdapServer.saslPrincipal();
+        saslRealms = createLdapServer.saslRealms();
     }
 
     // Public methods --------------------------------------------------------
@@ -322,6 +325,11 @@ public class ManagedCreateLdapServer extends AnnotationLiteral<CreateLdapServer>
      */
     public void setSaslPrincipal(String saslPrincipal) {
         this.saslPrincipal = saslPrincipal;
+    }
+
+    @Override
+    public String[] saslRealms() {
+        return  saslRealms;
     }
 
 }

@@ -24,17 +24,23 @@ package org.jboss.as.test.integration.security.common;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import javax.security.auth.kerberos.KerberosPrincipal;
+import org.apache.directory.api.ldap.model.exception.LdapInvalidDnException;
+import org.apache.directory.server.annotations.CreateChngPwdServer;
+import org.apache.directory.server.annotations.CreateKdcServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.AnnotationUtils;
 import org.apache.directory.server.core.api.DirectoryService;
+import static org.apache.directory.server.factory.ServerAnnotationProcessor.createTransport;
 import org.apache.directory.server.i18n.I18n;
+import org.apache.directory.server.kerberos.ChangePasswordConfig;
+import org.apache.directory.server.kerberos.KerberosConfig;
+import org.apache.directory.server.kerberos.changepwd.ChangePasswordServer;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
 import org.apache.directory.server.kerberos.shared.replay.ReplayCache;
 import org.apache.directory.server.protocol.shared.transport.TcpTransport;
 import org.apache.directory.server.protocol.shared.transport.Transport;
 import org.apache.directory.server.protocol.shared.transport.UdpTransport;
 import org.apache.directory.shared.kerberos.KerberosTime;
-import org.apache.directory.shared.ldap.model.exception.LdapInvalidDnException;
 import org.apache.mina.util.AvailablePortFinder;
 import org.jboss.logging.Logger;
 
@@ -60,9 +66,9 @@ public class KDCServerAnnotationProcessor {
      * @return
      * @throws Exception
      */
-    public static KdcServer getKdcServer(DirectoryService directoryService, int startPort, String address) throws Exception {
-        final ExtCreateKdcServer createKdcServer = (ExtCreateKdcServer) AnnotationUtils.getInstance(ExtCreateKdcServer.class);
-        return createKdcServer(createKdcServer, directoryService, startPort, address);
+    public static KdcServer getKdcServer(DirectoryService directoryService, int startPort) throws Exception {
+        final CreateKdcServer createKdcServer = (CreateKdcServer) AnnotationUtils.getInstance(CreateKdcServer.class);
+        return createKdcServer(createKdcServer, directoryService, startPort);
     }
 
     // Private methods -------------------------------------------------------
@@ -75,19 +81,22 @@ public class KDCServerAnnotationProcessor {
      * @param startPort
      * @return
      */
-    private static KdcServer createKdcServer(ExtCreateKdcServer createKdcServer, DirectoryService directoryService,
-            int startPort, String bindAddress) {
+    private static KdcServer createKdcServer(CreateKdcServer createKdcServer, DirectoryService directoryService,
+            int startPort) {
         if (createKdcServer == null) {
             return null;
         }
-        KdcServer kdcServer = new NoReplayKdcServer();
-        kdcServer.setServiceName(createKdcServer.name());
-        kdcServer.setKdcPrincipal(createKdcServer.kdcPrincipal());
-        kdcServer.setPrimaryRealm(createKdcServer.primaryRealm());
-        kdcServer.setMaximumTicketLifetime(createKdcServer.maxTicketLifetime());
-        kdcServer.setMaximumRenewableLifetime(createKdcServer.maxRenewableLifetime());
+
+        KerberosConfig kdcConfig = new KerberosConfig();
+        kdcConfig.setServicePrincipal(createKdcServer.kdcPrincipal());
+        kdcConfig.setPrimaryRealm(createKdcServer.primaryRealm());
+        kdcConfig.setMaximumTicketLifetime(createKdcServer.maxTicketLifetime());
+        kdcConfig.setMaximumRenewableLifetime(createKdcServer.maxRenewableLifetime());
+        kdcConfig.setPaEncTimestampRequired(false);
+
+        KdcServer kdcServer = new NoReplayKdcServer(kdcConfig);
+
         kdcServer.setSearchBaseDn(createKdcServer.searchBaseDn());
-        kdcServer.setPaEncTimestampRequired(false);
 
         CreateTransport[] transportBuilders = createKdcServer.transports();
 
@@ -97,27 +106,31 @@ public class KDCServerAnnotationProcessor {
             kdcServer.addTransports(defaultTransport);
         } else if (transportBuilders.length > 0) {
             for (CreateTransport transportBuilder : transportBuilders) {
-                String protocol = transportBuilder.protocol();
-                int port = transportBuilder.port();
-                int nbThreads = transportBuilder.nbThreads();
-                int backlog = transportBuilder.backlog();
-                final String address = bindAddress != null ? bindAddress : transportBuilder.address();
-
-                if (port == -1) {
-                    port = AvailablePortFinder.getNextAvailable(startPort);
-                    startPort = port + 1;
-                }
-
-                if (protocol.equalsIgnoreCase("TCP")) {
-                    Transport tcp = new TcpTransport(address, port, nbThreads, backlog);
-                    kdcServer.addTransports(tcp);
-                } else if (protocol.equalsIgnoreCase("UDP")) {
-                    UdpTransport udp = new UdpTransport(address, port);
-                    kdcServer.addTransports(udp);
-                } else {
-                    throw new IllegalArgumentException(I18n.err(I18n.ERR_689, protocol));
-                }
+                Transport t = createTransport(transportBuilder, startPort);
+                startPort = t.getPort() + 1;
+                kdcServer.addTransports(t);
             }
+        }
+
+        CreateChngPwdServer[] createChngPwdServers = createKdcServer.chngPwdServer();
+
+        if (createChngPwdServers.length > 0) {
+
+            CreateChngPwdServer createChngPwdServer = createChngPwdServers[0];
+            ChangePasswordConfig config = new ChangePasswordConfig(kdcConfig);
+            config.setServicePrincipal(createChngPwdServer.srvPrincipal());
+
+            ChangePasswordServer chngPwdServer = new ChangePasswordServer(config);
+
+            for (CreateTransport transportBuilder : createChngPwdServer.transports()) {
+                Transport t = createTransport(transportBuilder, startPort);
+                startPort = t.getPort() + 1;
+                chngPwdServer.addTransports(t);
+            }
+
+            chngPwdServer.setDirectoryService(directoryService);
+
+            kdcServer.setChangePwdServer(chngPwdServer);
         }
 
         kdcServer.setDirectoryService(directoryService);
@@ -130,6 +143,7 @@ public class KDCServerAnnotationProcessor {
         }
 
         return kdcServer;
+
     }
 
 }
@@ -143,6 +157,10 @@ public class KDCServerAnnotationProcessor {
 class NoReplayKdcServer extends KdcServer {
 
     private static Logger LOGGER = Logger.getLogger(NoReplayKdcServer.class);
+
+    NoReplayKdcServer(KerberosConfig kdcConfig) {
+        super(kdcConfig);
+    }
 
     /**
      *
