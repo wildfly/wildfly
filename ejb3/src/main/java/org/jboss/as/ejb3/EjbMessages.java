@@ -35,6 +35,7 @@ import javax.ejb.ConcurrentAccessTimeoutException;
 import javax.ejb.EJBAccessException;
 import javax.ejb.EJBException;
 import javax.ejb.EJBTransactionRequiredException;
+import javax.ejb.EJBTransactionRolledbackException;
 import javax.ejb.IllegalLoopbackException;
 import javax.ejb.LockType;
 import javax.ejb.NoMoreTimeoutsException;
@@ -2509,6 +2510,9 @@ public interface EjbMessages {
 
     @Message(id = 14589, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'")
     OperationFailedException inconsistentAttributeNotSupported(String attributeName, String mustMatch);
+
+    @Message(id = 14590, value = "Unexpected Error")
+    EJBTransactionRolledbackException convertUnexpectedError(@Cause Throwable cause);
 
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

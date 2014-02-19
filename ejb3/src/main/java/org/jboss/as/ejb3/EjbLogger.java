@@ -593,6 +593,10 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14267, value = "The <%2$s xmlns=\"%1$s\"/> element will be ignored.")
     void deprecatedNamespace(String namespace, String element);
 
+    @LogMessage(level = ERROR)
+    @Message(id = 14268, value = "Failure in caller transaction.")
+    void failureInCallerTransaction(@Cause Throwable cause);
+
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
     // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem

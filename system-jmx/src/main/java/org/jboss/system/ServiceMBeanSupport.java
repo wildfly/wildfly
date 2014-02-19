@@ -376,7 +376,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
                 try {
                     create();
                 } catch (Exception e) {
-                    log.error(e);
+                    log.error(ServiceMBeanMessages.MESSAGES.postRegisterInitializationFailed(), e);
                 }
             }
         }
