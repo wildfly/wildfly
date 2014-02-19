@@ -161,7 +161,7 @@ class SessionProviderFactory {
             }
             final InetAddress destinationAddress;
             try {
-                destinationAddress = binding.getDestinationAddress();
+                destinationAddress = binding.getResolvedDestinationAddress();
             } catch (UnknownHostException uhe) {
                 throw MailMessages.MESSAGES.unknownOutboundSocketBindingDestination(uhe, ref);
             }

@@ -188,11 +188,7 @@ class HornetQService implements Service<HornetQServer> {
                             }
                         } else {
                             port = binding.getDestinationPort();
-                            if (binding.getDestinationAddress().isLoopbackAddress()) {
-                                host = binding.getDestinationAddress().getHostName();
-                            } else {
-                                host = binding.getDestinationAddress().getHostAddress();
-                            }
+                            host = binding.getUnresolvedDestinationAddress();
                         }
                         tc.getParams().put(HOST, host);
                         tc.getParams().put(PORT, String.valueOf(port));

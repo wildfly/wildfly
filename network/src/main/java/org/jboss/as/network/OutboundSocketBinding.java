@@ -52,7 +52,7 @@ public class OutboundSocketBinding {
     private final int destinationPort;
 
     /**
-     * The destination address is lazily resolved whenever a request is made {@link #getDestinationAddress()}
+     * The destination address is lazily resolved whenever a request is made {@link #getUnresolvedDestinationAddress()} ()}
      * or for {@link #connect()}
      */
     private InetAddress resolvedDestinationAddress;
@@ -123,7 +123,7 @@ public class OutboundSocketBinding {
      */
     public Socket connect() throws IOException {
         final Socket socket = this.createSocket();
-        final InetAddress destinationAddress = this.getDestinationAddress();
+        final InetAddress destinationAddress = this.getResolvedDestinationAddress();
         final int destinationPort = this.getDestinationPort();
         final SocketAddress destination = new InetSocketAddress(destinationAddress, destinationPort);
         socket.connect(destination);
@@ -132,20 +132,36 @@ public class OutboundSocketBinding {
     }
 
     /**
-     * Returns the destination address of this outbound socket binding. If the destination address
+     * Returns the <em>unresolved</em> destination address of this outbound socket binding.
+     */
+    public String getUnresolvedDestinationAddress() {
+        return this.unresolvedDestinationAddress;
+    }
+
+    /**
+     * Returns the <em>resolved</em> destination address of this outbound socket binding. If the destination address
      * is already resolved then this method return that address or else it tries to resolve the
      * address before return.
      *
-     * @return
      * @throws UnknownHostException If the destination address cannot be resolved
      */
-    public synchronized InetAddress getDestinationAddress() throws UnknownHostException {
+    public synchronized InetAddress getResolvedDestinationAddress() throws UnknownHostException {
         if (this.resolvedDestinationAddress != null) {
             return this.resolvedDestinationAddress;
         }
         this.resolvedDestinationAddress = InetAddress.getByName(this.unresolvedDestinationAddress);
         return this.resolvedDestinationAddress;
     }
+
+    /**
+    * @deprecated use {@link #getResolvedDestinationAddress()} instead to get the resolved destination address
+    * or {@link #getUnresolvedDestinationAddress()} to get the unresolved destination address.
+    */
+    @Deprecated
+    public synchronized InetAddress getDestinationAddress() throws UnknownHostException {
+        return getResolvedDestinationAddress();
+    }
+
 
     public int getDestinationPort() {
         return this.destinationPort;

@@ -96,7 +96,7 @@ public class LocalOutboundConnectionService extends AbstractOutboundConnectionSe
             return this.connectionURI;
         }
         final OutboundSocketBinding destinationOutboundSocket = this.destinationOutboundSocketBindingInjectedValue.getValue();
-        final InetAddress destinationAddress = destinationOutboundSocket.getDestinationAddress();
+        final InetAddress destinationAddress = destinationOutboundSocket.getResolvedDestinationAddress();
         final int port = destinationOutboundSocket.getDestinationPort();
 
         this.connectionURI = new URI(LOCAL_URI_SCHEME + destinationAddress.getHostAddress() + ":" + port);

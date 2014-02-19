@@ -631,7 +631,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                     @Override
                     public void inject(OutboundSocketBinding value) {
                         try {
-                            builder.addServer().host(value.getDestinationAddress().getHostAddress()).port(value.getDestinationPort());
+                            builder.addServer().host(value.getResolvedDestinationAddress().getHostAddress()).port(value.getDestinationPort());
                         } catch (UnknownHostException e) {
                             throw InfinispanMessages.MESSAGES.failedToInjectSocketBinding(e, value);
                         }
