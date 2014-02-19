@@ -103,6 +103,7 @@ public class MessageDrivenComponentCreateService extends EJBComponentCreateServi
         // set the endpoint
         final EJBUtilities ejbUtilities = this.ejbUtilitiesInjectedValue.getValue();
         final Endpoint endpoint = ejbUtilities.getEndpoint(activeResourceAdapterName);
+
         component.setEndpoint(endpoint);
 
         return component;
