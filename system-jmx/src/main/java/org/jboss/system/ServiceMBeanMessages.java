@@ -65,4 +65,7 @@ public interface ServiceMBeanMessages {
 
     @Message(id = 17807, value = "Destroying failed %s")
     IllegalArgumentException destroyingFailed(@Cause Throwable cause, String description);
+
+    @Message(id = 17808, value = "Initialization failed during postRegister")
+    String postRegisterInitializationFailed();
 }

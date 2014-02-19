@@ -579,6 +579,22 @@ public interface EjbLogger extends BasicLogger {
     @Message(id = 14265, value = "Error during transaction recovery")
     void errorDuringTransactionRecovery(@Cause Throwable cause);
 
+    /* Used in WildFly 8, but so far not in EAP
+    // Maps to WFLYEJB0166
+    @LogMessage(level = WARN)
+    @Message(id = 14266, value = "The @%s annotation is deprecated and will be ignored.")
+    void deprecatedAnnotation(String annotation);
+
+    // Maps to WFLYEJB0167
+    @LogMessage(level = WARN)
+    @Message(id = 14267, value = "The <%2$s xmlns=\"%1$s\"/> element will be ignored.")
+    void deprecatedNamespace(String namespace, String element);
+    */
+
+    @LogMessage(level = ERROR)
+    @Message(id = 14268, value = "Failure in caller transaction.")
+    void failureInCallerTransaction(@Cause Throwable cause);
+
 
     // Don't add message ids greater that 14299!!! If you need more first check what EjbMessages is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is

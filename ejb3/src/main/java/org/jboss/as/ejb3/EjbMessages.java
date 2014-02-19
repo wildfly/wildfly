@@ -58,6 +58,7 @@ import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentCreateServiceFactory;
@@ -2414,6 +2415,23 @@ public interface EjbMessages {
     @Message(id = 14586, value = "Transaction '%s' is in unexpected state (%s)")
     EJBException transactionInUnexpectedState(Transaction tx, String txStatus);
 
+    /* Used in WildFly 8, but so far not in EAP
+    // Maps to WFLYEJB0449
+    @Message(id = 14587, value = "Timerservice API is not allowed on stateful session bean %s")
+    String timerServiceMethodNotAllowedForSFSB(final String ejbComponent);
+
+    // Maps to WFLYEJB0450
+    @Message(id = 14588, value = "CMP Entity Beans are not supported")
+    DeploymentUnitProcessingException cmpEntityBeansAreNotSupported();
+
+    // Maps to WFLYEJB0451
+    @Message(id = 14589, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'")
+    OperationFailedException inconsistentAttributeNotSupported(String attributeName, String mustMatch);
+    */
+
+    @Message(id = 14590, value = "Unexpected Error")
+    String convertUnexpectedError();
+
     // STOP!!! Don't add message ids greater that 14599!!! If you need more first check what EjbLogger is
     // using and take more (lower) numbers from the available range for this module. If the range for the module is
     // all used, go to https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
@@ -2422,9 +2440,6 @@ public interface EjbMessages {
     // *Exception messages* greater >= 14225 start here.
     @Message(id = 14225, value = "Could not create an instance of deployment node selector %s")
     DeploymentUnitProcessingException failedToCreateDeploymentNodeSelector(@Cause Exception e, String deploymentNodeSelectorClassName);
-
-    // Don't add exception messages greater that 14240!!! If you need more go to
-    // https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
 
     @Message(id = 14226, value = "Could not lookup service %s")
     IllegalStateException serviceNotFound(ServiceName serviceName);
@@ -2470,4 +2485,8 @@ public interface EjbMessages {
 
     @Message(id = 14240, value = "This EJB does not have any timeout methods")
     String ejbHasNoTimerMethods();
+
+    // Don't add exception messages greater than 14240!!! If you need more go to
+    // https://community.jboss.org/docs/DOC-16810 and allocate another block for this subsystem
+
 }
