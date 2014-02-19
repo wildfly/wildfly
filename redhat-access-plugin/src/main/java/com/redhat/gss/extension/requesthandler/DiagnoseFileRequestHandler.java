@@ -41,7 +41,6 @@ import java.util.List;
 
 public class DiagnoseFileRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-    public static final Logger logger = Logger.getLogger(DiagnoseFileRequestHandler.class);
     public static final String OPERATION_NAME = "diagnose-file";
     public static final DiagnoseFileRequestHandler INSTANCE = new DiagnoseFileRequestHandler();
 
@@ -70,21 +69,14 @@ public class DiagnoseFileRequestHandler extends BaseRequestHandler implements
             @Override
             public void execute(OperationContext context, ModelNode operation)
                     throws OperationFailedException {
-                API api = null;
-                try {
-                    api = getAPI(context, operation);
-                } catch (MalformedURLException e) {
-                    logger.error(e);
-                    throw new OperationFailedException(e.getLocalizedMessage(),
-                            e);
-                }
+                API api = getAPI(context, operation);
+
                 String diagnoseFileString = DIAGNOSEFILE.resolveModelAttribute(
                         context, operation).asString();
                 List<Link> links = null;
                 try {
                     links = api.getProblems().diagnoseFile(diagnoseFileString);
                 } catch (Exception e) {
-                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

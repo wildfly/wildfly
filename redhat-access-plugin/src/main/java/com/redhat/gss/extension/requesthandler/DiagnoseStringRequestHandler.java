@@ -36,12 +36,10 @@ import org.jboss.logging.Logger;
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Link;
-import java.net.MalformedURLException;
 import java.util.List;
 
 public class DiagnoseStringRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-    public static final Logger logger = Logger.getLogger(DiagnoseStringRequestHandler.class);
     public static final String OPERATION_NAME = "diagnose-string";
     private static final SimpleAttributeDefinition DIAGNOSESTRING = new SimpleAttributeDefinitionBuilder(
             "diagnose-string", ModelType.STRING).build();
@@ -68,21 +66,13 @@ public class DiagnoseStringRequestHandler extends BaseRequestHandler implements
             @Override
             public void execute(OperationContext context, ModelNode operation)
                     throws OperationFailedException {
-                API api = null;
-                try {
-                    api = getAPI(context, operation);
-                } catch (MalformedURLException e) {
-                    logger.error(e);
-                    throw new OperationFailedException(e.getLocalizedMessage(),
-                            e);
-                }
+                API api = getAPI(context, operation);
                 String diagnoseStringString = DIAGNOSESTRING
                         .resolveModelAttribute(context, operation).asString();
                 List<Link> links = null;
                 try {
                     links = api.getProblems().diagnoseStr(diagnoseStringString);
                 } catch (Exception e) {
-                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

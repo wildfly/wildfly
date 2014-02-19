@@ -42,7 +42,6 @@ import java.net.MalformedURLException;
 public class GetSolutionRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
 
-    public static final Logger logger = Logger.getLogger(GetSolutionRequestHandler.class);
     public static final String OPERATION_NAME = "get-solution";
     public static final GetSolutionRequestHandler INSTANCE = new GetSolutionRequestHandler();
 
@@ -75,21 +74,13 @@ public class GetSolutionRequestHandler extends BaseRequestHandler implements
             @Override
             public void execute(OperationContext context, ModelNode operation)
                     throws OperationFailedException {
-                API api = null;
-                try {
-                    api = getAPI(context, operation);
-                } catch (MalformedURLException e) {
-                    logger.error(e);
-                    throw new OperationFailedException(e.getLocalizedMessage(),
-                            e);
-                }
+                API api = getAPI(context, operation);
                 String solutionIdString = SOLUTIONID.resolveModelAttribute(
                         context, operation).asString();
                 Solution solution = null;
                 try {
                     solution = api.getSolutions().get(solutionIdString);
                 } catch (Exception e) {
-                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

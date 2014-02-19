@@ -40,7 +40,6 @@ import java.net.MalformedURLException;
 
 public class AddCommentRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-    public static final Logger logger = Logger.getLogger(AddCommentRequestHandler.class);
     public static final String OPERATION_NAME = "add-comment";
     public static final AddCommentRequestHandler INSTANCE = new AddCommentRequestHandler();
 
@@ -66,14 +65,8 @@ public class AddCommentRequestHandler extends BaseRequestHandler implements
             @Override
             public void execute(OperationContext context, ModelNode operation)
                     throws OperationFailedException {
-                API api = null;
-                try {
-                    api = getAPI(context, operation);
-                } catch (MalformedURLException e) {
-                    logger.error(e);
-                    throw new OperationFailedException(e.getLocalizedMessage(),
-                            e);
-                }
+                API api = getAPI(context, operation);
+
                 String caseNumberString = CASENUMBER.resolveModelAttribute(
                         context, operation).asString();
                 String commentTextString = COMMENTTEXT.resolveModelAttribute(
@@ -85,7 +78,6 @@ public class AddCommentRequestHandler extends BaseRequestHandler implements
                 try {
                     comment = api.getComments().add(comment);
                 } catch (Exception e) {
-                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

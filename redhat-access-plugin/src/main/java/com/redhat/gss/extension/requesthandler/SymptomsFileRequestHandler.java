@@ -40,7 +40,6 @@ import java.util.List;
 
 public class SymptomsFileRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-    public static final Logger logger = Logger.getLogger(SymptomsFileRequestHandler.class);
     public static final String OPERATION_NAME = "symptoms";
     public static final SymptomsFileRequestHandler INSTANCE = new SymptomsFileRequestHandler();
 
@@ -68,14 +67,8 @@ public class SymptomsFileRequestHandler extends BaseRequestHandler implements
             @Override
             public void execute(OperationContext context, ModelNode operation)
                     throws OperationFailedException {
-                API api = null;
-                try {
-                    api = getAPI(context, operation);
-                } catch (MalformedURLException e) {
-                    logger.error(e);
-                    throw new OperationFailedException(e.getLocalizedMessage(),
-                            e);
-                }
+                API api = getAPI(context, operation);
+
                 String symptomsFileString = SYMPTIONSFILE
                         .resolveModelAttribute(context, operation).asString();
                 List<ExtractedSymptom> symptoms = null;
@@ -83,7 +76,6 @@ public class SymptomsFileRequestHandler extends BaseRequestHandler implements
                     symptoms = api.getSymptoms().retrieveSymptoms(
                             symptomsFileString);
                 } catch (Exception e) {
-                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

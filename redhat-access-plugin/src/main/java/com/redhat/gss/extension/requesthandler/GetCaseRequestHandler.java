@@ -30,16 +30,12 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
-
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Case;
-import java.net.MalformedURLException;
 
 public class GetCaseRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-    public static final Logger logger = Logger.getLogger(GetCaseRequestHandler.class);
     public static final String OPERATION_NAME = "get-case";
     public static final GetCaseRequestHandler INSTANCE = new GetCaseRequestHandler();;
 
@@ -83,21 +79,13 @@ public class GetCaseRequestHandler extends BaseRequestHandler implements
             @Override
             public void execute(OperationContext context, ModelNode operation)
                     throws OperationFailedException {
-                API api = null;
-                try {
-                    api = getAPI(context, operation);
-                } catch (MalformedURLException e) {
-                    logger.error(e);
-                    throw new OperationFailedException(e.getLocalizedMessage(),
-                            e);
-                }
+                API api = getAPI(context, operation);
                 String caseNumberString = CASENUMBER.resolveModelAttribute(
                         context, operation).asString();
                 Case cas = null;
                 try {
                     cas = api.getCases().get(caseNumberString);
                 } catch (Exception e) {
-                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

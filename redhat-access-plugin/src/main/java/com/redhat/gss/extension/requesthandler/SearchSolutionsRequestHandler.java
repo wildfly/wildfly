@@ -31,18 +31,14 @@ import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.jboss.logging.Logger;
-
 import com.redhat.gss.extension.RedhatAccessPluginExtension;
 import com.redhat.gss.redhat_support_lib.api.API;
 import com.redhat.gss.redhat_support_lib.parsers.Solution;
 
-import java.net.MalformedURLException;
 import java.util.List;
 
 public class SearchSolutionsRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-    public static final Logger logger = Logger.getLogger(SearchSolutionsRequestHandler.class);
     public static final String OPERATION_NAME = "search-solutions";
     public static final SearchSolutionsRequestHandler INSTANCE = new SearchSolutionsRequestHandler();
 
@@ -71,21 +67,14 @@ public class SearchSolutionsRequestHandler extends BaseRequestHandler implements
             @Override
             public void execute(OperationContext context, ModelNode operation)
                     throws OperationFailedException {
-                API api = null;
-                try {
-                    api = getAPI(context, operation);
-                } catch (MalformedURLException e) {
-                    logger.error(e);
-                    throw new OperationFailedException(e.getLocalizedMessage(),
-                            e);
-                }
+                API api = getAPI(context, operation);
+
                 String[] searchStr = { SEARCHSTRING.resolveModelAttribute(
                         context, operation).asString() };
                 List<Solution> solutions = null;
                 try {
                     solutions = api.getSolutions().list(searchStr, null);
                 } catch (Exception e) {
-                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

@@ -40,7 +40,6 @@ import java.util.List;
 
 public class GetVersionsRequestHandler extends BaseRequestHandler implements
         OperationStepHandler {
-    public static final Logger logger = Logger.getLogger(GetVersionsRequestHandler.class);
     public static final String OPERATION_NAME = "get-versions";
     public static final GetVersionsRequestHandler INSTANCE = new GetVersionsRequestHandler();
 
@@ -63,21 +62,14 @@ public class GetVersionsRequestHandler extends BaseRequestHandler implements
             @Override
             public void execute(OperationContext context, ModelNode operation)
                     throws OperationFailedException {
-                API api = null;
-                try {
-                    api = getAPI(context, operation);
-                } catch (MalformedURLException e) {
-                    logger.error(e);
-                    throw new OperationFailedException(e.getLocalizedMessage(),
-                            e);
-                }
+                API api = getAPI(context, operation);
+
                 String productString = PRODUCT.resolveModelAttribute(context,
                         operation).asString();
                 List<String> versions = null;
                 try {
                     versions = api.getProducts().getVersions(productString);
                 } catch (Exception e) {
-                    logger.error(e);
                     throw new OperationFailedException(e.getLocalizedMessage(),
                             e);
                 }

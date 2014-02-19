@@ -71,7 +71,7 @@ public class BaseRequestHandler {
     }
 
     public API getAPI(OperationContext context, ModelNode operation)
-            throws OperationFailedException, MalformedURLException {
+            throws OperationFailedException {
         String usernameStr = USERNAME.resolveModelAttribute(context, operation)
                 .asString();
         String passwordStr = PASSWORD.resolveModelAttribute(context, operation)
@@ -87,7 +87,11 @@ public class BaseRequestHandler {
                 operation);
         URL proxyUrlUrl = null;
         if (proxyUrlStr.isDefined()) {
-            proxyUrlUrl = new URL(proxyUrlStr.asString());
+            try {
+                proxyUrlUrl = new URL(proxyUrlStr.asString());
+            } catch (MalformedURLException e) {
+                throw new OperationFailedException(e.getLocalizedMessage());
+            }
         }
         int proxyPortInt = -1;
         if (proxyport.isDefined()) {
