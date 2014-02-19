@@ -94,6 +94,10 @@ public final class WorkManagerService implements Service<WorkManager> {
             WorkManagerCoordinator.getInstance().registerWorkManager(value);
         }
 
+        //this is a value.restart() equivalent
+        if (value.isShutdown())
+            value.cancelShutdown();
+
         ROOT_LOGGER.debugf("Started JCA WorkManager: ", value.getName());
     }
 
@@ -101,6 +105,7 @@ public final class WorkManagerService implements Service<WorkManager> {
     public void stop(StopContext context) {
         ROOT_LOGGER.debugf("Stopping JCA WorkManager: ", value.getName());
 
+        //shutting down immediately (synchronous method) the workmanager and release all works
         value.shutdown();
 
         if (value.getName().equals(DEFAULT_NAME)) {
