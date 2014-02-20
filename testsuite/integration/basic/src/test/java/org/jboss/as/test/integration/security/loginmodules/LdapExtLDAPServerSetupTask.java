@@ -60,7 +60,7 @@ import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesSer
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.RolePrintingServlet;
+import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
 
 /**

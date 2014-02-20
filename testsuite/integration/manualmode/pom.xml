@@ -99,6 +99,46 @@
                         </configuration>
 
                     </plugin>
+                                                            
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>keytool-maven-plugin</artifactId>
+                        <version>1.4</version>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.codehaus.mojo</groupId>
+                                <artifactId>keytool-api-1.7</artifactId>
+                                <version>1.4</version>
+                            </dependency>
+                        </dependencies>
+                        <executions>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>clean-cli-vault-keystore</id>
+                                <goals>
+                                    <goal>clean</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <phase>generate-test-resources</phase>
+                                <id>genseckey-cli-vault-keystore</id>
+                                <goals>
+                                    <goal>generateSecretKey</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <keystore>${basedir}/target/cli-vault.keystore</keystore>
+                            <dname>cn=JBoss Security,ou=JBoss Division,o=RedHatInc,l=Raleigh,st=NC,c=US</dname>
+                            <keypass>secret_1</keypass>
+                            <storepass>secret_1</storepass>
+                            <storetype>jceks</storetype>
+                            <alias>vault</alias>
+                            <keyalg>AES</keyalg>
+                            <keysize>128</keysize>
+                            <validity>365</validity>
+                        </configuration>
+                    </plugin>
 
                 </plugins>
             </build>

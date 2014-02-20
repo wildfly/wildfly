@@ -48,7 +48,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainSetup;
 import org.jboss.as.test.integration.security.common.Utils;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
+import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.spi.IdentityLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
