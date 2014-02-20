@@ -81,11 +81,11 @@ public class AuditLogXml {
             case DOMAIN_1_4:
                 throw unexpectedElement(reader);
             default:
-                parseAuditLog2_0(reader, address, expectedNs, list, host);
+                parseAuditLog1_5(reader, address, expectedNs, list, host);
         }
     }
 
-    private void parseAuditLog2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list, boolean host) throws XMLStreamException {
+    private void parseAuditLog1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list, boolean host) throws XMLStreamException {
 
         requireNamespace(reader, expectedNs);
 
@@ -104,19 +104,19 @@ public class AuditLogXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
             case FORMATTERS:
-                parseAuditLogFormatters2_0(reader, auditLogAddress, expectedNs, list);
+                parseAuditLogFormatters1_5(reader, auditLogAddress, expectedNs, list);
                 break;
             case HANDLERS:{
-                parseAuditLogHandlers2_0(reader, auditLogAddress, expectedNs, list);
+                parseAuditLogHandlers1_5(reader, auditLogAddress, expectedNs, list);
                 break;
             }
             case LOGGER:{
-                parseAuditLogConfig2_0(reader, auditLogAddress, expectedNs, AuditLogLoggerResourceDefinition.PATH_ELEMENT, list);
+                parseAuditLogConfig1_5(reader, auditLogAddress, expectedNs, AuditLogLoggerResourceDefinition.PATH_ELEMENT, list);
                 break;
             }
             case SERVER_LOGGER:{
                 if (host){
-                    parseAuditLogConfig2_0(reader, auditLogAddress, expectedNs, AuditLogLoggerResourceDefinition.HOST_SERVER_PATH_ELEMENT, list);
+                    parseAuditLogConfig1_5(reader, auditLogAddress, expectedNs, AuditLogLoggerResourceDefinition.HOST_SERVER_PATH_ELEMENT, list);
                     break;
                 }
                 //Otherwise fallback to server-logger not recognised in standalone.xml
@@ -127,7 +127,7 @@ public class AuditLogXml {
         }
     }
 
-    private void parseAuditLogFormatters2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+    private void parseAuditLogFormatters1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
 
         requireNamespace(reader, expectedNs);
 
@@ -136,7 +136,7 @@ public class AuditLogXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
             case JSON_FORMATTER:{
-                parseFileAuditLogFormatter2_0(reader, address, expectedNs, list);
+                parseFileAuditLogFormatter1_5(reader, address, expectedNs, list);
                 break;
             }
             default:
@@ -145,7 +145,7 @@ public class AuditLogXml {
         }
     }
 
-    private void parseFileAuditLogFormatter2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+    private void parseFileAuditLogFormatter1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         final ModelNode add = Util.createAddOperation();
         list.add(add);
         final int count = reader.getAttributeCount();
@@ -193,7 +193,7 @@ public class AuditLogXml {
         requireNoContent(reader);
     }
 
-    private void parseAuditLogHandlers2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+    private void parseAuditLogHandlers1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
 
         requireNamespace(reader, expectedNs);
 
@@ -202,11 +202,11 @@ public class AuditLogXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
             case FILE_HANDLER:{
-                parseFileAuditLogHandler2_0(reader, address, expectedNs, list);
+                parseFileAuditLogHandler1_5(reader, address, expectedNs, list);
                 break;
             }
             case SYSLOG_HANDLER: {
-                parseSyslogAuditLogHandler2_0(reader, address, expectedNs, list);
+                parseSyslogAuditLogHandler1_5(reader, address, expectedNs, list);
                 break;
             }
             default:
@@ -215,7 +215,7 @@ public class AuditLogXml {
         }
     }
 
-    private void parseFileAuditLogHandler2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+    private void parseFileAuditLogHandler1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         final ModelNode add = Util.createAddOperation();
         list.add(add);
         final int count = reader.getAttributeCount();
@@ -255,9 +255,7 @@ public class AuditLogXml {
         requireNoContent(reader);
     }
 
-    private void parseSyslogAuditLogHandler2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
-        final ModelNode add = Util.createAddOperation();
-        list.add(add);
+    private void parseSyslogAuditLogHandlerAttributes1_5(final XMLExtendedStreamReader reader, final ModelNode address, final ModelNode addOp) throws XMLStreamException {
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
             final String value = reader.getAttributeValue(i);
@@ -267,41 +265,94 @@ public class AuditLogXml {
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case NAME: {
-                    add.get(OP_ADDR).set(address).add(ModelDescriptionConstants.SYSLOG_HANDLER, value);
+                    addOp.get(OP_ADDR).set(address).add(ModelDescriptionConstants.SYSLOG_HANDLER, value);
                     break;
                 }
                 case MAX_FAILURE_COUNT: {
-                    SyslogAuditLogHandlerResourceDefinition.MAX_FAILURE_COUNT.parseAndSetParameter(value, add, reader);
+                    SyslogAuditLogHandlerResourceDefinition.MAX_FAILURE_COUNT.parseAndSetParameter(value, addOp, reader);
                     break;
                 }
                 case FORMATTER:{
-                    SyslogAuditLogHandlerResourceDefinition.FORMATTER.parseAndSetParameter(value, add, reader);
+                    SyslogAuditLogHandlerResourceDefinition.FORMATTER.parseAndSetParameter(value, addOp, reader);
                     break;
                 }
                 case MAX_LENGTH: {
-                    SyslogAuditLogHandlerResourceDefinition.MAX_LENGTH.parseAndSetParameter(value, add, reader);
+                    SyslogAuditLogHandlerResourceDefinition.MAX_LENGTH.parseAndSetParameter(value, addOp, reader);
                     break;
                 }
                 case TRUNCATE: {
-                    SyslogAuditLogHandlerResourceDefinition.TRUNCATE.parseAndSetParameter(value, add, reader);
-                    break;
-                }
-                case FACILITY: {
-                    SyslogAuditLogHandlerResourceDefinition.FACILITY.parseAndSetParameter(value, add, reader);
-                    break;
-                }
-                case APP_NAME: {
-                    SyslogAuditLogHandlerResourceDefinition.APP_NAME.parseAndSetParameter(value, add, reader);
+                    SyslogAuditLogHandlerResourceDefinition.TRUNCATE.parseAndSetParameter(value, addOp, reader);
                     break;
                 }
                 case SYSLOG_FORMAT: {
-                    SyslogAuditLogHandlerResourceDefinition.SYSLOG_FORMAT.parseAndSetParameter(value, add, reader);
+                    SyslogAuditLogHandlerResourceDefinition.SYSLOG_FORMAT.parseAndSetParameter(value, addOp, reader);
                     break;
                 }
                 default: {
                     throw unexpectedAttribute(reader, i);
                 }
             }
+        }
+    }
+
+    private void parseSyslogAuditLogHandlerAttributes1_6(final XMLExtendedStreamReader reader, final ModelNode address, final ModelNode addOp) throws XMLStreamException {
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    addOp.get(OP_ADDR).set(address).add(ModelDescriptionConstants.SYSLOG_HANDLER, value);
+                    break;
+                }
+                case MAX_FAILURE_COUNT: {
+                    SyslogAuditLogHandlerResourceDefinition.MAX_FAILURE_COUNT.parseAndSetParameter(value, addOp, reader);
+                    break;
+                }
+                case FORMATTER:{
+                    SyslogAuditLogHandlerResourceDefinition.FORMATTER.parseAndSetParameter(value, addOp, reader);
+                    break;
+                }
+                case MAX_LENGTH: {
+                    SyslogAuditLogHandlerResourceDefinition.MAX_LENGTH.parseAndSetParameter(value, addOp, reader);
+                    break;
+                }
+                case TRUNCATE: {
+                    SyslogAuditLogHandlerResourceDefinition.TRUNCATE.parseAndSetParameter(value, addOp, reader);
+                    break;
+                }
+                case FACILITY: {
+                    SyslogAuditLogHandlerResourceDefinition.FACILITY.parseAndSetParameter(value, addOp, reader);
+                    break;
+                }
+                case APP_NAME: {
+                    SyslogAuditLogHandlerResourceDefinition.APP_NAME.parseAndSetParameter(value, addOp, reader);
+                    break;
+                }
+                case SYSLOG_FORMAT: {
+                    SyslogAuditLogHandlerResourceDefinition.SYSLOG_FORMAT.parseAndSetParameter(value, addOp, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+    }
+
+    private void parseSyslogAuditLogHandler1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        final ModelNode add = Util.createAddOperation();
+        list.add(add);
+
+        switch (expectedNs) {
+            case DOMAIN_1_5:
+                parseSyslogAuditLogHandlerAttributes1_5(reader, address, add);
+                break;
+            default:
+                parseSyslogAuditLogHandlerAttributes1_6(reader, address, add);
         }
 
         if (!add.get(OP_ADDR).isDefined()) {
@@ -323,7 +374,7 @@ public class AuditLogXml {
             case UDP:
             case TCP:
             case TLS:{
-                parseSyslogAuditLogHandlerProtocol2_0(reader, add.get(OP_ADDR), expectedNs, list, element);
+                parseSyslogAuditLogHandlerProtocol1_5(reader, add.get(OP_ADDR), expectedNs, list, element);
                 break;
             }
             default:
@@ -332,7 +383,7 @@ public class AuditLogXml {
         }
     }
 
-    private void parseSyslogAuditLogHandlerProtocol2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list, final Element protocolElement) throws XMLStreamException {
+    private void parseSyslogAuditLogHandlerProtocol1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list, final Element protocolElement) throws XMLStreamException {
         PathAddress protocolAddress = PathAddress.pathAddress(address.clone().add(ModelDescriptionConstants.PROTOCOL, protocolElement.getLocalName()));
         ModelNode add = Util.createAddOperation(protocolAddress);
         list.add(add);
@@ -434,7 +485,7 @@ public class AuditLogXml {
         requireNoContent(reader);
     }
 
-    private void parseAuditLogConfig2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final PathElement pathElement, final List<ModelNode> list) throws XMLStreamException {
+    private void parseAuditLogConfig1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final PathElement pathElement, final List<ModelNode> list) throws XMLStreamException {
 
         requireNamespace(reader, expectedNs);
 
@@ -477,7 +528,7 @@ public class AuditLogXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
             case HANDLERS:{
-                parseAuditLogHandlersReference2_0(reader, configAddress, expectedNs, list);
+                parseAuditLogHandlersReference1_5(reader, configAddress, expectedNs, list);
                 break;
             }
             default:
@@ -486,7 +537,7 @@ public class AuditLogXml {
         }
     }
 
-    private void parseAuditLogHandlersReference2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+    private void parseAuditLogHandlersReference1_5(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         requireNamespace(reader, expectedNs);
 
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
