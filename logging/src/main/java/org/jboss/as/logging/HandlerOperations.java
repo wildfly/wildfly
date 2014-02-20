@@ -26,6 +26,7 @@ import static org.jboss.as.logging.AbstractHandlerDefinition.FORMATTER;
 import static org.jboss.as.logging.AbstractHandlerDefinition.NAMED_FORMATTER;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.QUEUE_LENGTH;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.SUBHANDLERS;
+import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
@@ -33,12 +34,10 @@ import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
-import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.Logging.createOperationFailure;
 import static org.jboss.as.logging.PatternFormatterResourceDefinition.PATTERN;
-import static org.jboss.as.logging.PatternFormatterResourceDefinition.PATTERN_FORMATTER;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -705,26 +704,36 @@ final class HandlerOperations {
             final String currentValue = configuration.getEncoding();
             result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
         } else if (attribute.getName().equals(FORMATTER.getName())) {
-            final String formatterName = configuration.getName();
-            // Only check the pattern if the name matches the currently configured name
-            if (formatterName.equals(configuration.getFormatterNameValueExpression().getResolvedValue())) {
-                final FormatterConfiguration fmtConfig;
-                if (logContextConfiguration.getFormatterNames().contains(formatterName)) {
-                    fmtConfig = logContextConfiguration.getFormatterConfiguration(formatterName);
-                    final String resolvedValue = FORMATTER.resolvePropertyValue(context, model);
-                    final String currentValue = fmtConfig.getPropertyValueString(PATTERN_FORMATTER.getName());
-                    result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
+            // Ignored if there is a named-formatter defined
+            if (model.hasDefined(NAMED_FORMATTER.getName())) {
+                result = true;
+            } else {
+                final String formatterName = configuration.getName();
+                // Only check the pattern if the name matches the currently configured name
+                if (formatterName.equals(configuration.getFormatterNameValueExpression().getResolvedValue())) {
+                    final FormatterConfiguration fmtConfig;
+                    if (logContextConfiguration.getFormatterNames().contains(formatterName)) {
+                        fmtConfig = logContextConfiguration.getFormatterConfiguration(formatterName);
+                        final String resolvedValue = FORMATTER.resolvePropertyValue(context, model);
+                        final String currentValue = fmtConfig.getPropertyValueString(PATTERN.getName());
+                        result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
+                    } else {
+                        result = false;
+                    }
                 } else {
                     result = false;
                 }
-            } else {
-                result = false;
             }
         } else if (attribute.getName().equals(NAMED_FORMATTER.getName())) {
             final ModelNode valueNode = NAMED_FORMATTER.resolveModelAttribute(context, model);
-            final String resolvedValue = (valueNode.isDefined() ? valueNode.asString() : null);
-            final String currentValue = configuration.getFormatterName();
-            result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
+            // Ignore if not defined
+            if (valueNode.isDefined()) {
+                final String resolvedValue = valueNode.asString();
+                final String currentValue = configuration.getFormatterName();
+                result = resolvedValue.equals(currentValue);
+            } else {
+                result = true;
+            }
         } else if (attribute.getName().equals(FILTER_SPEC.getName())) {
             final ModelNode valueNode = FILTER_SPEC.resolveModelAttribute(context, model);
             final String resolvedValue = (valueNode.isDefined() ? valueNode.asString() : null);

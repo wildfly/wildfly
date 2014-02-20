@@ -119,6 +119,14 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
         final List<String> configuredFormatters = logContextConfiguration.getFormatterNames();
         configuredFormatters.removeAll(resource.getChildrenNames(PatternFormatterResourceDefinition.PATTERN_FORMATTER.getName()));
         configuredFormatters.removeAll(resource.getChildrenNames(CustomFormatterResourceDefinition.CUSTOM_FORMATTER.getName()));
+        // Formatter names could also be the name of a handler if the formatter attribute is used rather than a named-formatter
+        configuredFormatters.removeAll(resource.getChildrenNames(AsyncHandlerResourceDefinition.ASYNC_HANDLER));
+        configuredFormatters.removeAll(resource.getChildrenNames(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER));
+        configuredFormatters.removeAll(resource.getChildrenNames(CustomHandlerResourceDefinition.CUSTOM_HANDLER));
+        configuredFormatters.removeAll(resource.getChildrenNames(FileHandlerResourceDefinition.FILE_HANDLER));
+        configuredFormatters.removeAll(resource.getChildrenNames(PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER));
+        configuredFormatters.removeAll(resource.getChildrenNames(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER));
+
         for (String name : configuredFormatters) {
             LoggingLogger.ROOT_LOGGER.tracef("Removing formatter configuration for '%s'", name);
             logContextConfiguration.removeFormatterConfiguration(name);
