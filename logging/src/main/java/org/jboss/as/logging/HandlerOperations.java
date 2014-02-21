@@ -279,7 +279,7 @@ final class HandlerOperations {
                             logContextConfiguration.addPojoConfiguration(moduleName, className, name, constructionProperties);
                         }
                         configuration = logContextConfiguration.addHandlerConfiguration("org.jboss.as.logging", Log4jAppenderHandler.class.getName(), name);
-                        configuration.addPostConfigurationMethod("activate");
+                        configuration.addPostConfigurationMethod(Log4jAppenderHandler.ACTIVATE_OPTIONS_METHOD_NAME);
                         configuration.setPropertyValueString("appender", name);
                     } else {
                         // Check for construction parameters
@@ -348,6 +348,11 @@ final class HandlerOperations {
                         propertyConfigurable = configuration;
                     } else {
                         propertyConfigurable = pojoConfiguration;
+                        // If this is a POJO it's a log4j appender and the OptionHandler.activateOptions() should be
+                        // invoked assuming it does not already exist.
+                        if (!configuration.getPostConfigurationMethods().contains(Log4jAppenderHandler.ACTIVATE_OPTIONS_METHOD_NAME)) {
+                            configuration.addPostConfigurationMethod(Log4jAppenderHandler.ACTIVATE_OPTIONS_METHOD_NAME);
+                        }
                     }
                     if (value.isDefined()) {
                         for (Property property : value.asPropertyList()) {
@@ -561,6 +566,8 @@ final class HandlerOperations {
     private static void handleProperty(final AttributeDefinition attribute, final OperationContext context, final ModelNode model,
                                        final LogContextConfiguration logContextConfiguration, final HandlerConfiguration configuration, final boolean resolveValue)
             throws OperationFailedException {
+        boolean addPostConstruct = false;
+
         if (attribute.getName().equals(ENABLED.getName())) {
             final boolean value = ((resolveValue ? ENABLED.resolveModelAttribute(context, model).asBoolean() : model.asBoolean()));
             if (value) {
@@ -572,6 +579,7 @@ final class HandlerOperations {
             final String resolvedValue = (resolveValue ? ENCODING.resolvePropertyValue(context, model) : model.isDefined() ? model.asString() : null);
             configuration.setEncoding(resolvedValue);
         } else if (attribute.getName().equals(FORMATTER.getName())) {
+            addPostConstruct = true;
             final String formatterName = configuration.getName();
             // Use a formatter only if a named-formatter is not defined, note too that if explicitly undefining the named-formatter
             // the formatter pattern will be used
@@ -596,6 +604,7 @@ final class HandlerOperations {
                 configuration.setFormatterName(formatterName);
             }
         } else if (attribute.getName().equals(NAMED_FORMATTER.getName())) {
+            addPostConstruct = true;
             final String formatterName = configuration.getName();
             final ModelNode valueNode = (resolveValue ? NAMED_FORMATTER.resolveModelAttribute(context, model) : model);
             // If the value not is undefined, this may have come from a undefine-attribute operation
@@ -643,6 +652,7 @@ final class HandlerOperations {
                 propertyConfigurable = configuration;
             } else {
                 propertyConfigurable = pojoConfiguration;
+                addPostConstruct = true;
             }
             // Should be safe here to only process defined properties. The write-attribute handler handles removing
             // undefined properties
@@ -669,6 +679,16 @@ final class HandlerOperations {
                 }
             } else {
                 LoggingLogger.ROOT_LOGGER.invalidPropertyAttribute(attribute.getName());
+            }
+        }
+        if (addPostConstruct) {
+            // A log4j POJO configuration will have the same name as the handler
+            if (logContextConfiguration.getPojoNames().contains(configuration.getName())) {
+                // If this is a POJO it's a log4j appender and the OptionHandler.activateOptions() should be
+                // invoked assuming it does not already exist.
+                if (!configuration.getPostConfigurationMethods().contains(Log4jAppenderHandler.ACTIVATE_OPTIONS_METHOD_NAME)) {
+                    configuration.addPostConfigurationMethod(Log4jAppenderHandler.ACTIVATE_OPTIONS_METHOD_NAME);
+                }
             }
         }
     }

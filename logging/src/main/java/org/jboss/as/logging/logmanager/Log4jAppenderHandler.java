@@ -40,6 +40,7 @@ import org.jboss.logmanager.ExtLogRecord;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class Log4jAppenderHandler extends ExtHandler {
+    public static final String ACTIVATE_OPTIONS_METHOD_NAME = "activate";
     private volatile Appender appender = null;
     private final boolean applyLayout;
 
