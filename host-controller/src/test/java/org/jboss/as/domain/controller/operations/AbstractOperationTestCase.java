@@ -130,6 +130,10 @@ public abstract class AbstractOperationTestCase {
             return 0;
         }
 
+        public String getHttpManagementSecureInterface() {
+            return null;
+        }
+
         public int getHttpManagementSecurePort() {
             return 0;
         }

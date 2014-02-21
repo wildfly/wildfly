@@ -256,6 +256,11 @@ public class LegacyKernelServicesImpl extends AbstractKernelServicesImpl {
             }
 
             @Override
+            public String getHttpManagementSecureInterface() {
+                return null;
+            }
+
+            @Override
             public boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration() {
                 return false;
             }
