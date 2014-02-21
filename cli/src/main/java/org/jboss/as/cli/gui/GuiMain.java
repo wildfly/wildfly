@@ -222,7 +222,13 @@ public class GuiMain {
 
     private static JTabbedPane makeTabbedPane(CliGuiContext cliGuiCtx, JPanel output) {
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Command Builder", new ManagementModel(cliGuiCtx));
+        ManagementModel mgtModel = new ManagementModel(cliGuiCtx);
+        tabs.addTab("Command Builder", mgtModel);
+
+        ManagementModelNode loggingSubsys = mgtModel.findNode("/subsystem=logging/");
+        if (loggingSubsys != null && cliGuiCtx.isStandalone()) {
+            tabs.addTab("Server Logs", new ServerLogsPanel(cliGuiCtx, loggingSubsys));
+        }
         tabs.addTab("Output", output);
         return tabs;
     }

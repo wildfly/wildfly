@@ -108,6 +108,32 @@ public class OperationDialog extends JDialog {
         super.setVisible(isVisible);
     }
 
+    /**
+     * Set the value of the underlying component.  Note that this will
+     * not work for ListEditor components.  Also, note that for a JComboBox,
+     * The value object must have the same identity as an object in the drop-down.
+     *
+     * @param propName The DMR property name to set.
+     * @param value  The value.
+     */
+    public void setValue(String propName, Object value) {
+        for (RequestProp prop : props) {
+            if (prop.getName().equals(propName)) {
+                JComponent valComp = prop.getValueComponent();
+                if (valComp instanceof JTextComponent) {
+                    ((JTextComponent)valComp).setText(value.toString());
+                }
+                if (valComp instanceof AbstractButton) {
+                    ((AbstractButton)valComp).setSelected((Boolean)value);
+                }
+                if (valComp instanceof JComboBox) {
+                    ((JComboBox)valComp).setSelectedItem(value);
+                }
+                return;
+            }
+        }
+    }
+
     private void setProps(ModelNode requestProperties) throws Exception {
         props = new TreeSet<RequestProp>();
         if (opName.equals("add")) {

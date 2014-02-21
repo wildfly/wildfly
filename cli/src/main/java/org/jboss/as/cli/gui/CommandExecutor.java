@@ -63,15 +63,20 @@ public class CommandExecutor {
 
     private ModelNode execute(String command, ModelNode request) throws IOException {
         try {
-            if (command.startsWith("deploy")) {
+            if (isSlowCommand(command)) {
                 cliGuiCtx.getMainWindow().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             }
             return client.execute(request);
         } finally {
-            if (command.startsWith("deploy")) {
+            if (isSlowCommand(command)) {
                 cliGuiCtx.getMainWindow().setCursor(Cursor.getDefaultCursor());
             }
         }
+    }
+
+    private boolean isSlowCommand(String command) {
+        return command.startsWith("deploy") ||
+               command.startsWith("/subsystem=logging/:read-log-file");
     }
 
     public static class Response {
