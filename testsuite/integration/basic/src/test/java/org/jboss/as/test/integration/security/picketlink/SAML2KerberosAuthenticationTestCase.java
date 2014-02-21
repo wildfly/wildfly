@@ -79,11 +79,10 @@ import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
 import org.jboss.as.test.integration.security.common.negotiation.JBossNegotiateSchemeFactory;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.PrincipalPrintingServlet;
-import org.jboss.as.test.integration.security.loginmodules.common.servlets.RolePrintingServlet;
+import org.jboss.as.test.integration.security.common.servlets.PrincipalPrintingServlet;
+import org.jboss.as.test.integration.security.common.servlets.RolePrintingServlet;
 import org.jboss.logging.Logger;
 import org.jboss.security.auth.callback.UsernamePasswordHandler;
-import org.jboss.security.negotiation.spnego.SPNEGOLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -352,7 +351,7 @@ public class SAML2KerberosAuthenticationTestCase {
                     .name(IDENTITY_PROVIDER_REALM)
                     .loginModules(
                             new SecurityModule.Builder()    // Login module used for password negotiation
-                                    .name(SPNEGOLoginModule.class.getName())
+                                    .name("SPNEGO")
                                     .flag(Constants.REQUISITE)
                                     .putOption("password-stacking", "useFirstPass")
                                     .putOption("serverSecurityDomain", SERVER_SECURITY_DOMAIN)
