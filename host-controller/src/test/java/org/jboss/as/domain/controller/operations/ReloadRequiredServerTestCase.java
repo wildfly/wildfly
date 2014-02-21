@@ -494,6 +494,11 @@ public class ReloadRequiredServerTestCase extends AbstractOperationTestCase {
         }
 
         @Override
+        public String getHttpManagementSecureInterface() {
+            return null;
+        }
+
+        @Override
         public int getHttpManagementSecurePort() {
             return 0;
         }

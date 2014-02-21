@@ -69,7 +69,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -178,7 +177,6 @@ public class HTTPSManagementInterfaceTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("WFLY-2870")
     public void testHTTPWithSecureInterface() throws Exception {
         httpTest(true);
     }
@@ -238,7 +236,6 @@ public class HTTPSManagementInterfaceTestCase {
      * @throws ClientProtocolException, IOException, URISyntaxException
      */
     @Test
-    @Ignore("WFLY-2870")
     public void testHTTPSWithSecureInterface() throws Exception {
         httpsTest(true);
     }
@@ -273,7 +270,6 @@ public class HTTPSManagementInterfaceTestCase {
     }
 
     @Test
-    @Ignore("WFLY-2870")
     public void testNoHttpsRedirectWithSecureInterface() throws Exception {
         httpsRedirectTest(true);
     }
