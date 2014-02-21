@@ -62,6 +62,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import static org.hamcrest.CoreMatchers.*;
+import org.hamcrest.Matcher;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
@@ -216,12 +217,14 @@ public class SAML2KerberosAuthenticationTestCase {
             assertThat("WWW-Authenticate header is present",   authnHeaders, notNullValue());
             assertThat("WWW-Authenticate header is non-empty", authnHeaders.length, not(equalTo(0)));
 
-            final Set<String> authnHeaderValues = new HashSet<String>();
+            final Set<? super String> authnHeaderValues = new HashSet<String>();
             for (final Header header : authnHeaders) {
                 authnHeaderValues.add(header.getValue());
             }
 
-            assertThat("WWW-Authenticate [Negotiate] header is missing", authnHeaderValues, hasItem(containsString("Negotiate")));
+            Matcher<String> matcherContainsString = containsString("Negotiate");
+            Matcher<Iterable<? super String>> matcherAnyContainsNegotiate = hasItem(matcherContainsString);
+            assertThat("WWW-Authenticate [Negotiate] header is missing", authnHeaderValues, matcherAnyContainsNegotiate);
 
             consumeResponse(response);
         } finally {
