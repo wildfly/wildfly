@@ -1133,6 +1133,11 @@ public class ParseAndMarshalModelsTestCase {
         }
 
         @Override
+        public String getHttpManagementSecureInterface() {
+            return null;
+        }
+
+        @Override
         public boolean isRemoteDomainControllerIgnoreUnaffectedConfiguration() {
             return false;
         }

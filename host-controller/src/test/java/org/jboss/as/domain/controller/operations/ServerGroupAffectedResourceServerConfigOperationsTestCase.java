@@ -437,6 +437,11 @@ public class ServerGroupAffectedResourceServerConfigOperationsTestCase extends A
         }
 
         @Override
+        public String getHttpManagementSecureInterface() {
+            return null;
+        }
+
+        @Override
         public int getHttpManagementSecurePort() {
             return 0;
         }

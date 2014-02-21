@@ -25,6 +25,7 @@ import io.undertow.server.ListenerRegistry;
 import io.undertow.server.handlers.ChannelUpgradeHandler;
 
 import java.net.BindException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,6 +73,7 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
     private final InjectedValue<SocketBinding> injectedSocketBindingValue = new InjectedValue<SocketBinding>();
     private final InjectedValue<SocketBinding> injectedSecureSocketBindingValue = new InjectedValue<SocketBinding>();
     private final InjectedValue<NetworkInterfaceBinding> interfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
+    private final InjectedValue<NetworkInterfaceBinding> secureInterfaceBindingValue = new InjectedValue<NetworkInterfaceBinding>();
     private final InjectedValue<SocketBindingManager> injectedSocketBindingManager = new InjectedValue<SocketBindingManager>();
     private final InjectedValue<Integer> portValue = new InjectedValue<Integer>();
     private final InjectedValue<Integer> securePortValue = new InjectedValue<Integer>();
@@ -168,9 +170,10 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
         InetSocketAddress bindAddress = null;
         InetSocketAddress secureBindAddress = null;
 
-        SocketBinding basicBinding = injectedSocketBindingValue.getOptionalValue();
-        SocketBinding secureBinding = injectedSecureSocketBindingValue.getOptionalValue();
+        final SocketBinding basicBinding = injectedSocketBindingValue.getOptionalValue();
+        final SocketBinding secureBinding = injectedSecureSocketBindingValue.getOptionalValue();
         final NetworkInterfaceBinding interfaceBinding = interfaceBindingValue.getOptionalValue();
+        final NetworkInterfaceBinding secureInterfaceBinding = secureInterfaceBindingValue.getOptionalValue();
         if (interfaceBinding != null) {
             useUnmanagedBindings = true;
             final int port = portValue.getOptionalValue();
@@ -179,7 +182,8 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
             }
             final int securePort = securePortValue.getOptionalValue();
             if (securePort > 0) {
-                secureBindAddress = new InetSocketAddress(interfaceBinding.getAddress(), securePort);
+                InetAddress secureAddress = secureInterfaceBinding == null ? interfaceBinding.getAddress() : secureInterfaceBinding.getAddress();
+                secureBindAddress = new InetSocketAddress(secureAddress, securePort);
             }
         } else {
             if (basicBinding != null) {
@@ -308,6 +312,15 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
      */
     public Injector<NetworkInterfaceBinding> getInterfaceInjector() {
         return interfaceBindingValue;
+    }
+
+    /**
+     * Get the secure interface binding injector.
+     *
+     * @return The injector
+     */
+    public Injector<NetworkInterfaceBinding> getSecureInterfaceInjector() {
+        return secureInterfaceBindingValue;
     }
 
     public Injector<SocketBindingManager> getSocketBindingManagerInjector() {

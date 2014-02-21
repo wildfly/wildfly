@@ -333,6 +333,7 @@ public class ModelDescriptionConstants {
     public static final String SCHEMA_LOCATIONS = "schema-locations";
     public static final String SEARCH_BY = "search-by";
     public static final String SECRET = "secret";
+    public static final String SECURE_INTERFACE = "secure-interface";
     public static final String SECURE_PORT = "secure-port";
     public static final String SECURE_SOCKET_BINDING = "secure-socket-binding";
     public static final String SECURITY_REALM = "security-realm";

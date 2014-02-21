@@ -86,6 +86,13 @@ public interface LocalHostControllerInfo {
     int getHttpManagementPort();
 
     /**
+     * Gets the name of the interface on which the host listens for HTTPS management requests.
+     *
+     * @return the logical interface name
+     */
+    String getHttpManagementSecureInterface();
+
+    /**
      * Gets the name of the port on which the host listens for HTTPS management requests.
      * @return  the port number
      */
