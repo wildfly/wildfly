@@ -86,7 +86,7 @@ public class InitialDeploymentTracker extends ServiceTracker<Object> {
         if (expectedServices.isEmpty() == false) {
             ServiceRegistry serviceRegistry = context.getServiceRegistry(false);
             listenerTarget = serviceRegistry.getService(JBOSS_SERVER_CONTROLLER).getServiceContainer();
-            listenerTarget.addListener(this);
+            listenerTarget.addListener(Inheritance.ALL, this);
         }
 
         // Check the tracker for completeness
