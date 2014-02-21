@@ -209,7 +209,7 @@ public class ManagementHttpServer {
         try {
             pathHandler.addPrefixPath(ErrorContextHandler.ERROR_CONTEXT, ErrorContextHandler.createErrorContext(consoleSlot));
         } catch (ModuleLoadException e) {
-            ROOT_LOGGER.error(consoleSlot == null ? "main" : consoleSlot);
+            ROOT_LOGGER.errorContextModuleNotFound(consoleSlot == null ? "main" : consoleSlot);
         }
 
         ManagementRootConsoleRedirectHandler rootConsoleRedirectHandler = new ManagementRootConsoleRedirectHandler(consoleHandler);
