@@ -32,6 +32,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.FileUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -47,6 +48,7 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.jboss.shrinkwrap.impl.base.exporter.ExplodedExporterImpl;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -67,10 +69,14 @@ public class DeploymentOverlayCLITestCase {
     private static File replacedLibrary;
     private static File addedLibrary;
     private static File war1;
+    private static File war1_exploded;
     private static File war2;
+    private static File war2_exploded;
     private static File war3;
     private static File ear1;
+    private static File ear1_exploded;
     private static File ear2;
+    private static File ear2_exploded;
     private static File webXml;
     private static File overrideXml;
     private static File replacedAjsp;
@@ -117,8 +123,13 @@ public class DeploymentOverlayCLITestCase {
         war.addAsWebResource(DeploymentOverlayCLITestCase.class.getPackage(), "a.jsp", "a.jsp");
         war.addAsWebInfResource(DeploymentOverlayCLITestCase.class.getPackage(), "web.xml", "web.xml");
         war.addAsLibraries(jar);
+
+        File explodedwars_basedir = new File(tempDir + File.separator + "exploded_deployments");
+        explodedwars_basedir.mkdirs();
+
         war1 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war1, true);
+        war1_exploded = new ExplodedExporterImpl(war).exportExploded(explodedwars_basedir);
 
         war = ShrinkWrap.create(WebArchive.class, "deployment1.war");
         war.addClass(SimpleServlet.class);
@@ -126,6 +137,7 @@ public class DeploymentOverlayCLITestCase {
         war.addAsLibraries(jar);
         war2 = new File(tempDir + File.separator + war.getName());
         new ZipExporterImpl(war).exportTo(war2, true);
+        war2_exploded = new ExplodedExporterImpl(war).exportExploded(explodedwars_basedir);
 
         war = ShrinkWrap.create(WebArchive.class, "another.war");
         war.addClass(SimpleServlet.class);
@@ -138,6 +150,7 @@ public class DeploymentOverlayCLITestCase {
         ear.addAsModule(war1);
         ear1 = new File(tempDir + File.separator + ear.getName());
         new ZipExporterImpl(ear).exportTo(ear1, true);
+        ear1_exploded = new ExplodedExporterImpl(ear).exportExploded(explodedwars_basedir);
 
         war = ShrinkWrap.create(WebArchive.class, "deployment0.war");
         war.addClass(SimpleServlet.class);
@@ -154,6 +167,7 @@ public class DeploymentOverlayCLITestCase {
         ear.addAsLibraries(jar);
         ear2 = new File(tempDir + File.separator + ear.getName());
         new ZipExporterImpl(ear).exportTo(ear2, true);
+        ear2_exploded = new ExplodedExporterImpl(ear).exportExploded(explodedwars_basedir);
 
         final URL overrideXmlUrl = DeploymentOverlayCLITestCase.class.getResource("override.xml");
         if(overrideXmlUrl == null) {
@@ -187,10 +201,14 @@ public class DeploymentOverlayCLITestCase {
     @AfterClass
     public static void after() throws Exception {
         war1.delete();
+        FileUtils.deleteDirectory(war1_exploded);
         war2.delete();
+        FileUtils.deleteDirectory(war2_exploded);
         war3.delete();
         ear1.delete();
+        FileUtils.deleteDirectory(ear1_exploded);
         ear2.delete();
+        FileUtils.deleteDirectory(ear2_exploded);
         replacedLibrary.delete();
         replacedAjsp.delete();
         addedLibrary.delete();
@@ -250,9 +268,40 @@ public class DeploymentOverlayCLITestCase {
         //now test Libraries
         assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
         assertEquals("Added Library Servlet", HttpRequest.get(baseUrl + "deployment0/AddedLibraryServlet", 10, TimeUnit.SECONDS).trim());
+    }
 
+    @Test
+    public void testSimpleOverrideExploded() throws Exception {
 
+        ctx.handle("/deployment="+war1_exploded.getName()
+                +":add(content=[{\"path\"=>\""+war1_exploded.getAbsolutePath().replace("\\", "\\\\")+"\",\"archive\"=>false}], enabled=true)");
+        ctx.handle("/deployment="+war2_exploded.getName()
+                +":add(content=[{\"path\"=>\""+war2_exploded.getAbsolutePath().replace("\\", "\\\\")+"\",\"archive\"=>false}], enabled=true)");
 
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
+                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                + ",WEB-INF/lib/addedlib.jar=" + addedLibrary.getAbsolutePath()
+                + " --deployments=" + war1_exploded.getName());
+
+        String response = readResponse("deployment0");
+        assertEquals("NON OVERRIDDEN", response);
+        response = readResponse("deployment1");
+        assertEquals("NON OVERRIDDEN", response);
+
+        ctx.handle("/deployment=" + war1_exploded.getName() + ":redeploy");
+        ctx.handle("/deployment=" + war2_exploded.getName() + ":redeploy");
+
+        response = readResponse("deployment0");
+        assertEquals("OVERRIDDEN", response);
+        response = readResponse("deployment1");
+        assertEquals("NON OVERRIDDEN", response);
+
+        // replacing JSP files in exploded deployments is not supported - see WFLY-2989 for more details
+        // assertEquals("Replaced JSP File", HttpRequest.get(baseUrl + "deployment0/a.jsp", 10, TimeUnit.SECONDS).trim());
+
+        //now test Libraries
+        assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
+        assertEquals("Added Library Servlet", HttpRequest.get(baseUrl + "deployment0/AddedLibraryServlet", 10, TimeUnit.SECONDS).trim());
     }
 
 
@@ -281,6 +330,32 @@ public class DeploymentOverlayCLITestCase {
 
     }
 
+    @Test
+    public void testSimpleOverrideInEarAtWarLevelExploded() throws Exception {
+
+        ctx.handle("/deployment="+ear1_exploded.getName()
+                +":add(content=[{\"path\"=>\""+ear1_exploded.getAbsolutePath().replace("\\", "\\\\")+"\",\"archive\"=>false}], enabled=true)");
+
+        ctx.handle("deployment-overlay add --name=overlay-test --content=WEB-INF/web.xml=" + overrideXml.getAbsolutePath()
+                + ",a.jsp=" + replacedAjsp.getAbsolutePath() + ",WEB-INF/lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                + " --deployments=" + war1.getName());
+
+        String response = readResponse("deployment0");
+        assertEquals("NON OVERRIDDEN", response);
+
+        ctx.handle("/deployment=" + ear1_exploded.getName() + ":redeploy");
+
+        response = readResponse("deployment0");
+        assertEquals("OVERRIDDEN", response);
+
+        //now test JSP (it works here, because only the EAR is exploded, the inner WAR is not)
+        assertEquals("Replaced JSP File", HttpRequest.get(baseUrl + "deployment0/a.jsp", 10, TimeUnit.SECONDS).trim());
+
+        //now test Libraries
+        assertEquals("Replaced Library Servlet", HttpRequest.get(baseUrl + "deployment0/LibraryServlet", 10, TimeUnit.SECONDS).trim());
+
+    }
+
 
     @Test
     public void testSimpleOverrideInEarAtEarLevel() throws Exception {
@@ -294,6 +369,25 @@ public class DeploymentOverlayCLITestCase {
         assertEquals("original library", HttpRequest.get(baseUrl + "deployment0/EarServlet", 10, TimeUnit.SECONDS).trim());
 
         ctx.handle("/deployment=" + ear2.getName() + ":redeploy");
+
+        //now test Libraries
+        assertEquals("replaced library", HttpRequest.get(baseUrl + "deployment0/EarServlet", 10, TimeUnit.SECONDS).trim());
+    }
+
+    @Test
+    public void testSimpleOverrideInEarAtEarLevelExploded() throws Exception {
+
+        ctx.handle("/deployment="+ear2_exploded.getName()
+                +":add(content=[{\"path\"=>\""+ear2_exploded.getAbsolutePath().replace("\\", "\\\\")+"\",\"archive\"=>false}], enabled=true)");
+
+
+        ctx.handle("deployment-overlay add --name=overlay-test --content=lib/lib.jar=" + replacedLibrary.getAbsolutePath()
+                + " --deployments=" + ear2_exploded.getName());
+
+        //now test Libraries
+        assertEquals("original library", HttpRequest.get(baseUrl + "deployment0/EarServlet", 10, TimeUnit.SECONDS).trim());
+
+        ctx.handle("/deployment=" + ear2_exploded.getName() + ":redeploy");
 
         //now test Libraries
         assertEquals("replaced library", HttpRequest.get(baseUrl + "deployment0/EarServlet", 10, TimeUnit.SECONDS).trim());
