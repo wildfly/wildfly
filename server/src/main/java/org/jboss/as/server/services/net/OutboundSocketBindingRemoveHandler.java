@@ -22,10 +22,12 @@
 
 package org.jboss.as.server.services.net;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.dmr.ModelNode;
 
@@ -38,7 +40,8 @@ class OutboundSocketBindingRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        final String outboundSocketName = model.get(ModelDescriptionConstants.NAME).asString();
+        final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
+        final String outboundSocketName = address.getLastElement().getValue();
         context.removeService(OutboundSocketBinding.OUTBOUND_SOCKET_BINDING_BASE_SERVICE_NAME.append(outboundSocketName));
     }
 }
