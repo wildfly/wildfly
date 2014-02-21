@@ -65,6 +65,7 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
     static void clearHostControllerInfo(LocalHostControllerInfoImpl hostControllerInfo) {
         hostControllerInfo.setHttpManagementInterface(null);
         hostControllerInfo.setHttpManagementPort(0);
+        hostControllerInfo.setHttpManagementSecureInterface(null);
         hostControllerInfo.setHttpManagementSecurePort(0);
         hostControllerInfo.setHttpManagementSecurityRealm(null);
     }

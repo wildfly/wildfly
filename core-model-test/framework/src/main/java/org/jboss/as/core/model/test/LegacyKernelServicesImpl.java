@@ -255,6 +255,12 @@ public class LegacyKernelServicesImpl extends AbstractKernelServicesImpl {
             public String getHttpManagementInterface() {
                 return null;
             }
+
+            @Override
+            public String getHttpManagementSecureInterface() {
+                return null;
+            }
+
         });
 
         for (IgnoreDomainResourceTypeResource resource : ignoredResources) {

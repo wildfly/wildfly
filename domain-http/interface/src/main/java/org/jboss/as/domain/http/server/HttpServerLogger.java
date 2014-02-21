@@ -22,6 +22,11 @@
 
 package org.jboss.as.domain.http.server;
 
+import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+
+import java.net.InetAddress;
+
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -29,7 +34,6 @@ import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
-import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
 /**
@@ -79,9 +83,18 @@ public interface HttpServerLogger extends BasicLogger {
     @Message(id = 15103, value = "A secure port has been specified for the HTTP interface but no SSL configuration in the realm.")
     void sslConfigurationNotFound();
 
+    @LogMessage(level = ERROR)
+    @Message(id = 15104, value = "Unable to load error contest for slot %s, disabling error context.")
+    void errorContextModuleNotFound(String slot);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15105, value = "Management interface is using different addresses for HTTP (%s) and HTTPS (%s). Redirection of HTTPS requests from HTTP socket to HTTPS socket will not be supported.")
+    void httpsRedirectNotSupported(InetAddress bindAddress, InetAddress secureBindAddress);
+
     /*
      * Message IDs 15100 to 15199 Reserved for the HTTP management interface, HTTPServerMessages also contains messages in this
      * range commencing at 15120.
      */
+
 
 }

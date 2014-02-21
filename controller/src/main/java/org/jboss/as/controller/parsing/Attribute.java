@@ -136,6 +136,7 @@ public enum Attribute {
     SEARCH_CREDENTIAL("search-credential"),
     SEARCH_BY("search-by"),
     SEARCH_DN("search-dn"),
+    SECURE_INTERFACE("secure-interface"),
     SECURE_PORT("secure-port"),
     SECURITY_REALM("security-realm"),
     SHA1("sha1"),

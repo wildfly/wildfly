@@ -1517,7 +1517,7 @@
         <xs:complexContent>
             <xs:extension base="management-interfaceType">
                 <xs:sequence>
-                    <xs:element name="socket" type="http-management-socketType"/>
+                    <xs:element name="socket" type="host-http-management-socketType"/>
                 </xs:sequence>
                 <xs:attribute name="console-enabled" type="xs:boolean" use="optional" default="true"/>
             </xs:extension>
@@ -1552,6 +1552,37 @@
 
                             If specified the security-realm will be required to obtain
                             the SSL configuration.
+                        </xs:documentation>
+                    </xs:annotation>
+                </xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="host-http-management-socketType">
+        <xs:annotation>
+            <xs:documentation>
+                Configuration of the socket used by host's exposed HTTP management interface.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:complexContent>
+            <xs:extension base="http-management-socketType">
+                <xs:attribute name="secure-interface" type="xs:string" use="optional">
+                    <xs:annotation>
+                        <xs:documentation>
+                            Network interface on which the host's socket for
+                            HTTPS management communication should be opened
+                            if a different interface should be used from that
+                            specified by the 'interface' attribute.
+
+                            If not specified the interface specified by the 'interface'
+                            attribute will be used.
+
+                            Has no effect if the 'secure-port' attribute is not set.
+
+                            If specified with a different value from the 'interface'
+                            attribute, redirect of HTTPS requests received on the HTTP
+                            socket to the HTTPS address will not be supported.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
