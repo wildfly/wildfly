@@ -33,6 +33,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
 import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -57,13 +58,19 @@ public class DownloadServerLogDialog extends JDialog implements ActionListener {
 
     private CliGuiContext cliGuiCtx;
     private String fileName;
+
+    // we'll use this if we decide to show a progress indicator
+    // might not be perfectly accurate
+    private Long fileSize;
+
     private JPanel inputPanel = new JPanel(new GridBagLayout());
     private JTextField pathField = new JTextField(40);
 
-    public DownloadServerLogDialog(CliGuiContext cliGuiCtx, String fileName) {
+    public DownloadServerLogDialog(CliGuiContext cliGuiCtx, String fileName, Long fileSize) {
         super(cliGuiCtx.getMainWindow(), "Download " + fileName, Dialog.ModalityType.APPLICATION_MODAL);
         this.cliGuiCtx = cliGuiCtx;
         this.fileName = fileName;
+        this.fileSize = fileSize;
         fileChooser.setSelectedFile(new File(fileName));
         setPathField();
 
@@ -162,19 +169,30 @@ public class DownloadServerLogDialog extends JDialog implements ActionListener {
 
         PrintStream out = null;
         try {
-            String command = "/subsystem=logging/:read-log-file(name=" + fileName + ",lines=-1,skip=0,tail=false)";
-            ModelNode result = cliGuiCtx.getExecutor().doCommand(command);
-            if (result.get("outcome").asString().equals("failed")) {
-                String error = "Failure at server: " + result.get("failure-description").toString();
-                JOptionPane.showMessageDialog(cliGuiCtx.getMainWindow(), error, "Download Failed", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
             out = new PrintStream(new BufferedOutputStream(new FileOutputStream(selectedFile)));
+            int linesToRead = 5000;
+            int skip = 0;
+            List<ModelNode> dataLines = null;
+            long bytesRead = 0; // we'll use this if we decide to show a progress indicator
+            int lineSepLength = System.getProperty("line.separator").length();
 
-            for (ModelNode line : result.get("result").asList()) {
-                out.println(line.asString());
-            }
+            do {
+                String command = "/subsystem=logging/:read-log-file(name=" + fileName + ",lines=" + linesToRead + ",skip=" + skip + ",tail=false)";
+                ModelNode result = cliGuiCtx.getExecutor().doCommand(command);
+                if (result.get("outcome").asString().equals("failed")) {
+                    String error = "Failure at server: " + result.get("failure-description").toString();
+                    JOptionPane.showMessageDialog(cliGuiCtx.getMainWindow(), error, "Download Failed", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                dataLines = result.get("result").asList();
+                for (ModelNode line : dataLines) {
+                    String strLine = line.asString();
+                    bytesRead += strLine.length() + lineSepLength;
+                    out.println(strLine);
+                }
+                skip += linesToRead;
+            } while (dataLines.size() == linesToRead);
         } catch (IOException | CommandFormatException ex) {
             throw new RuntimeException(ex);
         } finally {

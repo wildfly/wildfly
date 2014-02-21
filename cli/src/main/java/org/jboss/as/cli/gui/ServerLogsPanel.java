@@ -72,6 +72,10 @@ public class ServerLogsPanel extends JPanel {
         return (String)table.getValueAt(table.getSelectedRow(), 0);
     }
 
+    private Long getSelectedFileSize() {
+        return (Long)table.getValueAt(table.getSelectedRow(), 2);
+    }
+
     private class ViewWithCLIButton extends JButton {
         private String description;
         private ModelNode requestProperties;
@@ -108,7 +112,7 @@ public class ServerLogsPanel extends JPanel {
             addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    DownloadServerLogDialog dialog = new DownloadServerLogDialog(cliGuiCtx, getSelectedFileName());
+                    DownloadServerLogDialog dialog = new DownloadServerLogDialog(cliGuiCtx, getSelectedFileName(), getSelectedFileSize());
                     dialog.setLocationRelativeTo(cliGuiCtx.getMainWindow());
                     dialog.setVisible(true);
                 }
