@@ -40,7 +40,7 @@ public class ServletResourceManager implements ResourceManager {
             for (VirtualFile overlay : overlays) {
                 VirtualFile child = overlay.getChild(p);
                 if (child.exists()) {
-                    return new VirtualFileResource(child, path);
+                    return new VirtualFileResource(overlay.getPhysicalFile(), child, path);
                 }
             }
         }
