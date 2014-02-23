@@ -30,6 +30,7 @@ import org.apache.log4j.Category;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.OptionHandler;
+import org.jboss.as.logging.LoggingLogger;
 import org.jboss.as.logging.LoggingMessages;
 import org.jboss.logmanager.ExtHandler;
 import org.jboss.logmanager.ExtLogRecord;
@@ -40,6 +41,8 @@ import org.jboss.logmanager.ExtLogRecord;
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
 public class Log4jAppenderHandler extends ExtHandler {
+    public static final String ACTIVATE_OPTIONS_METHOD_NAME = "activate";
+    public static final String ACTIVATOR_PROPERTY_METHOD_NAME = "dummy";
     private volatile Appender appender = null;
     private final boolean applyLayout;
 
@@ -83,11 +86,24 @@ public class Log4jAppenderHandler extends ExtHandler {
     }
 
     /**
+     * This method does nothing. It's only purpose is to be invoked so the {@link #activate()} method will be invoked
+     * when log4j appenders are also {@link org.apache.log4j.spi.OptionHandler option handlers}.
+     *
+     * @param ignore any string value or {@code null}
+     */
+    public void setDummy(final String ignore) {
+        // does nothing
+    }
+
+    /**
      * Activates the appender only if it's an {@link OptionHandler option handler}.
      */
     public void activate() {
         if (appender instanceof OptionHandler) {
             ((OptionHandler) appender).activateOptions();
+            if (LoggingLogger.ROOT_LOGGER.isDebugEnabled()) {
+                LoggingLogger.ROOT_LOGGER.debugf("Invoking OptionHandler.activateOptions() on appender %s (%s)", appender.getName(), appender.getClass().getCanonicalName());
+            }
         }
     }
 

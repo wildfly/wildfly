@@ -272,14 +272,17 @@ final class HandlerOperations {
                 try {
                     final Class<?> actualClass = Class.forName(className, false, moduleLoader.loadModule(id).getClassLoader());
                     if (Appender.class.isAssignableFrom(actualClass)) {
+                        final PojoConfiguration pojoConfiguration;
                         // Check for construction parameters
                         if (constructionProperties == null) {
-                            logContextConfiguration.addPojoConfiguration(moduleName, className, name);
+                            pojoConfiguration = logContextConfiguration.addPojoConfiguration(moduleName, className, name);
                         } else {
-                            logContextConfiguration.addPojoConfiguration(moduleName, className, name, constructionProperties);
+                            pojoConfiguration = logContextConfiguration.addPojoConfiguration(moduleName, className, name, constructionProperties);
                         }
+                        // Set the name on the appender
+                        pojoConfiguration.setPropertyValueString("name", name);
                         configuration = logContextConfiguration.addHandlerConfiguration("org.jboss.as.logging", Log4jAppenderHandler.class.getName(), name);
-                        configuration.addPostConfigurationMethod("activate");
+                        configuration.addPostConfigurationMethod(Log4jAppenderHandler.ACTIVATE_OPTIONS_METHOD_NAME);
                         configuration.setPropertyValueString("appender", name);
                     } else {
                         // Check for construction parameters
@@ -348,6 +351,10 @@ final class HandlerOperations {
                         propertyConfigurable = configuration;
                     } else {
                         propertyConfigurable = pojoConfiguration;
+                        // A log4j appender may be an OptionHandler which requires the invocation of activateOptions(). Setting
+                        // a dummy property on the Log4jAppenderHandler is required to invoke this method as all properties are
+                        // set on the POJO which is the actual appender
+                        configuration.setPropertyValueString(Log4jAppenderHandler.ACTIVATOR_PROPERTY_METHOD_NAME, "");
                     }
                     if (value.isDefined()) {
                         for (Property property : value.asPropertyList()) {
@@ -561,6 +568,7 @@ final class HandlerOperations {
     private static void handleProperty(final AttributeDefinition attribute, final OperationContext context, final ModelNode model,
                                        final LogContextConfiguration logContextConfiguration, final HandlerConfiguration configuration, final boolean resolveValue)
             throws OperationFailedException {
+
         if (attribute.getName().equals(ENABLED.getName())) {
             final boolean value = ((resolveValue ? ENABLED.resolveModelAttribute(context, model).asBoolean() : model.asBoolean()));
             if (value) {
@@ -643,6 +651,10 @@ final class HandlerOperations {
                 propertyConfigurable = configuration;
             } else {
                 propertyConfigurable = pojoConfiguration;
+                // A log4j appender may be an OptionHandler which requires the invocation of activateOptions(). Setting
+                // a dummy property on the Log4jAppenderHandler is required to invoke this method as all properties are
+                // set on the POJO which is the actual appender
+                configuration.setPropertyValueString(Log4jAppenderHandler.ACTIVATOR_PROPERTY_METHOD_NAME, "");
             }
             // Should be safe here to only process defined properties. The write-attribute handler handles removing
             // undefined properties
