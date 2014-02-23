@@ -99,11 +99,10 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
     @Override
     protected void rollbackRuntime(OperationContext context, ModelNode operation, ModelNode model, List<ServiceController<?>> controllers) {
-        HttpManagementRemoveHandler.clearHostControllerInfo(hostControllerInfo);
 
-        if (!context.isBooting()) {
-            HttpManagementRemoveHandler.removeHttpManagementService(context);
-        }
+        super.rollbackRuntime(context, operation, model, controllers);
+
+        HttpManagementRemoveHandler.clearHostControllerInfo(hostControllerInfo);
     }
 
     static void populateHostControllerInfo(final LocalHostControllerInfoImpl hostControllerInfo, final OperationContext context, final ModelNode model) throws OperationFailedException {

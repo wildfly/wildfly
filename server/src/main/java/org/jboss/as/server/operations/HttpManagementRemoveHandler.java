@@ -59,18 +59,14 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
-        removeHttpManagementService(context);
+        context.removeService(UndertowHttpManagementService.SERVICE_NAME);
 
         RemotingServices.removeConnectorServices(context, ManagementRemotingServices.HTTP_CONNECTOR);
-        context.removeService(RemotingHttpUpgradeService.UPGRADE_SERVICE_NAME.append("management"));
+        context.removeService(RemotingHttpUpgradeService.UPGRADE_SERVICE_NAME.append(ManagementRemotingServices.HTTP_CONNECTOR));
     }
 
     @Override
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         HttpManagementAddHandler.INSTANCE.performRuntime(context, operation, model, null, null);
-    }
-
-    static void removeHttpManagementService(final OperationContext context) {
-        context.removeService(UndertowHttpManagementService.SERVICE_NAME);
     }
 }
