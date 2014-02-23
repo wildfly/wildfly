@@ -29,6 +29,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 import static org.jboss.as.test.integration.security.common.Utils.makeCallWithHttpClient;
+import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT;
+import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT_VERIFY_FALSE;
+import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT_VERIFY_TRUE;
+import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT_VERIFY_WANT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -59,6 +63,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AddRoleLoginModule;
+import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.SecurityTraceLoggingServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -81,14 +86,14 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- * Testing https connection to Web Connector with configured two-way SSL. 
+ * Testing https connection to Web Connector with configured two-way SSL.
  * HTTP client has set client keystore with valid/invalid certificate, which is used for
  * authentication to management interface. Result of authentication depends on whether client
  * certificate is accepted in server truststore. HTTP client uses client truststore with accepted
  * server certificate to authenticate server identity.
- * 
+ *
  * Keystores and truststores have valid certificates until 25 Octover 2033.
- * 
+ *
  * @author Filip Bogyai
  * @author Josef cacek
  */
@@ -112,13 +117,6 @@ public class HTTPSWebConnectorTestCase {
     public static final File CLIENT_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_KEYSTORE);
     public static final File CLIENT_TRUSTSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_TRUSTSTORE);
     public static final File UNTRUSTED_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.UNTRUSTED_KEYSTORE);
-
-    private static final int HTTPS_PORT = 8443;
-    private static final int HTTPS_PORT_VERIFY_FALSE = 18443;
-    private static final int HTTPS_PORT_VERIFY_WANT = 18444;
-    private static final int HTTPS_PORT_VERIFY_TRUE = 18445;
-
-    protected static final int[] HTTPS_PORTS = { HTTPS_PORT_VERIFY_FALSE, HTTPS_PORT_VERIFY_TRUE, HTTPS_PORT_VERIFY_WANT };
 
     private static final String HTTPS_NAME_VERIFY_NOT_REQUESTED = "https-verify-not-requested";
     private static final String HTTPS_NAME_VERIFY_REQUESTED = "https-verify-requested";

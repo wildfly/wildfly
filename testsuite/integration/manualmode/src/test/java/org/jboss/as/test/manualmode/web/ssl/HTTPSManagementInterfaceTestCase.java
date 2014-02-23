@@ -60,6 +60,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.management.util.CustomCLIExecutor;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
+import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.realm.Authentication;
@@ -75,14 +76,14 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- * Testing https connection to HTTP Management interface with configured two-way SSL. 
+ * Testing https connection to HTTP Management interface with configured two-way SSL.
  * HTTP client has set client keystore with valid/invalid certificate, which is used for
  * authentication to management interface. Result of authentication depends on whether client
  * certificate is accepted in server truststore. HTTP client uses client truststore with accepted
  * server certificate to authenticate server identity.
- * 
+ *
  * Keystores and truststores have valid certificates until 25 Octover 2033.
- * 
+ *
  * @author Filip Bogyai
  * @author Josef Cacek
  */
@@ -140,12 +141,12 @@ public class HTTPSManagementInterfaceTestCase {
      * @test.tsfi tsfi.app.web.admin.console
      * @test.tsfi tsfi.keystore.file
      * @test.tsfi tsfi.truststore.file
-     * @test.objective Testing authentication over management-http port. Test with user who has right/wrong certificate 
+     * @test.objective Testing authentication over management-http port. Test with user who has right/wrong certificate
      *                 to login into management web interface. Also provides check for web administration console
      *                 authentication, which goes through /management context.
-     * 
+     *
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
-     * 
+     *
      * @throws ClientProtocolException, IOException, URISyntaxException
      */
     @Test
@@ -173,12 +174,12 @@ public class HTTPSManagementInterfaceTestCase {
      * @test.tsfi tsfi.app.web.admin.console
      * @test.tsfi tsfi.keystore.file
      * @test.tsfi tsfi.truststore.file
-     * @test.objective Testing authentication over management-https port. Test with user who has right/wrong certificate 
+     * @test.objective Testing authentication over management-https port. Test with user who has right/wrong certificate
      *                 to login into management web interface. Also provides check for web administration console
      *                 authentication, which goes through /management context.
-     * 
+     *
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
-     * 
+     *
      * @throws ClientProtocolException, IOException, URISyntaxException
      */
     @Test
@@ -209,13 +210,13 @@ public class HTTPSManagementInterfaceTestCase {
         ModelControllerClient client = getNativeModelControllerClient();
         ManagementClient managementClient = new ManagementClient(client, TestSuiteEnvironment.getServerAddress(),
                 MANAGEMENT_NATIVE_PORT , "remoting");
-        
+
         resetHttpInterfaceConfiguration(client);
 
         // reload to apply changes
         CustomCLIExecutor.execute(null, RELOAD, NATIVE_CONTROLLER);
         waitForServerToReload(MAX_RELOAD_TIME, NATIVE_CONTROLLER);
-        
+
         serverTearDown(managementClient);
         managementNativeRealmSetup.tearDown(managementClient, CONTAINER);
 
@@ -245,7 +246,7 @@ public class HTTPSManagementInterfaceTestCase {
     }
 
     private void serverSetup(ManagementClient managementClient) throws Exception {
-        
+
      // create key and trust stores with imported certificates from opposing sides
         FileUtils.deleteDirectory(WORK_DIR);
         WORK_DIR.mkdirs();
@@ -285,7 +286,7 @@ public class HTTPSManagementInterfaceTestCase {
 
         FileUtils.deleteDirectory(WORK_DIR);
     }
-    
+
     private void resetHttpInterfaceConfiguration(ModelControllerClient client) throws Exception {
 
         // change back security realm for http management interface
@@ -294,16 +295,16 @@ public class HTTPSManagementInterfaceTestCase {
         operation.get(NAME).set("security-realm");
         operation.get(VALUE).set("ManagementRealm");
         Utils.applyUpdate(operation, client);
-        
+
         // undefine secure socket binding from http interface
         operation = createOpNode("core-service=management/management-interface=http-interface",
                 ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION);
-        operation.get(NAME).set("secure-socket-binding");            
-        Utils.applyUpdate(operation, client);         
+        operation.get(NAME).set("secure-socket-binding");
+        Utils.applyUpdate(operation, client);
     }
 
     private ModelControllerClient getNativeModelControllerClient(){
-    
+
         ModelControllerClient client = null;
         try {
             client = ModelControllerClient.Factory.create("remote", InetAddress.getByName(TestSuiteEnvironment.getServerAddress()),
