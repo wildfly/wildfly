@@ -27,6 +27,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.host.controller.HostControllerEnvironment;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
+import org.jboss.as.remoting.RemotingHttpUpgradeService;
+import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.mgmt.UndertowHttpManagementService;
 import org.jboss.dmr.ModelNode;
 
@@ -52,7 +55,12 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        removeHttpManagementService(context);
+        context.removeService(UndertowHttpManagementService.SERVICE_NAME);
+
+        RemotingServices.removeConnectorServices(context, ManagementRemotingServices.HTTP_CONNECTOR);
+        context.removeService(RemotingHttpUpgradeService.UPGRADE_SERVICE_NAME.append(ManagementRemotingServices.HTTP_CONNECTOR));
+
+        clearHostControllerInfo(hostControllerInfo);
     }
 
     @Override
@@ -67,9 +75,5 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
         hostControllerInfo.setHttpManagementPort(0);
         hostControllerInfo.setHttpManagementSecurePort(0);
         hostControllerInfo.setHttpManagementSecurityRealm(null);
-    }
-
-    static void removeHttpManagementService(final OperationContext context) {
-        context.removeService(UndertowHttpManagementService.SERVICE_NAME);
     }
 }
