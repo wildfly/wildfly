@@ -33,6 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
 import org.jboss.as.security.Constants;
@@ -72,6 +73,23 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
      */
     public final void setup(final ManagementClient managementClient, String containerId) throws Exception {
         this.managementClient = managementClient;
+        setup(managementClient.getControllerClient(), containerId);
+    }
+
+    /**
+     * Removes the security realms from the AS configuration.
+     *
+     * @param managementClient
+     * @param containerId
+     */
+    public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+        tearDown(managementClient.getControllerClient(), containerId);
+        this.managementClient = null;
+    }
+
+    // Protected methods -----------------------------------------------------
+
+    protected void setup(final ModelControllerClient modelControllerClient, String containerId) throws Exception {
         securityRealms = getSecurityRealms();
 
         if (securityRealms == null || securityRealms.length == 0) {
@@ -89,7 +107,7 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
             ModelNode steps = compositeOp.get(STEPS);
 
             // /core-service=management/security-realm=foo:add
-            final PathAddress realmAddr = PathAddress.pathAddress().append(CORE_SERVICE, MANAGEMENT)
+            final PathAddress realmAddr = getBaseAddress().append(CORE_SERVICE, MANAGEMENT)
                     .append(SECURITY_REALM, securityRealmName);
             ModelNode op = Util.createAddOperation(realmAddr);
             steps.add(op);
@@ -127,7 +145,7 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
                 final LdapAuthentication ldap = authentication.getLdap();
                 if (ldap != null) {
                     // /core-service=management/ldap-connection=bar:add
-                    final PathAddress ldapConnectionAddr = PathAddress.pathAddress().append(CORE_SERVICE, MANAGEMENT)
+                    final PathAddress ldapConnectionAddr = getBaseAddress().append(CORE_SERVICE, MANAGEMENT)
                             .append(LDAP_CONNECTION, ldap.getConnection());
                     final ModelNode ldapConnectionNode = Util.createAddOperation(ldapConnectionAddr);
                     setModelAttribute(ldapConnectionNode, SEARCH_DN, ldap.getSearchDn());
@@ -160,16 +178,10 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
             }
             updates.add(compositeOp);
         }
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
+        Utils.applyUpdates(updates, modelControllerClient);
     }
 
-    /**
-     * Removes the security realms from the AS configuration.
-     *
-     * @param managementClient
-     * @param containerId
-     */
-    public final void tearDown(ManagementClient managementClient, String containerId) throws Exception {
+    protected void tearDown(ModelControllerClient modelControllerClient, String containerId) throws Exception {
         if (securityRealms == null || securityRealms.length == 0) {
             LOGGER.warn("Empty security realms configuration.");
             return;
@@ -183,7 +195,7 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Removing security realm " + realmName);
             }
-            final ModelNode op = Util.createRemoveOperation(PathAddress.pathAddress().append(CORE_SERVICE, MANAGEMENT)
+            final ModelNode op = Util.createRemoveOperation(getBaseAddress().append(CORE_SERVICE, MANAGEMENT)
                     .append(SECURITY_REALM, realmName));
             op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
@@ -192,19 +204,24 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
             final Authentication authentication = securityRealm.getAuthentication();
             if (authentication != null && authentication.getLdap() != null) {
                 // remove ldap connection too
-                final ModelNode ldapOp = Util.createRemoveOperation(PathAddress.pathAddress().append(CORE_SERVICE, MANAGEMENT)
+                final ModelNode ldapOp = Util.createRemoveOperation(getBaseAddress().append(CORE_SERVICE, MANAGEMENT)
                         .append(LDAP_CONNECTION, authentication.getLdap().getConnection()));
                 ldapOp.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
                 ldapOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
                 updates.add(ldapOp);
             }
         }
-        Utils.applyUpdates(updates, managementClient.getControllerClient());
-        this.managementClient = null;
+        Utils.applyUpdates(updates, modelControllerClient);
         this.securityRealms = null;
     }
 
-    // Protected methods -----------------------------------------------------
+    /**
+     * Gets the base address to be used for operations in setup/teardown.
+     * @return
+     */
+    protected PathAddress getBaseAddress() {
+        return PathAddress.EMPTY_ADDRESS;
+    }
 
     /**
      * Returns configuration for creating security realms.

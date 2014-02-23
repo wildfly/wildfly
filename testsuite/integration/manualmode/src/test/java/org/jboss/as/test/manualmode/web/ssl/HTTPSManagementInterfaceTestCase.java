@@ -54,6 +54,7 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
+import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.realm.Authentication;
@@ -68,14 +69,14 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 /**
- * Testing https connection to HTTP Management interface with configured two-way SSL. 
+ * Testing https connection to HTTP Management interface with configured two-way SSL.
  * HTTP client has set client keystore with valid/invalid certificate, which is used for
  * authentication to management interface. Result of authentication depends on whether client
  * certificate is accepted in server truststore. HTTP client uses client truststore with accepted
  * server certificate to authenticate server identity.
- * 
+ *
  * Keystores and truststores have valid certificates until 25 October 2033.
- * 
+ *
  * @author Filip Bogyai
  * @author Josef Cacek
  */
@@ -135,12 +136,12 @@ public class HTTPSManagementInterfaceTestCase {
      * @test.tsfi tsfi.app.web.admin.console
      * @test.tsfi tsfi.keystore.file
      * @test.tsfi tsfi.truststore.file
-     * @test.objective Testing authentication over management-http port. Test with user "admin" who has right password and right
-     *                 role to login into management web interface. Also provides check for web administration console
+     * @test.objective Testing authentication over management-http port. Test with user who has right/wrong certificate
+     *                 to login into management web interface. Also provides check for web administration console
      *                 authentication, which goes through /management context.
-     * 
+     *
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
-     * 
+     *
      * @throws ClientProtocolException, IOException, URISyntaxException
      */
     @Test
@@ -169,12 +170,12 @@ public class HTTPSManagementInterfaceTestCase {
      * @test.tsfi tsfi.app.web.admin.console
      * @test.tsfi tsfi.keystore.file
      * @test.tsfi tsfi.truststore.file
-     * @test.objective Testing authentication over management-https port. Test with user who has right/wrong certificate 
+     * @test.objective Testing authentication over management-https port. Test with user who has right/wrong certificate
      *                 to login into management web interface. Also provides check for web administration console
      *                 authentication, which goes through /management context.
-     * 
+     *
      * @test.expectedResult Management web console page is successfully reached, and test finishes without exception.
-     * 
+     *
      * @throws ClientProtocolException, IOException, URISyntaxException
      */
     @Test
@@ -215,9 +216,9 @@ public class HTTPSManagementInterfaceTestCase {
 
     /**
      * Requests given URL and checks if the returned HTTP status code is the expected one. Returns HTTP response body
-     * 
-     * @param URL url to which the request should be made
-     * @param DefaultHttpClient httpClient to test multiple access
+     *
+     * @param url url to which the request should be made
+     * @param httpClient httpClient to test multiple access
      * @param expectedStatusCode expected status code returned from the requested server
      * @return HTTP response body
      * @throws ClientProtocolException
@@ -266,6 +267,8 @@ public class HTTPSManagementInterfaceTestCase {
 
     private void createKeyMaterial() throws IOException {
 
+
+        // create key and trust stores with imported certificates from opposing sides
         FileUtils.deleteDirectory(WORK_DIR);
         WORK_DIR.mkdirs();
         Utils.createKeyMaterial(WORK_DIR);

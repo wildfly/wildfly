@@ -29,6 +29,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT_VERIFY_FALSE;
+import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT_VERIFY_TRUE;
+import static org.jboss.as.test.integration.security.common.SSLTruststoreUtil.HTTPS_PORT_VERIFY_WANT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -65,6 +68,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AddRoleLoginModule;
+import org.jboss.as.test.integration.security.common.SSLTruststoreUtil;
 import org.jboss.as.test.integration.security.common.SecurityTestConstants;
 import org.jboss.as.test.integration.security.common.SecurityTraceLoggingServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -93,9 +97,9 @@ import org.junit.runner.RunWith;
  * on whether client certificate is accepted in server truststore. HTTP client
  * uses client truststore with accepted server certificate to authenticate
  * server identity.
- * 
+ *
  * Keystores and truststores have valid certificates until 25 October 2033.
- * 
+ *
  * @author Filip Bogyai
  * @author Josef cacek
  */
@@ -124,15 +128,12 @@ public class HTTPSWebConnectorTestCase {
     public static final File CLIENT_TRUSTSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.CLIENT_TRUSTSTORE);
     public static final File UNTRUSTED_KEYSTORE_FILE = new File(WORK_DIR, SecurityTestConstants.UNTRUSTED_KEYSTORE);
 
-    private static final int HTTPS_PORT_VERIFY_FALSE = 18443;
-    private static final int HTTPS_PORT_VERIFY_WANT = 18444;
-    private static final int HTTPS_PORT_VERIFY_TRUE = 18445;
-
-    protected static final int[] HTTPS_PORTS = { HTTPS_PORT_VERIFY_FALSE, HTTPS_PORT_VERIFY_TRUE, HTTPS_PORT_VERIFY_WANT };
-
     private static final String HTTPS_NAME_VERIFY_FALSE = "https-verify-false";
     private static final String HTTPS_NAME_VERIFY_WANT = "https-verify-want";
     private static final String HTTPS_NAME_VERIFY_TRUE = "https-verify-true";
+    private static final String HTTPS_NAME_VERIFY_NOT_REQUESTED = "https-verify-not-requested";
+    private static final String HTTPS_NAME_VERIFY_REQUESTED = "https-verify-requested";
+    private static final String HTTPS_NAME_VERIFY_REQUIRED = "https-verify-required";
 
     private static final String APP_CONTEXT = HTTPS;
     private static final String SECURED_SERVLET_WITH_SESSION = SimpleSecuredServlet.SERVLET_PATH + "?"

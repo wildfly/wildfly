@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.manualmode.web.ssl;
+package org.jboss.as.test.integration.security.common;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,11 +40,21 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.jboss.as.test.integration.management.util.CustomCLIExecutor;
 import org.jboss.logging.Logger;
 
 public class SSLTruststoreUtil {
 
     private static final Logger LOGGER = Logger.getLogger(SSLTruststoreUtil.class);
+
+    public static final int HTTPS_PORT = 8443;
+    public static final int HTTPS_PORT_VERIFY_FALSE = 18443;
+    public static final int HTTPS_PORT_VERIFY_WANT = 18444;
+    public static final int HTTPS_PORT_VERIFY_TRUE = 18445;
+
+    public static final int[] HTTPS_PORTS = { HTTPS_PORT_VERIFY_FALSE, HTTPS_PORT_VERIFY_TRUE, HTTPS_PORT_VERIFY_WANT };
+
+    private static final String HTTPS = "https";
 
     public static DefaultHttpClient getHttpClientWithSSL(File trustStoreFile, String password) {
         return getHttpClientWithSSL(null, null, trustStoreFile, password);
@@ -62,10 +72,10 @@ public class SSLTruststoreUtil {
             HttpParams params = new BasicHttpParams();
 
             SchemeRegistry registry = new SchemeRegistry();
-            registry.register(new Scheme("http", HTTPSManagementInterfaceTestCase.MGMT_PORT, PlainSocketFactory
+            registry.register(new Scheme("http", CustomCLIExecutor.MANAGEMENT_HTTP_PORT, PlainSocketFactory
                     .getSocketFactory()));
-            registry.register(new Scheme("https", HTTPSManagementInterfaceTestCase.MGMT_SECURED_PORT, ssf));
-            for (int port : HTTPSWebConnectorTestCase.HTTPS_PORTS) {
+            registry.register(new Scheme("https", CustomCLIExecutor.MANAGEMENT_HTTPS_PORT, ssf));
+            for (int port : HTTPS_PORTS) {
                 registry.register(new Scheme("https", port, ssf));
             }
             ClientConnectionManager ccm = new PoolingClientConnectionManager(registry);
@@ -78,7 +88,7 @@ public class SSLTruststoreUtil {
 
     /**
      * Loads a JKS keystore with given path and password.
-     * 
+     *
      * @param keystoreFile path to keystore file
      * @param keystorePwd keystore password
      * @return
