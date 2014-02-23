@@ -52,6 +52,8 @@ public class HttpManagementRemoveHandler extends AbstractRemoveStepHandler {
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         removeHttpManagementService(context);
+
+        clearHostControllerInfo(hostControllerInfo);
     }
 
     @Override

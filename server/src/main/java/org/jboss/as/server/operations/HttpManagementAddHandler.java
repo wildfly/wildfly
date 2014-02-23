@@ -67,9 +67,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.threads.JBossThreadFactory;
 
 
-import org.xnio.OptionMap;
-
-
 /**
  * A handler that activates the HTTP management API on a Server.
  *
