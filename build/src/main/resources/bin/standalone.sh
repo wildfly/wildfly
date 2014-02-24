@@ -16,8 +16,6 @@ do
           shift
           if [ -n "$1" ] && [ "${1#*-}" = "$1" ]; then
               DEBUG_PORT=$1
-          else
-              SERVER_OPTS="$SERVER_OPTS \"$1\""
           fi
           ;;
       --)
@@ -107,6 +105,7 @@ if [ "$DEBUG_MODE" = "true" ]; then
     else
         echo "Debug already enabled in JAVA_OPTS, ignoring --debug argument"
     fi
+    SERVER_OPTS="$SERVER_OPTS --debug ${DEBUG_PORT}"
 fi
 
 # Setup the JVM
