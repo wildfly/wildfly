@@ -31,6 +31,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
+import org.jboss.as.controller.interfaces.InetAddressUtil;
 
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.logmanager.ExtLogRecord;
@@ -178,7 +179,7 @@ public class SyslogAuditLogHandler extends AuditLogHandler {
                 //i18n not needed, user code will not end up here
                 throw new IllegalStateException("Unknown protocol");
             }
-            handler = new SyslogHandler(syslogServerAddress, port, facility.convert(), syslogType, protocol, hostName == null ? InetAddress.getLocalHost().getHostName() : hostName);
+            handler = new SyslogHandler(syslogServerAddress, port, facility.convert(), syslogType, protocol, hostName == null ? InetAddressUtil.getLocalHostName() : hostName);
             handler.setEscapeEnabled(false); //Escaping is handled by the formatter
             handler.setAppName(appName);
             handler.setTruncate(truncate);

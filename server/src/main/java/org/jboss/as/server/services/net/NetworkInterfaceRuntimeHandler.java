@@ -32,6 +32,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.network.NetworkInterfaceBinding;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -67,7 +68,7 @@ public class NetworkInterfaceRuntimeHandler implements OperationStepHandler {
                     final InetAddress address = binding.getAddress();
                     final ModelNode result = new ModelNode();
                     if(RESOLVED_ADDRESS.getName().equals(attributeName)) {
-                        result.set(address.getHostAddress());
+                        result.set(NetworkUtils.canonize(address.getHostAddress()));
                     }
                     context.getResult().set(result);
                 }

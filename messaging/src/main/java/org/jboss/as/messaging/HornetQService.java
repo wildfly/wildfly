@@ -49,6 +49,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -182,13 +183,13 @@ class HornetQService implements Service<HornetQServer> {
                             port = sa.getPort();
                             // resolve the host name of the address only if a loopback address has been set
                             if (sa.getAddress().isLoopbackAddress()) {
-                                host = sa.getAddress().getHostName();
+                                host = NetworkUtils.canonize(sa.getAddress().getHostName());
                             } else {
-                                host = sa.getAddress().getHostAddress();
+                                host = NetworkUtils.canonize(sa.getAddress().getHostAddress());
                             }
                         } else {
                             port = binding.getDestinationPort();
-                            host = binding.getUnresolvedDestinationAddress();
+                            host = NetworkUtils.canonize(binding.getUnresolvedDestinationAddress());
                         }
                         tc.getParams().put(HOST, host);
                         tc.getParams().put(PORT, String.valueOf(port));
