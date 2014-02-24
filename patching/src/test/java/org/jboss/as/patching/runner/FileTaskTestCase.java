@@ -35,7 +35,6 @@ import static org.jboss.as.patching.runner.TestUtils.createZippedPatchFile;
 import static org.jboss.as.patching.runner.TestUtils.dump;
 import static org.jboss.as.patching.runner.TestUtils.randomString;
 import static org.jboss.as.patching.runner.TestUtils.touch;
-import static org.jboss.as.patching.runner.TestUtils.tree;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -48,7 +47,6 @@ import org.jboss.as.patching.metadata.MiscContentItem;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
-import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchingResult;
 import org.junit.Test;
 
@@ -205,23 +203,14 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
 
         Identity identityBeforePatch = loadInstalledIdentity().getIdentity();
 
-        System.out.println("before patch");
-        tree(env.getInstalledImage().getJbossHome());
-
         // Apply
         PatchingResult result = executePatch(zippedPatch);
         assertPatchHasBeenApplied(result, patch);
         assertFalse(test.exists());
 
-        System.out.println("after patch");
-        tree(env.getInstalledImage().getJbossHome());
-
         // Rollback
         result = rollback(patch.getPatchId());
         assertPatchHasBeenRolledBack(result, identityBeforePatch);
-
-        System.out.println("after rollback");
-        tree(env.getInstalledImage().getJbossHome());
 
         assertTrue(test.exists());
         assertTrue(fileOne.isFile());
