@@ -29,6 +29,7 @@ import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_EJB3;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
@@ -52,7 +53,10 @@ final class DeploymentModelBuilderJAXWS_EJB extends AbstractDeploymentModelBuild
             final String ejbEndpointClassName = ejbEndpoint.getClassName();
             ROOT_LOGGER.ejbClass(ejbEndpointClassName);
             final Endpoint ep = newHttpEndpoint(ejbEndpointClassName, ejbEndpointName, dep);
-            ep.setProperty(COMPONENT_VIEW_NAME, ejbEndpoint.getComponentViewName());
+            final ServiceName componentViewName = ejbEndpoint.getComponentViewName();
+            if (componentViewName != null) {
+                ep.setProperty(COMPONENT_VIEW_NAME, componentViewName);
+            }
         }
     }
 
