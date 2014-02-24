@@ -59,8 +59,8 @@ import org.jboss.dmr.ModelNode;
  */
 public class DownloadServerLogDialog extends JDialog implements ActionListener, PropertyChangeListener {
     // make these static so that they always retains the last value chosen
-    private static JFileChooser fileChooser = new JFileChooser(new File("."));
-    private static JCheckBox viewInLogViewer = new JCheckBox("View in default log viewer");
+    private static final JFileChooser fileChooser = new JFileChooser(new File("."));
+    private static final JCheckBox viewInLogViewer = new JCheckBox("View in default log viewer");
     static {
         viewInLogViewer.setSelected(true);
     }
@@ -73,6 +73,8 @@ public class DownloadServerLogDialog extends JDialog implements ActionListener, 
 
     private ProgressMonitor progressMonitor;
     private DownloadLogTask downloadTask;
+
+    private boolean openInViewerSupported = Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN);
 
     public DownloadServerLogDialog(CliGuiContext cliGuiCtx, String fileName, Long fileSize) {
         super(cliGuiCtx.getMainWindow(), "Download " + fileName, Dialog.ModalityType.APPLICATION_MODAL);
@@ -128,7 +130,7 @@ public class DownloadServerLogDialog extends JDialog implements ActionListener, 
         gbConst.gridwidth = GridBagConstraints.REMAINDER;
         inputPanel.add(browse, gbConst);
 
-        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+        if (openInViewerSupported) {
             JLabel emptyLabel = new JLabel("");
             gbConst.gridwidth = 1;
             inputPanel.add(emptyLabel, gbConst);
@@ -271,7 +273,7 @@ public class DownloadServerLogDialog extends JDialog implements ActionListener, 
                 return;
             }
 
-            if (!viewInLogViewer.isSelected()) {
+            if (!viewInLogViewer.isSelected() || !openInViewerSupported) {
                 JOptionPane.showMessageDialog(cliGuiCtx.getMainWindow(), message + "complete.");
                 return;
             }
