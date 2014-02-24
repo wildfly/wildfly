@@ -663,8 +663,8 @@
                             This is optional but could be useful in a few scenarios e.g. authenticate with an e-mail address but be identified by a username,
                             correcting the case of an entered username or even in the future ensuring consistency after a different
                             authentication approach.
-                            
-                            Note: This value will become the username used for any subsequent group loading. 
+
+                            Note: This value will become the username used for any subsequent group loading.
                         </xs:documentation>
                     </xs:annotation>
                 </xs:attribute>
@@ -685,7 +685,7 @@
     <xs:complexType name="ldapAuthorizationType">
         <xs:complexContent>
             <xs:extension base="baseLdapAuthType">
-                <xs:sequence>                    
+                <xs:sequence>
                     <xs:element name="username-to-dn" type="ldapUserSearchType" minOccurs="0" />
                     <xs:element name="group-search" type="ldapGroupSearchType" />
                 </xs:sequence>
@@ -884,7 +884,7 @@
             </xs:annotation>
         </xs:attribute>
     </xs:complexType>
-    
+
     <xs:simpleType name="cacheType">
         <xs:restriction base="xs:string">
             <xs:enumeration value="by-search-time" />
@@ -909,8 +909,8 @@
 
                     If items are not going to be evicted based on time then max-cache-size should be set otherwise the cache
                     could grow without restriction.
-                    
-                    Note: The eviction time is handled on a best-efforts basis, during times of many concurrent authentications 
+
+                    Note: The eviction time is handled on a best-efforts basis, during times of many concurrent authentications
                     there could be small delay before the evictions fire.
                 </xs:documentation>
             </xs:annotation>
@@ -1237,7 +1237,7 @@
                       The numerical values in the enumeration entries, is the numerical value as defined in the RFC.
                    </xs:documentation>
                 </xs:annotation>
-                <xs:simpleType>                
+                <xs:simpleType>
 	                <xs:restriction base="xs:token">
 		                <xs:enumeration value="KERNEL">
 			                <xs:annotation>
@@ -1659,13 +1659,19 @@
                         Configuration of the socket to use for the native management interface is a choice
                         between a direct configuration of the address and port, or a reference to a socket-binding
                         configuration in the server's socket-binding-group element. The latter is the recommended
-                        approach is it makes it easier to avoid port conflicts by taking advantage of the
+                        approach as it makes it easier to avoid port conflicts by taking advantage of the
                         socket-binding-group's port-offset configuration. Direct configuration of the address and
-                        ports is provided to preserve backward compatibility.
+                        ports is deprecated and is only provided to preserve backward compatibility.
                     </xs:documentation>
                 </xs:annotation>
                 <xs:choice>
-                    <xs:element name="socket" type="native-management-socketType"/>
+                    <xs:element name="socket" type="native-management-socketType">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Deprecated. Use 'socket-binding'
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                     <xs:element name="socket-binding" type="native-management-socket-binding-refType"/>
                 </xs:choice>
             </xs:extension>
@@ -1700,13 +1706,19 @@
                         Configuration of the socket to use for the HTTP/HTTPS management interface is a choice
                         between a direct configuration of the address and ports, or a reference to socket-binding
                         configurations in the server's socket-binding-group element. The latter is the recommended
-                        approach is it makes it easier to avoid port conflicts by taking advantage of the
+                        approach as it makes it easier to avoid port conflicts by taking advantage of the
                         socket-binding-group's port-offset configuration. Direct configuration of the address and
-                        ports is provided to preserve backward compatibility.
+                        ports is deprecated and is only provided to preserve backward compatibility.
                     </xs:documentation>
                 </xs:annotation>
                 <xs:choice>
-                    <xs:element name="socket" type="http-management-socketType"/>
+                    <xs:element name="socket" type="http-management-socketType">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Deprecated. Use 'socket-binding'
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                     <xs:element name="socket-binding" type="http-management-socket-binding-refType"/>
                 </xs:choice>
                 <xs:attribute name="console-enabled" type="xs:boolean" use="optional" default="true"/>
