@@ -20,6 +20,7 @@ package org.jboss.as.cli.gui.metacommand;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -37,6 +38,7 @@ import java.io.PrintStream;
 import java.util.List;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -56,14 +58,19 @@ import org.jboss.dmr.ModelNode;
  * @author Stan Silvert ssilvert@redhat.com (C) 2014 Red Hat Inc.
  */
 public class DownloadServerLogDialog extends JDialog implements ActionListener, PropertyChangeListener {
-    // make this static so that it always retains the last directory chosen
+    // make these static so that they always retains the last value chosen
     private static JFileChooser fileChooser = new JFileChooser(new File("."));
+    private static JCheckBox viewInLogViewer = new JCheckBox("View in default log viewer");
+    static {
+        viewInLogViewer.setSelected(true);
+    }
 
     private CliGuiContext cliGuiCtx;
     private String fileName;
     private Long fileSize;
     private JPanel inputPanel = new JPanel(new GridBagLayout());
     private JTextField pathField = new JTextField(40);
+
     private ProgressMonitor progressMonitor;
     private DownloadLogTask downloadTask;
 
@@ -72,6 +79,7 @@ public class DownloadServerLogDialog extends JDialog implements ActionListener, 
         this.cliGuiCtx = cliGuiCtx;
         this.fileName = fileName;
         this.fileSize = fileSize;
+
         fileChooser.setSelectedFile(new File(fileChooser.getCurrentDirectory(), fileName));
         setPathField();
 
@@ -119,6 +127,15 @@ public class DownloadServerLogDialog extends JDialog implements ActionListener, 
         });
         gbConst.gridwidth = GridBagConstraints.REMAINDER;
         inputPanel.add(browse, gbConst);
+
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+            JLabel emptyLabel = new JLabel("");
+            gbConst.gridwidth = 1;
+            inputPanel.add(emptyLabel, gbConst);
+            addStrut();
+            gbConst.gridwidth = GridBagConstraints.REMAINDER;
+            inputPanel.add(viewInLogViewer, gbConst);
+        }
 
         return inputPanel;
     }
@@ -174,6 +191,7 @@ public class DownloadServerLogDialog extends JDialog implements ActionListener, 
         downloadTask.execute();
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if ("progress".equals(evt.getPropertyName())){
             int percentRead = (Integer) evt.getNewValue();
@@ -250,8 +268,23 @@ public class DownloadServerLogDialog extends JDialog implements ActionListener, 
             String message = "Download " + fileName + " ";
             if (isCancelled()) {
                 JOptionPane.showMessageDialog(cliGuiCtx.getMainWindow(), message + "cancelled.", message + "cancelled.", JOptionPane.ERROR_MESSAGE);
-            } else {
+                return;
+            }
+
+            if (!viewInLogViewer.isSelected()) {
                 JOptionPane.showMessageDialog(cliGuiCtx.getMainWindow(), message + "complete.");
+                return;
+            }
+
+            try {
+                Desktop.getDesktop().open(selectedFile);
+            } catch (IOException ioe) {
+                // try to open in file manager for destination directory
+                try {
+                    Desktop.getDesktop().open(fileChooser.getCurrentDirectory());
+                } catch (IOException ioe2) {
+                    JOptionPane.showMessageDialog(cliGuiCtx.getMainWindow(), "Download success.  No registered application to view " + fileName, "Can't view file.", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     }
