@@ -149,7 +149,7 @@ public class RemoteOutboundConnectionService extends AbstractOutboundConnectionS
             return this.connectionURI;
         }
         final OutboundSocketBinding destinationOutboundSocket = this.destinationOutboundSocketBindingInjectedValue.getValue();
-        final InetAddress destinationAddress = destinationOutboundSocket.getDestinationAddress();
+        final InetAddress destinationAddress = destinationOutboundSocket.getResolvedDestinationAddress();
         final int port = destinationOutboundSocket.getDestinationPort();
 
         this.connectionURI = new URI(protocol + "://" + NetworkUtils.formatPossibleIpv6Address(destinationAddress.getHostAddress()) + ":" + port);
