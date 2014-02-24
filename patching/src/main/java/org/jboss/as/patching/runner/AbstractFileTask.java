@@ -34,6 +34,7 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.ModificationType;
 
 /**
  * Base {@linkplain PatchingTask} for misc file updates.
@@ -79,7 +80,7 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
     byte[] apply(PatchingTaskContext context, PatchContentLoader loader) throws IOException {
         final MiscContentItem item = contentItem;
         if(item.isDirectory()) {
-            if(! target.mkdir() && ! target.isDirectory()) {
+            if(! target.mkdirs() && ! target.isDirectory()) {
                 throw PatchMessages.MESSAGES.cannotCreateDirectory(target.getAbsolutePath());
             }
             return NO_CONTENT;

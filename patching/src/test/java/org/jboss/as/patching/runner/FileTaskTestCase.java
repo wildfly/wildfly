@@ -23,6 +23,7 @@
 package org.jboss.as.patching.runner;
 
 import static org.jboss.as.patching.HashUtils.hashFile;
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
 import static org.jboss.as.patching.IoUtils.mkdir;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileContent;
 import static org.jboss.as.patching.runner.PatchingAssert.assertFileDoesNotExist;
@@ -41,9 +42,13 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 
 import org.jboss.as.patching.installation.Identity;
+import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
+import org.jboss.as.patching.metadata.MiscContentItem;
+import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchBuilder;
+import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchingResult;
 import org.junit.Test;
 
@@ -223,6 +228,41 @@ public class FileTaskTestCase extends AbstractTaskTestCase {
         assertTrue(fileTwo.isFile());
         assertTrue(subOne.isFile());
         assertTrue(subTwo.isFile());
+    }
+
+    @Test
+    public void testAddDirectory() throws Exception {
+
+        final ContentItem item = new MiscContentItem("dir", new String[] { "test"}, NO_CONTENT, true, false);
+        final ContentModification addDir = new ContentModification(item, NO_CONTENT, ModificationType.ADD);
+
+        final String patchID = randomString();
+        final Patch patch = PatchBuilder.create()
+                .setPatchId(patchID)
+                .setDescription(randomString())
+                .oneOffPatchIdentity(productConfig.getProductName(), productConfig.getProductVersion())
+                .getParent()
+                .addContentModification(addDir)
+                .build();
+
+        // create the patch
+        final File patchDir = mkdir(tempDir, patch.getPatchId());
+        createPatchXMLFile(patchDir, patch);
+        final File zippedPatch = createZippedPatchFile(patchDir, patch.getPatchId());
+
+        // Apply
+        PatchingResult result = executePatch(zippedPatch);
+        assertPatchHasBeenApplied(result, patch);
+
+        final File test = new File(env.getInstalledImage().getJbossHome(), "test");
+        assertTrue(test.exists());
+        assertTrue(test.isDirectory());
+        final File dir = new File(test, "dir");
+        assertTrue(dir.exists());
+        assertTrue(dir.isDirectory());
+
+        rollback(patchID);
+
     }
 
 }
