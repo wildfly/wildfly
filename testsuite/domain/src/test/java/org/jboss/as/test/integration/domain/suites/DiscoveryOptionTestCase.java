@@ -32,7 +32,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.host.controller.discovery.Constants.ACCESS_KEY;
 import static org.jboss.as.host.controller.discovery.Constants.LOCATION;
 import static org.jboss.as.host.controller.discovery.Constants.SECRET_ACCESS_KEY;
@@ -64,7 +63,9 @@ public class DiscoveryOptionTestCase {
 
     @BeforeClass
     public static void setupDomain() throws Exception {
-        testSupport = DomainTestSuite.createSupport(DiscoveryOptionTestCase.class.getSimpleName());
+        testSupport = DomainTestSupport.createAndStartSupport(DomainTestSupport.Configuration.create(DiscoveryOptionTestCase.class.getName(),
+                "domain-configs/domain-standard.xml", "host-configs/host-master.xml", "host-configs/host-slave-discovery-options.xml"));
+
         domainMasterLifecycleUtil = testSupport.getDomainMasterLifecycleUtil();
         domainSlaveLifecycleUtil = testSupport.getDomainSlaveLifecycleUtil();
     }
@@ -127,6 +128,9 @@ public class DiscoveryOptionTestCase {
         discoveryOptionsAddress.add("core-service", "discovery-options");
         ModelNode readDiscoveryOptionsOrdering = Util.getReadAttributeOperation(PathAddress.pathAddress(discoveryOptionsAddress), DISCOVERY_OPTIONS);
         ModelNode expectedDiscoveryOptionsOrdering = new ModelNode();
+        expectedDiscoveryOptionsOrdering.add("static-discovery", "start-option");
+        ModelNode originalOptionsOrdering = new ModelNode();
+        originalOptionsOrdering.add("static-discovery", "start-option");
 
         ModelNode discoveryOptionProperties = new ModelNode();
         discoveryOptionProperties.get(ACCESS_KEY).set("access_key");
@@ -140,8 +144,8 @@ public class DiscoveryOptionTestCase {
         addStaticDiscoveryOption.get(PORT).set("9999");
 
         ModelNode result = slaveClient.execute(readDiscoveryOptionsOrdering);
-        validateResponse(result);
-        Assert.assertFalse(result.hasDefined(RESULT));
+        ModelNode returnVal = validateResponse(result);
+        Assert.assertEquals(originalOptionsOrdering, returnVal);
 
         // (host=slave),(core-service=discovery-options),(discovery-option=option-one)
         ModelNode discoveryOptionAddressOne = discoveryOptionsAddress.clone().add("discovery-option", "option-one");
@@ -159,7 +163,7 @@ public class DiscoveryOptionTestCase {
         expectedDiscoveryOptionsOrdering.add("discovery-option", "option-three");
 
         result = slaveClient.execute(readDiscoveryOptionsOrdering);
-        ModelNode returnVal = validateResponse(result);
+        returnVal = validateResponse(result);
         Assert.assertEquals(expectedDiscoveryOptionsOrdering, returnVal);
 
         removeDiscoveryOptionTest(slaveClient, discoveryOptionAddressOne);
@@ -167,8 +171,8 @@ public class DiscoveryOptionTestCase {
         removeDiscoveryOptionTest(slaveClient, discoveryOptionAddressThree);
 
         result = slaveClient.execute(readDiscoveryOptionsOrdering);
-        validateResponse(result);
-        Assert.assertFalse(result.hasDefined(RESULT));
+        returnVal = validateResponse(result);
+        Assert.assertEquals(originalOptionsOrdering, returnVal);
     }
 
     private void addAndRemoveDiscoveryOptionTest(ModelControllerClient client, ModelNode discoveryOptionAddress, 
