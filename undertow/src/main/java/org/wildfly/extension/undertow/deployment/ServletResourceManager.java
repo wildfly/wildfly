@@ -1,7 +1,9 @@
 package org.wildfly.extension.undertow.deployment;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.server.handlers.resource.Resource;
@@ -30,17 +32,17 @@ public class ServletResourceManager implements ResourceManager {
     public Resource getResource(final String path) throws IOException {
         Resource res = deploymentResourceManager.getResource(path);
         if (res != null) {
-            return res;
+            return new ServletResource(this, res);
         }
         String p = path;
         if (p.startsWith("/")) {
             p = p.substring(1);
         }
-        if(overlays != null) {
+        if (overlays != null) {
             for (VirtualFile overlay : overlays) {
                 VirtualFile child = overlay.getChild(p);
                 if (child.exists()) {
-                    return new VirtualFileResource(child, path);
+                    return new ServletResource(this, new VirtualFileResource(overlay.getPhysicalFile(), child, path));
                 }
             }
         }
@@ -65,5 +67,41 @@ public class ServletResourceManager implements ResourceManager {
     @Override
     public void close() throws IOException {
         deploymentResourceManager.close();
+    }
+
+    /**
+     * Lists all children of a particular path, taking overlays into account
+     * @param path The path
+     * @return The list of children
+     */
+    public List<Resource> list(String path) {
+        try {
+            final List<Resource> ret = new ArrayList<>();
+
+            Resource res = deploymentResourceManager.getResource(path);
+            if (res != null) {
+                for (Resource child : res.list()) {
+                    ret.add(new ServletResource(this, child));
+                }
+            }
+            String p = path;
+            if (p.startsWith("/")) {
+                p = p.substring(1);
+            }
+            if (overlays != null) {
+                for (VirtualFile overlay : overlays) {
+                    VirtualFile child = overlay.getChild(p);
+                    if (child.exists()) {
+                        VirtualFileResource vfsResource = new VirtualFileResource(overlay.getPhysicalFile(), child, path);
+                        for (Resource c : vfsResource.list()) {
+                            ret.add(new ServletResource(this, c));
+                        }
+                    }
+                }
+            }
+            return ret;
+        } catch (IOException e) {
+            throw new RuntimeException(e); //this method really should have thrown IOException
+        }
     }
 }

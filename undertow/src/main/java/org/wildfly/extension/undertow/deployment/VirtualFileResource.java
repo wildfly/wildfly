@@ -29,10 +29,12 @@ import java.util.List;
  */
 public class VirtualFileResource implements Resource {
 
+    private final File resourceManagerRoot;
     private final VirtualFile file;
     private final String path;
 
-    public VirtualFileResource(final VirtualFile file, String path) {
+    public VirtualFileResource(File resourceManagerRoot, final VirtualFile file, String path) {
+        this.resourceManagerRoot = resourceManagerRoot;
         this.file = file;
         this.path = path;
     }
@@ -75,7 +77,7 @@ public class VirtualFileResource implements Resource {
     public List<Resource> list() {
         final List<Resource> resources = new ArrayList<Resource>();
         for (VirtualFile child : file.getChildren()) {
-            resources.add(new VirtualFileResource(child, path));
+            resources.add(new VirtualFileResource(resourceManagerRoot, child, path));
         }
         return resources;
     }
@@ -226,7 +228,7 @@ public class VirtualFileResource implements Resource {
 
     @Override
     public File getResourceManagerRoot() {
-        return null;
+        return resourceManagerRoot;
     }
 
     @Override
