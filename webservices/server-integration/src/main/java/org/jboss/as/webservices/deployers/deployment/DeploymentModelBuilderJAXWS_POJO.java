@@ -29,6 +29,7 @@ import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 
@@ -52,7 +53,10 @@ final class DeploymentModelBuilderJAXWS_POJO extends AbstractDeploymentModelBuil
             final String pojoEndpointClassName = pojoEndpoint.getClassName();
             ROOT_LOGGER.pojoClass(pojoEndpointClassName);
             final Endpoint ep = newHttpEndpoint(pojoEndpointClassName, pojoEndpointName, dep);
-            ep.setProperty(COMPONENT_VIEW_NAME, pojoEndpoint.getComponentViewName());
+            final ServiceName componentViewName = pojoEndpoint.getComponentViewName();
+            if (componentViewName != null) {
+                ep.setProperty(COMPONENT_VIEW_NAME, componentViewName);
+            }
         }
     }
 
