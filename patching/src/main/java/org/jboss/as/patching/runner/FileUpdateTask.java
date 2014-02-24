@@ -22,7 +22,10 @@
 
 package org.jboss.as.patching.runner;
 
+import static org.jboss.as.patching.IoUtils.NO_CONTENT;
+
 import java.io.File;
+import java.util.Arrays;
 
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
@@ -41,7 +44,11 @@ final class FileUpdateTask extends AbstractFileTask {
 
     @Override
     ContentModification createRollbackEntry(ContentModification original, MiscContentItem item, byte[] targetHash) {
-        return new ContentModification(item, targetHash, ModificationType.MODIFY);
+        ModificationType type = ModificationType.MODIFY;
+        if (Arrays.equals(NO_CONTENT, item.getContentHash()) && !backup.exists()) {
+            type = ModificationType.REMOVE;
+        }
+        return new ContentModification(item, targetHash, type);
     }
 
 }

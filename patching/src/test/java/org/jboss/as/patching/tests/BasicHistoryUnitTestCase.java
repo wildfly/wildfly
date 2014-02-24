@@ -404,5 +404,45 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
         rollback(oop1, ContentVerificationPolicy.STRICT, PatchStepAssertions.NONE, true);
     }
 
+    @Test
+    public void testUpdateNonExistingFile() throws Exception {
+
+        final PatchingTestBuilder test = createDefaultBuilder();
+
+        final byte[] existingHash = new byte[20];
+        final byte[] resultingHash = Arrays.copyOf(existingHash, existingHash.length);
+
+        final PatchingTestStepBuilder oop1 = test.createStepBuilder();
+        oop1.setPatchId("oop1")
+                .oneOffPatchIdentity(PRODUCT_VERSION)
+                .oneOffPatchElement("base-oop1", "base", false)
+                .addModuleWithRandomContent("org.jboss.test", null)
+                .getParent()
+                .updateFileWithRandomContent(existingHash, resultingHash, "client.jar")
+        ;
+
+        apply(oop1, ContentVerificationPolicy.OVERRIDE_ALL);
+
+        Assert.assertTrue(test.hasFile("client.jar"));
+
+        final byte[] moduleHash = new byte[20];
+
+        final PatchingTestStepBuilder cp1 = test.createStepBuilder();
+        cp1.setPatchId("CP1")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base-CP1", "base", false)
+                .addModuleWithRandomContent("org.jboss.test", moduleHash)
+                .getParent()
+        ;
+        // Apply CP1
+        apply(cp1, ContentVerificationPolicy.OVERRIDE_ALL);
+
+        Assert.assertFalse(test.hasFile("client.jar"));
+
+        rollback(cp1);
+        rollback(oop1);
+
+    }
+
 
 }
