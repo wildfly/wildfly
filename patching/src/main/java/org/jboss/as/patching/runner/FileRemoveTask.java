@@ -74,8 +74,16 @@ class FileRemoveTask implements PatchingTask {
         backup(target, backup, Arrays.asList(item.getPath()), rollback, context);
         // See if the hash matches the metadata
 
+        boolean isEmptyDirectory = false;
+        if (target.isDirectory()) {
+            final File[] children = target.listFiles();
+            if (children == null || children.length == 0) {
+                isEmptyDirectory = true;
+            }
+        }
+
         final byte[] expected = description.getModification().getTargetHash();
-        final byte[] actual = HashUtils.hashFile(target);
+        final byte[] actual = isEmptyDirectory ? NO_CONTENT : HashUtils.hashFile(target);
         return Arrays.equals(expected, actual);
     }
 
