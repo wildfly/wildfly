@@ -1580,13 +1580,19 @@
                         Configuration of the socket to use for the native management interface is a choice
                         between a direct configuration of the address and port, or a reference to a socket-binding
                         configuration in the server's socket-binding-group element. The latter is the recommended
-                        approach is it makes it easier to avoid port conflicts by taking advantage of the
+                        approach as it makes it easier to avoid port conflicts by taking advantage of the
                         socket-binding-group's port-offset configuration. Direct configuration of the address and
-                        ports is provided to preserve backward compatibility.
+                        ports is deprecated and is only provided to preserve backward compatibility.
                     </xs:documentation>
                 </xs:annotation>
                 <xs:choice>
-                    <xs:element name="socket" type="native-management-socketType"/>
+                    <xs:element name="socket" type="native-management-socketType">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Deprecated. Use 'socket-binding'
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                     <xs:element name="socket-binding" type="native-management-socket-binding-refType"/>
                 </xs:choice>
             </xs:extension>
@@ -1621,13 +1627,19 @@
                         Configuration of the socket to use for the HTTP/HTTPS management interface is a choice
                         between a direct configuration of the address and ports, or a reference to socket-binding
                         configurations in the server's socket-binding-group element. The latter is the recommended
-                        approach is it makes it easier to avoid port conflicts by taking advantage of the
+                        approach as it makes it easier to avoid port conflicts by taking advantage of the
                         socket-binding-group's port-offset configuration. Direct configuration of the address and
-                        ports is provided to preserve backward compatibility.
+                        ports is deprecated and is only provided to preserve backward compatibility.
                     </xs:documentation>
                 </xs:annotation>
                 <xs:choice>
-                    <xs:element name="socket" type="http-management-socketType"/>
+                    <xs:element name="socket" type="http-management-socketType">
+                        <xs:annotation>
+                            <xs:documentation>
+                                Deprecated. Use 'socket-binding'
+                            </xs:documentation>
+                        </xs:annotation>
+                    </xs:element>
                     <xs:element name="socket-binding" type="http-management-socket-binding-refType"/>
                 </xs:choice>
                 <xs:attribute name="console-enabled" type="xs:boolean" use="optional" default="true"/>
