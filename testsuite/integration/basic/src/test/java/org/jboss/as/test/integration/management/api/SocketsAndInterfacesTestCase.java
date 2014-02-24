@@ -59,6 +59,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RES
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
+import org.jboss.as.network.NetworkUtils;
 import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
 
 /**
@@ -115,7 +116,7 @@ public class SocketsAndInterfacesTestCase extends ContainerResourceMgmtTestBase 
         result = executeOperation(op);
 
         // test the connector
-        String testHost = testNic.getInetAddresses().nextElement().getHostName();
+        String testHost = NetworkUtils.canonize(testNic.getInetAddresses().nextElement().getHostName());
         Assert.assertTrue("Could not connect to created connector.",WebUtil.testHttpURL(new URL(
                 "http", testHost, TEST_PORT, "/").toString()));
 

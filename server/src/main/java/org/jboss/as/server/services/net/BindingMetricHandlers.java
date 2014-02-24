@@ -36,6 +36,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.network.ManagedBinding;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -120,7 +121,7 @@ public final class BindingMetricHandlers {
             ManagedBinding managedBinding = binding.getManagedBinding();
             if (managedBinding != null) {
                 InetAddress addr = managedBinding.getBindAddress().getAddress();
-                result.set(addr.getHostAddress());
+                result.set(NetworkUtils.canonize(addr.getHostAddress()));
             }
         }
 

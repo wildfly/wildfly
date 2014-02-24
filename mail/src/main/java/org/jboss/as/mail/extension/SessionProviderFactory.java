@@ -32,6 +32,7 @@ import java.util.Properties;
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
+import org.jboss.as.network.NetworkUtils;
 
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.metadata.javaee.spec.MailSessionMetaData;
@@ -128,7 +129,7 @@ class SessionProviderFactory {
             Map<String, String> customProps = server.getProperties();
             if (server.getOutgoingSocketBinding() != null) {
                 InetSocketAddress socketAddress = getServerSocketAddress(server);
-                props.setProperty(getHostKey(protocol), socketAddress.getAddress().getHostName());
+                props.setProperty(getHostKey(protocol), NetworkUtils.canonize(socketAddress.getAddress().getHostName()));
                 props.setProperty(getPortKey(protocol), String.valueOf(socketAddress.getPort()));
             } else {
                 String host = customProps.get("host");

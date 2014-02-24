@@ -43,6 +43,7 @@ import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.KernelServicesBuilder;
 import org.jboss.as.core.model.test.TestModelType;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.server.controller.descriptions.ServerDescriptionConstants;
 import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
@@ -266,7 +267,7 @@ public class StandaloneRootResourceTestCase extends AbstractCoreModelTest {
     }
 
     private String getDefaultServerName() throws Exception {
-        String hostName = InetAddress.getLocalHost().getHostName().toLowerCase();
+        String hostName = NetworkUtils.canonize(InetAddress.getLocalHost().getHostName().toLowerCase());
         int index = hostName.indexOf('.');
         return index == -1 ? hostName : hostName.substring(0, index);
     }
