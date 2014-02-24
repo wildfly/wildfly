@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javafx.scene.layout.Pane;
 import org.jboss.as.patching.DirectoryStructure;
 import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchingException;
@@ -101,8 +102,12 @@ public abstract class AbstractTaskTestCase {
     }
 
     protected PatchingResult rollback(String patchId, final boolean rollbackTo) throws IOException, PatchingException {
+        return rollback(patchId, rollbackTo, ContentVerificationPolicy.STRICT);
+    }
+
+    protected PatchingResult rollback(String patchId, boolean rollbackTo, ContentVerificationPolicy policy) throws IOException, PatchingException {
         final PatchTool tool = newPatchTool();
-        final PatchingResult result = tool.rollback(patchId, ContentVerificationPolicy.STRICT, rollbackTo, true);
+        final PatchingResult result = tool.rollback(patchId, policy, rollbackTo, true);
         result.commit();
         return result;
     }

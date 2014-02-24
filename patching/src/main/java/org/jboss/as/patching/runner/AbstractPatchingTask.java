@@ -123,7 +123,7 @@ abstract class AbstractPatchingTask<T extends ContentItem> implements PatchingTa
         final byte[] contentHash = contentItem.getContentHash();
         if(Arrays.equals(backupHash, contentHash)) {
             // Skip execute for misc items only
-            skipExecution = contentItem.getContentType() == ContentType.MISC;
+            skipExecution = contentItem.getContentType() == ContentType.MISC && backupHash != NO_CONTENT;
             return true;
         }
         // See if the content matches our expected target
