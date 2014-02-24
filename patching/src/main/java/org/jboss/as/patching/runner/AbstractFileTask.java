@@ -34,7 +34,6 @@ import org.jboss.as.patching.IoUtils;
 import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
-import org.jboss.as.patching.metadata.ModificationType;
 
 /**
  * Base {@linkplain PatchingTask} for misc file updates.
