@@ -345,6 +345,13 @@ abstract class AbstractOperationContext implements OperationContext {
     abstract void waitForRemovals() throws InterruptedException;
 
     /**
+     * Gets whether any steps have taken actions that indicate a wish to write to the model or the service container.
+     *
+     * @return {@code true} if no
+     */
+    abstract boolean isReadOnly();
+
+    /**
      * Gets whether the currently executing thread is allowed to control this operation context.
      *
      * @return {@code true} if the currently executing thread is allowed to control the context
@@ -363,7 +370,7 @@ abstract class AbstractOperationContext implements OperationContext {
                 Caller caller = getCaller();
                 Subject subject = SecurityActions.getSubject(caller);
                 auditLogger.log(
-                        !isModelAffected(),
+                        isReadOnly(),
                         resultAction,
                         caller == null ? null : caller.getName(),
                         accessContext == null ? null : accessContext.getDomainUuid(),
