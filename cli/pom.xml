@@ -137,6 +137,7 @@
         <dependency>
            <groupId>org.picketbox</groupId>
            <artifactId>picketbox</artifactId>
+            <optional>true</optional>
         </dependency>
 
         <!-- Test Dependencies -->
@@ -145,38 +146,14 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>sun.jdk</groupId>
+            <artifactId>jconsole</artifactId>
+            <version>jdk</version>
+            <scope>system</scope>
+            <systemPath>${java.home}/../lib/jconsole.jar</systemPath>
+        </dependency>
     </dependencies>
 
-    <profiles>
-        <profile>
-            <id>linux-windows</id>
-            <activation>
-                <file><exists>${java.home}/../lib/tools.jar</exists></file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>sun.jdk</groupId>
-                    <artifactId>jconsole</artifactId>
-                    <version>jdk</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/../lib/jconsole.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>os-x</id>
-            <activation>
-                <file><exists>${java.home}/bundle/Classes/classes.jar</exists></file>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>sun.jdk</groupId>
-                    <artifactId>jconsole</artifactId>
-                    <version>jdk</version>
-                    <scope>system</scope>
-                    <systemPath>${java.home}/bundle/Classes/jconsole.jar</systemPath>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
 </project>
