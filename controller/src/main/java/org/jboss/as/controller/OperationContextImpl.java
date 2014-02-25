@@ -152,6 +152,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     /** The step that acquired the container monitor  */
     private Step containerMonitorStep;
     private volatile Boolean requiresModelUpdateAuthorization;
+    private volatile boolean readOnly = true;
 
     /**
      * Cache of resource descriptions generated during operation execution. Primarily intended for
@@ -237,8 +238,11 @@ final class OperationContextImpl extends AbstractOperationContext {
 
 
     public ManagementResourceRegistration getResourceRegistrationForUpdate() {
-        final PathAddress address = activeStep.address;
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress address = activeStep.address;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -277,6 +281,11 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     public ServiceRegistry getServiceRegistry(final boolean modify) throws UnsupportedOperationException {
         assert isControllingThread();
+
+        if (modify) {
+            readOnly = false;
+        }
+
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -296,6 +305,9 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     public ServiceController<?> removeService(final ServiceName name) throws UnsupportedOperationException {
         assert isControllingThread();
+
+        readOnly = false;
+
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -344,6 +356,9 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     public void removeService(final ServiceController<?> controller) throws UnsupportedOperationException {
         assert isControllingThread();
+
+        readOnly = false;
+
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -394,6 +409,9 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     public ServiceTarget getServiceTarget() throws UnsupportedOperationException {
         assert isControllingThread();
+
+        readOnly = false;
+
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -466,8 +484,11 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     public ModelNode readModelForUpdate(final PathAddress requestAddress) {
-        final PathAddress address = activeStep.address.append(requestAddress);
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -581,8 +602,11 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     public Resource readResourceForUpdate(PathAddress requestAddress) {
-        final PathAddress address = activeStep.address.append(requestAddress);
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -643,15 +667,20 @@ final class OperationContextImpl extends AbstractOperationContext {
         return originalModel.clone();
     }
 
+    @Override
     public Resource createResource(PathAddress relativeAddress) {
         final Resource toAdd = Resource.Factory.create();
         addResource(relativeAddress, toAdd);
         return toAdd;
     }
 
+    @Override
     public void addResource(PathAddress relativeAddress, Resource toAdd) {
-        final PathAddress absoluteAddress = activeStep.address.append(relativeAddress);
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress absoluteAddress = activeStep.address.append(relativeAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -715,9 +744,13 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
+    @Override
     public Resource removeResource(final PathAddress requestAddress) {
-        final PathAddress address = activeStep.address.append(requestAddress);
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -758,10 +791,12 @@ final class OperationContextImpl extends AbstractOperationContext {
         return model;
     }
 
+    @Override
     public void acquireControllerLock() {
         takeWriteLock();
     }
 
+    @Override
     public Resource getRootResource() {
         // TODO limit children
         authorize(false, READ_CONFIG);
@@ -769,22 +804,27 @@ final class OperationContextImpl extends AbstractOperationContext {
         return readOnlyModel.clone();
     }
 
+    @Override
     public boolean isModelAffected() {
         return affectsModel.size() > 0;
     }
 
+    @Override
     public boolean isRuntimeAffected() {
         return affectsRuntime;
     }
 
+    @Override
     public boolean isResourceRegistryAffected() {
         return affectsResourceRegistration;
     }
 
+    @Override
     public Stage getCurrentStage() {
         return currentStage;
     }
 
+    @Override
     public void report(final MessageSeverity severity, final String message) {
         try {
             if(messageHandler != null) {
@@ -823,6 +863,11 @@ final class OperationContextImpl extends AbstractOperationContext {
                 containerMonitorStep = null;
             }
         }
+    }
+
+    @Override
+    boolean isReadOnly() {
+        return readOnly;
     }
 
     private static Resource requireChild(final Resource resource, final PathElement childPath, final PathAddress fullAddress) {
@@ -976,6 +1021,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         return authResp;
     }
 
+    @Override
     Resource getModel() {
         return model;
     }

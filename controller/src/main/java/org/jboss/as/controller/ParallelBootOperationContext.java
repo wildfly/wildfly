@@ -336,6 +336,11 @@ class ParallelBootOperationContext extends AbstractOperationContext {
     }
 
     @Override
+    boolean isReadOnly() {
+        return primaryContext.isReadOnly();
+    }
+
+    @Override
     public ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {
         return primaryContext.resolveExpressions(node);
     }

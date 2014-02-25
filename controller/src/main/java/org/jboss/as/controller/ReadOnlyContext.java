@@ -81,6 +81,11 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     @Override
+    boolean isReadOnly() {
+        return true;
+    }
+
+    @Override
     public InputStream getAttachmentStream(int index) {
         throw readOnlyContext();
     }
