@@ -175,7 +175,10 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PeriodicHandlerResourceDefinition.PERIODIC_HANDLER_PATH),
                                 new RejectExpressionsConfig(PeriodicHandlerResourceDefinition.ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH),
-                                new RejectExpressionsConfig(SizeRotatingHandlerResourceDefinition.ATTRIBUTES))
+                                FailedOperationTransformationConfig.ChainedConfig.createBuilder(SizeRotatingHandlerResourceDefinition.ATTRIBUTES)
+                                        .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(SizeRotatingHandlerResourceDefinition.ROTATE_ON_BOOT))
+                                        .addConfig(new RejectExpressionsConfig(SizeRotatingHandlerResourceDefinition.ATTRIBUTES))
+                                        .build())
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CustomHandlerResourceDefinition.CUSTOM_HANDLE_PATH),
                                 new RejectExpressionsConfig(CustomHandlerResourceDefinition.WRITABLE_ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(SyslogHandlerResourceDefinition.SYSLOG_HANDLER_PATH),

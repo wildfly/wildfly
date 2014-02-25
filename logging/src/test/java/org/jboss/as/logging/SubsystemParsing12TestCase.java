@@ -44,6 +44,11 @@ public class SubsystemParsing12TestCase extends AbstractSubsystemBaseTest {
         return readResource("/logging_1_2.xml");
     }
 
+    @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("/expressions_1_2.xml", false);
+    }
+
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
         return LoggingTestEnvironment.getManagementInstance();

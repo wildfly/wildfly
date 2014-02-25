@@ -20,7 +20,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<subsystem xmlns="urn:jboss:domain:logging:1.3">
+<subsystem xmlns="urn:jboss:domain:logging:1.2">
     <async-handler name="async">
         <queue-length value="${test.queue.length:10}"/>
         <overflow-action value="${test.overflow.action:block}"/>
@@ -56,7 +56,7 @@
         <suffix value="${test.file.suffix:.yyyy-MM-dd}"/>
     </periodic-rotating-file-handler>
 
-    <size-rotating-file-handler name="sizeLogger" autoflush="${test.autoflush:true}" rotate-on-boot="${test.rotate-on-boot:true}">
+    <size-rotating-file-handler name="sizeLogger" autoflush="${test.autoflush:true}">
         <level name="${test.file.level:INFO}"/>
         <encoding value="${test.encoding:UTF-8}"/>
         <formatter>
