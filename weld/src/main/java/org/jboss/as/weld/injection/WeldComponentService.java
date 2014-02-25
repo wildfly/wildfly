@@ -41,9 +41,9 @@ import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.SessionBean;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
-import org.jboss.weld.injection.producer.BasicInjectionTarget;
 import org.jboss.weld.injection.producer.InjectionTargetService;
 import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.manager.api.WeldInjectionTarget;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -115,10 +115,10 @@ public class WeldComponentService implements Service<WeldComponentService> {
                 return;
             }
 
-            BasicInjectionTarget injectionTarget = InjectionTargets.createInjectionTarget(componentClass, bean, beanManager, !Utils.isComponentWithView(componentDescription));
+            WeldInjectionTarget injectionTarget = InjectionTargets.createInjectionTarget(componentClass, bean, beanManager, !Utils.isComponentWithView(componentDescription));
             if (componentDescription instanceof MessageDrivenComponentDescription || componentDescription instanceof WebComponentDescription) {
                 // fire ProcessInjectionTarget for non-contextual components
-                this.injectionTarget = beanManager.fireProcessInjectionTarget(injectionTarget.getAnnotated(), injectionTarget);
+                this.injectionTarget = beanManager.fireProcessInjectionTarget(injectionTarget.getAnnotatedType(), injectionTarget);
             } else {
                 this.injectionTarget = injectionTarget;
             }
