@@ -1580,10 +1580,10 @@ public class ManagementXml {
             case DOMAIN_1_3:
             case DOMAIN_1_4:
             case DOMAIN_1_5:
-                parseKeystore_1_3(reader, op, true);
+                parseKeystore_1_3(reader, op, false);
                 break;
             default:
-                parseKeystore_1_6(reader, op, true);
+                parseKeystore_1_6(reader, op, false);
         }
 
         list.add(op);
