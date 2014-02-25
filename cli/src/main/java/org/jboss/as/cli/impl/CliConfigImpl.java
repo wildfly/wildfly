@@ -26,6 +26,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.security.GeneralSecurityException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +44,6 @@ import org.jboss.as.cli.ControllerAddress;
 import org.jboss.as.cli.SSLConfig;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.logging.Logger;
-import org.jboss.security.vault.SecurityVaultException;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 import org.jboss.staxmapper.XMLMapper;
@@ -752,7 +752,7 @@ class CliConfigImpl implements CliConfig {
                     final VaultConfig vaultConfig = VaultConfig.load(vaultFile);
                     try {
                         vaultReader.init(vaultConfig.getOptions());
-                    } catch (SecurityVaultException e) {
+                    } catch (GeneralSecurityException e) {
                         throw new XMLStreamException("Failed to initialize vault", e);
                     }
                 } else if ("alias".equals(localName)) {
@@ -778,7 +778,7 @@ class CliConfigImpl implements CliConfig {
         private String getPassword(CLIVaultReader vaultReader, String str) throws XMLStreamException {
             try {
                 return vaultReader.retrieve(str);
-            } catch (SecurityVaultException e) {
+            } catch (GeneralSecurityException e) {
                 throw new XMLStreamException("Failed to retrieve from vault '" + str + "'", e);
             }
         }

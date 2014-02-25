@@ -47,7 +47,7 @@
         <module name="org.jboss.staxmapper"/>
         <module name="org.jboss.threads"/>
         <module name="org.jboss.vfs"/>
-        <module name="org.picketbox"/>
+        <module name="org.picketbox" optional="true"/>
         <module name="javax.api"/>
     </dependencies>
 
