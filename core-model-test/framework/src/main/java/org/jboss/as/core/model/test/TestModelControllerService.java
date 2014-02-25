@@ -70,6 +70,7 @@ import org.jboss.as.model.test.StringConfigurationPersister;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
+import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironment.LaunchType;
 import org.jboss.as.server.ServerEnvironmentResourceDescription;
@@ -98,11 +99,14 @@ class TestModelControllerService extends ModelTestModelControllerService {
     private final DelegatingResourceDefinition rootResourceDefinition;
     private final ControlledProcessState processState;
     private final ExtensionRegistry extensionRegistry;
+    private final AbstractVaultReader vaultReader;
     private volatile Initializer initializer;
 
     TestModelControllerService(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
-            TestModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState, ExtensionRegistry extensionRegistry) {
-        super(processType, runningModeControl, null, persister, validateOpsFilter, rootResourceDefinition, processState, Controller80x.INSTANCE);
+            TestModelType type, ModelInitializer modelInitializer, DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState, ExtensionRegistry extensionRegistry,
+            AbstractVaultReader vaultReader) {
+        super(processType, runningModeControl, null, persister, validateOpsFilter, rootResourceDefinition, processState,
+                new RuntimeExpressionResolver(vaultReader), Controller80x.INSTANCE);
         this.type = type;
         this.runningModeControl = runningModeControl;
         this.pathManagerService = type == TestModelType.STANDALONE ? new ServerPathManagerService() : new HostPathManagerService();
@@ -110,6 +114,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
         this.rootResourceDefinition = rootResourceDefinition;
         this.processState = processState;
         this.extensionRegistry = extensionRegistry;
+        this.vaultReader = vaultReader;
 
         if (type == TestModelType.STANDALONE) {
             initializer = new ServerInitializer();
@@ -132,7 +137,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
     static TestModelControllerService create(ProcessType processType, RunningModeControl runningModeControl, StringConfigurationPersister persister, ModelTestOperationValidatorFilter validateOpsFilter,
             TestModelType type, ModelInitializer modelInitializer, ExtensionRegistry extensionRegistry) {
-        return new TestModelControllerService(processType, runningModeControl, persister, validateOpsFilter, type, modelInitializer, new DelegatingResourceDefinition(type), new ControlledProcessState(true), extensionRegistry);
+        return new TestModelControllerService(processType, runningModeControl, persister, validateOpsFilter, type, modelInitializer,
+                new DelegatingResourceDefinition(type), new ControlledProcessState(true), extensionRegistry, new TestVaultReader());
     }
 
     InjectedValue<ContentRepository> getContentRepositoryInjector(){
@@ -393,7 +399,6 @@ class TestModelControllerService extends ModelTestModelControllerService {
         final ExtensibleConfigurationPersister persister = new NullConfigurationPersister();
         final ServerEnvironment environment = createStandaloneServerEnvironment();
         final boolean parallelBoot = false;
-        final AbstractVaultReader vaultReader = null;
 
         public void setRootResourceDefinitionDelegate() {
             rootResourceDefinition.setDelegate(new ServerRootResourceDefinition(
@@ -447,7 +452,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
                             injectedContentRepository.getValue(),
                             domainController,
                             extensionRegistry,
-                            null /*vaultReader*/,
+                            vaultReader,
                             ignoredRegistry,
                             processState,
                             pathManagerService,

@@ -22,12 +22,18 @@
 package org.jboss.as.core.model.test.vault;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
@@ -42,10 +48,13 @@ import org.junit.Test;
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
 public abstract class AbstractVaultTest extends AbstractCoreModelTest {
-    private final PathAddress vaultAddress;
 
-    protected AbstractVaultTest(PathAddress vaultAddress) {
-        this.vaultAddress = vaultAddress;
+    protected final PathAddress rootAddress;
+    protected final PathAddress vaultAddress;
+
+    protected AbstractVaultTest(PathAddress rootAddress) {
+        this.rootAddress = rootAddress;
+        this.vaultAddress = rootAddress.append(PathElement.pathElement(CORE_SERVICE,  VAULT));
     }
 
     @Test
