@@ -1866,6 +1866,11 @@
 
                 <dependency>
                     <groupId>org.jboss.ws.cxf</groupId>
+                    <artifactId>jbossws-cxf-jaspi</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.ws.cxf</groupId>
                     <artifactId>jbossws-cxf-factories</artifactId>
                 </dependency>
 
