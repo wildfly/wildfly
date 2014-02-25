@@ -126,10 +126,11 @@ public abstract class ModelTestModelControllerService extends AbstractController
      */
     protected ModelTestModelControllerService(final ProcessType processType, final RunningModeControl runningModeControl, final TransformerRegistry transformerRegistry,
             final StringConfigurationPersister persister, final ModelTestOperationValidatorFilter validateOpsFilter,
-            final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState, Controller80x version) {
+            final DelegatingResourceDefinition rootResourceDefinition, ControlledProcessState processState,
+            ExpressionResolver expressionResolver, Controller80x version) {
         super(processType, runningModeControl, persister,
                 processState == null ? new ControlledProcessState(true) : processState, rootResourceDefinition, null,
-                ExpressionResolver.TEST_RESOLVER, AuditLogger.NO_OP_LOGGER, new DelegatingConfigurableAuthorizer());
+                expressionResolver, AuditLogger.NO_OP_LOGGER, new DelegatingConfigurableAuthorizer());
         this.persister = persister;
         this.transformerRegistry = transformerRegistry;
         this.validateOpsFilter = validateOpsFilter;

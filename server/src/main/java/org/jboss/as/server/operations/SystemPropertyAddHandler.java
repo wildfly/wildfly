@@ -23,6 +23,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.BOOT_TIME;
 import static org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.VALUE;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -91,15 +95,19 @@ public class SystemPropertyAddHandler implements OperationStepHandler{
         final boolean reload = !applyToRuntime && context.getProcessType().isServer();
 
         if (applyToRuntime) {
-            final String setValue = value != null ? VALUE.resolveModelAttribute(context, model).asString() : null;
-            if (setValue != null) {
-                WildFlySecurityManager.setPropertyPrivileged(name, setValue);
-            } else {
-                WildFlySecurityManager.clearPropertyPrivileged(name);
+            String setValue = null;
+            boolean setIt = false;
+            try {
+                setValue = value != null ? VALUE.resolveModelAttribute(context, model).asString() : null;
+                setIt = true;
+            } catch (Exception resolutionFailure) {
+                handleResolutionFailure(context, model, name, resolutionFailure);
             }
-            if (systemPropertyUpdater != null) {
-                systemPropertyUpdater.systemPropertyUpdated(name, setValue);
+
+            if (setIt) {
+                setProperty(name, setValue);
             }
+
         } else if (reload) {
             context.reloadRequired();
         }
@@ -118,5 +126,71 @@ public class SystemPropertyAddHandler implements OperationStepHandler{
                 }
             }
         });
+    }
+
+    private void setProperty(String name, String value) {
+        if (value != null) {
+            WildFlySecurityManager.setPropertyPrivileged(name, value);
+        } else {
+            WildFlySecurityManager.clearPropertyPrivileged(name);
+        }
+        if (systemPropertyUpdater != null) {
+            systemPropertyUpdater.systemPropertyUpdated(name, value);
+        }
+    }
+
+    private void handleResolutionFailure(OperationContext context, ModelNode model,
+                                         final String propertyName, final Exception resolutionFailure) {
+
+        assert resolutionFailure instanceof RuntimeException || resolutionFailure instanceof OperationFailedException
+                : "invalid resolutionFailure type " + resolutionFailure.getClass();
+
+        DeferredProcessor deferredResolver = (DeferredProcessor) context.getAttachment(SystemPropertyDeferredProcessor.ATTACHMENT_KEY);
+        if (deferredResolver == null) {
+            deferredResolver = new DeferredProcessor();
+            context.attach(SystemPropertyDeferredProcessor.ATTACHMENT_KEY, deferredResolver);
+        }
+        deferredResolver.unresolved.put(propertyName, model);
+
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                DeferredProcessor deferredResolver = (DeferredProcessor) context.getAttachment(SystemPropertyDeferredProcessor.ATTACHMENT_KEY);
+                if (deferredResolver != null && deferredResolver.unresolved.containsKey(propertyName)) {
+                    context.setRollbackOnly();
+                    if (resolutionFailure instanceof RuntimeException) {
+                        throw (RuntimeException) resolutionFailure;
+                    } else if (resolutionFailure instanceof OperationFailedException) {
+                        throw (OperationFailedException) resolutionFailure;
+                    }
+                    // Should not be possible -- see initial assert
+                    throw new RuntimeException(resolutionFailure);
+                }
+                context.stepCompleted();
+            }
+        }, OperationContext.Stage.VERIFY);
+    }
+
+    private class DeferredProcessor implements SystemPropertyDeferredProcessor {
+
+        private final Map<String, ModelNode> unresolved = new HashMap<String, ModelNode>();
+
+        @Override
+        public void processDeferredProperties(OperationContext context) throws OperationFailedException {
+            for (Iterator<Map.Entry<String, ModelNode>> it = unresolved.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<String, ModelNode> entry = it.next();
+                try {
+                    final String setValue = VALUE.resolveModelAttribute(context, entry.getValue()).asString();
+                    setProperty(entry.getKey(), setValue);
+                    it.remove();
+                } catch (OperationFailedException resolutionFailure) {
+                    context.setRollbackOnly();
+                    throw resolutionFailure;
+                }  catch (RuntimeException resolutionFailure) {
+                    context.setRollbackOnly();
+                    throw resolutionFailure;
+                }
+            }
+        }
     }
 }

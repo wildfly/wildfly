@@ -21,9 +21,7 @@
 */
 package org.jboss.as.core.model.test.vault;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -41,7 +39,7 @@ import org.junit.Assert;
 public class HostVaultTestCase extends AbstractVaultTest {
 
     public HostVaultTestCase() {
-        super(PathAddress.pathAddress(PathElement.pathElement(HOST, "master"), PathElement.pathElement(CORE_SERVICE, VAULT)));
+        super(PathAddress.pathAddress(PathElement.pathElement(HOST, "master")));
     }
 
     @Override

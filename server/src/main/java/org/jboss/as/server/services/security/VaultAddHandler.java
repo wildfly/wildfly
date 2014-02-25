@@ -29,6 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.server.ServerMessages;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
+import org.jboss.as.server.operations.SystemPropertyDeferredProcessor;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -79,6 +80,13 @@ public class VaultAddHandler extends AbstractAddStepHandler {
                 vaultReader.createVault(vaultClass, vaultOptions);
             } catch (VaultReaderException e) {
                 throw ServerMessages.MESSAGES.cannotCreateVault(e, e);
+            }
+
+            // WFLY-1904 if any system properties were not resolved due to needing vault resolution,
+            // resolve them now
+            final SystemPropertyDeferredProcessor deferredResolver = context.getAttachment(SystemPropertyDeferredProcessor.ATTACHMENT_KEY);
+            if (deferredResolver != null) {
+                deferredResolver.processDeferredProperties(context);
             }
         }
     }
