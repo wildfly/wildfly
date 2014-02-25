@@ -1356,6 +1356,7 @@
 
         <module-def name="org.jboss.ws.jaxws-client">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-client"/>
+            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-jaspi"/>
         </module-def>
 
         <module-def name="org.jboss.ws.jaxws-undertow-httpspi">
