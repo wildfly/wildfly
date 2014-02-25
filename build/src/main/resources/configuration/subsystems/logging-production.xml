@@ -2,7 +2,7 @@
 <!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
 <config default-supplement="default">
    <extension-module>org.jboss.as.logging</extension-module>
-   <subsystem xmlns="urn:jboss:domain:logging:1.3">
+   <subsystem xmlns="urn:jboss:domain:logging:1.4">
        <periodic-rotating-file-handler name="FILE" autoflush="true">
            <formatter>
                <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
