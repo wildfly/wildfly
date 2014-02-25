@@ -22,6 +22,7 @@
 
 package org.jboss.as.patching;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import org.jboss.logging.BasicLogger;
@@ -53,5 +54,9 @@ public interface PatchLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 16801, value = "Cannot invalidate %s")
     void cannotInvalidateZip(String name);
+
+    @LogMessage(level = ERROR)
+    @Message(id =16802, value = "failed to undo change for: '%s'")
+    void failedToUndoChange(final String name);
 
 }
