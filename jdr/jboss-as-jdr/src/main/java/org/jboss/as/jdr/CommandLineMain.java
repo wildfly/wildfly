@@ -95,13 +95,13 @@ public class CommandLineMain {
         JdrReport response = null;
         try {
             response = reportService.standaloneCollect(protocol, host, port);
+            System.out.println("JDR started: " + response.getStartTime().toString());
+            System.out.println("JDR ended: " + response.getEndTime().toString());
+            System.out.println("JDR location: " + response.getLocation());
         } catch (OperationFailedException e) {
             System.out.println("Failed to complete the JDR report: " + e.getMessage());
         }
 
-        System.out.println("JDR started: " + response.getStartTime().toString());
-        System.out.println("JDR ended: " + response.getEndTime().toString());
-        System.out.println("JDR location: " + response.getLocation());
-        System.exit(0);
+       System.exit(0);
     }
 }
