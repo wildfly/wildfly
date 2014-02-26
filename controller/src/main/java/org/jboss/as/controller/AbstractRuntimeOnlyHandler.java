@@ -22,11 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
 import org.jboss.dmr.ModelNode;
-import org.jboss.msc.service.ServiceController;
-import org.jboss.msc.service.StabilityMonitor;
 
 /**
  * Base class for operations that do nothing in {@link org.jboss.as.controller.OperationContext.Stage#MODEL} except
@@ -36,38 +32,6 @@ import org.jboss.msc.service.StabilityMonitor;
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  */
 public abstract class AbstractRuntimeOnlyHandler implements OperationStepHandler {
-
-
-    /**
-     * Wait for the required service to start up and fail otherwise. This method is necessary when a runtime operation
-     * uses a service that might have been created within a composite operation.
-     *
-     * This method will wait at most 100 millis.
-     *
-     * @param controller the service to wait for
-     * @throws OperationFailedException if the service is not available, or the thread was interrupted.
-     *
-     * @deprecated this method is unrelated to this class and will be removed in the next major release
-     */
-    @Deprecated
-    public void waitFor(final ServiceController<?> controller) throws OperationFailedException {
-        if (controller.getState() == ServiceController.State.UP) return;
-
-        final StabilityMonitor monitor = new StabilityMonitor();
-        monitor.addController(controller);
-        try {
-            monitor.awaitStability(100, MILLISECONDS);
-        } catch (final InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new OperationFailedException((new ModelNode()).set("Interrupted waiting for service: " + controller.getName()));
-        } finally {
-            monitor.removeController(controller);
-        }
-
-        if (controller.getState() != ServiceController.State.UP) {
-            throw new OperationFailedException(new ModelNode().set("Required service is not available: " + controller.getName()));
-        }
-    }
 
     /**
      * Simply adds a {@link org.jboss.as.controller.OperationContext.Stage#RUNTIME} step that calls
