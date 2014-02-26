@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -216,6 +217,14 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
         return createAddress(profileName, SyslogHandlerResourceDefinition.SYSLOG_HANDLER, name);
     }
 
+    static PathAddress createPatternFormatterAddress(final String name) {
+        return createAddress(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH.getKey(), name);
+    }
+
+    static PathAddress createPatternFormatterAddress(final String profileName, final String name) {
+        return createAddress(profileName, PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH.getKey(), name);
+    }
+
     protected KernelServices boot() throws Exception {
         final KernelServices kernelServices = createKernelServicesBuilder(createAdditionalInitialization()).setSubsystemXml(getSubsystemXml()).build();
         final Throwable bootError = kernelServices.getBootError();
@@ -325,8 +334,8 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
         for (String name : handlerNames) {
             final HandlerConfiguration handlerConfig = logContextConfig.getHandlerConfiguration(name);
             final ModelNode handlerModel = findHandlerModel(model, name);
-            final Set<String> modelPropertyNames = handlerModel.keys();
-            final List<String> configPropertyNames = handlerConfig.getPropertyNames();
+            final Set<String> modelPropertyNames = new HashSet<String>(handlerModel.keys());
+            final List<String> configPropertyNames = new ArrayList<String>(handlerConfig.getPropertyNames());
 
             // Remove unneeded properties
             modelPropertyNames.remove(CommonAttributes.FILTER.getName());
@@ -334,7 +343,7 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
 
             // Process the properties
             for (String modelPropertyName : modelPropertyNames) {
-                final ModelNode modelValue = handlerModel.get(modelPropertyName);
+                ModelNode modelValue = handlerModel.get(modelPropertyName);
                 String modelStringValue = modelValue.asString();
                 final String configValue;
                 // Special properties
@@ -347,14 +356,26 @@ public abstract class AbstractLoggingSubsystemTest extends AbstractSubsystemBase
                     }
                 } else if (modelPropertyName.equals(CommonAttributes.ENCODING.getName())) {
                     configValue = handlerConfig.getEncoding();
-                } else if (modelPropertyName.equals(CommonAttributes.FORMATTER.getName())) {
-                    final String formatterName = handlerConfig.getFormatterName();
-                    if (formatterName == null) {
-                        configValue = null;
+                } else if (modelPropertyName.equals(AbstractHandlerDefinition.FORMATTER.getName()) || modelPropertyName.equals(AbstractHandlerDefinition.NAMED_FORMATTER.getName())) {
+                    // Formatters are handled differently than most attributes. A named-formatter must be separately defined.
+                    // The formatter attribute is really a PatternFormatter with the same name as the handler.
+
+                    // If there is a named formatter in the model, just match the names
+                    if (handlerModel.hasDefined(AbstractHandlerDefinition.NAMED_FORMATTER.getName())) {
+                        configValue = handlerConfig.getFormatterName();
+                        modelValue = handlerModel.get(AbstractHandlerDefinition.NAMED_FORMATTER.getName());
                     } else {
-                        final FormatterConfiguration formatterConfig = logContextConfig.getFormatterConfiguration(formatterName);
-                        configValue = formatterConfig.getPropertyValueString(CommonAttributes.PATTERN.getName());
+                        // Not a named-formatter, so attempt to match the pattern
+                        final String formatterName = handlerConfig.getFormatterName();
+                        if (formatterName == null) {
+                            configValue = null;
+                        } else {
+                            final FormatterConfiguration formatterConfig = logContextConfig.getFormatterConfiguration(formatterName);
+                            configValue = formatterConfig.getPropertyValueString(PatternFormatterResourceDefinition.PATTERN.getName());
+                            modelValue = handlerModel.get(AbstractHandlerDefinition.FORMATTER.getName());
+                        }
                     }
+                    modelStringValue = modelValue.asString();
                 } else if (modelPropertyName.equals(CommonAttributes.FILTER_SPEC.getName())) {
                     configValue = handlerConfig.getFilter();
                 } else if (modelPropertyName.equals(CommonAttributes.LEVEL.getName())) {

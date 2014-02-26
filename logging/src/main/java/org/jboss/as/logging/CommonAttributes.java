@@ -77,28 +77,30 @@ public interface CommonAttributes {
             .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .build();
 
-    PropertyAttributeDefinition FILTER_SPEC = PropertyAttributeDefinition.Builder.of("filter-spec", ModelType.STRING, true)
-            .addAlternatives("filter")
-            .setAllowExpression(true)
-            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
-            .build();
-
-    PropertyAttributeDefinition FORMATTER = PropertyAttributeDefinition.Builder.of("formatter", ModelType.STRING, true)
-            .setAllowExpression(true)
+    PropertyObjectTypeAttributeDefinition FILE = PropertyObjectTypeAttributeDefinition.Builder.of("file", RELATIVE_TO, PATH)
+            .setAllowExpression(false)
             .setAttributeMarshaller(new DefaultAttributeMarshaller() {
                 @Override
                 public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
                     if (isMarshallable(attribute, resourceModel, marshallDefault)) {
                         writer.writeStartElement(attribute.getXmlName());
-                        writer.writeStartElement(PATTERN_FORMATTER);
-                        final String content = resourceModel.get(attribute.getName()).asString();
-                        writer.writeAttribute(PATTERN.getXmlName(), content);
-                        writer.writeEndElement();
+                        final ModelNode file = resourceModel.get(attribute.getName());
+                        RELATIVE_TO.marshallAsAttribute(file, marshallDefault, writer);
+                        PATH.marshallAsAttribute(file, marshallDefault, writer);
                         writer.writeEndElement();
                     }
                 }
             })
-            .setDefaultValue(new ModelNode("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"))
+            .setCorrector(FileCorrector.INSTANCE)
+            .setPropertyName("fileName")
+            .setResolver(FileResolver.INSTANCE)
+            .setValidator(new FileValidator())
+            .build();
+
+    PropertyAttributeDefinition FILTER_SPEC = PropertyAttributeDefinition.Builder.of("filter-spec", ModelType.STRING, true)
+            .addAlternatives("filter")
+            .setAllowExpression(true)
+            .setAttributeMarshaller(ElementAttributeMarshaller.VALUE_ATTRIBUTE_MARSHALLER)
             .build();
 
     SimpleAttributeDefinition HANDLER = SimpleAttributeDefinitionBuilder.create("handler", ModelType.STRING)
@@ -132,8 +134,6 @@ public interface CommonAttributes {
             .setDeprecated(ModelVersion.create(1, 2, 0))
             .build();
 
-    String PATTERN_FORMATTER = "pattern-formatter";
-
     /**
      * The name of the root logger.
      */
@@ -156,24 +156,8 @@ public interface CommonAttributes {
             .setDefaultValue(new ModelNode(true))
             .build();
 
-    PropertyObjectTypeAttributeDefinition FILE = PropertyObjectTypeAttributeDefinition.Builder.of("file", RELATIVE_TO, PATH)
+    SimpleAttributeDefinition FILTER_PATTERN = SimpleAttributeDefinitionBuilder.create("pattern", ModelType.STRING)
             .setAllowExpression(false)
-            .setAttributeMarshaller(new DefaultAttributeMarshaller() {
-                @Override
-                public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
-                    if (isMarshallable(attribute, resourceModel, marshallDefault)) {
-                        writer.writeStartElement(attribute.getXmlName());
-                        final ModelNode file = resourceModel.get(attribute.getName());
-                        RELATIVE_TO.marshallAsAttribute(file, marshallDefault, writer);
-                        PATH.marshallAsAttribute(file, marshallDefault, writer);
-                        writer.writeEndElement();
-                    }
-                }
-            })
-            .setCorrector(FileCorrector.INSTANCE)
-            .setPropertyName("fileName")
-            .setResolver(FileResolver.INSTANCE)
-            .setValidator(new FileValidator())
             .build();
 
     SimpleAttributeDefinition MATCH = SimpleAttributeDefinitionBuilder.create("match", ModelType.STRING)
@@ -206,10 +190,6 @@ public interface CommonAttributes {
             .setAllowExpression(false)
             .setCorrector(CaseParameterCorrector.TO_UPPER)
             .setValidator(new LogLevelValidator(true))
-            .build();
-
-    SimpleAttributeDefinition PATTERN = SimpleAttributeDefinitionBuilder.create("pattern", ModelType.STRING)
-            .setAllowExpression(false)
             .build();
 
     SimpleAttributeDefinition REPLACEMENT = SimpleAttributeDefinitionBuilder.create("replacement", ModelType.STRING)
@@ -248,15 +228,15 @@ public interface CommonAttributes {
             })
             .build();
 
-    ObjectTypeAttributeDefinition REPLACE = ObjectTypeAttributeDefinition.Builder.of("replace", PATTERN, REPLACEMENT, REPLACE_ALL)
+    ObjectTypeAttributeDefinition REPLACE = ObjectTypeAttributeDefinition.Builder.of("replace", FILTER_PATTERN, REPLACEMENT, REPLACE_ALL)
             .setAllowExpression(false)
             .setAllowNull(true)
-            .setValidator(new ObjectTypeValidator(false, PATTERN, REPLACEMENT, REPLACE_ALL) {
+            .setValidator(new ObjectTypeValidator(false, FILTER_PATTERN, REPLACEMENT, REPLACE_ALL) {
                 @Override
                 public void validateParameter(final String parameterName, final ModelNode value) throws OperationFailedException {
                     super.validateParameter(parameterName, value);
                     final ModelNode clonedValue = value.clone();
-                    final AttributeDefinition[] allowedValues = {PATTERN, REPLACEMENT, REPLACE_ALL};
+                    final AttributeDefinition[] allowedValues = {FILTER_PATTERN, REPLACEMENT, REPLACE_ALL};
                     for (AttributeDefinition valueType : allowedValues) {
                         final ModelNode syntheticValue;
                         // Does the value the type

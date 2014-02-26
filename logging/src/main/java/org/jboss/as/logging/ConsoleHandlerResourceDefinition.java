@@ -51,7 +51,7 @@ class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
             .setValidator(EnumValidator.create(Target.class, true, false))
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, TARGET);
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, TARGET, NAMED_FORMATTER);
 
     public ConsoleHandlerResourceDefinition(final boolean includeLegacyAttributes) {
         super(CONSOLE_HANDLER_PATH, ConsoleHandler.class,

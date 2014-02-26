@@ -24,6 +24,9 @@ package org.jboss.as.logging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.logging.CommonAttributes.APPEND;
+import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
+import static org.jboss.as.logging.CommonAttributes.FILE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +43,7 @@ import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker.DefaultRejectAttributeChecker;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
@@ -164,14 +168,17 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(AsyncHandlerResourceDefinition.ASYNC_HANDLER_PATH),
                                 new RejectExpressionsConfig(AsyncHandlerResourceDefinition.ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH),
-                                new RejectExpressionsConfig(ConsoleHandlerResourceDefinition.ATTRIBUTES))
+                                FailedOperationTransformationConfig.ChainedConfig.createBuilder(FileHandlerResourceDefinition.ATTRIBUTES)
+                                        .addConfig(new RejectExpressionsConfig(ConsoleHandlerResourceDefinition.ATTRIBUTES))
+                                        .build())
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
                                 new RejectExpressionsConfig(FileHandlerResourceDefinition.ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
                                 FailedOperationTransformationConfig.ChainedConfig.createBuilder(FileHandlerResourceDefinition.ATTRIBUTES)
-                                .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.ENABLED))
-                                .addConfig(new RejectExpressionsConfig(FileHandlerResourceDefinition.ATTRIBUTES))
-                                .build())
+                                        .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(CommonAttributes.ENABLED))
+                                        .addConfig(new RejectExpressionsConfig(Logging.join(FileHandlerResourceDefinition.DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE)))
+                                        .addConfig(new FailedOperationTransformationConfig.NewAttributesConfig(AbstractHandlerDefinition.NAMED_FORMATTER))
+                                        .build())
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PeriodicHandlerResourceDefinition.PERIODIC_HANDLER_PATH),
                                 new RejectExpressionsConfig(PeriodicHandlerResourceDefinition.ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_HANDLER_PATH),
@@ -183,15 +190,21 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                                 new RejectExpressionsConfig(CustomHandlerResourceDefinition.WRITABLE_ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(SyslogHandlerResourceDefinition.SYSLOG_HANDLER_PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER_PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(RootLoggerResourceDefinition.ROOT_LOGGER_PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(LoggerResourceDefinition.LOGGER_PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(SyslogHandlerResourceDefinition.SYSLOG_HANDLER_PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
         );
     }
@@ -202,17 +215,17 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         // Get all the console handler
         final ModelNode consoleHandler = legacyModel.get(consoleAddress.getElement(0).getKey(), consoleAddress.getElement(0).getValue(),
                 consoleAddress.getElement(1).getKey(), consoleAddress.getElement(1).getValue());
-        String formatPattern = consoleHandler.get(CommonAttributes.FORMATTER.getName()).asString();
+        String formatPattern = consoleHandler.get(AbstractHandlerDefinition.FORMATTER.getName()).asString();
         Assert.assertFalse("Pattern (" + formatPattern + ") contains a color attribute not supported in legacy models.", COLOR_PATTERN.matcher(formatPattern).find());
 
         // Write a pattern with a %K{level} to ensure it gets removed
-        ModelNode op = SubsystemOperations.createWriteAttributeOperation(consoleAddress.toModelNode(), CommonAttributes.FORMATTER, "%K{level}" + formatPattern);
+        ModelNode op = SubsystemOperations.createWriteAttributeOperation(consoleAddress.toModelNode(), AbstractHandlerDefinition.FORMATTER, "%K{level}" + formatPattern);
         executeTransformOperation(mainServices, modelVersion, op);
         validateLegacyFormatter(mainServices, modelVersion, consoleAddress.toModelNode());
 
         // Test update properties
         op = SubsystemOperations.createOperation(AbstractHandlerDefinition.UPDATE_OPERATION_NAME, consoleAddress.toModelNode());
-        op.get(CommonAttributes.FORMATTER.getName()).set("%K{level}" + formatPattern);
+        op.get(AbstractHandlerDefinition.FORMATTER.getName()).set("%K{level}" + formatPattern);
         executeTransformOperation(mainServices, modelVersion, op);
         validateLegacyFormatter(mainServices, modelVersion, consoleAddress.toModelNode());
 
@@ -347,7 +360,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
     }
 
     private static void validateLegacyFormatter(final KernelServices kernelServices, final ModelVersion modelVersion, final ModelNode address) throws OperationFailedException {
-        final ModelNode op = SubsystemOperations.createReadAttributeOperation(address, CommonAttributes.FORMATTER);
+        final ModelNode op = SubsystemOperations.createReadAttributeOperation(address, AbstractHandlerDefinition.FORMATTER);
         final ModelNode result = executeTransformOperation(kernelServices, modelVersion, op);
         Assert.assertTrue(result.asString(), SubsystemOperations.isSuccessfulOutcome(result));
         final String formatPattern = SubsystemOperations.readResultAsString(result);

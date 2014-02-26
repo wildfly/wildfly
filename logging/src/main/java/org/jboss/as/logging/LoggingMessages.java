@@ -518,7 +518,7 @@ public interface LoggingMessages {
      * @return an {@link IllegalArgumentException} for the error
      */
     @Message(id = 11575, value = "Formatter '%s' is not found")
-    IllegalArgumentException formatterNotFound(String name);
+    String formatterNotFound(String name);
 
     /**
      * Creates an exception indicating the character set is not supported.

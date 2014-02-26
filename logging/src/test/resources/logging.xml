@@ -40,6 +40,9 @@
 
     <file-handler name="anotherFile" enabled="false">
         <filter-spec value="levelRange(TRACE,WARN]" />
+        <formatter>
+            <named-formatter name="PATTERN"/>
+        </formatter>
         <file relative-to="jboss.server.log.dir" path="another.log"/>
         <append value="true"/>
     </file-handler>
@@ -47,6 +50,9 @@
     <file-handler name="simpleFile">
         <level name="INFO"/>
         <filter-spec value="deny"/>
+        <formatter>
+            <named-formatter name="PATTERN"/>
+        </formatter>
         <file relative-to="jboss.server.log.dir" path="fileHandler.log"/>
         <append value="true"/>
     </file-handler>
@@ -125,6 +131,10 @@
         </handlers>
     </root-logger>
 
+    <formatter name="PATTERN">
+        <pattern-formatter pattern="${test.console.pattern:%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n}" color-map="${test.console.color:info:cyan,warn:yellow,error:red}"/>
+    </formatter>
+
     <logging-profiles>
         <logging-profile name="test-profile">
 
@@ -135,6 +145,16 @@
                     <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
                 </formatter>
             </console-handler>
+
+            <file-handler name="simpleFile">
+                <level name="INFO"/>
+                <filter-spec value="deny"/>
+                <formatter>
+                    <named-formatter name="PATTERN"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="profileFileHandler.log"/>
+                <append value="true"/>
+            </file-handler>
 
             <syslog-handler name="syslog">
                 <level name="WARN"/>
@@ -160,6 +180,10 @@
                     <handler name="syslog"/>
                 </handlers>
             </root-logger>
+
+            <formatter name="PATTERN">
+                <pattern-formatter pattern="${test.console.pattern:%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n}" color-map="${test.console.color:info:cyan,warn:yellow,error:red}"/>
+            </formatter>
         </logging-profile>
     </logging-profiles>
 </subsystem>

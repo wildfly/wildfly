@@ -21,9 +21,7 @@
 */
 package org.jboss.as.logging;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -129,6 +127,12 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
     public void testCompositeOperations() throws Exception {
         testCompositeOperations(null);
         testCompositeOperations(PROFILE);
+    }
+
+    @Test
+    public void testPatternFormatter() throws Exception {
+        testPatternFormatter(null);
+        testPatternFormatter(PROFILE);
     }
 
     @Test
@@ -258,13 +262,13 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         addFileHandler(kernelServices, PROFILE, handlerName, org.jboss.logmanager.Level.INFO, profileLogFile, true);
 
         // Change the format
-        ModelNode op = SubsystemOperations.createReadAttributeOperation(handlerAddress, CommonAttributes.FORMATTER);
+        ModelNode op = SubsystemOperations.createReadAttributeOperation(handlerAddress, AbstractHandlerDefinition.FORMATTER);
         final String defaultHandlerFormat = SubsystemOperations.readResultAsString(executeOperation(kernelServices, op));
-        op = SubsystemOperations.createReadAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER);
+        op = SubsystemOperations.createReadAttributeOperation(profileHandlerAddress, AbstractHandlerDefinition.FORMATTER);
         final String defaultProfileHandlerFormat = SubsystemOperations.readResultAsString(executeOperation(kernelServices, op));
-        op = SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FORMATTER, "%m%n");
+        op = SubsystemOperations.createWriteAttributeOperation(handlerAddress, AbstractHandlerDefinition.FORMATTER, "%m%n");
         executeOperation(kernelServices, op);
-        op = SubsystemOperations.createWriteAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER, "%m%n");
+        op = SubsystemOperations.createWriteAttributeOperation(profileHandlerAddress, AbstractHandlerDefinition.FORMATTER, "%m%n");
         executeOperation(kernelServices, op);
 
         // Log with and without profile
@@ -273,9 +277,9 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         doLog(PROFILE, LEVELS, msg);
 
         // Reset the formatters
-        op = SubsystemOperations.createWriteAttributeOperation(handlerAddress, CommonAttributes.FORMATTER, defaultHandlerFormat);
+        op = SubsystemOperations.createWriteAttributeOperation(handlerAddress, AbstractHandlerDefinition.FORMATTER, defaultHandlerFormat);
         executeOperation(kernelServices, op);
-        op = SubsystemOperations.createWriteAttributeOperation(profileHandlerAddress, CommonAttributes.FORMATTER, defaultProfileHandlerFormat);
+        op = SubsystemOperations.createWriteAttributeOperation(profileHandlerAddress, AbstractHandlerDefinition.FORMATTER, defaultProfileHandlerFormat);
         executeOperation(kernelServices, op);
 
         // Remove the handler
@@ -564,24 +568,80 @@ public class LoggingOperationsSubsystemTestCase extends AbstractLoggingSubsystem
         executeOperation(kernelServices, op);
     }
 
+    private void testPatternFormatter(final String profileName) throws Exception {
+        final KernelServices kernelServices = boot();
+        final String fileHandlerName = "test-file-handler";
 
-    private void addFileHandler(final KernelServices kernelServices, final String loggingProfile, final String name,
-                                final Level level, final File file, final boolean assign) throws Exception {
+        final File logFile = createLogFile();
+
+        // Add file handler
+        final ModelNode handlerAddress = addFileHandler(kernelServices, profileName, fileHandlerName, org.jboss.logmanager.Level.INFO, logFile, false);
+
+        // Get the logger
+        final Logger logger = getLogger(profileName);
+
+        // Create the logger
+        final ModelNode loggerAddress = createLoggerAddress(profileName, logger.getName()).toModelNode();
+        ModelNode op = SubsystemOperations.createAddOperation(loggerAddress);
+        op.get(LoggerResourceDefinition.USE_PARENT_HANDLERS.getName()).set(false);
+        op.get(CommonAttributes.HANDLERS.getName()).setEmptyList().add(fileHandlerName);
+        executeOperation(kernelServices, op);
+
+        // Create a pattern formatter
+        final ModelNode patternFormatterAddress = createPatternFormatterAddress(profileName, "PATTERN").toModelNode();
+        op = SubsystemOperations.createAddOperation(patternFormatterAddress);
+        // Add a format that can be read back to make sure it matches the pattern used in the handler
+        op.get(PatternFormatterResourceDefinition.PATTERN.getName()).set("[NAMED-PATTERN] %s%n");
+        executeOperation(kernelServices, op);
+
+        // Add the named formatter to the handler
+        op = SubsystemOperations.createWriteAttributeOperation(handlerAddress, FileHandlerResourceDefinition.NAMED_FORMATTER, "PATTERN");
+        executeOperation(kernelServices, op);
+
+        // Log 3 lines
+        logger.info("Test message 1");
+        logger.info("Test message 2");
+        logger.info("Test message 3");
+
+        // Check the file, should only contain 3 lines
+        final List<String> lines = FileUtils.readLines(logFile);
+        assertEquals("Additional messages written to handler that should not be there.", 3, lines.size());
+
+        // Check each line
+        assertEquals("Line patterns don't match.", "[NAMED-PATTERN] Test message 1", lines.get(0));
+        assertEquals("Line patterns don't match.", "[NAMED-PATTERN] Test message 2", lines.get(1));
+        assertEquals("Line patterns don't match.", "[NAMED-PATTERN] Test message 3", lines.get(2));
+
+        // Clean up
+        op = SubsystemOperations.CompositeOperationBuilder.create()
+                .addStep(SubsystemOperations.createRemoveOperation(loggerAddress))
+                .addStep(SubsystemOperations.createRemoveOperation(handlerAddress))
+                .addStep(SubsystemOperations.createRemoveOperation(patternFormatterAddress))
+                .build().getOperation();
+        executeOperation(kernelServices, op);
+
+    }
+
+
+    private ModelNode addFileHandler(final KernelServices kernelServices, final String loggingProfile, final String name,
+                                     final Level level, final File file, final boolean assign) throws Exception {
+        final ModelNode address = createFileHandlerAddress(loggingProfile, name).toModelNode();
 
         // add file handler
-        ModelNode op = SubsystemOperations.createAddOperation(createFileHandlerAddress(loggingProfile, name).toModelNode());
+        ModelNode op = SubsystemOperations.createAddOperation(address);
         op.get(CommonAttributes.NAME.getName()).set(name);
         op.get(CommonAttributes.LEVEL.getName()).set(level.getName());
         op.get(CommonAttributes.FILE.getName()).get(PathResourceDefinition.PATH.getName()).set(file.getAbsolutePath());
         op.get(CommonAttributes.AUTOFLUSH.getName()).set(true);
         executeOperation(kernelServices, op);
 
-        if (!assign) return;
-
         // register it with root logger
-        op = SubsystemOperations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
-        op.get(CommonAttributes.NAME.getName()).set(name);
-        executeOperation(kernelServices, op);
+        if (assign) {
+            op = SubsystemOperations.createOperation(RootLoggerResourceDefinition.ROOT_LOGGER_ADD_HANDLER_OPERATION_NAME, createRootLoggerAddress(loggingProfile).toModelNode());
+            op.get(CommonAttributes.NAME.getName()).set(name);
+            executeOperation(kernelServices, op);
+        }
+        return address;
     }
 
     private void removeFileHandler(final KernelServices kernelServices, final String loggingProfile, final String name,

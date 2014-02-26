@@ -50,7 +50,7 @@ class PeriodicHandlerResourceDefinition extends AbstractFileHandlerDefinition {
             .setValidator(new SuffixValidator())
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE, SUFFIX);
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, FILE, SUFFIX, NAMED_FORMATTER);
 
     public PeriodicHandlerResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean includeLegacyAttributes) {
         super(PERIODIC_HANDLER_PATH, PeriodicRotatingFileHandler.class, resolvePathHandler,

@@ -25,7 +25,7 @@
     <console-handler name="CONSOLE">
         <level name="INFO"/>
         <formatter>
-            <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+            <named-formatter name="CONSOLE-PATTERN"/>
         </formatter>
     </console-handler>
 
@@ -48,6 +48,10 @@
             <handler name="FILE"/>
         </handlers>
     </root-logger>
+
+    <formatter name="CONSOLE-PATTERN">
+        <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n" color-map="info:cyan"/>
+    </formatter>
 
     <logging-profiles>
         <logging-profile name="test-profile">

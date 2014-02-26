@@ -5,7 +5,7 @@
    <subsystem xmlns="urn:jboss:domain:logging:1.4">
        <periodic-rotating-file-handler name="FILE" autoflush="true">
            <formatter>
-               <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+               <named-formatter name="PATTERN"/>
            </formatter>
            <file relative-to="jboss.server.log.dir" path="server.log"/>
            <suffix value=".yyyy-MM-dd"/>
@@ -18,6 +18,9 @@
                <handler name="FILE"/>
            </handlers>
        </root-logger>
+       <formatter name="PATTERN">
+           <pattern-formatter pattern="%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"/>
+       </formatter>
    </subsystem>
    <supplement name="default">
       <replacement placeholder="@@append@@" attributeValue="true"/>

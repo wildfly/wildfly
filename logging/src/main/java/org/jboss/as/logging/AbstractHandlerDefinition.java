@@ -29,17 +29,21 @@ import static org.jboss.as.logging.CommonAttributes.ENABLED;
 import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
-import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CommonAttributes.NAME;
 
 import java.util.logging.Handler;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.DefaultAttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -49,6 +53,8 @@ import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.logging.logmanager.PropertySorter;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
@@ -58,6 +64,43 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
 
     public static final String UPDATE_OPERATION_NAME = "update-properties";
     public static final String CHANGE_LEVEL_OPERATION_NAME = "change-log-level";
+
+    public static final PropertyAttributeDefinition FORMATTER = PropertyAttributeDefinition.Builder.of("formatter", ModelType.STRING, true)
+            .setAllowExpression(true)
+            .setAlternatives("named-formatter")
+            .setAttributeMarshaller(new DefaultAttributeMarshaller() {
+                @Override
+                public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
+                    if (isMarshallable(attribute, resourceModel, marshallDefault)) {
+                        writer.writeStartElement(attribute.getXmlName());
+                        writer.writeStartElement(PatternFormatterResourceDefinition.PATTERN_FORMATTER.getXmlName());
+                        final String pattern = resourceModel.get(attribute.getName()).asString();
+                        writer.writeAttribute(PatternFormatterResourceDefinition.PATTERN.getXmlName(), pattern);
+                        writer.writeEndElement();
+                        writer.writeEndElement();
+                    }
+                }
+            })
+            .setDefaultValue(new ModelNode("%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%E%n"))
+            .build();
+
+    public static final SimpleAttributeDefinition NAMED_FORMATTER = SimpleAttributeDefinitionBuilder.create("named-formatter", ModelType.STRING, true)
+            .setAllowExpression(false)
+            .setAlternatives("formatter")
+            .setAttributeMarshaller(new DefaultAttributeMarshaller() {
+                @Override
+                public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
+                    if (isMarshallable(attribute, resourceModel, marshallDefault)) {
+                        writer.writeStartElement(FORMATTER.getXmlName());
+                        writer.writeStartElement(attribute.getXmlName());
+                        String content = resourceModel.get(attribute.getName()).asString();
+                        writer.writeAttribute(CommonAttributes.NAME.getName(), content);
+                        writer.writeEndElement();
+                        writer.writeEndElement();
+                    }
+                }
+            })
+            .build();
 
     static final AttributeDefinition[] DEFAULT_ATTRIBUTES = {
             LEVEL,
@@ -190,6 +233,9 @@ abstract class AbstractHandlerDefinition extends SimpleResourceDefinition {
                     .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
                     // Strip console color from format patterns
                     .setValueConverter(Transformers1_1_0.CONSOLE_COLOR_CONVERTER, FORMATTER)
+                    // Discard named formatters
+                    .setDiscard(DiscardAttributeChecker.UNDEFINED, NAMED_FORMATTER)
+                    .addRejectCheck(RejectAttributeChecker.DEFINED, NAMED_FORMATTER)
                     // Discard undefined filter-spec, else convert the value and rename to "filter"
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
                     .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)

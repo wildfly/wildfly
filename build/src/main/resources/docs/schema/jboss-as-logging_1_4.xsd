@@ -50,6 +50,7 @@
             <xs:element name="async-handler" type="asyncHandlerType"/>
             <xs:element name="custom-handler" type="customHandlerType"/>
             <xs:element name="syslog-handler" type="syslogHandlerType"/>
+            <xs:element name="formatter" type="formatterType"/>
             <xs:element name="logging-profiles" type="logging-profilesType" minOccurs="0" maxOccurs="1"/>
         </xs:choice>
     </xs:complexType>
@@ -81,6 +82,7 @@
             <xs:element name="async-handler" type="asyncHandlerType"/>
             <xs:element name="custom-handler" type="customHandlerType"/>
             <xs:element name="syslog-handler" type="syslogHandlerType"/>
+            <xs:element name="formatter" type="formatterType"/>
         </xs:choice>
         <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
@@ -159,7 +161,7 @@
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
             <xs:element name="filter" type="valueType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="formatter" type="handlerFormatterType" minOccurs="0"/>
             <xs:element name="target" minOccurs="0">
                 <xs:complexType>
                     <xs:attribute name="name" use="required">
@@ -188,7 +190,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="formatter" type="handlerFormatterType" minOccurs="0"/>
             <xs:element name="file" type="pathType" minOccurs="1"/>
             <xs:element name="append" type="booleanValueType" minOccurs="0"/>
         </xs:all>
@@ -208,7 +210,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="formatter" type="handlerFormatterType" minOccurs="0"/>
             <xs:element name="file" type="pathType"/>
             <xs:element name="suffix" type="valueType"/>
             <xs:element name="append" type="booleanValueType" minOccurs="0"/>
@@ -229,7 +231,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="formatter" type="handlerFormatterType" minOccurs="0"/>
             <xs:element name="file" type="pathType"/>
             <xs:element name="rotate-size" type="sizeType" minOccurs="0"/>
             <xs:element name="max-backup-index" type="positiveIntType" minOccurs="0"/>
@@ -269,7 +271,7 @@
             <xs:element name="level" type="refType" minOccurs="0"/>
             <xs:element name="encoding" type="valueType" minOccurs="0"/>
             <xs:element name="filter-spec" type="valueType" minOccurs="0"/>
-            <xs:element name="formatter" type="formatterType" minOccurs="0"/>
+            <xs:element name="formatter" type="handlerFormatterType" minOccurs="0"/>
             <xs:element name="properties" type="propertiesType" minOccurs="0"/>
         </xs:all>
         <xs:attribute name="name" type="xs:string" use="required"/>
@@ -416,23 +418,81 @@
     <xs:complexType name="formatterType">
         <xs:annotation>
             <xs:documentation>
-                Defines a formatter.
+                A formatter that can be assigned to a handler.
             </xs:documentation>
         </xs:annotation>
         <xs:choice minOccurs="1" maxOccurs="1">
             <xs:element name="pattern-formatter" type="patternFormatterType" maxOccurs="1"/>
         </xs:choice>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="handlerFormatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a formatter.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="1">
+            <xs:element name="pattern-formatter" type="handlerPatternFormatterType" maxOccurs="1"/>
+            <xs:element name="named-formatter" type="namedFormatterType" maxOccurs="1"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="handlerPatternFormatterType">
+        <xs:annotation>
+            <xs:documentation>
+                Defines a pattern formatter.  See the documentation for org.jboss.logmanager.formatters.FormatStringParser
+                for more information about the format string.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="pattern" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="patternFormatterType">
         <xs:annotation>
             <xs:documentation>
-                Defines a pattern formatter. See the documentation for
-                org.jboss.logmanager.formatters.FormatStringParser
+                Defines a pattern formatter.  See the documentation for org.jboss.logmanager.formatters.FormatStringParser
                 for more information about the format string.
+
+                The color-map attribute allows for a comma delimited list of colors to be used for different levels. The
+                format is level-name:color-name.
+
+                Valid Levels; severe, fatal, error, warn, warning, info, debug, trace, config, fine, finer, finest
+
+                Valid Colors; black, green, red, yellow, blue, magenta, cyan, white, brightblack, brightred, brightgreen,
+                brightblue, brightyellow, brightmagenta, brightcyan, brightwhite
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="pattern" type="xs:string" use="required"/>
+        <xs:attribute name="pattern" type="xs:string" use="required">
+            <xs:annotation>
+                <xs:documentation>
+                    The format pattern as defined in org.jboss.logmanager.formatters.FormatStringParser.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="color-map" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>
+                    The color-map attribute allows for a comma delimited list of colors to be used for different levels. The
+                    format is level-name:color-name.
+
+                    Valid Levels; severe, fatal, error, warn, warning, info, debug, trace, config, fine, finer, finest
+
+                    Valid Colors; black, green, red, yellow, blue, magenta, cyan, white, brightblack, brightred, brightgreen,
+                    brightblue, brightyellow, brightmagenta, brightcyan, brightwhite
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="namedFormatterType">
+        <xs:annotation>
+            <xs:documentation>
+                The name of a defined formatter that will be used to format the log message.
+            </xs:documentation>
+        </xs:annotation>
+        <xs:attribute name="name" type="xs:string" use="required"/>
     </xs:complexType>
 
     <xs:complexType name="syslogFormatterType">

@@ -187,6 +187,8 @@ public class LoggingExtension implements Extension {
         CustomHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
         SyslogHandlerResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
 
+        PatternFormatterResourceDefinition.addTransformers(subsystemBuilder, loggingProfileBuilder);
+
         // Register the transformers
         TransformationDescription.Tools.register(subsystemBuilder.build(), subsystem, ModelVersion.create(1, 1, 0));
 
@@ -215,6 +217,7 @@ public class LoggingExtension implements Extension {
         registration.registerSubModel(new SizeRotatingHandlerResourceDefinition(resolvePathHandler, includeLegacyAttributes));
         registration.registerSubModel(new CustomHandlerResourceDefinition(includeLegacyAttributes));
         registration.registerSubModel(SyslogHandlerResourceDefinition.INSTANCE);
+        registration.registerSubModel(PatternFormatterResourceDefinition.INSTANCE);
     }
 
     private static class LoggingResourceDescriptionResolver extends StandardResourceDescriptionResolver {
@@ -230,12 +233,13 @@ public class LoggingExtension implements Extension {
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILE.getName(), "logging.handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILTER.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FILTER_SPEC.getName(), "logging.common");
-            COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.FORMATTER.getName(), "logging.common");
+            COMMON_ATTRIBUTE_NAMES.put(AbstractHandlerDefinition.FORMATTER.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.HANDLERS.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.LEVEL.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(SizeRotatingHandlerResourceDefinition.MAX_BACKUP_INDEX.getName(), "logging.size-rotating-file-handler");
             COMMON_ATTRIBUTE_NAMES.put(CustomHandlerResourceDefinition.MODULE.getName(), "logging.custom-handler");
             COMMON_ATTRIBUTE_NAMES.put(CommonAttributes.NAME.getName(), "logging.handler");
+            COMMON_ATTRIBUTE_NAMES.put(AbstractHandlerDefinition.NAMED_FORMATTER.getName(), "logging.common");
             COMMON_ATTRIBUTE_NAMES.put(AsyncHandlerResourceDefinition.OVERFLOW_ACTION.getName(), "logging.async-handler");
             COMMON_ATTRIBUTE_NAMES.put(PathResourceDefinition.PATH.getName(), null);
             COMMON_ATTRIBUTE_NAMES.put(CustomHandlerResourceDefinition.PROPERTIES.getName(), "logging.custom-handler");
@@ -347,6 +351,10 @@ public class LoggingExtension implements Extension {
                 } else if (CommonAttributes.LOGGING_PROFILE.equals(key1)) {
                     result = LESS;
                 } else if (CommonAttributes.LOGGING_PROFILE.equals(key2)) {
+                    result = GREATER;
+                } else if (PatternFormatterResourceDefinition.PATTERN_FORMATTER.getName().equals(key1)) {
+                    result = LESS;
+                } else if (PatternFormatterResourceDefinition.PATTERN_FORMATTER.getName().equals(key2)) {
                     result = GREATER;
                 } else if (RootLoggerResourceDefinition.ROOT_LOGGER_PATH_NAME.equals(key1)) {
                     result = GREATER;

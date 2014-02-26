@@ -102,7 +102,7 @@ class SyslogHandlerResourceDefinition extends SimpleResourceDefinition {
                 @Override
                 public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException {
                     if (isMarshallable(attribute, resourceModel, marshallDefault)) {
-                        writer.writeStartElement(CommonAttributes.FORMATTER.getXmlName());
+                        writer.writeStartElement(AbstractHandlerDefinition.FORMATTER.getXmlName());
                         writer.writeStartElement(attribute.getXmlName());
                         final String content = resourceModel.get(attribute.getName()).asString();
                         writer.writeAttribute(Attribute.SYSLOG_TYPE.getLocalName(), content);

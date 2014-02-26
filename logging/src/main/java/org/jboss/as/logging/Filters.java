@@ -139,7 +139,7 @@ class Filters {
                 result.append(SUBSTITUTE);
             }
             return result.append("(")
-                    .append(escapeString(CommonAttributes.PATTERN, replace))
+                    .append(escapeString(CommonAttributes.FILTER_PATTERN, replace))
                     .append(",").append(escapeString(CommonAttributes.REPLACEMENT, replace))
                     .append(")").toString();
         }
@@ -224,7 +224,7 @@ class Filters {
             substitute.get(CommonAttributes.REPLACE_ALL.getName()).set(false);
             expect("(", iterator);
             final String pattern = expectString(iterator);
-            set(CommonAttributes.PATTERN, substitute, pattern);
+            set(CommonAttributes.FILTER_PATTERN, substitute, pattern);
             expect(",", iterator);
             final String replacement = expectString(iterator);
             set(CommonAttributes.REPLACEMENT, substitute, replacement);
@@ -234,7 +234,7 @@ class Filters {
             substitute.get(CommonAttributes.REPLACE_ALL.getName()).set(true);
             expect("(", iterator);
             final String pattern = expectString(iterator);
-            set(CommonAttributes.PATTERN, substitute, pattern);
+            set(CommonAttributes.FILTER_PATTERN, substitute, pattern);
             expect(",", iterator);
             final String replacement = expectString(iterator);
             set(CommonAttributes.REPLACEMENT, substitute, replacement);

@@ -22,6 +22,8 @@
 
 package org.jboss.as.logging;
 
+import static org.jboss.as.logging.AbstractHandlerDefinition.FORMATTER;
+import static org.jboss.as.logging.AbstractHandlerDefinition.NAMED_FORMATTER;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.QUEUE_LENGTH;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.SUBHANDLERS;
 import static org.jboss.as.logging.CommonAttributes.ENABLED;
@@ -29,13 +31,14 @@ import static org.jboss.as.logging.CommonAttributes.ENCODING;
 import static org.jboss.as.logging.CommonAttributes.FILE;
 import static org.jboss.as.logging.CommonAttributes.FILTER;
 import static org.jboss.as.logging.CommonAttributes.FILTER_SPEC;
-import static org.jboss.as.logging.CommonAttributes.FORMATTER;
 import static org.jboss.as.logging.CommonAttributes.HANDLER_NAME;
 import static org.jboss.as.logging.CommonAttributes.LEVEL;
 import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
 import static org.jboss.as.logging.CustomHandlerResourceDefinition.MODULE;
 import static org.jboss.as.logging.CustomHandlerResourceDefinition.PROPERTIES;
 import static org.jboss.as.logging.Logging.createOperationFailure;
+import static org.jboss.as.logging.PatternFormatterResourceDefinition.PATTERN;
+import static org.jboss.as.logging.PatternFormatterResourceDefinition.PATTERN_FORMATTER;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -126,7 +129,7 @@ final class HandlerOperations {
                 boolean restartRequired = false;
                 boolean reloadRequired = false;
                 for (AttributeDefinition attribute : attributes) {
-                    // Only update values for attributes defined in the operation
+                    // Only update if the attribute is on the operation
                     if (operation.has(attribute.getName())) {
                         handleProperty(attribute, context, model, logContextConfiguration, configuration);
                         restartRequired = restartRequired || Logging.requiresRestart(attribute.getFlags());
@@ -395,6 +398,21 @@ final class HandlerOperations {
                 // Undefine the filter-spec
                 model.getModel().get(CommonAttributes.FILTER_SPEC.getName()).set(filterSpecValue);
             }
+
+            // Undefine formatter attribute if writing a named-formatter
+            if (AbstractHandlerDefinition.NAMED_FORMATTER.getName().equals(attributeName)) {
+                // If the formatter is defined in the model, remove it
+                final ModelNode m = model.getModel();
+                if (m.hasDefined(AbstractHandlerDefinition.FORMATTER.getName())) {
+                    m.get(AbstractHandlerDefinition.FORMATTER.getName()).clear();
+                }
+            } else if (AbstractHandlerDefinition.FORMATTER.getName().equals(attributeName)) {
+                // If the named-formatter is defined in the model, remove it
+                final ModelNode m = model.getModel();
+                if (m.hasDefined(AbstractHandlerDefinition.NAMED_FORMATTER.getName())) {
+                    m.get(AbstractHandlerDefinition.NAMED_FORMATTER.getName()).clear();
+                }
+            }
         }
     }
 
@@ -560,15 +578,53 @@ final class HandlerOperations {
             configuration.setEncoding(resolvedValue);
         } else if (attribute.getName().equals(FORMATTER.getName())) {
             final String formatterName = configuration.getName();
-            final FormatterConfiguration fmtConfig;
-            if (logContextConfiguration.getFormatterNames().contains(formatterName)) {
-                fmtConfig = logContextConfiguration.getFormatterConfiguration(formatterName);
+            // Use a formatter only if a named-formatter is not defined, note too that if explicitly undefining the named-formatter
+            // the formatter pattern will be used
+            if (model.hasDefined(NAMED_FORMATTER.getName())) {
+                final ModelNode valueNode = (resolveValue ? NAMED_FORMATTER.resolveModelAttribute(context, model) : model);
+                final String resolvedValue = (valueNode.isDefined() ? valueNode.asString() : null);
+                configuration.setFormatterName(resolvedValue);
+                // Check the current formatter name, if it's the same name as the handler, remove the old formatter
+                if (!formatterName.equals(resolvedValue) && logContextConfiguration.getFormatterNames().contains(formatterName)) {
+                    logContextConfiguration.removeFormatterConfiguration(formatterName);
+                }
             } else {
-                fmtConfig = logContextConfiguration.addFormatterConfiguration(null, PatternFormatter.class.getName(), formatterName, "pattern");
+                // Use a formatter only if a named-formatter is not defined or the named-formatter was explicitly undefined
+                final FormatterConfiguration fmtConfig;
+                if (logContextConfiguration.getFormatterNames().contains(formatterName)) {
+                    fmtConfig = logContextConfiguration.getFormatterConfiguration(formatterName);
+                } else {
+                    fmtConfig = logContextConfiguration.addFormatterConfiguration(null, PatternFormatter.class.getName(), formatterName, PATTERN.getPropertyName());
+                }
+                final String resolvedValue = (resolveValue ? FORMATTER.resolvePropertyValue(context, model) : model.asString());
+                fmtConfig.setPropertyValueString(PATTERN.getPropertyName(), resolvedValue);
+                configuration.setFormatterName(formatterName);
             }
-            final String resolvedValue = (resolveValue ? FORMATTER.resolvePropertyValue(context, model) : model.asString());
-            fmtConfig.setPropertyValueString("pattern", resolvedValue);
-            configuration.setFormatterName(formatterName);
+        } else if (attribute.getName().equals(NAMED_FORMATTER.getName())) {
+            final String formatterName = configuration.getName();
+            final ModelNode valueNode = (resolveValue ? NAMED_FORMATTER.resolveModelAttribute(context, model) : model);
+            // If the value not is undefined, this may have come from a undefine-attribute operation
+            if (valueNode.isDefined()) {
+                final String resolvedValue = valueNode.asString();
+                configuration.setFormatterName(resolvedValue);
+                // Check the current formatter name, if it's the same name as the handler, remove the old formatter
+                if (!formatterName.equals(resolvedValue) && logContextConfiguration.getFormatterNames().contains(formatterName)) {
+                    logContextConfiguration.removeFormatterConfiguration(formatterName);
+                }
+            } else {
+                // If the current formatter name already equals the name defined in the configuration, there is no need to process
+                if (!formatterName.equals(configuration.getFormatterName())) {
+                    // Use a formatter only if a named-formatter is not defined or the named-formatter was explicitly undefined
+                    final FormatterConfiguration fmtConfig;
+                    if (logContextConfiguration.getFormatterNames().contains(formatterName)) {
+                        fmtConfig = logContextConfiguration.getFormatterConfiguration(formatterName);
+                    } else {
+                        fmtConfig = logContextConfiguration.addFormatterConfiguration(null, PatternFormatter.class.getName(), formatterName, PATTERN.getPropertyName());
+                    }
+                    fmtConfig.setPropertyValueString(PATTERN.getPropertyName(), FORMATTER.resolvePropertyValue(context, model));
+                    configuration.setFormatterName(formatterName);
+                }
+            }
         } else if (attribute.getName().equals(FILTER_SPEC.getName())) {
             final ModelNode valueNode = (resolveValue ? FILTER_SPEC.resolveModelAttribute(context, model) : model);
             final String resolvedValue = (valueNode.isDefined() ? valueNode.asString() : null);
@@ -658,20 +714,35 @@ final class HandlerOperations {
             final String currentValue = configuration.getEncoding();
             result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
         } else if (attribute.getName().equals(FORMATTER.getName())) {
-            final String formatterName = configuration.getName();
-            // Only check the pattern if the name matches the currently configured name
-            if (formatterName.equals(configuration.getFormatterNameValueExpression().getResolvedValue())) {
-                final FormatterConfiguration fmtConfig;
-                if (logContextConfiguration.getFormatterNames().contains(formatterName)) {
-                    fmtConfig = logContextConfiguration.getFormatterConfiguration(formatterName);
-                    final String resolvedValue = FORMATTER.resolvePropertyValue(context, model);
-                    final String currentValue = fmtConfig.getPropertyValueString("pattern");
-                    result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
+            // Ignored if there is a named-formatter defined
+            if (model.hasDefined(NAMED_FORMATTER.getName())) {
+                result = true;
+            } else {
+                final String formatterName = configuration.getName();
+                // Only check the pattern if the name matches the currently configured name
+                if (formatterName.equals(configuration.getFormatterNameValueExpression().getResolvedValue())) {
+                    final FormatterConfiguration fmtConfig;
+                    if (logContextConfiguration.getFormatterNames().contains(formatterName)) {
+                        fmtConfig = logContextConfiguration.getFormatterConfiguration(formatterName);
+                        final String resolvedValue = FORMATTER.resolvePropertyValue(context, model);
+                        final String currentValue = fmtConfig.getPropertyValueString(PATTERN.getName());
+                        result = (resolvedValue == null ? currentValue == null : resolvedValue.equals(currentValue));
+                    } else {
+                        result = false;
+                    }
                 } else {
                     result = false;
                 }
+            }
+        } else if (attribute.getName().equals(NAMED_FORMATTER.getName())) {
+            final ModelNode valueNode = NAMED_FORMATTER.resolveModelAttribute(context, model);
+            // Ignore if not defined
+            if (valueNode.isDefined()) {
+                final String resolvedValue = valueNode.asString();
+                final String currentValue = configuration.getFormatterName();
+                result = resolvedValue.equals(currentValue);
             } else {
-                result = false;
+                result = true;
             }
         } else if (attribute.getName().equals(FILTER_SPEC.getName())) {
             final ModelNode valueNode = FILTER_SPEC.resolveModelAttribute(context, model);

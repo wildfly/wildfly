@@ -72,7 +72,7 @@ class SizeRotatingHandlerResourceDefinition extends AbstractFileHandlerDefinitio
             .setValidator(new SizeValidator())
             .build();
 
-    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, ROTATE_ON_BOOT, MAX_BACKUP_INDEX, ROTATE_SIZE, FILE);
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, AUTOFLUSH, APPEND, ROTATE_ON_BOOT, MAX_BACKUP_INDEX, ROTATE_SIZE, FILE, NAMED_FORMATTER);
 
     public SizeRotatingHandlerResourceDefinition(final ResolvePathHandler resolvePathHandler, final boolean includeLegacyAttributes) {
         super(SIZE_ROTATING_HANDLER_PATH, SizeRotatingFileHandler.class, resolvePathHandler,
