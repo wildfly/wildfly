@@ -262,7 +262,13 @@ public class ControllerInitializer {
             return;
         }
         rootResource.getModel().get(PATH);
-        ManagementResourceRegistration paths = rootRegistration.registerSubModel(PathResourceDefinition.createSpecified(pathManager));
+        PathResourceDefinition def = PathResourceDefinition.createSpecified(pathManager);
+        if (rootRegistration.getSubModel(PathAddress.pathAddress(def.getPathElement())) != null) {
+            //Older versions of core model tests seem to register this resource, while in newer it does not get registered,
+            //so let's remove it here if it exists already
+            rootRegistration.unregisterSubModel(def.getPathElement());
+        }
+        rootRegistration.registerSubModel(def);
     }
 
     /**

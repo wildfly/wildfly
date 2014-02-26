@@ -178,4 +178,18 @@ public interface LegacyKernelServicesInitializer {
      * @param exclusionFilter the class filter used to exclude class from the the parent classloader when resolving.
      */
     LegacyKernelServicesInitializer excludeFromParent(ClassFilter exclusionFilter);
+
+    /**
+     * Add classes to be loaded from the child classloader. The url's from the {@code classes} protection domain get added to the
+     * list of URLs used by the child  first classloader. Classes coming from that URL, which are not specified in the {@code classes}
+     * list, are loaded from the parent classloader. URLs implicitely added via this method must not be added via any of the other
+     * methods such as {@link #addSimpleResourceURL(String)} and {@link #addMavenResourceURL(String)}; if that happens an
+     * {@link IllegalStateException} will get thrown when the controllers are built.
+     *
+     * This is useful for adding {@link AdditionalInitialization} implementations for the scoped legacy controller.
+     *
+     * @param classes the classes to be added as child first classes
+     * @return this initializer
+     */
+    LegacyKernelServicesInitializer addSingleChildFirstClass(Class<?>...classes);
 }

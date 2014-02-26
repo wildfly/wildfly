@@ -717,6 +717,12 @@ final class SubsystemTestDelegate {
             return this;
         }
 
+        @Override
+        public LegacyKernelServicesInitializer addSingleChildFirstClass(final Class<?>... classes) {
+            classLoaderBuilder.addSingleChildFirstClass(classes);
+            return this;
+        }
+
         private LegacyControllerKernelServicesProxy install(KernelServices mainServices, List<ModelNode> bootOperations) throws Exception {
             if (!skipReverseCheck) {
                 bootCurrentVersionWithLegacyBootOperations(bootOperations, mainServices);
