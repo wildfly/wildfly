@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTE_FOR_COORDINATOR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INPUT_STREAM_INDEX;
@@ -46,10 +47,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -107,6 +110,7 @@ public class OperationCoordinatorStepHandler {
             // This is possibly a two step operation, but it's not coordinated by this host.
             // Execute direct (which will proxy the request to the intended HC) and let the remote HC coordinate
             // any two step process (if there is one)
+            configureDomainUUID(operation);
             executeDirect(context, operation);
         }
         else if (!routing.isTwoStep()) {
@@ -173,6 +177,8 @@ public class OperationCoordinatorStepHandler {
         if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
             HOST_CONTROLLER_LOGGER.trace("Executing two-phase");
         }
+
+        configureDomainUUID(operation);
 
         DomainOperationContext overallContext = new DomainOperationContext(localHostControllerInfo);
 
@@ -292,6 +298,17 @@ public class OperationCoordinatorStepHandler {
             }
         }
         return false;
+    }
+
+    static void configureDomainUUID(ModelNode operation) {
+        if (!operation.hasDefined(OPERATION_HEADERS) || !operation.get(OPERATION_HEADERS).hasDefined(DOMAIN_UUID)) {
+            String domainUUID = UUID.randomUUID().toString();
+            operation.get(OPERATION_HEADERS, DOMAIN_UUID).set(domainUUID);
+            AccessAuditContext accessContext = SecurityActions.currentAccessAuditContext();
+            if (accessContext != null) {
+                accessContext.setDomainUuid(domainUUID);
+            }
+        }
     }
 
 }
