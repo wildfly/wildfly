@@ -50,7 +50,7 @@ public class LogStoreTransactionDeleteHandler implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         MBeanServer mbs = TransactionExtension.getMBeanServer(context);
-        final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+        final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
 
         try {
             final ObjectName on = LogStoreResource.getObjectName(resource);
@@ -70,7 +70,6 @@ public class LogStoreTransactionDeleteHandler implements OperationStepHandler {
                 final PathAddress address = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR));
                 final PathElement element = address.getLastElement();
 
-                context.acquireControllerLock();
                 logStoreResource.removeChild(element);
             }
         } catch (OperationFailedException e) {
