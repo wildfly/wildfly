@@ -193,7 +193,7 @@
         <version.org.jboss.osgi.spi>3.2.0.Final-redhat-1</version.org.jboss.osgi.spi>
         <version.org.jboss.osgi.vfs>1.2.1.Final-redhat-1</version.org.jboss.osgi.vfs>
         <version.org.jboss.remote-naming>1.0.8.Final-redhat-1</version.org.jboss.remote-naming>
-        <version.org.jboss.remoting3>3.2.19.GA-redhat-1</version.org.jboss.remoting3>
+        <version.org.jboss.remoting3>3.3.0.CR4</version.org.jboss.remoting3>
         <version.org.jboss.remotingjmx.remoting-jmx>1.1.2.Final-redhat-1</version.org.jboss.remotingjmx.remoting-jmx>
         <version.org.jboss.resteasy>2.3.8.Final-redhat-1</version.org.jboss.resteasy>
         <version.org.jboss.sasl>1.0.3.Final-redhat-1</version.org.jboss.sasl>
