@@ -32,6 +32,8 @@ import javax.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -110,7 +112,10 @@ public class CalendarBasedTimeoutTestCase {
         Assert.assertEquals(29, firstTimeout.get(Calendar.DAY_OF_MONTH));
     }
 
-
+    @Before
+    public void checkTestEnabled() {
+        Assume.assumeTrue(Boolean.valueOf("jboss.test.allow.CalendarBasedTimeoutTestCase"));
+    }
     @Test
     public void testCalendarBasedTimeout() {
 
