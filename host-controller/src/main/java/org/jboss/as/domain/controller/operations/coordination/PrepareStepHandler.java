@@ -22,7 +22,6 @@
 
 package org.jboss.as.domain.controller.operations.coordination;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTE_FOR_COORDINATOR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -30,10 +29,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.operations.coordination.OperationCoordinatorStepHandler.configureDomainUUID;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.ControllerMessages;
@@ -95,12 +94,10 @@ public class PrepareStepHandler  implements OperationStepHandler {
             // Assign a unique id to this operation to allow tying together of audit logs from various hosts/servers
             // impacted by it
 
-            if (!operation.hasDefined(OPERATION_HEADERS) || !operation.get(OPERATION_HEADERS).hasDefined(DOMAIN_UUID)) {
-                operation.get(OPERATION_HEADERS, DOMAIN_UUID).set(UUID.randomUUID().toString());
-            }
-
             if (isServerOperation(operation)) {
                 // Pass direct requests for the server through whether they come from the master or not
+                // First, attach a domainUUID for audit logging
+                configureDomainUUID(operation);
                 executeDirect(context, operation);
             } else {
                 coordinatorHandler.execute(context, operation);
