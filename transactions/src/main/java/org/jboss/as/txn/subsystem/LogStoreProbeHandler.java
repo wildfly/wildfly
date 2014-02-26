@@ -182,7 +182,8 @@ public class LogStoreProbeHandler implements OperationStepHandler {
             // Replace the current model with an updated one
             context.acquireControllerLock();
             final Resource storeModel = probeTransactions(mbs);
-
+            // WFLY-3020 -- don't drop the root model
+            storeModel.writeModel(logStore.getModel());
             logStore.update(storeModel);
         }
         context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
