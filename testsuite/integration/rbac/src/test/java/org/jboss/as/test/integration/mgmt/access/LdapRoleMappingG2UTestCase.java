@@ -25,6 +25,10 @@ package org.jboss.as.test.integration.mgmt.access;
 import java.io.InputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.directory.api.ldap.model.entry.DefaultEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifEntry;
+import org.apache.directory.api.ldap.model.ldif.LdifReader;
+import org.apache.directory.api.ldap.model.schema.SchemaManager;
 import org.apache.directory.server.annotations.CreateLdapServer;
 import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.CreateDS;
@@ -33,10 +37,6 @@ import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.factory.DSAnnotationProcessor;
 import org.apache.directory.server.factory.ServerAnnotationProcessor;
 import org.apache.directory.server.ldap.LdapServer;
-import org.apache.directory.shared.ldap.model.entry.DefaultEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifEntry;
-import org.apache.directory.shared.ldap.model.ldif.LdifReader;
-import org.apache.directory.shared.ldap.model.schema.SchemaManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -58,7 +58,8 @@ public class LdapRoleMappingG2UTestCase {
             allowAnonAccess = true
     )
     @CreateLdapServer(
-            transports = @CreateTransport(protocol = "LDAP", address = "localhost", port = 10389)
+            transports = @CreateTransport(protocol = "LDAP", address = "localhost", port = 10389),
+            allowAnonymousAccess = true
     )
     public static void setUp() throws Exception {
         directoryService = DSAnnotationProcessor.getDirectoryService();
