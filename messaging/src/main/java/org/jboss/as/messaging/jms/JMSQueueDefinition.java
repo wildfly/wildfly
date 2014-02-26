@@ -122,7 +122,11 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
                 if (deployed) {
                     registry.registerReadOnlyAttribute(attr, JMSQueueConfigurationRuntimeHandler.INSTANCE);
                 } else {
-                    registry.registerReadOnlyAttribute(attr, null);
+                    if (attr == CommonAttributes.DESTINATION_ENTRIES) {
+                        registry.registerReadWriteAttribute(attr, null, JMSQueueConfigurationWriteHandler.INSTANCE);
+                    } else {
+                        registry.registerReadOnlyAttribute(attr, null);
+                    }
                 }
             }
         }
@@ -147,10 +151,16 @@ public class JMSQueueDefinition extends SimpleResourceDefinition {
             JMSQueueControlHandler.INSTANCE.registerOperations(registry);
 
             if (!deployed) {
-                SimpleOperationDefinition op = new SimpleOperationDefinition(ConnectionFactoryAddJndiHandler.ADD_JNDI,
+                SimpleOperationDefinition addJNDI = new SimpleOperationDefinition(AbstractUpdateJndiHandler.ADD_JNDI,
                         getResourceDescriptionResolver(),
-                        ConnectionFactoryAddJndiHandler.JNDI_BINDING);
-                registry.registerOperationHandler(op, JMSQueueAddJndiHandler.INSTANCE);
+                        AbstractUpdateJndiHandler.JNDI_BINDING);
+                registry.registerOperationHandler(addJNDI, new JMSQueueUpdateJndiHandler(true));
+
+                SimpleOperationDefinition removeJNDI = new SimpleOperationDefinition(AbstractUpdateJndiHandler.REMOVE_JNDI,
+                        getResourceDescriptionResolver(),
+                        AbstractUpdateJndiHandler.JNDI_BINDING);
+                registry.registerOperationHandler(removeJNDI, new JMSQueueUpdateJndiHandler(false));
+
             }
         }
     }

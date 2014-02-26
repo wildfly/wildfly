@@ -133,10 +133,15 @@ public class ConnectionFactoryDefinition extends SimpleResourceDefinition {
         super.registerOperations(registry);
 
         if (registerRuntimeOnly) {
-            SimpleOperationDefinition op = new SimpleOperationDefinition(ConnectionFactoryAddJndiHandler.ADD_JNDI,
+            SimpleOperationDefinition add = new SimpleOperationDefinition(AbstractUpdateJndiHandler.ADD_JNDI,
                     getResourceDescriptionResolver(),
-                    ConnectionFactoryAddJndiHandler.JNDI_BINDING);
-            registry.registerOperationHandler(op, ConnectionFactoryAddJndiHandler.INSTANCE);
+                    AbstractUpdateJndiHandler.JNDI_BINDING);
+            registry.registerOperationHandler(add, new ConnectionFactoryUpdateJndiHandler(true));
+
+            SimpleOperationDefinition remove = new SimpleOperationDefinition(AbstractUpdateJndiHandler.REMOVE_JNDI,
+                    getResourceDescriptionResolver(),
+                    AbstractUpdateJndiHandler.JNDI_BINDING);
+            registry.registerOperationHandler(remove, new ConnectionFactoryUpdateJndiHandler(false));
         }
    }
 }

@@ -54,6 +54,13 @@ import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
  * Domain extension that integrates HornetQ.
  *
  * <dl>
+ *   <dt>AS 8.0.1</dt>
+ *   <dd>
+ *     <ul>
+ *       <li>XML namespace: urn:jboss:domain:messaging:2.0
+ *       <li>Management model: 2.1.0
+ *     </ul>
+ *   </dd>
  *   <dt>AS 8.0.0</dt>
  *   <dd>
  *     <ul>
@@ -104,7 +111,7 @@ public class MessagingExtension implements Extension {
     static final String RESOURCE_NAME = MessagingExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     public static final ModelVersion VERSION_2_0_0 = ModelVersion.create(2, 0, 0);

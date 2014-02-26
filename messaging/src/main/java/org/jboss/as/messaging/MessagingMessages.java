@@ -569,4 +569,13 @@ public interface MessagingMessages {
 
     @Message(id = 11682, value = "Attributes %s is an alias for attribute %s; both cannot be set with conflicting values.")
     OperationFailedException inconsistentStatisticsSettings(String attrOne, String attrTwo);
-}
+
+    /**
+     * A message indicating the resource must have at least one JNDI name.
+     *
+     * @param jndiName the JNDI name.
+     *
+     * @return the message.
+     */
+    @Message(id = 11683, value = "Can not remove JNDI name %s. The resource must have at least one JNDI name")
+    String canNotRemoveLastJNDIName(String jndiName);}

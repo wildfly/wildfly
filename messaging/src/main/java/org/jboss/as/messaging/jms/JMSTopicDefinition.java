@@ -182,10 +182,14 @@ public class JMSTopicDefinition extends SimpleResourceDefinition {
         super.registerOperations(registry);
 
         if (registerRuntimeOnly && !deployed) {
-            SimpleOperationDefinition op = new SimpleOperationDefinition(ConnectionFactoryAddJndiHandler.ADD_JNDI,
+            SimpleOperationDefinition add = new SimpleOperationDefinition(AbstractUpdateJndiHandler.ADD_JNDI,
                     getResourceDescriptionResolver(),
-                    ConnectionFactoryAddJndiHandler.JNDI_BINDING);
-            registry.registerOperationHandler(op,JMSTopicAddJndiHandler.INSTANCE);
+                    AbstractUpdateJndiHandler.JNDI_BINDING);
+            registry.registerOperationHandler(add, new JMSTopicUpdateJndiHandler(true));
+            SimpleOperationDefinition remove = new SimpleOperationDefinition(AbstractUpdateJndiHandler.REMOVE_JNDI,
+                    getResourceDescriptionResolver(),
+                    AbstractUpdateJndiHandler.JNDI_BINDING);
+            registry.registerOperationHandler(remove, new JMSTopicUpdateJndiHandler(false));
         }
 
         final EnumSet<OperationEntry.Flag> readOnly = EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY);
