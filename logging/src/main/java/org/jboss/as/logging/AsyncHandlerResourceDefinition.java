@@ -125,6 +125,11 @@ class AsyncHandlerResourceDefinition extends AbstractHandlerDefinition {
         registration.registerOperationHandler(REMOVE_HANDLER, HandlerOperations.REMOVE_SUBHANDLER);
     }
 
+    @Override
+    protected void registerResourceTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder resourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+       // no-op
+    }
+
     /**
      * Add the transformers for the async handler.
      *

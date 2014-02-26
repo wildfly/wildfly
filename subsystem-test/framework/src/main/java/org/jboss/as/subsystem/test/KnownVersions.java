@@ -86,6 +86,7 @@ class KnownVersions {
         addSubsystemVersion(map, "jpa", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "logging", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "logging", "1.2.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "logging", "1.3.0", CORE_MODEL_EAP_6_2_0);
         addSubsystemVersion(map, "mail", "1.1.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "mail", "1.2.0", CORE_MODEL_7_2_0);
         addSubsystemVersion(map, "messaging", "1.1.0", CORE_MODEL_7_1_3);

@@ -79,4 +79,9 @@ class ConsoleHandlerResourceDefinition extends AbstractHandlerDefinition {
 
         return registerTransformers(child);
     }
+
+    @Override
+    protected void registerResourceTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder resourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+        // no-op
+    }
 }

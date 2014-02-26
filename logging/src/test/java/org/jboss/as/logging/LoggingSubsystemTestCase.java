@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.FILE;
+import static org.jboss.as.logging.CommonAttributes.LOGGING_PROFILE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,16 +44,18 @@ import org.jboss.as.controller.client.helpers.ClientConstants;
 import org.jboss.as.controller.client.helpers.Operations.CompositeOperationBuilder;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
-import org.jboss.as.controller.transform.description.RejectAttributeChecker.DefaultRejectAttributeChecker;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
+import org.jboss.as.model.test.FailedOperationTransformationConfig.NewAttributesConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.RejectExpressionsConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.logmanager.LogContext;
 import org.junit.Assert;
 import org.junit.Test;
@@ -104,6 +107,11 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
     }
 
     @Test
+    public void testTransformersEAP620() throws Exception {
+        testTransformer1_3_0(ModelTestControllerVersion.EAP_6_2_0);
+    }
+
+    @Test
     public void testRejectExpressionsEAP600() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testRejectExpressions1_1_0(ModelTestControllerVersion.EAP_6_0_0);
@@ -113,6 +121,10 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
     public void testRejectExpressionsEAP601() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testRejectExpressions1_1_0(ModelTestControllerVersion.EAP_6_0_1);
+    }
+    @Test
+    public void testFailedTransformedBootOperationsEAP620() throws Exception {
+        testFailedTransformedBootOperations1_3_0(ModelTestControllerVersion.EAP_6_2_0);
     }
 
     private void testTransformer1_1_0(ModelTestControllerVersion controllerVersion) throws Exception {
@@ -206,7 +218,64 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH),
                                 FailedOperationTransformationConfig.REJECTED_RESOURCE)
-        );
+                                                           );
+    }
+
+    private void testTransformer1_3_0(final ModelTestControllerVersion controllerVersion) throws Exception {
+        final String subsystemXml = readResource("/logging_1_3.xml");
+        final ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
+
+        final KernelServicesBuilder builder = createKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance())
+                .setSubsystemXml(subsystemXml);
+
+        // Create the legacy kernel
+        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-logging:" + controllerVersion.getMavenGavVersion())
+                .dontPersistXml()
+                .addSingleChildFirstClass(LoggingTestEnvironment.class, LoggingTestEnvironment.LoggingInitializer.class, ConfigurationPersistence.class)
+                .configureReverseControllerCheck(LoggingTestEnvironment.getManagementInstance(), null);
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        Assert.assertNotNull(legacyServices);
+        // Using a ModelFixer to remove an attribute from the legacy model that the transformer removes seems odd here.
+        // However, the category attribute is a read-only attribute resolved at runtime by the name of the resource.
+        // WildFly does not require the ModelFixer as read-only attributes can be left off. If a change is made in EAP
+        // to do the same thing, this ModelFixer can and should be removed.
+        checkSubsystemModelTransformation(mainServices, modelVersion, new AttributeRemovalModelFixer(LoggerResourceDefinition.LOGGER, LoggerResourceDefinition.CATEGORY));
+    }
+
+    private void testFailedTransformedBootOperations1_3_0(final ModelTestControllerVersion controllerVersion) throws Exception {
+        final ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
+        final KernelServicesBuilder builder = createKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance());
+
+        // Create the legacy kernel
+        builder.createLegacyKernelServicesBuilder(LoggingTestEnvironment.getManagementInstance(), controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-logging:" + controllerVersion.getMavenGavVersion())
+                .addSingleChildFirstClass(LoggingTestEnvironment.class, LoggingTestEnvironment.LoggingInitializer.class, ConfigurationPersistence.class);
+
+
+        KernelServices mainServices = builder.build();
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+
+        Assert.assertNotNull(legacyServices);
+        Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot());
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+
+        final List<ModelNode> ops = builder.parseXmlResource("/expressions.xml");
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops,
+                new FailedOperationTransformationConfig()
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS.append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
+                                new NewAttributesConfig(FileHandlerResourceDefinition.NAMED_FORMATTER))
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
+                                new NewAttributesConfig(FileHandlerResourceDefinition.NAMED_FORMATTER))
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS.append(CommonAttributes.LOGGING_PROFILE).append(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH),
+                                FailedOperationTransformationConfig.REJECTED_RESOURCE)
+                                                           );
     }
 
     private void testTransformOperations(final KernelServices mainServices, final ModelVersion modelVersion, final ModelNode legacyModel) throws Exception {
@@ -376,5 +445,38 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         op = SubsystemOperations.createReadAttributeOperation(address, CommonAttributes.FILTER);
         result = executeTransformOperation(kernelServices, modelVersion, op);
         Assert.assertEquals("Transformed spec does not match filter expression.", Filters.filterToFilterSpec(SubsystemOperations.readResult(result)), filterExpression);
+    }
+
+    static class AttributeRemovalModelFixer implements ModelFixer {
+        private final String resourceName;
+        private final AttributeDefinition[] attributes;
+
+        AttributeRemovalModelFixer(final String resourceName, final AttributeDefinition... attributes) {
+            this.resourceName = resourceName;
+            this.attributes = attributes;
+        }
+
+        @Override
+        public ModelNode fixModel(final ModelNode modelNode) {
+            // Check for a logging-profile
+            if (modelNode.hasDefined(LOGGING_PROFILE)) {
+                final ModelNode loggingProfiles = modelNode.get(LOGGING_PROFILE);
+                for (Property property : loggingProfiles.asPropertyList()) {
+                    final ModelNode loggingProfile = property.getValue();
+                    loggingProfiles.get(property.getName()).set(fixModel(loggingProfile.clone()));
+                }
+            }
+            if (modelNode.hasDefined(resourceName)) {
+                final ModelNode model = modelNode.get(resourceName);
+                for (Property property : model.asPropertyList()) {
+                    final ModelNode resourceModel = property.getValue();
+                    for (AttributeDefinition attribute : attributes) {
+                        resourceModel.remove(attribute.getName());
+                    }
+                    model.get(property.getName()).set(resourceModel);
+                }
+            }
+            return modelNode;
+        }
     }
 }

@@ -35,7 +35,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.logging.LoggingOperations.LoggingWriteAttributeHandler;
@@ -49,7 +48,7 @@ import org.jboss.logmanager.formatters.PatternFormatter;
 /**
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class PatternFormatterResourceDefinition extends SimpleResourceDefinition {
+public class PatternFormatterResourceDefinition extends TransformerResourceDefinition {
 
     static final String COLOR_MAP_VALIDATION_PATTERN = "^((severe|fatal|error|warn|warning|info|debug|trace|config|fine|finer|finest|):(black|green|red|yellow|blue|magenta|cyan|white|brightblack|brightred|brightgreen|brightblue|brightyellow|brightmagenta|brightcyan|brightwhite|)(,(?!$)|$))*$";
 
@@ -173,6 +172,17 @@ public class PatternFormatterResourceDefinition extends SimpleResourceDefinition
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         for (AttributeDefinition def : ATTRIBUTES) {
             resourceRegistration.registerReadWriteAttribute(def, null, WRITE);
+        }
+    }
+
+    @Override
+    public void registerTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder resourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
+        switch (modelVersion) {
+            case VERSION_1_1_0:
+            case VERSION_1_2_0:
+            case VERSION_1_3_0:
+                resourceBuilder.rejectChildResource(PATTERN_FORMATTER_PATH);
+                loggingProfileBuilder.rejectChildResource(PATTERN_FORMATTER_PATH);
         }
     }
 
