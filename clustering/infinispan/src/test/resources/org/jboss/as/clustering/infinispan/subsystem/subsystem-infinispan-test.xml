@@ -1,10 +1,34 @@
-<subsystem xmlns="urn:jboss:domain:infinispan:1.4">
+<!--
+  ~ /*
+  ~  * JBoss, Home of Professional Open Source.
+  ~  * Copyright 2012, Red Hat, Inc., and individual contributors
+  ~  * as indicated by the @author tags. See the copyright.txt file in the
+  ~  * distribution for a full listing of individual contributors.
+  ~  *
+  ~  * This is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU Lesser General Public License as
+  ~  * published by the Free Software Foundation; either version 2.1 of
+  ~  * the License, or (at your option) any later version.
+  ~  *
+  ~  * This software is distributed in the hope that it will be useful,
+  ~  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~  * Lesser General Public License for more details.
+  ~  *
+  ~  * You should have received a copy of the GNU Lesser General Public
+  ~  * License along with this software; if not, write to the Free
+  ~  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~  */
+  -->
+
+<subsystem xmlns="urn:jboss:domain:infinispan:1.5">
     <cache-container name="minimal" default-cache="local">
         <local-cache name="local"/>
     </cache-container>
-    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue" module="org.infinispan" statistics="true">
+    <cache-container name="maximal" aliases="alias1 alias2" default-cache="local" eviction-executor="infinispan-eviction" jndi-name="java:global/infinispan/maximal" listener-executor="infinispan-listener" replication-queue-executor="infinispan-repl-queue" module="org.infinispan" statistics-enabled="true">
         <transport cluster="maximal-cluster" executor="transport-executor" lock-timeout="120000" stack="tcp"/>
-        <local-cache name="local" batching="true" start="EAGER" module="org.infinispan" statistics="true">
+        <local-cache name="local" batching="true" start="EAGER" module="org.infinispan" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="NONE" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LIRS"/>
@@ -14,7 +38,7 @@
             </file-store>
             <indexing index="LOCAL" />
         </local-cache>
-        <invalidation-cache name="invalid" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true" statistics="true">
+        <invalidation-cache name="invalid" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="LAZY" async-marshalling="true" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_UNCOMMITTED" striping="true"/>
             <transaction mode="NON_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="LRU"/>
@@ -27,7 +51,7 @@
             </remote-store>
             <indexing index="NONE" />
         </invalidation-cache>
-        <replicated-cache name="repl" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="EAGER"  async-marshalling="false" statistics="true">
+        <replicated-cache name="repl" mode="ASYNC" batching="true" queue-flush-interval="10" queue-size="1000" start="EAGER"  async-marshalling="false" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="SERIALIZABLE" striping="true"/>
             <transaction mode="NON_DURABLE_XA" stop-timeout="60000" locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="FIFO"/>
@@ -39,7 +63,7 @@
             </store>
             <indexing index="NONE" />
         </replicated-cache>
-        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="2" async-marshalling="true" statistics="true">
+        <distributed-cache name="dist" mode="SYNC" batching="true" l1-lifespan="1200000" owners="4" remote-timeout="35000" start="EAGER" segments="2" async-marshalling="true" statistics-enabled="true">
             <locking acquire-timeout="30000" concurrency-level="2000" isolation="READ_COMMITTED" striping="true"/>
             <transaction mode="FULL_XA" stop-timeout="60000"  locking="OPTIMISTIC"/>
             <eviction max-entries="20000" strategy="UNORDERED"/>

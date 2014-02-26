@@ -47,8 +47,8 @@ public class InfinispanExtension implements Extension {
     public static final String RESOURCE_NAME = InfinispanExtension.class.getPackage().getName() + "." +"LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
-    private static final int MANAGEMENT_API_MICRO_VERSION = 1;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 5;
+    private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
            StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);

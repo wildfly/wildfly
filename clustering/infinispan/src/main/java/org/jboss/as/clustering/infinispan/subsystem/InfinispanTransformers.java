@@ -376,7 +376,7 @@ public class InfinispanTransformers {
 
     /**
      * Register the transformers for transforming from current to 1.4.0 management api version, including:
-     * - attribute STATISTICS was added in 2.0
+     * - attribute STATISTICS was added in 1.5.0 model, 1_5 schema.
      * @param subsystem the subsystems registration
      */
     private static void registerTransformers141(final SubsystemRegistration subsystem) {

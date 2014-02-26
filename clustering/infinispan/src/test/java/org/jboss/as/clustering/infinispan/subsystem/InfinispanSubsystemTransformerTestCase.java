@@ -21,6 +21,12 @@
 */
 package org.jboss.as.clustering.infinispan.subsystem;
 
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.CACHE_CONTAINER;
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.DISTRIBUTED_CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.INVALIDATION_CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.LOCAL_CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.REPLICATED_CACHE;
+import static org.jboss.as.clustering.infinispan.subsystem.ModelKeys.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -40,6 +46,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.*;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -70,7 +77,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
 
     @Override
     protected String getSubsystemXml() throws IOException {
-        return readResource("infinispan-transformer_1_4.xml");
+        return readResource("infinispan-transformer_1_5.xml");
     }
 
     @Test
@@ -92,6 +99,7 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
                 .setSubsystemXml(getSubsystemXml());
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
             .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + controllerVersion.getMavenGavVersion())
+            .configureReverseControllerCheck(null, new FixReverseControllerModel130())
             //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
             //which is strange since it should be loading it all from the current jboss modules
             //Also this works in several other tests
@@ -142,19 +150,18 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         Assert.assertTrue("main services did not boot", mainServices.isSuccessfulBoot()); ;
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
 
-        List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer_1_4-expressions.xml");
+        List<ModelNode> xmlOps = builder.parseXmlResource("infinispan-transformer_1_5-expressions.xml");
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, version_1_3_0, xmlOps, getConfig());
     }
 
-    @Test
     public void testTransformer_1_4_0() throws Exception {
         ModelVersion version140 = ModelVersion.create(1, 4);
                 // create builder for current subsystem version
                 KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
                 builder.createLegacyKernelServicesBuilder(null, ModelTestControllerVersion.MASTER, version140)
-                        .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.2.0.Final");
-
+                        .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:7.2.0.Final")
+                        .configureReverseControllerCheck(null, new FixReverseControllerModel140());
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(version140);
@@ -200,12 +207,18 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         testTransformer_1_4_1(ModelTestControllerVersion.EAP_6_1_1);
     }
 
+    @Test
+    public void testTransformer620() throws Exception {
+        testTransformer_1_4_1(ModelTestControllerVersion.EAP_6_2_0);
+    }
+
     private void testTransformer_1_4_1(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion version = ModelVersion.create(1, 4, 1);
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXml(getSubsystemXml());
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, version)
             .addMavenResourceURL("org.jboss.as:jboss-as-clustering-infinispan:" + controllerVersion.getMavenGavVersion())
+            .configureReverseControllerCheck(null, new FixReverseControllerModel141())
             //TODO storing the model triggers the weirdness mentioned in SubsystemTestDelegate.LegacyKernelServiceInitializerImpl.install()
             //which is strange since it should be loading it all from the current jboss modules
             //Also this works in several other tests
@@ -320,6 +333,93 @@ public class InfinispanSubsystemTransformerTestCase extends OperationTestCaseBas
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             return new ModelNode();
+        }
+    }
+
+     /**
+      * Returns a copy of the model generated by booting current controller with legacy operations, but
+      * with the following changes:
+      * - all instances of "statistics" attribute set to true.
+      *
+      * This is required when comparing current model with the current controller booted with legacy operations,
+      * as the statistics attribute of cache-container and cache add operations are discarded.
+      */
+    private static class FixReverseControllerModel130 implements ModelFixer {
+        @Override
+        public ModelNode fixModel(ModelNode modelNode) {
+            // ModelNode fixedModelNode = modelNode.clone();
+            ModelNode fixedModelNode = modelNode;
+            // set statistics to true for cache container and caches in the model
+            // we are assuming the model specified in infinispan-transformer-2_0.xml
+            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
+
+            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
+
+            return fixedModelNode;
+        }
+    }
+
+    /**
+     * Returns a copy of the model generated by booting current controller with legacy operations, but
+     * with the following changes:
+     * - all instances of "statistics" attribute set to true
+     * - virtual nodes attribute
+     *
+     * This is required when comparing current model with the current controller booted with legacy operations,
+     * as the statistics attribute of ache-container and cache add operations are discarded.
+     */
+    private static class FixReverseControllerModel140 implements ModelFixer {
+        @Override
+        public ModelNode fixModel(ModelNode modelNode) {
+            // ModelNode fixedModelNode = modelNode.clone();
+            ModelNode fixedModelNode = modelNode;
+            // set statistics to true for cache container and caches in the model
+            // we are assuming the model specified in infinispan-transformer-2_0.xml
+            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
+
+            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
+
+            return fixedModelNode;
+        }
+    }
+
+    /*
+     * Returns a copy of the model generated by booting current controller with legacy operations, but
+     * with the following changes:
+     * - all instances of "statistics" attribute set to true
+     * - virtual nodes attribute
+     *
+     * This is required when comparing current model with the current controller booted with legacy operations,
+     * as the statistics attribute of ache-container and cache add operations are discarded.
+     */
+    private static class FixReverseControllerModel141 implements ModelFixer {
+        @Override
+        public ModelNode fixModel(ModelNode modelNode) {
+            // ModelNode fixedModelNode = modelNode.clone();
+            ModelNode fixedModelNode = modelNode;
+            // set statistics to true for cache container and caches in the model
+            // we are assuming the model specified in infinispan-transformer-2_0.xml
+            fixedModelNode.get(CACHE_CONTAINER, "minimal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "minimal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
+
+            fixedModelNode.get(CACHE_CONTAINER, "maximal").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", LOCAL_CACHE, "local").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", INVALIDATION_CACHE, "invalid").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", REPLICATED_CACHE, "repl").get(STATISTICS_ENABLED).set(true);
+            fixedModelNode.get(CACHE_CONTAINER, "maximal", DISTRIBUTED_CACHE, "dist").get(STATISTICS_ENABLED).set(true);
+
+            return fixedModelNode;
         }
     }
 }

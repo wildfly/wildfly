@@ -20,15 +20,10 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.subsystem.test.AbstractSubsystemTest;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.jboss.dmr.Property;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
 
 /**
  * Subsystem parsing test case
