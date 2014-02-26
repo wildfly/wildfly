@@ -548,4 +548,14 @@ public interface MessagingMessages {
      */
     @Message(id = 11681, value = "Attribute (%s) can not been undefined as the resource does not define any alternative to this attribute.")
     String undefineAttributeWithoutAlternative(String name);
+
+    /**
+     * A message indicating the resource must have at least one JNDI name.
+     *
+     * @param jndiName the JNDI name.
+     *
+     * @return the message.
+     */
+    @Message(id = 11683, value = "Can not remove JNDI name %s. The resource must have at least one JNDI name")
+    OperationFailedException canNotRemoveLastJNDIName(String jndiName);
 }
