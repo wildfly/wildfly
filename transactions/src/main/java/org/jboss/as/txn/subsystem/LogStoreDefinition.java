@@ -24,7 +24,6 @@ package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -34,10 +33,6 @@ import org.jboss.as.controller.registry.OperationEntry;
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a>
  */
 public class LogStoreDefinition extends SimpleResourceDefinition {
-    static final SimpleAttributeDefinition[] LOG_STORE_ATTRIBUTE = new SimpleAttributeDefinition[]{
-            LogStoreConstants.LOG_STORE_TYPE};
-
-
 
     public LogStoreDefinition(final LogStoreResource resource) {
         super(TransactionExtension.LOG_STORE_PATH,
@@ -61,9 +56,8 @@ public class LogStoreDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        for (SimpleAttributeDefinition attr : LOG_STORE_ATTRIBUTE) {
-            resourceRegistration.registerReadOnlyAttribute(attr, null);
-        }
+
+        resourceRegistration.registerReadOnlyAttribute(LogStoreConstants.LOG_STORE_TYPE, null);
     }
 
 }
