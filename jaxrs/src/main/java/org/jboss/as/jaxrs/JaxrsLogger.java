@@ -22,6 +22,7 @@
 
 package org.jboss.as.jaxrs;
 
+import org.jboss.as.jaxrs.deployment.JaxrsSpringProcessor;
 import org.jboss.jandex.AnnotationTarget;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.LogMessage;
@@ -96,4 +97,8 @@ public interface JaxrsLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11204, value = "%s found and ignored in web.xml. This is not necessary, as Resteasy will use the container integration in the JAX-RS 1.1 specification in section 2.3.2")
     void resteasyScanWarning(String param);
+
+    @LogMessage(level = WARN)
+    @Message(id = 11205, value = "The context param " + JaxrsSpringProcessor.DISABLE_PROPERTY + " is deprecated, and will be removed in a future release. Please use " + JaxrsSpringProcessor.ENABLE_PROPERTY + " instead")
+    void disablePropertyDeprecated();
 }
