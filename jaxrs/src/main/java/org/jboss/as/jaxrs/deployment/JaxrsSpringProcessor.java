@@ -22,6 +22,7 @@
 
 package org.jboss.as.jaxrs.deployment;
 
+import org.jboss.as.jaxrs.JaxrsLogger;
 import org.jboss.as.jaxrs.JaxrsMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -62,9 +63,11 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
 
 
     public static final String SPRING_INT_JAR = "resteasy-spring.jar";
-    public static final String SPRING_LISTENER = "org.resteasy.plugins.spring.SpringContextLoaderListener";
+    public static final String SPRING_LISTENER = "org.jboss.resteasy.plugins.spring.SpringContextLoaderListener";
     public static final String SPRING_SERVLET = "org.springframework.web.servlet.DispatcherServlet";
+    @Deprecated
     public static final String DISABLE_PROPERTY = "org.jboss.as.jaxrs.disableSpringIntegration";
+    public static final String ENABLE_PROPERTY = "org.jboss.as.jaxrs.enableSpringIntegration";
     public static final String SERVICE_NAME = "resteasy-spring-integration-resource-root";
 
     private final ServiceTarget serviceTarget;
@@ -137,11 +140,21 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
             if (md.getContextParams() != null) {
                 boolean skip = false;
                 for (ParamValueMetaData prop : md.getContextParams()) {
-                    if (prop.getParamName().equals(DISABLE_PROPERTY) && "true".equals(prop.getParamValue())) {
+                    if (prop.getParamName().equals(ENABLE_PROPERTY)) {
+                        boolean explicitEnable = Boolean.parseBoolean(prop.getParamName());
+                        if(explicitEnable) {
+                            found = true;
+                        } else {
+                            skip = true;
+                        }
+                        break;
+                    } else if(prop.getParamName().equals(DISABLE_PROPERTY) && "true".equals(prop.getParamValue())) {
                         skip = true;
+                        JaxrsLogger.JAXRS_LOGGER.disablePropertyDeprecated();
+                        break;
                     }
                 }
-                if (skip) {
+                if(skip) {
                     continue;
                 }
             }
