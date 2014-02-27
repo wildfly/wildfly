@@ -24,6 +24,7 @@ package org.jboss.as.server;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -53,8 +54,12 @@ import org.jboss.stdio.StdioContext;
  */
 public final class Main {
 
+    // Capture System.out and System.err before they are redirected by STDIO
+    private static final PrintStream STDOUT = System.out;
+    private static final PrintStream STDERR = System.err;
+
     private static void usage() {
-        CommandLineArgumentUsageImpl.printUsage(System.out);
+        CommandLineArgumentUsageImpl.printUsage(STDOUT);
     }
 
     private Main() {
@@ -103,7 +108,7 @@ public final class Main {
     private static void abort(Throwable t) {
         try {
             if (t != null) {
-                t.printStackTrace(System.err);
+                t.printStackTrace(STDERR);
             }
         } finally {
             SystemExiter.exit(ExitCodes.FAILED);
@@ -122,7 +127,7 @@ public final class Main {
                 if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
                         || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
                     productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR), null);
-                    System.out.println(productConfig.getPrettyVersionString());
+                    STDOUT.println(productConfig.getPrettyVersionString());
                     return null;
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
                     usage();
@@ -188,7 +193,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(ServerMessages.MESSAGES.noArgValue(arg));
+                        STDERR.println(ServerMessages.MESSAGES.noArgValue(arg));
                         usage();
                         return null;
                     }
@@ -210,7 +215,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        System.err.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
+                        STDERR.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
                         usage();
                         return null;
                     }
@@ -238,12 +243,12 @@ public final class Main {
                         }
                     }
                 } else {
-                    System.err.println(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
+                    STDERR.println(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
                     usage();
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
-                System.err.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
+                STDERR.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
                 usage();
                 return null;
             }
@@ -275,11 +280,11 @@ public final class Main {
              systemProperties.load(url.openConnection().getInputStream());
              return true;
          } catch (MalformedURLException e) {
-             System.err.println(ServerMessages.MESSAGES.malformedCommandLineURL(urlSpec, arg));
+             STDERR.println(ServerMessages.MESSAGES.malformedCommandLineURL(urlSpec, arg));
              usage();
              return false;
          } catch (IOException e) {
-             System.err.println(ServerMessages.MESSAGES.unableToLoadProperties(url));
+             STDERR.println(ServerMessages.MESSAGES.unableToLoadProperties(url));
              usage();
              return false;
          }
@@ -317,7 +322,7 @@ public final class Main {
 
             int idx = token.indexOf('=');
             if (idx == token.length() - 1) {
-                System.err.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(secProperties));
+                STDERR.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(secProperties));
                 usage();
                 return;
             }

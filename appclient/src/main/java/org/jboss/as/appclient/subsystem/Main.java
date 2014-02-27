@@ -25,6 +25,7 @@ import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,9 +62,13 @@ import org.jboss.stdio.StdioContext;
  */
 public final class Main {
 
+    // Capture System.out and System.err before they are redirected by STDIO
+    private static final PrintStream STDOUT = System.out;
+    private static final PrintStream STDERR = System.err;
+
 
     private static void usage() {
-        CommandLineArgumentUsageImpl.printUsage(System.out);
+        CommandLineArgumentUsageImpl.printUsage(STDOUT);
     }
 
     private Main() {
@@ -104,7 +109,7 @@ public final class Main {
             final List<String> clientArgs = options.clientArguments;
 
             if (clientArgs.isEmpty()) {
-                System.err.println(MESSAGES.appClientNotSpecified());
+                STDERR.println(MESSAGES.appClientNotSpecified());
                 usage();
                 abort(null);
             } else {
@@ -161,7 +166,7 @@ public final class Main {
     private static void abort(Throwable t) {
         try {
             if (t != null) {
-                t.printStackTrace(System.err);
+                t.printStackTrace(STDERR);
             }
         } finally {
             SystemExiter.exit(1);
@@ -186,7 +191,7 @@ public final class Main {
                 } else if (CommandLineConstants.VERSION.equals(arg) || CommandLineConstants.SHORT_VERSION.equals(arg)
                         || CommandLineConstants.OLD_VERSION.equals(arg) || CommandLineConstants.OLD_SHORT_VERSION.equals(arg)) {
                     productConfig = new ProductConfig(Module.getBootModuleLoader(), SecurityActions.getSystemProperty(ServerEnvironment.HOME_DIR), null);
-                    System.out.println(productConfig.getPrettyVersionString());
+                    STDOUT.println(productConfig.getPrettyVersionString());
                     return null;
                 } else if (CommandLineConstants.HELP.equals(arg) || CommandLineConstants.SHORT_HELP.equals(arg) || CommandLineConstants.OLD_HELP.equals(arg)) {
                     usage();
@@ -257,7 +262,7 @@ public final class Main {
                     appClientConfig = parseValue(arg, CommandLineConstants.APPCLIENT_CONFIG);
                 } else {
                     if (arg.startsWith("-")) {
-                        System.out.println(MESSAGES.unknownOption(arg));
+                        STDOUT.println(MESSAGES.unknownOption(arg));
                         usage();
 
                         return null;
@@ -266,7 +271,7 @@ public final class Main {
                     clientArguments.add(arg);
                 }
             } catch (IndexOutOfBoundsException e) {
-                System.err.println(MESSAGES.argumentExpected(arg));
+                STDERR.println(MESSAGES.argumentExpected(arg));
                 usage();
                 return null;
             }
@@ -297,11 +302,11 @@ public final class Main {
             props.load(url.openConnection().getInputStream());
             return true;
         } catch (MalformedURLException e) {
-            System.err.println(MESSAGES.malformedUrl(arg));
+            STDERR.println(MESSAGES.malformedUrl(arg));
             usage();
             return false;
         } catch (IOException e) {
-            System.err.println(MESSAGES.cannotLoadProperties(url));
+            STDERR.println(MESSAGES.cannotLoadProperties(url));
             usage();
             return false;
         }
