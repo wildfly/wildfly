@@ -123,28 +123,27 @@ public class ServiceBasedNamingStore implements NamingStore {
     }
 
     private Object lookup(final String name, final ServiceName lookupName, boolean dereference) throws NamingException {
-        final ServiceController<?> controller = serviceRegistry.getService(lookupName);
-        final Object object;
-        if (controller != null) {
-            try {
-                object = controller.getValue();
-            } catch (IllegalStateException e) {
-                //occurs if the service is not actually up
-                throw new NameNotFoundException("Error looking up " + name + ", service " + lookupName + " is not started");
+        try {
+            final ServiceController<?> controller = serviceRegistry.getService(lookupName);
+            if (controller != null) {
+                final Object object = controller.getValue();
+                if (dereference && object instanceof ManagedReferenceFactory) {
+                    return ManagedReferenceFactory.class.cast(object).getReference().getInstance();
+                } else {
+                    return object;
+                }
+            } else {
+                return null;
             }
-        } else {
-            return null;
+        } catch (IllegalStateException e) {
+            NameNotFoundException n = new NameNotFoundException(name);
+            n.initCause(e);
+            throw n;
+        } catch (Throwable t) {
+            NamingException n = MESSAGES.lookupError(name);
+            n.initCause(t);
+            throw n;
         }
-        if (dereference && object instanceof ManagedReferenceFactory) {
-            try {
-                return ManagedReferenceFactory.class.cast(object).getReference().getInstance();
-            } catch (Exception e) {
-                NamingException n = new NamingException(e.getMessage());
-                n.initCause(e);
-                throw n;
-            }
-        }
-        return object;
     }
 
     public List<NameClassPair> list(final Name name) throws NamingException {

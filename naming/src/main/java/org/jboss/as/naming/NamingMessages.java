@@ -486,4 +486,14 @@ public interface NamingMessages {
 
     @Message(id = 11877, value = "Binding type %s can not take a 'cache' attribute")
     OperationFailedException cacheNotValidForBindingType(BindingType type);
+
+    /**
+     * Creates an exception indicating a lookup failure.
+     *
+     * @param name the bind name.
+     *
+     * @return a {@link NamingException} for the error.
+     */
+    @Message(id = 11878, value = "Failed to lookup %s")
+    NamingException lookupError(String name);
 }
