@@ -408,7 +408,7 @@ abstract class AbstractOperationContext implements OperationContext {
      * @param operation the operation
      */
     private void recordControllerOperation(ModelNode operation) {
-        controllerOperations.add(operation);
+        controllerOperations.add(operation.clone()); // clone so we don't log op nodes mutated during execution
     }
 
     abstract Resource getModel();
