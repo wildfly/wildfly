@@ -1,0 +1,147 @@
+// ****************************************************************************
+// Global grants
+// ****************************************************************************
+
+// Grant AllPermission to non-existing application. This checks if permissions from one application are not (wrongly) used
+// in another one.
+grant codeBase "vfs:/content/xxx.war/-" {
+  permission java.security.AllPermission;
+};
+
+// ****************************************************************************
+// PropertyPermissionReadTestCase
+// ****************************************************************************
+
+// Grant read PropertyPermission for all properties to test application
+grant codeBase "vfs:/content/read-props-grant.war/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+
+// Grant "java.home" read PropertyPermission to servlets in test application
+grant codeBase "vfs:/content/read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// Grant the permission to codebase, where will not fit exact match (i.e. no WEB-INF/classes)
+// So the permission should not be assigned to the test-servlet. 
+grant codeBase "vfs:/content/read-props-deny.war" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// ****************************************************************************
+// EJBPropertyPermissionReadTestCase
+// ****************************************************************************
+
+// Grant read PropertyPermission for all properties to the EJB test application
+grant codeBase "vfs:/content/ejb-read-props-grant.jar" {
+  permission java.util.PropertyPermission "*", "read";
+  permission java.io.SerializablePermission "allowSerializationReflection";
+  permission java.io.SerializablePermission "enableSubclassImplementation";
+};
+
+grant codeBase "vfs:/content/mdb-read-props-grant.jar" {
+  permission java.util.PropertyPermission "*", "read";
+};
+
+// Grant "java.home" read PropertyPermission to the EJB test application
+grant codeBase "vfs:/content/ejb-read-props-limited.jar" {
+  permission java.util.PropertyPermission "java.home", "read";
+  permission java.io.SerializablePermission "allowSerializationReflection";
+  permission java.io.SerializablePermission "enableSubclassImplementation";
+};
+
+grant codeBase "vfs:/content/mdb-read-props-limited.jar" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+grant codeBase "vfs:/content/ejb-read-props-deny.jar" {
+  permission java.io.SerializablePermission "allowSerializationReflection";
+};
+
+// ****************************************************************************
+// FilePermissionTestCase
+// ****************************************************************************
+
+// Grant read FilePermission for all properties to test application
+grant codeBase "vfs:/content/read-file-grant.war/-" {
+  permission java.io.FilePermission "${java.io.tmpdir}/-", "read";
+};
+
+// ****************************************************************************
+// HACKS - remove this grant once the bugs are fixed
+// ****************************************************************************
+
+grant {
+  // EJB client is missing doPrivileged blocks:
+  permission java.lang.RuntimePermission "getClassLoader";
+};
+
+// https://bugzilla.redhat.com/show_bug.cgi?id=1075083
+// Workaround for JSP permissions in PropertyPermissionReadTestCase
+grant codeBase "file:${jboss.home.dir}/standalone/tmp/work/jboss.web/default-host/read-props-grant/" {
+  permission java.util.PropertyPermission "*", "read";
+};
+
+grant codeBase "file:${jboss.home.dir}/standalone/tmp/work/jboss.web/default-host/read-props-deny" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+
+// Workaround for https://bugzilla.redhat.com/show_bug.cgi?id=1082518 - Incorrect VFS URLs in codebase of deployed applications on windows
+grant codeBase "vfs:/${user.dir}/content/xxx.war/-" {
+  permission java.security.AllPermission;
+};
+grant codeBase "vfs:/${user.dir}/content/read-props-grant.war/-" {
+  permission java.util.PropertyPermission "*", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/read-props-limited.war/WEB-INF/classes" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/read-props-deny.war" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ejb-read-props-grant.jar" {
+  permission java.util.PropertyPermission "*", "read";
+  permission java.io.SerializablePermission "allowSerializationReflection";
+  permission java.io.SerializablePermission "enableSubclassImplementation";
+};
+grant codeBase "vfs:/${user.dir}/content/mdb-read-props-grant.jar" {
+  permission java.util.PropertyPermission "*", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ejb-read-props-limited.jar" {
+  permission java.util.PropertyPermission "java.home", "read";
+  permission java.io.SerializablePermission "allowSerializationReflection";
+  permission java.io.SerializablePermission "enableSubclassImplementation";
+};
+grant codeBase "vfs:/${user.dir}/content/mdb-read-props-limited.jar" {
+  permission java.util.PropertyPermission "java.home", "read";
+};
+grant codeBase "vfs:/${user.dir}/content/ejb-read-props-deny.jar" {
+  permission java.io.SerializablePermission "allowSerializationReflection";
+};
+grant codeBase "vfs:/${user.dir}/content/read-file-grant.war/-" {
+  permission java.io.FilePermission "${java.io.tmpdir}/-", "read";
+};
+
+// ****************************************************************************
+// AS + Arquillian related grants 
+// ****************************************************************************
+
+// Grant all to the jboss-modules.jar
+grant codeBase "file:${jboss.home.dir}/jboss-modules.jar" {
+  permission java.security.AllPermission;
+};
+
+// Standard extensions get all permissions by default
+grant codeBase "file:${{java.ext.dirs}}/*" {
+	permission java.security.AllPermission;
+};
+
+// Grant all to Arquillian
+grant codeBase "vfs:/content/arquillian-service" {
+  permission java.security.AllPermission;
+};
+grant codeBase "vfs:/${user.dir}/content/arquillian-service" {
+  permission java.security.AllPermission;
+};
+
+// No more grants here.
