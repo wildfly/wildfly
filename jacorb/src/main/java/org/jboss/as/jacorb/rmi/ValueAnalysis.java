@@ -85,6 +85,10 @@ public class ValueAnalysis extends ContainerAnalysis {
         return (ValueAnalysis) cache.getAnalysis(cls);
     }
 
+    public static void clearCache(final ClassLoader classLoader) {
+        cache.clearClassLoader(classLoader);
+    }
+
     protected ValueAnalysis(final Class cls) {
         super(cls);
     }

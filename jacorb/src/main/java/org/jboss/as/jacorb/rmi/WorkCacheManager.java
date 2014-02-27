@@ -28,9 +28,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.WeakHashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.jacorb.JacORBMessages;
 
@@ -51,11 +52,35 @@ import org.jboss.as.jacorb.JacORBMessages;
  * unfinished analysis will be returned if the same thread is already
  * working on this analysis.
  *
- * TODO: this looks like a big class loader leak waiting to happen
- *
  * @author <a href="mailto:osh@sparre.dk">Ole Husgaard</a>
  */
 class WorkCacheManager {
+
+    /**
+     * The analysis constructor of our analysis class.
+     * This constructor takes a single argument of type <code>Class</code>.
+     */
+    private final Constructor constructor;
+
+    /**
+     * The analysis initializer of our analysis class.
+     * This method takes no arguments, and is named doAnalyze.
+     */
+    private final Method initializer;
+
+    /**
+     * This maps the classes of completely done analyses to soft
+     * references of their analysis.
+     */
+    private final Map<Class, SoftReference<ContainerAnalysis>> workDone;
+
+    /**
+     * This maps the classes of analyses in progress to their
+     * analysis.
+     */
+    private final Map<InProgressKey, ContainerAnalysis> workInProgress;
+
+    private final Map<ClassLoader, Set<Class<?>>> classesByLoader;
 
     /**
      * Create a new work cache manager.
@@ -70,9 +95,16 @@ class WorkCacheManager {
         } catch (NoSuchMethodException ex) {
             throw JacORBMessages.MESSAGES.unexpectedException(ex);
         }
-
-        workDone = new WeakHashMap<Class, SoftReference<ContainerAnalysis>>();
+        workDone = new HashMap<Class, SoftReference<ContainerAnalysis>>();
         workInProgress = new HashMap<InProgressKey, ContainerAnalysis>();
+        classesByLoader = new HashMap<ClassLoader, Set<Class<?>>>();
+    }
+
+    public void clearClassLoader(final ClassLoader cl) {
+        Set<Class<?>> classes = classesByLoader.remove(cl);
+        if(classes != null) {
+            workInProgress.remove(cl);
+        }
     }
 
     /**
@@ -108,36 +140,20 @@ class WorkCacheManager {
                 workInProgress.remove(new InProgressKey(cls, Thread.currentThread()));
                 if(ret != null) {
                     workDone.put(cls, new SoftReference<ContainerAnalysis>(ret));
+                    ClassLoader classLoader = cls.getClassLoader();
+                    if(classLoader != null) {
+                        Set<Class<?>> classes = classesByLoader.get(classLoader);
+                        if(classes == null) {
+                            classesByLoader.put(classLoader, classes = new HashSet<Class<?>>());
+                        }
+                        classes.add(cls);
+                    }
                 }
                 notifyAll();
             }
         }
         return ret;
     }
-
-    /**
-     * The analysis constructor of our analysis class.
-     * This constructor takes a single argument of type <code>Class</code>.
-     */
-    private final Constructor constructor;
-
-    /**
-     * The analysis initializer of our analysis class.
-     * This method takes no arguments, and is named doAnalyze.
-     */
-    private final Method initializer;
-
-    /**
-     * This maps the classes of completely done analyses to soft
-     * references of their analysis.
-     */
-    private final Map<Class, SoftReference<ContainerAnalysis>> workDone;
-
-    /**
-     * This maps the classes of analyses in progress to their
-     * analysis.
-     */
-    private final Map<InProgressKey, ContainerAnalysis> workInProgress;
 
     /**
      * Lookup an analysis in the fully done map.

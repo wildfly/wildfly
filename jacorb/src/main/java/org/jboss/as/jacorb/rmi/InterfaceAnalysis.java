@@ -53,6 +53,9 @@ public class InterfaceAnalysis extends ContainerAnalysis {
         return (InterfaceAnalysis) cache.getAnalysis(cls);
     }
 
+    public static void clearCache(final ClassLoader classLoader) {
+        cache.clearClassLoader(classLoader);
+    }
 
     protected InterfaceAnalysis(Class cls) {
         super(cls);
