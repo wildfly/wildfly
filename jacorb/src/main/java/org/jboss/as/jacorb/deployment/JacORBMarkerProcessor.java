@@ -21,10 +21,15 @@
  */
 package org.jboss.as.jacorb.deployment;
 
+import org.jboss.as.jacorb.rmi.ExceptionAnalysis;
+import org.jboss.as.jacorb.rmi.InterfaceAnalysis;
+import org.jboss.as.jacorb.rmi.ValueAnalysis;
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 
 /**
  * Processor responsible for marking a deployment as using IIOP
@@ -41,7 +46,14 @@ public class JacORBMarkerProcessor implements DeploymentUnitProcessor{
 
     @Override
     public void undeploy(final DeploymentUnit context) {
-
+        //clear data from the relevant caches
+        Module module = context.getAttachment(Attachments.MODULE);
+        if(module == null) {
+            return;
+        }
+        ExceptionAnalysis.clearCache(module.getClassLoader());
+        InterfaceAnalysis.clearCache(module.getClassLoader());
+        ValueAnalysis.clearCache(module.getClassLoader());
     }
 
 }

@@ -43,6 +43,10 @@ public class ExceptionAnalysis extends ValueAnalysis {
         return (ExceptionAnalysis) cache.getAnalysis(cls);
     }
 
+    public static void clearCache(final ClassLoader classLoader) {
+        cache.clearClassLoader(classLoader);
+    }
+
     protected ExceptionAnalysis(Class cls) {
         super(cls);
     }
