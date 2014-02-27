@@ -175,6 +175,31 @@ public class LoggerResourceDefinition extends TransformerResourceDefinition {
             final PathElement pathElement = getPathElement();
             final ResourceTransformationDescriptionBuilder resourceBuilder = rootResourceBuilder.addChildResource(pathElement);
             switch (modelVersion) {
+                case VERSION_1_1_0: {
+                    resourceBuilder
+                            .getAttributeBuilder()
+                                    // discard level="ALL"
+                            .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
+                            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EXPRESSION_ATTRIBUTES)
+                                    // Discard undefined filter-spec, else convert the value and rename to "filter"
+                            .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
+                            .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)
+                            .addRename(FILTER_SPEC, FILTER.getName())
+                            .end()
+                                    // Register operation transformers
+                            .addOperationTransformationOverride(ADD)
+                            .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                            .inheritResourceAttributeDefinitions()
+                            .end()
+                            .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
+                            .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                            .inheritResourceAttributeDefinitions()
+                            .end()
+                            .addOperationTransformationOverride(REMOVE_HANDLER_OPERATION_NAME)
+                            .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                            .inheritResourceAttributeDefinitions()
+                            .end();
+                }
                 case VERSION_1_2_0:
                 case VERSION_1_3_0: {
                     resourceBuilder.setCustomResourceTransformer(new LoggingResourceTransformer(CATEGORY));
@@ -185,46 +210,5 @@ public class LoggerResourceDefinition extends TransformerResourceDefinition {
                 }
             }
         }
-    }
-
-    /**
-     * Add the transformers for the logger.
-     *
-     * @param subsystemBuilder      the default subsystem builder
-     * @param loggingProfileBuilder the logging profile builder
-     *
-     * @return the builder created for the resource
-     */
-    static ResourceTransformationDescriptionBuilder addTransformers(final ResourceTransformationDescriptionBuilder subsystemBuilder,
-                                                                    final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
-
-        // Reject logging profile resources
-        loggingProfileBuilder.rejectChildResource(LOGGER_PATH);
-
-        // Register the logger resource
-        return subsystemBuilder.addChildResource(LOGGER_PATH)
-                .getAttributeBuilder()
-                    // discard level="ALL"
-                    .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, EXPRESSION_ATTRIBUTES)
-                    // Discard undefined filter-spec, else convert the value and rename to "filter"
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
-                    .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)
-                    .addRename(FILTER_SPEC, FILTER.getName())
-                    .end()
-                // Register operation transformers
-                .addOperationTransformationOverride(ADD)
-                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                    .inheritResourceAttributeDefinitions()
-                    .end()
-                .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
-                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                    .inheritResourceAttributeDefinitions()
-                    .end()
-                .addOperationTransformationOverride(REMOVE_HANDLER_OPERATION_NAME)
-                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                    .inheritResourceAttributeDefinitions()
-                    .end()
-                .setCustomResourceTransformer(new LoggingResourceTransformer(CATEGORY));
     }
 }

@@ -221,8 +221,33 @@ abstract class AbstractHandlerDefinition extends TransformerResourceDefinition {
         if (modelVersion.hasTransformers()) {
             final PathElement pathElement = getPathElement();
             final ResourceTransformationDescriptionBuilder resourceBuilder = rootResourceBuilder.addChildResource(pathElement);
-            final ResourceTransformationDescriptionBuilder loggingProfileResourceBuilder = loggingProfileBuilder.addChildResource(pathElement);
+            ResourceTransformationDescriptionBuilder loggingProfileResourceBuilder = null;
             switch (modelVersion) {
+                case VERSION_1_1_0: {
+                    resourceBuilder
+                            .getAttributeBuilder()
+                                    // discard level="ALL"
+                            .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
+                                    // Strip console color from format patterns
+                            .setValueConverter(Transformers1_1_0.CONSOLE_COLOR_CONVERTER, FORMATTER)
+                                    // Discard undefined filter-spec, else convert the value and rename to "filter"
+                            .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
+                            .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)
+                            .addRename(FILTER_SPEC, FILTER.getName())
+                                    // Discard 'enabled' if undefined or true, else reject
+                            .setDiscard(Transformers1_1_0.DISCARD_ENABLED, ENABLED)
+                            .addRejectCheck(RejectAttributeChecker.DEFINED, ENABLED)
+                                    // Standard expression rejection
+                            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DEFAULT_ATTRIBUTES)
+                            .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, LEGACY_ATTRIBUTES)
+                            .end()
+                            .addOperationTransformationOverride(ADD)
+                            .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                            .inheritResourceAttributeDefinitions()
+                            .end()
+                                    // Discard 'name' as legacy slaves didn't store it in resources
+                            .setCustomResourceTransformer(new LoggingResourceTransformer(NAME));
+                }
                 case VERSION_1_2_0:
                 case VERSION_1_3_0: {
                     resourceBuilder
@@ -230,11 +255,14 @@ abstract class AbstractHandlerDefinition extends TransformerResourceDefinition {
                             .setDiscard(DiscardAttributeChecker.UNDEFINED, NAMED_FORMATTER)
                             .addRejectCheck(RejectAttributeChecker.DEFINED, NAMED_FORMATTER)
                             .end();
-                    loggingProfileResourceBuilder
-                            .getAttributeBuilder()
-                            .setDiscard(DiscardAttributeChecker.UNDEFINED, NAMED_FORMATTER)
-                            .addRejectCheck(RejectAttributeChecker.DEFINED, NAMED_FORMATTER)
-                            .end();
+                    if (loggingProfileBuilder != null) {
+                        loggingProfileResourceBuilder = loggingProfileBuilder.addChildResource(pathElement);
+                        loggingProfileResourceBuilder
+                                .getAttributeBuilder()
+                                .setDiscard(DiscardAttributeChecker.UNDEFINED, NAMED_FORMATTER)
+                                .addRejectCheck(RejectAttributeChecker.DEFINED, NAMED_FORMATTER)
+                                .end();
+                    }
                 }
             }
             registerResourceTransformers(modelVersion, resourceBuilder, loggingProfileResourceBuilder);
@@ -251,44 +279,4 @@ abstract class AbstractHandlerDefinition extends TransformerResourceDefinition {
     protected abstract void registerResourceTransformers(KnownModelVersion modelVersion,
                                                          ResourceTransformationDescriptionBuilder resourceBuilder,
                                                          ResourceTransformationDescriptionBuilder loggingProfileBuilder);
-
-    /**
-     * Register the transformers for the handler.
-     * <p/>
-     * By default the {@link #DEFAULT_ATTRIBUTES default attributes} and {@link #LEGACY_ATTRIBUTES legacy attributes}
-     * are added to the reject transformer.
-     *
-     * @param handlerBuilder the default handler builder
-     *
-     * @return the builder created for the resource
-     */
-    static ResourceTransformationDescriptionBuilder registerTransformers(final ResourceTransformationDescriptionBuilder handlerBuilder) {
-        // Add default operation transformers
-        return handlerBuilder
-                .getAttributeBuilder()
-                    // discard level="ALL"
-                    .setDiscard(Transformers1_1_0.LEVEL_ALL_DISCARD_CHECKER, LEVEL)
-                    // Strip console color from format patterns
-                    .setValueConverter(Transformers1_1_0.CONSOLE_COLOR_CONVERTER, FORMATTER)
-                    // Discard named formatters
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, NAMED_FORMATTER)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, NAMED_FORMATTER)
-                    // Discard undefined filter-spec, else convert the value and rename to "filter"
-                    .setDiscard(DiscardAttributeChecker.UNDEFINED, FILTER_SPEC)
-                    .setValueConverter(Transformers1_1_0.FILTER_SPEC_CONVERTER, FILTER_SPEC)
-                    .addRename(FILTER_SPEC, FILTER.getName())
-                    // Discard 'enabled' if undefined or true, else reject
-                    .setDiscard(Transformers1_1_0.DISCARD_ENABLED, ENABLED)
-                    .addRejectCheck(RejectAttributeChecker.DEFINED, ENABLED)
-                    // Standard expression rejection
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DEFAULT_ATTRIBUTES)
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, LEGACY_ATTRIBUTES)
-                    .end()
-                .addOperationTransformationOverride(ADD)
-                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                    .inheritResourceAttributeDefinitions()
-                    .end()
-                // Discard 'name' as legacy slaves didn't store it in resources
-                .setCustomResourceTransformer(new LoggingResourceTransformer(NAME));
-    }
 }

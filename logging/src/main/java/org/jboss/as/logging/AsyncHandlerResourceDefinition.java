@@ -127,34 +127,19 @@ class AsyncHandlerResourceDefinition extends AbstractHandlerDefinition {
 
     @Override
     protected void registerResourceTransformers(final KnownModelVersion modelVersion, final ResourceTransformationDescriptionBuilder resourceBuilder, final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
-       // no-op
-    }
-
-    /**
-     * Add the transformers for the async handler.
-     *
-     * @param subsystemBuilder      the default subsystem builder
-     * @param loggingProfileBuilder the logging profile builder
-     *
-     * @return the builder created for the resource
-     */
-    static ResourceTransformationDescriptionBuilder addTransformers(final ResourceTransformationDescriptionBuilder subsystemBuilder,
-                                                                    final ResourceTransformationDescriptionBuilder loggingProfileBuilder) {
-        // Register the logger resource
-        final ResourceTransformationDescriptionBuilder child = subsystemBuilder.addChildResource(ASYNC_HANDLER_PATH)
-                .getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, QUEUE_LENGTH, OVERFLOW_ACTION)
-                    .end()
-                .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
-                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                    .end()
-                .addOperationTransformationOverride(REMOVE_HANDLER_OPERATION_NAME)
-                    .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
-                    .end();
-
-        // Reject logging profile resources
-        loggingProfileBuilder.rejectChildResource(ASYNC_HANDLER_PATH);
-
-        return registerTransformers(child);
+        switch (modelVersion) {
+            case VERSION_1_1_0: {
+                resourceBuilder
+                        .getAttributeBuilder()
+                        .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, QUEUE_LENGTH, OVERFLOW_ACTION)
+                        .end()
+                        .addOperationTransformationOverride(ADD_HANDLER_OPERATION_NAME)
+                        .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                        .end()
+                        .addOperationTransformationOverride(REMOVE_HANDLER_OPERATION_NAME)
+                        .setCustomOperationTransformer(LoggingOperationTransformer.INSTANCE)
+                        .end();
+            }
+        }
     }
 }
