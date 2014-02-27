@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
@@ -101,6 +102,16 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
     public void clearDependencies(){
         auditLogger = null;
         logDir = null;
+    }
+
+    /**
+     * Override base method to clone the operation so any mutation of it by the controller
+     * does not get noticed in comparisons of log output to op input.
+     * {@inheritDoc}
+     */
+    @Override
+    public ModelNode executeForResult(ModelNode operation) throws OperationFailedException {
+        return super.executeForResult(operation.clone());
     }
 
     protected ManagedAuditLogger getAuditLogger(){
@@ -347,7 +358,9 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
 
     @Override
     protected void addBootOperations(List<ModelNode> bootOperations) {
-        bootOperations.addAll(this.bootOperations);
+        for (ModelNode bootOp : this.bootOperations) {
+            bootOperations.add(bootOp.clone()); // clone so we don't have to worry about mutated ops when we compare
+        }
     }
 
 }
