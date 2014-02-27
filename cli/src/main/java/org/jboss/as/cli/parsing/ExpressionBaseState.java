@@ -31,11 +31,14 @@ import org.jboss.as.cli.CommandFormatException;
 public class ExpressionBaseState extends DefaultParsingState {
 
     private final boolean resolveSystemProperties;
+    private final boolean exceptionIfNotResolved;
 
     private CharacterHandler resolvingEntranceHandler = new CharacterHandler() {
         @Override
         public void handle(ParsingContext ctx) throws CommandFormatException {
-            ctx.resolveExpression(resolveSystemProperties, true);
+            if(ctx.getCharacter() == '$') {
+                ctx.resolveExpression(resolveSystemProperties, exceptionIfNotResolved);
+            }
             ExpressionBaseState.super.getEnterHandler().handle(ctx);
         }};
 
@@ -46,11 +49,34 @@ public class ExpressionBaseState extends DefaultParsingState {
     public ExpressionBaseState(String id, boolean enterLeaveContent, CharacterHandlerMap enterStateHandlers) {
         super(id, enterLeaveContent, enterStateHandlers);
         this.resolveSystemProperties = true;
+        this.exceptionIfNotResolved = true;
+        putExpressionHandler();
     }
 
     public ExpressionBaseState(String id, boolean resolveSystemProperties) {
+        this(id, resolveSystemProperties, true);
+    }
+
+    public ExpressionBaseState(String id, boolean resolveSystemProperties, boolean exceptionIfNotResolved) {
         super(id);
         this.resolveSystemProperties = resolveSystemProperties;
+        this.exceptionIfNotResolved = exceptionIfNotResolved;
+        putExpressionHandler();
+    }
+
+    protected void putExpressionHandler() {
+        this.putHandler('$', new CharacterHandler(){
+            @Override
+            public void handle(ParsingContext ctx)
+                    throws CommandFormatException {
+                ctx.resolveExpression(resolveSystemProperties, exceptionIfNotResolved);
+                final char resolvedCh = ctx.getCharacter();
+                if(resolvedCh == '$') {
+                    getDefaultHandler().handle(ctx);
+                } else {
+                    getHandler(resolvedCh).handle(ctx);
+                }
+            }});
     }
 
     @Override
