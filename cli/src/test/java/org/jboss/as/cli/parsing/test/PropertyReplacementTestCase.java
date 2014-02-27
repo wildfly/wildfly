@@ -28,6 +28,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.ParsedCommandLine;
@@ -155,10 +156,10 @@ public class PropertyReplacementTestCase {
 
     @Test
     public void testCommandArgumentNameAndValue() throws Exception {
-        final ParsedCommandLine parsed = parse("command-name --${" + OP_PROP_PROP_NAME + "}=${OP_PROP_PROP_NAME}");
+        final ParsedCommandLine parsed = parse("command-name --${" + OP_PROP_PROP_NAME + "}=${" + OP_PROP_PROP_NAME + "}");
         assertEquals("command-name", parsed.getOperationName());
         // there is a different config option whether to resolve argument values
-        assertEquals(parsed.getPropertyValue("--" + OP_PROP_PROP_VALUE), "${OP_PROP_PROP_NAME}");
+        assertEquals(parsed.getPropertyValue("--" + OP_PROP_PROP_VALUE), "${" + OP_PROP_PROP_NAME + "}");
     }
 
     @Test
@@ -194,6 +195,15 @@ public class PropertyReplacementTestCase {
         headers = new ModelNode();
         parsed.getLastHeader().addTo(null, headers);
         assertEquals(OP_PROP_VALUE, headers.get(OP_PROP_PROP_VALUE).asString());
+    }
+
+    @Test
+    public void testSystemPropertiesInTheMix() throws Exception {
+        final ParsedCommandLine parsed = parse("co${" + OP_PROP_NAME + "}${" + OP_PROP_NAME + "} "
+                + "--${" + OP_PROP_PROP_NAME + "}_${" + OP_PROP_PROP_NAME + "}=${" + OP_PROP_PROP_NAME + "}");
+        assertEquals("co" + OP_PROP_VALUE + OP_PROP_VALUE, parsed.getOperationName());
+        assertTrue(parsed.getOtherProperties().isEmpty());
+        assertEquals("${" + OP_PROP_PROP_NAME + "}", parsed.getPropertyValue("--" + OP_PROP_PROP_VALUE + "_" + OP_PROP_PROP_VALUE));
     }
 
     private void assertFailedToParse(String line) {

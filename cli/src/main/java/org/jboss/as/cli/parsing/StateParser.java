@@ -163,12 +163,14 @@ public class StateParser {
 
             // TODO resolve variables
             int endIndex = location + 1;
-            if(endIndex >= input.length() || !Character.isJavaIdentifierStart(input.charAt(endIndex))) {
+            char c = input.charAt(endIndex);
+            if(endIndex >= input.length() || !(Character.isJavaIdentifierStart(c) && c != '$')) {
                 // simply '$'
                 return;
             }
             while(++endIndex < input.length()) {
-                if(!Character.isJavaIdentifierPart(input.charAt(endIndex))) {
+                c = input.charAt(endIndex);
+                if(!(Character.isJavaIdentifierPart(c) && c != '$')) {
                     break;
                 }
             }

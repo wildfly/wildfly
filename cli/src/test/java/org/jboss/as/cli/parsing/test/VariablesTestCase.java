@@ -28,6 +28,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.List;
+
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandContextFactory;
 import org.jboss.as.cli.CommandFormatException;
@@ -198,6 +200,24 @@ public class VariablesTestCase {
         headers = new ModelNode();
         parsed.getLastHeader().addTo(null, headers);
         assertEquals(OP_VAR_VALUE, headers.get(OP_PROP_VAR_VALUE).asString());
+    }
+
+    @Test
+    public void testVariablesInTheMix() throws Exception {
+        final ParsedCommandLine parsed = parse("co$" + OP_VAR_NAME + "$" + OP_VAR_NAME + " $" + OP_PROP_VAR_NAME + ":$" + OP_PROP_VAR_NAME);
+        assertEquals("co" + OP_VAR_VALUE + OP_VAR_VALUE, parsed.getOperationName());
+        final List<String> props = parsed.getOtherProperties();
+        assertEquals(1, props.size());
+        assertEquals(OP_PROP_VAR_VALUE + ':' + OP_PROP_VAR_VALUE, props.get(0));
+    }
+
+    @Test
+    public void testEscapingVariableName() throws Exception {
+        final ParsedCommandLine parsed = parse("set v=\\$" + OP_VAR_NAME);
+        assertEquals("set", parsed.getOperationName());
+        final List<String> props = parsed.getOtherProperties();
+        assertEquals(1, props.size());
+        assertEquals("v=\\$" + OP_VAR_NAME, props.get(0));
     }
 
     private void assertFailedToParse(String line) {

@@ -24,10 +24,17 @@ package org.jboss.as.cli.impl;
 import java.util.List;
 
 import org.jboss.as.cli.ArgumentValueConverter;
+import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineCompleter;
 import org.jboss.as.cli.handlers.CommandHandlerWithArguments;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.parsing.ExpressionBaseState;
+import org.jboss.as.cli.parsing.ParsingContext;
+import org.jboss.as.cli.parsing.ParsingStateCallbackHandler;
+import org.jboss.as.cli.parsing.StateParser;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
+import org.jboss.dmr.ModelNode;
 
 /**
  *
@@ -77,23 +84,74 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
      */
     @Override
     public String getValue(ParsedCommandLine args, boolean required) throws CommandFormatException {
+        return getResolvedValue(args, required);
+    }
 
+    /**
+     * Calls getOriginalValue(ParsedCommandLine parsedLine, boolean required) and correctly
+     * handles escape sequences and resolves system properties.
+     *
+     * @param parsedLine  parsed command line
+     * @param required  whether the argument is required
+     * @return  resolved argument value
+     * @throws CommandFormatException  in case the required argument is missing
+     */
+    public String getResolvedValue(ParsedCommandLine parsedLine, boolean required) throws CommandFormatException {
+        final String value = getOriginalValue(parsedLine, required);
+        return resolveValue(value);
+    }
+
+    public static String resolveValue(final String value) throws CommandFormatException {
+        if(value == null) {
+            return null;
+        }
+
+        final StringBuilder buf = new StringBuilder();
+        final ExpressionBaseState state = new ExpressionBaseState("EXPR", true, false);
+        state.setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+        StateParser.parse(value, new ParsingStateCallbackHandler(){
+            @Override
+            public void enteredState(ParsingContext ctx) throws CommandFormatException {
+            }
+
+            @Override
+            public void leavingState(ParsingContext ctx) throws CommandFormatException {
+            }
+
+            @Override
+            public void character(ParsingContext ctx) throws CommandFormatException {
+                buf.append(ctx.getCharacter());
+            }}, state);
+        return buf.toString();
+    }
+
+    /**
+     * Returns value as it appeared on the command line with escape sequences
+     * and system properties not resolved. The variables, though, are resolved
+     * during the initial parsing of the command line.
+     *
+     * @param parsedLine  parsed command line
+     * @param required  whether the argument is required
+     * @return  argument value as it appears on the command line
+     * @throws CommandFormatException  in case the required argument is missing
+     */
+    public String getOriginalValue(ParsedCommandLine parsedLine, boolean required) throws CommandFormatException {
         String value = null;
-        if(args.hasProperties()) {
+        if(parsedLine.hasProperties()) {
             if(index >= 0) {
-                List<String> others = args.getOtherProperties();
+                List<String> others = parsedLine.getOtherProperties();
                 if(others.size() > index) {
                     return others.get(index);
                 }
             }
 
-            value = args.getPropertyValue(fullName);
+            value = parsedLine.getPropertyValue(fullName);
             if(value == null && shortName != null) {
-                value = args.getPropertyValue(shortName);
+                value = parsedLine.getPropertyValue(shortName);
             }
         }
 
-        if(required && value == null && !isPresent(args)) {
+        if(required && value == null && !isPresent(parsedLine)) {
             StringBuilder buf = new StringBuilder();
             buf.append("Required argument ");
             buf.append('\'').append(fullName).append('\'');
@@ -101,6 +159,15 @@ public class ArgumentWithValue extends ArgumentWithoutValue {
             throw new CommandFormatException(buf.toString());
         }
         return value;
+    }
+
+    public ModelNode toModelNode(CommandContext ctx) throws CommandFormatException {
+        final ParsedCommandLine parsedLine = ctx.getParsedCommandLine();
+        final String value = getOriginalValue(parsedLine, false);
+        if(value == null) {
+            return null;
+        }
+        return valueConverter.fromString(ctx, value);
     }
 
     @Override

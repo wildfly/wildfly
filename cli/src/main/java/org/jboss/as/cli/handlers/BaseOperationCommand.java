@@ -255,8 +255,7 @@ public abstract class BaseOperationCommand extends CommandHandlerWithHelp implem
         if(!headers.isPresent(ctx.getParsedCommandLine())) {
             return;
         }
-        final String headersValue = headers.getValue(ctx.getParsedCommandLine());
-        final ModelNode headersNode = headers.getValueConverter().fromString(ctx, headersValue);
+        final ModelNode headersNode = headers.toModelNode(ctx);
         final ModelNode opHeaders = request.get(Util.OPERATION_HEADERS);
         opHeaders.set(headersNode);
     }
