@@ -42,7 +42,7 @@ import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.ASYNC_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.LoggerResourceDefinition.CATEGORY;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.CLASS;
+import static org.jboss.as.logging.CommonAttributes.CLASS;
 import static org.jboss.as.logging.ConsoleHandlerResourceDefinition.CONSOLE_HANDLER;
 import static org.jboss.as.logging.CustomHandlerResourceDefinition.CUSTOM_HANDLER;
 import static org.jboss.as.logging.CommonAttributes.ENABLED;
@@ -61,12 +61,13 @@ import static org.jboss.as.logging.CommonAttributes.MAX_INCLUSIVE;
 import static org.jboss.as.logging.CommonAttributes.MAX_LEVEL;
 import static org.jboss.as.logging.CommonAttributes.MIN_INCLUSIVE;
 import static org.jboss.as.logging.CommonAttributes.MIN_LEVEL;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.MODULE;
+import static org.jboss.as.logging.CommonAttributes.MODULE;
 import static org.jboss.as.logging.CommonAttributes.NAME;
+import static org.jboss.as.logging.CustomFormatterResourceDefinition.CUSTOM_FORMATTER;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.OVERFLOW_ACTION;
 import static org.jboss.as.logging.CommonAttributes.FILTER_PATTERN;
 import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER;
-import static org.jboss.as.logging.CustomHandlerResourceDefinition.PROPERTIES;
+import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.AsyncHandlerResourceDefinition.QUEUE_LENGTH;
 import static org.jboss.as.logging.CommonAttributes.REPLACEMENT;
 import static org.jboss.as.logging.CommonAttributes.REPLACE_ALL;
@@ -99,6 +100,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
@@ -1009,6 +1011,14 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                     operations.add(operation);
                     break;
                 }
+                case CUSTOM_FORMATTER: {
+                    final ModelNode operation = Util.createAddOperation();
+                    // Setup the operation address
+                    addOperationAddress(operation, address, CustomFormatterResourceDefinition.CUSTOM_FORMATTER.getName(), name);
+                    parseCustomFormatterElement(reader, operation);
+                    operations.add(operation);
+                    break;
+                }
                 default: {
                     throw unexpectedElement(reader);
                 }
@@ -1073,6 +1083,50 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             throw missingRequired(reader, required);
         }
         requireNoContent(reader);
+    }
+
+    private static void parseCustomFormatterElement(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
+        final EnumSet<Attribute> required = EnumSet.of(Attribute.CLASS, Attribute.MODULE);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            required.remove(attribute);
+            switch (attribute) {
+                case CLASS: {
+                    CommonAttributes.CLASS.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                case MODULE: {
+                    CommonAttributes.MODULE.parseAndSetParameter(value, operation, reader);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+        if (!required.isEmpty()) {
+            throw missingRequired(reader, required);
+        }
+
+
+        final EnumSet<Element> encountered = EnumSet.noneOf(Element.class);
+        while (reader.nextTag() != END_ELEMENT) {
+            final Element element = Element.forName(reader.getLocalName());
+            if (!encountered.add(element)) {
+                throw unexpectedElement(reader);
+            }
+            switch (element) {
+                case PROPERTIES: {
+                    parsePropertyElement(operation, reader);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
     }
 
     private static void parsePropertyElement(final ModelNode node, final XMLExtendedStreamReader reader) throws XMLStreamException {
@@ -1490,11 +1544,8 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
             writeRootLogger(writer, node.get(ROOT_LOGGER_PATH_NAME, ROOT_LOGGER_ATTRIBUTE_NAME));
         }
 
-        if (node.hasDefined(PATTERN_FORMATTER.getName())) {
-            for (String name : node.get(PATTERN_FORMATTER.getName()).keys()) {
-                writePatternFormatter(writer, node.get(PATTERN_FORMATTER.getName(), name), name);
-            }
-        }
+        writeFormatters(writer, PATTERN_FORMATTER, node);
+        writeFormatters(writer, CUSTOM_FORMATTER, node);
     }
 
     private void writeCommonLogger(final XMLExtendedStreamWriter writer, final ModelNode node) throws XMLStreamException {
@@ -1618,11 +1669,16 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         writer.writeEndElement();
     }
 
-    private void writePatternFormatter(final XMLExtendedStreamWriter writer, final ModelNode model, final String name) throws XMLStreamException {
-        writer.writeStartElement(Element.FORMATTER.getLocalName());
-        writer.writeAttribute(NAME.getXmlName(), name);
-        PATTERN_FORMATTER.marshallAsElement(model, writer);
-        writer.writeEndElement();
+    private void writeFormatters(final XMLExtendedStreamWriter writer, final AttributeDefinition attribute, final ModelNode model) throws XMLStreamException {
+        if (model.hasDefined(attribute.getName())) {
+            for (String name : model.get(attribute.getName()).keys()) {
+                writer.writeStartElement(Element.FORMATTER.getLocalName());
+                writer.writeAttribute(NAME.getXmlName(), name);
+                final ModelNode value = model.get(attribute.getName(), name);
+                attribute.marshallAsElement(value, writer);
+                writer.writeEndElement();
+            }
+        }
     }
 
     private static void addOperationAddress(final ModelNode operation, final PathAddress base, final String key, final String value) {
