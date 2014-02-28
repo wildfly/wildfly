@@ -410,4 +410,12 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 15972, value = "The operating system has limited the number of open files to %d for this process; a value of at least 4096 is recommended")
     void fdTooLow(long fdCount);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15973, value = "Starting subdeployment (runtime-name: \"%s\")")
+    void startingSubDeployment(String deploymentUnitName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15974, value = "Stopped subdeployment (runtime-name: %s) in %dms")
+    void stoppedSubDeployment(String deploymentUnitName, int elapsedTime);
 }
