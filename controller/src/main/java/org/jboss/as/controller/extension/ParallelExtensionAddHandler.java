@@ -35,6 +35,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ParsedBootOp;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
@@ -49,13 +50,24 @@ public class ParallelExtensionAddHandler implements OperationStepHandler {
 
     private final ExecutorService executor;
     private final List<ParsedBootOp> extensionAdds = new ArrayList<ParsedBootOp>();
+    private ParsedBootOp ourOp;
 
     public ParallelExtensionAddHandler(ExecutorService executorService) {
         this.executor = executorService;
     }
 
     public void addParsedOp(final ParsedBootOp op, final ExtensionAddHandler handler) {
-        extensionAdds.add(new ParsedBootOp(op, handler));
+        ParsedBootOp toAdd = new ParsedBootOp(op, handler);
+        extensionAdds.add(toAdd);
+        getParsedBootOp().addChildOperation(toAdd);
+    }
+
+    public ParsedBootOp getParsedBootOp() {
+        if (ourOp == null) {
+            ModelNode op = Util.getEmptyOperation("parallel-extension-add", new ModelNode().setEmptyList());
+            ourOp = new ParsedBootOp(op, this);
+        }
+        return ourOp;
     }
 
     @Override
