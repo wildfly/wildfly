@@ -74,17 +74,22 @@ public class RemoteStoreResourceDefinition extends BaseStoreResourceDefinition {
                     .setDefaultValue(new ModelNode().set(60000))
                     .build();
 
-    static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinition("outbound-socket-binding", ModelType.STRING, true);
+    // the remote servers parameter is required (not null), and the list of remote-server objects must have size >= 1
+    static final SimpleAttributeDefinition OUTBOUND_SOCKET_BINDING = new SimpleAttributeDefinitionBuilder("outbound-socket-binding", ModelType.STRING)
+            .setAllowNull(false)
+            .setXmlName(Attribute.OUTBOUND_SOCKET_BINDING.getLocalName())
+            .build();
 
-    static final ObjectTypeAttributeDefinition REMOTE_SERVER = ObjectTypeAttributeDefinition.
-            Builder.of(ModelKeys.REMOTE_SERVER, OUTBOUND_SOCKET_BINDING).
-            setAllowNull(true).
-            setSuffix("remote-server").
-            build();
+    static final ObjectTypeAttributeDefinition REMOTE_SERVER = ObjectTypeAttributeDefinition.Builder.of(ModelKeys.REMOTE_SERVER, OUTBOUND_SOCKET_BINDING)
+            .setAllowNull(false)
+            .setSuffix("remote-server")
+            .build();
 
-    static final ObjectListAttributeDefinition REMOTE_SERVERS = ObjectListAttributeDefinition.Builder.of(ModelKeys.REMOTE_SERVERS, REMOTE_SERVER).
-            setAllowNull(true).
-            build();
+    static final ObjectListAttributeDefinition REMOTE_SERVERS = ObjectListAttributeDefinition.Builder.of(ModelKeys.REMOTE_SERVERS, REMOTE_SERVER)
+            .setAllowNull(false)
+            .setMinSize(1)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
 
     static final AttributeDefinition[] REMOTE_STORE_ATTRIBUTES = {CACHE, TCP_NO_DELAY, SOCKET_TIMEOUT, REMOTE_SERVERS};
 
