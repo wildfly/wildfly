@@ -405,4 +405,12 @@ public interface ServerLogger extends BasicLogger {
     @LogMessage(level = Logger.Level.INFO)
     @Message(id = 15971, value = "Deployment restart detected for deployment %s, performing full redeploy instead.")
     void deploymentRestartDetected(String deployment);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15973, value = "Starting subdeployment (runtime-name: \"%s\")")
+    void startingSubDeployment(String deploymentUnitName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15974, value = "Stopped subdeployment (runtime-name: %s) in %dms")
+    void stoppedSubDeployment(String deploymentUnitName, int elapsedTime);
 }
