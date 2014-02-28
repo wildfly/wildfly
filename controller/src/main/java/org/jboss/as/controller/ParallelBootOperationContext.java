@@ -398,4 +398,8 @@ class ParallelBootOperationContext extends AbstractOperationContext {
         return primaryContext.getModel();
     }
 
+    @Override
+    void logAuditRecord() {
+        // handled by the primary context
+    }
 }

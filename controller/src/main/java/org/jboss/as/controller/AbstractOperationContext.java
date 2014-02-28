@@ -240,8 +240,16 @@ abstract class AbstractOperationContext implements OperationContext {
             deque.addLast(new Step(step, response, operation, address));
         }
 
-        if (!executing) {
+        if (!executing && stage == Stage.MODEL) {
             recordControllerOperation(operation);
+        }
+    }
+
+    void addBootStep(ParsedBootOp parsedBootOp) {
+        addStep(parsedBootOp.response, parsedBootOp.operation, parsedBootOp.handler, Stage.MODEL);
+        // If the op is controlling other ops (i.e. for parallel boot) then record those for audit logging
+        for (ModelNode childOp : parsedBootOp.getChildOperations()) {
+            recordControllerOperation(childOp);
         }
     }
 

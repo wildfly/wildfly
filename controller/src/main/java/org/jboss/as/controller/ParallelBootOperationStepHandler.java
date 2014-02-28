@@ -34,6 +34,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
@@ -53,6 +54,7 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
     private final int operationId;
 
     private final Map<String, List<ParsedBootOp>> opsBySubsystem = new LinkedHashMap<String, List<ParsedBootOp>>();
+    private ParsedBootOp ourOp;
 
     ParallelBootOperationStepHandler(final ExecutorService executorService, final ImmutableManagementResourceRegistration rootRegistration,
                                      final ControlledProcessState processState, final ModelControllerImpl controller, final int operationId) {
@@ -73,8 +75,17 @@ public class ParallelBootOperationStepHandler implements OperationStepHandler {
                 opsBySubsystem.put(subsystemName, list);
             }
             list.add(parsedOp);
+            getParsedBootOp().addChildOperation(parsedOp);
         }
         return subsystemName != null;
+    }
+
+    ParsedBootOp getParsedBootOp() {
+        if (ourOp == null) {
+            ModelNode op = Util.getEmptyOperation("parallel-subsystem-boot", new ModelNode().setEmptyList());
+            ourOp = new ParsedBootOp(op, this);
+        }
+        return ourOp;
     }
 
     private String getSubsystemName(final PathAddress address) {
