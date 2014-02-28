@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-mod_cluster-undertow}"/>
     </resources>
 
     <dependencies>

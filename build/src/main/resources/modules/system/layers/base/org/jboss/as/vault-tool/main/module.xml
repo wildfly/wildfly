@@ -31,7 +31,6 @@
     <main-class name="org.jboss.as.security.vault.VaultTool"/>
 
     <resources>
-        <!-- Insert resources here -->
     </resources>
 
     <dependencies>

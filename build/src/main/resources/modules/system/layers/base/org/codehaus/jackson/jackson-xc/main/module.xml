@@ -27,7 +27,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.codehaus.jackson:jackson-xc}"/>
     </resources>
 
     <dependencies>

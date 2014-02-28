@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${com.sun.xml.fastinfoset:FastInfoset}"/>
     </resources>
 
     <dependencies>

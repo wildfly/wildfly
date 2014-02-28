@@ -35,6 +35,6 @@
     </dependencies>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.spec.javax.faces:jboss-jsf-api_2.2_spec}"/>
     </resources>
 </module>

@@ -33,6 +33,6 @@
     </dependencies>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.spec.javax.resource:jboss-connector-api_1.7_spec}"/>
     </resources>
 </module>

@@ -33,7 +33,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.apache.santuario:xmlsec}"/>
     </resources>
 
     <dependencies>

@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${com.sun.xml.messaging.saaj:saaj-impl}"/>
     </resources>
 
     <dependencies>

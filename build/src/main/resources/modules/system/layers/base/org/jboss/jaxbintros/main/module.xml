@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${jboss.jaxbintros:jboss-jaxb-intros}"/>
     </resources>
 
     <dependencies>

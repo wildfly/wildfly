@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.apache.james:apache-mime4j}"/>
     </resources>
 
     <dependencies>
