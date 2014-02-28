@@ -86,6 +86,7 @@ import org.jboss.security.auth.spi.BaseCertLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -291,6 +292,7 @@ public class HTTPSWebConnectorTestCase {
      */
     @Test
     @InSequence(1)
+    @Ignore("Reenable once https://bugzilla.redhat.com/show_bug.cgi?id=1071331 has been fixed")
     public void testWantVerifyConnector() throws Exception {
 
         Assume.assumeFalse(SystemUtils.IS_JAVA_1_6 && SystemUtils.JAVA_VENDOR.toUpperCase(Locale.ENGLISH).contains("IBM"));
