@@ -87,6 +87,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import static org.junit.Assert.assertThat;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -239,6 +240,7 @@ public class SAML2KerberosAuthenticationTestCase {
      * 
      * @throws Exception
      */
+    @Ignore("Dismiss ignore after fixing this: https://bugzilla.redhat.com/show_bug.cgi?id=1071288") 
     @Test
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testJDukeRoles(@ArquillianResource URL webAppURL, @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
@@ -262,6 +264,7 @@ public class SAML2KerberosAuthenticationTestCase {
      *
      * @throws Exception
      */
+    @Ignore("Dismiss ignore after fixing this: https://bugzilla.redhat.com/show_bug.cgi?id=1071288") 
     @Test
     @OperateOnDeployment(SERVICE_PROVIDER_NAME)
     public void testJDukePrincipal(@ArquillianResource URL webAppURL, @ArquillianResource @OperateOnDeployment(IDENTITY_PROVIDER_NAME) URL idpURL) throws Exception {
