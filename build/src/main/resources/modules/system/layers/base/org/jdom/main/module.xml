@@ -28,7 +28,7 @@
     </dependencies>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jdom:jdom}"/>
     </resources>
 
 </module>

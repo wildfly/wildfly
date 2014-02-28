@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.hal:release-stream::resources}"/>
     </resources>
 
     <dependencies>

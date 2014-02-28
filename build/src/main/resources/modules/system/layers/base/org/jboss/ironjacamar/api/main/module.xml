@@ -28,7 +28,9 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-common-api}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-common-spi}"/>
+        <artifact name="${org.jboss.ironjacamar:ironjacamar-core-api}"/>
     </resources>
 
     <dependencies>

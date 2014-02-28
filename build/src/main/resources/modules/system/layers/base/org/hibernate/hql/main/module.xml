@@ -28,7 +28,8 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.hibernate.hql:hibernate-hql-lucene}"/>
+        <artifact name="${org.hibernate.hql:hibernate-hql-parser}"/>
     </resources>
 
     <dependencies>

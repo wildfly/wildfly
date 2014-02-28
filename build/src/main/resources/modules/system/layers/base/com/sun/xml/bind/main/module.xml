@@ -28,7 +28,8 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${com.sun.xml.bind:jaxb-impl}"/>
+        <artifact name="${com.sun.xml.bind:jaxb-xjc}"/>
     </resources>
 
     <dependencies>

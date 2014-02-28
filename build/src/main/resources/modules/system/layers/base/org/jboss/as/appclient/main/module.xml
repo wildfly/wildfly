@@ -35,7 +35,7 @@
     <main-class name="org.jboss.as.appclient.subsystem.Main"/>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.wildfly:wildfly-appclient}"/>
     </resources>
 
     <dependencies>
@@ -74,6 +74,7 @@
         <module name="org.wildfly.security.manager"/>
         <module name="org.jboss.as.version"/>
         <module name="org.picketbox"/>
-        <module name="org.jboss.metadata"/>
+        <module name="org.jboss.metadata.common"/>
+        <module name="org.jboss.metadata.appclient"/>
     </dependencies>
 </module>

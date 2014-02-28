@@ -29,7 +29,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.yaml:snakeyaml}"/>
     </resources>
 
     <dependencies>

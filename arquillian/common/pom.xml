@@ -37,6 +37,19 @@
 
     <packaging>jar</packaging>
 
+    <dependencyManagement>
+        <!-- Hack to get things to run in the correct order-->
+        <dependencies>
+            <dependency>
+                <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-dist</artifactId>
+                <type>pom</type>
+                <scope>import</scope>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.jboss.arquillian.testenricher</groupId>
@@ -100,5 +113,6 @@
             <artifactId>arquillian-container-osgi</artifactId>
             <scope>provided</scope>
         </dependency>
+
     </dependencies>
 </project>

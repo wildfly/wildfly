@@ -28,7 +28,7 @@
     </properties>
 
     <resources>
-        <!-- Insert resources here -->
+        <artifact name="${org.apache.ws.xmlschema:xmlschema-core}"/>
     </resources>
 
     <dependencies>
