@@ -1478,6 +1478,12 @@
                 <groupId>com.sun.jersey.contribs</groupId>
                 <artifactId>jersey-multipart</artifactId>
                 <version>${version.com.sun.jersey}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jvnet</groupId>
+                        <artifactId>mimepull</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <dependency>
@@ -6368,12 +6374,6 @@
                 <version>${version.org.jgroups}</version>
             </dependency>
             
-            <dependency>
-                <groupId>org.jvnet</groupId>
-                <artifactId>mimepull</artifactId>
-                <version>${version.org.jvnet}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.kohsuke.rngom</groupId>
                 <artifactId>rngom</artifactId>

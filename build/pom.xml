@@ -385,11 +385,6 @@
                 </dependency>
                 
                 <dependency>
-                    <groupId>org.jvnet</groupId>
-                    <artifactId>mimepull</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>javax.activation</groupId>
                     <artifactId>activation</artifactId>
                 </dependency>
