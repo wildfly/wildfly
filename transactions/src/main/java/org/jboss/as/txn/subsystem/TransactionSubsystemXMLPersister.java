@@ -105,7 +105,9 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeStartElement(Element.USEHORNETQSTORE.getLocalName());
             TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO.marshallAsAttribute(node, writer);
             writer.writeEndElement();
-        } else if (node.hasDefined(CommonAttributes.USE_JDBC_STORE) && node.get(CommonAttributes.USE_JDBC_STORE).asBoolean()) {
+        }
+
+        if (node.hasDefined(CommonAttributes.USE_JDBC_STORE) && node.get(CommonAttributes.USE_JDBC_STORE).asBoolean()) {
             writer.writeStartElement(Element.JDBC_STORE.getLocalName());
             TransactionSubsystemRootResourceDefinition.JDBC_STORE_DATASOURCE.marshallAsAttribute(node, writer);
             if (TransactionSubsystemRootResourceDefinition.JDBC_ACTION_STORE_TABLE_PREFIX.isMarshallable(node)
