@@ -23,6 +23,8 @@
 package org.jboss.as.txn.subsystem;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
@@ -38,9 +40,14 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * {@link ResourceDefinition} for the root resource of the transaction subsystem.
@@ -247,11 +254,19 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        // Register all attributes
-        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributes);
-        for(final AttributeDefinition def : attributes) {
+        // Register all attributes except of the mutual ones
+        Set<AttributeDefinition> attributesWithoutMutuals = new HashSet<AttributeDefinition>(Arrays.asList(attributes));
+        attributesWithoutMutuals.remove(USEHORNETQSTORE);
+        attributesWithoutMutuals.remove(USE_JDBC_STORE);
+        OperationStepHandler writeHandler = new ReloadRequiredWriteAttributeHandler(attributesWithoutMutuals);
+        for(final AttributeDefinition def : attributesWithoutMutuals) {
             resourceRegistration.registerReadWriteAttribute(def, null, writeHandler);
         }
+
+        // Register mutual object store attributes
+        OperationStepHandler mutualWriteHandler = new ObjectStoreMutualWriteHandler(USEHORNETQSTORE, USE_JDBC_STORE);
+        resourceRegistration.registerReadWriteAttribute(USEHORNETQSTORE, null, mutualWriteHandler);
+        resourceRegistration.registerReadWriteAttribute(USE_JDBC_STORE, null, mutualWriteHandler);
 
         if (registerRuntimeOnly) {
             TxStatsHandler.INSTANCE.registerMetrics(resourceRegistration);
@@ -261,5 +276,33 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
     @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         resourceRegistration.registerSubModel(new CMResourceResourceDefinition());
+    }
+
+    private static class ObjectStoreMutualWriteHandler extends ReloadRequiredWriteAttributeHandler {
+        public ObjectStoreMutualWriteHandler(final AttributeDefinition... definitions) {
+            super(definitions);
+        }
+
+        @Override
+        protected void finishModelStage(final OperationContext context, final ModelNode operation, String attributeName,
+                                        ModelNode newValue, ModelNode oldValue, final Resource model) throws OperationFailedException {
+            super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+
+            assert !USEHORNETQSTORE.isAllowExpression() && !USE_JDBC_STORE.isAllowExpression() : "rework this before enabling expression";
+
+            if (attributeName.equals(USEHORNETQSTORE.getName()) || attributeName.equals(USE_JDBC_STORE.getName())) {
+                if (newValue.asBoolean() == true) {
+                    // check the value of the mutual attribute and disable it if it is set to true
+                    final String mutualAttributeName = attributeName.equals(USE_JDBC_STORE.getName())
+                            ? USEHORNETQSTORE.getName()
+                            : USE_JDBC_STORE.getName();
+
+                    ModelNode resourceModel = model.getModel();
+                    if (resourceModel.hasDefined(mutualAttributeName) && resourceModel.get(mutualAttributeName).asBoolean()) {
+                        resourceModel.get(mutualAttributeName).set(new ModelNode(false));
+                    }
+                }
+            }
+        }
     }
 }
