@@ -65,7 +65,11 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
         deploymentUnit = createAndInitializeDeploymentUnit(context.getController().getServiceContainer());
 
         final String managementName = deploymentUnit.getAttachment(Attachments.MANAGEMENT_NAME);
-        ServerLogger.DEPLOYMENT_LOGGER.startingDeployment(managementName, deploymentName);
+        if (deploymentUnit.getParent()==null) {
+            ServerLogger.DEPLOYMENT_LOGGER.startingDeployment(managementName, deploymentName);
+        } else {
+            ServerLogger.DEPLOYMENT_LOGGER.startingSubDeployment(deploymentName);
+        }
 
         final ServiceName serviceName = deploymentUnit.getServiceName().append(FIRST_PHASE_NAME);
         final Phase firstPhase = Phase.values()[0];
@@ -87,7 +91,11 @@ public abstract class AbstractDeploymentUnitService implements Service<Deploymen
     public synchronized void stop(final StopContext context) {
         final String deploymentName = context.getController().getName().getSimpleName();
         final String managementName = deploymentUnit.getAttachment(Attachments.MANAGEMENT_NAME);
-        ServerLogger.DEPLOYMENT_LOGGER.stoppedDeployment(managementName, deploymentName, (int) (context.getElapsedTime() / 1000000L));
+        if (deploymentUnit.getParent()==null) {
+            ServerLogger.DEPLOYMENT_LOGGER.stoppedDeployment(managementName, deploymentName, (int) (context.getElapsedTime() / 1000000L));
+        } else {
+            ServerLogger.DEPLOYMENT_LOGGER.stoppedSubDeployment(deploymentName, (int) (context.getElapsedTime() / 1000000L));
+        }
         deploymentUnit = null;
         monitor.removeController(context.getController());
         monitor = null;
