@@ -5,9 +5,7 @@
    <subsystem xmlns="urn:jboss:domain:messaging:2.0">
        <hornetq-server>
            <?CLUSTERED?>
-           <persistence-enabled>true</persistence-enabled>
            <journal-file-size>102400</journal-file-size>
-           <journal-min-files>2</journal-min-files>
 
            <connectors>
                <http-connector name="http-connector" socket-binding="http">
@@ -47,12 +45,10 @@
                <address-setting match="#">
                    <dead-letter-address>jms.queue.DLQ</dead-letter-address>
                    <expiry-address>jms.queue.ExpiryQueue</expiry-address>
-                   <redelivery-delay>0</redelivery-delay>
 
                    <?REDISTRIBUTION-DELAY?>
 
                    <max-size-bytes>10485760</max-size-bytes>
-                   <address-full-policy>PAGE</address-full-policy>
                    <page-size-bytes>2097152</page-size-bytes>
                    <message-counter-history-day-limit>10</message-counter-history-day-limit>
                </address-setting>
@@ -107,7 +103,6 @@
            <discovery-groups>
                <discovery-group name="dg-group1">
                    <socket-binding>messaging-group</socket-binding>
-                   <refresh-timeout>10000</refresh-timeout>
                </discovery-group>
            </discovery-groups>
        </replacement>
@@ -127,7 +122,6 @@
            <ha>true</ha>
            <block-on-acknowledge>true</block-on-acknowledge>
            <retry-interval>1000</retry-interval>
-           <retry-interval-multiplier>1.0</retry-interval-multiplier>
            <reconnect-attempts>-1</reconnect-attempts>
        </replacement>
    </supplement>
