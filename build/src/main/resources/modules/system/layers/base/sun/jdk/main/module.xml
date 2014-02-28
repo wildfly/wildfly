@@ -56,7 +56,8 @@
                 <path name="com/sun/security/auth"/>
                 <path name="com/sun/security/auth/login"/>
                 <path name="com/sun/security/auth/module"/>
-                <path name="com/sun/tools/internal/xjc"/>                
+                <path name="com/sun/tools/internal/xjc"/>
+                <path name="com/sun/security/jgss"/>
                 <path name="sun/awt"/>
                 <path name="sun/awt/color"/>
                 <path name="sun/awt/datatransfer"/>
@@ -90,6 +91,7 @@
                 <path name="sun/security"/>
                 <path name="sun/security/util"/>
                 <path name="sun/security/krb5"/>
+                <path name="sun/security/krb5/internal"/>
                 <path name="sun/util"/>
                 <path name="sun/util/calendar"/>
                 <path name="sun/util/locale"/>
