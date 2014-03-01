@@ -41,11 +41,25 @@ public class EmbeddedContainerConfigurationTestCase {
         validate(conf);
     }
 
-    @Test(expected = ConfigurationException.class)
-    public void shouldValidateThatBundlePathIsNonExisting() {
+    @Test
+    public void shouldNotValidateBundlePathIfNonExisting() {
         final EmbeddedContainerConfiguration conf = new EmbeddedContainerConfiguration();
-        conf.setBundlePath("");
+        conf.setBundlePath(null);
         validate(conf);
+    }
+
+    @Test
+    public void shouldValidateBundlePathIfExisting() {
+        final EmbeddedContainerConfiguration conf = new EmbeddedContainerConfiguration();
+        conf.setBundlePath("/");
+        validate(conf);
+    }
+
+    @Test(expected = ConfigurationException.class)
+    public void shouldValidateThatJbossHomePathIsNonExisting() {
+        final EmbeddedContainerConfiguration conf = new EmbeddedContainerConfiguration();
+        conf.setJbossHome(null);
+        conf.validate();
     }
 
     @Test
@@ -59,13 +73,15 @@ public class EmbeddedContainerConfigurationTestCase {
     private void validate(final EmbeddedContainerConfiguration conf) {
         assertNotNull(conf.getJbossHome());
         assertNotNull(conf.getModulePath());
-        assertNotNull(conf.getBundlePath());
         conf.validate();
     }
 
     private static void createDir(final String path) {
-        File dir = new File(path);
-        if (!dir.exists())
-            assertTrue("Failed to create directory", dir.mkdirs());
+        if (path != null) {
+            File dir = new File(path);
+            if (!dir.exists()) {
+                assertTrue("Failed to create directory", dir.mkdirs());
+            }
+        }
     }
 }
