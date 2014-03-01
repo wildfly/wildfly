@@ -141,7 +141,7 @@ public class JaxrsSpringProcessor implements DeploymentUnitProcessor {
                 boolean skip = false;
                 for (ParamValueMetaData prop : md.getContextParams()) {
                     if (prop.getParamName().equals(ENABLE_PROPERTY)) {
-                        boolean explicitEnable = Boolean.parseBoolean(prop.getParamName());
+                        boolean explicitEnable = Boolean.parseBoolean(prop.getParamValue());
                         if(explicitEnable) {
                             found = true;
                         } else {
