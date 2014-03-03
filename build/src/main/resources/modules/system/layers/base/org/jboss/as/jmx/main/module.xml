@@ -45,6 +45,5 @@
         <module name="org.jboss.msc"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.remoting-jmx" services="import" optional="true" />
-        <module name="org.jboss.as.naming"/>                
     </dependencies>
 </module>

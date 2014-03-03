@@ -24,11 +24,12 @@ package org.jboss.as.service;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 
-import org.jboss.as.naming.WritableServiceBasedNamingStore;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.service.LifecycleContext;
 import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -39,29 +40,32 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 abstract class AbstractService implements Service<Object> {
 
     private final Object mBeanInstance;
-    private final ServiceName duServiceName;
+    private final List<SetupAction> setupActions;
     private final ClassLoader mbeanContextClassLoader;
 
     /**
-     *
      * @param mBeanInstance
-     * @param duServiceName the deployment unit's service name
+     * @param setupActions  actions to setup the thread local context
      */
-    protected AbstractService(final Object mBeanInstance, final ServiceName duServiceName, final ClassLoader mbeanContextClassLoader) {
+    protected AbstractService(final Object mBeanInstance, final List<SetupAction> setupActions, final ClassLoader mbeanContextClassLoader) {
         this.mBeanInstance = mBeanInstance;
-        this.duServiceName = duServiceName;
+        this.setupActions = setupActions;
         this.mbeanContextClassLoader = mbeanContextClassLoader;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public final Object getValue() {
         return mBeanInstance;
     }
 
     protected void invokeLifecycleMethod(final Method method, final LifecycleContext context) throws InvocationTargetException, IllegalAccessException {
         if (method != null) {
-            WritableServiceBasedNamingStore.pushOwner(duServiceName);
             try {
+                for (SetupAction action : setupActions) {
+                    action.setup(Collections.<String, Object>emptyMap());
+                }
                 final ClassLoader old = WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(this.mbeanContextClassLoader);
                 try {
                     method.invoke(mBeanInstance);
@@ -69,7 +73,9 @@ abstract class AbstractService implements Service<Object> {
                     WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(old);
                 }
             } finally {
-                WritableServiceBasedNamingStore.popOwner();
+                for (SetupAction action : setupActions) {
+                    action.teardown(Collections.<String, Object>emptyMap());
+                }
             }
         }
     }

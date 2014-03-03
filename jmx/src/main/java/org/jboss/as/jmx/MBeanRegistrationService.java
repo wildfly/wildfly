@@ -26,11 +26,13 @@ import static org.jboss.as.jmx.JmxLogger.ROOT_LOGGER;
 import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.lang.management.ManagementFactory;
+import java.util.Collections;
+import java.util.List;
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
-import org.jboss.as.naming.WritableServiceBasedNamingStore;
+import org.jboss.as.server.deployment.SetupAction;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -51,26 +53,26 @@ public class MBeanRegistrationService<T> implements Service<Void> {
     private final InjectedValue<T> value = new InjectedValue<T>();
     private final String name;
     private ObjectName objectName;
-    private final ServiceName duServiceName;
+    private final List<SetupAction> setupActions;
 
     /**
      * Create an instance.
      *
      * @param name The name to use as an ObjectName
      */
-    public MBeanRegistrationService(final String name, final ServiceName duServiceName) {
+    public MBeanRegistrationService(final String name, final List<SetupAction> setupActions) {
         this.name = name;
-        this.duServiceName = duServiceName;
+        this.setupActions = setupActions;
     }
 
     /**
      * Create an instance.
      *
-     * @param name The name to use as an ObjectName
+     * @param name  The name to use as an ObjectName
      * @param value The object to register
      */
-    public MBeanRegistrationService(final String name, final ServiceName duServiceName, final Value<T> value) {
-        this(name, duServiceName);
+    public MBeanRegistrationService(final String name, final List<SetupAction> setupActions, final Value<T> value) {
+        this(name, setupActions);
         this.value.inject(value.getValue());
     }
 
@@ -89,14 +91,20 @@ public class MBeanRegistrationService<T> implements Service<Void> {
             throw MESSAGES.mbeanRegistrationFailed(e, name);
         }
 
-        WritableServiceBasedNamingStore.pushOwner(duServiceName);
         try {
-            ROOT_LOGGER.debugf("Registering [%s] with name [%s]", value, objectName);
-            mBeanServer.registerMBean(value, objectName);
-        } catch (Exception e) {
-            throw MESSAGES.mbeanRegistrationFailed(e, name);
+            for (SetupAction action : setupActions) {
+                action.setup(Collections.<String, Object>emptyMap());
+            }
+            try {
+                ROOT_LOGGER.debugf("Registering [%s] with name [%s]", value, objectName);
+                mBeanServer.registerMBean(value, objectName);
+            } catch (Exception e) {
+                throw MESSAGES.mbeanRegistrationFailed(e, name);
+            }
         } finally {
-            WritableServiceBasedNamingStore.popOwner();
+            for (SetupAction action : setupActions) {
+                action.teardown(Collections.<String, Object>emptyMap());
+            }
         }
     }
 
@@ -106,21 +114,29 @@ public class MBeanRegistrationService<T> implements Service<Void> {
      * @param context The stop context
      */
     public synchronized void stop(StopContext context) {
-        if(objectName == null){
+        if (objectName == null) {
             ROOT_LOGGER.cannotUnregisterObject();
         }
         final MBeanServer mBeanServer = getMBeanServer();
-        WritableServiceBasedNamingStore.pushOwner(duServiceName);
         try {
-            mBeanServer.unregisterMBean(objectName);
-        } catch (Exception e) {
-            ROOT_LOGGER.unregistrationFailure(e, objectName);
+            for (SetupAction action : setupActions) {
+                action.setup(Collections.<String, Object>emptyMap());
+            }
+            try {
+                mBeanServer.unregisterMBean(objectName);
+            } catch (Exception e) {
+                ROOT_LOGGER.unregistrationFailure(e, objectName);
+            }
         } finally {
-            WritableServiceBasedNamingStore.popOwner();
+            for (SetupAction action : setupActions) {
+                action.teardown(Collections.<String, Object>emptyMap());
+            }
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     public Void getValue() throws IllegalStateException {
         return null;
     }
@@ -135,7 +151,7 @@ public class MBeanRegistrationService<T> implements Service<Void> {
 
     private MBeanServer getMBeanServer() {
         MBeanServer mBeanServer = injectedMBeanServer.getOptionalValue();
-        if(mBeanServer == null) {
+        if (mBeanServer == null) {
             mBeanServer = ManagementFactory.getPlatformMBeanServer();
         }
         return mBeanServer;
