@@ -108,6 +108,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @Category(CommonCriteria.class)
+@Ignore("Reenable once https://bugzilla.redhat.com/show_bug.cgi?id=1071331 has been fixed")
 public class HTTPSWebConnectorTestCase {
 
     private static final String STANDARD_SOCKETS = "standard-sockets";
@@ -292,7 +293,6 @@ public class HTTPSWebConnectorTestCase {
      */
     @Test
     @InSequence(1)
-    @Ignore("Reenable once https://bugzilla.redhat.com/show_bug.cgi?id=1071331 has been fixed")
     public void testWantVerifyConnector() throws Exception {
 
         Assume.assumeFalse(SystemUtils.IS_JAVA_1_6 && SystemUtils.JAVA_VENDOR.toUpperCase(Locale.ENGLISH).contains("IBM"));
