@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ JBoss, Home of Professional Open Source.
+  ~ Copyright 2010, Red Hat, Inc., and individual contributors
+  ~ as indicated by the @author tags. See the copyright.txt file in the
+  ~ distribution for a full listing of individual contributors.
+  ~
+  ~ This is free software; you can redistribute it and/or modify it
+  ~ under the terms of the GNU Lesser General Public License as
+  ~ published by the Free Software Foundation; either version 2.1 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~ Lesser General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Lesser General Public
+  ~ License along with this software; if not, write to the Free
+  ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.jboss.as</groupId>
+        <artifactId>jboss-as-security-parent</artifactId>
+        <version>7.4.0.Final-redhat-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-security</artifactId>
+    <version>7.4.0.Final-redhat-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>JBoss Application Server: Security Subsystem</name>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*TestCase.java</include>
+                    </includes>
+                    <enableAssertions>false</enableAssertions>
+                </configuration>
+            </plugin>
+
+            <!-- JAR -->
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.jboss.as.security.vault.VaultTool</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>
+                        -AgeneratedTranslationFilesPath=${project.build.directory}/generated-translation-files
+                    </compilerArgument>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+        </dependency>
+
+        <dependency>
+	        <groupId>org.jboss.as</groupId>
+	        <artifactId>jboss-as-domain-management</artifactId>
+			 </dependency>
+
+	   <dependency>
+           <groupId>org.wildfly</groupId>
+           <artifactId>wildfly-core-security</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-naming</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-clustering-infinispan</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-transactions</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-processor</artifactId>
+            <!-- This is a compile-time dependency of this project, but is not needed at compile or runtime by other
+                  projects that depend on this project.-->
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.security</groupId>
+            <artifactId>jboss-negotiation-extras</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.security</groupId>
+            <artifactId>jboss-negotiation-spnego</artifactId>
+        </dependency>
+
+        <dependency>
+        	<groupId>org.picketbox</groupId>
+        	<artifactId>picketbox</artifactId>
+        </dependency>
+
+        <dependency>
+        	<groupId>org.jboss.spec.javax.security.jacc</groupId>
+        	<artifactId>jboss-jacc-api_1.4_spec</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.picketbox</groupId>
+          <artifactId>picketbox-infinispan</artifactId>
+        </dependency>
+
+        <dependency>
+          <groupId>org.picketbox</groupId>
+          <artifactId>picketbox-commons</artifactId>
+        </dependency>
+        <dependency>
+          <groupId>commons-cli</groupId>
+          <artifactId>commons-cli</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-subsystem-test</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

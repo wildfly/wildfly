@@ -28,18 +28,22 @@
 
     <parent>
         <groupId>org.jboss.as</groupId>
-        <artifactId>jboss-as-parent</artifactId>
+        <artifactId>jboss-as-security-parent</artifactId>
         <version>7.4.0.Final-redhat-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>jboss-as-security-parent</artifactId>
+    <groupId>org.jboss.as</groupId>
+    <artifactId>jboss-as-security-api</artifactId>
     <version>7.4.0.Final-redhat-SNAPSHOT</version>
-    <packaging>pom</packaging>
+    <packaging>jar</packaging>
 
-    <name>JBoss AS: Security Subsystem parent</name>
+    <name>JBoss AS: Security Subsystem API</name>
 
-    <modules>
-        <module>api</module>
-        <module>subsystem</module>
-    </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.jboss.as</groupId>
+            <artifactId>jboss-as-security</artifactId>
+        </dependency>
+    </dependencies>
 </project>

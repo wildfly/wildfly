@@ -1130,6 +1130,16 @@
 
                 <dependency>
                     <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-security-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
+                    <artifactId>jboss-as-security</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-osgi-web</artifactId>
                 </dependency>
 
