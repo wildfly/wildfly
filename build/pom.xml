@@ -1341,11 +1341,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.wildfly</groupId>
-                    <artifactId>wildfly-jpa-util</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>org.jboss</groupId>
                     <artifactId>jboss-transaction-spi</artifactId>
                 </dependency>

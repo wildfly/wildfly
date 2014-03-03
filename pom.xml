@@ -4525,13 +4525,6 @@
                 </exclusions>
             </dependency>
 
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-jpa-util</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-
             <dependency>
                 <groupId>org.jipijapa</groupId>
                 <artifactId>jipijapa-hibernate3</artifactId>
