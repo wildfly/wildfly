@@ -1109,6 +1109,10 @@
             <maven-resource group="org.wildfly" artifact="wildfly-sar"/>
         </module-def>
 
+        <module-def name="org.jboss.as.security-api">
+            <maven-resource group="org.wildfly" artifact="wildfly-security-api"/>
+        </module-def>        	
+    	
         <module-def name="org.jboss.as.security">
             <maven-resource group="org.wildfly" artifact="wildfly-security"/>
         </module-def>
