@@ -27,15 +27,15 @@ import static org.mockito.Mockito.*;
 
 import javax.servlet.http.HttpServletRequest;
 
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
 import io.undertow.security.impl.SingleSignOnManager;
 
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
-import org.wildfly.clustering.web.sso.Authentication;
-import org.wildfly.clustering.web.sso.AuthenticationType;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 
@@ -45,7 +45,7 @@ import org.wildfly.clustering.web.sso.SSOManager;
  */
 public class DistributableSingleSignOnManagerTestCase {
 
-    private final SSOManager<Account, String, Void> manager = mock(SSOManager.class);
+    private final SSOManager<AuthenticatedSession, String, Void> manager = mock(SSOManager.class);
     private final SessionManagerRegistry registry = mock(SessionManagerRegistry.class);
 
     private final SingleSignOnManager subject = new DistributableSingleSignOnManager(this.manager, this.registry);
@@ -56,22 +56,24 @@ public class DistributableSingleSignOnManagerTestCase {
         Batcher batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         Account account = mock(Account.class);
-        SSO<Account, String, Void> sso = mock(SSO.class);
-        Authentication<Account> authentication = mock(Authentication.class);
-        String authenticationType = HttpServletRequest.BASIC_AUTH;
+        String mechanism = HttpServletRequest.BASIC_AUTH;
+        SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
+        ArgumentCaptor<AuthenticatedSession> authenticationCaptor = ArgumentCaptor.forClass(AuthenticatedSession.class);
 
         when(this.manager.createIdentifier()).thenReturn(id);
         when(this.manager.getBatcher()).thenReturn(batcher);
         when(batcher.startBatch()).thenReturn(batch);
-        when(this.manager.createSSO(id)).thenReturn(sso);
-        when(sso.getAuthentication()).thenReturn(authentication);
+        when(this.manager.createSSO(same(id), authenticationCaptor.capture())).thenReturn(sso);
 
-        SingleSignOn result = this.subject.createSingleSignOn(account, authenticationType);
+        SingleSignOn result = this.subject.createSingleSignOn(account, mechanism);
 
         assertNotNull(result);
 
-        verify(authentication).setIdentity(account);
-        verify(authentication).setType(AuthenticationType.BASIC);
+        AuthenticatedSession capturedAuthentication = authenticationCaptor.getValue();
+        assertNotNull(capturedAuthentication);
+        assertSame(capturedAuthentication.getAccount(), account);
+        assertSame(capturedAuthentication.getMechanism(), mechanism);
+
         verifyNoMoreInteractions(batch);
     }
 
@@ -92,7 +94,7 @@ public class DistributableSingleSignOnManagerTestCase {
         verify(batch).discard();
         reset(batch);
 
-        SSO<Account, String, Void> sso = mock(SSO.class);
+        SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
 
         when(this.manager.findSSO(id)).thenReturn(sso);
 
@@ -118,7 +120,7 @@ public class DistributableSingleSignOnManagerTestCase {
         verify(batch).discard();
         reset(batch);
 
-        SSO<Account, String, Void> sso = mock(SSO.class);
+        SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
 
         when(this.manager.findSSO(id)).thenReturn(sso);
 

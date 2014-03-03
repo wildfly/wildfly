@@ -26,15 +26,14 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.jboss.as.clustering.infinispan.io.AbstractSimpleExternalizer;
-import org.wildfly.clustering.web.sso.AuthenticationType;
 
 /**
  * Externalizer for {@link CoarseAuthenticationEntry}.
  * @author Paul Ferraro
- * @param <I>
+ * @param <A>
  * @param <D>
  */
-public class CoarseAuthenticationEntryExternalizer<I, D> extends AbstractSimpleExternalizer<CoarseAuthenticationEntry<I, D, ?>> {
+public class CoarseAuthenticationEntryExternalizer<A, D> extends AbstractSimpleExternalizer<CoarseAuthenticationEntry<A, D, ?>> {
     private static final long serialVersionUID = 4667240286133879206L;
 
     public CoarseAuthenticationEntryExternalizer() {
@@ -47,16 +46,14 @@ public class CoarseAuthenticationEntryExternalizer<I, D> extends AbstractSimpleE
     }
 
     @Override
-    public void writeObject(ObjectOutput output, CoarseAuthenticationEntry<I, D, ?> entry) throws IOException {
-        output.writeObject(entry.getIdentity());
-        output.writeByte(entry.getType().ordinal());
+    public void writeObject(ObjectOutput output, CoarseAuthenticationEntry<A, D, ?> entry) throws IOException {
+        output.writeObject(entry.getAuthentication());
     }
 
     @Override
-    public CoarseAuthenticationEntry<I, D, ?> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
-        CoarseAuthenticationEntry<I, D, ?> entry = new CoarseAuthenticationEntry<>();
-        entry.setIdentity((I) input.readObject());
-        entry.setAuthenticationType(AuthenticationType.values()[input.readByte()]);
+    public CoarseAuthenticationEntry<A, D, ?> readObject(ObjectInput input) throws IOException, ClassNotFoundException {
+        CoarseAuthenticationEntry<A, D, ?> entry = new CoarseAuthenticationEntry<>();
+        entry.setAuthentication((A) input.readObject());
         return entry;
     }
 }

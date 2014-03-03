@@ -41,7 +41,7 @@ public class InfinispanSSOManagerFactoryBuilder implements SSOManagerFactoryBuil
     public static final String DEFAULT_CACHE_CONTAINER = "web";
 
     @Override
-    public <I, D> ServiceBuilder<SSOManagerFactory<I, D>> build(ServiceTarget target, ServiceName name, String host) {
+    public <A, D> ServiceBuilder<SSOManagerFactory<A, D>> build(ServiceTarget target, ServiceName name, String host) {
         String containerName = DEFAULT_CACHE_CONTAINER;
         ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
         String templateCacheName = CacheContainer.DEFAULT_CACHE_ALIAS;

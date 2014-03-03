@@ -46,10 +46,10 @@ import org.wildfly.clustering.web.infinispan.sso.coarse.CoarseSessionsKey;
 import org.wildfly.clustering.web.sso.SSOManager;
 import org.wildfly.clustering.web.sso.SSOManagerFactory;
 
-public class InfinispanSSOManagerFactory<I, D> extends AbstractService<SSOManagerFactory<I, D>> implements SSOManagerFactory<I, D> {
+public class InfinispanSSOManagerFactory<A, D> extends AbstractService<SSOManagerFactory<A, D>> implements SSOManagerFactory<A, D> {
 
-    public static <I, D> ServiceBuilder<SSOManagerFactory<I, D>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
-        InfinispanSSOManagerFactory<I, D> service = new InfinispanSSOManagerFactory<>();
+    public static <A, D> ServiceBuilder<SSOManagerFactory<A, D>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
+        InfinispanSSOManagerFactory<A, D> service = new InfinispanSSOManagerFactory<>();
         return target.addService(name, service)
                 .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
                 .addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, service.affinityFactory)
@@ -66,15 +66,15 @@ public class InfinispanSSOManagerFactory<I, D> extends AbstractService<SSOManage
     }
 
     @Override
-    public SSOManagerFactory<I, D> getValue() {
+    public SSOManagerFactory<A, D> getValue() {
         return this;
     }
 
     @Override
-    public <L> SSOManager<I, D, L> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
-        Cache<String, CoarseAuthenticationEntry<I, D, L>> authenticationCache = this.cache.getValue();
+    public <L> SSOManager<A, D, L> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
+        Cache<String, CoarseAuthenticationEntry<A, D, L>> authenticationCache = this.cache.getValue();
         Cache<CoarseSessionsKey, Map<D, String>> sessionsCache = this.cache.getValue();
-        SSOFactory<CoarseSSOEntry<I, D, L>, I, D, L> factory = new CoarseSSOFactory<>(authenticationCache, sessionsCache, this.invoker, localContextFactory);
+        SSOFactory<CoarseSSOEntry<A, D, L>, A, D, L> factory = new CoarseSSOFactory<>(authenticationCache, sessionsCache, this.invoker, localContextFactory);
         IdentifierFactory<String> idFactory = new AffinityIdentifierFactory<>(identifierFactory, authenticationCache, this.affinityFactory.getValue());
         Batcher batcher = new InfinispanBatcher(authenticationCache);
         return new InfinispanSSOManager<>(factory, idFactory, batcher);

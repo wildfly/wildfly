@@ -23,7 +23,7 @@ package org.wildfly.clustering.web.infinispan.sso.coarse;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.wildfly.clustering.web.sso.AuthenticationType;
+import org.wildfly.clustering.web.infinispan.sso.Authenticator;
 
 /**
  * Cache entry that store authentication data plus any local context
@@ -32,26 +32,18 @@ import org.wildfly.clustering.web.sso.AuthenticationType;
  * @param <D> the deployment identifier type
  * @param <L> the local context type
  */
-public class CoarseAuthenticationEntry<I, D, L> {
+public class CoarseAuthenticationEntry<A, D, L> implements Authenticator<A> {
 
     private final AtomicReference<L> localContext = new AtomicReference<>();
-    private volatile I identity;
-    private volatile AuthenticationType type;
+    private volatile A authentication;
 
-    public I getIdentity() {
-        return this.identity;
+    public A getAuthentication() {
+        return this.authentication;
     }
 
-    public void setIdentity(I identity) {
-        this.identity = identity;
-    }
-
-    public AuthenticationType getType() {
-        return this.type;
-    }
-
-    public void setAuthenticationType(AuthenticationType type) {
-        this.type = type;
+    @Override
+    public void setAuthentication(A authentication) {
+        this.authentication = authentication;
     }
 
     public AtomicReference<L> getLocalContext() {

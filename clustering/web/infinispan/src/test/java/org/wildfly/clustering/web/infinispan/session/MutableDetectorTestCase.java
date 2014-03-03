@@ -41,14 +41,15 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Test;
 import org.wildfly.clustering.web.annotation.Immutable;
-import org.wildfly.clustering.web.sso.AuthenticationType;
 
 /**
+ * Unit test for {@link MutableDetector}
  * @author Paul Ferraro
  */
 public class MutableDetectorTestCase {
@@ -66,7 +67,7 @@ public class MutableDetectorTestCase {
         assertFalse(MutableDetector.isMutable(Boolean.TRUE));
         assertFalse(MutableDetector.isMutable(Character.valueOf('a')));
         assertFalse(MutableDetector.isMutable(Currency.getInstance(Locale.US)));
-        assertFalse(MutableDetector.isMutable(AuthenticationType.BASIC));
+        assertFalse(MutableDetector.isMutable(TimeUnit.DAYS));
         assertFalse(MutableDetector.isMutable(Locale.getDefault()));
         assertFalse(MutableDetector.isMutable(Byte.valueOf(Integer.valueOf(1).byteValue())));
         assertFalse(MutableDetector.isMutable(Short.valueOf(Integer.valueOf(1).shortValue())));

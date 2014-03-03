@@ -28,7 +28,7 @@ package org.wildfly.clustering.web.sso;
  * @param the deployment identifier type
  * @param the local context type
  */
-public interface SSO<I, D, L> {
+public interface SSO<A, D, L> {
     /**
      * A unique identifier for this SSO.
      * @return a unique identifier
@@ -39,7 +39,7 @@ public interface SSO<I, D, L> {
      * Returns the authentication for this SSO.
      * @return an authentication.
      */
-    Authentication<I> getAuthentication();
+    A getAuthentication();
 
     /**
      * Returns the session for which the user is authenticated.

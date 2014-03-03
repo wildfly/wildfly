@@ -26,25 +26,27 @@ import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.SSOManager;
 
-public class InfinispanSSOManager<V, I, D, L> implements SSOManager<I, D, L> {
+public class InfinispanSSOManager<V extends Authenticator<A>, A, D, L> implements SSOManager<A, D, L> {
 
-    private final SSOFactory<V, I, D, L> factory;
+    private final SSOFactory<V, A, D, L> factory;
     private final Batcher batcher;
     private final IdentifierFactory<String> identifierFactory;
 
-    public InfinispanSSOManager(SSOFactory<V, I, D, L> factory, IdentifierFactory<String> identifierFactory, Batcher batcher) {
+    public InfinispanSSOManager(SSOFactory<V, A, D, L> factory, IdentifierFactory<String> identifierFactory, Batcher batcher) {
         this.factory = factory;
         this.batcher = batcher;
         this.identifierFactory = identifierFactory;
     }
 
     @Override
-    public SSO<I, D, L> createSSO(String ssoId) {
-        return this.factory.createSSO(ssoId, this.factory.createValue(ssoId));
+    public SSO<A, D, L> createSSO(String ssoId, A authentication) {
+        V value = this.factory.createValue(ssoId);
+        value.setAuthentication(authentication);
+        return this.factory.createSSO(ssoId, value);
     }
 
     @Override
-    public SSO<I, D, L> findSSO(String ssoId) {
+    public SSO<A, D, L> findSSO(String ssoId) {
         V value = this.factory.findValue(ssoId);
         return (value != null) ? this.factory.createSSO(ssoId, value) : null;
     }

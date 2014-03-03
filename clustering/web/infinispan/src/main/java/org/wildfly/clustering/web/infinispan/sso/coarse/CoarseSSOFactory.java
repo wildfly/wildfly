@@ -32,7 +32,6 @@ import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.CacheEntryMutator;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSO;
 import org.wildfly.clustering.web.infinispan.sso.SSOFactory;
-import org.wildfly.clustering.web.sso.Authentication;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -53,13 +52,11 @@ public class CoarseSSOFactory<I, D, L> implements SSOFactory<CoarseSSOEntry<I, D
     @Override
     public SSO<I, D, L> createSSO(String id, CoarseSSOEntry<I, D, L> entry) {
         CoarseAuthenticationEntry<I, D, L> authenticationEntry = entry.getAuthenticationEntry();
-        Mutator authenticationMutator = new CacheEntryMutator<>(this.authenticationCache, this.invoker, id, authenticationEntry);
-        Authentication<I> authentication = new CoarseAuthentication<>(authenticationEntry, authenticationMutator);
         CoarseSessionsKey sessionsKey = new CoarseSessionsKey(id);
         Map<D, String> sessionsValue = entry.getSessions();
         Mutator sessionsMutator = new CacheEntryMutator<>(this.sessionsCache, this.invoker, sessionsKey, sessionsValue);
         Sessions<D> sessions = new CoarseSessions<>(sessionsValue, sessionsMutator);
-        return new InfinispanSSO<>(id, authentication, sessions, authenticationEntry.getLocalContext(), this.localContextFactory, this);
+        return new InfinispanSSO<>(id, authenticationEntry.getAuthentication(), sessions, authenticationEntry.getLocalContext(), this.localContextFactory, this);
     }
 
     @Override
