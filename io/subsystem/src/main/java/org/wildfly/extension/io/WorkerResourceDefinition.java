@@ -45,10 +45,10 @@ class WorkerResourceDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(false))
             .build();*/
     static final OptionAttributeDefinition WORKER_TASK_CORE_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_CORE_THREADS, Options.WORKER_TASK_CORE_THREADS)
-            .setDefaultValue(new ModelNode(4))
+            .setDefaultValue(new ModelNode(2))
             .build();
     static final OptionAttributeDefinition WORKER_TASK_MAX_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_MAX_THREADS, Options.WORKER_TASK_MAX_THREADS)
-            .setDefaultValue(new ModelNode(15))
+            .setDefaultValue(new ModelNode(Runtime.getRuntime().availableProcessors() * 16))
             .build();
     static final OptionAttributeDefinition WORKER_TASK_KEEPALIVE = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_KEEPALIVE, Options.WORKER_TASK_KEEPALIVE)
             .setDefaultValue(new ModelNode(60))
@@ -57,7 +57,7 @@ class WorkerResourceDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(0L))
             .build();
     static final OptionAttributeDefinition WORKER_IO_THREADS = new OptionAttributeDefinition.Builder(Constants.WORKER_IO_THREADS, Options.WORKER_IO_THREADS)
-            .setDefaultValue(new ModelNode(4))
+            .setDefaultValue(new ModelNode(Runtime.getRuntime().availableProcessors() * 2))
             .build();
     /*static final OptionAttributeDefinition WORKER_TASK_LIMIT = new OptionAttributeDefinition.Builder(Constants.WORKER_TASK_LIMIT, Options.WORKER_TASK_LIMIT)
             .setDefaultValue(new ModelNode(0x4000))
