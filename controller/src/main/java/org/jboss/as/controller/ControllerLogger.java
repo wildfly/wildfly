@@ -503,6 +503,10 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 13413, value = "Timeout after [%d] seconds waiting for service container stability while finalizing an operation. Process must be restarted. Step that first updated the service container was '%s' at address '%s'")
     void timeoutCompletingOperation(long blockingTimeout, String name, PathAddress address);
 
+    @LogMessage(level = Level.INFO)
+    @Message(id = 13414, value = "Cancelling operation '%s' with id '%d' running on thread '%s'")
+    void cancellingOperation(String operation, int id, String thread);
+
     // 13449 IS END OF 134xx SERIES USABLE FOR LOGGER MESSAGES
 
 }

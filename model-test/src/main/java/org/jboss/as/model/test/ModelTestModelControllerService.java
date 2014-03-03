@@ -169,13 +169,13 @@ public abstract class ModelTestModelControllerService extends AbstractController
     }
 
     @Override
-    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+    protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
         this.rootRegistration = rootRegistration;
-        initCoreModel(rootResource, rootRegistration);
+        initCoreModel(rootResource, rootRegistration, modelControllerResource);
         initExtraModel(rootResource, rootRegistration);
     }
 
-    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+    protected void initCoreModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
         GlobalOperationHandlers.registerGlobalOperations(rootRegistration, ProcessType.STANDALONE_SERVER);
 
         rootRegistration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);

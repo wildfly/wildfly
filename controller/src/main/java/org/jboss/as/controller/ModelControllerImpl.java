@@ -27,12 +27,12 @@ import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACTIVE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -40,13 +40,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROCESS_STATE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESPONSE_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVICE;
 
 import java.io.IOException;
 import java.security.AccessControlContext;
 import java.security.PrivilegedAction;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -72,6 +75,7 @@ import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -87,6 +91,14 @@ import org.jboss.threads.AsyncFutureTask;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 class ModelControllerImpl implements ModelController {
+
+    private static final String INITIAL_BOOT_OPERATION = "initial-boot-operation";
+    private static final String POST_EXTENSION_BOOT_OPERATION = "post-extension-boot-operation";
+    static final ModelNode EMPTY_ADDRESS = new ModelNode().setEmptyList();
+
+    static {
+        EMPTY_ADDRESS.protect();
+    }
 
     private final ServiceRegistry serviceRegistry;
     private final ServiceTarget serviceTarget;
@@ -104,11 +116,12 @@ class ModelControllerImpl implements ModelController {
     private final ExpressionResolver expressionResolver;
     private final Authorizer authorizer;
 
-    private final ConcurrentMap<Integer, AbstractOperationContext> activeOperations = new ConcurrentHashMap<Integer, AbstractOperationContext>();
+    private final ConcurrentMap<Integer, OperationContextImpl> activeOperations = new ConcurrentHashMap<Integer, OperationContextImpl>();
     private final ManagedAuditLogger auditLogger;
 
     /** Tracks the relationship between domain resources and hosts and server groups */
     private final HostServerGroupTracker hostServerGroupTracker;
+    private final Resource.ResourceEntry modelControllerResource;
 
     ModelControllerImpl(final ServiceRegistry serviceRegistry, final ServiceTarget serviceTarget, final ManagementResourceRegistration rootRegistration,
                         final ContainerStateMonitor stateMonitor, final ConfigurationPersister persister,
@@ -131,6 +144,7 @@ class ModelControllerImpl implements ModelController {
         this.authorizer = authorizer;
         this.auditLogger = auditLogger;
         this.hostServerGroupTracker = processType.isManagedDomain() ? new HostServerGroupTracker() : null;
+        this.modelControllerResource = new ModelControllerResource();
         auditLogger.startBoot();
     }
 
@@ -206,6 +220,7 @@ class ModelControllerImpl implements ModelController {
             }
         };
 
+        AccessMechanism accessMechanism = null;
         AccessAuditContext accessContext = SecurityActions.currentAccessAuditContext();
         if (accessContext != null) {
             if (operation.hasDefined(OPERATION_HEADERS)) {
@@ -218,14 +233,16 @@ class ModelControllerImpl implements ModelController {
                             .setAccessMechanism(AccessMechanism.valueOf(operationHeaders.get(ACCESS_MECHANISM).asString()));
                 }
             }
+            accessMechanism = accessContext.getAccessMechanism();
         }
 
         for (;;) {
             // Create a random operation-id
             final Integer operationID = new Random(new SecureRandom().nextLong()).nextInt();
-            final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
+            final OperationContextImpl context = new OperationContextImpl(operationID, operation.get(OP).asString(),
+                    operation.get(OP_ADDR), this, processType, runningModeControl.getRunningMode(),
                     contextFlags, handler, attachments, model, originalResultTxControl, processState, auditLogger,
-                    bootingFlag.get(), operationID, hostServerGroupTracker, blockingTimeoutConfig);
+                    bootingFlag.get(), hostServerGroupTracker, blockingTimeoutConfig, accessMechanism);
             // Try again if the operation-id is already taken
             if(activeOperations.putIfAbsent(operationID, context) == null) {
                 CurrentOperationIdHolder.setCurrentOperationID(operationID);
@@ -233,21 +250,23 @@ class ModelControllerImpl implements ModelController {
                     context.addStep(response, operation, prepareStep, OperationContext.Stage.MODEL);
                     context.executeOperation();
                 } finally {
+
+                    if (!response.hasDefined(RESPONSE_HEADERS) || !response.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE)) {
+                        ControlledProcessState.State state = processState.getState();
+                        switch (state) {
+                            case RELOAD_REQUIRED:
+                            case RESTART_REQUIRED:
+                                response.get(RESPONSE_HEADERS, PROCESS_STATE).set(state.toString());
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
                     activeOperations.remove(operationID);
                     CurrentOperationIdHolder.setCurrentOperationID(null);
                 }
                 break;
-            }
-        }
-        if (!response.hasDefined(RESPONSE_HEADERS) || !response.get(RESPONSE_HEADERS).hasDefined(PROCESS_STATE)) {
-            ControlledProcessState.State state = processState.getState();
-            switch (state) {
-                case RELOAD_REQUIRED:
-                case RESTART_REQUIRED:
-                    response.get(RESPONSE_HEADERS, PROCESS_STATE).set(state.toString());
-                    break;
-                default:
-                    break;
             }
         }
         return response;
@@ -261,8 +280,10 @@ class ModelControllerImpl implements ModelController {
         EnumSet<OperationContextImpl.ContextFlag> contextFlags = rollbackOnRuntimeFailure
                 ? EnumSet.of(OperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL)
                 : EnumSet.noneOf(OperationContextImpl.ContextFlag.class);
-        final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
-                contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID, hostServerGroupTracker, null);
+        final OperationContextImpl context = new OperationContextImpl(operationID, INITIAL_BOOT_OPERATION, EMPTY_ADDRESS,
+                this, processType, runningModeControl.getRunningMode(),
+                contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(),
+                hostServerGroupTracker, null, null);
 
         // Add to the context all ops prior to the first ExtensionAddHandler as well as all ExtensionAddHandlers; save the rest.
         // This gets extensions registered before proceeding to other ops that count on these registrations
@@ -279,8 +300,9 @@ class ModelControllerImpl implements ModelController {
         if (resultAction == OperationContext.ResultAction.KEEP && bootOperations.postExtensionOps != null) {
 
             // Success. Now any extension handlers are registered. Continue with remaining ops
-            final OperationContextImpl postExtContext = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
-                    contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID, hostServerGroupTracker, null);
+            final OperationContextImpl postExtContext = new OperationContextImpl(operationID, POST_EXTENSION_BOOT_OPERATION,
+                    EMPTY_ADDRESS, this, processType, runningModeControl.getRunningMode(),
+                    contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), hostServerGroupTracker, null, null);
 
             for (ParsedBootOp parsedOp : bootOperations.postExtensionOps) {
                 if (parsedOp.handler == null) {
@@ -408,6 +430,10 @@ class ModelControllerImpl implements ModelController {
 
     public Resource getRootResource() {
         return model;
+    }
+
+    public Resource.ResourceEntry getModelControllerResource() {
+        return modelControllerResource;
     }
 
     ManagementResourceRegistration getRootRegistration() {
@@ -775,6 +801,76 @@ class ModelControllerImpl implements ModelController {
             this.initialOps = initialOps;
             this.postExtensionOps = postExtensionOps;
             this.invalid = invalid;
+        }
+    }
+
+    private final class ModelControllerResource extends PlaceholderResource.PlaceholderResourceEntry {
+
+        private ModelControllerResource() {
+            super(SERVICE, MANAGEMENT_OPERATIONS);
+        }
+
+        @Override
+        public boolean hasChild(PathElement element) {
+            try {
+                return ACTIVE_OPERATION.equals(element.getKey())
+                        && activeOperations.containsKey(Integer.valueOf(element.getValue()));
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+
+        @Override
+        public Resource getChild(PathElement element) {
+            Resource result = null;
+            if (ACTIVE_OPERATION.equals(element.getKey())) {
+                try {
+                    OperationContextImpl context = activeOperations.get(Integer.valueOf(element.getValue()));
+                    if (context != null) {
+                        result = context.getActiveOperationResource();
+                    }
+                } catch (NumberFormatException e) {
+                    // just return null
+                }
+            }
+            return result;
+        }
+
+        @Override
+        public Resource requireChild(PathElement element) {
+            final Resource resource = getChild(element);
+            if(resource == null) {
+                throw new NoSuchResourceException(element);
+            }
+            return resource;
+        }
+
+        @Override
+        public boolean hasChildren(String childType) {
+            return ACTIVE_OPERATION.equals(childType) && activeOperations.size() > 0;
+        }
+
+        @Override
+        public Set<String> getChildTypes() {
+            return Collections.singleton(ACTIVE_OPERATION);
+        }
+
+        @Override
+        public Set<String> getChildrenNames(String childType) {
+            Set<String> result = new HashSet<String>(activeOperations.size());
+            for (Integer id : activeOperations.keySet()) {
+                result.add(id.toString());
+            }
+            return result;
+        }
+
+        @Override
+        public Set<ResourceEntry> getChildren(String childType) {
+            Set<ResourceEntry> result = new HashSet<ResourceEntry>(activeOperations.size());
+            for (OperationContextImpl context : activeOperations.values()) {
+                result.add(context.getActiveOperationResource());
+            }
+            return result;
         }
     }
 

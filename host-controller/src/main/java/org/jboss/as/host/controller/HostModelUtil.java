@@ -31,6 +31,7 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.domain.controller.DomainController;
 import org.jboss.as.domain.management.security.WhoAmIOperation;
@@ -74,9 +75,11 @@ public class HostModelUtil {
                                           final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
                                           final HostModelRegistrar hostModelRegistrar,
                                           final ProcessType processType,
-                                          final DelegatingConfigurableAuthorizer authorizer) {
+                                          final DelegatingConfigurableAuthorizer authorizer,
+                                          final Resource modelControllerResource) {
         // Add of the host itself
-        final HostModelRegistrationHandler hostModelRegistratorHandler = new HostModelRegistrationHandler(environment, ignoredDomainResourceRegistry, hostModelRegistrar);
+        final HostModelRegistrationHandler hostModelRegistratorHandler =
+                new HostModelRegistrationHandler(environment, ignoredDomainResourceRegistry, hostModelRegistrar, modelControllerResource);
         root.registerOperationHandler(HostModelRegistrationHandler.DEFINITION, hostModelRegistratorHandler);
 
         // Global operations

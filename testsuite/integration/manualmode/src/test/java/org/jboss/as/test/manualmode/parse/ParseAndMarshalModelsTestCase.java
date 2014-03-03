@@ -1072,7 +1072,7 @@ public class ParseAndMarshalModelsTestCase {
             latch.countDown();
         }
 
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
             registration.setup(rootResource, rootRegistration, authorizer);
 
             rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("capture-model", new NonResolvingResourceDescriptionResolver()).build()

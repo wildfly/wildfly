@@ -715,7 +715,7 @@ public class ModelControllerImplUnitTestCase {
     static class ModelControllerService extends TestModelControllerService {
 
         @Override
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
 
             rootRegistration.registerOperationHandler("setup", new ModelControllerImplUnitTestCase.SetupHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("composite", CompositeOperationHandler.INSTANCE, ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
