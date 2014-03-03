@@ -24,6 +24,7 @@ package org.wildfly.clustering.web.undertow.sso;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
 import io.undertow.server.session.Session;
 import io.undertow.server.session.SessionManager;
@@ -35,8 +36,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
 import org.wildfly.clustering.web.Batch;
-import org.wildfly.clustering.web.sso.Authentication;
-import org.wildfly.clustering.web.sso.AuthenticationType;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
@@ -46,7 +45,7 @@ import org.wildfly.clustering.web.sso.Sessions;
  */
 public class DistributableSingleSignOnTestCase {
 
-    private final SSO<Account, String, Void> sso = mock(SSO.class);
+    private final SSO<AuthenticatedSession, String, Void> sso = mock(SSO.class);
     private final SessionManagerRegistry registry = mock(SessionManagerRegistry.class);
     private final Batch batch = mock(Batch.class);
     private final DistributableSingleSignOn subject = new DistributableSingleSignOn(this.sso, this.registry, this.batch);
@@ -67,10 +66,10 @@ public class DistributableSingleSignOnTestCase {
     @Test
     public void getAccount() {
         Account account = mock(Account.class);
-        Authentication<Account> authentication = mock(Authentication.class);
+        String mechanism = HttpServletRequest.BASIC_AUTH;
+        AuthenticatedSession authentication = new AuthenticatedSession(account, mechanism);
 
         when(this.sso.getAuthentication()).thenReturn(authentication);
-        when(authentication.getIdentity()).thenReturn(account);
 
         Account result = this.subject.getAccount();
 
@@ -81,11 +80,11 @@ public class DistributableSingleSignOnTestCase {
 
     @Test
     public void getMechanismName() {
-        AuthenticationType type = AuthenticationType.CLIENT_CERT;
-        Authentication<Account> authentication = mock(Authentication.class);
+        Account account = mock(Account.class);
+        String mechanism = HttpServletRequest.CLIENT_CERT_AUTH;
+        AuthenticatedSession authentication = new AuthenticatedSession(account, mechanism);
 
         when(this.sso.getAuthentication()).thenReturn(authentication);
-        when(authentication.getType()).thenReturn(type);
 
         String result = this.subject.getMechanismName();
 

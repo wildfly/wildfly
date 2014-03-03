@@ -21,7 +21,7 @@
  */
 package org.wildfly.clustering.web.undertow.sso;
 
-import io.undertow.security.idm.Account;
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractService;
@@ -47,7 +47,7 @@ public class DistributableSingleSignOnManagerFactoryService extends AbstractServ
         ;
     }
 
-    private final InjectedValue<SSOManagerFactory<Account, String>> manager = new InjectedValue<>();
+    private final InjectedValue<SSOManagerFactory<AuthenticatedSession, String>> manager = new InjectedValue<>();
     private final InjectedValue<SessionManagerRegistry> registry = new InjectedValue<>();
 
     private DistributableSingleSignOnManagerFactoryService() {

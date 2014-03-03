@@ -30,13 +30,12 @@ import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.junit.Test;
 import org.wildfly.clustering.web.LocalContextFactory;
 import org.wildfly.clustering.web.infinispan.sso.InfinispanSSO;
-import org.wildfly.clustering.web.sso.Authentication;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
 public class InfinispanSSOTestCase {
     private final String id = "id";
-    private final Authentication<String> authentication = mock(Authentication.class);
+    private final String authentication = "auth";
     private final Sessions<String> sessions = mock(Sessions.class);
     private final AtomicReference<Object> localContext = new AtomicReference<>();
     private final LocalContextFactory<Object> localContextFactory = mock(LocalContextFactory.class);
@@ -48,8 +47,9 @@ public class InfinispanSSOTestCase {
     public void getId() {
         assertSame(this.id, this.sso.getId());
     }
+
     @Test
-    public void getCredentials() {
+    public void getAuthentication() {
         assertSame(this.authentication, this.sso.getAuthentication());
     }
     

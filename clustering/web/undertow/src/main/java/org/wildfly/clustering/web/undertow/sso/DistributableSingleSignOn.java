@@ -30,6 +30,7 @@ import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
+import io.undertow.security.api.AuthenticatedSessionManager.AuthenticatedSession;
 import io.undertow.security.idm.Account;
 import io.undertow.security.impl.SingleSignOn;
 import io.undertow.server.session.Session;
@@ -41,11 +42,11 @@ import io.undertow.server.session.SessionManager;
  */
 public class DistributableSingleSignOn implements SingleSignOn {
 
-    private final SSO<Account, String, Void> sso;
+    private final SSO<AuthenticatedSession, String, Void> sso;
     private final SessionManagerRegistry registry;
     private final Batch batch;
 
-    public DistributableSingleSignOn(SSO<Account, String, Void> sso, SessionManagerRegistry registry, Batch batch) {
+    public DistributableSingleSignOn(SSO<AuthenticatedSession, String, Void> sso, SessionManagerRegistry registry, Batch batch) {
         this.sso = sso;
         this.registry = registry;
         this.batch = batch;
@@ -58,12 +59,12 @@ public class DistributableSingleSignOn implements SingleSignOn {
 
     @Override
     public Account getAccount() {
-        return this.sso.getAuthentication().getIdentity();
+        return this.sso.getAuthentication().getAccount();
     }
 
     @Override
     public String getMechanismName() {
-        return this.sso.getAuthentication().getType().name();
+        return this.sso.getAuthentication().getMechanism();
     }
 
     @Override

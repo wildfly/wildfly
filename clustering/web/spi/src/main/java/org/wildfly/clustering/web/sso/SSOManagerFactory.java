@@ -28,6 +28,6 @@ import org.wildfly.clustering.web.LocalContextFactory;
  * Factory for creating SSO manager instances.
  * @author Paul Ferraro
  */
-public interface SSOManagerFactory<I, D> {
-    <L> SSOManager<I, D, L> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory);
+public interface SSOManagerFactory<A, D> {
+    <L> SSOManager<A, D, L> createSSOManager(IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory);
 }

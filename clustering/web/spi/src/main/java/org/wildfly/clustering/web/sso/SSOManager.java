@@ -31,20 +31,20 @@ import org.wildfly.clustering.web.IdentifierFactory;
  * @param the deployment identifier type
  * @param the local context type
  */
-public interface SSOManager<I, D, L> extends IdentifierFactory<String> {
+public interface SSOManager<A, D, L> extends IdentifierFactory<String> {
     /**
      * Creates a new single sign on entry.
      * @param ssoId a unique SSO identifier
      * @return a new SSO.
      */
-    SSO<I, D, L> createSSO(String ssoId);
+    SSO<A, D, L> createSSO(String ssoId, A authentication);
 
     /**
      * Returns the single sign on entry identified by the specified identifier.
      * @param ssoId a unique SSO identifier
      * @return an existing SSO, or null, if no SSO was found
      */
-    SSO<I, D, L> findSSO(String ssoId);
+    SSO<A, D, L> findSSO(String ssoId);
 
     /**
      * A mechanism for starting/stopping a batch.

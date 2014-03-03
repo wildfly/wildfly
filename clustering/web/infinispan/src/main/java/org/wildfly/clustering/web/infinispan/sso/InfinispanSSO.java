@@ -18,26 +18,25 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- **/
+ */
 package org.wildfly.clustering.web.infinispan.sso;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.wildfly.clustering.web.LocalContextFactory;
-import org.wildfly.clustering.web.sso.Authentication;
 import org.wildfly.clustering.web.sso.SSO;
 import org.wildfly.clustering.web.sso.Sessions;
 
-public class InfinispanSSO<I, D, L> implements SSO<I, D, L> {
+public class InfinispanSSO<A, D, L> implements SSO<A, D, L> {
     private final String id;
-    private final Authentication<I> authentication;
+    private final A authentication;
     private final Sessions<D> sessions;
     private final AtomicReference<L> localContext;
     private final LocalContextFactory<L> localContextFactory;
     private final Remover<String> remover;
 
-    public InfinispanSSO(String id, Authentication<I> authentication, Sessions<D> sessions, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover) {
+    public InfinispanSSO(String id, A authentication, Sessions<D> sessions, AtomicReference<L> localContext, LocalContextFactory<L> localContextFactory, Remover<String> remover) {
         this.id = id;
         this.authentication = authentication;
         this.sessions = sessions;
@@ -52,7 +51,7 @@ public class InfinispanSSO<I, D, L> implements SSO<I, D, L> {
     }
 
     @Override
-    public Authentication<I> getAuthentication() {
+    public A getAuthentication() {
         return this.authentication;
     }
 

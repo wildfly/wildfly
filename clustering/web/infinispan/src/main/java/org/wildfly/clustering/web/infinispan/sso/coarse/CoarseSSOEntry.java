@@ -23,21 +23,28 @@ package org.wildfly.clustering.web.infinispan.sso.coarse;
 
 import java.util.Map;
 
+import org.wildfly.clustering.web.infinispan.sso.Authenticator;
+
 /**
  * Simple container for CoarseAuthenticationEntry and sessions map.
  * @author Paul Ferraro
  */
-public class CoarseSSOEntry<I, D, L> {
+public class CoarseSSOEntry<A, D, L> implements Authenticator<A> {
 
-    private final CoarseAuthenticationEntry<I, D, L> authenticationEntry;
+    private final CoarseAuthenticationEntry<A, D, L> authenticationEntry;
     private final Map<D, String> sessions;
 
-    public CoarseSSOEntry(CoarseAuthenticationEntry<I, D, L> authenticationEntry, Map<D, String> sessions) {
+    public CoarseSSOEntry(CoarseAuthenticationEntry<A, D, L> authenticationEntry, Map<D, String> sessions) {
         this.authenticationEntry = authenticationEntry;
         this.sessions = sessions;
     }
 
-    public CoarseAuthenticationEntry<I, D, L> getAuthenticationEntry() {
+    @Override
+    public void setAuthentication(A authentication) {
+        this.authenticationEntry.setAuthentication(authentication);
+    }
+
+    public CoarseAuthenticationEntry<A, D, L> getAuthenticationEntry() {
         return this.authenticationEntry;
     }
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,16 +19,8 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.sso;
+package org.wildfly.clustering.web.infinispan.sso;
 
-/**
- * Encapsulates the authentication information for an SSO.
- * @author Paul Ferraro
- */
-public interface Authentication<I> {
-    I getIdentity();
-    void setIdentity(I identity);
-
-    AuthenticationType getType();
-    void setType(AuthenticationType type);
+public interface Authenticator<A> {
+    void setAuthentication(A authentication);
 }
