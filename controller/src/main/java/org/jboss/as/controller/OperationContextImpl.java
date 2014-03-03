@@ -22,10 +22,14 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACTIVE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_THREAD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTION_STATUS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL_SIGNIFICANT;
@@ -36,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQ
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -81,6 +86,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -164,15 +170,27 @@ final class OperationContextImpl extends AbstractOperationContext {
             Collections.synchronizedMap(new HashMap<PathAddress, ModelNode>());
 
     private final Integer operationId;
+    private final String operationName;
+    private final ModelNode operationAddress;
+    private final AccessMechanism accessMechanism;
+    private final ActiveOperationResource activeOperationResource;
+    private final BooleanHolder done = new BooleanHolder();
 
-    OperationContextImpl(final ModelControllerImpl modelController, final ProcessType processType,
+    private volatile ExecutionStatus executionStatus = ExecutionStatus.EXECUTING;
+
+    OperationContextImpl(final Integer operationId, final String operationName, final ModelNode operationAddress, final ModelControllerImpl modelController, final ProcessType processType,
                          final RunningMode runningMode, final EnumSet<ContextFlag> contextFlags,
                          final OperationMessageHandler messageHandler, final OperationAttachments attachments,
                          final Resource model, final ModelController.OperationTransactionControl transactionControl,
                          final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
-                         final Integer operationId, final HostServerGroupTracker hostServerGroupTracker,
-                         final ModelNode blockingTimeoutConfig) {
+                         final HostServerGroupTracker hostServerGroupTracker,
+                         final ModelNode blockingTimeoutConfig,
+                         final AccessMechanism accessMechanism) {
         super(processType, runningMode, transactionControl, processState, booting, auditLogger);
+        this.operationId = operationId;
+        this.operationName = operationName;
+        this.operationAddress = operationAddress.isDefined()
+                ? operationAddress : ModelControllerImpl.EMPTY_ADDRESS;
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;
@@ -181,9 +199,10 @@ final class OperationContextImpl extends AbstractOperationContext {
         this.affectsModel = booting ? new ConcurrentHashMap<PathAddress, Object>(16 * 16) : new HashMap<PathAddress, Object>(1);
         this.contextFlags = contextFlags;
         this.serviceTarget = new ContextServiceTarget(modelController);
-        this.operationId = operationId;
         this.hostServerGroupTracker = hostServerGroupTracker;
         this.blockingTimeoutConfig = blockingTimeoutConfig != null && blockingTimeoutConfig.isDefined() ? blockingTimeoutConfig : null;
+        this.activeOperationResource = new ActiveOperationResource();
+        this.accessMechanism = accessMechanism;
     }
 
     public InputStream getAttachmentStream(final int index) {
@@ -202,9 +221,11 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (affectsRuntime) {
             MGMT_OP_LOGGER.debugf("Entered VERIFY stage; waiting for service container to settle");
             long timeout = getBlockingTimeout().getBlockingTimeout();
+            ExecutionStatus originalExecutionStatus = executionStatus;
             try {
                 // First wait until any removals we've initiated have begun processing, otherwise
                 // the ContainerStateMonitor may not have gotten the notification causing it to untick
+                executionStatus = ExecutionStatus.AWAITING_STABILITY;
                 waitForRemovals();
                 ContainerStateMonitor.ContainerStateChangeReport changeReport =
                         modelController.awaitContainerStateChangeReport(timeout, TimeUnit.MILLISECONDS);
@@ -219,6 +240,8 @@ final class OperationContextImpl extends AbstractOperationContext {
                 // message to the user as part of the operation response
                 MGMT_OP_LOGGER.timeoutExecutingOperation(timeout / 1000, containerMonitorStep.operationId.name, containerMonitorStep.address);
                 throw te;
+            } finally {
+                executionStatus = originalExecutionStatus;
             }
         }
     }
@@ -434,12 +457,18 @@ final class OperationContextImpl extends AbstractOperationContext {
         return serviceTarget;
     }
 
+    Resource.ResourceEntry getActiveOperationResource() {
+        return activeOperationResource;
+    }
+
     private void takeWriteLock() {
         if (lockStep == null) {
             if (currentStage == Stage.DONE) {
                 throw ControllerLogger.ROOT_LOGGER.invalidModificationAfterCompletedStep();
             }
+            ExecutionStatus originalStatus = executionStatus;
             try {
+                executionStatus = ExecutionStatus.AWAITING_OTHER_OPERATION;
                 // BES 2014/04/22 Ignore blocking timeout here. We risk some bug causing the
                 // lock to never be released. But we gain multiple ops being able to wait until they get
                 // a chance to run with no need to guess how long op 2 will take so we can
@@ -460,6 +489,8 @@ final class OperationContextImpl extends AbstractOperationContext {
                 cancelled = true;
                 Thread.currentThread().interrupt();
                 throw ControllerLogger.ROOT_LOGGER.operationCancelledAsynchronously();
+            } finally {
+                executionStatus = originalStatus;
             }
         }
     }
@@ -474,7 +505,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                 }
                 containerMonitorStep = activeStep;
                 int timeout = getBlockingTimeout().getBlockingTimeout();
+                ExecutionStatus origStatus = executionStatus;
                 try {
+                    executionStatus = ExecutionStatus.AWAITING_STABILITY;
                     modelController.awaitContainerStability(timeout, TimeUnit.MILLISECONDS, respectInterruption);
                 } catch (InterruptedException e) {
                     if (resultAction != ResultAction.ROLLBACK) {
@@ -496,9 +529,11 @@ final class OperationContextImpl extends AbstractOperationContext {
                     // Deliberate log and throw; we want this logged, we need to notify user, and I want slightly
                     // different messages for both so just throwing a RuntimeException to get the automatic handling
                     // in AbstractOperationContext.executeStep is not what I wanted
-                    MGMT_OP_LOGGER.timeoutAwaitingInitialStability(timeout / 1000, activeStep.operationId.name, activeStep.operationId.address);
+                    ControllerLogger.MGMT_OP_LOGGER.timeoutAwaitingInitialStability(timeout / 1000, activeStep.operationId.name, activeStep.operationId.address);
                     setRollbackOnly();
                     throw new OperationFailedRuntimeException(ControllerLogger.ROOT_LOGGER.timeoutAwaitingInitialStability());
+                } finally {
+                    executionStatus = origStatus;
                 }
             }
         }
@@ -1010,6 +1045,22 @@ final class OperationContextImpl extends AbstractOperationContext {
     @Override
     Resource getModel() {
         return model;
+    }
+
+    @Override
+    ResultAction executeOperation() {
+        try {
+            return super.executeOperation();
+        } finally {
+            synchronized (done) {
+                if (done.done) {
+                    // late cancellation; clear the thread status
+                    Thread.interrupted();
+                } else {
+                    done.done = true;
+                }
+            }
+        }
     }
 
     private TargetAttribute createTargetAttribute(AuthorizationResponseImpl authResp, String attributeName, boolean isDefaultResponse) {
@@ -1910,5 +1961,60 @@ final class OperationContextImpl extends AbstractOperationContext {
             DescriptionProvider realProvider = super.getModelDescription(relativeAddress);
             return new CachingDescriptionProvider(fullAddress, realProvider);
         }
+    }
+
+    private class ActiveOperationResource extends PlaceholderResource.PlaceholderResourceEntry implements Cancellable {
+
+        private ActiveOperationResource() {
+            super(ACTIVE_OPERATION, operationId.toString());
+        }
+
+        @Override
+        public boolean isModelDefined() {
+            return true;
+        }
+
+        @Override
+        public ModelNode getModel() {
+            final ModelNode model = new ModelNode();
+
+            model.get(OP).set(operationName);
+            model.get(OP_ADDR).set(operationAddress);
+
+            model.get(CALLER_THREAD).set(initiatingThread.getName());
+            ModelNode accessMechanismNode = model.get(ACCESS_MECHANISM);
+            if (accessMechanism != null) {
+                accessMechanismNode.set(accessMechanismNode.toString());
+            }
+            model.get(EXECUTION_STATUS).set(getExecutionStatus());
+            model.get(CANCELLED).set(cancelled);
+            return model;
+        }
+
+        private String getExecutionStatus() {
+            ExecutionStatus currentStatus = executionStatus;
+            if (currentStatus == ExecutionStatus.EXECUTING) {
+                currentStatus = resultAction == ResultAction.ROLLBACK ? ExecutionStatus.ROLLING_BACK
+                        : currentStage == Stage.DONE ? ExecutionStatus.COMPLETING : ExecutionStatus.EXECUTING;
+            }
+            return currentStatus.toString();
+        }
+
+        @Override
+        public boolean cancel() {
+            synchronized (done) {
+                boolean canCancel = !done.done;
+                if (canCancel) {
+                    done.done = true;
+                    ControllerLogger.MGMT_OP_LOGGER.cancellingOperation(operationName, operationId, initiatingThread.getName());
+                    initiatingThread.interrupt();
+                }
+                return canCancel;
+            }
+        }
+    }
+
+    private static class BooleanHolder {
+        private boolean done = false;
     }
 }

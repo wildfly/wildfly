@@ -236,7 +236,7 @@ public class OperationTimeoutUnitTestCase {
     public static class ModelControllerService extends TestModelControllerService {
 
         @Override
-        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
 
             rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
             rootRegistration.registerOperationHandler("block", new BlockingServiceHandler(), DESC_PROVIDER, false);

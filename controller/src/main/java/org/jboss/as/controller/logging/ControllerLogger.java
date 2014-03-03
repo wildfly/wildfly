@@ -3175,4 +3175,9 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Level.ERROR)
     @Message(id = 349, value = "Timeout after [%d] seconds waiting for service container stability while finalizing an operation. Process must be restarted. Step that first updated the service container was '%s' at address '%s'")
     void timeoutCompletingOperation(long blockingTimeout, String name, PathAddress address);
+
+    @LogMessage(level = Level.INFO)
+    @Message(id = 350, value = "Cancelling operation '%s' with id '%d' running on thread '%s'")
+    void cancellingOperation(String operation, int id, String thread);
+
 }
