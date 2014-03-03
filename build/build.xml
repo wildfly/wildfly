@@ -206,6 +206,10 @@
             <maven-resource group="org.wildfly" artifact="wildfly-controller-client"/>
         </module-def>
 
+        <module-def name="org.jboss.as.core-security-api">
+            <maven-resource group="org.wildfly" artifact="wildfly-core-security-api"/>
+        </module-def>        	
+    	
         <module-def name="org.jboss.as.core-security">
             <maven-resource group="org.wildfly" artifact="wildfly-core-security"/>
         </module-def>

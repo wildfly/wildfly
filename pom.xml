@@ -992,6 +992,12 @@
 
             <dependency>
                 <groupId>org.wildfly</groupId>
+                <artifactId>wildfly-core-security-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-core-security</artifactId>
                 <version>${project.version}</version>
             </dependency>

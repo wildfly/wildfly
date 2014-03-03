@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,52 +20,22 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.core.security;
-
-import static org.jboss.as.core.security.CoreSecurityMessages.MESSAGES;
+package org.jboss.as.core.security.api;
 
 import java.security.Principal;
 
 /**
- * Base class for Principals define in DomainManagement.
+ * An interface to be implemented by {@link Principal} types that also return a realm name.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public abstract class DomainManagementPrincipal implements Principal {
-
-    private final String name;
-
-    public DomainManagementPrincipal(final String name) {
-        if (name == null) {
-            throw MESSAGES.canNotBeNull("name");
-        }
-        this.name = name;
-    }
+public interface RealmPrincipal extends Principal {
 
     /**
-     * @see java.security.Principal#getName()
+     * Obtain the name of the realm that this {@link Principal} is associated with.
+     *
+     * @return The name of the realm.
      */
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return obj != null && this.getClass().equals(obj.getClass()) ? equals((DomainManagementPrincipal) obj) : false;
-    }
-
-    protected boolean equals(DomainManagementPrincipal principal) {
-        return this == principal || name.equals(principal.name);
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
+    String getRealm();
 
 }
