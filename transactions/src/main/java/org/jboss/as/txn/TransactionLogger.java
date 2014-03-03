@@ -30,6 +30,7 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.WARN;
 
 /**
  * Transaction logger. Uses id's 10100 to 10199.
@@ -71,4 +72,14 @@ public interface TransactionLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 10152, value = "APPLICATION ERROR: transaction still active in request with status %s")
     void transactionStillOpen(int status);
+
+
+    /**
+     * If the user has set node identifier to the default value
+     *
+     * @return the message.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10153, value = "Node identifier property is set to the default value. Please make sure it is unique.")
+    void nodeIdentifierIsSetToDefault();
 }
