@@ -50,6 +50,7 @@ import org.jboss.as.network.SocketBindingManager;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.txn.TransactionLogger;
 import org.jboss.as.txn.deployment.TransactionJndiBindingProcessor;
 import org.jboss.as.txn.deployment.TransactionLeakRollbackProcessor;
 import org.jboss.as.txn.service.ArjunaObjectStoreEnvironmentService;
@@ -174,6 +175,8 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model,
                                    ServiceVerificationHandler verificationHandler,
                                    List<ServiceController<?>> controllers) throws OperationFailedException {
+
+        checkIfNodeIdentifierIsDefault(context, model);
 
         boolean jts = model.hasDefined(JTS) && model.get(JTS).asBoolean();
 
@@ -441,5 +444,13 @@ class TransactionSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     }
 
+    private void checkIfNodeIdentifierIsDefault(final OperationContext context, final ModelNode model) throws OperationFailedException {
+        final String nodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.resolveModelAttribute(context, model).asString();
+        final String defaultNodeIdentifier = TransactionSubsystemRootResourceDefinition.NODE_IDENTIFIER.getDefaultValue().asString();
+
+        if (defaultNodeIdentifier.equals(nodeIdentifier)) {
+            TransactionLogger.ROOT_LOGGER.nodeIdentifierIsSetToDefault();
+        }
+    }
 
 }
