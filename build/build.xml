@@ -1058,10 +1058,6 @@
             <maven-resource group="org.jipijapa" artifact="jipijapa-spi"/>
         </module-def>
 
-        <module-def name="org.jboss.as.jpa.util">
-            <maven-resource group="org.wildfly" artifact="wildfly-jpa-util"/>
-        </module-def>
-
         <module-def name="org.jboss.as.jsf">
             <maven-resource group="org.wildfly" artifact="wildfly-jsf" />
         </module-def>
