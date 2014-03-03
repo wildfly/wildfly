@@ -975,6 +975,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-core-security-api</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-core-security</artifactId>
                 </dependency>
 
