@@ -151,7 +151,7 @@
         <version.org.glassfish.javax.el>3.0.0</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.0.3</version.org.glassfish.javax.json>
-        <version.org.hibernate>4.3.1.Final</version.org.hibernate>
+        <version.org.hibernate>4.3.4.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
         <version.org.hibernate.validator>5.1.0.Final</version.org.hibernate.validator>
