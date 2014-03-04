@@ -21,4 +21,4 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module-alias xmlns="urn:jboss:module:1.1" name="org.jboss.as.clustering.ejb3.infinispan" target-name="org.wildfly.clustering.ejb.infinispan"/>
+<module-alias xmlns="urn:jboss:module:1.3" name="org.jboss.as.clustering.ejb3.infinispan" target-name="org.wildfly.clustering.ejb.infinispan"/>

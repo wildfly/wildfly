@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="javax.servlet.jsp.api">
+<module xmlns="urn:jboss:module:1.3" name="javax.servlet.jsp.api">
     <dependencies>
         <module name="javax.servlet.api" export="true"/>
         <module name="org.glassfish.javax.el" export="true"/>

@@ -23,7 +23,7 @@
   -->
 
 <!-- Represents the EclipseLink module  -->
-<module xmlns="urn:jboss:module:1.1" name="org.eclipse.persistence">
+<module xmlns="urn:jboss:module:1.3" name="org.eclipse.persistence">
     <resources>
         <!-- Insert resources here -->
     </resources>

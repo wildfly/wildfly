@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="javax.ejb.api">
+<module xmlns="urn:jboss:module:1.3" name="javax.ejb.api">
     <dependencies>
         <!-- This dep is for javax.naming -->
         <module name="javax.api" export="true"/>
