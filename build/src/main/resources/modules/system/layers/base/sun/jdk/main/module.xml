@@ -21,7 +21,7 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<module xmlns="urn:jboss:module:1.1" name="sun.jdk">
+<module xmlns="urn:jboss:module:1.3" name="sun.jdk">
     <resources>
         <!-- currently jboss modules has not way of importing services from
         classes.jar so we duplicate them here -->
