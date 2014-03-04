@@ -56,13 +56,8 @@
             <resources/>
 
             <!-- Some final cleanup -->
-            <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
-                <replacetoken>
-                    <![CDATA[
-        <!-- Insert resources here -->]]></replacetoken>
-                <replacevalue>
-                </replacevalue>
-            </replace>
+            <replaceregexp file="${module.repo.output.dir}/${current.module.path}/${module.xml}" match="\s+&lt;!-- Insert resources here --&gt;" replace=""
+                          flags="gis" byline="false"/>
 
         </sequential>
     </macrodef>
