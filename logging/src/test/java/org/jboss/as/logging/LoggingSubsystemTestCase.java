@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.logging.CommonAttributes.APPEND;
 import static org.jboss.as.logging.CommonAttributes.AUTOFLUSH;
 import static org.jboss.as.logging.CommonAttributes.FILE;
-import static org.jboss.as.logging.CommonAttributes.LOGGING_PROFILE;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,6 +54,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.SubsystemOperations;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.logmanager.LogContext;
 import org.junit.Assert;
@@ -173,6 +173,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         final List<ModelNode> ops = builder.parseXmlResource("/expressions.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops,
                 new FailedOperationTransformationConfig()
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS, new NewAttributesConfig(LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES))
                         .addFailedAttribute(createRootLoggerAddress(),
                                 new RejectExpressionsConfig(RootLoggerResourceDefinition.EXPRESSION_ATTRIBUTES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(LoggerResourceDefinition.LOGGER_PATH),
@@ -244,7 +245,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         // However, the category attribute is a read-only attribute resolved at runtime by the name of the resource.
         // WildFly does not require the ModelFixer as read-only attributes can be left off. If a change is made in EAP
         // to do the same thing, this ModelFixer can and should be removed.
-        checkSubsystemModelTransformation(mainServices, modelVersion, new AttributeRemovalModelFixer(LoggerResourceDefinition.LOGGER, LoggerResourceDefinition.CATEGORY));
+        checkSubsystemModelTransformation(mainServices, modelVersion, new AttributeRemovalModelFixer(LoggerResourceDefinition.CATEGORY, LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES));
     }
 
     private void testFailedTransformedBootOperations1_3_0(final ModelTestControllerVersion controllerVersion) throws Exception {
@@ -267,6 +268,7 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
         final List<ModelNode> ops = builder.parseXmlResource("/expressions.xml");
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops,
                 new FailedOperationTransformationConfig()
+                        .addFailedAttribute(SUBSYSTEM_ADDRESS, new NewAttributesConfig(LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(FileHandlerResourceDefinition.FILE_HANDLER_PATH),
                                 new NewAttributesConfig(FileHandlerResourceDefinition.NAMED_FORMATTER))
                         .addFailedAttribute(SUBSYSTEM_ADDRESS.append(PatternFormatterResourceDefinition.PATTERN_FORMATTER_PATH),
@@ -448,32 +450,30 @@ public class LoggingSubsystemTestCase extends AbstractLoggingSubsystemTest {
     }
 
     static class AttributeRemovalModelFixer implements ModelFixer {
-        private final String resourceName;
         private final AttributeDefinition[] attributes;
 
-        AttributeRemovalModelFixer(final String resourceName, final AttributeDefinition... attributes) {
-            this.resourceName = resourceName;
+        AttributeRemovalModelFixer(final AttributeDefinition... attributes) {
             this.attributes = attributes;
         }
 
         @Override
         public ModelNode fixModel(final ModelNode modelNode) {
-            // Check for a logging-profile
-            if (modelNode.hasDefined(LOGGING_PROFILE)) {
-                final ModelNode loggingProfiles = modelNode.get(LOGGING_PROFILE);
-                for (Property property : loggingProfiles.asPropertyList()) {
-                    final ModelNode loggingProfile = property.getValue();
-                    loggingProfiles.get(property.getName()).set(fixModel(loggingProfile.clone()));
-                }
-            }
-            if (modelNode.hasDefined(resourceName)) {
-                final ModelNode model = modelNode.get(resourceName);
-                for (Property property : model.asPropertyList()) {
-                    final ModelNode resourceModel = property.getValue();
-                    for (AttributeDefinition attribute : attributes) {
-                        resourceModel.remove(attribute.getName());
+            // Recursively remove the attributes
+            if (modelNode.getType() == ModelType.OBJECT) {
+                for (Property property : modelNode.asPropertyList()) {
+                    final String name = property.getName();
+                    final ModelNode value = property.getValue();
+                    if (value.isDefined()) {
+                        if (value.getType() == ModelType.OBJECT) {
+                            modelNode.get(name).set(fixModel(value));
+                        } else {
+                            for (AttributeDefinition attribute : attributes) {
+                                if (name.equals(attribute.getName())) {
+                                    modelNode.remove(name);
+                                }
+                            }
+                        }
                     }
-                    model.get(property.getName()).set(resourceModel);
                 }
             }
             return modelNode;

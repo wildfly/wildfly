@@ -51,6 +51,15 @@
             <xs:element name="custom-handler" type="customHandlerType"/>
             <xs:element name="syslog-handler" type="syslogHandlerType"/>
             <xs:element name="formatter" type="formatterType"/>
+            <xs:element name="add-logging-api-dependencies" type="booleanTrueValueType">
+                <xs:annotation>
+                    <xs:documentation>
+                        <![CDATA[
+                            Determines whether or not the default logging dependencies should be added to deployments during the deployment process.
+                        ]]>
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
             <xs:element name="logging-profiles" type="logging-profilesType" minOccurs="0" maxOccurs="1"/>
         </xs:choice>
     </xs:complexType>
@@ -352,6 +361,10 @@
 
     <xs:complexType name="booleanValueType">
         <xs:attribute name="value" use="required" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="booleanTrueValueType">
+        <xs:attribute name="value" type="xs:boolean" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="valueType">

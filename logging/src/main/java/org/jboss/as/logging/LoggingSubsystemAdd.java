@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.logging.deployments.LoggingDependencyDeploymentProcessor;
 import org.jboss.as.logging.logmanager.ConfigurationPersistence;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
@@ -53,15 +54,20 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) {
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException  {
         model.setEmptyObject();
+        LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES.validateAndSet(operation, model);
     }
 
     @Override
     protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler, final List<ServiceController<?>> newControllers) throws OperationFailedException {
+        final boolean addDependencies = LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES.resolveModelAttribute(context, model).asBoolean();
         context.addStep(new AbstractDeploymentChainStep() {
             @Override
             protected void execute(final DeploymentProcessorTarget processorTarget) {
+                if (addDependencies) {
+                    processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_LOGGING, new LoggingDependencyDeploymentProcessor());
+                }
                 processorTarget.addDeploymentProcessor(LoggingExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_LOGGING_CONFIG, LoggingDeploymentUnitProcessor.INSTANCE);
             }
         }, Stage.RUNTIME);

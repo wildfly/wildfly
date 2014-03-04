@@ -21,6 +21,7 @@
   -->
 
 <subsystem xmlns="urn:jboss:domain:logging:1.4">
+    <add-logging-api-dependencies value="${test.add.deps:true}"/>
     <async-handler name="async">
         <queue-length value="${test.queue.length:10}"/>
         <overflow-action value="${test.overflow.action:block}"/>

@@ -35,6 +35,7 @@ enum Element {
     UNKNOWN((String) null),
 
     ACCEPT(CommonAttributes.ACCEPT),
+    ADD_LOGGING_API_DEPENDENCIES(LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES),
     ALL(CommonAttributes.ALL),
     ANY(CommonAttributes.ANY),
     APP_NAME(SyslogHandlerResourceDefinition.APP_NAME),

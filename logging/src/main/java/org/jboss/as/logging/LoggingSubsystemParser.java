@@ -104,6 +104,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -136,7 +137,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         }
         final PathAddress address = PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, LoggingExtension.SUBSYSTEM_NAME));
 
-        list.add(Util.createAddOperation(address));
+        // Subsystem add operation
+        final ModelNode subsystemAddOp = Util.createAddOperation(address);
+        list.add(subsystemAddOp);
 
         final List<ModelNode> loggerOperations = new ArrayList<ModelNode>();
         final List<ModelNode> asyncHandlerOperations = new ArrayList<ModelNode>();
@@ -158,6 +161,14 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 case LOGGING_1_4: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
+                        case ADD_LOGGING_API_DEPENDENCIES:{
+                            if (namespace == Namespace.LOGGING_1_0 || namespace == Namespace.LOGGING_1_1 ||
+                                    namespace == Namespace.LOGGING_1_2 || namespace == Namespace.LOGGING_1_3)
+                                throw unexpectedElement(reader);
+                            final String value = ParseUtils.readStringAttributeElement(reader, Attribute.VALUE.getLocalName());
+                            LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES.parseAndSetParameter(value, subsystemAddOp, reader);
+                            break;
+                        }
                         case LOGGER: {
                             parseLoggerElement(reader, address, loggerOperations, loggerNames);
                             break;
@@ -1436,6 +1447,9 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
         context.startSubsystemElement(Namespace.CURRENT.getUriString(), false);
 
         ModelNode node = context.getModelNode();
+
+        // Marshall attributes
+        LoggingRootResource.ADD_LOGGING_API_DEPENDENCIES.marshallAsElement(node, false, writer);
 
         writeContent(writer, node);
 

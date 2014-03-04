@@ -1,8 +1,8 @@
 /*
- * JBoss, Home of Professional Open Source
- * Copyright 2010, Red Hat Inc., and individual contributors as indicated
- * by the @authors tag. See the copyright.txt in the distribution for a
- * full listing of individual contributors.
+ * JBoss, Home of Professional Open Source.
+ * Copyright 2014, Red Hat, Inc., and individual contributors
+ * as indicated by the @author tags. See the copyright.txt file in the
+ * distribution for a full listing of individual contributors.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,32 +19,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.server.deployment.module;
 
-import org.jboss.as.server.ServerLogger;
+package org.jboss.as.logging.deployments;
+
+import org.jboss.as.logging.LoggingLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.as.server.deployment.module.ModuleDependency;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
 
 /**
- * DUP thats adds dependencies that are availible to all deployments
+ * Adds the default logging dependencies to the deployment.
+ * <p/>
+ * Default Dependencies:
+ * <ul>
+ * <li>org.jboss.logging</li>
+ * <li>org.apache.commons.logging</li>
+ * <li>org.apache.log4j</li>
+ * <li>org.sfl4j</li>
+ * <li>org.jboss.logging-jul-to-slf4j-stub</li>
+ * </ul>
  *
- * @author Stuart Douglas
- * @author Thomas.Diesler@jboss.com
+ * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
  */
-public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
+public class LoggingDependencyDeploymentProcessor implements DeploymentUnitProcessor {
 
-    private static ModuleIdentifier[] DEFAULT_MODULES = new ModuleIdentifier[] {
-        ModuleIdentifier.create("sun.jdk"),
-        ModuleIdentifier.create("ibm.jdk"),
-        ModuleIdentifier.create("javax.api"),
-        ModuleIdentifier.create("org.jboss.vfs"),
+    private static final ModuleIdentifier[] LOGGING_MODULES = new ModuleIdentifier[] {
+            ModuleIdentifier.create("org.jboss.logging"),
+            ModuleIdentifier.create("org.apache.commons.logging"),
+            ModuleIdentifier.create("org.apache.log4j"),
+            ModuleIdentifier.create("org.slf4j"),
+            ModuleIdentifier.create("org.jboss.logging.jul-to-slf4j-stub"),
     };
 
     @Override
@@ -52,13 +64,14 @@ public class ServerDependenciesProcessor implements DeploymentUnitProcessor {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
-        for (ModuleIdentifier moduleId : DEFAULT_MODULES) {
+        // Add the logging modules
+        for (ModuleIdentifier moduleId : LOGGING_MODULES) {
             try {
+                LoggingLogger.ROOT_LOGGER.tracef("Adding module '%s' to deployment '%s'", moduleId, deploymentUnit.getName());
                 moduleLoader.loadModule(moduleId);
-                boolean importServices = moduleId.getName().endsWith("jdk");
-                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleId, false, false, importServices, false));
+                moduleSpecification.addSystemDependency(new ModuleDependency(moduleLoader, moduleId, false, false, false, false));
             } catch (ModuleLoadException ex) {
-                ServerLogger.ROOT_LOGGER.debugf("Module not found: %s", moduleId);
+                LoggingLogger.ROOT_LOGGER.debugf("Module not found: %s", moduleId);
             }
         }
     }
