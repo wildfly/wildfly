@@ -25,6 +25,9 @@ package org.jboss.as.connector.subsystems.datasources;
 import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsDescriptionProvider;
 import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
+import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeReadHandler;
+import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeWriteHandler;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
@@ -35,10 +38,8 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 
 /**
-*
  * Listener that registers data source statistics with the management model
- *
-*/
+ */
 public class DataSourceStatisticsListener extends AbstractServiceListener<Object> {
 
     private static final PathElement JDBC_STATISTICS = PathElement.pathElement("statistics", "jdbc");
@@ -64,6 +65,8 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
 
                 StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
                 StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
+                jdbcStats.setEnabled(false);
+                poolStats.setEnabled(false);
                 int jdbcStatsSize = jdbcStats.getNames().size();
                 int poolStatsSize = poolStats.getNames().size();
                 if (jdbcStatsSize > 0 || poolStatsSize > 0) {
@@ -73,10 +76,13 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                         ManagementResourceRegistration jdbcRegistration = subRegistration.registerSubModel(JDBC_STATISTICS, new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", jdbcStats));
                         jdbcRegistration.setRuntimeOnly(true);
                         jdbcRegistration.registerOperationHandler(Constants.CLEAR_STATISTICS, new ClearStatisticsHandler(jdbcStats));
-
                         for (String statName : jdbcStats.getNames()) {
                             jdbcRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
                         }
+                        //adding enable/disable for pool stats
+                        OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(jdbcStats);
+                        OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(jdbcStats);
+                        jdbcRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
 
                         resource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                     }
@@ -89,6 +95,10 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                         for (String statName : poolStats.getNames()) {
                             poolRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                         }
+                        //adding enable/disable for pool stats
+                        OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(poolStats);
+                        OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(poolStats);
+                        poolRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
 
                         resource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                     }

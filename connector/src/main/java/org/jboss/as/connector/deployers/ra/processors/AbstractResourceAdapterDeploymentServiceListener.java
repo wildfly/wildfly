@@ -31,10 +31,13 @@ import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsEle
 import org.jboss.as.connector.dynamicresource.descriptionproviders.SubSystemExtensionDescriptionProvider;
 import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
+import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeReadHandler;
+import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeWriteHandler;
 import org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -51,10 +54,8 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 
 /**
-*
-*
-* @author Stefano Maestri (c) 2011 Red Hat Inc.
-*/
+ * @author Stefano Maestri (c) 2011 Red Hat Inc.
+ */
 public abstract class AbstractResourceAdapterDeploymentServiceListener extends AbstractServiceListener<Object> {
     private final ManagementResourceRegistration registration;
     private final String deploymentUnitName;
@@ -77,6 +78,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                     for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
                         if (cm.getPool() != null) {
                             StatisticsPlugin poolStats = cm.getPool().getStatistics();
+                            poolStats.setEnabled(false);
 
                             if (poolStats.getNames().size() != 0) {
                                 DescriptionProvider statsResourceDescriptionProvider = new StatisticsDescriptionProvider(CommonAttributes.RESOURCE_NAME, "statistics", poolStats);
@@ -107,96 +109,102 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
 
                                     }
 
-                                ManagementResourceRegistration subRegistration;
-                                try {
-                                    subRegistration = overrideRegistration.registerSubModel(new SimpleResourceDefinition(pe, new SubSystemExtensionDescriptionProvider(CommonAttributes.RESOURCE_NAME, "deployment-subsystem")));
-                                } catch (IllegalArgumentException iae) {
-                                    subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
-                                }
-                                Resource subsystemResource;
+                                    ManagementResourceRegistration subRegistration;
+                                    try {
+                                        subRegistration = overrideRegistration.registerSubModel(new SimpleResourceDefinition(pe, new SubSystemExtensionDescriptionProvider(CommonAttributes.RESOURCE_NAME, "deployment-subsystem")));
+                                    } catch (IllegalArgumentException iae) {
+                                        subRegistration = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
+                                    }
+                                    Resource subsystemResource;
 
-                                if (!deploymentResource.hasChild(pe)) {
-                                    subsystemResource = new IronJacamarResource.IronJacamarRuntimeResource();
-                                    deploymentResource.registerChild(pe, subsystemResource);
-                                } else {
-                                    subsystemResource = deploymentResource.getChild(pe);
-                                }
+                                    if (!deploymentResource.hasChild(pe)) {
+                                        subsystemResource = new IronJacamarResource.IronJacamarRuntimeResource();
+                                        deploymentResource.registerChild(pe, subsystemResource);
+                                    } else {
+                                        subsystemResource = deploymentResource.getChild(pe);
+                                    }
 
-                                ManagementResourceRegistration statsRegistration;
+                                    ManagementResourceRegistration statsRegistration;
                                     try {
                                         statsRegistration = subRegistration.registerSubModel(new SimpleResourceDefinition(peStats, new StatisticsElementDescriptionProvider(CommonAttributes.RESOURCE_NAME, "statistics")));
                                     } catch (IllegalArgumentException iae) {
                                         statsRegistration = subRegistration.getSubModel(PathAddress.pathAddress(peStats));
                                     }
-                                Resource statisticsResource;
+                                    Resource statisticsResource;
 
-                                if (!subsystemResource.hasChild(peStats)) {
-                                    statisticsResource = new IronJacamarResource.IronJacamarRuntimeResource();
-                                    subsystemResource.registerChild(peStats, statisticsResource);
-                                } else {
-                                    statisticsResource = subsystemResource.getChild(peStats);
-                                }
+                                            if (!subsystemResource.hasChild(peStats)) {
+                                                statisticsResource = new IronJacamarResource.IronJacamarRuntimeResource();
+                                                subsystemResource.registerChild(peStats, statisticsResource);
+                                            } else {
+                                                statisticsResource = subsystemResource.getChild(peStats);
+                                            }
 
-                                if (statsRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
-                                    ManagementResourceRegistration cdSubRegistration = statsRegistration.registerSubModel(peCD, statsResourceDescriptionProvider);
-                                    final Resource cdResource = new IronJacamarResource.IronJacamarRuntimeResource();
+                                            if (statsRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
+                                                ManagementResourceRegistration cdSubRegistration = statsRegistration.registerSubModel(peCD, statsResourceDescriptionProvider);
+                                                final Resource cdResource = new IronJacamarResource.IronJacamarRuntimeResource();
 
-                                    if (!statisticsResource.hasChild(peCD))
-                                        statisticsResource.registerChild(peCD, cdResource);
+                                                if (!statisticsResource.hasChild(peCD))
+                                                    statisticsResource.registerChild(peCD, cdResource);
 
-                                    for (String statName : poolStats.getNames()) {
-                                        cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                                for (String statName : poolStats.getNames()) {
+                                                    cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
+                                                }
+                                                //adding enable/disable for pool stats
+                                                OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(poolStats);
+                                                OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(poolStats);
+                                                cdSubRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
+
+                                                cdSubRegistration.registerOperationHandler(ClearStatisticsHandler.DEFINITION, new ClearStatisticsHandler(poolStats));
+                                            }
+
+                                            registerIronjacamar(controller, subRegistration, subsystemResource);
+                                        }
                                     }
-                                    cdSubRegistration.registerOperationHandler(ClearStatisticsHandler.DEFINITION, new ClearStatisticsHandler(poolStats));
                                 }
-
-                                registerIronjacamar(controller, subRegistration, subsystemResource);
-                            }
                             }
                         }
+                        break;
+
                     }
-                }
-                break;
+                    case UP_to_STOP_REQUESTED: {
 
-            }
-            case UP_to_STOP_REQUESTED: {
+                        PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
+                        PathElement ijPe = PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME);
+                        PathElement peStats = PathElement.pathElement(Constants.STATISTICS_NAME, Constants.STATISTICS_NAME);
+                        PathElement peCD = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME);
 
-                PathElement pe = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ResourceAdaptersExtension.SUBSYSTEM_NAME);
-                PathElement ijPe = PathElement.pathElement(Constants.IRONJACAMAR_NAME, Constants.IRONJACAMAR_NAME);
-                PathElement peStats = PathElement.pathElement(Constants.STATISTICS_NAME, Constants.STATISTICS_NAME);
-                PathElement peCD = PathElement.pathElement(Constants.CONNECTIONDEFINITIONS_NAME);
-
-                ManagementResourceRegistration overrideRegistration = registration;
-                //when you are in deploy you have a registration pointing to deployment=*
-                //when you are in re-deploy it points to specific deploymentUnit
-                if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) != null) {
-                    overrideRegistration = registration.getOverrideModel(deploymentUnitName);
-                }
-                ManagementResourceRegistration subsystemReg= overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
-                if (subsystemReg != null) {
-                    if(subsystemReg.getSubModel(PathAddress.pathAddress(ijPe)) != null) {
-                        subsystemReg.unregisterSubModel(ijPe);
-                    }
-                    ManagementResourceRegistration statsReg =  subsystemReg.getSubModel(PathAddress.pathAddress(peStats));
-                    if(statsReg != null) {
-                        if(statsReg.getSubModel(PathAddress.pathAddress(peCD)) != null) {
-                            statsReg.unregisterSubModel(peCD);
+                        ManagementResourceRegistration overrideRegistration = registration;
+                        //when you are in deploy you have a registration pointing to deployment=*
+                        //when you are in re-deploy it points to specific deploymentUnit
+                        if (registration.isAllowsOverride() && registration.getOverrideModel(deploymentUnitName) != null) {
+                            overrideRegistration = registration.getOverrideModel(deploymentUnitName);
                         }
-                        subsystemReg.unregisterSubModel(peStats);
+                        ManagementResourceRegistration subsystemReg = overrideRegistration.getSubModel(PathAddress.pathAddress(pe));
+                        if (subsystemReg != null) {
+                            if (subsystemReg.getSubModel(PathAddress.pathAddress(ijPe)) != null) {
+                                subsystemReg.unregisterSubModel(ijPe);
+                            }
+                            ManagementResourceRegistration statsReg = subsystemReg.getSubModel(PathAddress.pathAddress(peStats));
+                            if (statsReg != null) {
+                                if (statsReg.getSubModel(PathAddress.pathAddress(peCD)) != null) {
+                                    statsReg.unregisterSubModel(peCD);
+                                }
+                                subsystemReg.unregisterSubModel(peStats);
+                            }
+                            overrideRegistration.unregisterSubModel(pe);
+                        }
+
+                        deploymentResource.removeChild(pe);
+
+
                     }
-                    overrideRegistration.unregisterSubModel(pe);
+
                 }
-
-                deploymentResource.removeChild(pe);
-
-
-
             }
 
-        }
+        protected abstract void registerIronjacamar ( final ServiceController<? extends Object> controller,
+        final ManagementResourceRegistration subRegistration, final Resource subsystemResource);
+
+        protected abstract CommonDeployment getDeploymentMetadata (
+        final ServiceController<? extends Object> controller);
     }
-
-    protected abstract void registerIronjacamar(final ServiceController<? extends Object> controller, final ManagementResourceRegistration subRegistration, final Resource subsystemResource);
-
-    protected abstract CommonDeployment getDeploymentMetadata(final ServiceController<? extends Object> controller);
-}

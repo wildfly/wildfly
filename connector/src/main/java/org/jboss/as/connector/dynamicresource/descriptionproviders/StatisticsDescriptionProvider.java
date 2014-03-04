@@ -38,6 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.jboss.as.connector.subsystems.common.pool.Constants;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.OverrideDescriptionProvider;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -97,7 +98,7 @@ public class StatisticsDescriptionProvider implements DescriptionProvider {
         for (Map.Entry<String, ModelNode> entry : attributeDescriptions.entrySet()) {
             attrs.get(entry.getKey()).set(entry.getValue());
         }
-
+        Constants.POOL_STATISTICS_ENABLED.addResourceAttributeDescription(bundle,"statistics",subsystem);
         subsystem.get(OPERATIONS); // placeholder
 
         subsystem.get(CHILDREN).setEmptyObject(); // no children
