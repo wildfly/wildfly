@@ -32,6 +32,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.builder.PredicatedHandler;
 import io.undertow.server.handlers.resource.CachingResourceManager;
 import io.undertow.server.handlers.resource.ResourceManager;
+import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.Servlets;
 import io.undertow.servlet.api.AuthMethodConfig;
 import io.undertow.servlet.api.ClassIntrospecter;
@@ -199,6 +200,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final List<HandlerWrapper> innerHandlerChainWrappers;
     private final List<HandlerWrapper> outerHandlerChainWrappers;
     private final List<ThreadSetupAction> threadSetupActions;
+    private final List<ServletExtension> servletExtensions;
     private final boolean explodedDeployment;
 
     private final InjectedValue<UndertowService> undertowService = new InjectedValue<>();
@@ -211,7 +213,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final Map<String, InjectedValue<Executor>> executorsByName = new HashMap<String, InjectedValue<Executor>>();
 
-    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment) {
+    private UndertowDeploymentInfoService(final JBossWebMetaData mergedMetaData, final String deploymentName, final TldsMetaData tldsMetaData, final List<TldMetaData> sharedTlds, final Module module, final ScisMetaData scisMetaData, final VirtualFile deploymentRoot, final String jaccContextId, final String securityDomain, final List<ServletContextAttribute> attributes, final String contextPath, final List<SetupAction> setupActions, final Set<VirtualFile> overlays, final List<ExpressionFactoryWrapper> expressionFactoryWrappers, List<PredicatedHandler> predicatedHandlers, List<HandlerWrapper> initialHandlerChainWrappers, List<HandlerWrapper> innerHandlerChainWrappers, List<HandlerWrapper> outerHandlerChainWrappers, List<ThreadSetupAction> threadSetupActions, boolean explodedDeployment, List<ServletExtension> servletExtensions) {
         this.mergedMetaData = mergedMetaData;
         this.deploymentName = deploymentName;
         this.tldsMetaData = tldsMetaData;
@@ -232,6 +234,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         this.outerHandlerChainWrappers = outerHandlerChainWrappers;
         this.threadSetupActions = threadSetupActions;
         this.explodedDeployment = explodedDeployment;
+        this.servletExtensions = servletExtensions;
     }
 
     @Override
@@ -571,6 +574,12 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
 
             if (mergedMetaData.getExecutorName() != null) {
                 d.setExecutor(executorsByName.get(mergedMetaData.getExecutorName()).getValue());
+            }
+
+            if(servletExtensions != null) {
+                for(ServletExtension extension : servletExtensions) {
+                    d.addServletExtension(extension);
+                }
             }
 
             if (mergedMetaData.getServletMappings() != null) {
@@ -1271,6 +1280,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private List<HandlerWrapper> innerHandlerChainWrappers;
         private List<HandlerWrapper> outerHandlerChainWrappers;
         private List<ThreadSetupAction> threadSetupActions;
+        private List<ServletExtension> servletExtensions;
         private boolean explodedDeployment;
 
         Builder setMergedMetaData(final JBossWebMetaData mergedMetaData) {
@@ -1373,8 +1383,17 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             return this;
         }
 
+        public List<ServletExtension> getServletExtensions() {
+            return servletExtensions;
+        }
+
+        public Builder setServletExtensions(List<ServletExtension> servletExtensions) {
+            this.servletExtensions = servletExtensions;
+            return this;
+        }
+
         public UndertowDeploymentInfoService createUndertowDeploymentInfoService() {
-            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment);
+            return new UndertowDeploymentInfoService(mergedMetaData, deploymentName, tldsMetaData, sharedTlds, module, scisMetaData, deploymentRoot, jaccContextId, securityDomain, attributes, contextPath, setupActions, overlays, expressionFactoryWrappers, predicatedHandlers, initialHandlerChainWrappers, innerHandlerChainWrappers, outerHandlerChainWrappers, threadSetupActions, explodedDeployment, servletExtensions);
         }
     }
 }

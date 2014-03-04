@@ -22,6 +22,7 @@
 package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.server.HandlerWrapper;
+import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.api.ThreadSetupAction;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
@@ -42,6 +43,8 @@ public final class UndertowAttachments {
     public static final AttachmentKey<AttachmentList<HandlerWrapper>> UNDERTOW_OUTER_HANDLER_CHAIN_WRAPPERS = AttachmentKey.createList(HandlerWrapper.class);
 
     public static final AttachmentKey<AttachmentList<ThreadSetupAction>> UNDERTOW_THREAD_SETUP_ACTIONS = AttachmentKey.createList(ThreadSetupAction.class);
+
+    public static final AttachmentKey<AttachmentList<ServletExtension>> UNDERTOW_SERVLET_EXTENSIONS = AttachmentKey.createList(ServletExtension.class);
 
     private UndertowAttachments() {
     }
