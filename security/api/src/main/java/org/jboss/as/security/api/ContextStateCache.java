@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,36 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.core.security;
+package org.jboss.as.security.api;
 
-import java.security.Principal;
+import org.jboss.remoting3.Connection;
+import org.jboss.security.SecurityContext;
 
 /**
- * An interfaces to be implemented by all {@link Principal} instances that are also associated with a realm.
+ * Where clients use the API in this module they can push an identity to the security context which also clears the identity
+ * from the connection, when clients call push they are returned an instance of this class so that they can pass it later to a
+ * call to pop to restore the state.
+ *
+ * Note: It is intentional that the content of this cache is not accessible to the client.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public interface RealmPrincipal extends Principal {
+public final class ContextStateCache {
 
-    String getRealm();
+    private final Connection connection;
+    private final SecurityContext securityContext;
+
+    ContextStateCache(final Connection connection, final SecurityContext securityContext) {
+        this.connection = connection;
+        this.securityContext = securityContext;
+    }
+
+    Connection getConnection() {
+        return connection;
+    }
+
+    SecurityContext getSecurityContext() {
+        return securityContext;
+    }
 
 }
