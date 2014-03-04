@@ -45,6 +45,7 @@ import org.xnio.OptionMap;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+import org.jboss.as.network.NetworkUtils;
 
 /**
  * Service activator for the communication services of a managed server in a domain.
@@ -94,7 +95,7 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
 
             // Install the communication services
             final int port = managementSocket.getPort();
-            final String host = managementSocket.getAddress().getHostAddress();
+            final String host = NetworkUtils.canonize(managementSocket.getAddress().getHostAddress());
             HostControllerConnectionService service = new HostControllerConnectionService(host, port, serverName, serverProcessName, authKey, initialOperationID, managementSubsystemEndpoint);
             serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, service)
                     .addDependency(endpointName, Endpoint.class, service.getEndpointInjector())
