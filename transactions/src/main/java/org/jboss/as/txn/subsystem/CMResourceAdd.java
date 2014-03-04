@@ -24,6 +24,7 @@ package org.jboss.as.txn.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.txn.TransactionLogger.ROOT_LOGGER;
+import static org.jboss.as.txn.TransactionMessages.MESSAGES;
 
 import java.util.List;
 import java.util.Map;
@@ -33,7 +34,6 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -53,7 +53,11 @@ class CMResourceAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        CMResourceResourceDefinition.JNDI_NAME.validateAndSet(operation, model);
+        String str = PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue();
+        if (!str.startsWith("java:/") && !str.startsWith("java:jboss/")) {
+            throw MESSAGES.jndiNameInvalidFormat();
+        }
+
         CMResourceResourceDefinition.CM_TABLE_NAME.validateAndSet(operation, model);
         CMResourceResourceDefinition.CM_TABLE_BATCH_SIZE.validateAndSet(operation, model);
         CMResourceResourceDefinition.CM_TABLE_IMMEDIATE_CLEANUP.validateAndSet(operation, model);

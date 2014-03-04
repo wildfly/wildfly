@@ -33,7 +33,6 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOU
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdapterResourceDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
@@ -44,16 +43,10 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.controller.transform.DiscardUndefinedAttributesTransformer;
-import org.jboss.as.controller.transform.ResourceTransformer;
-import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
 import org.jboss.as.controller.transform.description.TransformationDescriptionBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-
-import java.util.Set;
 
 /**
  * @author Stefano Maestri
@@ -113,16 +106,28 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
     static void registerTransformers(SubsystemRegistration subsystem) {
         TransformationDescription.Tools.register(get110TransformationDescription(), subsystem, ModelVersion.create(1, 1, 0));
         TransformationDescription.Tools.register(get111TransformationDescription(), subsystem, ModelVersion.create(1, 1, 1));
+        TransformationDescription.Tools.register(get112TransformationDescription(), subsystem, ModelVersion.create(1, 1, 2));
         TransformationDescription.Tools.register(get120TransformationDescription(), subsystem, ModelVersion.create(1, 2, 0));
     }
 
     static TransformationDescription get120TransformationDescription() {
 
             ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-            JdbcDriverDefinition.registerTransformers110(builder);
+            //No change
+            //JdbcDriverDefinition.registerTransformers110(builder);
             DataSourceDefinition.registerTransformers120(builder);
-            XaDataSourceDefinition.registerTransformers110(builder);
+            XaDataSourceDefinition.registerTransformers120(builder);
             return builder.build();
+    }
+
+    static TransformationDescription get112TransformationDescription() {
+
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        //No change
+        //JdbcDriverDefinition.registerTransformers111(builder);
+        DataSourceDefinition.registerTransformers112(builder);
+        XaDataSourceDefinition.registerTransformers112(builder);
+        return builder.build();
     }
 
     static TransformationDescription get111TransformationDescription() {
@@ -130,7 +135,7 @@ public class DataSourcesSubsystemRootDefinition extends SimpleResourceDefinition
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         JdbcDriverDefinition.registerTransformers111(builder);
         DataSourceDefinition.registerTransformers111(builder);
-        XaDataSourceDefinition.registerTransformers110(builder);
+        XaDataSourceDefinition.registerTransformers111(builder);
         return builder.build();
     }
 

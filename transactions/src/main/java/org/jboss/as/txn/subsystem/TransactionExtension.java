@@ -167,16 +167,12 @@ public class TransactionExtension implements Extension {
      */
     private static void registerTransformers(final SubsystemRegistration subsystem) {
 
-        final ResourceTransformationDescriptionBuilder subsystemRoot200 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder subsystemRoot130 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
-        //Versions < 3.0.0 is not able to handle commit-markable-resource
-        subsystemRoot200.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
-
-        final ModelVersion version200 = ModelVersion.create(2, 0, 0);
-        final TransformationDescription description200 = subsystemRoot200.build();
-        TransformationDescription.Tools.register(description200, subsystem, version200);
-
-
+        //Versions < 1.4.0 is not able to handle commit-markable-resource
+        subsystemRoot130.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
+        final ModelVersion version130 = ModelVersion.create(1, 3, 0);
+        TransformationDescription.Tools.register(subsystemRoot130.build(), subsystem, version130);
 
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
@@ -236,6 +232,7 @@ public class TransactionExtension implements Extension {
         final TransformationDescription description110 = subsystemRoot.build();
         TransformationDescription.Tools.register(description110, subsystem, version110);
     }
+
 
     private static class UnneededJDBCStoreChecker implements DiscardAttributeChecker {
 

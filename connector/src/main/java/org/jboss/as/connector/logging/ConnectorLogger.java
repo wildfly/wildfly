@@ -22,21 +22,20 @@
 
 package org.jboss.as.connector.logging;
 
-import java.sql.Driver;
-
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.logging.BasicLogger;
-import org.jboss.logging.annotations.LogMessage;
-import org.jboss.logging.Logger;
-import org.jboss.logging.annotations.Message;
-import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartException;
-
 import static org.jboss.logging.Logger.Level.DEBUG;
 import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
+
+import java.sql.Driver;
+
+import org.jboss.logging.BasicLogger;
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.LogMessage;
+import org.jboss.logging.annotations.Message;
+import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartException;
 
 /**
  * Date: 01.09.2011
@@ -209,21 +208,21 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10416, value = "Forcing ironjacamar.xml descriptor to null")
     void forceIJToNull();
 
-    @LogMessage(level = INFO)
-    @Message(id = 10417, value = "Started Driver service with driver-name = %s")
-    void startedDriverService(String driverName);
+    //@LogMessage(level = INFO)
+    //@Message(id = 10417, value = "Started Driver service with driver-name = %s")
+    //void startedDriverService(String driverName);
 
-    @LogMessage(level = INFO)
-    @Message(id = 10418, value = "Stopped Driver service with driver-name = %s")
-    void stoppeddDriverService(String driverName);
+    //@LogMessage(level = INFO)
+    //@Message(id = 10418, value = "Stopped Driver service with driver-name = %s")
+    //void stoppeddDriverService(String driverName);
 
-    @LogMessage(level = WARN)
-    @Message(id = 10419, value = "Unsupported selector's option: %s")
-    void unsupportedSelectorOption(String name);
+    //@LogMessage(level = WARN)
+    //@Message(id = 10419, value = "Unsupported selector's option: %s")
+    //void unsupportedSelectorOption(String name);
 
-    @LogMessage(level = WARN)
-    @Message(id = 10420, value = "Unsupported policy's option: %s")
-    void unsupportedPolicyOption(String name);
+    //@LogMessage(level = WARN)
+    //@Message(id = 10420, value = "Unsupported policy's option: %s")
+    //void unsupportedPolicyOption(String name);
 
 
     /**
@@ -233,32 +232,32 @@ public interface ConnectorLogger extends BasicLogger {
      * @param wmName the name of the workmanager
      * @return a {@link StartException} for the error.
      */
-    @Message(id = 10421, value = "Failed to start JGroups channel %s for distributed workmanager %s")
-    StartException failedToStartJGroupsChannel(String channelName, String wmName);
+    //@Message(id = 10421, value = "Failed to start JGroups channel %s for distributed workmanager %s")
+    //StartException failedToStartJGroupsChannel(String channelName, String wmName);
 
-    @Message(id = 10422, value = "Cannot find WorkManager %s or it isn't a distributed workmanager. Only DWM can override configurations")
-    OperationFailedException failedToFindDistributedWorkManager(String wmName);
+    //@Message(id = 10422, value = "Cannot find WorkManager %s or it isn't a distributed workmanager. Only DWM can override configurations")
+    //OperationFailedException failedToFindDistributedWorkManager(String wmName);
 
-    @Message(id = 10423, value = "Failed to start JGroups transport for distributed workmanager %s")
-    StartException failedToStartDWMTransport(String wmName);
+    //@Message(id = 10423, value = "Failed to start JGroups transport for distributed workmanager %s")
+    //StartException failedToStartDWMTransport(String wmName);
 
-    @Message(id = 10424, value = "Unsupported selector's option: %s")
-    OperationFailedException unsupportedSelector(String name);
+    //@Message(id = 10424, value = "Unsupported selector's option: %s")
+    //OperationFailedException unsupportedSelector(String name);
 
-    @Message(id = 10425, value = "Unsupported policy's option: %s")
-    OperationFailedException unsupportedPolicy(String name);
+    //@Message(id = 10425, value = "Unsupported policy's option: %s")
+    //OperationFailedException unsupportedPolicy(String name);
 
-    @LogMessage(level = WARN)
-    @Message(id = 10426, value = "No ironjacamar.security defined for %s")
-    void noSecurityDefined(String jndiName);
+    //@LogMessage(level = WARN)
+    //@Message(id = 10426, value = "No ironjacamar.security defined for %s")
+    //void noSecurityDefined(String jndiName);
 
-    @LogMessage(level = WARN)
-    @Message(id = 10427, value = "@ConnectionFactoryDefinition will have limited management: %s")
-    void connectionFactoryAnnotation(String jndiName);
+    //@LogMessage(level = WARN)
+    //@Message(id = 10427, value = "@ConnectionFactoryDefinition will have limited management: %s")
+    //void connectionFactoryAnnotation(String jndiName);
 
-    @LogMessage(level = WARN)
-    @Message(id = 10428, value = "@AdministeredObjectDefinition will have limited management: %s")
-    void adminObjectAnnotation(String jndiName);
+    //@LogMessage(level = WARN)
+    //@Message(id = 10428, value = "@AdministeredObjectDefinition will have limited management: %s")
+    //void adminObjectAnnotation(String jndiName);
 
     @LogMessage(level = ERROR)
     @Message(id = 10429, value = "Unable to register recovery: %s (%s)")

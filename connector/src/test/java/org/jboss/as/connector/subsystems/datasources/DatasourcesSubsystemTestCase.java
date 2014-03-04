@@ -35,7 +35,6 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
-import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
@@ -126,6 +125,16 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformer1_1_2("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_1_1);
     }
 
+    @Test
+    public void testTransformersEAP620() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformer1_2_0("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_2_0);
+    }
+
+    @Test
+    public void testRejectingTransformersEAP620() throws Exception {
+        testRejectTransformers1_2_0("datasources-full-expression.xml", ModelTestControllerVersion.EAP_6_2_0);
+    }
 
     /**
      * Tests transformation of model from 1.1.1 version into 1.1.0 version.
@@ -156,6 +165,28 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     private void testTransformer1_1_2(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 1, 2); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+                .setSubsystemXmlResource(subsystemXml);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null,controllerVersion,  modelVersion)
+                  .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                  .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
+                  .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
+                  .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+
+        KernelServices mainServices = builder.build();
+        Assert.assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        Assert.assertTrue(legacyServices.isSuccessfulBoot());
+        Assert.assertNotNull(legacyServices);
+
+        checkSubsystemModelTransformation(mainServices, modelVersion);
+    }
+
+    private void testTransformer1_2_0(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 0); //The old model version
         //Use the non-runtime version of the extension which will happen on the HC
         KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
                 .setSubsystemXmlResource(subsystemXml);
@@ -233,11 +264,38 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         );
     }
 
+    public void testRejectTransformers1_2_0(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
+        ModelVersion modelVersion = ModelVersion.create(1, 2, 0); //The old model version
+        //Use the non-runtime version of the extension which will happen on the HC
+        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT);
+
+        // Add legacy subsystems
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+
+        KernelServices mainServices = builder.build();
+        assertTrue(mainServices.isSuccessfulBoot());
+        KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
+        assertNotNull(legacyServices);
+        assertTrue(legacyServices.isSuccessfulBoot());
+
+        List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
+        PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
+        ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
+                .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),FAILED_TRANSFORMER_1_1_1)
+                .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), FAILED_TRANSFORMER_1_1_1)
+    );
+}
+
 
     private static FailedOperationTransformationConfig.ChainedConfig FAILED_TRANSFORMER_1_1_0 =
             FailedOperationTransformationConfig.ChainedConfig.createBuilder(ALL_DS_ATTRIBUTES_REJECTED_1_1_0)
             .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
             .build();
+
+
 
     private static class NonWritableChainedConfig extends FailedOperationTransformationConfig.ChainedConfig {
 
@@ -293,7 +351,11 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
             if (super.checkValue(attrName, attribute, isWriteAttribute)) {
                 return true;
             }
-            return attribute.asBoolean();
+            try {
+                return attribute.isDefined() && attribute.asBoolean();
+            } catch (IllegalArgumentException e) {
+                throw e;
+            }
         }
 
         @Override

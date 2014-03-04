@@ -102,7 +102,7 @@
             </statement>
         </datasource>
         <xa-datasource jndi-name="${test.expr:java:jboss/xa-datasources/complexXaDs}" pool-name="complexXaDs_Pool"
-                       use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}">
+                       use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" >
             <xa-datasource-property name="URL">
                 ${test.expr:jdbc:h2:mem:test}
             </xa-datasource-property>

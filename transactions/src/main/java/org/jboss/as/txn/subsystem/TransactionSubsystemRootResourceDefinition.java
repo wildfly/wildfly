@@ -258,4 +258,8 @@ public class TransactionSubsystemRootResourceDefinition extends SimpleResourceDe
         }
     }
 
+    @Override
+    public void registerChildren(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerSubModel(new CMResourceResourceDefinition());
+    }
 }

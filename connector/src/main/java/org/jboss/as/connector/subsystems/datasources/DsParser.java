@@ -410,7 +410,13 @@ public class DsParser extends AbstractParser {
 
                         list.add(operation);
                         list.addAll(xadatasourcePropertiesOperations);
-
+                        if (enabled) {
+                            final ModelNode enableOperation = new ModelNode();
+                            enableOperation.get(OP).set(ENABLE);
+                            enableOperation.get(OP_ADDR).set(dsAddress);
+                            enableOperation.get(PERSISTENT).set(persistEnabled);
+                            list.add(enableOperation);
+                        }
                         return;
                     } else {
                         if (XaDataSource.Tag.forName(reader.getLocalName()) == XaDataSource.Tag.UNKNOWN) {
@@ -638,6 +644,13 @@ public class DsParser extends AbstractParser {
 
                         list.add(operation);
                         list.addAll(configPropertiesOperations);
+                        if (enabled) {
+                            final ModelNode enableOperation = new ModelNode();
+                            enableOperation.get(OP).set(ENABLE);
+                            enableOperation.get(OP_ADDR).set(dsAddress);
+                            enableOperation.get(PERSISTENT).set(persistEnabled);
+                            list.add(enableOperation);
+                        }
                         return;
                     } else {
                         if (DataSource.Tag.forName(reader.getLocalName()) == DataSource.Tag.UNKNOWN) {

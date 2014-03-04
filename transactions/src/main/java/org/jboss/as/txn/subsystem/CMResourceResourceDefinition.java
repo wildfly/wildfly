@@ -22,16 +22,13 @@
 
 package org.jboss.as.txn.subsystem;
 
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
-
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -48,26 +45,7 @@ public class CMResourceResourceDefinition extends SimpleResourceDefinition {
     static SimpleAttributeDefinition JNDI_NAME =  new SimpleAttributeDefinitionBuilder(CommonAttributes.CM_JNDI_NAME, ModelType.STRING)
             .setAllowExpression(true)
             .setAllowNull(false)
-            .setValidator(new ParameterValidator() {
-                    @Override
-                    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                        if (value.isDefined()) {
-                            if (value.getType() != ModelType.EXPRESSION) {
-                                String str = value.asString();
-                                if (!str.startsWith("java:/") && !str.startsWith("java:jboss/")) {
-                                    throw MESSAGES.jndiNameInvalidFormat();
-                                }
-                            }
-                        } else {
-                            throw MESSAGES.jndiNameRequired();
-                        }
-                    }
-
-                    @Override
-                    public void validateResolvedParameter(String parameterName, ModelNode value) throws OperationFailedException {
-                        validateParameter(parameterName, value.resolve());
-                    }
-                })
+            .setResourceOnly()
             .build();
 
     static SimpleAttributeDefinition CM_TABLE_BATCH_SIZE =  new SimpleAttributeDefinitionBuilder(CommonAttributes.CM_BATCH_SIZE, ModelType.INT)
@@ -110,10 +88,11 @@ public class CMResourceResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         ReloadRequiredWriteAttributeHandler reloadWrtiteHandler = new ReloadRequiredWriteAttributeHandler(JNDI_NAME, CM_TABLE_NAME, CM_TABLE_BATCH_SIZE, CM_TABLE_IMMEDIATE_CLEANUP);
-        resourceRegistration.registerReadWriteAttribute(JNDI_NAME, null, reloadWrtiteHandler);
         resourceRegistration.registerReadWriteAttribute(CM_TABLE_NAME, null, reloadWrtiteHandler);
         resourceRegistration.registerReadWriteAttribute(CM_TABLE_BATCH_SIZE, null, reloadWrtiteHandler);
         resourceRegistration.registerReadWriteAttribute(CM_TABLE_IMMEDIATE_CLEANUP, null, reloadWrtiteHandler);
+
+        resourceRegistration.registerReadOnlyAttribute(JNDI_NAME, ReadResourceNameOperationStepHandler.INSTANCE);
     }
 }
 

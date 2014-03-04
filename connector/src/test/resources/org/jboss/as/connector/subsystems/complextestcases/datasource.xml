@@ -111,7 +111,7 @@
                         <track-statements>nowarn</track-statements>
                     </statement>
                 </datasource>
-                <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool" use-java-context="true" spy="false" use-ccm="true" jta="false">
+                <xa-datasource jndi-name="java:jboss/xa-datasources/complexXaDs" pool-name="complexXaDs_Pool" use-java-context="true" spy="false" use-ccm="true">
                     <xa-datasource-property name="URL">
                         jdbc:h2:mem:test
                     </xa-datasource-property>

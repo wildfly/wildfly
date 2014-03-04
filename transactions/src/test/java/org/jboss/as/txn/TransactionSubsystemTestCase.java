@@ -192,6 +192,13 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformersFull(ModelTestControllerVersion.EAP_6_1_1, ModelVersion.create(1, 2, 0));
     }
 
+    @Test
+    public void testTransformersFullEAP620() throws Exception {
+        ignoreThisTestIfEAPRepositoryIsNotReachable();
+        testTransformersFull(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0));
+    }
+
+
     private void testTransformersFull(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion) throws Exception {
         String subsystemXml = readResource("full-expressions-transform.xml");
         //Use the non-runtime version of the extension which will happen on the HC
@@ -211,7 +218,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(legacyServices);
 
         checkSubsystemModelTransformation(mainServices, modelVersion);
-
     }
 
     @Test
@@ -288,6 +294,15 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
                     PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
                     FailedOperationTransformationConfig.REJECTED_RESOURCE));
     }
+
+    @Test
+    public void testRejectTransformersEAP620() throws Exception {
+        testRejectTransformers(ModelTestControllerVersion.EAP_6_2_0, ModelVersion.create(1, 3, 0), new FailedOperationTransformationConfig()
+            .addFailedAttribute(PathAddress.pathAddress(
+                    PathElement.pathElement(SUBSYSTEM, TransactionExtension.SUBSYSTEM_NAME)).append(CMResourceResourceDefinition.PATH_CM_RESOURCE),
+                    FailedOperationTransformationConfig.REJECTED_RESOURCE));
+    }
+
 
     private void testRejectTransformers(ModelTestControllerVersion controllerVersion, ModelVersion modelVersion, FailedOperationTransformationConfig config) throws Exception {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());

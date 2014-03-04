@@ -137,8 +137,33 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
     }
 
     static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
-            parentBuilder.addChildResource(PATH_XA_DATASOURCE).getAttributeBuilder()
-                    .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
-                    .end();
-        }
+        parentBuilder.addChildResource(PATH_XA_DATASOURCE).getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
+                .end();
+    }
+
+
+    static void registerTransformers111(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+                builder.getAttributeBuilder()
+                //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
+                //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
+                .end();
+    }
+
+    static void registerTransformers112(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+                builder.getAttributeBuilder()
+
+                //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
+                //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
+                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
+                .end();
+    }
+
+    static void registerTransformers120(ResourceTransformationDescriptionBuilder parentBuilder) {
+        //No change
+    }
+
 }
