@@ -12,7 +12,7 @@
     <jts/>
     <use-hornetq-store enable-async-io="${test.enable.async.io:false}"/>
     <commit-markable-resources>
-        <commit-markable-resource jndi-name="${test.jndi.name:java:/foo}">
+        <commit-markable-resource jndi-name="java:/foo">
             <xid-location name="${test.table:fooTable}" batch-size="${test.batch:10}" immediate-cleanup="${test.immediate:false}"/>
         </commit-markable-resource>
     </commit-markable-resources>
