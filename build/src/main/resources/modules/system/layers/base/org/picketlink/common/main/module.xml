@@ -31,6 +31,8 @@
     <dependencies>
         <module name="javax.api"/>
         <module name="javax.xml.stream.api"/>
+        <module name="javax.xml.bind.api"/>
+        <module name="javax.xml.ws.api"/>
         <module name="org.jboss.logging"/>
     </dependencies>
 
