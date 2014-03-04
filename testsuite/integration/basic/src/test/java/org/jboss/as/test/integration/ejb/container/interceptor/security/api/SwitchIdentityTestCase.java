@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.ejb.container.interceptor.security;
+package org.jboss.as.test.integration.ejb.container.interceptor.security.api;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
@@ -62,6 +62,8 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.integration.ejb.container.interceptor.security.CurrentUserCredential;
+import org.jboss.as.test.integration.ejb.container.interceptor.security.GuestDelegationLoginModule;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -152,9 +154,8 @@ public class SwitchIdentityTestCase {
         jar.addAsManifestResource(SwitchIdentityTestCase.class.getPackage(), "jboss-ejb3.xml", "jboss-ejb3.xml");
         jar.addAsManifestResource(new StringAsset(ClientSecurityInterceptor.class.getName()),
                 "services/org.jboss.ejb.client.EJBClientInterceptor");
-        jar.addAsManifestResource(SwitchIdentityTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
-        jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.remoting3", "org.jboss.as.domain-management",
-                "org.jboss.as.controller", "org.jboss.as.core-security"), "jboss-deployment-structure.xml");
+        jar.addAsManifestResource(ClientSecurityInterceptor.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.as.security-api", "org.jboss.as.core-security-api"), "jboss-deployment-structure.xml");
         final Properties props = EJBUtil.createEjbClientConfiguration(StringUtils.strip(
                 TestSuiteEnvironment.getServerAddress(), "[]"));
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
