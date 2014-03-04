@@ -51,7 +51,7 @@
             <xs:element name="custom-handler" type="customHandlerType"/>
             <xs:element name="syslog-handler" type="syslogHandlerType"/>
             <xs:element name="formatter" type="formatterType"/>
-            <xs:element name="add-logging-api-dependencies" type="booleanValueType">
+            <xs:element name="add-logging-api-dependencies" type="booleanTrueValueType">
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
@@ -60,7 +60,7 @@
                     </xs:documentation>
                 </xs:annotation>
             </xs:element>
-            <xs:element name="use-deployment-logging-config" type="booleanValueType">
+            <xs:element name="use-deployment-logging-config" type="booleanTrueValueType">
                 <xs:annotation>
                     <xs:documentation>
                             Determines whether or not deployments should be scanned for configuration files. If set to
@@ -369,6 +369,10 @@
 
     <xs:complexType name="booleanValueType">
         <xs:attribute name="value" use="required" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:complexType name="booleanTrueValueType">
+        <xs:attribute name="value" type="xs:boolean" default="true"/>
     </xs:complexType>
 
     <xs:complexType name="valueType">
