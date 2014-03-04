@@ -119,7 +119,9 @@ public class ParsedServiceDeploymentProcessor implements DeploymentUnitProcessor
         final List<ClassReflectionIndex<?>> mBeanClassHierarchy = ReflectionUtils.getClassHierarchy(mBeanClassName, index, classLoader);
         final Object mBeanInstance = newInstance(mBeanConfig, mBeanClassHierarchy, classLoader);
         final String mBeanName = mBeanConfig.getName();
-        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, phaseContext.getDeploymentUnit().getServiceName(), classLoader);
+        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+
+        final MBeanServices mBeanServices = new MBeanServices(mBeanName, mBeanInstance, mBeanClassHierarchy, target, componentInstantiator, deploymentUnit.getAttachmentList(Attachments.SETUP_ACTIONS), classLoader);
 
         final JBossServiceDependencyConfig[] dependencyConfigs = mBeanConfig.getDependencyConfigs();
         addDependencies(dependencyConfigs, mBeanClassHierarchy, mBeanServices);

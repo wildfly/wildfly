@@ -29,7 +29,7 @@
      or use module org.hibernate which contains the JPA integration classes for Hibernate 4.3.x
 -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.jpa.hibernate" slot="4">
+<module xmlns="urn:jboss:module:1.3" name="org.jboss.as.jpa.hibernate" slot="4">
     <properties>
         <property name="jboss.api" value="private"/>
     </properties>

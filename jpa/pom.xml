@@ -35,16 +35,8 @@
     </parent>
 
     <groupId>org.wildfly</groupId>
-    <artifactId>wildfly-jpa-parent</artifactId>
-    <version>8.0.1.Final-SNAPSHOT</version>
-    <packaging>pom</packaging>
-
+    <artifactId>wildfly-jpa</artifactId>
     <name>WildFly: JPA Subsystem</name>
-
-    <modules>
-        <module>core</module>
-        <module>util</module>
-    </modules>
 
     <dependencies>
         <dependency>
@@ -73,5 +65,53 @@
             <artifactId>jboss-logging</artifactId>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-controller</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-ejb3</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jipijapa</groupId>
+            <artifactId>jipijapa-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly.security</groupId>
+            <artifactId>wildfly-security-manager</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.msc</groupId>
+            <artifactId>jboss-msc</artifactId>
+        </dependency>
+
+         <dependency>
+            <groupId>org.jboss.weld</groupId>
+            <artifactId>weld-core-impl</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.el</groupId>
+            <artifactId>jboss-el-api_3.0_spec</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-subsystem-test</artifactId>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+        </dependency>
+
     </dependencies>
 </project>

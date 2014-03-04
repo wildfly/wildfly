@@ -26,7 +26,7 @@
     <parent>
       <groupId>org.jboss</groupId>
       <artifactId>jboss-parent</artifactId>
-      <version>12</version>
+      <version>13</version>
     </parent>
 
     <groupId>org.wildfly</groupId>
@@ -64,7 +64,6 @@
             For example: <version.surefire.plugin>2.11</version.surefire.plugin>
           -->
         <maven.min.version>3.1.0</maven.min.version>
-        <version.checkstyle.plugin>2.11</version.checkstyle.plugin>
         <!--
             Dependency versions. Please keep alphabetical.
 
@@ -125,7 +124,6 @@
         <version.org.apache.cxf>2.7.10</version.org.apache.cxf>
         <version.org.apache.cxf.xjcplugins>2.6.1</version.org.apache.cxf.xjcplugins>
         <version.org.apache.ds>2.0.0-M15</version.org.apache.ds>
-        <version.org.apache.ds.all>2.0.0-M7</version.org.apache.ds.all>
         <version.org.apache.httpcomponents.httpclient>4.2.1</version.org.apache.httpcomponents.httpclient>
         <version.org.apache.httpcomponents.httpcore>4.2.1</version.org.apache.httpcomponents.httpcore>
         <version.org.apache.james.apache-mime4j>0.6</version.org.apache.james.apache-mime4j>
@@ -3117,13 +3115,6 @@
             </dependency>
 
             <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-all</artifactId>
-                <scope>test</scope>
-                <version>${version.org.apache.ds.all}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.opensaml</groupId>
                 <artifactId>opensaml</artifactId>
                 <version>${version.org.opensaml.opensaml}</version>
@@ -4535,13 +4526,6 @@
                         <artifactId>jboss-transaction-api_1.1_spec</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-
-            <dependency>
-                <groupId>org.wildfly</groupId>
-                <artifactId>wildfly-jpa-util</artifactId>
-                <version>${project.version}</version>
             </dependency>
 
             <dependency>

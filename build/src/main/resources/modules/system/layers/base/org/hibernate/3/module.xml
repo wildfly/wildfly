@@ -23,7 +23,7 @@
   -->
 
 <!-- Represents the Hibernate 3.x module  -->
-<module xmlns="urn:jboss:module:1.1" name="org.hibernate" slot="3">
+<module xmlns="urn:jboss:module:1.3" name="org.hibernate" slot="3">
     <resources>
         <!-- Insert resources here -->
     </resources>
@@ -42,7 +42,6 @@
         <module name="org.dom4j"/>
         <module name="org.javassist"/>
         <module name="org.jboss.as.jpa.spi"/>
-        <module name="org.jboss.as.jpa.util"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>

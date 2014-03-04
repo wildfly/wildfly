@@ -23,7 +23,7 @@
   -->
 
 <!-- Represents the Hibernate 4.1.x (works with Hibernate 4.2.x jars also) module  -->
-<module xmlns="urn:jboss:module:1.1" name="org.hibernate" slot="4.1">
+<module xmlns="urn:jboss:module:1.3" name="org.hibernate" slot="4.1">
     <resources>
         <!-- Insert resources here -->
     </resources>
@@ -43,7 +43,6 @@
         <module name="org.infinispan" services="import"/>
         <module name="org.javassist"/>
         <module name="org.jboss.as.jpa.spi"/>
-        <module name="org.jboss.as.jpa.util"/>
         <module name="org.jboss.jandex"/>
         <module name="org.jboss.logging"/>
         <module name="org.jboss.vfs"/>

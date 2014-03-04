@@ -63,7 +63,6 @@
 &lt;module name="org.dom4j"/&gt;
 &lt;module name="org.javassist"/&gt;
 &lt;module name="org.jboss.as.jpa.spi"/&gt;
-&lt;module name="org.jboss.as.jpa.util"/&gt;
 &lt;module name="org.jboss.logging"/&gt;
 &lt;module name="org.jboss.vfs"/&gt;
 &lt;/dependencies&gt;
@@ -94,7 +93,6 @@
 &lt;module name="org.apache.commons.collections"/&gt;
 &lt;module name="org.apache.commons.lang"/&gt;
 &lt;module name="org.jboss.as.jpa.spi"/&gt;
-&lt;module name="org.jboss.as.jpa.util"/&gt;
 &lt;module name="org.jboss.logging"/&gt;
 &lt;module name="org.jboss.vfs"/&gt;
 &lt;module name="org.jboss.jandex"/&gt;

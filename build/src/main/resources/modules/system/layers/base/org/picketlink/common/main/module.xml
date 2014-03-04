@@ -22,7 +22,7 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.picketlink.common">
+<module xmlns="urn:jboss:module:1.3" name="org.picketlink.common">
 
     <resources>
             <!-- Insert resources here -->
@@ -31,6 +31,8 @@
     <dependencies>
         <module name="javax.api" />
         <module name="javax.xml.stream.api" />
+        <module name="javax.xml.bind.api"/>
+        <module name="javax.xml.ws.api"/>
         <module name="org.jboss.logging" />
     </dependencies>
 
