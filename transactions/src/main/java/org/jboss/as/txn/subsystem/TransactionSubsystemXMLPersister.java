@@ -21,13 +21,13 @@
  */
 package org.jboss.as.txn.subsystem;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * The {@link XMLElementWriter} that handles the Transaction subsystem. As we only write out the most recent version of
@@ -134,7 +134,7 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             writer.writeStartElement(Element.CM_RESOURCES.getLocalName());
             for (Property cmr : node.get(CommonAttributes.CM_RESOURCE).asPropertyList()) {
                 writer.writeStartElement(CommonAttributes.CM_RESOURCE);
-                CMResourceResourceDefinition.JNDI_NAME.marshallAsAttribute(cmr.getValue(), writer);
+                writer.writeAttribute(Attribute.JNDI_NAME.getLocalName(), cmr.getName());
                 if (cmr.getValue().hasDefined(CMResourceResourceDefinition.CM_TABLE_NAME.getName()) ||
                         cmr.getValue().hasDefined(CMResourceResourceDefinition.CM_TABLE_BATCH_SIZE.getName()) ||
                         cmr.getValue().hasDefined(CMResourceResourceDefinition.CM_TABLE_IMMEDIATE_CLEANUP.getName())) {

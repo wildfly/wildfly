@@ -27,19 +27,18 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.parsing.ParseUtils.missingRequired;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
-import org.jboss.as.controller.SimpleAttributeDefinition;
-
 import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * The {@link XMLElementReader} that handles the version 3.0 of Transaction subsystem xml.
+ * The {@link org.jboss.staxmapper.XMLElementReader} that handles the version 3.0 of Transaction subsystem xml.
  */
 class TransactionSubsystem30Parser extends TransactionSubsystem20Parser {
 
@@ -129,7 +128,6 @@ class TransactionSubsystem30Parser extends TransactionSubsystem20Parser {
             switch (attribute) {
                 case JNDI_NAME: {
                     jndiName = rawAttributeText(reader, CMResourceResourceDefinition.JNDI_NAME.getXmlName(), null);
-                        CMResourceResourceDefinition.JNDI_NAME.parseAndSetParameter(jndiName, cmrOperation, reader);
                     break;
                 }
                 default:
