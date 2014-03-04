@@ -60,7 +60,7 @@ public class CommandLineMain {
      * @param args ignored
      */
     public static void main(String[] args) {
-        String port = "9999";
+        String port = "9990";
         String host = "localhost";
         String protocol = "http-remoting";
 

@@ -85,7 +85,7 @@ public class JdrReportService implements JdrReportCollector, Service<JdrReportCo
             host = "localhost";
         }
         if (port == null) {
-            port = "9999";
+            port = "9990";
         }
         if(protocol == null) {
             protocol = "http-remoting";
