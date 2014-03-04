@@ -64,6 +64,7 @@ import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
+import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcessor;
 import org.jboss.as.test.integration.security.common.ManagedCreateLdapServer;
 import org.jboss.as.test.integration.security.common.ManagedCreateTransport;
 import org.jboss.as.test.integration.security.common.Utils;
@@ -205,7 +206,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         fixTransportAddress(createLdapServer, cannonicalHost);
 
         ldapServer1 = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService1);
-        krbServer1 = ServerAnnotationProcessor.getKdcServer(directoryService1, KERBEROS_PORT);
+        krbServer1 = KDCServerAnnotationProcessor.getKdcServer(directoryService1, KERBEROS_PORT);
         ldapServer1.start();
 
         createKrb5Conf(cannonicalHost, KRB5_CONF_FILE, KERBEROS_PORT);
