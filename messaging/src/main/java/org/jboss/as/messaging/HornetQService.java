@@ -40,6 +40,7 @@ import org.hornetq.api.core.DiscoveryGroupConfiguration;
 import org.hornetq.api.core.TransportConfiguration;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
+import org.hornetq.core.remoting.impl.netty.TransportConstants;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.impl.HornetQServerImpl;
@@ -190,6 +191,13 @@ class HornetQService implements Service<HornetQServer> {
                         } else {
                             port = binding.getDestinationPort();
                             host = NetworkUtils.canonize(binding.getUnresolvedDestinationAddress());
+                            if (binding.getSourceAddress() != null) {
+                                tc.getParams().put(TransportConstants.LOCAL_ADDRESS_PROP_NAME,
+                                        NetworkUtils.canonize(binding.getSourceAddress().getHostAddress()));
+                            }
+                            if (binding.getSourcePort() != null) {
+                                tc.getParams().put(TransportConstants.LOCAL_PORT_PROP_NAME, binding.getSourcePort());
+                            }
                         }
                         tc.getParams().put(HOST, host);
                         tc.getParams().put(PORT, String.valueOf(port));
