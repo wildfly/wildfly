@@ -71,6 +71,7 @@ import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.AbstractSystemPropertiesServerSetupTask;
+import org.jboss.as.test.integration.security.common.KDCServerAnnotationProcessor;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
@@ -424,8 +425,7 @@ public class SPNEGOLoginModuleTestCase {
                 e.printStackTrace();
                 throw e;
             }
-            //kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024, hostname);
-            kdcServer = ServerAnnotationProcessor.getKdcServer(directoryService, 1024);
+            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024);
         }
 
         /**
