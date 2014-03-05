@@ -274,13 +274,13 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
                 PathAddress.pathAddress(CoreManagementResourceDefinition.PATH_ELEMENT, AccessAuthorizationResourceDefinition.PATH_ELEMENT));
         accessControl.writeModel(new ModelNode());
         for(Resource.ResourceEntry entry : accessControl.getChildren(ModelDescriptionConstants.SERVER_GROUP_SCOPED_ROLE)) {
-            rootResource.removeChild(entry.getPathElement());
+            accessControl.removeChild(entry.getPathElement());
         }
         for(Resource.ResourceEntry entry : accessControl.getChildren(ModelDescriptionConstants.HOST_SCOPED_ROLE)) {
-            rootResource.removeChild(entry.getPathElement());
+            accessControl.removeChild(entry.getPathElement());
         }
         for(Resource.ResourceEntry entry : accessControl.getChildren(ModelDescriptionConstants.ROLE_MAPPING)) {
-            rootResource.removeChild(entry.getPathElement());
+            accessControl.removeChild(entry.getPathElement());
         }
     }
 

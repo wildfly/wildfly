@@ -22,17 +22,23 @@
 package org.jboss.as.domain.controller.operations;
 
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROFILE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROVIDER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
@@ -83,6 +89,7 @@ import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
+import org.jboss.as.domain.management.access.AccessAuthorizationResourceDefinition;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -633,6 +640,15 @@ public abstract class AbstractOperationTestCase {
         final Resource binding2 = Resource.Factory.create();
         binding2.getModel().setEmptyObject();
         rootResource.registerChild(PathElement.pathElement(SOCKET_BINDING_GROUP, "binding-two"), binding2);
+
+        final Resource management = rootResource.getChild(PathElement.pathElement(CORE_SERVICE, MANAGEMENT));
+        final Resource accessControl = management.getChild(AccessAuthorizationResourceDefinition.PATH_ELEMENT);
+
+        final Resource superUser = Resource.Factory.create();
+        accessControl.registerChild(PathElement.pathElement(ROLE_MAPPING, "SuperUser"), superUser);
+        final Resource include = Resource.Factory.create();
+        superUser.registerChild(PathElement.pathElement(INCLUDE, "user-$local"), include);
+        include.getModel().get("name").set("local");
 
         hack(rootResource, EXTENSION);
         hack(rootResource, PATH);
