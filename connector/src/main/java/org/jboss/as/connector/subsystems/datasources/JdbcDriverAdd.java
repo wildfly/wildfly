@@ -113,11 +113,15 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
 
         if (driverClassName == null) {
             final ServiceLoader<Driver> serviceLoader = module.loadService(Driver.class);
+            boolean driverLoaded = false;
             if (serviceLoader != null) {
                 for (Driver driver : serviceLoader) {
                     startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, verificationHandler);
+                    driverLoaded = true;
                 }
             }
+            if (!driverLoaded)
+                SUBSYSTEM_DATASOURCES_LOGGER.cannotFindDriverClassName(driverName);
         } else {
             try {
                 final Class<? extends Driver> driverClass = module.getClassLoader().loadClass(driverClassName)

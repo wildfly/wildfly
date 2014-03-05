@@ -257,4 +257,13 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 10428, value = "@AdministeredObjectDefinition will have limited management: %s")
     void adminObjectAnnotation(String jndiName);
+
+    /**
+     * Logs a warning message indicating can't find the driver class name.
+     *
+     * @param driverName the driver jar.
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 10429, value = "Unable to find driver class name in \"%s\" jar")
+    void cannotFindDriverClassName(String driverName);
 }
