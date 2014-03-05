@@ -103,7 +103,9 @@ class WorkCacheManager {
     public void clearClassLoader(final ClassLoader cl) {
         Set<Class<?>> classes = classesByLoader.remove(cl);
         if(classes != null) {
-            workInProgress.remove(cl);
+            for(Class<?> clazz : classes) {
+                workDone.remove(clazz);
+            }
         }
     }
 
@@ -114,11 +116,13 @@ class WorkCacheManager {
      */
     ContainerAnalysis getAnalysis(final Class cls) throws RMIIIOPViolationException {
         ContainerAnalysis ret = null;
+        boolean created = false;
         try {
             synchronized (this) {
                 ret = lookupDone(cls);
-                if (ret != null)
+                if (ret != null) {
                     return ret;
+                }
 
                 // is it work-in-progress?
                 final ContainerAnalysis inProgress = workInProgress.get(new InProgressKey(cls, Thread.currentThread()));
@@ -131,19 +135,19 @@ class WorkCacheManager {
 
                 ret = createWorkInProgress(cls);
             }
-
+            created = true;
             // Do the work
             doTheWork(cls, ret);
         } finally {
             // We did it
             synchronized (this) {
-                workInProgress.remove(new InProgressKey(cls, Thread.currentThread()));
-                if(ret != null) {
+                if(created) {
+                    workInProgress.remove(new InProgressKey(cls, Thread.currentThread()));
                     workDone.put(cls, new SoftReference<ContainerAnalysis>(ret));
                     ClassLoader classLoader = cls.getClassLoader();
-                    if(classLoader != null) {
+                    if (classLoader != null) {
                         Set<Class<?>> classes = classesByLoader.get(classLoader);
-                        if(classes == null) {
+                        if (classes == null) {
                             classesByLoader.put(classLoader, classes = new HashSet<Class<?>>());
                         }
                         classes.add(cls);
