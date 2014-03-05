@@ -1201,17 +1201,7 @@
                 <version>${project.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-security-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
-            <dependency>
-                <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-security</artifactId>
-                <version>${project.version}</version>
-            </dependency>
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
@@ -1252,6 +1242,12 @@
             <dependency>
                 <groupId>org.jboss.as</groupId>
                 <artifactId>jboss-as-remoting</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-security-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

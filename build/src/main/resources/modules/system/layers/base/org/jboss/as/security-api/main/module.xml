@@ -33,6 +33,6 @@
         <module name="org.picketbox"/>
         <module name="org.jboss.as.core-security"/>
         <module name="org.jboss.as.security"/>
-        <module name="org.jboss.remoting"/>        
+        <module name="org.jboss.remoting3"/>        
     </dependencies>
 </module>
