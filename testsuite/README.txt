@@ -11,11 +11,9 @@ Some points to note:
 
 The testsuite has the following maven modules:
 
-* benchmark   - benchmarking integration tests
 * compat      - compatibility tests (require special dependencies)
 * domain      - domain management integration tests (require special framework)
 * integration - general integration tests
-* stress      - stress integration tests
 
 
 2. Defined directories and files
@@ -47,7 +45,7 @@ maven build profiles are used to control:
 
 - for each module X, the profile is named X.module.profile and is enabled by -DX.module
 - for example, integration.module.profile, enabled by -Dintegration.module, enables the integration module
-- there are profiles for api, benchmark, domain, integration, spec and stress
+- there are profiles for api, domain and integration
 
 3.2 test cases to be executed
 ---------------------

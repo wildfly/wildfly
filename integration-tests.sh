@@ -57,7 +57,7 @@ TESTS_SPECIFIED="N"
 
 #
 # Helper to process command line for test directives
-# - user-specified parameters (allTests, stress-tests, benchmark-tests) are translated into the appropriate
+# - user-specified parameters (allTests etc) are translated into the appropriate
 # maven build profiles and removed from the command line
 # - smoke tests run with build
 #
@@ -70,7 +70,7 @@ process_test_directives() {
     case $param in
       ## -s .../settings.xml - don't use our own.
       -s)                MVN_ARGS="";          CMD_LINE_PARAMS="$CMD_LINE_PARAMS -s";;
-      ## -DallTests runs all tests except benchmark and stress.
+      ## -DallTests runs all tests.
       -DallTests)        TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS -DallTests -fae";;
 
       -Dinteg-tests)     TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $INTEGRATION_TESTS";;
@@ -79,8 +79,6 @@ process_test_directives() {
       -Dbasic-tests)     TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BASIC_TESTS";;
       -Ddomain-tests)    TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $DOMAIN_TESTS";;
       -Dcompat-tests)    TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $COMPAT_TESTS";;
-      -Dbenchmark-tests) TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $BENCHMARK_TESTS";;
-      -Dstress-tests)    TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $STRESS_TESTS";;
       ## Don't run smoke tests if a single test is specified.
       -Dtest=*)          TESTS_SPECIFIED="Y";  CMD_LINE_PARAMS="$CMD_LINE_PARAMS $param";; # -DfailIfNoTests=false
 

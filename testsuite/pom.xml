@@ -25,11 +25,9 @@
 <!--
     1. The testsuite module has a small number of submodules:
 
-    integration - holds all integration tests for AS7.
-    compat      - holds all compatibility management tests for AS7.
-    domain      - holds all domain management tests for AS7.
-    benchmark   - holds all benchmark tests for AS7.
-    stress      - holds all stress tests for AS7.
+    integration - holds all integration tests for Wildfly.
+    compat      - holds all compatibility management tests for Wildfly.
+    domain      - holds all domain management tests for Wildfly.
 
     All tests should fit into one of these four categories.
 
@@ -466,12 +464,6 @@
         </profile>
 
         <profile>
-            <id>benchmark.module.profile</id>
-            <activation><property><name>benchmark.module</name></property></activation>
-            <modules><module>benchmark</module></modules>
-        </profile>
-
-        <profile>
             <id>compat.module.profile</id>
             <activation><property><name>compat.module</name></property></activation>
             <modules><module>compat</module></modules>
@@ -493,18 +485,6 @@
             <modules><module>domain</module></modules>
         </profile>
 
-        <profile>
-            <id>stress.module.profile</id>
-            <activation><property><name>stress.module</name></property></activation>
-            <modules><module>stress</module></modules>
-        </profile>
-        <profile>
-            <id>stress_.module.profile</id>
-            <activation><property><name>ts.stress</name></property></activation>
-            <modules><module>stress</module></modules>
-        </profile>
-
-
 
         <!--
           Debugging profiles.
@@ -525,7 +505,7 @@
         </profile>
 
 
-        <!-- IPv6. AS7-2228. -->
+        <!-- IPv6. Wildfly-2228. -->
         <profile>
             <id>ts.ipv6</id>
             <activation><property><name>ipv6</name></property></activation>
@@ -546,7 +526,7 @@
 
             </properties>
         </profile>
-        <!-- Ugly workaround for MANTRUN-172 :/   See AS7-3993. -->
+        <!-- Ugly workaround for MANTRUN-172 :/   See Wildfly-3993. -->
         <profile>
             <id>ts.ipv6.dummy.node0</id>
             <activation><property><name>node0</name></property></activation>
@@ -590,7 +570,7 @@
 
 
 
-        <!-- Security policy.  ARQ-690, AS7-2823, AS7-2826. -->
+        <!-- Security policy.  ARQ-690, Wildfly-2823, Wildfly-2826. -->
         <profile>
             <id>ts.security.policy</id>
             <activation><property><name>security.policy</name></property></activation>
@@ -635,7 +615,7 @@
           Usage:
              mvn clean install -rf testsuite -Dds=mysql51
 
-          See: https://community.jboss.org/wiki/DataSourceConfigurationInAS7
+          See: https://community.jboss.org/wiki/DataSourceConfigurationInWildfly
         -->
 
         <profile>
@@ -1108,12 +1088,12 @@
                                                         <!-- Excludes solve "Can't add different class with same name: ..." -->
                                                         <!-- We have 2.x in main. -->
                                                         <exclude name="com/sun/jsf-impl/1.*/**/*"/>
-                                                        <!--  AS7-3383 - com/sun/codemodel vs. /1.0/com/sun/codemodel -->
+                                                        <!--  Wildfly-3383 - com/sun/codemodel vs. /1.0/com/sun/codemodel -->
                                                         <exclude name="com/sun/xml/**/*"/>
                                                         <exclude name="javax/faces/api/1.2/**/*"/>
-                                                        <!-- AS7-3390 -->
+                                                        <!-- Wildfly-3390 -->
                                                         <exclude name="org/apache/commons/beanutils/**/*"/>
-                                                        <!-- AS7-3389 -->
+                                                        <!-- Wildfly-3389 -->
                                                     </fileset>
                                                 </classfiles>
                                                 <sourcefiles encoding="UTF-8">

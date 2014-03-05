@@ -63,16 +63,10 @@ The testsuite module contains several submodules including the following:
 * "domain" -- tests of the domain management features. Should be run with no failures before any major commits.
 * "integration" -- tests of a WildFly standalone server's internals. Should be run with no failures before any major commits.
 * "spec" -- tests of features that only involve end user use of the Java EE 7 spec APIs. Should be run with no failures before any major commits.
-* "benchmark" -- tests used to compare performance against other releases or previous builds
-* "stress" -- tests of the server's ability to perform properly while under stress 
 
 To run the basic testsuite including smoke tests from the root directory, run the build script "./build.sh" or "build.bat":
 
 For basic smoke tests, simply: "./build.sh test"
-
-For benchmark tests: "./build.sh test -Pbenchmark-tests"
-
-For stress tests: "./build.sh test -Pstress-tests"
 
 To run all the tests
 
