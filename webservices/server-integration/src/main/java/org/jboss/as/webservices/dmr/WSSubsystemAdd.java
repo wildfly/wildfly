@@ -152,8 +152,7 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     }
 
     private static boolean isJMXSubsystemAvailable(final OperationContext context) {
-        //context.readResourceFromRoot(PathAddress.pathAddress(PathElement.pathElement(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME))) != null
-        Resource root = context.readResourceFromRoot(PathAddress.pathAddress(PathAddress.EMPTY_ADDRESS));
+        Resource root = context.readResourceFromRoot(PathAddress.pathAddress(PathAddress.EMPTY_ADDRESS), false);
         return root.hasChild(PathElement.pathElement(SUBSYSTEM, JMXExtension.SUBSYSTEM_NAME));
     }
 }
