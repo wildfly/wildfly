@@ -380,6 +380,11 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         final Set<ServerIdentity> affectedServers;
         //Path that gets called when missing data is piggy-backed as a result of changes to the domain model
         affectedServers = new HashSet<ServerIdentity>();
+
+        if (!hostModel.hasDefined(SERVER_CONFIG)) {
+            return;
+        }
+
         for (String serverName : hostModel.get(SERVER_CONFIG).keys()) {
             ModelNode startOps = createBootOps(context, serverName, startRoot, existingHostModel);
             ModelNode endOps = createBootOps(context, serverName, endRoot, hostModel);
