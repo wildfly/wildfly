@@ -302,6 +302,9 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
                 return;
             }
             setBooleanIfNotNull(context, ((DsPool) pool).isAllowMultipleUsers());
+        } else if (attributeName.equals(Constants.CONNECTABLE.getName())) {
+            //Just set to false
+            context.getResult().set(false);
         } else {
             throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
         }
