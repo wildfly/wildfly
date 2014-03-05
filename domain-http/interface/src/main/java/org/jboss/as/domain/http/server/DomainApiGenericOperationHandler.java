@@ -110,7 +110,7 @@ class DomainApiGenericOperationHandler implements HttpHandler {
                 builder.addFileAsAttachment(value.getFile());
             }
         }
-
+        operationParameterBuilder.pretty(operation.hasDefined("json.pretty") && operation.get("json.pretty").asBoolean());
         // Response callback to handle the :reload operation
         final OperationParameter opParam = operationParameterBuilder.build();
         final ResponseCallback callback = new ResponseCallback() {
