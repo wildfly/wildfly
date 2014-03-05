@@ -35,6 +35,7 @@
     <dependencies>
         <module name="javax.api" />
         <module name="javax.xml.bind.api" />
+        <module name="javax.servlet.api" />
         <module name="com.sun.xml.bind" services="import"/>
         <module name="javax.xml.ws.api" />
         <module name="org.jboss.ws.api" />
