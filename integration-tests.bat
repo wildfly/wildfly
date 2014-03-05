@@ -90,10 +90,8 @@ set CMD_LINE_PARAMS=
 set TESTS_SPECIFIED=N
 
 REM  Each test module executes a different type of test
-set BENCHMARK_TESTS=-Dbenchmark.module
 set INTEGRATION_TESTS=-Dintegration.module -Dbasic.integration.tests -Dcompat.integration.tests -Dclustering.integration.tests -Dtimerservice.integration.tests
 set SMOKE_TESTS=-Dintegration.module -Dsmoke.integration.tests
-set STRESS_TESTS=-Dstress.module
 set DOMAIN_TESTS=-Ddomain.module
 set COMPAT_TESTS=-Dcompat.module
 
@@ -138,12 +136,6 @@ if "%1" == "-DallTests" (
   set "TESTS_SPECIFIED=Y"
   goto processed
 )
-REM  -Dbenchmark-tests
-if "%1" == "-Dbenchmark-tests" (
-  set "CMD_LINE_PARAMS=%CMD_LINE_PARAMS% %BENCHMARK_TESTS%"
-  set "TESTS_SPECIFIED=Y"
-  goto processed
-)
 REM  -Ddomain-tests
 if "%1" == "-Ddomain-tests" (
   set "CMD_LINE_PARAMS=%CMD_LINE_PARAMS% %DOMAIN_TESTS%"
@@ -159,12 +151,6 @@ if "%1" == "-Dcompat-tests" (
 REM  -Dsmoke-tests
 if "%1" == "-Dsmoke-tests" (
   set "CMD_LINE_PARAMS=%CMD_LINE_PARAMS% %SMOKE_TESTS%"
-  set "TESTS_SPECIFIED=Y"
-  goto processed
-)
-REM  -Dstress-tests
-if "%1" == "-Dstress-tests" (
-  set "CMD_LINE_PARAMS=%CMD_LINE_PARAMS% %STRESS_TESTS%"
   set "TESTS_SPECIFIED=Y"
   goto processed
 )

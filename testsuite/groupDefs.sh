@@ -10,8 +10,6 @@ BASIC_TESTS="-Dts.basic"
 CLUSTER_TESTS="-Dts.clust"
 IIOP_TESTS="-Dts.iiop"
 
-BENCHMARK_TESTS="-Dbenchmark.module  -Dts.noSmoke"
-STRESS_TESTS="-Dstress.module  -Dts.noSmoke"
 DOMAIN_TESTS="-Ddomain.module  -Dts.noSmoke"
 COMPAT_TESTS="-Dcompat.module  -Dts.noSmoke"
 
