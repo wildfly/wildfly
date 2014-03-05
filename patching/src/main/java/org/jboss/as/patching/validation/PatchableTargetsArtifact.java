@@ -41,14 +41,14 @@ import org.jboss.as.patching.metadata.RollbackPatch;
  *
  * @author Emanuel Muckenhuber
  */
-class PatchableTargetsArtifact extends AbstractArtifact<PatchingXmlArtifact.XmlArtifactState<RollbackPatch>, PatchableTargetsArtifact.PatchableTargetState> {
+class PatchableTargetsArtifact extends AbstractArtifact<PatchingXmlArtifact.XmlArtifactState<Patch>, PatchableTargetsArtifact.PatchableTargetState> {
 
     PatchableTargetsArtifact(PatchingArtifact<PatchableTargetState, ? extends ArtifactState>... artifacts) {
         super(artifacts);
     }
 
     @Override
-    public boolean process(PatchingXmlArtifact.XmlArtifactState<RollbackPatch> parent, PatchingArtifactProcessor processor) {
+    public boolean process(PatchingXmlArtifact.XmlArtifactState<Patch> parent, PatchingArtifactProcessor processor) {
         final InstalledIdentity identity = processor.getInstalledIdentity();
         final Patch patch = parent.getPatch();
         if (Constants.BASE.equals(patch.getPatchId())) {

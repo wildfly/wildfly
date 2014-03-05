@@ -46,7 +46,7 @@ public final class PatchingArtifacts {
 
     // The patch.xml validation
     public static final PatchableTargetsArtifact PATCH_CONTENTS = new PatchableTargetsArtifact(LAYER);
-    public static final PatchingXmlArtifact<Patch> PATCH = new PatchingXmlArtifact<Patch>() {
+    public static final PatchingXmlArtifact<Patch> PATCH = new PatchingXmlArtifact<Patch>(PATCH_CONTENTS) {
         @Override
         protected Patch resolveMetaData(PatchMetadataResolver resolver) throws PatchingException {
             return resolver.resolvePatch(null, null);
@@ -55,7 +55,7 @@ public final class PatchingArtifacts {
 
     // The rollback.xml validation
     public static final RollbackTargetArtifact ROLLBACK_TARGET = new RollbackTargetArtifact();
-    public static final PatchingXmlArtifact<RollbackPatch> ROLLBACK_PATCH = new PatchingXmlArtifact<RollbackPatch>(PATCH_CONTENTS, ROLLBACK_TARGET) {
+    public static final PatchingXmlArtifact<RollbackPatch> ROLLBACK_PATCH = new PatchingXmlArtifact<RollbackPatch>(ROLLBACK_TARGET) {
         @Override
         protected RollbackPatch resolveMetaData(PatchMetadataResolver resolver) throws PatchingException {
             return (RollbackPatch) resolver.resolvePatch(null, null);
