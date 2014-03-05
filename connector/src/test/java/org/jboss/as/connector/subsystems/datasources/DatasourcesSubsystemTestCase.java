@@ -35,6 +35,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
+import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.as.model.test.SingleClassFilter;
@@ -43,6 +44,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -160,7 +162,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
         Assert.assertNotNull(legacyServices);
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        checkSubsystemModelTransformation(mainServices, modelVersion, XA_JTA_MODEL_FIXER);
     }
 
     private void testTransformer1_1_2(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
@@ -182,7 +184,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
         Assert.assertNotNull(legacyServices);
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        checkSubsystemModelTransformation(mainServices, modelVersion, XA_JTA_MODEL_FIXER);
     }
 
     private void testTransformer1_2_0(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
@@ -204,7 +206,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertTrue(legacyServices.isSuccessfulBoot());
         Assert.assertNotNull(legacyServices);
 
-        checkSubsystemModelTransformation(mainServices, modelVersion);
+        checkSubsystemModelTransformation(mainServices, modelVersion, XA_JTA_MODEL_FIXER);
     }
 
     public void testRejectTransformers1_1_0(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
@@ -286,8 +288,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
                 .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),FAILED_TRANSFORMER_1_1_1)
                 .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), FAILED_TRANSFORMER_1_1_1)
-    );
-}
+        );
+    }
 
 
     private static FailedOperationTransformationConfig.ChainedConfig FAILED_TRANSFORMER_1_1_0 =
@@ -364,4 +366,20 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         }
     }
 
+
+    private static ModelFixer XA_JTA_MODEL_FIXER = new ModelFixer() {
+
+        @Override
+        public ModelNode fixModel(ModelNode modelNode) {
+            //xa-datasource wrongly had jta in the model before 1.3.0. It never gets set via our parser,
+            //but appears in the model as true since defaults are included
+            if (modelNode.hasDefined("xa-data-source")) {
+                for (Property prop : modelNode.get("xa-data-source").asPropertyList()) {
+                    String name = prop.getName();
+                    modelNode.get("xa-data-source", name).remove("jta");
+                }
+            }
+            return modelNode;
+        }
+    };
 }

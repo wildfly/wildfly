@@ -483,7 +483,7 @@ class Constants {
             SPY, USE_CCM, ENABLED,
             RECOVERY_USERNAME, RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN, RECOVER_PLUGIN_CLASSNAME,
-            NO_RECOVERY, JTA};
+            NO_RECOVERY};
 
     static final PropertiesAttributeDefinition[] XA_DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
             REAUTHPLUGIN_PROPERTIES,
