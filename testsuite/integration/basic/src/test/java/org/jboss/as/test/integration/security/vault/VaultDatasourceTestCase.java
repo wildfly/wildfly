@@ -70,7 +70,7 @@ import org.junit.runner.RunWith;
 
 /**
  * A VaultDatasourceTestCase for testing access to database through vault security
- * 
+ *
  * @author Ondrej Lukas
  */
 @RunWith(Arquillian.class)
@@ -89,14 +89,14 @@ public class VaultDatasourceTestCase {
         @Override
         public void setup(ManagementClient managementClient, String containerId) throws Exception {
             LOGGER.info("RESOURCE_LOCATION=" + RESOURCE_LOCATION);
-            
+
             ModelNode op;
 
             // setup DB
             server = Server.createTcpServer("-tcpAllowOthers").start();
             Class.forName("org.h2.Driver");
             connection = DriverManager.getConnection("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", RIGHT_PASSWORD);
-            executeUpdate(connection, "CREATE CMR_TABLE TestPeople(Name Varchar(50), Surname Varchar(50))");
+            executeUpdate(connection, "CREATE TABLE TestPeople(Name Varchar(50), Surname Varchar(50))");
             executeUpdate(connection, "INSERT INTO TestPeople VALUES ('John','Smith')");
 
             // clean temporary directory
@@ -143,7 +143,7 @@ public class VaultDatasourceTestCase {
                     WRONG_PASSWORD.toCharArray());
 
             LOGGER.debug("vaultPasswordString=" + vaultPasswordString);
-            
+
             // create new vault setting in standalone
             op = new ModelNode();
             op.get(OP).set(ADD);
@@ -176,7 +176,7 @@ public class VaultDatasourceTestCase {
             managementClient.getControllerClient().execute(new OperationBuilder(op).build());
 
             LOGGER.debug(VAULT_BLOCK + " datasource created");
-            
+
             final ModelNode enableNode = new ModelNode();
             enableNode.get(OP).set(ENABLE);
             enableNode.get(OP_ADDR).add(SUBSYSTEM, "datasources");
@@ -262,7 +262,7 @@ public class VaultDatasourceTestCase {
                 datFile3.delete();
 
             // stop DB
-            executeUpdate(connection, "DROP CMR_TABLE TestPeople");
+            executeUpdate(connection, "DROP TABLE TestPeople");
             connection.close();
             server.shutdown();
 
@@ -275,7 +275,7 @@ public class VaultDatasourceTestCase {
         }
     }
 
-    static final String RESOURCE_LOCATION = VaultDatasourceTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile() 
+    static final String RESOURCE_LOCATION = VaultDatasourceTestCase.class.getProtectionDomain().getCodeSource().getLocation().getFile()
             + "security/ds-vault/";
     static final String KEYSTORE_FILENAME = RESOURCE_LOCATION + "vaulttest.keystore";
     static final String VAULT_BLOCK = "ds_TestDS";

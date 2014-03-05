@@ -287,7 +287,7 @@ public class DatabaseLoginModuleTestCase {
             LOGGER.info("Creating database " + dbUrl);
 
             final Connection conn = DriverManager.getConnection(dbUrl, "sa", "sa");
-            executeUpdate(conn, "CREATE CMR_TABLE Roles(PrincipalID Varchar(50), Role Varchar(50), RoleGroup Varchar(50))");
+            executeUpdate(conn, "CREATE TABLE Roles(PrincipalID Varchar(50), Role Varchar(50), RoleGroup Varchar(50))");
             executeUpdate(conn, "INSERT INTO Roles VALUES ('anil','" + SimpleSecuredServlet.ALLOWED_ROLE + "','Roles')");
             executeUpdate(conn, "INSERT INTO Roles VALUES ('marcus','superuser','Roles')");
             createPrincipalsTab(conn, DEP1, null);
@@ -303,7 +303,7 @@ public class DatabaseLoginModuleTestCase {
         }
 
         private void createPrincipalsTab(Connection conn, String dep, Coding coding) throws SQLException {
-            executeUpdate(conn, "CREATE CMR_TABLE Principals" + dep + "(PrincipalID Varchar(50), Password Varchar(50))");
+            executeUpdate(conn, "CREATE TABLE Principals" + dep + "(PrincipalID Varchar(50), Password Varchar(50))");
             executeUpdate(conn, "INSERT INTO Principals" + dep + " VALUES ('anil','" + Utils.hashMD5(ANIL, coding) + "')");
             executeUpdate(conn, "INSERT INTO Principals" + dep + " VALUES ('marcus','" + Utils.hashMD5(MARCUS, coding) + "')");
         }
