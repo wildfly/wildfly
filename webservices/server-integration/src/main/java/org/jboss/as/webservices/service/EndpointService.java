@@ -59,6 +59,7 @@ import org.jboss.security.SecurityConstants;
 import org.jboss.security.SecurityUtil;
 import org.jboss.ws.api.monitoring.RecordProcessor;
 import org.jboss.ws.common.ObjectNameFactory;
+import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.ws.common.management.ManagedEndpoint;
 import org.jboss.ws.common.monitoring.ManagedRecordProcessor;
 import org.jboss.wsf.spi.deployment.Deployment;
@@ -78,13 +79,12 @@ import org.jboss.wsf.spi.security.EJBMethodSecurityAttributeProvider;
  */
 public final class EndpointService implements Service<Endpoint> {
 
-    private static final ServiceName MBEAN_SERVER_NAME = ServiceName.JBOSS.append("mbean", "server");
     private final Endpoint endpoint;
     private final ServiceName name;
     private final InjectedValue<SecurityDomainContext> securityDomainContextValue = new InjectedValue<SecurityDomainContext>();
     private final InjectedValue<WebAppController> pclWebAppControllerValue = new InjectedValue<WebAppController>();
     private final InjectedValue<EndpointRegistry> endpointRegistryValue = new InjectedValue<EndpointRegistry>();
-    private final InjectedValue<MBeanServer> mBeanServerValue = new InjectedValue<MBeanServer>();
+    private final InjectedValue<AbstractServerConfig> serverConfigServiceValue = new InjectedValue<AbstractServerConfig>();
     private final InjectedValue<EJBViewMethodSecurityAttributesService> ejbMethodSecurityAttributeServiceValue = new InjectedValue<EJBViewMethodSecurityAttributesService>();
 
     private EndpointService(final Endpoint endpoint, final ServiceName name) {
@@ -140,7 +140,7 @@ public final class EndpointService implements Service<Endpoint> {
     }
 
     private void registerRecordProcessor(final RecordProcessor processor, final Endpoint ep) {
-        MBeanServer mbeanServer = mBeanServerValue.getValue();
+        MBeanServer mbeanServer = serverConfigServiceValue.getValue().getMbeanServer();
         if (mbeanServer != null) {
             try {
                 mbeanServer.registerMBean(processor, ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
@@ -160,7 +160,7 @@ public final class EndpointService implements Service<Endpoint> {
     }
 
     private void unregisterRecordProcessor(final RecordProcessor processor, final Endpoint ep) {
-        MBeanServer mbeanServer = mBeanServerValue.getValue();
+        MBeanServer mbeanServer = serverConfigServiceValue.getValue().getMbeanServer();
         if (mbeanServer != null) {
             try {
                 mbeanServer.unregisterMBean(ObjectNameFactory.create(ep.getName() + ",recordProcessor=" + processor.getName()));
@@ -173,7 +173,7 @@ public final class EndpointService implements Service<Endpoint> {
     }
 
     private void registerEndpoint(final Endpoint ep) {
-        MBeanServer mbeanServer = mBeanServerValue.getValue();
+        MBeanServer mbeanServer = serverConfigServiceValue.getValue().getMbeanServer();
         if (mbeanServer != null) {
             try {
                 ManagedEndpoint jmxEndpoint = new ManagedEndpoint(endpoint, mbeanServer);
@@ -188,7 +188,7 @@ public final class EndpointService implements Service<Endpoint> {
     }
 
     private void unregisterEndpoint(final Endpoint ep) {
-        MBeanServer mbeanServer = mBeanServerValue.getValue();
+        MBeanServer mbeanServer = serverConfigServiceValue.getValue().getMbeanServer();
         if (mbeanServer != null) {
             try {
                 mbeanServer.unregisterMBean(endpoint.getName());
@@ -219,8 +219,8 @@ public final class EndpointService implements Service<Endpoint> {
         return endpointRegistryValue;
     }
 
-    public Injector<MBeanServer> getMBeanServerInjector() {
-        return mBeanServerValue;
+    public Injector<AbstractServerConfig> getAbstractServerConfigInjector() {
+        return serverConfigServiceValue;
     }
 
     public Injector<EJBViewMethodSecurityAttributesService> getEJBMethodSecurityAttributeServiceInjector() {
@@ -243,10 +243,8 @@ public final class EndpointService implements Service<Endpoint> {
         builder.addDependency(DependencyType.REQUIRED,
                 WSServices.PORT_COMPONENT_LINK_SERVICE,
                 WebAppController.class, service.getPclWebAppControllerInjector());
-        builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME,
-                MBeanServer.class,
-                service.getMBeanServerInjector());
-        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE);
+        builder.addDependency(DependencyType.REQUIRED, WSServices.CONFIG_SERVICE, AbstractServerConfig.class,
+                service.getAbstractServerConfigInjector());
         if (EndpointType.JAXWS_EJB3.equals(endpoint.getType())) {
             builder.addDependency(DependencyType.OPTIONAL, getEJBViewMethodSecurityAttributesServiceName(unit, endpoint),
                     EJBViewMethodSecurityAttributesService.class, service.getEJBMethodSecurityAttributeServiceInjector());
