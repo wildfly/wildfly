@@ -224,7 +224,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = false;
         try {
-            delegate = findDelegate(name);
+            delegate = findDelegateForNewObject(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(CREATE_MBEAN, readOnly, true);
             }
@@ -252,7 +252,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = false;
         try {
-            delegate = findDelegate(name);
+            delegate = findDelegateForNewObject(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(CREATE_MBEAN, readOnly, true);
             }
