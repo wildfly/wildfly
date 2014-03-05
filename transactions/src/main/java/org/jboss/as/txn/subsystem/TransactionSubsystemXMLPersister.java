@@ -21,12 +21,13 @@
  */
 package org.jboss.as.txn.subsystem;
 
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
-
-import javax.xml.stream.XMLStreamException;
 
 /**
  * The {@link XMLElementWriter} that handles the Transaction subsystem. As we only write out the most recent version of
@@ -125,6 +126,25 @@ class TransactionSubsystemXMLPersister implements XMLElementWriter<SubsystemMars
                 writer.writeEmptyElement(Element.JDBC_STATE_STORE.getLocalName());
                 TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_TABLE_PREFIX.marshallAsAttribute(node, writer);
                 TransactionSubsystemRootResourceDefinition.JDBC_STATE_STORE_DROP_TABLE.marshallAsAttribute(node, writer);
+            }
+            writer.writeEndElement();
+        }
+
+        if (node.hasDefined(CommonAttributes.CM_RESOURCE) && node.get(CommonAttributes.CM_RESOURCE).asList().size() > 0) {
+            writer.writeStartElement(Element.CM_RESOURCES.getLocalName());
+            for (Property cmr : node.get(CommonAttributes.CM_RESOURCE).asPropertyList()) {
+                writer.writeStartElement(CommonAttributes.CM_RESOURCE);
+                writer.writeAttribute(Attribute.JNDI_NAME.getLocalName(), cmr.getName());
+                if (cmr.getValue().hasDefined(CMResourceResourceDefinition.CM_TABLE_NAME.getName()) ||
+                        cmr.getValue().hasDefined(CMResourceResourceDefinition.CM_TABLE_BATCH_SIZE.getName()) ||
+                        cmr.getValue().hasDefined(CMResourceResourceDefinition.CM_TABLE_IMMEDIATE_CLEANUP.getName())) {
+                    writer.writeStartElement(Element.CM_TABLE.getLocalName());
+                    CMResourceResourceDefinition.CM_TABLE_NAME.marshallAsAttribute(cmr.getValue(), writer);
+                    CMResourceResourceDefinition.CM_TABLE_BATCH_SIZE.marshallAsAttribute(cmr.getValue(), writer);
+                    CMResourceResourceDefinition.CM_TABLE_IMMEDIATE_CLEANUP.marshallAsAttribute(cmr.getValue(), writer);
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
             }
             writer.writeEndElement();
         }

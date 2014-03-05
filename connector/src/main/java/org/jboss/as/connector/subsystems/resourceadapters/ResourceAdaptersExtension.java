@@ -45,7 +45,7 @@ public class ResourceAdaptersExtension implements Extension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
 
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 3;
     private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
@@ -84,6 +84,7 @@ public class ResourceAdaptersExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_0.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_1_1.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_2_0.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.RESOURCEADAPTERS_3_0.getUriString(), ResourceAdapterSubsystemParser.INSTANCE);
     }
 
 }

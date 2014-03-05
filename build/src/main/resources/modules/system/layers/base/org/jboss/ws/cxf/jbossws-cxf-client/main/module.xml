@@ -44,8 +44,11 @@
         <module name="org.jboss.ws.cxf.jbossws-cxf-factories" services="export" />
         <!-- Apache CXF APIs only -->
         <module name="org.apache.cxf" export="true" />
-        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" export="true" services="export" />
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow" export="true" services="export" />
         <module name="org.jboss.ws.cxf.jbossws-cxf-transports-udp" export="true" services="export" />
         <module name="org.jboss.jaxbintros" export="true"/>
+        <module name="javax.security.auth.message.api" export="true"/>
+        <module name="org.picketbox" export="true"/>
+        <module name="org.apache.ws.security" export="true"/>
     </dependencies>
 </module>

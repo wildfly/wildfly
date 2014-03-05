@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:2.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:3.0">
  <resource-adapters>
   <resource-adapter id="myRA">
    <archive>multiple.rar</archive>

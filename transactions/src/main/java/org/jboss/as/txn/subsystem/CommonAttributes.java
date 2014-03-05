@@ -39,10 +39,14 @@ interface CommonAttributes {
     String OBJECT_STORE = "object-store";
     String OBJECT_STORE_PATH = "object-store-path";
     String OBJECT_STORE_RELATIVE_TO = "object-store-relative-to";
+    String STATE_STORE = "state";
+    String COMMUNICATION_STORE = "communication";
+    String ACTION_STORE = "action";
 
     String JTS = "jts";
     String USEHORNETQSTORE = "use-hornetq-store";
     String HORNETQ_STORE_ENABLE_ASYNC_IO = "hornetq-store-enable-async-io";
+    String JDBC_STORE = "jdbc-store";
     String USE_JDBC_STORE = "use-jdbc-store";
     String JDBC_STORE_DATASOURCE = "jdbc-store-datasource";
     String JDBC_ACTION_STORE_TABLE_PREFIX = "jdbc-action-store-table-prefix";
@@ -82,4 +86,18 @@ interface CommonAttributes {
     String PARTICIPANT = "participant";
     String TRANSACTION = "transaction";
     // TODO, process-id/mbean, process-id/file
+
+    String CM_RESOURCES ="commit-markable-resources";
+    String CM_RESOURCE ="commit-markable-resource";
+    String CM_LOCATION ="xid-location";
+
+    String CM_JNDI_NAME = "jndi-name";
+
+    String CM_BATCH_SIZE = "batch-size";
+    String CM_IMMEDIATE_CLEANUP = "immediate-cleanup";
+    String CM_LOCATION_NAME = "name";
+
+    Integer CM_BATCH_SIZE_DEF_VAL = 100;
+    Boolean CM_IMMEDIATE_CLEANUP_DEF_VAL = true;
+    String CM_LOCATION_NAME_DEF_VAL = "xids";
 }

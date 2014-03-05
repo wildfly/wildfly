@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:2.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:3.0">
   <!--Optional:-->
   <resource-adapters>
     <!--1 or more repetitions:-->
@@ -19,7 +19,7 @@
       <!--Optional:-->
       <connection-definitions>
         <!--1 or more repetitions:-->
-        <connection-definition use-ccm="true" class-name="token" sharable="false" enlistment="false" jndi-name="java:jboss/cf/PoolName" enabled="true" use-java-context="true" pool-name="poolName">
+        <connection-definition use-ccm="true" class-name="token" sharable="false" enlistment="false" jndi-name="java:jboss/cf/PoolName" enabled="true" use-java-context="true" pool-name="poolName" connectable="false">
           <!--Zero or more repetitions:-->
           <config-property name="config2">value</config-property>
           <!--You have a CHOICE of the next 2 items at this level-->

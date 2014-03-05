@@ -34,6 +34,7 @@ import org.jboss.msc.service.StartException;
 import java.sql.Driver;
 
 import static org.jboss.logging.Logger.Level.DEBUG;
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
@@ -224,6 +225,7 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10420, value = "Unsupported policy's option: %s")
     void unsupportedPolicyOption(String name);
 
+
     /**
      * Creates an exception indicating a failure to start JGroup channel for a Disributed Work Manager
      *
@@ -257,4 +259,12 @@ public interface ConnectorLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 10428, value = "@AdministeredObjectDefinition will have limited management: %s")
     void adminObjectAnnotation(String jndiName);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 10429, value = "Unable to register recovery: %s (%s)")
+    void unableToRegisterRecovery(String key, boolean isXa);
+
+
 }
+
+

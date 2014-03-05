@@ -45,6 +45,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BEANV
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.BOOTSTRAP_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONFIG_PROPERTIES;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
@@ -102,7 +103,7 @@ public class CommonAttributes {
             CLASS_NAME,
             JNDINAME,
             USE_JAVA_CONTEXT,
-            ENABLED,
+            ENABLED, CONNECTABLE,
             MAX_POOL_SIZE,
             INITIAL_POOL_SIZE,
             MIN_POOL_SIZE,

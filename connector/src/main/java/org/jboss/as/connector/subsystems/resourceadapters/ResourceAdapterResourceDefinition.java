@@ -21,14 +21,7 @@
 */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES;
-import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
-import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUP;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DEFAULT_GROUPS;
@@ -111,6 +104,10 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
     }
 
 
+    static void registerTransformers200(ResourceTransformationDescriptionBuilder parentBuilder) {
+        ConnectionDefinitionResourceDefinition.registerTransformer200(parentBuilder);
+    }
+
     static void registerTransformers120(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PathElement.pathElement(RESOURCEADAPTER_NAME))
                 .getAttributeBuilder()
@@ -145,22 +142,9 @@ public class ResourceAdapterResourceDefinition extends SimpleResourceDefinition 
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.BEANVALIDATIONGROUP, Constants.ARCHIVE)
                 //Expressions not allowed
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.BEANVALIDATIONGROUP, Constants.ARCHIVE)
-                .end()
-                .addChildResource(ConnectionDefinitionResourceDefinition.PATH).getAttributeBuilder()
-                        .setDiscard(DiscardAttributeChecker.UNDEFINED, Constants.SECURITY_DOMAIN, Constants.SECURITY_DOMAIN_AND_APPLICATION, Constants.APPLICATION,
-                                CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_CLASS,
-                                INITIAL_POOL_SIZE, CAPACITY_DECREMENTER_PROPERTIES, CAPACITY_INCREMENTER_PROPERTIES)
-                        .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)), ENLISTMENT, SHARABLE)
-                                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.SECURITY_DOMAIN, Constants.SECURITY_DOMAIN_AND_APPLICATION, Constants.APPLICATION,
-                                        CAPACITY_DECREMENTER_CLASS, CAPACITY_INCREMENTER_CLASS,
-                                        INITIAL_POOL_SIZE, CAPACITY_DECREMENTER_PROPERTIES, CAPACITY_INCREMENTER_PROPERTIES)
-                                .addRejectCheck(RejectAttributeChecker.UNDEFINED, ENLISTMENT, SHARABLE)
-                                .addRejectCheck(new RejectAttributeChecker.SimpleAcceptAttributeChecker(new ModelNode(true)), ENLISTMENT, SHARABLE)
-                                        //Did not use to be nillable
-                                .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.RECOVERLUGIN_PROPERTIES)
-                                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.RECOVERLUGIN_PROPERTIES)
-                                .end();
+                .end();
 
+        ConnectionDefinitionResourceDefinition.registerTransformer110(builder);
     }
 
 

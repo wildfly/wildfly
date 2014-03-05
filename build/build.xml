@@ -1097,6 +1097,10 @@
 
         <module-def name="org.jboss.as.modcluster"/>
 
+        <module-def name="org.wildfly.extension.picketlink">
+            <maven-resource group="org.wildfly" artifact="wildfly-picketlink"/>
+        </module-def>
+
         <module-def name="org.jboss.as.pojo">
             <maven-resource group="org.wildfly" artifact="wildfly-pojo"/>
         </module-def>
@@ -1346,8 +1350,8 @@
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-server"/>
         </module-def>
 
-        <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver">
-            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-httpserver"/>
+        <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow">
+            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-transports-undertow"/>
         </module-def>
 
         <module-def name="org.jboss.ws.cxf.jbossws-cxf-transports-udp">
@@ -1356,10 +1360,11 @@
 
         <module-def name="org.jboss.ws.jaxws-client">
             <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-client"/>
+            <maven-resource group="org.jboss.ws.cxf" artifact="jbossws-cxf-jaspi"/>
         </module-def>
 
-        <module-def name="org.jboss.ws.jaxws-jboss-httpserver-httpspi">
-            <maven-resource group="org.jboss.ws.projects" artifact="jaxws-jboss-httpserver-httpspi"/>
+        <module-def name="org.jboss.ws.jaxws-undertow-httpspi">
+            <maven-resource group="org.jboss.ws.projects" artifact="jaxws-undertow-httpspi"/>
         </module-def>
 
         <module-def name="org.jboss.ws.api">
@@ -1469,6 +1474,10 @@
 
         <module-def name="org.picketlink.idm">
             <maven-resource group="org.picketlink" artifact="picketlink-idm-impl"/>
+        </module-def>
+
+        <module-def name="org.picketlink.idm.schema">
+            <maven-resource group="org.picketlink" artifact="picketlink-idm-simple-schema"/>
         </module-def>
 
         <module-def name="org.picketbox">

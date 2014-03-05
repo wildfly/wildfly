@@ -21,25 +21,6 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.connector.util.ParserException;
-import org.jboss.dmr.ModelNode;
-import org.jboss.jca.common.CommonBundle;
-import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
-import org.jboss.jca.common.api.metadata.common.v11.WorkManager;
-import org.jboss.jca.common.api.metadata.common.v11.WorkManagerSecurity;
-import org.jboss.jca.common.api.metadata.ironjacamar.v11.IronJacamar;
-import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
-import org.jboss.jca.common.api.validator.ValidateException;
-import org.jboss.jca.common.metadata.common.v11.WorkManagerImpl;
-import org.jboss.jca.common.metadata.common.v11.WorkManagerSecurityImpl;
-import org.jboss.logging.Messages;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
@@ -66,6 +47,27 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+
+import org.jboss.as.connector.util.ParserException;
+import org.jboss.dmr.ModelNode;
+import org.jboss.jca.common.CommonBundle;
+import org.jboss.jca.common.api.metadata.common.TransactionSupportEnum;
+import org.jboss.jca.common.api.metadata.common.v11.WorkManager;
+import org.jboss.jca.common.api.metadata.common.v11.WorkManagerSecurity;
+import org.jboss.jca.common.api.metadata.ironjacamar.v11.IronJacamar;
+import org.jboss.jca.common.api.metadata.resourceadapter.ResourceAdapters;
+import org.jboss.jca.common.api.validator.ValidateException;
+import org.jboss.jca.common.metadata.common.v11.WorkManagerImpl;
+import org.jboss.jca.common.metadata.common.v11.WorkManagerSecurityImpl;
+import org.jboss.logging.Messages;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
  * A ResourceAdapterParserr.
@@ -287,7 +289,16 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
 
                         case CONNECTION_DEFINITION: {
-                            parseConnectionDefinitions(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
+                            switch (org.jboss.as.connector.subsystems.resourceadapters.Namespace.forUri(reader.getNamespaceURI())) {
+                                case RESOURCEADAPTERS_1_0:
+                                case RESOURCEADAPTERS_1_1:
+                                case RESOURCEADAPTERS_2_0:
+                                    parseConnectionDefinitions_1_0(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
+                                    break;
+                                case RESOURCEADAPTERS_3_0:
+                                    parseConnectionDefinitions_3_0(reader, connectionDefinitionsOperations, cfConfigPropertiesOperations, isXa);
+                                    break;
+                            }
                             break;
                         }
                         case BEAN_VALIDATION_GROUP: {

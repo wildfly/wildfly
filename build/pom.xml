@@ -1176,6 +1176,11 @@
 
                 <dependency>
                     <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-picketlink</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.wildfly</groupId>
                     <artifactId>wildfly-pojo</artifactId>
                 </dependency>
 
@@ -1861,12 +1866,17 @@
 
                 <dependency>
                     <groupId>org.jboss.ws.projects</groupId>
-                    <artifactId>jaxws-jboss-httpserver-httpspi</artifactId>
+                    <artifactId>jaxws-undertow-httpspi</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jboss.ws.cxf</groupId>
                     <artifactId>jbossws-cxf-client</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.ws.cxf</groupId>
+                    <artifactId>jbossws-cxf-jaspi</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1887,12 +1897,12 @@
 
                 <dependency>
                     <groupId>org.jboss.ws.cxf</groupId>
-                    <artifactId>jbossws-cxf-transports-httpserver</artifactId>
+                    <artifactId>jbossws-cxf-transports-udp</artifactId>
                 </dependency>
 
                 <dependency>
                     <groupId>org.jboss.ws.cxf</groupId>
-                    <artifactId>jbossws-cxf-transports-udp</artifactId>
+                    <artifactId>jbossws-cxf-transports-undertow</artifactId>
                 </dependency>
 
                 <dependency>
@@ -1964,7 +1974,12 @@
                     <groupId>org.picketlink</groupId>
                     <artifactId>picketlink-idm-impl</artifactId>
                 </dependency>
-    
+
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-idm-simple-schema</artifactId>
+                </dependency>
+
                 <dependency>
                     <groupId>org.picketlink.distribution</groupId>
                     <artifactId>picketlink-jbas7</artifactId>

@@ -30,6 +30,11 @@ public class HostModelTestCase extends AbstractCoreModelTest {
         doHostXml("host-with-expressions.xml");
     }
 
+    @Test
+    public void testWFLY2870() throws Exception {
+        doHostXml("host-with-secure-interface.xml");
+    }
+
     private final ModelInitializer MODEL_SANITIZER = new ModelInitializer() {
         @Override
         public void populateModel(Resource rootResource) {
