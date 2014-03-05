@@ -1,8 +1,8 @@
 END USER LICENSE AGREEMENT
-JBOSS^® ENTERPRISE MIDDLEWARE^TM
+RED HAT^® JBOSS^® MIDDLEWARE^TM
 
 The end user license agreement ("EULA") governs the use of the various
-software modules that collectively comprise JBoss Enterprise Middleware and
+software modules that collectively comprise Red Hat JBoss Middleware and
 any related updates, source code, appearance, structure and organization,
-regardless of the delivery mechanism. The JBoss Enterprise Middleware EULA can
+regardless of the delivery mechanism. The Red Hat JBoss Middleware EULA can
 be found here:  http://www.redhat.com/licenses/jboss_eula.html
