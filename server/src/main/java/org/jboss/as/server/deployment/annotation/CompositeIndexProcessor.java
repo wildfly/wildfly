@@ -104,6 +104,17 @@ public class CompositeIndexProcessor implements DeploymentUnitProcessor {
         if (ModuleRootMarker.isModuleRoot(deploymentRoot)) {
             allResourceRoots.add(deploymentRoot);
         }
+        //Add all the resources from the ear's lib dir
+        if (deploymentUnit.getParent() != null) {
+            final DeploymentUnit parent = deploymentUnit.getParent();
+            final ResourceRoot parentResourceRoot = parent.getAttachment(Attachments.DEPLOYMENT_ROOT);
+            final List<ResourceRoot> parentResourceRoots = parent.getAttachment(Attachments.RESOURCE_ROOTS);
+            for (ResourceRoot resourceRoot : parentResourceRoots) {
+                if (!SubDeploymentMarker.isSubDeployment(resourceRoot)) {
+                    allResourceRoots.add(resourceRoot);
+                }
+            }
+        }
         for (ResourceRoot resourceRoot : allResourceRoots) {
             Index index = resourceRoot.getAttachment(Attachments.ANNOTATION_INDEX);
             if (index != null) {
