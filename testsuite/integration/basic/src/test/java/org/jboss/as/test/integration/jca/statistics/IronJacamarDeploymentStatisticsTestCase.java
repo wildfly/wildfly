@@ -82,7 +82,7 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
         return createDeployment("3");
     }
 
-    public ModelNode prepareTest(String name) throws Exception{
+    public ModelNode prepareTest(String name) throws Exception {
         ModelNode address = new ModelNode();
         String arch = "archive"+name+".rar";
         address.add(DEPLOYMENT,arch)
@@ -92,7 +92,27 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
         .add("connection-definitions",fact+name);
 
         deployer.deploy(name);
+
+        enableStats(name, fact+name);
+
         return address;
+    }
+
+    private void enableStats(String name, String cdName) throws Exception {
+        String arch = "archive"+name+".rar";
+        ModelNode statAddress = new ModelNode();
+        statAddress.add(DEPLOYMENT, arch)
+                .add(SUBSYSTEM, "resource-adapters")
+                .add("statistics", "statistics")
+                .add("resource-adapter", arch)
+                .add("connection-definitions", cdName);
+        statAddress.protect();
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("write-attribute");
+        operation.get(OP_ADDR).set(statAddress);
+        operation.get("name").set("statistics-enabled");
+        operation.get("value").set(true);
+        executeOperation(operation);
     }
 
     @Test
@@ -121,6 +141,7 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
     public void testTwoConnectionsInOneRa() throws Exception {
         ModelNode mn=prepareTest("3");
         ModelNode mn1 = getAnotherConnection(mn);
+        enableStats("3", mn1.get(4).get("connection-definitions").asString());
         testStatistics(mn);
         testStatisticsDouble(mn);
         testStatistics(mn1);
@@ -134,6 +155,7 @@ public class IronJacamarDeploymentStatisticsTestCase extends JcaStatisticsBase {
     public void testTwoConnectionsInOneRaPlusOneInOther() throws Exception {
         ModelNode mn = prepareTest("3");
         ModelNode mn1 = getAnotherConnection(mn);
+        enableStats("3", mn1.get(4).get("connection-definitions").asString());
         ModelNode mn2 = prepareTest("1");
         testStatistics(mn);
         testStatisticsDouble(mn);
