@@ -35,6 +35,7 @@
 
     <dependencies>
         <module name="javax.api"/>
+        <module name="org.jboss.vfs" services="import"/>
         <module name="org.jboss.logmanager" services="import"/>
         <module name="org.jboss.as.jmx" services="import"/>
         <module name="org.jboss.as.server" export="true"/>
