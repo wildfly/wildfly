@@ -72,7 +72,18 @@ public class DsMgmtTestBase extends ContainerResourceMgmtTestBase {
         address.add(type, dsName);
         address.protect();
 
-        final ModelNode operation = new ModelNode();
+        final ModelNode poolStats = address.clone();
+        poolStats.add("statistics", "pool");
+        poolStats.protect();
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set("write-attribute");
+        operation.get(OP_ADDR).set(poolStats);
+        operation.get("name").set("statistics-enabled");
+        operation.get("value").set(true);
+
+        executeOperation(operation);
+
+        operation = new ModelNode();
         operation.get(OP).set("test-connection-in-pool");
         operation.get(OP_ADDR).set(address);
 
