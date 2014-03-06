@@ -192,15 +192,18 @@ public final class ParsedInterfaceCriteria {
                 return new LoopbackAddressInterfaceCriteria(parseInetAddress(value, expressionResolver));
             }
             case NIC: {
+                ModelNode value = parsePossibleExpression(property.getValue());
                 checkStringType(property.getValue(), element.getLocalName());
-                return new NicInterfaceCriteria(property.getValue().asString());
+                return new NicInterfaceCriteria(expressionResolver.resolveExpressions(value).asString());
             }
             case NIC_MATCH: {
+                ModelNode value = parsePossibleExpression(property.getValue());
                 checkStringType(property.getValue(), element.getLocalName());
-                return createNicMatchCriteria(property.getValue());
+                return createNicMatchCriteria(expressionResolver.resolveExpressions(value));
             }
             case SUBNET_MATCH: {
-                return createSubnetMatchCriteria(property.getValue());
+                ModelNode value = parsePossibleExpression(property.getValue());
+                return createSubnetMatchCriteria(expressionResolver.resolveExpressions(value));
             }
             case ANY:
             case NOT:
