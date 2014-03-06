@@ -82,6 +82,7 @@ import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -108,7 +109,8 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         operation.get(DOMAIN_MODEL).set(getCurrentModelUpdates(root, UpdateListModifier.createForAdditions()));
         final MockOperationContext operationContext = getOperationContext(root, false);
         handler.execute(operationContext, operation);
-        operationContext.verify();
+        final List<OperationAndHandler> operations = operationContext.verify().get(OperationContext.Stage.MODEL);
+        Assert.assertEquals(4, operations.size());
     }
 
     @Test
@@ -167,8 +169,8 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
 
         assertTrue(addedSteps.containsKey(OperationContext.Stage.MODEL));
         List<OperationAndHandler> modelSteps = addedSteps.get(OperationContext.Stage.MODEL);
-        assertEquals(2, modelSteps.size());
-        OperationAndHandler oah = modelSteps.get(1);
+        assertEquals(4, modelSteps.size());
+        OperationAndHandler oah = modelSteps.get(3);
 
         operationContext = getOperationContext(root, false);
         operationContext.expectStep(PathAddress.pathAddress(PathElement.pathElement(HOST, "localhost"), PathElement.pathElement(SERVER, "server-one")));
