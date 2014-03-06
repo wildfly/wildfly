@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A task that uses an executor service to concurrently execute other tasks
@@ -62,19 +64,36 @@ class ConcurrentUpdateTask implements Runnable {
         }
 
         // Wait until all complete before returning
+        boolean patient = true;
         for (int i = 0; i < futures.size(); i++) {
             Future<?> future = futures.get(i);
             try {
-                future.get();
+                if (patient) {
+                    future.get();
+                } else {
+                    // We've been interrupted; see if this task is already done
+                    future.get(0, TimeUnit.MILLISECONDS);
+                }
             } catch (InterruptedException e) {
-                DOMAIN_DEPLOYMENT_LOGGER.caughtExceptionWaitingForTaskReturning(ConcurrentUpdateTask.class.getSimpleName(),
+                DOMAIN_DEPLOYMENT_LOGGER.caughtExceptionWaitingForTask(ConcurrentUpdateTask.class.getSimpleName(),
                         e.getClass().getSimpleName(), concurrentTasks.get(i).toString());
-                Thread.currentThread().interrupt();
-                return;
+                patient = false;
+                future.cancel(true);
             } catch (ExecutionException e) {
                 DOMAIN_DEPLOYMENT_LOGGER.caughtExceptionWaitingForTask(ConcurrentUpdateTask.class.getSimpleName(),
                         e.getClass().getSimpleName(), concurrentTasks.get(i).toString());
+                future.cancel(true);
+            } catch (TimeoutException e) {
+                // Task wasn't already done; cancel it
+                DOMAIN_DEPLOYMENT_LOGGER.caughtExceptionWaitingForTask(ConcurrentUpdateTask.class.getSimpleName(),
+                        e.getClass().getSimpleName(), concurrentTasks.get(i).toString());
+                patient = false; // it should already be false if we got here, but just in case someone changes something
+                future.cancel(true);
             }
+        }
+
+        if (!patient) {
+            Thread.currentThread().interrupt();
         }
     }
 

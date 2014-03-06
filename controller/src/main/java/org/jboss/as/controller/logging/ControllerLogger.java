@@ -3177,7 +3177,15 @@ public interface ControllerLogger extends BasicLogger {
     void timeoutCompletingOperation(long blockingTimeout, String name, PathAddress address);
 
     @LogMessage(level = Level.INFO)
-    @Message(id = 350, value = "Cancelling operation '%s' with id '%d' running on thread '%s'")
+    @Message(id = 350, value = "Execution of operation '%s' on remote process at address '%s' interrupted while awaiting initial response; remote process has been notified to cancel operation")
+    void interruptedAwaitingInitialResponse(String operation, PathAddress proxyNodeAddress);
+
+    @LogMessage(level = Level.INFO)
+    @Message(id = 351, value = "Execution of operation '%s' on remote process at address '%s' interrupted while awaiting final response; remote process has been notified to terminate operation")
+    void interruptedAwaitingFinalResponse(String operation, PathAddress proxyNodeAddress);
+
+    @LogMessage(level = Level.INFO)
+    @Message(id = 352, value = "Cancelling operation '%s' with id '%d' running on thread '%s'")
     void cancellingOperation(String operation, int id, String thread);
 
 }

@@ -168,6 +168,8 @@ class ServerUpdatePolicy {
      *         <code>false</code> otherwise
      */
     public synchronized boolean isFailed() {
-        return failureCount > maxFailed;
+        // Here we use successCount instead of failed count, so
+        // non-recorded servers are treated as failures
+        return (servers.size() - successCount) > maxFailed;
     }
 }

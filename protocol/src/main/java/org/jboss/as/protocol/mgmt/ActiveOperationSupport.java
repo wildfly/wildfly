@@ -300,6 +300,7 @@ class ActiveOperationSupport {
 
             @Override
             public void cancel() {
+                ProtocolLogger.CONNECTION_LOGGER.debugf("Operation (%d) cancelled", operationId);
                 ActiveOperationImpl.this.cancel();
             }
         };

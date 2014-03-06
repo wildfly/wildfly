@@ -166,9 +166,9 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                     return header;
                 }
 
-                Runnable createAsyncTaskRunner(final AsyncTask<A> task) {
+                Runnable createAsyncTaskRunner(final AsyncTask<A> task, final boolean cancellable) {
                     final ManagementRequestContext<A> context = this;
-                    final AsyncTaskRunner runner = new AsyncTaskRunner() {
+                    final AsyncTaskRunner runner = new AsyncTaskRunner(cancellable) {
                         @Override
                         protected void doExecute() {
                             try {
@@ -176,21 +176,36 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                             } catch (Exception e) {
                                 resultHandler.failed(e);
                                 requests.remove(requestId);
+                                if (e instanceof InterruptedException) {
+                                    Thread.currentThread().interrupt();
+                                }
                             }
                         }
                     };
-                    support.addCancellable(runner);
+                    if (cancellable) {
+                        support.addCancellable(runner);
+                    }
                     return runner;
                 }
 
                 @Override
                 public void executeAsync(final AsyncTask<A> task) {
-                    executeAsync(task, getExecutor());
+                    executeAsync(task, true, getExecutor());
+                }
+
+                @Override
+                public void executeAsync(final AsyncTask<A> task, boolean cancellable) {
+                    executeAsync(task, cancellable, getExecutor());
                 }
 
                 @Override
                 public void executeAsync(AsyncTask<A> task, Executor executor) {
-                    executor.execute(createAsyncTaskRunner(task));
+                    executeAsync(task, true, executor);
+                }
+
+                @Override
+                public void executeAsync(AsyncTask<A> task, boolean cancellable, Executor executor) {
+                    executor.execute(createAsyncTaskRunner(task, cancellable));
                 }
 
                 @Override
@@ -273,9 +288,9 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                     return header;
                 }
 
-                Runnable createAsyncTaskRunner(final AsyncTask<A> task) {
+                Runnable createAsyncTaskRunner(final AsyncTask<A> task, final boolean cancellable) {
                     final ManagementRequestContext<A> context = this;
-                    final AsyncTaskRunner runner = new AsyncTaskRunner() {
+                    final AsyncTaskRunner runner = new AsyncTaskRunner(cancellable) {
                         @Override
                         protected void doExecute() {
                             try {
@@ -288,19 +303,31 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                             }
                         }
                     };
-                    support.addCancellable(runner);
+                    if (cancellable) {
+                        support.addCancellable(runner);
+                    }
                     return runner;
                 }
 
                 @Override
                 public void executeAsync(final AsyncTask<A> task) {
-                    executeAsync(task, getExecutor());
+                    executeAsync(task, true, getExecutor());
                 }
 
                 @Override
-                public void executeAsync(final AsyncTask<A> task, final Executor executor) {
+                public void executeAsync(final AsyncTask<A> task, boolean cancellable) {
+                    executeAsync(task, cancellable, getExecutor());
+                }
+
+                @Override
+                public void executeAsync(AsyncTask<A> task, Executor executor) {
+                    executeAsync(task, true, executor);
+                }
+
+                @Override
+                public void executeAsync(final AsyncTask<A> task, boolean cancellable, final Executor executor) {
                     try {
-                        executor.execute(createAsyncTaskRunner(task));
+                        executor.execute(createAsyncTaskRunner(task, cancellable));
                     } catch (RejectedExecutionException e) {
                         if(resultHandler.failed(e)) {
                             safeWriteErrorResponse(channel, header, e);
@@ -474,15 +501,20 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
 
     private abstract static class AsyncTaskRunner implements Runnable, Cancellable {
 
+        private final boolean cancellable;
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         private volatile Thread thread;
 
+        private AsyncTaskRunner(boolean cancellable) {
+            this.cancellable = cancellable;
+        }
         @Override
         public Cancellable cancel() {
-            if(cancelled.compareAndSet(false, true)) {
+            if (cancellable && cancelled.compareAndSet(false, true)) {
                 final Thread thread = this.thread;
                 if(thread != null) {
                     thread.interrupt();
+                    ProtocolLogger.ROOT_LOGGER.cancelledAsyncTask(getClass().getSimpleName(), thread);
                 }
             }
             return this;
@@ -495,8 +527,9 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
 
         @Override
         public void run() {
-            if(cancelled.get()) {
+            if (cancellable && cancelled.get()) {
                 Thread.currentThread().interrupt();
+                ProtocolLogger.ROOT_LOGGER.cancelledAsyncTaskBeforeRun(getClass().getSimpleName());
             }
             this.thread = Thread.currentThread();
             try {
@@ -504,6 +537,10 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
             } finally {
                 this.thread = null;
             }
+        }
+
+        final boolean isCancelled() {
+            return cancelled.get();
         }
     }
 

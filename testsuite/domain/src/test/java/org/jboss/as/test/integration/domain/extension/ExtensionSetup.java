@@ -24,6 +24,8 @@ package org.jboss.as.test.integration.domain.extension;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
+import org.jboss.as.test.integration.management.extension.EmptySubsystemParser;
+import org.jboss.as.test.integration.management.extension.blocker.BlockerExtension;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.exporter.StreamExporter;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
@@ -42,7 +44,7 @@ public class ExtensionSetup {
     public static void initializeTestExtension(final DomainTestSupport support) throws IOException {
         // Get module.xml, create modules.jar and add to test config
         final InputStream moduleXml = getModuleXml("module.xml");
-        StreamExporter exporter = createResourceRoot(ExtensionSetup.class.getPackage(), TestExtension.class);
+        StreamExporter exporter = createResourceRoot(TestExtension.class, ExtensionSetup.class.getPackage(), EmptySubsystemParser.class.getPackage());
         Map<String, StreamExporter> content = Collections.singletonMap("test-extension.jar", exporter);
         support.addTestModule(TestExtension.MODULE_NAME, moduleXml, content);
     }
@@ -51,22 +53,35 @@ public class ExtensionSetup {
 
         // slave - version1
         InputStream moduleXml = getModuleXml("transformers-module.xml");
-        final StreamExporter version1 = createResourceRoot(ExtensionSetup.class.getPackage(), VersionedExtension1.class);
+        final StreamExporter version1 = createResourceRoot(VersionedExtension1.class, ExtensionSetup.class.getPackage(), EmptySubsystemParser.class.getPackage());
         Map<String, StreamExporter> v1 = Collections.singletonMap("transformers-extension.jar", version1);
         support.addOverrideModule("slave", VersionedExtensionCommon.EXTENSION_NAME, moduleXml, v1);
 
         // master - version2
         moduleXml = getModuleXml("transformers-module.xml");
-        final StreamExporter version2 = createResourceRoot(ExtensionSetup.class.getPackage(), VersionedExtension2.class);
+        final StreamExporter version2 = createResourceRoot(VersionedExtension2.class, ExtensionSetup.class.getPackage());
         Map<String, StreamExporter> v2 = Collections.singletonMap("transformers-extension.jar", version2);
         support.addOverrideModule("master", VersionedExtensionCommon.EXTENSION_NAME, moduleXml, v2);
 
     }
 
-    static StreamExporter createResourceRoot(Package pkg, Class<? extends Extension> extensions) throws IOException {
+    public static void initializeBlockerExtension(final DomainTestSupport support) throws IOException {
+        // Get module.xml, create modules.jar and add to test config
+        final InputStream moduleXml = getModuleXml("blocker-module.xml");
+        StreamExporter exporter = createResourceRoot(BlockerExtension.class, EmptySubsystemParser.class.getPackage());
+        Map<String, StreamExporter> content = Collections.singletonMap("blocker-extension.jar", exporter);
+        support.addTestModule(BlockerExtension.MODULE_NAME, moduleXml, content);
+    }
+
+    static StreamExporter createResourceRoot(Class<? extends Extension> extension, Package... additionalPackages) throws IOException {
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class);
-        archive.addPackage(ExtensionSetup.class.getPackage());
-        archive.addAsServiceProvider(Extension.class, extensions);
+        archive.addPackage(extension.getPackage());
+        if (additionalPackages != null) {
+            for (Package pkg : additionalPackages) {
+                archive.addPackage(pkg);
+            }
+        }
+        archive.addAsServiceProvider(Extension.class, extension);
         return archive.as(ZipExporter.class);
     }
 
