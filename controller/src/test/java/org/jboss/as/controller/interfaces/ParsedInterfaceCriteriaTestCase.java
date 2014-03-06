@@ -102,4 +102,17 @@ public class ParsedInterfaceCriteriaTestCase {
         Assert.assertFalse(new WildcardInetAddressInterfaceCriteria(Inet4Address.getLocalHost()).equals(LoopbackInterfaceCriteria.INSTANCE));
         Assert.assertFalse(LoopbackInterfaceCriteria.INSTANCE.equals(UpInterfaceCriteria.INSTANCE));
     }
+
+    @Test
+    public void testSystemPropertyResolution() throws Exception {
+        ModelNode op = new ModelNode();
+        op.get(Element.ANY.getLocalName()).add().get(Element.SUBNET_MATCH.getLocalName()).set("${subnet:192.168.0.0/16}");
+        op.get(Element.ANY.getLocalName()).add().get(Element.NIC_MATCH.getLocalName()).set("${subnet:test}");
+        op.get(Element.ANY.getLocalName()).add().get(Element.NIC.getLocalName()).set("${subnet:test}");
+
+        ParsedInterfaceCriteria criteria = ParsedInterfaceCriteria.parse(op, true, ExpressionResolver.TEST_RESOLVER);
+        Assert.assertNull(criteria.getFailureMessage());
+        Assert.assertFalse(criteria.getCriteria().isEmpty());
+    }
+
 }

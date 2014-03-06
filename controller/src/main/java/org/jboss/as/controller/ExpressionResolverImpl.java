@@ -159,12 +159,12 @@ public class ExpressionResolverImpl implements ExpressionResolver {
             // this method for any expression will have ignoreUnresolvable set to 'false' which means a basic test of
             // ability to read system properties will have already passed. So a failure with ignoreUnresolvable set to
             // true means a specific property caused the failure, and that should not be ignored
-            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.noPermissionToResolveExpression(unresolved, e)));
+            throw new OperationFailedException(ControllerMessages.MESSAGES.noPermissionToResolveExpression(unresolved, e));
         } catch (IllegalStateException e) {
             if (ignoreUnresolvable) {
                 return new ModelNode(unresolved.asString());
             }
-            throw new OperationFailedException(new ModelNode(ControllerMessages.MESSAGES.cannotResolveExpression(unresolved, e)));
+            throw new OperationFailedException(ControllerMessages.MESSAGES.cannotResolveExpression(unresolved, e));
         }
 
     }

@@ -65,8 +65,8 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -74,10 +74,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -584,8 +580,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 final String value = reader.getAttributeValue(0);
                 requireNoContent(reader);
 
-                validateAddressMask(value, reader.getLocation());
-
                 if (nested) {
                     subModel.get(localName).add(value);
                 } else {
@@ -595,27 +589,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
             default:
                 throw unexpectedElement(reader);
-        }
-    }
-
-    private void validateAddressMask(String value, Location location) throws XMLStreamException {
-        final String[] split = value.split("/");
-        try {
-            if (split.length != 2) {
-                throw new XMLStreamException(MESSAGES.invalidAddressMaskValue(value), location);
-            }
-            // todo - possible DNS hit here
-            final InetAddress addr = InetAddress.getByName(split[0]);
-            // Validate both parts of the split
-            addr.getAddress();
-            Integer.parseInt(split[1]);
-
-        } catch (final NumberFormatException e) {
-            throw new XMLStreamException(MESSAGES.invalidAddressMask(split[1], e.getLocalizedMessage()),
-                    location, e);
-        } catch (final UnknownHostException e) {
-            throw new XMLStreamException(MESSAGES.invalidAddressValue(split[0], e.getLocalizedMessage()),
-                    location, e);
         }
     }
 
