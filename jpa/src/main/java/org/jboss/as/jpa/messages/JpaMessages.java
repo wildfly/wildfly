@@ -595,10 +595,6 @@ public interface JpaMessages {
     RuntimeException classloaderHasMultipleAdapters(String classloader);
 
     /**
-     * Don't add any message ids higher than 11499 (will need a new chunk).
-     */
-
-    /**
      * Likely cause is that the application deployment did not complete successfully
      *
      * @param scopedPuName
@@ -606,4 +602,18 @@ public interface JpaMessages {
      */
     @Message(id = 11477, value = "Persistence unit '%s' is not available")
     IllegalStateException PersistenceUnitNotAvailable(String scopedPuName);
+
+    /**
+     * persistence provider adaptor module load error
+     *
+     * @param cause the cause of the error.
+     * @param adaptorModule name of persistence provider adaptor module that couldn't be loaded.
+     * @return
+     */
+    @Message(id = 11478, value =  "Persistence provider adapter module load error %s")
+    DeploymentUnitProcessingException persistenceProviderAdaptorModuleLoadError( @Cause Throwable cause, String adaptorModule);
+
+    /**
+     * Don't add any message ids higher than 11499 (will need a new chunk).
+     */
 }

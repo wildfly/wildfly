@@ -32,7 +32,6 @@ import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,7 +44,6 @@ import javax.naming.NamingException;
  * @author Scott Marlow
  */
 @RunWith(Arquillian.class)
-@Ignore  // until we hack the test to populate the org.hibernate module
 public class Hibernate3SharedModuleProviderTestCase {
 
     private static final String ARCHIVE_NAME = "hibernate3module_test";
@@ -65,7 +63,7 @@ public class Hibernate3SharedModuleProviderTestCase {
 // Hibernate 3 jars will need to be in the module folder and each jar name
 // should be added to module.xml in same folder.
 // not configuring the org.hibernate:3 module will give errors like this: http://pastie.org/2280769
-            "<property name=\"jboss.as.jpa.providerModule\" value=\"org.hibernate:3\"/>" +
+            "<property name=\"jboss.as.jpa.providerModule\" value=\"org.hibernate:3test\"/>" +
             "</properties>" +
             "  </persistence-unit>" +
             "</persistence>";

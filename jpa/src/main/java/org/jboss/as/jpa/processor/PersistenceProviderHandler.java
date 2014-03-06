@@ -22,6 +22,7 @@
 
 package org.jboss.as.jpa.processor;
 
+import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.lang.reflect.Constructor;
@@ -74,6 +75,7 @@ public class PersistenceProviderHandler {
                     final Constructor<? extends PersistenceProvider> constructor = providerClass.getConstructor();
                     provider = constructor.newInstance();
                     providerList.add(provider);
+                    JPA_LOGGER.tracef("deployment %s is using its own copy of %s", deploymentUnit.getName(), providerName);
 
                 } catch (Exception e) {
                     throw MESSAGES.cannotDeployApp(e, providerName);
@@ -88,7 +90,9 @@ public class PersistenceProviderHandler {
                         adaptor = (PersistenceProviderAdaptor) deploymentModuleClassLoader.loadClass(adapterClass).newInstance();
                         adaptor.injectJtaManager(JtaManagerImpl.getInstance());
                         adaptor.injectPlatform(platform);
-                        savePersistenceProviderInDeploymentUnit(deploymentUnit, new PersistenceProviderDeploymentHolder(providerList, adaptor));
+                        ArrayList<PersistenceProviderAdaptor> adaptorList = new ArrayList<>();
+                        adaptorList.add(adaptor);
+                        PersistenceProviderDeploymentHolder.savePersistenceProviderInDeploymentUnit(deploymentUnit, providerList, adaptorList);
                     } catch (InstantiationException e) {
                         throw MESSAGES.cannotCreateAdapter(e, adapterClass);
                     } catch (IllegalAccessException e) {
@@ -98,7 +102,7 @@ public class PersistenceProviderHandler {
                     }
                 } else {
                     // register the provider (no adapter specified)
-                    savePersistenceProviderInDeploymentUnit(deploymentUnit, new PersistenceProviderDeploymentHolder(providerList));
+                    PersistenceProviderDeploymentHolder.savePersistenceProviderInDeploymentUnit(deploymentUnit, providerList, null);
                 }
             }
         }
@@ -106,24 +110,15 @@ public class PersistenceProviderHandler {
 
     public static void finishDeploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder  = getPersistenceProviderDeploymentHolder(deploymentUnit);
-        if (persistenceProviderDeploymentHolder != null && persistenceProviderDeploymentHolder.getProvider() != null) {
+        PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder  = PersistenceProviderDeploymentHolder.getPersistenceProviderDeploymentHolder(deploymentUnit);
+        List<PersistenceProvider> providerList = persistenceProviderDeploymentHolder != null ?
+                persistenceProviderDeploymentHolder.getProviders() : null;
+        if (providerList != null) {
             Set<ClassLoader> deploymentClassLoaders = allDeploymentModuleClassLoaders(deploymentUnit);
-            for (PersistenceProvider provider:persistenceProviderDeploymentHolder.getProvider()) {
+            for (PersistenceProvider provider:providerList) {
                 PersistenceProviderResolverImpl.getInstance().addDeploymentSpecificPersistenceProvider(provider, deploymentClassLoaders);
             }
         }
-    }
-
-    private static PersistenceProviderDeploymentHolder getPersistenceProviderDeploymentHolder(DeploymentUnit deploymentUnit) {
-        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
-        return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
-    }
-
-    private static void savePersistenceProviderInDeploymentUnit(
-            DeploymentUnit deploymentUnit, PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder) {
-        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
-        deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, persistenceProviderDeploymentHolder);
     }
 
     public static void undeploy(final DeploymentUnit deploymentUnit) {

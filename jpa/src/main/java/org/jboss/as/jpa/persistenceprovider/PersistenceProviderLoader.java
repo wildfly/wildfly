@@ -22,6 +22,8 @@
 
 package org.jboss.as.jpa.persistenceprovider;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ServiceLoader;
 
 import javax.persistence.spi.PersistenceProvider;
@@ -50,23 +52,29 @@ public class PersistenceProviderLoader {
     }
 
     /**
-     * Loads the specified JPA persistence provider module name
+     * Loads the specified JPA persistence provider module
      *
-     * @param moduleName
+     * @param moduleName is the static module to be loaded
      * @throws ModuleLoadException
+     * @return list of persistence providers in specified module
+     *
+     * Note: side effect of saving loaded persistence providers to static api in javax.persistence.spi.PersistenceProvider.
      */
-    public static void loadProviderModuleByName(String moduleName) throws ModuleLoadException {
+    public static List<PersistenceProvider> loadProviderModuleByName(String moduleName) throws ModuleLoadException {
         final ModuleLoader moduleLoader = Module.getBootModuleLoader();
         Module module = moduleLoader.loadModule(ModuleIdentifier.fromString(moduleName));
         final ServiceLoader<PersistenceProvider> serviceLoader =
             module.loadService(PersistenceProvider.class);
+        List<PersistenceProvider> result = new ArrayList<>();
         if (serviceLoader != null) {
             for (PersistenceProvider provider1 : serviceLoader) {
                 // persistence provider jar may contain multiple provider service implementations
                 // save each provider
                 PersistenceProviderResolverImpl.getInstance().addPersistenceProvider(provider1);
+                result.add(provider1);
             }
         }
+        return result;
     }
 
 }

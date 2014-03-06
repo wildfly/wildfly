@@ -22,16 +22,11 @@
 
 package org.jboss.as.test.integration.jpa.mockprovider.classtransformer;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 
@@ -65,7 +60,8 @@ public class ClassFileTransformerTestCase {
         persistenceProvider.addClasses(
                     TestClassTransformer.class,
                     TestEntityManagerFactory.class,
-                    TestPersistenceProvider.class
+                    TestPersistenceProvider.class,
+                    TestAdapter.class
                 );
 
         // META-INF/services/javax.persistence.spi.PersistenceProvider
@@ -136,6 +132,15 @@ public class ClassFileTransformerTestCase {
                     entry);
         } finally {
             TestPersistenceProvider.clearLastPersistenceUnitInfo();
+        }
+    }
+
+    @Test
+    public void test_persistenceProviderAdapterInitialized() {
+        try {
+        assertTrue("persistence unit adapter was initialized", TestAdapter.wasInitialized());
+        } finally {
+            TestAdapter.clearInitialized();
         }
     }
 
