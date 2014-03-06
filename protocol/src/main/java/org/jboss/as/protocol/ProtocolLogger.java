@@ -23,6 +23,7 @@
 package org.jboss.as.protocol;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
 import static org.jboss.logging.Logger.Level.WARN;
 
 import java.net.ServerSocket;
@@ -147,5 +148,13 @@ public interface ProtocolLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 12118, value = "No such request (%d) associated with channel %s")
     void noSuchRequest(int requestId, Channel channel);
+
+    @LogMessage(level = INFO)
+    @Message(id = 12119, value = "%s cancelled task by interrupting thread %s")
+    void cancelledAsyncTask(String asyncTaskRunner, Thread thread);
+
+    @LogMessage(level = INFO)
+    @Message(id = 12120, value = "%s cancelled task before execution began")
+    void cancelledAsyncTaskBeforeRun(String asyncTaskRunner);
 
 }

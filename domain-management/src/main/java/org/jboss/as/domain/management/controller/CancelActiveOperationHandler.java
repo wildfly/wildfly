@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACTIVE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT_OPERATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.util.EnumSet;
 
@@ -62,6 +63,7 @@ public class CancelActiveOperationHandler implements OperationStepHandler {
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
+        DomainManagementLogger.ROOT_LOGGER.debugf("Cancel of %s requested", PathAddress.pathAddress(operation.get(OP_ADDR)).getLastElement().getValue());
         context.authorize(operation, EnumSet.of(Action.ActionEffect.WRITE_RUNTIME));
 
         context.addStep(new OperationStepHandler() {

@@ -28,7 +28,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 
-import javax.security.auth.Subject;
 import java.io.DataInput;
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,6 +41,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.security.auth.Subject;
+
+import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
@@ -116,7 +118,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
                 try {
                     // Execute
                     channelAssociation.executeRequest(op, new CompleteTxRequest(ModelControllerProtocol.PARAM_ROLLBACK));
-                } catch (Exception e) {
+                } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -141,9 +143,28 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
+        public void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+
+            ControllerLogger.MGMT_OP_LOGGER.tracef("sending ExecuteRequest for %d", context.getOperationId());
+            // WFLY-3090 Protect the communication channel from getting closed due to administrative
+            // cancellation of the management op by using a separate thread to send
+            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+                @Override
+                public void execute(ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                    sendRequestInternal(resultHandler, context);
+                }
+            }, false);
+
+        }
+
+        @Override
         protected void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
                                    final ManagementRequestContext<ExecuteRequestContext> context,
                                    final FlushableDataOutput output) throws IOException {
+
+            ControllerLogger.MGMT_OP_LOGGER.tracef("transmitting ExecuteRequest for %d", context.getOperationId());
+
             // Write the operation
             final ExecuteRequestContext executionContext = context.getAttachment();
             final List<InputStream> streams = executionContext.getInputStreams();
@@ -166,6 +187,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            ControllerLogger.MGMT_OP_LOGGER.tracef("received response to ExecuteRequest for %d", context.getOperationId());
             final byte responseType = input.readByte();
             final ModelNode response = new ModelNode();
             response.readExternal(input);
@@ -201,6 +223,11 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
                 resultHandler.done(response);
             }
         }
+
+        private void sendRequestInternal(ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                         ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            super.sendRequest(resultHandler, context);
+        }
     }
 
     /**
@@ -221,18 +248,40 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
         }
 
         @Override
+        public void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+
+            ControllerLogger.MGMT_OP_LOGGER.tracef("sending CompleteTxRequest for %d", context.getOperationId());
+            context.executeAsync(new ManagementRequestContext.AsyncTask<ExecuteRequestContext>() {
+                @Override
+                public void execute(ManagementRequestContext<ExecuteRequestContext> context) throws Exception {
+                    sendRequestInternal(resultHandler, context);
+                }
+            }, false);
+
+        }
+
+        @Override
         protected void sendRequest(final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context, final FlushableDataOutput output) throws IOException {
+
+            ControllerLogger.MGMT_OP_LOGGER.tracef("transmitting CompleteTxRequest (%s) for %d", status != ModelControllerProtocol.PARAM_ROLLBACK, context.getOperationId());
             output.write(status);
         }
 
         @Override
         public void handleRequest(final DataInput input, final ActiveOperation.ResultHandler<ModelNode> resultHandler, final ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            ControllerLogger.MGMT_OP_LOGGER.tracef("received response to CompleteTxRequest (%s) for %d", status != ModelControllerProtocol.PARAM_ROLLBACK, context.getOperationId());
             // We only accept operationCompleted responses
             expectHeader(input, ModelControllerProtocol.PARAM_OPERATION_COMPLETED);
             final ModelNode response = new ModelNode();
             response.readExternal(input);
             // Complete the operation
             resultHandler.done(response);
+        }
+
+        private void sendRequestInternal(ActiveOperation.ResultHandler<ModelNode> resultHandler,
+                                         ManagementRequestContext<ExecuteRequestContext> context) throws IOException {
+            super.sendRequest(resultHandler, context);
         }
     }
 

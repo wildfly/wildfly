@@ -21,10 +21,13 @@
  */
 package org.jboss.as.controller.remote;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
@@ -36,6 +39,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
@@ -155,6 +160,7 @@ public class RemoteProxyController implements ProxyController {
 //            }
 
             // Execute the operation
+            ControllerLogger.MGMT_OP_LOGGER.tracef("Executing %s for %s", translated.get(OP).asString(), getProxyNodeAddress());
             futureResult = client.execute(operationListener, translated, messageHandler, attachments);
             // Wait for the prepared response
             final TransactionalProtocolClient.PreparedOperation<TransactionalProtocolClient.Operation> prepared = queue.take();
@@ -164,6 +170,7 @@ public class RemoteProxyController implements ProxyController {
                 return;
             }
             // Send the prepared notification and wrap the OperationTransaction to block on commit/rollback
+            final Future cancellable = futureResult;
             control.operationPrepared(new ModelController.OperationTransaction() {
                 @Override
                 public void commit() {
@@ -172,6 +179,8 @@ public class RemoteProxyController implements ProxyController {
                         // Await the completed notification
                         completed.await();
                     } catch(InterruptedException e) {
+                        cancellable.cancel(true);
+                        ControllerLogger.MGMT_OP_LOGGER.interruptedAwaitingFinalResponse(translated.get(OP).asString(), getProxyNodeAddress());
                         Thread.currentThread().interrupt();
                     } catch (Exception e) {
                         // ignore
@@ -185,6 +194,8 @@ public class RemoteProxyController implements ProxyController {
                         // Await the completed notification
                         completed.await();
                     } catch(InterruptedException e) {
+                        cancellable.cancel(true);
+                        ControllerLogger.MGMT_OP_LOGGER.interruptedAwaitingFinalResponse(translated.get(OP).asString(), getProxyNodeAddress());
                         Thread.currentThread().interrupt();
                     } catch (Exception e) {
                         // ignore
@@ -193,10 +204,12 @@ public class RemoteProxyController implements ProxyController {
             }, prepared.getPreparedResult());
 
         } catch (InterruptedException e) {
-            if(futureResult != null) {
+            if (futureResult != null) { // it won't be null, as IE can only be thrown after it's assigned
+                ControllerLogger.MGMT_OP_LOGGER.interruptedAwaitingInitialResponse(original.get(OP).asString(), getProxyNodeAddress());
                 // Cancel the operation
-                futureResult.cancel(false);
+                futureResult.cancel(true);
             }
+            control.operationFailed(getCancelledResponse());
             Thread.currentThread().interrupt();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -305,5 +318,12 @@ public class RemoteProxyController implements ProxyController {
         }
         //We did not get a preparedResult, because the address is not valid for the current user
         return false;
+    }
+
+    private static ModelNode getCancelledResponse() {
+        ModelNode result = new ModelNode();
+        result.get(OUTCOME).set(CANCELLED);
+        result.get(FAILURE_DESCRIPTION).set(ControllerMessages.MESSAGES.operationCancelled());
+        return result;
     }
 }

@@ -48,7 +48,7 @@ class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask imp
         final ServerTaskExecutor.ServerOperationListener listener = new ServerTaskExecutor.ServerOperationListener();
         for(final ServerUpdateTask task : tasks) {
             final ServerIdentity identity = task.getServerIdentity();
-            if(updatePolicy.canUpdateServer(identity)) {
+            if (updatePolicy.canUpdateServer(identity) && !Thread.currentThread().isInterrupted()) {
                 // Execute the task
                 if(executor.executeTask(listener, task)) {
                     outstanding.add(task.getServerIdentity());
@@ -59,7 +59,7 @@ class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask imp
             }
         }
         boolean interrupted = false;
-        while(! outstanding.isEmpty()) {
+        while(!interrupted && ! outstanding.isEmpty()) {
             try {
                 // Wait for all prepared results
                 final TransactionalProtocolClient.PreparedOperation<ServerTaskExecutor.ServerOperation> prepared = listener.retrievePreparedOperation();
@@ -70,6 +70,14 @@ class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask imp
                 interrupted = true;
             }
         }
+
+        if (!outstanding.isEmpty()) {
+            DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER.interruptedAwaitingPreparedResponse(getClass().getSimpleName(), outstanding);
+            for (ServerIdentity identity : outstanding) {
+                executor.cancelTask(identity);
+            }
+        }
+
         if(interrupted) {
             Thread.currentThread().interrupt();
         }
