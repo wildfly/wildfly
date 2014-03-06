@@ -22,8 +22,6 @@
 
 package org.jboss.as.jpa.processor;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -246,7 +244,6 @@ public class PersistenceUnitServiceHandler {
 
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
             final ModuleClassLoader classLoader = module.getClassLoader();
-            PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = getPersistenceProviderDeploymentHolder(deploymentUnit);
 
             for (PersistenceUnitMetadataHolder holder : puList) {
                 setAnnotationIndexes(holder, deploymentUnit);
@@ -257,6 +254,7 @@ public class PersistenceUnitServiceHandler {
                     boolean deployPU = (jpaContainerManaged == null? true : Boolean.parseBoolean(jpaContainerManaged));
 
                     if (deployPU) {
+                        final PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = getPersistenceProviderDeploymentHolder(deploymentUnit);
                         final PersistenceProvider provider = lookupProvider(pu, persistenceProviderDeploymentHolder, deploymentUnit);
                         final PersistenceProviderAdaptor adaptor = getPersistenceProviderAdaptor(pu, persistenceProviderDeploymentHolder, deploymentUnit, provider, platform);
                         final boolean twoPhaseBootStrapCapable = (adaptor instanceof TwoPhaseBootstrapCapable) && Configuration.allowTwoPhaseBootstrap(pu);
@@ -825,32 +823,40 @@ public class PersistenceUnitServiceHandler {
             final PersistenceProvider provider,
             final Platform platform) throws
         DeploymentUnitProcessingException {
-        String adaptorModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
-        PersistenceProviderAdaptor adaptor = null;
-        if (persistenceProviderDeploymentHolder != null) {
-            adaptor = persistenceProviderDeploymentHolder.getAdapter();
-        }
-        if (adaptor == null) {
-            adaptor = getPerDeploymentSharedPersistenceProviderAdaptor(deploymentUnit, adaptorModule, provider);
-            if (adaptor == null) {
-                try {
-                    // will load the persistence provider adaptor (integration classes).  if adaptorModule is null
-                    // the noop adaptor is returned (can be used against any provider but the integration classes
-                    // are handled externally via properties or code in the persistence provider).
-                    if (adaptorModule != null) { // legacy way of loading adapter module
-                        adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule, platform);
-                    }
-                    else {
-                        adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider, platform);
-                    }
-                } catch (ModuleLoadException e) {
-                    throw new DeploymentUnitProcessingException("persistence provider adapter module load error "
-                        + adaptorModule, e);
-                }
-                adaptor = savePerDeploymentSharedPersistenceProviderAdaptor(deploymentUnit, adaptorModule, adaptor, provider);
-            }
+        String adapterClass = pu.getProperties().getProperty(Configuration.ADAPTER_CLASS);
 
+        /**
+         * use adapter packaged in application deployment.
+         */
+        if (persistenceProviderDeploymentHolder != null && adapterClass != null) {
+            List<PersistenceProviderAdaptor> persistenceProviderAdaptors = persistenceProviderDeploymentHolder.getAdapters();
+            for(PersistenceProviderAdaptor persistenceProviderAdaptor:persistenceProviderAdaptors) {
+                if(adapterClass.equals(persistenceProviderAdaptor.getClass().getName())) {
+                    return persistenceProviderAdaptor;
+                }
+            }
         }
+
+        String adaptorModule = pu.getProperties().getProperty(Configuration.ADAPTER_MODULE);
+        PersistenceProviderAdaptor adaptor;
+        adaptor = getPerDeploymentSharedPersistenceProviderAdaptor(deploymentUnit, adaptorModule, provider);
+        if (adaptor == null) {
+            try {
+                // will load the persistence provider adaptor (integration classes).  if adaptorModule is null
+                // the noop adaptor is returned (can be used against any provider but the integration classes
+                // are handled externally via properties or code in the persistence provider).
+                if (adaptorModule != null) { // legacy way of loading adapter module
+                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapterModule(adaptorModule, platform);
+                }
+                else {
+                    adaptor = PersistenceProviderAdaptorLoader.loadPersistenceAdapter(provider, platform);
+                }
+            } catch (ModuleLoadException e) {
+                throw JpaMessages.MESSAGES.persistenceProviderAdaptorModuleLoadError(e, adaptorModule);
+            }
+            adaptor = savePerDeploymentSharedPersistenceProviderAdaptor(deploymentUnit, adaptorModule, adaptor, provider);
+        }
+
         if (adaptor == null) {
             throw JpaMessages.MESSAGES.failedToGetAdapter(pu.getPersistenceProviderClassName());
         }
@@ -926,100 +932,79 @@ public class PersistenceUnitServiceHandler {
             PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder,
             DeploymentUnit deploymentUnit) throws DeploymentUnitProcessingException {
 
-        PersistenceProvider provider = null;
-        if (persistenceProviderDeploymentHolder != null &&
-            persistenceProviderDeploymentHolder.getProvider() != null) {
-
-            List<PersistenceProvider> providerList = persistenceProviderDeploymentHolder.getProvider();
+        /**
+         * check if the deployment is already associated with the specified persistence provider
+         */
+        List<PersistenceProvider> providerList = persistenceProviderDeploymentHolder != null ?
+                persistenceProviderDeploymentHolder.getProviders() : null;
+        if (providerList != null) {
             for (PersistenceProvider persistenceProvider : providerList) {
                 if (persistenceProvider.getClass().getName().equals(pu.getPersistenceProviderClassName())) {
-                    provider = persistenceProvider;
-                    JPA_LOGGER.tracef("deployment %s is using its own copy of %s", deploymentUnit.getName(), pu.getPersistenceProviderClassName());
-                    break;
+                    JPA_LOGGER.tracef("deployment %s is using %s", deploymentUnit.getName(), pu.getPersistenceProviderClassName());
+                    return persistenceProvider;
                 }
             }
         }
 
-        if (provider == null) {
-            // ensure that the persistence provider module is loaded
-            String persistenceProviderModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
-            String persistenceProviderClassName = pu.getPersistenceProviderClassName();
+        String configuredPersistenceProviderModule = pu.getProperties().getProperty(Configuration.PROVIDER_MODULE);
+        String persistenceProviderClassName = pu.getPersistenceProviderClassName();
 
-            if (persistenceProviderClassName == null) {
-                persistenceProviderClassName = Configuration.PROVIDER_CLASS_DEFAULT;
-            }
-
-            // try to determine the provider module name (ignore if we can't, it might already be loaded)
-            if (persistenceProviderModule == null) {
-                persistenceProviderModule = Configuration.getProviderModuleNameFromProviderClassName(persistenceProviderClassName);
-            }
-
-            provider = getProviderByName(pu, persistenceProviderModule);
-
-            // if we haven't loaded the provider yet, load it
-            if (provider == null) {
-                if (persistenceProviderModule != null) {
-                    try {
-                        PersistenceProviderLoader.loadProviderModuleByName(persistenceProviderModule);
-                        provider = getProviderByName(pu, persistenceProviderModule);
-                    } catch (ModuleLoadException e) {
-                        throw JpaMessages.MESSAGES.cannotLoadPersistenceProviderModule(e, persistenceProviderModule, persistenceProviderClassName);
-                    }
-                }
-            }
-
-            if (provider == null)
-                throw JpaMessages.MESSAGES.persistenceProviderNotFound(persistenceProviderClassName);
+        if (persistenceProviderClassName == null) {
+            persistenceProviderClassName = Configuration.PROVIDER_CLASS_DEFAULT;
         }
+
+        /**
+         * locate persistence provider in specified static module
+         */
+        if (configuredPersistenceProviderModule != null) {
+            try {
+                List<PersistenceProvider> providers = PersistenceProviderLoader.loadProviderModuleByName(configuredPersistenceProviderModule);
+                PersistenceProviderDeploymentHolder.savePersistenceProviderInDeploymentUnit(deploymentUnit, providers, null);
+                PersistenceProvider provider = getProviderByName(pu, providers);
+                if (provider != null) {
+                    return provider;
+                }
+            } catch (ModuleLoadException e) {
+                throw JpaMessages.MESSAGES.cannotLoadPersistenceProviderModule(e, configuredPersistenceProviderModule, persistenceProviderClassName);
+            }
+        }
+
+        // try to determine the static module name based on the persistence provider class name
+        String providerNameDerivedFromClassName = Configuration.getProviderModuleNameFromProviderClassName(persistenceProviderClassName);
+
+        // see if the providerNameDerivedFromClassName has been loaded yet
+        PersistenceProvider provider = getProviderByName(pu);
+
+        // if we haven't loaded the provider yet, try loading now
+        if (provider == null && providerNameDerivedFromClassName != null) {
+            try {
+                List<PersistenceProvider> providers = PersistenceProviderLoader.loadProviderModuleByName(providerNameDerivedFromClassName);
+                PersistenceProviderDeploymentHolder.savePersistenceProviderInDeploymentUnit(deploymentUnit, providers, null);
+                provider = getProviderByName(pu, providers);
+            } catch (ModuleLoadException e) {
+                throw JpaMessages.MESSAGES.cannotLoadPersistenceProviderModule(e, providerNameDerivedFromClassName, persistenceProviderClassName);
+            }
+        }
+
+        if (provider == null)
+            throw JpaMessages.MESSAGES.persistenceProviderNotFound(persistenceProviderClassName);
 
         return provider;
     }
 
-    private static PersistenceProvider getProviderByName(PersistenceUnitMetadata pu, String persistenceProviderModule) {
+    private static PersistenceProvider getProviderByName(PersistenceUnitMetadata pu) {
+        return getProviderByName(pu, PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders());
+    }
+
+    private static PersistenceProvider getProviderByName(PersistenceUnitMetadata pu, List<PersistenceProvider> providers) {
         String providerName = pu.getPersistenceProviderClassName();
-        List<PersistenceProvider> providers =
-            PersistenceProviderResolverHolder.getPersistenceProviderResolver().getPersistenceProviders();
         for (PersistenceProvider provider : providers) {
             if (provider.getClass().getName().equals(providerName)) {
-                if (providerName.equals(Configuration.PROVIDER_CLASS_DEFAULT)) {
-                    // could be Hibernate 3 or Hibernate 4 (OGM will not match PROVIDER_CLASS_DEFAULT)
-                    if (persistenceProviderModule.equals(Configuration.PROVIDER_MODULE_HIBERNATE3)) {
-                        if (isHibernate3(provider)) {
-                            return provider;            // return Hibernate3 provider
-                        }
-                    } else if (!isHibernate3(provider)) { // looking for Hibernate4
-                        return provider;                // return Hibernate 4 provider
-                    }
-                } else {
-                    return provider;                    // return the provider that matched classname
-                }
+                return provider;                    // return the provider that matched classname
             }
         }
         return null;
     }
-
-
-    private static boolean isHibernate3(PersistenceProvider provider) {
-        boolean result = false;
-        // invoke org.hibernate.Version.getVersionString()
-        try {
-            Class<?> targetCls = provider.getClass().getClassLoader().loadClass("org.hibernate.Version");
-            Method m = targetCls.getMethod("getVersionString");
-            Object version = m.invoke(null);
-            JPA_LOGGER.tracef("lookup provider checking provider version (%s)", version);
-            if (version instanceof String &&
-                ((String) version).startsWith("3.")) {
-                result = true;
-            }
-        } catch (ClassNotFoundException ignore) {
-        } catch (NoSuchMethodException ignore) {
-        } catch (InvocationTargetException ignore) {
-        } catch (IllegalAccessException ignore) {
-        }
-
-        return result;
-    }
-
 
     static boolean isEarDeployment(final DeploymentUnit context) {
         return (DeploymentTypeMarker.isType(DeploymentType.EAR, context));

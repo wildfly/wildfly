@@ -30,6 +30,7 @@
 		<properties>
             <!-- setting jboss.as.jpa.classtransformer to true, to insure that classloader transforms are allowed -->
             <property name="jboss.as.jpa.classtransformer" value="true" />
+            <property name="jboss.as.jpa.adapterClass" value="org.jboss.as.test.integration.jpa.mockprovider.classtransformer.TestAdapter"/>
 		</properties>
 	</persistence-unit>
 </persistence>

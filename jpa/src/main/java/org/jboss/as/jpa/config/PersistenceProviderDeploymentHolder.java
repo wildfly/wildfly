@@ -23,43 +23,72 @@
 package org.jboss.as.jpa.config;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.spi.PersistenceProvider;
 
+import org.jboss.as.jpa.processor.JpaAttachments;
+import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jipijapa.plugin.spi.PersistenceProviderAdaptor;
 
 /**
- * holds the deployed persistence provider + adaptor
+ * holds the persistence providers + adaptors associated with a deployment
  *
  * @author Scott Marlow
  */
 public class PersistenceProviderDeploymentHolder {
 
 
-    private final List<PersistenceProvider> providerList = new ArrayList<PersistenceProvider>();
-    private final PersistenceProviderAdaptor adapter;
+    private final List<PersistenceProvider> providerList = Collections.synchronizedList(new ArrayList<PersistenceProvider>());
+    private final List<PersistenceProviderAdaptor>  adapterList = Collections.synchronizedList(new ArrayList<PersistenceProviderAdaptor>());
 
-    public PersistenceProviderDeploymentHolder(final List<PersistenceProvider> providerList) {
-        this(providerList, null);
-    }
-
-    public PersistenceProviderDeploymentHolder(final List<PersistenceProvider> providerList, final PersistenceProviderAdaptor adapter) {
+    public PersistenceProviderDeploymentHolder(final List<PersistenceProvider> providerList, final List<PersistenceProviderAdaptor> adapterList) {
         this.providerList.addAll(providerList);
-        this.adapter = adapter;
-    }
-
-    public PersistenceProviderAdaptor getAdapter() {
-        return adapter;
+        if (adapterList != null) {
+            this.adapterList.addAll(adapterList);
+        }
     }
 
     /**
-     * returns the persistence providers that are deployed with an application.
-     * returns null if no provider is deployed with the application.
+     * get the persistence providers adapters associated with an application deployment
      *
-     * @return the deployed persistence provider list
+     * @return list of persistence provider adapters
      */
-    public List<PersistenceProvider> getProvider() {
+    public List<PersistenceProviderAdaptor> getAdapters() {
+        return adapterList;
+    }
+
+    /**
+     * get the persistence providers associated with an application deployment
+     *
+     * @return the persistence providers list
+     */
+    public List<PersistenceProvider> getProviders() {
         return providerList;
     }
+
+    public static PersistenceProviderDeploymentHolder getPersistenceProviderDeploymentHolder(DeploymentUnit deploymentUnit) {
+        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        return deploymentUnit.getAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER);
+    }
+
+    public static void savePersistenceProviderInDeploymentUnit(
+            DeploymentUnit deploymentUnit, final List<PersistenceProvider> providerList, final List<PersistenceProviderAdaptor> adaptorList) {
+        deploymentUnit = DeploymentUtils.getTopDeploymentUnit(deploymentUnit);
+        PersistenceProviderDeploymentHolder persistenceProviderDeploymentHolder = getPersistenceProviderDeploymentHolder(deploymentUnit);
+        if (persistenceProviderDeploymentHolder == null) {
+            persistenceProviderDeploymentHolder = new PersistenceProviderDeploymentHolder(providerList, adaptorList);
+            deploymentUnit.putAttachment(JpaAttachments.DEPLOYED_PERSISTENCE_PROVIDER, persistenceProviderDeploymentHolder);
+        }
+        else {
+            persistenceProviderDeploymentHolder.providerList.addAll(providerList);
+            if (adaptorList != null) {
+                persistenceProviderDeploymentHolder.adapterList.addAll(adaptorList);
+            }
+        }
+
+    }
+
 }
