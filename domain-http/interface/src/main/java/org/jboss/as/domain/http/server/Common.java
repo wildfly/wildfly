@@ -103,7 +103,7 @@ public class Common {
 
             String msgString = stringWriter.toString();
             byte[] bytes = msgString.getBytes();
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, TEXT_PLAIN + "; charset=" + UTF_8);
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, APPLICATION_JSON + "; charset=" + UTF_8);
             exchange.getResponseHeaders().put(Headers.CONTENT_LENGTH, String.valueOf(bytes.length));
             exchange.setResponseCode(errorCode);
 
