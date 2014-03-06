@@ -61,26 +61,29 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
     private final JmxAuthorizer authorizer;
     private final ManagedAuditLogger auditLoggerInfo;
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
-
+    private final boolean forStandalone;
     private PluggableMBeanServer mBeanServer;
     private MBeanServerPlugin showModelPlugin;
 
     private MBeanServerService(final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat,
                                final boolean coreMBeanSensitivity,
-            final ManagedAuditLogger auditLoggerInfo, final JmxAuthorizer authorizer) {
+            final ManagedAuditLogger auditLoggerInfo, final JmxAuthorizer authorizer, final boolean forStandalone) {
         this.resolvedDomainName = resolvedDomainName;
         this.expressionsDomainName = expressionsDomainName;
         this.legacyWithProperPropertyFormat = legacyWithProperPropertyFormat;
         this.coreMBeanSensitivity = coreMBeanSensitivity;
         this.auditLoggerInfo = auditLoggerInfo;
         this.authorizer = authorizer;
+        this.forStandalone = forStandalone;
     }
 
+    @SafeVarargs
     public static ServiceController<?> addService(final ServiceTarget batchBuilder, final String resolvedDomainName, final String expressionsDomainName, final boolean legacyWithProperPropertyFormat,
-                                                        final boolean coreMBeanSensitivity,
-                                                        final ManagedAuditLogger auditLoggerInfo, final JmxAuthorizer authorizer,
-                                                        final ServiceListener<Object>... listeners) {
-        MBeanServerService service = new MBeanServerService(resolvedDomainName, expressionsDomainName, legacyWithProperPropertyFormat, coreMBeanSensitivity, auditLoggerInfo, authorizer);
+                                                  final boolean coreMBeanSensitivity,
+                                                  final ManagedAuditLogger auditLoggerInfo, final JmxAuthorizer authorizer,
+                                                  boolean forStandalone, final ServiceListener<? super PluggableMBeanServer>... listeners) {
+        MBeanServerService service = new MBeanServerService(resolvedDomainName, expressionsDomainName, legacyWithProperPropertyFormat,
+                coreMBeanSensitivity, auditLoggerInfo, authorizer, forStandalone);
         return batchBuilder.addService(MBeanServerService.SERVICE_NAME, service)
             .addListener(listeners)
             .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -99,7 +102,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
         if (resolvedDomainName != null || expressionsDomainName != null) {
             //TODO make these configurable
             ConfiguredDomains configuredDomains = new ConfiguredDomains(resolvedDomainName, expressionsDomainName);
-            showModelPlugin = new ModelControllerMBeanServerPlugin(configuredDomains, modelControllerValue.getValue(), legacyWithProperPropertyFormat);
+            showModelPlugin = new ModelControllerMBeanServerPlugin(configuredDomains, modelControllerValue.getValue(), legacyWithProperPropertyFormat, forStandalone);
             pluggable.addPlugin(showModelPlugin);
         }
         mBeanServer = pluggable;

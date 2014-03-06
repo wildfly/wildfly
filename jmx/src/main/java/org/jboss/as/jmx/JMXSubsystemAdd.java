@@ -28,6 +28,7 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.access.management.JmxAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
@@ -72,12 +73,12 @@ class JMXSubsystemAdd extends AbstractAddStepHandler {
             legacyWithProperPropertyFormat = ExposeModelResourceExpression.DOMAIN_NAME.resolveModelAttribute(context, recursiveModel).asBoolean();
         }
         boolean coreMBeanSensitivity = JMXSubsystemRootResource.CORE_MBEAN_SENSITIVITY.resolveModelAttribute(context, recursiveModel).asBoolean();
-
+        boolean forStandalone = context.getProcessType() == ProcessType.STANDALONE_SERVER;
         ServiceController<?> controller = verificationHandler != null ?
                 MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat,
-                        coreMBeanSensitivity, auditLoggerInfo, authorizer, verificationHandler) :
+                        coreMBeanSensitivity, auditLoggerInfo, authorizer, forStandalone, verificationHandler) :
                     MBeanServerService.addService(context.getServiceTarget(), resolvedDomain, expressionsDomain, legacyWithProperPropertyFormat,
-                            coreMBeanSensitivity, auditLoggerInfo, authorizer);
+                            coreMBeanSensitivity, auditLoggerInfo, authorizer, forStandalone);
         if (newControllers != null) {
             newControllers.add(controller);
         }

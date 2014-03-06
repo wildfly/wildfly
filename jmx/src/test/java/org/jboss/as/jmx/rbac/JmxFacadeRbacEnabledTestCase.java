@@ -74,7 +74,6 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
@@ -111,8 +110,6 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
     volatile MBeanServer server;
 
     private static final String TEST_USER = "test";
-    private static final String LAUNCH_TYPE = "launch-type";
-    private static final String TYPE_STANDALONE = "STANDALONE";
 
     private static final PathElement ONE = PathElement.pathElement("one");
     private static final PathElement ONE_A = PathElement.pathElement("one", "a");
@@ -135,6 +132,7 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
     private volatile Resource rootResource;
 
     public JmxFacadeRbacEnabledTestCase(){
+        super(ProcessType.STANDALONE_SERVER);
     }
 
     @Before
@@ -765,15 +763,6 @@ public class JmxFacadeRbacEnabledTestCase extends AbstractControllerTestBase {
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
         registration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
         registration.registerOperationHandler(RootResourceHack.DEFINITION, RootResourceHack.INSTANCE);
-
-        registration.registerReadOnlyAttribute(LAUNCH_TYPE, new OperationStepHandler() {
-
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(TYPE_STANDALONE);
-                context.stepCompleted();
-            }
-        }, AttributeAccess.Storage.RUNTIME);
 
         TestServiceListener listener = new TestServiceListener();
         listener.reset(1);

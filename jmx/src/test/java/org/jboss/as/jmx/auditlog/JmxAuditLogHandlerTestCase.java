@@ -43,9 +43,6 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.jboss.as.controller.CompositeOperationHandler;
-import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
@@ -59,7 +56,6 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -88,7 +84,7 @@ import org.junit.Test;
 /**
  * Don't use core-model test for this. It does not support runtime, and more importantly for backwards compatibility the audit logger cannot be used
  *
- * @author: Kabir Khan
+ * @author Kabir Khan
  */
 public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
 
@@ -97,8 +93,6 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
     volatile File logDir;
     volatile MBeanServer server;
 
-    private static final String LAUNCH_TYPE = "launch-type";
-    private static final String TYPE_STANDALONE = "STANDALONE";
     private final static String ANY_PLACEHOLDER = "$$$ ANY $$$ ANY $$$";
     private final static ObjectName OBJECT_NAME;
     static {
@@ -746,16 +740,6 @@ public class JmxAuditLogHandlerTestCase extends AbstractControllerTestBase {
         };
         GlobalOperationHandlers.registerGlobalOperations(registration, processType);
         registration.registerOperationHandler(CompositeOperationHandler.DEFINITION, CompositeOperationHandler.INSTANCE);
-
-        registration.registerReadOnlyAttribute(LAUNCH_TYPE, new OperationStepHandler() {
-
-            @Override
-            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                context.getResult().set(TYPE_STANDALONE);
-                context.stepCompleted();
-            }
-        }, AttributeAccess.Storage.RUNTIME);
-
 
         TestServiceListener listener = new TestServiceListener();
         listener.reset(1);
