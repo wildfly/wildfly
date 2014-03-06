@@ -85,7 +85,7 @@
         <version.com.h2database>1.3.168-redhat-2</version.com.h2database>
         <version.com.redhat.gss.redhat-support-lib-java>1.0.4.jbossorg-1</version.com.redhat.gss.redhat-support-lib-java>
         <version.com.sun.codemodel>2.6-redhat-2</version.com.sun.codemodel>
-        <version.com.sun.faces>2.1.27.redhat-8</version.com.sun.faces>
+        <version.com.sun.faces>2.1.27-jbossorg-2</version.com.sun.faces>
         <version.com.sun.istack>2.6.1-redhat-2</version.com.sun.istack>
         <version.com.sun.jersey>1.17.1</version.com.sun.jersey>
         <version.com.sun.xml.txw2>20110809-redhat-2</version.com.sun.xml.txw2>
