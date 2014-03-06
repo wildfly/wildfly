@@ -91,23 +91,14 @@ public class ModelControllerMBeanHelper {
     private final ConfiguredDomains configuredDomains;
     private final String domain;
 
-    ModelControllerMBeanHelper(TypeConverters converters, ConfiguredDomains configuredDomains, String domain, ModelController controller) {
+    ModelControllerMBeanHelper(TypeConverters converters, ConfiguredDomains configuredDomains, String domain,
+                               ModelController controller, boolean standalone) {
         this.converters = converters;
         this.configuredDomains = configuredDomains;
         this.domain = domain;
         this.controller = controller;
         this.accessControlUtil = new ResourceAccessControlUtil(controller);
-
-        ModelNode op = new ModelNode();
-        op.get(OP).set(READ_ATTRIBUTE_OPERATION);
-        op.get(OP_ADDR).setEmptyList();
-        op.get(NAME).set("launch-type");
-        final ModelNode result = execute(op);
-        String error = getFailureDescription(result);
-        if (error != null) {
-            throw new IllegalStateException(error);
-        }
-        standalone = result.require(RESULT).asString().equals("STANDALONE");
+        this.standalone = standalone;
     }
 
     int getMBeanCount() {
