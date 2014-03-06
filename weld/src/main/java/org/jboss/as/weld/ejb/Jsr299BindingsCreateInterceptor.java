@@ -23,7 +23,6 @@ import org.jboss.as.weld.WeldBootstrapService;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.weld.bean.SessionBean;
-import org.jboss.weld.context.WeldCreationalContext;
 import org.jboss.weld.ejb.spi.EjbDescriptor;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
 import org.jboss.weld.manager.BeanManagerImpl;
@@ -80,7 +79,7 @@ public class Jsr299BindingsCreateInterceptor implements org.jboss.invocation.Int
         WeldInterceptorInstances existing = (WeldInterceptorInstances) componentInstance.getInstanceData(SerializedCdiInterceptorsKey.class);
 
         if (existing == null) {
-            WeldCreationalContext<Object> creationalContext = beanManager.createCreationalContext(bean);
+            CreationalContext<Object> creationalContext = beanManager.createCreationalContext(bean);
             HashMap<String, SerializableContextualInstance<Interceptor<Object>, Object>> interceptorInstances = new HashMap<String, SerializableContextualInstance<Interceptor<Object>, Object>>();
 
             if (interceptorBindings != null) {
