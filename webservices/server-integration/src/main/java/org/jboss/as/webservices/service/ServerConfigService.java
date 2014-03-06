@@ -42,6 +42,7 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.ImmediateValue;
 import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.wsf.spi.management.ServerConfig;
 
@@ -85,9 +86,13 @@ public final class ServerConfigService implements Service<ServerConfig> {
     }
 
     public static ServiceController<?> install(final ServiceTarget serviceTarget, final ServerConfigImpl serverConfig,
-            final ServiceListener<Object> listener, final List<ServiceName> dependencies) {
+            final ServiceListener<Object> listener, final List<ServiceName> dependencies, final boolean jmxSubsystemAvailable) {
         final ServiceBuilder<ServerConfig> builder = serviceTarget.addService(WSServices.CONFIG_SERVICE, new ServerConfigService(serverConfig));
-        builder.addDependency(DependencyType.OPTIONAL, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
+        if (jmxSubsystemAvailable) {
+            builder.addDependency(DependencyType.REQUIRED, MBEAN_SERVER_NAME, MBeanServer.class, serverConfig.getMBeanServerInjector());
+        } else {
+            serverConfig.getMBeanServerInjector().setValue(new ImmediateValue<MBeanServer>(null));
+        }
         builder.addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, serverConfig.getServerEnvironmentInjector());
         for (ServiceName dep : dependencies) {
             builder.addDependency(dep);
