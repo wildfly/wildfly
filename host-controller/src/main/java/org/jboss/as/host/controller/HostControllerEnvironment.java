@@ -36,6 +36,7 @@ import java.util.Map;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.process.DefaultJvmUtils;
 import org.jboss.as.version.ProductConfig;
 
@@ -285,7 +286,7 @@ public class HostControllerEnvironment extends ProcessEnvironment {
             }
             if (qualifiedHostName == null) {
                 try {
-                    qualifiedHostName = InetAddress.getLocalHost().getHostName();
+                    qualifiedHostName = NetworkUtils.canonize(InetAddress.getLocalHost().getHostName());
                 } catch (UnknownHostException e) {
                     qualifiedHostName = null;
                 }

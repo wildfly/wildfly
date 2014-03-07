@@ -30,8 +30,14 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
@@ -60,7 +66,7 @@ import org.xnio.IoUtils;
 
 /**
  *
- * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a>  (c) 2013 Red Hat, inc.
+ * @author <a href="mailto:ehugonne@redhat.com">Emmanuel Hugonnet</a> (c) 2013 Red Hat, inc.
  */
 @RunWith(Arquillian.class)
 @RunAsClient
@@ -70,6 +76,7 @@ public class ReloadWSDLPublisherTestCase {
     private static final String DEPLOYMENT = "jaxws-manual-pojo";
     private static final long TIMEOUT = 100000L;
     private static final String keepAlive = System.getProperty("http.keepAlive") == null ? "true" : System.getProperty("http.keepAlive");
+    private static final String maxConnections = System.getProperty("http.maxConnections") == null ? "5" : System.getProperty("http.maxConnections");
 
     @ArquillianResource
     ContainerController containerController;
@@ -90,6 +97,8 @@ public class ReloadWSDLPublisherTestCase {
         if (containerController.isStarted(DEFAULT_JBOSSAS)) {
             deployer.deploy(DEPLOYMENT);
         }
+        System.setProperty("http.keepAlive", "false");
+        System.setProperty("http.maxConnections", "1");
     }
 
     @Test
@@ -116,6 +125,7 @@ public class ReloadWSDLPublisherTestCase {
     @After
     public void stopContainer() {
         System.setProperty("http.keepAlive", keepAlive);
+        System.setProperty("http.maxConnections", maxConnections);
         if (containerController.isStarted(DEFAULT_JBOSSAS)) {
             deployer.undeploy(DEPLOYMENT);
         }
@@ -174,11 +184,20 @@ public class ReloadWSDLPublisherTestCase {
     }
 
     private void checkWsdl(URL wsdlURL) throws IOException {
-        System.setProperty("http.keepAlive", "false");
+        StringBuilder proxyUsed = new StringBuilder();
+        try {
+            List<Proxy> proxies = ProxySelector.getDefault().select(wsdlURL.toURI());
+            for(Proxy proxy : proxies) {
+                System.out.println("To connect to " + wsdlURL + " we are using proxy " + proxy);
+                proxyUsed.append("To connect to ").append(wsdlURL).append(" we are using proxy ").append(proxy).append("\r\n");
+            }
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(ReloadWSDLPublisherTestCase.class.getName()).log(Level.SEVERE, null, ex);
+        }
         HttpURLConnection connection = (HttpURLConnection) wsdlURL.openConnection();
         try {
             connection.connect();
-            Assert.assertEquals(HttpServletResponse.SC_OK, connection.getResponseCode());
+            Assert.assertEquals(proxyUsed.toString(), HttpServletResponse.SC_OK, connection.getResponseCode());
         } finally {
             connection.disconnect();
         }

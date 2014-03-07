@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import javax.mail.Session;
+import org.jboss.as.network.NetworkUtils;
 
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.msc.inject.Injector;
@@ -129,7 +130,7 @@ public class MailSessionService implements Service<Session> {
         Map<String, String> customProps = server.getProperties();
         if (server.getOutgoingSocketBinding() != null) {
             InetSocketAddress socketAddress = getServerSocketAddress(server);
-            props.setProperty(getHostKey(protocol), socketAddress.getAddress().getHostName());
+            props.setProperty(getHostKey(protocol), NetworkUtils.canonize(socketAddress.getAddress().getHostName()));
             props.setProperty(getPortKey(protocol), String.valueOf(socketAddress.getPort()));
         } else {
             String host = customProps.get("host");

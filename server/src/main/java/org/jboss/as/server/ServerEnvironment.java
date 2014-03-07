@@ -43,6 +43,7 @@ import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.as.version.Version;
 import org.jboss.modules.Module;
@@ -620,7 +621,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
             }
             if (qualifiedHostName == null) {
                 try {
-                    qualifiedHostName = InetAddressUtil.getLocalHost().getHostName();
+                    qualifiedHostName = NetworkUtils.canonize(InetAddressUtil.getLocalHost().getHostName());
                 } catch (UnknownHostException e) {
                     qualifiedHostName = null;
                 }

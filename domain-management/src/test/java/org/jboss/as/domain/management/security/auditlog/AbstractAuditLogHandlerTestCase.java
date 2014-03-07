@@ -51,6 +51,7 @@ import org.jboss.as.controller.audit.ManagedAuditLoggerImpl;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler.Transport;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
@@ -235,7 +236,7 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
         composite.get(STEPS).add(handler);
 
         ModelNode protocol = Util.createAddOperation(createSyslogHandlerProtocolAddress(handlerName, SyslogAuditLogHandler.Transport.UDP));
-        protocol.get(HOST).set(addr.getHostName());
+        protocol.get(HOST).set(InetAddressUtil.canonize(addr.getHostName()));
         protocol.get(PORT).set(port);
         composite.get(STEPS).add(protocol);
 
@@ -256,7 +257,7 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
         composite.get(STEPS).add(handler);
 
         ModelNode protocol = Util.createAddOperation(createSyslogHandlerProtocolAddress(handlerName, SyslogAuditLogHandler.Transport.TCP));
-        protocol.get(HOST).set(addr.getHostName());
+        protocol.get(HOST).set(InetAddressUtil.canonize(addr.getHostName()));
         protocol.get(PORT).set(port);
         if (transfer != null) {
             protocol.get(MESSAGE_TRANSFER).set(transfer.name());
@@ -281,7 +282,7 @@ public class AbstractAuditLogHandlerTestCase extends ManagementControllerTestBas
         composite.get(STEPS).add(handler);
 
         ModelNode protocol = Util.createAddOperation(createSyslogHandlerProtocolAddress(handlerName, SyslogAuditLogHandler.Transport.TLS));
-        protocol.get(HOST).set(addr.getHostName());
+        protocol.get(HOST).set(InetAddressUtil.canonize(addr.getHostName()));
         protocol.get(PORT).set(port);
         if (transfer != null) {
             protocol.get(MESSAGE_TRANSFER).set(transfer.name());

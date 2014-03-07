@@ -66,10 +66,10 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.ejb3.subsystem.EJB3Extension;
 import org.jboss.as.ejb3.subsystem.EJB3SubsystemModel;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.remoting.RemotingExtension;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
-
 
 /**
  * @author Jaikiran Pai
@@ -460,7 +460,7 @@ public class EJBManagementUtil {
             }
             if (qualifiedHostName == null) {
                 try {
-                    qualifiedHostName = InetAddress.getLocalHost().getHostName();
+                    qualifiedHostName = NetworkUtils.canonize(InetAddress.getLocalHost().getHostName());
                 } catch (UnknownHostException e) {
                     qualifiedHostName = null;
                 }
