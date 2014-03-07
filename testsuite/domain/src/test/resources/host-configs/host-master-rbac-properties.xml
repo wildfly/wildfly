@@ -85,7 +85,7 @@
             <inet-address value="${jboss.test.host.master.address}"/>
         </interface>
         <interface name="public">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+            <inet-address value="${jboss.test.host.master.address}"/>
         </interface>
     </interfaces>
 
