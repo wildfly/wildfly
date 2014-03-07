@@ -391,6 +391,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 }
                 case WEB_1_4:
                 case WEB_1_5:
+                case WEB_1_6:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
@@ -746,6 +747,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 }
                 case WEB_1_4:
                 case WEB_1_5:
+                case WEB_1_6:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
@@ -846,6 +848,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_3:
                 case WEB_1_4:
                 case WEB_1_5:
+                case WEB_1_6:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
@@ -933,6 +936,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_3:
                 case WEB_1_4:
                 case WEB_1_5:
+                case WEB_1_6:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
@@ -983,6 +987,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case ENABLE_LOOKUPS:
                     WebConnectorDefinition.ENABLE_LOOKUPS.parseAndSetParameter(value, connector, reader);
                     break;
+                case PROXY_BINDING:
+                    WebConnectorDefinition.PROXY_BINDING.parseAndSetParameter(value, connector, reader);
+                    break;
                 case PROXY_NAME:
                     WebConnectorDefinition.PROXY_NAME.parseAndSetParameter(value, connector, reader);
                     break;
@@ -997,6 +1004,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 case SECURE:
                     WebConnectorDefinition.SECURE.parseAndSetParameter(value, connector, reader);
+                    break;
+                case REDIRECT_BINDING:
+                    WebConnectorDefinition.REDIRECT_BINDING.parseAndSetParameter(value, connector, reader);
+                    connector.remove(WebConnectorDefinition.REDIRECT_PORT.getName());
                     break;
                 case REDIRECT_PORT:
                     WebConnectorDefinition.REDIRECT_PORT.parseAndSetParameter(value, connector, reader);
@@ -1024,6 +1035,7 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_3:
                 case WEB_1_4:
                 case WEB_1_5:
+                case WEB_1_6:
                 case WEB_2_0: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {

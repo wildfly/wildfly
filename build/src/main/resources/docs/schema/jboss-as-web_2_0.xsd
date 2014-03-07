@@ -129,8 +129,10 @@
       <xs:attribute name="scheme" use="required" />
       <xs:attribute name="socket-binding" use="required" />
       <xs:attribute name="enable-lookups" default="false" type="xs:boolean" />
+      <xs:attribute name="proxy-binding" />
       <xs:attribute name="proxy-name" />
       <xs:attribute name="proxy-port" />
+      <xs:attribute name="redirect-binding" />
       <xs:attribute name="redirect-port" />
       <xs:attribute name="secure" default="false" type="xs:boolean" />
       <xs:attribute name="max-post-size" />
