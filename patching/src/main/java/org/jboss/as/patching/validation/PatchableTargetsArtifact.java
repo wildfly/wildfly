@@ -34,7 +34,6 @@ import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.Patch;
 import org.jboss.as.patching.metadata.PatchElement;
 import org.jboss.as.patching.metadata.PatchElementProvider;
-import org.jboss.as.patching.metadata.RollbackPatch;
 
 /**
  * Artifact validating the state of a {@code PatchableTarget}.

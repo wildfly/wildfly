@@ -529,7 +529,7 @@ class IdentityPatchContext implements PatchContentProvider {
         }
 
         // Swap the patch element modifications, keep the identity ones since we don't need to fix the misc modifications
-        return new PatchImpl(original.getPatchId(), original.getDescription(), original.getIdentity(), elements, original.getModifications());
+        return new PatchImpl(original.getPatchId(), original.getDescription(), original.getIdentity(), elements, identityEntry.modifications);
     }
 
     /**

@@ -101,7 +101,6 @@ public interface PatchingTask {
             final ModificationType type = description.getModificationType();
             switch (type) {
                 case ADD:
-                    return new FileAddTask(description, target, backup);
                 case MODIFY:
                     return new FileUpdateTask(description, target, backup);
                 case REMOVE:
