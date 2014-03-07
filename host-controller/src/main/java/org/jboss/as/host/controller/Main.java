@@ -184,14 +184,6 @@ public final class Main {
         CommandLineArgumentUsageImpl.printUsage(STDOUT);
     }
 
-    /**
-     * @deprecated this method is not meant for public use
-     */
-    @Deprecated
-    public static HostControllerEnvironment determineEnvironment(String[] args, InputStream stdin, PrintStream stdout, PrintStream stderr) {
-        return determineEnvironment(args);
-    }
-
     private static HostControllerEnvironment determineEnvironment(String[] args) {
         Integer pmPort = null;
         InetAddress pmAddress = null;
@@ -352,7 +344,7 @@ public final class Main {
                     if (value == null) {
                         return null;
                     }
-
+                    value = fixPossibleIPv6URL(value);
                     hostSystemProperties.put(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_ADDRESS, value);
                     WildFlySecurityManager.setPropertyPrivileged(HostControllerEnvironment.JBOSS_DOMAIN_MASTER_ADDRESS, value);
                 } else if (arg.startsWith(CommandLineConstants.MASTER_PORT)) {
@@ -397,6 +389,7 @@ public final class Main {
                     if (value == null) {
                         return null;
                     }
+                    value = fixPossibleIPv6URL(value);
                     String propertyName;
                     if (idx < 0) {
                         // -b xxx -bmanagement xxx
@@ -421,7 +414,7 @@ public final class Main {
                     if (value == null) {
                         return null;
                     }
-
+                    value = fixPossibleIPv6URL(value);
                     hostSystemProperties.put(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                     WildFlySecurityManager.setPropertyPrivileged(HostControllerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else if (arg.equals(CommandLineConstants.MODULE_PATH)) {
@@ -508,6 +501,16 @@ public final class Main {
             STDERR.println(MESSAGES.unknownHostValue(key, value, usageNote()));
             return null;
         }
+    }
+
+    private static String fixPossibleIPv6URL(String val) {
+        String result = val;
+        if (val != null && val.length() > 2
+                && val.charAt(0) == '[' && val.charAt(val.length() - 1) == ']'
+                && val.contains(":")) {
+            result = val.substring(1, val.length() - 1);
+        }
+        return result;
     }
 
     private static URL makeURL(String urlspec) throws MalformedURLException {

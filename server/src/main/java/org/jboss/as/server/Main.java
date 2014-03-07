@@ -197,7 +197,7 @@ public final class Main {
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
-
+                    value = fixPossibleIPv6URL(value);
                     String propertyName = null;
                     if (idx < 0) {
                         // -b xxx -bmanagement xxx
@@ -219,6 +219,7 @@ public final class Main {
                         return null;
                     }
                     String value = idx > -1 ? arg.substring(idx + 1) : args[++i];
+                    value = fixPossibleIPv6URL(value);
 
                     systemProperties.setProperty(ServerEnvironment.JBOSS_DEFAULT_MULTICAST_ADDRESS, value);
                 } else if (CommandLineConstants.ADMIN_ONLY.equals(arg)) {
@@ -270,6 +271,16 @@ public final class Main {
             value = arg.substring(splitPos + 1);
         }
         return value;
+    }
+
+    private static String fixPossibleIPv6URL(String val) {
+        String result = val;
+        if (val != null && val.length() > 2
+                && val.charAt(0) == '[' && val.charAt(val.length() - 1) == ']'
+                && val.contains(":")) {
+            result = val.substring(1, val.length() - 1);
+        }
+        return result;
     }
 
     private static boolean processProperties(final String arg, final String urlSpec, Properties systemProperties) {
