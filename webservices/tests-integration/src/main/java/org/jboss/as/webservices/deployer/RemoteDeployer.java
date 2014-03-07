@@ -243,6 +243,12 @@ public final class RemoteDeployer implements Deployer {
     }
 
     @Override
+    public void addJaspiSecurityDomain(String name, String loginModuleStackName, Map<String, String> loginModuleOptions,
+            String authModuleName, Map<String, String> authModuleOptions) throws Exception {
+        throw new UnsupportedOperationException("JASPIC (SOAP Profile) authentication not available");
+    }
+
+    @Override
     public void removeSecurityDomain(String name) throws Exception {
         synchronized (securityDomainUsers) {
             int count = securityDomainUsers.get(name);
