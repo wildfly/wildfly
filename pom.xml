@@ -1247,7 +1247,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-security-api</artifactId>
+                <artifactId>jboss-as-sar</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1259,7 +1259,7 @@
 
             <dependency>
                 <groupId>org.jboss.as</groupId>
-                <artifactId>jboss-as-sar</artifactId>
+                <artifactId>jboss-as-security-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
