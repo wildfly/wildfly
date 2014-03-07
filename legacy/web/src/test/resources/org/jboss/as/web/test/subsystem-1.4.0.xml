@@ -2,7 +2,7 @@
    This file should be kept in sync with subsystem-1.1.0.xml
   -->
 
-        <subsystem xmlns="urn:jboss:domain:web:2.1" default-virtual-server="default-host" native="${prop.native:true}">
+        <subsystem xmlns="urn:jboss:domain:web:1.6" default-virtual-server="default-host" native="${prop.native:true}">
             <configuration>
                 <static-resources listings="${prop.listings:true}"
                                  sendfile="${prop.sendfile:1000}"
@@ -42,11 +42,10 @@
                        socket-binding="http"
                        enabled="${prop.enabled:true}"
                        enable-lookups="${prop.enable-lookups:false}"
-                       proxy-name="${prop.proxy-name:some-name}"
-                       proxy-port="${prop.proxy-port:7777}"
+                       proxy-binding="reverse-proxy"
                        max-post-size="${prop.max-post-size:2097153}"
                        max-save-post-size="${prop.max-save-post-size:512}"
-                       redirect-port="${prop.redirect-port:7778}"
+                       redirect-binding="https"
                        max-connections="${prop.max-connections:300}"
                        secure="false"
                        executor="some-executor"
@@ -69,7 +68,6 @@
                     session-timeout="${prop.session-timeout:3000}"
                     ssl-protocol="${prop.ssl-protocol:RFC4279}"
                   />
-                  <!--  ssl-protocol does not exist < 1.2.0 -->
             </connector>
             <connector name="http-vs" scheme="http" protocol="HTTP/1.1" socket-binding="http" >
                 <virtual-server name="vs1" />
@@ -85,7 +83,6 @@
                <rewrite name="with-conditions" pattern="${prop.pattern:^/helloworld(.*)}" substitution="${prop.substitution:/helloworld/test.jsp}" flags="${prop.flags:L}" >
                   <condition name="https" pattern="${prop.pattern:off}" test="${prop.test:%{HTTPS}}" flags="${prop.flags:NC}"/>
                   <condition name="user" test="%{USER}" pattern="toto" flags="NC"/>
-                  <!--  This should break in <= 1.2.0 -->
                   <condition name="no-flags" test="%{USER}" pattern="toto"/>
                </rewrite>
                <sso reauthenticate="${prop.reauthenticate:true}" domain="${prop.domain:myDomain}" cache-name="myCache" cache-container="cache-container"/>

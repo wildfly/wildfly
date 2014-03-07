@@ -391,7 +391,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 }
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_0: {
+                case WEB_1_6:
+                case WEB_2_0:
+                case WEB_2_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONTAINER_CONFIG: {
@@ -746,7 +748,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 }
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_0: {
+                case WEB_1_6:
+                case WEB_2_0:
+                case WEB_2_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case ALIAS:
@@ -846,7 +850,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_3:
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_0: {
+                case WEB_1_6:
+                case WEB_2_0:
+                case WEB_2_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case CONDITION:
@@ -933,7 +939,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_3:
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_0: {
+                case WEB_1_6:
+                case WEB_2_0:
+                case WEB_2_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case DIRECTORY:
@@ -949,6 +957,16 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
             }
         }
 
+    }
+
+    private static void attributeSupportedFor(XMLExtendedStreamReader reader, int i, Namespace ... namespaces) throws XMLStreamException {
+        Namespace currentNamespace= Namespace.forUri(reader.getNamespaceURI());
+        for(Namespace namespace : namespaces) {
+            if(currentNamespace.equals(namespace)) {
+                return;
+            }
+        }
+        throw unexpectedAttribute(reader, i);
     }
 
     static void parseConnector(XMLExtendedStreamReader reader, PathAddress parent, List<ModelNode> list)
@@ -983,6 +1001,10 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case ENABLE_LOOKUPS:
                     WebConnectorDefinition.ENABLE_LOOKUPS.parseAndSetParameter(value, connector, reader);
                     break;
+                case PROXY_BINDING:
+                    attributeSupportedFor(reader, i, Namespace.WEB_1_6,  Namespace.WEB_2_1);
+                    WebConnectorDefinition.PROXY_BINDING.parseAndSetParameter(value, connector, reader);
+                    break;
                 case PROXY_NAME:
                     WebConnectorDefinition.PROXY_NAME.parseAndSetParameter(value, connector, reader);
                     break;
@@ -997,6 +1019,11 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                     break;
                 case SECURE:
                     WebConnectorDefinition.SECURE.parseAndSetParameter(value, connector, reader);
+                    break;
+                case REDIRECT_BINDING:
+                    attributeSupportedFor(reader, i, Namespace.WEB_1_6,  Namespace.WEB_2_1);
+                    WebConnectorDefinition.REDIRECT_BINDING.parseAndSetParameter(value, connector, reader);
+                    connector.remove(WebConnectorDefinition.REDIRECT_PORT.getName());
                     break;
                 case REDIRECT_PORT:
                     WebConnectorDefinition.REDIRECT_PORT.parseAndSetParameter(value, connector, reader);
@@ -1024,7 +1051,9 @@ class WebSubsystemParser implements XMLStreamConstants, XMLElementReader<List<Mo
                 case WEB_1_3:
                 case WEB_1_4:
                 case WEB_1_5:
-                case WEB_2_0: {
+                case WEB_1_6:
+                case WEB_2_0:
+                case WEB_2_1: {
                     final Element element = Element.forName(reader.getLocalName());
                     switch (element) {
                         case SSL:
