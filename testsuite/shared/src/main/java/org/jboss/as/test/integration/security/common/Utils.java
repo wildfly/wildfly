@@ -28,10 +28,12 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.security.MessageDigest;
 import java.security.PrivilegedActionException;
@@ -98,6 +100,8 @@ import org.jboss.util.Base64;
 public class Utils {
 
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
+
+    public static final String UTF_8 = "UTF-8";
 
     /** The REDIRECT_STRATEGY for Apache HTTP Client */
     public static final RedirectStrategy REDIRECT_STRATEGY = new DefaultRedirectStrategy() {
@@ -979,5 +983,43 @@ public class Utils {
         }
 
         return content;
+    }
+
+    /**
+     * Makes HTTP call without authentication. Returns response body as a String.
+     *
+     * @param uri requested URL
+     * @param expectedStatusCode expected status code - it's checked after the request is executed
+     * @throws Exception
+     */
+    public static String makeCall(URI uri, int expectedStatusCode) throws Exception {
+        final DefaultHttpClient httpclient = new DefaultHttpClient();
+        try {
+            final HttpGet httpget = new HttpGet(uri);
+            final HttpResponse response = httpclient.execute(httpget);
+            int statusCode = response.getStatusLine().getStatusCode();
+            assertEquals("Unexpected status code returned after the authentication.", expectedStatusCode, statusCode);
+            return EntityUtils.toString(response.getEntity());
+        } finally {
+            httpclient.getConnectionManager().shutdown();
+        }
+    }
+
+    /**
+     * Returns param/value pair in form "urlEncodedName=urlEncodedValue". It can be used for instance in HTTP get queries.
+     *
+     * @param paramName parameter name
+     * @param paramValue parameter value
+     * @return "[urlEncodedName]=[urlEncodedValue]" string
+     */
+    public static String encodeQueryParam(final String paramName, final String paramValue) {
+        String response = null;
+        try {
+            response = StringUtils.isEmpty(paramValue) ? null : (URLEncoder.encode(paramName, UTF_8) + "=" + URLEncoder.encode(
+                    StringUtils.defaultString(paramValue, StringUtils.EMPTY), UTF_8));
+        } catch (UnsupportedEncodingException e) {
+            // should never happen - everybody likes the "UTF-8" :)
+        }
+        return response;
     }
 }
