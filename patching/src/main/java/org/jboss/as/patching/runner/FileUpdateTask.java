@@ -44,11 +44,23 @@ final class FileUpdateTask extends AbstractFileTask {
 
     @Override
     ContentModification createRollbackEntry(ContentModification original, MiscContentItem item, byte[] targetHash) {
-        ModificationType type = ModificationType.MODIFY;
+        final ModificationType type;
         if (Arrays.equals(NO_CONTENT, item.getContentHash()) && !backup.exists()) {
             type = ModificationType.REMOVE;
+        } else {
+            type = ModificationType.MODIFY;
         }
         return new ContentModification(item, targetHash, type);
     }
 
+    protected ContentModification getOriginalModification(byte[] targetHash, byte[] itemHash) {
+        final ContentModification original = super.getOriginalModification(targetHash, itemHash);
+        final ModificationType type;
+        if (Arrays.equals(NO_CONTENT, itemHash) && !backup.exists()) {
+            type = ModificationType.ADD;
+        } else {
+            type = ModificationType.MODIFY;
+        }
+        return new ContentModification(original.getItem(), original.getTargetHash(), type);
+    }
 }
