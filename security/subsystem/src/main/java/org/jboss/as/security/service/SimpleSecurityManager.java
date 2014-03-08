@@ -205,6 +205,9 @@ public class SimpleSecurityManager implements ServerSecurityManager {
             final Subject authenticatedSubject = getSubjectInfo(securityContext).getAuthenticatedSubject();
             roleGroup = getSubjectRoles(am, scb, authenticatedSubject);
         }
+        if (roleGroup == null) {
+            return false;
+        }
 
         List<Role> roles = roleGroup.getRoles();
 
