@@ -42,6 +42,10 @@ import org.jboss.dmr.ModelNode;
  */
 public class ReadMasterDomainModelHandler implements OperationStepHandler {
 
+    public static final String DOMAIN_RESOURCE_ADDRESS = "domain-resource-address";
+
+    public static final String DOMAIN_RESOURCE_MODEL = "domain-resource-model";
+
     public static final String OPERATION_NAME = "read-master-domain-model";
 
     private final Transformers transformers;
@@ -88,8 +92,8 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler {
             return; // ignore hosts
         }
         final ModelNode description = new ModelNode();
-        description.get("domain-resource-address").set(base.toModelNode());
-        description.get("domain-resource-model").set(resource.getModel());
+        description.get(DOMAIN_RESOURCE_ADDRESS).set(base.toModelNode());
+        description.get(DOMAIN_RESOURCE_MODEL).set(resource.getModel());
         nodes.add(description);
         for (final String childType : resource.getChildTypes()) {
             for (final Resource.ResourceEntry entry : resource.getChildren(childType)) {

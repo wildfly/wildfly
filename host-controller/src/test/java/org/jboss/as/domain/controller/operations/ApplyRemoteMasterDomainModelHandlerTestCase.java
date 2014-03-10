@@ -33,13 +33,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -52,9 +58,15 @@ import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration
 import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.transform.OperationTransformer;
+import org.jboss.as.controller.transform.ResourceTransformationContext;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.TransformationTarget;
+import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.dmr.ModelNode;
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -75,19 +87,25 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
 
     @Test
     public void testNoChanges() throws Exception {
-        final Resource root = createRootResource();
-        final ModelNode operation = new ModelNode();
-        operation.get(DOMAIN_MODEL).setEmptyList();
+        Resource root = createRootResource();
 
-        executeAndVerify(root, operation);
+        final ModelNode operation = new ModelNode();
+        operation.get(DOMAIN_MODEL).set(getCurrentModelUpdates(root, UpdateListModifier.createForAdditions()));
+        final MockOperationContext operationContext = getOperationContext(root, false);
+        handler.execute(operationContext, operation);
+        final List<OperationAndHandler> operations = operationContext.verify().get(OperationContext.Stage.MODEL);
+        Assert.assertEquals(4, operations.size());
     }
 
     @Test
     public void testBooting() throws Exception {
+        Resource root = createRootResource();
+
         final ModelNode operation = new ModelNode();
         operation.get(DOMAIN_MODEL).setEmptyList();
-        final OperationContext operationContext = getOperationContext(true);
+        final MockOperationContext operationContext = getOperationContext(root, true);
         handler.execute(operationContext, operation);
+        operationContext.verify();
     }
 
     @Test
@@ -489,21 +507,68 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
 
     @Test
     public void testRolloutPlans() throws Exception {
-        final Resource root = createRootResource();
+        Resource root = createRootResource();
+
         final ModelNode operation = new ModelNode();
         final ModelNode change = new ModelNode();
         PathAddress pa = PathAddress.pathAddress(PathElement.pathElement(MANAGEMENT_CLIENT_CONTENT, ROLLOUT_PLANS));
-        change.get("domain-resource-address").set(pa.toModelNode());
-        change.get("domain-resource-model").set(new ModelNode());
-        operation.get(DOMAIN_MODEL).add(change);
-
-        executeAndVerify(root, operation);
-
-        Resource r = root.navigate(pa);
+        change.get(ReadMasterDomainModelHandler.DOMAIN_RESOURCE_ADDRESS).set(pa.toModelNode());
+        change.get(ReadMasterDomainModelHandler.DOMAIN_RESOURCE_MODEL).set(new ModelNode());
+        operation.get(DOMAIN_MODEL).set(getCurrentModelUpdates(root, UpdateListModifier.createForAdditions(change)));
+        final MockOperationContext operationContext = getOperationContext(root, false);
+        handler.execute(operationContext, operation);
+        operationContext.verify();
+        Resource r = operationContext.root.navigate(pa);
         assertTrue(r instanceof ManagedDMRContentTypeResource);
     }
 
+    private static class UpdateListModifier {
+        private ModelNode[] additions;
+        private Map<PathAddress, ModelNode> changes;
+        private Set<PathAddress> removals;
 
+        public UpdateListModifier(ModelNode[] additions, Map<PathAddress, ModelNode> changes, Set<PathAddress> removals) {
+            this.additions = additions;
+            this.changes = changes;
+            this.removals = removals;
+        }
+
+        static UpdateListModifier createForAdditions(ModelNode...additions) {
+            return new UpdateListModifier(additions, Collections.<PathAddress, ModelNode>emptyMap(), Collections.<PathAddress>emptySet());
+        }
+
+        static UpdateListModifier createForChanges(ModelNode...changes) {
+            Map<PathAddress, ModelNode> changeMap = new HashMap<PathAddress, ModelNode>();
+            for (ModelNode change : changes) {
+                changeMap.put(PathAddress.pathAddress(change.get(ReadMasterDomainModelHandler.DOMAIN_RESOURCE_ADDRESS)), change);
+            }
+            return new UpdateListModifier(new ModelNode[0], changeMap, Collections.<PathAddress>emptySet());
+        }
+
+        static UpdateListModifier createForRemovals(PathAddress...removals) {
+            Set<PathAddress> removedSet = new HashSet<PathAddress>(Arrays.asList(removals));
+            return new UpdateListModifier(new ModelNode[0], Collections.<PathAddress, ModelNode>emptyMap(), removedSet);
+        }
+
+        ModelNode modifyList(ModelNode existing) {
+            ModelNode result = new ModelNode();
+            for (ModelNode current : existing.asList()) {
+                PathAddress addr = PathAddress.pathAddress(current.get(ReadMasterDomainModelHandler.DOMAIN_RESOURCE_ADDRESS));
+                if (removals.contains(addr)) {
+                    continue;
+                }
+                if (changes.containsKey(addr)) {
+                    result.add(changes.get(addr));
+                } else {
+                    result.add(current);
+                }
+            }
+            for (ModelNode addition : additions) {
+                result.add(addition);
+            }
+            return result;
+        }
+    }
 
 
     private void executeAndVerify(Resource root, ModelNode operation,
@@ -533,8 +598,47 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
 
     }
 
+    private ModelNode getCurrentModelUpdates(Resource root, UpdateListModifier modifier) throws Exception {
+        MockOperationContext context = getOperationContext(root, true);
+        new ReadMasterDomainModelHandler(new NoopTransformers()).execute(context, new ModelNode());
+        return modifier.modifyList(context.getResult());
+    }
+
     private MockOperationContext getOperationContext(Resource root, boolean booting) {
         return new MockOperationContext(root, booting, PathAddress.EMPTY_ADDRESS, false);
+    }
+
+    private static class NoopTransformers implements Transformers {
+
+        @Override
+        public TransformationTarget getTarget() {
+            return null;
+        }
+
+        @Override
+        public OperationTransformer.TransformedOperation transformOperation(TransformationContext context, ModelNode operation)
+                throws OperationFailedException {
+            return new OperationTransformer.TransformedOperation(operation, OperationTransformer.TransformedOperation.ORIGINAL_RESULT);
+        }
+
+        @Override
+        public OperationTransformer.TransformedOperation transformOperation(OperationContext operationContext, ModelNode operation)
+                throws OperationFailedException {
+            return new OperationTransformer.TransformedOperation(operation, OperationTransformer.TransformedOperation.ORIGINAL_RESULT);
+        }
+
+        @Override
+        public Resource transformResource(ResourceTransformationContext context, Resource resource)
+                throws OperationFailedException {
+            return resource;
+        }
+
+        @Override
+        public Resource transformRootResource(OperationContext operationContext, Resource resource)
+                throws OperationFailedException {
+            return resource;
+        }
+
     }
 
 }
