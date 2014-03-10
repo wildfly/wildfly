@@ -231,6 +231,12 @@ public class HostXml extends CommonXml {
             writeServers(writer, modelNode.get(SERVER_CONFIG));
             writeNewLine(writer);
             writer.writeEndElement();
+        }else {
+            writer.writeStartElement(Element.SERVERS.getLocalName());
+            // Write the directory grouping
+            HostResourceDefinition.DIRECTORY_GROUPING.marshallAsAttribute(modelNode, writer);
+            writeNewLine(writer);
+            writer.writeEndElement();
         }
 
         writer.writeEndElement();
