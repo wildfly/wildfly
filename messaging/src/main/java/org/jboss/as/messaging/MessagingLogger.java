@@ -232,4 +232,24 @@ public interface MessagingLogger extends BasicLogger {
     @LogMessage(level = WARN)
     @Message(id = 11617, value = "No connectors were explicitly defined for the pooled connection factory %s. Using %s as the connector.")
     void connectorForPooledConnectionFactory(String name, String connectorName);
+
+    /**
+     * Logs a warn message when there is no resource matching the address-settings' expiry-address.
+     *
+     * @param address the name of the address-settings' missing expiry-address
+     * @param addressSettings the name of the address-settings
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11618, value = "There is no resource matching the expiry-address %s for the address-settings %s, expired messages from destinations matching this address-setting will be lost!")
+    void noMatchingExpiryAddress(String address, String addressSettings);
+
+    /**
+     * Logs a warn message when there is no resource matching the address-settings' dead-letter-address.
+     *
+     * @param address the name of the address-settings' missing dead-letter-address
+     * @param addressSettings the name of the address-settings
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11619, value = "There is no resource matching the dead-letter-address %s for the address-settings %s, undelivered messages from destinations matching this address-setting will be lost!")
+    void noMatchingDeadLetterAddress(String address, String addressSettings);
 }

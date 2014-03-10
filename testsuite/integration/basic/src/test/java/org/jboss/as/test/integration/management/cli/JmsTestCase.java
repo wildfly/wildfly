@@ -22,6 +22,8 @@
 package org.jboss.as.test.integration.management.cli;
 
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
+
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.jboss.arquillian.junit.Arquillian;
@@ -61,33 +63,34 @@ public class JmsTestCase extends AbstractCliTestBase {
     }
 
     private void testAddJmsQueue() throws Exception {
-
+        String queueName = "testJmsQueue";
         // check the queue is not registered
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
         cli.sendLine("ls");
         String ls = cli.readOutput();
-        Assert.assertNull(ls);
+        assertFalse(ls.contains(queueName));
 
         // create queue
-        cli.sendLine("jms-queue add --queue-address=testJmsQueue --entries=testJmsQueue");
+        cli.sendLine(String.format("jms-queue add --queue-address=%s --entries=%s", queueName, queueName));
 
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
         cli.sendLine("ls");
         ls = cli.readOutput();
-        assertTrue(ls.contains("testJmsQueue"));
+        assertTrue(ls.contains(queueName));
     }
 
     private void testRemoveJmsQueue() throws Exception {
+        String queueName = "testJmsQueue";
 
-        // create queue
-        cli.sendLine("jms-queue remove --queue-address=testJmsQueue");
+        // remove the queue
+        cli.sendLine("jms-queue remove --queue-address=" + queueName);
 
         // check it is listed
         cli.sendLine("cd /subsystem=messaging/hornetq-server=default/jms-queue");
         cli.sendLine("ls");
         String ls = cli.readOutput();
-        Assert.assertNull(ls);
+        assertFalse(ls.contains(queueName));
     }
 
     private void testAddJmsTopic() throws Exception {

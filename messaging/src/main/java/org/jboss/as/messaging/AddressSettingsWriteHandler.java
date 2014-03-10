@@ -46,6 +46,14 @@ class AddressSettingsWriteHandler extends AbstractWriteAttributeHandler<AddressS
         super(AddressSettingDefinition.ATTRIBUTES);
     }
 
+
+    @Override
+    protected void finishModelStage(OperationContext context, ModelNode operation, String attributeName, ModelNode newValue, ModelNode oldValue, Resource model) throws OperationFailedException {
+        super.finishModelStage(context, operation, attributeName, newValue, oldValue, model);
+
+        AddressSettingsValidator.validateModel(context, operation, model);
+    }
+
     @Override
     protected boolean applyUpdateToRuntime(final OperationContext context, final ModelNode operation, final String attributeName, final ModelNode resolvedValue,
                                            final ModelNode currentValue, final HandbackHolder<RevertHandback> handbackHolder) throws OperationFailedException {
