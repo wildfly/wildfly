@@ -25,6 +25,7 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentInstanceInterceptorFactory;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
+import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
@@ -36,8 +37,9 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  *
  * @author Stuart Douglas
  */
-public class EntityBeanReentrancyInterceptor implements Interceptor{
+public class EntityBeanReentrancyInterceptor implements Interceptor {
 
+    public static final InterceptorFactory FACTORY = new ImmediateInterceptorFactory(new EntityBeanReentrancyInterceptor());
 
     @Override
     public Object processInvocation(final InterceptorContext context) throws Exception {
@@ -52,15 +54,4 @@ public class EntityBeanReentrancyInterceptor implements Interceptor{
             instance.setInvocationInProgress(false);
         }
     }
-
-
-    public static final InterceptorFactory FACTORY = new ComponentInstanceInterceptorFactory() {
-
-        @Override
-        protected org.jboss.invocation.Interceptor create(final Component component, final InterceptorFactoryContext context) {
-            return new EntityBeanReentrancyInterceptor();
-        }
-    };
-
-
 }

@@ -68,7 +68,6 @@ public class CmpEntityBeanComponentCreateService extends EntityBeanComponentCrea
 
         final OrderedItemContainer interceptors = new OrderedItemContainer();
         interceptors.add(CmpEntityBeanSynchronizationInterceptor.FACTORY, InterceptorOrder.Component.SYNCHRONIZATION_INTERCEPTOR);
-        interceptors.add(EntityBeanReentrancyInterceptor.FACTORY, InterceptorOrder.Component.REENTRANCY_INTERCEPTOR);
         interceptors.add(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.ComponentPostConstruct.EJB_SESSION_CONTEXT_INTERCEPTOR);
         interceptors.add(CmpEntityBeanJdbcRelationshipInterceptor.FACTORY, InterceptorOrder.Component.CMP_RELATIONSHIP_INTERCEPTOR);
 
