@@ -33,13 +33,14 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -51,13 +52,17 @@ import org.jboss.msc.service.ServiceController;
  */
 class AddressSettingAdd extends AbstractAddStepHandler {
 
-    static final OperationStepHandler INSTANCE = new AddressSettingAdd();
+    static final OperationStepHandler INSTANCE = new AddressSettingAdd(AddressSettingDefinition.ATTRIBUTES);
+
+    private AddressSettingAdd(AttributeDefinition... attributes) {
+        super(attributes);
+    }
 
     @Override
-    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
-        for(final SimpleAttributeDefinition attribute : AddressSettingDefinition.ATTRIBUTES) {
-            attribute.validateAndSet(operation, model);
-        }
+    protected void populateModel(OperationContext context, ModelNode operation, final Resource resource) throws OperationFailedException {
+        super.populateModel(context, operation, resource);
+
+        context.addStep(AddressSettingsValidator.ADD_VALIDATOR, OperationContext.Stage.MODEL);
     }
 
     @Override

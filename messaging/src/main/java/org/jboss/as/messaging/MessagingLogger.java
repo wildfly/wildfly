@@ -199,6 +199,23 @@ public interface MessagingLogger extends BasicLogger {
     @Message(id = 11613, value = "Can not change the clustered attribute to false: The hornetq-server resource at %s has cluster-connection children resources and will remain clustered.")
     void canNotChangeClusteredAttribute(PathAddress address);
 
+    /**
+     * Logs a warn message when there is no resource matching the address-settings' expiry-address.
+     *
+     * @param address the name of the address-settings' missing expiry-address
+     * @param addressSettings the name of the address-settings
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11618, value = "There is no resource matching the expiry-address %s for the address-settings %s, expired messages from destinations matching this address-setting will be lost!")
+    void noMatchingExpiryAddress(String address, String addressSettings);
 
-
+    /**
+     * Logs a warn message when there is no resource matching the address-settings' dead-letter-address.
+     *
+     * @param address the name of the address-settings' missing dead-letter-address
+     * @param addressSettings the name of the address-settings
+     */
+    @LogMessage(level = WARN)
+    @Message(id = 11619, value = "There is no resource matching the dead-letter-address %s for the address-settings %s, undelivered messages from destinations matching this address-setting will be lost!")
+    void noMatchingDeadLetterAddress(String address, String addressSettings);
 }
