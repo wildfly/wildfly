@@ -231,6 +231,10 @@ public class HostXml extends CommonXml {
             writeServers(writer, modelNode.get(SERVER_CONFIG));
             writeNewLine(writer);
             writer.writeEndElement();
+        } else if (modelNode.hasDefined(DIRECTORY_GROUPING)) {
+            // In case there are no servers defined, write an empty element, preserving the directory grouping
+            writer.writeEmptyElement(Element.SERVERS.getLocalName());
+            HostResourceDefinition.DIRECTORY_GROUPING.marshallAsAttribute(modelNode, writer);
         }
 
         writer.writeEndElement();
