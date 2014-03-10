@@ -58,6 +58,11 @@ public class FileWithPropertiesTestCase {
     private static final String SERVER_PROP_NAME = "cli-arg-test";
     private static final String CLI_PROP_NAME = "cli.prop.name";
     private static final String CLI_PROP_VALUE = "cli.prop.value";
+    private static final String HOST_PROP_NAME = "cli.host.name";
+    private static final String HOST_PROP_VALUE = TestSuiteEnvironment.getServerAddress();
+    private static final String PORT_PROP_NAME = "cli.port.name";
+    private static final String PORT_PROP_VALUE = String.valueOf(TestSuiteEnvironment.getServerPort());
+    private static final String CONNECT_COMMAND = "connect ${" + HOST_PROP_NAME + "}:${" + PORT_PROP_NAME + "}";
     private static final String SET_PROP_COMMAND = "/system-property=" + SERVER_PROP_NAME + ":add(value=${cli.prop.name})";
     private static final String GET_PROP_COMMAND = "/system-property=" + SERVER_PROP_NAME + ":read-resource";
     private static final String REMOVE_PROP_COMMAND = "/system-property=" + SERVER_PROP_NAME + ":remove";
@@ -126,6 +131,8 @@ public class FileWithPropertiesTestCase {
         ensureRemoved(PROPS_FILE);
         try {
             writer = new BufferedWriter(new FileWriter(SCRIPT_FILE));
+            writer.write(CONNECT_COMMAND);
+            writer.newLine();
             writer.write(SET_PROP_COMMAND);
             writer.newLine();
             writer.write(GET_PROP_COMMAND);
@@ -146,10 +153,9 @@ public class FileWithPropertiesTestCase {
         writer = null;
         try {
             writer = new BufferedWriter(new FileWriter(PROPS_FILE));
-            writer.write(CLI_PROP_NAME);
-            writer.write('=');
-            writer.write(CLI_PROP_VALUE);
-            writer.write('\n');
+            writer.write(CLI_PROP_NAME); writer.write('='); writer.write(CLI_PROP_VALUE); writer.newLine();
+            writer.write(HOST_PROP_NAME); writer.write('='); writer.write(HOST_PROP_VALUE); writer.newLine();
+            writer.write(PORT_PROP_NAME); writer.write('='); writer.write(PORT_PROP_VALUE); writer.newLine();
         } catch (IOException e) {
             fail("Failed to write to " + PROPS_FILE.getAbsolutePath() + ": " + e.getLocalizedMessage());
         } finally {
@@ -241,8 +247,8 @@ public class FileWithPropertiesTestCase {
         command.add("-mp");
         command.add(modulePath);
         command.add("org.jboss.as.cli");
-        command.add("-c");
-        command.add("--controller=" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort());
+        //command.add("-c");
+        //command.add("--controller=" + TestSuiteEnvironment.getServerAddress() + ":" + TestSuiteEnvironment.getServerPort());
         command.add("--file=" + SCRIPT_FILE.getAbsolutePath());
         command.add("--properties=" + PROPS_FILE.getAbsolutePath());
         builder.command(command);

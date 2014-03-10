@@ -1205,8 +1205,9 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                 }
                 builder.addProperty(Util.NAME, propName);
 
-                final String valueString = args.getPropertyValue(argName);
-                ModelNode nodeValue = arg.getValueConverter().fromString(ctx, valueString);
+//                final String valueString = args.getPropertyValue(argName);
+//                ModelNode nodeValue = arg.getValueConverter().fromString(ctx, valueString);
+                final ModelNode nodeValue = arg.toModelNode(ctx);
                 builder.getModelNode().get(Util.VALUE).set(nodeValue);
 
                 steps.add(builder.buildRequest());
@@ -1277,8 +1278,9 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
                     propName = argName.substring(1);
                 }
 
-                final String valueString = parsedArgs.getPropertyValue(argName);
-                ModelNode nodeValue = arg.getValueConverter().fromString(ctx, valueString);
+//                final String valueString = parsedArgs.getPropertyValue(argName);
+//                ModelNode nodeValue = arg.getValueConverter().fromString(ctx, valueString);
+                final ModelNode nodeValue = arg.toModelNode(ctx);
                 request.get(propName).set(nodeValue);
             }
             return request;

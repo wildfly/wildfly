@@ -27,6 +27,7 @@ import java.util.List;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
 import org.jboss.as.cli.CommandLineException;
+import org.jboss.as.cli.impl.ArgumentWithValue;
 import org.jboss.as.cli.operation.ParsedCommandLine;
 
 /**
@@ -35,6 +36,8 @@ import org.jboss.as.cli.operation.ParsedCommandLine;
  * @author Alexey Loubyansky
  */
 public class ConnectHandler extends CommandHandlerWithHelp {
+
+    private final ArgumentWithValue arg = new ArgumentWithValue(this, 0, "--controller");
 
     public ConnectHandler() {
         this("connect");
@@ -60,16 +63,14 @@ public class ConnectHandler extends CommandHandlerWithHelp {
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
 
-        String controller = null;
-
         final ParsedCommandLine parsedCmd = ctx.getParsedCommandLine();
+        final String controller = arg.getValue(parsedCmd);
         final List<String> args = parsedCmd.getOtherProperties();
 
         if (!args.isEmpty()) {
             if (args.size() != 1) {
                 throw new CommandFormatException("The command expects only one argument but got " + args);
             }
-            controller = args.get(0);
         }
 
         ctx.connectController(controller);

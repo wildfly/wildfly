@@ -184,8 +184,6 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
         composite.get(Util.ADDRESS).setEmptyList();
         final ModelNode steps = composite.get(Util.STEPS);
 
-        final ParsedCommandLine parsedArgs = ctx.getParsedCommandLine();
-
         for(String opName : this.ops) {
             final ModelNode req = new ModelNode();
             req.get(Util.OPERATION).set(opName);
@@ -209,9 +207,11 @@ public class ResourceCompositeOperationHandler extends BaseOperationCommand {
                     propName = argName.substring(1);
                 }
 
-                final String valueString = arg.getValue(parsedArgs);
-                if(valueString != null) {
-                    ModelNode nodeValue = arg.getValueConverter().fromString(ctx, valueString);
+//                final String valueString = arg.getOriginalValue(parsedArgs, false);
+//                if(valueString != null) {
+//                    ModelNode nodeValue = arg.getValueConverter().fromString(ctx, valueString);
+                final ModelNode nodeValue = arg.toModelNode(ctx);
+                if(nodeValue != null) {
                     req.get(propName).set(nodeValue);
                 }
             }
