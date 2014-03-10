@@ -93,6 +93,7 @@ public class InfinispanBeanManagerFactoryBuilder<G, I> implements BeanManagerFac
         };
         AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
                 .addDependency(configurationServiceName)
+                .addDependency(deploymentUnitServiceName.append("marshalling"))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
