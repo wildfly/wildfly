@@ -85,10 +85,11 @@ public class RaAdd extends AbstractAddStepHandler {
                             throws OperationFailedException {
                         final ServiceVerificationHandler svh = new ServiceVerificationHandler();
 
-
-                        ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveOrModuleName,
-                                name, svh);
-
+                        //Next lines activate configuration on module deployed rar
+                        //in case there is 2 different resource-adapter config using same module deployed rar
+                        // a Deployment sercivice could be already present and need a restart to consider also this
+                        //newly added configuration
+                        ServiceName restartedServiceName = RaOperationUtil.restartIfPresent(context, archiveOrModuleName, name, svh);
                         if (restartedServiceName == null) {
                             RaOperationUtil.activate(context, name, svh);
                         }
