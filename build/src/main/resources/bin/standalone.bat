@@ -195,14 +195,19 @@ if not "%PRESERVE_JAVA_OPTS%" == "true" (
   rem Add rotating GC logs, if supported, and not already defined
   echo "%JAVA_OPTS%" | findstr /I "\-verbose:gc" > nul
   if errorlevel == 1 (
-    "%JAVA%" -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -version > nul 2>&1
+    rem Back up any prior logs
+    move /y "%JBOSS_LOG_DIR%\gc.log.0" "%JBOSS_LOG_DIR%\backupgc.log.0" > nul 2>&1
+    move /y "%JBOSS_LOG_DIR%\gc.log.1" "%JBOSS_LOG_DIR%\backupgc.log.1" > nul 2>&1
+    move /y "%JBOSS_LOG_DIR%\gc.log.2" "%JBOSS_LOG_DIR%\backupgc.log.2" > nul 2>&1
+    move /y "%JBOSS_LOG_DIR%\gc.log.3" "%JBOSS_LOG_DIR%\backupgc.log.3" > nul 2>&1
+    move /y "%JBOSS_LOG_DIR%\gc.log.4" "%JBOSS_LOG_DIR%\backupgc.log.4" > nul 2>&1
+    "%JAVA%" -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -Xloggc:%XLOGGC% -XX:-TraceClassUnloading -version > nul 2>&1
     if not errorlevel == 1 (
       if not exist "%JBOSS_LOG_DIR" > nul 2>&1 (
         mkdir "%JBOSS_LOG_DIR%"
       )
-      rem Back up any prior logs
-      rename "%JBOSS_LOG_DIR%\gc.log.*" "backupgc.log.?"
-      set "JAVA_OPTS=-verbose:gc -Xloggc:%JBOSS_LOG_DIR%\gc.log -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M %JAVA_OPTS%"
+      set XLOGGC="%JBOSS_LOG_DIR%\gc.log"
+      set "JAVA_OPTS=-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -XX:-TraceClassUnloading %JAVA_OPTS%"
     )
   )
 )
@@ -232,15 +237,27 @@ echo ===========================================================================
 echo.
 
 :RESTART
-"%JAVA%" %JAVA_OPTS% ^
- "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\server.log" ^
- "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
-    -jar "%JBOSS_HOME%\jboss-modules.jar" ^
-    -mp "%JBOSS_MODULEPATH%" ^
-    -jaxpmodule "javax.xml.jaxp-provider" ^
-     org.jboss.as.standalone ^
-    "-Djboss.home.dir=%JBOSS_HOME%" ^
-     %SERVER_OPTS%
+if x%XLOGGC% == x (
+  "%JAVA%" %JAVA_OPTS% ^
+   "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\server.log" ^
+   "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
+      -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+      -mp "%JBOSS_MODULEPATH%" ^
+      -jaxpmodule "javax.xml.jaxp-provider" ^
+       org.jboss.as.standalone ^
+      "-Djboss.home.dir=%JBOSS_HOME%" ^
+       %SERVER_OPTS%
+) else (
+  "%JAVA%" -Xloggc:%XLOGGC% %JAVA_OPTS% ^
+   "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\server.log" ^
+   "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
+      -jar "%JBOSS_HOME%\jboss-modules.jar" ^
+      -mp "%JBOSS_MODULEPATH%" ^
+      -jaxpmodule "javax.xml.jaxp-provider" ^
+       org.jboss.as.standalone ^
+      "-Djboss.home.dir=%JBOSS_HOME%" ^
+       %SERVER_OPTS%
+)
 
 if ERRORLEVEL 10 goto RESTART
 
