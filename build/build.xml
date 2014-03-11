@@ -972,6 +972,10 @@
             <maven-resource group="org.jboss.mod_cluster" artifact="mod_cluster-container-jbossweb"/>
         </module-def>
 
+        <module-def name="org.wildfly.extension.picketlink">
+            <maven-resource group="org.wildfly" artifact="wildfly-picketlink"/>
+        </module-def>
+
         <module-def name="org.jboss.as.pojo">
             <maven-resource group="org.jboss.as" artifact="jboss-as-pojo"/>
         </module-def>
@@ -1379,6 +1383,10 @@
 
         <module-def name="org.picketlink.federation.bindings">
             <maven-resource group="org.picketlink.distribution" artifact="picketlink-jbas7"/>
+        </module-def>
+
+        <module-def name="org.picketlink.idm.schema">
+            <maven-resource group="org.picketlink" artifact="picketlink-idm-simple-schema"/>
         </module-def>
 
         <module-def name="org.picketbox">

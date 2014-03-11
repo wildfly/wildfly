@@ -61,6 +61,7 @@
                 <module>multinode</module>
                 <module>manualmode</module>
                 <module>patching</module>
+                <module>picketlink</module>
             </modules>
         </profile>
         <!-- Define ts.integration uber-group. -->
@@ -170,6 +171,15 @@
             </modules>
         </profile>
 
+        <!-- -Dts.picketlink -->
+        <profile>
+            <id>ts.integ.group.picketlink</id>
+            <activation><property><name>ts.picketlink</name></property></activation>
+            <modules>
+                <module>picketlink</module>
+            </modules>
+        </profile>
+
     </profiles>
 
 
@@ -230,6 +240,11 @@
                                     <!-- Add the XTS config to the standalone/config directory, so it will be processed as well -->
                                     <directory>${basedir}/target/jbossas/docs/examples/configs</directory>
                                     <includes><include>standalone-xts.xml</include></includes>
+                                </resource>
+                                <resource>
+                                    <!-- Add the Picketlink config to the standalone/config directory, so it will be processed as well -->
+                                    <directory>${basedir}/target/jbossas/docs/examples/configs</directory>
+                                    <includes><include>standalone-picketlink.xml</include></includes>
                                 </resource>
                             </resources>
                         </configuration>

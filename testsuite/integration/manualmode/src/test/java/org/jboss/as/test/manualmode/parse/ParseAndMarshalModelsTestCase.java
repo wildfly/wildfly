@@ -246,6 +246,11 @@ public class ParseAndMarshalModelsTestCase {
     }
 
     @Test
+    public void testStandalonePicketLinkXml() throws Exception {
+        standaloneXmlTest(getGeneratedExampleConfigFile("standalone-picketlink.xml"));
+    }
+
+    @Test
     public void testStandaloneXtsXml() throws Exception {
         standaloneXmlTest(getGeneratedExampleConfigFile("standalone-xts.xml"));
     }

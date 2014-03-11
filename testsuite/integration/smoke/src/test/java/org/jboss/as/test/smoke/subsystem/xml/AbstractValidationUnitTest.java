@@ -238,7 +238,7 @@ public class AbstractValidationUnitTest {
      * Simple JBoss XSD filter
      */
     private static class SchemaFilter implements FilenameFilter {
-        private static final Pattern PATTERN = Pattern.compile("jboss.*\\.xsd$");
+        private static final Pattern PATTERN = Pattern.compile("(jboss|wildfly)-.*\\.xsd$");
         private final String[] exclusions;
 
         SchemaFilter() {

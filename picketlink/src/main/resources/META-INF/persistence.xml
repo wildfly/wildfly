@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+
+  <persistence-unit name="identity" transaction-type="JTA">
+    <class>org.picketlink.idm.jpa.model.sample.simple.AttributedTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.AccountTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.RoleTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.GroupTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.IdentityTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.RelationshipTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.RelationshipIdentityTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.PartitionTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.PasswordCredentialTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.DigestCredentialTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.X509CredentialTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.OTPCredentialTypeEntity</class>
+    <class>org.picketlink.idm.jpa.model.sample.simple.AttributeTypeEntity</class>
+
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+
+    <properties>
+      <property name="hibernate.hbm2ddl.auto" value="update"/>
+      <property name="hibernate.show_sql" value="false"/>
+      <property name="hibernate.format_sql" value="true"/>
+
+      <property name="hibernate.listeners.envers.autoRegister" value="false"/>
+      <property name="javax.persistence.validation.mode" value="none"/>
+    </properties>
+  </persistence-unit>
+
+</persistence>
+
+

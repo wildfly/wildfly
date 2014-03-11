@@ -1,0 +1,54 @@
+<subsystem xmlns="urn:jboss:domain:picketlink-federation:1.0">
+    <federation name="federation-without-signatures">
+        <saml token-timeout="${test.picketlink.idp.token-timeout:4000}" clock-skew="${test.picketlink.idp.clock-skew:0}"/>
+        <key-store password="${test.picketlink.key-store.password:changeit}"
+                   sign-key-alias="${test.picketlink.key-store.sign-key-alias:localhost}"
+                   sign-key-password="${test.picketlink.key-store.sign-key-password:changeit}"
+                   file="${test.picketlink.key-store.file:jbid_test_keystore.jks}"
+                   relative-to="${test.picketlink.key-store.relative-to:jboss.server.data.dir}"/>
+        <identity-provider name="idp.war"
+                           security-domain="idp"
+                           support-signatures="${test.picketlink.idp.support-signatures:false}"
+                           encrypt="${test.picketlink.idp.encrypt:false}"
+                           strict-post-binding="${test.picketlink.idp.strict-post-binding:true}"
+                           ssl-authentication="${test.picketlink.idp.ssl-authentication:true}"
+                           url="${test.picketlink.idp.url:http://localhost:8080/idp/}">
+            <trust>
+                <trust-domain name="localhost"/>
+                <trust-domain name="mycompany.com2"/>
+                <trust-domain name="mycompany.com3"/>
+                <trust-domain name="mycompany.com4"/>
+            </trust>
+            <handlers>
+                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
+                <handler code="SAML2LogOutHandler"/>
+                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
+                <handler code="RolesGenerationHandler"/>
+                <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureGenerationHandler"/>
+                <handler code="SAML2SignatureValidationHandler">
+                    <handler-parameter name="SIGN_RESPONSE_AND_ASSERTION" value="${test.picketlink.idp.sign.response_and_assertion:true}"/>
+                </handler>
+            </handlers>
+        </identity-provider>
+        <service-providers>
+            <service-provider name="sales-redirect.war"
+                              security-domain="sp"
+                              post-binding="${test.picketlink.sales-redirect.post-binding:false}"
+                              url="${test.picketlink.sales-redirect.url:http://localhost:8080/sales-redirect/}"
+                              strict-post-binding="${test.picketlink.idp.strict-post-binding:true}"
+                              support-signatures="${test.picketlink.sales-redirect.support-signatures:false}"/>
+            <service-provider name="sales-post.war"
+                              security-domain="sp"
+                              post-binding="${test.picketlink.sales-post.post-binding:true}"
+                              url="${test.picketlink.sales-post.url:http://localhost:8080/sales-post/}"
+                              support-signatures="${test.picketlink.sales-post.support-signatures:false}"
+                              error-page="${test.picketlink.sales-post.error-page:/myErrorPage.jsp}"
+                              logout-page="${test.picketlink.sales-post.logout-page:/myLogoutPage.jsp}"/>
+            <service-provider name="fake.war"
+                              security-domain="sp"
+                              post-binding="${test.picketlink.fake.post-binding:false}"
+                              url="${test.picketlink.fake.url:http://localhost:8080/fake/}"
+                              support-signatures="${test.picketlink.fake.support-signatures:false}"/>
+        </service-providers>
+    </federation>
+</subsystem>

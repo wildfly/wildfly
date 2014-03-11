@@ -1139,6 +1139,11 @@
                 </dependency>
 
                 <dependency>
+                    <groupId>org.wildfly</groupId>
+                    <artifactId>wildfly-picketlink</artifactId>
+                </dependency>
+
+                <dependency>
                     <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-pojo</artifactId>
                 </dependency>

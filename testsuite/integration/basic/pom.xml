@@ -40,6 +40,10 @@
             <artifactId>jbossxacml</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.picketlink</groupId>
+            <artifactId>picketlink-api</artifactId>
+        </dependency>
 
     </dependencies>
 

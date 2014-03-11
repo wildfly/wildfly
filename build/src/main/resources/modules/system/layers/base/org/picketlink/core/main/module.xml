@@ -37,6 +37,5 @@
         <module name="org.picketlink.core.api" export="true"/>
         <module name="org.picketlink.idm.api" export="true"/>
         <module name="org.picketlink.idm"/>
-        <module name="org.jboss.logging"/>
     </dependencies>
 </module>
