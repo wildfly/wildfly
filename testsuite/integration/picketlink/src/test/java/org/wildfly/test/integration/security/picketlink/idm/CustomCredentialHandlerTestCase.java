@@ -34,6 +34,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.picketlink.idm.IdentityManager;
@@ -73,6 +74,7 @@ import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STO
  */
 @RunWith(Arquillian.class)
 @ServerSetup(CustomCredentialHandlerTestCase.IdentityManagementServerSetupTask.class)
+@Ignore
 public class CustomCredentialHandlerTestCase extends AbstractBasicIdentityManagementTestCase {
 
     static final String PARTITION_MANAGER_JNDI_NAME = "picketlink/CustomCredentialHandlerPartitionManager";

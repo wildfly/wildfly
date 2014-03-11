@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Pedro Igor
  */
-public class AbstractBasicFederationTestCase {
+public abstract class AbstractBasicFederationTestCase {
 
     @ArquillianResource
     @OperateOnDeployment("identity-provider")

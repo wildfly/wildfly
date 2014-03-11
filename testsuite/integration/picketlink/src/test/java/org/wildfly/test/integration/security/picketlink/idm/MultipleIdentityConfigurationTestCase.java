@@ -32,6 +32,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.picketlink.idm.IdentityManager;
@@ -45,11 +46,11 @@ import org.picketlink.idm.model.basic.BasicModel;
 import org.picketlink.idm.model.basic.Realm;
 import org.picketlink.idm.model.basic.Role;
 import org.picketlink.idm.model.basic.User;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.idm.model.AttributedTypeEnum;
 import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
 import org.wildfly.test.integration.security.picketlink.idm.util.LdapMapping;
 import org.wildfly.test.integration.security.picketlink.idm.util.LdapServerSetupTask;
-import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.idm.model.AttributedTypeEnum;
 
 import javax.annotation.Resource;
 
@@ -72,6 +73,7 @@ import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORT
 @RunWith(Arquillian.class)
 @ServerSetup({LdapServerSetupTask.class, MultipleIdentityConfigurationTestCase.IdentityManagementServerSetupTask.class
 })
+@Ignore
 public class MultipleIdentityConfigurationTestCase {
 
     static final String PARTITION_MANAGER_JNDI_NAME = "picketlink/MultipleIdentityConfigBasedPartitionManager";

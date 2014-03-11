@@ -65,7 +65,7 @@
                         <configuration>
                             <!-- Tests to execute. -->
                             <includes>
-                                <include>org/jboss/as/test/xts/**/*TestCase.java</include>
+                                <include>org/wildfly/test/integration/security/picketlink/**/*TestCase.java</include>
                             </includes>
                         </configuration>
                     </plugin>

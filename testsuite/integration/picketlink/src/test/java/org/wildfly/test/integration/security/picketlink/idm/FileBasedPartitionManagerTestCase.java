@@ -32,10 +32,11 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.picketlink.idm.PartitionManager;
-import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
 
 import javax.annotation.Resource;
 
@@ -47,10 +48,11 @@ import static org.wildfly.extension.picketlink.common.model.ModelElement.FILE_ST
  */
 @RunWith(Arquillian.class)
 @ServerSetup(FileBasedPartitionManagerTestCase.IdentityManagementServerSetupTask.class)
+@Ignore
 public class FileBasedPartitionManagerTestCase extends AbstractBasicIdentityManagementTestCase {
 
     static final String PARTITION_MANAGER_JNDI_NAME = "picketlink/FileBasedPartitionManager";
-
+@Ignore
     @Deployment
     public static WebArchive createDeployment() {
         return ShrinkWrap
