@@ -33,6 +33,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.picketlink.idm.PartitionManager;
 import org.wildfly.test.integration.security.picketlink.idm.entities.AbstractCredentialTypeEntity;
@@ -64,6 +65,7 @@ import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STO
  */
 @RunWith(Arquillian.class)
 @ServerSetup(JPAEMFFromModuleBasedPartitionManagerTestCase.IdentityManagementServerSetupTask.class)
+@Ignore
 public class JPAEMFFromModuleBasedPartitionManagerTestCase extends AbstractBasicIdentityManagementTestCase {
 
     static final String PARTITION_MANAGER_JNDI_NAME = "picketlink/JPAEMFModuleBasedPartitionManager";
