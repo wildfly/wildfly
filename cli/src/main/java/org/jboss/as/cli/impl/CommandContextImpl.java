@@ -640,7 +640,7 @@ class CommandContextImpl implements CommandContext, ModelControllerClientFactory
                 if(t1.getLocalizedMessage() != null) {
                     buf.append(": ").append(t1.getLocalizedMessage());
                 } else {
-                    t1.printStackTrace();
+                    buf.append(": ").append(t1.getClass().getName());
                 }
                 t1 = t1.getCause();
             }
