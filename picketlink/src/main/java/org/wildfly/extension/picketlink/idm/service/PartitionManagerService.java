@@ -42,11 +42,12 @@ import org.jboss.msc.value.ImmediateValue;
 import org.picketlink.idm.PartitionManager;
 import org.picketlink.idm.config.IdentityConfigurationBuilder;
 import org.picketlink.idm.internal.DefaultPartitionManager;
+import org.wildfly.extension.picketlink.idm.IDMExtension;
 
 import static org.wildfly.extension.picketlink.PicketLinkLogger.ROOT_LOGGER;
 
 /**
- * <p> This {@link Service} starts the {@link PartitionManager} using the configuration loaded from the domain model and publishes it in JNDI.
+ * <p> This {@link org.jboss.msc.service.Service} starts the {@link org.picketlink.idm.PartitionManager} using the configuration loaded from the domain model and publishes it in JNDI.
  * </p>
  *
  * @author <a href="mailto:sthorger@redhat.com">Stian Thorgersen</a>
@@ -67,11 +68,11 @@ public class PartitionManagerService implements Service<PartitionManager> {
     }
 
     public static ServiceName createServiceName(String alias) {
-        return ServiceName.JBOSS.append(SERVICE_NAME_PREFIX, alias);
+        return ServiceName.JBOSS.append(IDMExtension.SUBSYSTEM_NAME, SERVICE_NAME_PREFIX, alias);
     }
 
     public static ServiceName createIdentityStoreServiceName(String name, String configurationName, String storeType) {
-        return ServiceName.JBOSS.append(name, configurationName, storeType);
+        return ServiceName.JBOSS.append(IDMExtension.SUBSYSTEM_NAME, name, configurationName, storeType);
     }
 
     @Override

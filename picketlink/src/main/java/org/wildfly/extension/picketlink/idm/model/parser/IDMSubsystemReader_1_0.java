@@ -34,11 +34,11 @@ import org.wildfly.extension.picketlink.idm.model.JPAStoreResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.LDAPStoreAttributeResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.LDAPStoreMappingResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.LDAPStoreResourceDefinition;
-import org.wildfly.extension.picketlink.idm.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.idm.model.PartitionManagerResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.SupportedTypeResourceDefinition;
 import org.wildfly.extension.picketlink.idm.model.SupportedTypesResourceDefinition;
-import org.wildfly.extension.picketlink.idm.model.XMLElement;
+import org.wildfly.extension.picketlink.common.model.XMLElement;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -51,17 +51,17 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.parsing.ParseUtils.requireNoAttributes;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.COMMON_NAME;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.FILE_STORE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.IDENTITY_CONFIGURATION;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.JPA_STORE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.LDAP_STORE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.LDAP_STORE_ATTRIBUTE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.LDAP_STORE_MAPPING;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.PARTITION_MANAGER;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.SUPPORTED_TYPE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.SUPPORTED_TYPES;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_NAME;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.FILE_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_CONFIGURATION;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_ATTRIBUTE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_MAPPING;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.PARTITION_MANAGER;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORTED_TYPE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORTED_TYPES;
 
 /**
  * <p> XML Reader for the subsystem schema, version 1.0. </p>
@@ -318,7 +318,7 @@ public class IDMSubsystemReader_1_0 implements XMLStreamConstants, XMLElementRea
      *
      * @return A ModelNode instance populated.
      *
-     * @throws XMLStreamException
+     * @throws javax.xml.stream.XMLStreamException
      */
     private ModelNode parseConfig(XMLExtendedStreamReader reader, ModelElement xmlElement, String key, ModelNode lastNode,
                                          List<SimpleAttributeDefinition> attributes, List<ModelNode> addOperations) throws XMLStreamException {
