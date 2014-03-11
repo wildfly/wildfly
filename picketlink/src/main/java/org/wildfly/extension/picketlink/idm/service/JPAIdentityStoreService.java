@@ -24,8 +24,6 @@ package org.wildfly.extension.picketlink.idm.service;
 
 import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.engine.transaction.jta.platform.internal.JBossAppServerJtaPlatform;
-import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguration;
-import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfigurationBuilder;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -36,6 +34,8 @@ import org.picketlink.idm.jpa.internal.JPAIdentityStore;
 import org.picketlink.idm.spi.ContextInitializer;
 import org.picketlink.idm.spi.IdentityContext;
 import org.picketlink.idm.spi.IdentityStore;
+import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguration;
+import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfigurationBuilder;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -56,9 +56,9 @@ import java.util.Map;
 import java.util.Set;
 
 import static java.lang.reflect.Modifier.isAbstract;
+import static org.picketlink.common.util.StringUtil.isNullOrEmpty;
 import static org.wildfly.extension.picketlink.PicketLinkLogger.ROOT_LOGGER;
 import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
-import static org.picketlink.common.util.StringUtil.isNullOrEmpty;
 
 /**
  * @author Pedro Igor
