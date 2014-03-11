@@ -27,12 +27,13 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  * @since Mar 16, 2012
  */
-public class LDAPStoreAttributeResourceDefinition extends AbstractResourceDefinition {
+public class LDAPStoreAttributeResourceDefinition extends AbstractIDMResourceDefinition {
 
     public static final SimpleAttributeDefinition NAME = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_ATTRIBUTE_NAME.getName(), ModelType.STRING, false)
         .setAllowExpression(true)

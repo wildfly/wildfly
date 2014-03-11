@@ -1456,12 +1456,12 @@
             <maven-resource group="org.picketlink" artifact="picketlink-impl"/>
         </module-def>
 
-        <module-def name="org.picketlink.federation.bindings">
-            <maven-resource group="org.picketlink.distribution" artifact="picketlink-jbas7"/>
-        </module-def>
-
         <module-def name="org.picketlink.federation">
             <maven-resource group="org.picketlink" artifact="picketlink-federation"/>
+        </module-def>
+
+        <module-def name="org.picketlink.federation.bindings">
+            <maven-resource group="org.picketlink.distribution" artifact="picketlink-wildfly8"/>
         </module-def>
 
         <module-def name="org.picketlink.idm.api">

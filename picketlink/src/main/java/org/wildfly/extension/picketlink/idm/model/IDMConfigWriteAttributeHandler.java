@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
