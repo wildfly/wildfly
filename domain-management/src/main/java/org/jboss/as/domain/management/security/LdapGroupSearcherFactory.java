@@ -209,7 +209,7 @@ public class LdapGroupSearcherFactory {
             if (groupRef != null && groupRef.size() > 0) {
                 NamingEnumeration<String> groupRefValues = (NamingEnumeration<String>) groupRef.getAll();
                 while (groupRefValues.hasMore()) {
-                    String distingushedName = groupRefValues.next();
+                    String distingushedName = groupRefValues.next().replace("\\", "\\\\").replace("/", "\\/");
                     SECURITY_LOGGER.tracef("Group found with distinguishedName=%s", distingushedName);
                     String simpleName = null;
                     if (groupNameAttribute != null) {
