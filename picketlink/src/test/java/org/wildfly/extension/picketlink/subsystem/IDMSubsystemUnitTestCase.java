@@ -23,13 +23,13 @@
 package org.wildfly.extension.picketlink.subsystem;
 
 import org.jboss.as.controller.RunningMode;
-import org.wildfly.extension.picketlink.idm.IDMExtension;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.junit.Test;
+import org.wildfly.extension.picketlink.idm.IDMExtension;
 
 import java.io.IOException;
 
@@ -53,7 +53,6 @@ public class IDMSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
     public void testRuntime() throws Exception {
         System.setProperty("jboss.server.data.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
-        System.setProperty("jboss.home.dir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jboss.server.server.dir", System.getProperty("java.io.tmpdir"));
 
         KernelServicesBuilder builder = createKernelServicesBuilder(new AdditionalInitialization() {
@@ -74,5 +73,9 @@ public class IDMSubsystemUnitTestCase extends AbstractSubsystemBaseTest {
         assertTrue(mainServices.isSuccessfulBoot());
     }
 
+    @Test
+    public void testExpressions() throws Exception {
+        standardSubsystemTest("identity-management-subsystem-expressions-1.0.xml");
+    }
 
 }

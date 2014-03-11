@@ -33,11 +33,6 @@ import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
-import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguration;
-import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfigurationBuilder;
-import org.wildfly.extension.picketlink.idm.service.FileIdentityStoreService;
-import org.wildfly.extension.picketlink.idm.service.JPAIdentityStoreService;
-import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
@@ -59,6 +54,12 @@ import org.picketlink.idm.config.LDAPStoreConfigurationBuilder;
 import org.picketlink.idm.config.NamedIdentityConfigurationBuilder;
 import org.picketlink.idm.model.AttributedType;
 import org.picketlink.idm.model.Relationship;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfiguration;
+import org.wildfly.extension.picketlink.idm.config.JPAStoreSubsystemConfigurationBuilder;
+import org.wildfly.extension.picketlink.idm.service.FileIdentityStoreService;
+import org.wildfly.extension.picketlink.idm.service.JPAIdentityStoreService;
+import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
 import javax.transaction.TransactionManager;
 import java.util.List;
@@ -66,15 +67,15 @@ import java.util.List;
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.FILE_STORE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.IDENTITY_CONFIGURATION;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.JPA_STORE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.LDAP_STORE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.LDAP_STORE_ATTRIBUTE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.LDAP_STORE_MAPPING;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.SUPPORTED_TYPE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.SUPPORTED_TYPES;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.FILE_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_CONFIGURATION;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_ATTRIBUTE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_MAPPING;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORTED_TYPE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORTED_TYPES;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -203,7 +204,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     typeName = AttributedTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw MESSAGES.idmTypeNotProvided(LDAP_STORE_MAPPING.getName());
+                    throw MESSAGES.typeNotProvided(LDAP_STORE_MAPPING.getName());
                 }
 
                 LDAPMappingConfigurationBuilder storeMapping = storeConfig
@@ -280,8 +281,8 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         fileStoreBuilder.asyncWriteThreadPool(asyncWriteThreadPool.asInt());
 
         FileIdentityStoreService storeService = new FileIdentityStoreService(fileStoreBuilder, workingDir, relativeTo);
-        ServiceName storeServiceName = FileIdentityStoreService
-            .createServiceName(partitionManagerService.getName(), configurationName, ModelElement.FILE_STORE.getName());
+        ServiceName storeServiceName = PartitionManagerService
+            .createIdentityStoreServiceName(partitionManagerService.getName(), configurationName, ModelElement.FILE_STORE.getName());
         ServiceBuilder<FileIdentityStoreService> storeServiceBuilder = context.getServiceTarget()
             .addService(storeServiceName, storeService);
 
@@ -384,7 +385,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                     } else if (codeNode.isDefined()) {
                         typeName = AttributedTypeEnum.forType(codeNode.asString());
                     } else {
-                        throw MESSAGES.idmTypeNotProvided(SUPPORTED_TYPE.getName());
+                        throw MESSAGES.typeNotProvided(SUPPORTED_TYPE.getName());
                     }
 
                     ModelNode moduleNode = SupportedTypeResourceDefinition.MODULE.resolveModelAttribute(context, supportedType);
@@ -416,7 +417,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     typeName = CredentialTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw MESSAGES.idmTypeNotProvided(IDENTITY_STORE_CREDENTIAL_HANDLER.getName());
+                    throw MESSAGES.typeNotProvided(IDENTITY_STORE_CREDENTIAL_HANDLER.getName());
                 }
 
                 storeConfig.addCredentialHandler(loadClass(moduleNode, typeName));

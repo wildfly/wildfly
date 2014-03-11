@@ -29,6 +29,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentResourceRemoveHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;

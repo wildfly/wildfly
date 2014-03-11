@@ -27,12 +27,13 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  * @since Mar 16, 2012
  */
-public class SupportedTypesResourceDefinition extends AbstractResourceDefinition {
+public class SupportedTypesResourceDefinition extends AbstractIDMResourceDefinition {
 
     public static final SimpleAttributeDefinition SUPPORTS_ALL = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_SUPPORTS_ALL.getName(), ModelType.BOOLEAN, true)
         .setDefaultValue(new ModelNode(false))

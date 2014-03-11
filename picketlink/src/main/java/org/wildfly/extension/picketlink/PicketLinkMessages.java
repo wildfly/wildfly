@@ -27,6 +27,7 @@ import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
+import org.picketlink.common.exceptions.ProcessingException;
 import org.picketlink.idm.config.SecurityConfigurationException;
 
 import javax.xml.stream.XMLStreamException;
@@ -58,6 +59,12 @@ public interface PicketLinkMessages {
     @Message(id = 12503, value = "Could not load class [%s].")
     RuntimeException couldNotLoadClass(String mappingClass, @Cause Throwable e);
 
+    @Message(id = 12507, value = "No type provided for %s. You must specify a class-name or code.")
+    OperationFailedException typeNotProvided(String elementName);
+
+    @Message(id = 12514, value = "Failed to get metrics %s.")
+    OperationFailedException failedToGetMetrics(String reason);
+
     // IDM Messages
     @Message(id = 12504, value = "Entities module not found [%s].")
     SecurityConfigurationException idmJpaEntityModuleNotFound(String entityModuleName);
@@ -68,12 +75,25 @@ public interface PicketLinkMessages {
     @Message(id = 12506, value = "Could not lookup EntityManagerFactory [%s].")
     SecurityConfigurationException idmJpaEMFLookupFailed(String entityManagerFactoryJndiName);
 
-    @Message(id = 12507, value = "No type provided for %s. You must specify a class-name or code.")
-    OperationFailedException idmTypeNotProvided(String elementName);
-
-    @Message(id = 12508, value = "You post provide at least one identity configuration.")
+    @Message(id = 12508, value = "You must provide at least one identity configuration.")
     OperationFailedException idmNoIdentityConfigurationProvided();
 
-    @Message(id = 12509, value = "You post provide at least one identity store for identity configuration [%s].")
+    @Message(id = 12509, value = "You must provide at least one identity store for identity configuration [%s].")
     OperationFailedException idmNoIdentityStoreProvided(String identityConfiguration);
+
+    // Federation Messages
+    @Message(id = 12510, value = "No Identity Provider configuration found for federation [%s]. ")
+    IllegalStateException federationIdentityProviderNotConfigured(String federationAlias);
+
+    @Message(id = 12511, value = "No type provided for the handler. You must specify a class-name or code.")
+    OperationFailedException federationHandlerTypeNotProvided();
+
+    @Message(id = 12512, value = "Could not parse default STS configuration.")
+    RuntimeException federationCouldNotParseSTSConfig(@Cause Throwable t);
+
+    @Message(id = 12513, value = "Required attribute [%s] for [%s].")
+    OperationFailedException federationRequiredAttribute(String attributeName, String configuration);
+
+    @Message(id = 12515, value = "Could not configure SAML Metadata to deployment [%s].")
+    IllegalStateException federationSAMLMetadataConfigError(String deploymentName, @Cause ProcessingException e);
 }

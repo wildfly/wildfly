@@ -41,6 +41,6 @@ public class IDMSubsystemAdd extends AbstractAddStepHandler {
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        PicketLinkLogger.ROOT_LOGGER.activatingSubsystem();
+        PicketLinkLogger.ROOT_LOGGER.activatingSubsystem("Identity Management");
     }
 }

@@ -27,19 +27,20 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  * @since Mar 16, 2012
  */
-public class LDAPStoreMappingResourceDefinition extends AbstractResourceDefinition {
+public class LDAPStoreMappingResourceDefinition extends AbstractIDMResourceDefinition {
 
     public static final SimpleAttributeDefinition CLASS_NAME = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_CLASS_NAME.getName(), ModelType.STRING, true)
         .setAllowExpression(true)
         .setAlternatives(ModelElement.COMMON_CODE.getName())
         .build();
     public static final SimpleAttributeDefinition CODE = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_CODE.getName(), ModelType.STRING, true)
-        .setValidator(new EnumValidator<>(AttributedTypeEnum.class, true, true))
+        .setValidator(new EnumValidator<AttributedTypeEnum>(AttributedTypeEnum.class, true, true))
         .setAllowExpression(true)
         .setAlternatives(ModelElement.COMMON_CLASS_NAME.getName())
         .build();

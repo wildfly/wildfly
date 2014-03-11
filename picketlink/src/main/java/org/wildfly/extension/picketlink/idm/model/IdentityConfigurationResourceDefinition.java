@@ -23,12 +23,13 @@
 package org.wildfly.extension.picketlink.idm.model;
 
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
  * @since Mar 16, 2012
  */
-public class IdentityConfigurationResourceDefinition extends AbstractResourceDefinition {
+public class IdentityConfigurationResourceDefinition extends AbstractIDMResourceDefinition {
 
     public static final IdentityConfigurationResourceDefinition INSTANCE = new IdentityConfigurationResourceDefinition();
 

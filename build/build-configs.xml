@@ -135,8 +135,8 @@
            paramOutputFile="${generated.configs.examples}/standalone-genericjms.xml"/>
       <generate-server-config
            paramTemplateFile="configuration/standalone/template.xml"
-           paramSubsystemsFile="configuration/examples/subsystems-picketlink-identity-management.xml"
-           paramOutputFile="${generated.configs.examples}/standalone-picketlink-identity-management.xml"/>
+           paramSubsystemsFile="configuration/examples/subsystems-picketlink.xml"
+           paramOutputFile="${generated.configs.examples}/standalone-picketlink.xml"/>
     </target>
 
 

@@ -23,12 +23,13 @@
 package org.wildfly.extension.picketlink.idm.model.parser;
 
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.wildfly.extension.picketlink.idm.Namespace;
-import org.wildfly.extension.picketlink.idm.model.ModelElement;
-import org.wildfly.extension.picketlink.idm.model.XMLElement;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.common.model.XMLElement;
+import org.wildfly.extension.picketlink.common.parser.ModelXMLElementWriter;
+import org.wildfly.extension.picketlink.idm.Namespace;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -37,17 +38,17 @@ import java.util.List;
 import java.util.Map;
 
 import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.COMMON_NAME;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.FILE_STORE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.IDENTITY_CONFIGURATION;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.PARTITION_MANAGER;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.JPA_STORE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.LDAP_STORE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.LDAP_STORE_ATTRIBUTE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.LDAP_STORE_MAPPING;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.SUPPORTED_TYPE;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.SUPPORTED_TYPES;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_NAME;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.FILE_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_CONFIGURATION;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.JPA_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_ATTRIBUTE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.LDAP_STORE_MAPPING;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.PARTITION_MANAGER;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORTED_TYPE;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORTED_TYPES;
 
 /**
  * <p> XML Writer for the subsystem schema, version 1.0. </p>

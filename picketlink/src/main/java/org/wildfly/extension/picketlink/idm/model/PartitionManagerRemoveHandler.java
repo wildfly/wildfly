@@ -32,7 +32,7 @@ import org.jboss.dmr.Property;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
-import static org.wildfly.extension.picketlink.idm.model.ModelElement.IDENTITY_CONFIGURATION;
+import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_CONFIGURATION;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>

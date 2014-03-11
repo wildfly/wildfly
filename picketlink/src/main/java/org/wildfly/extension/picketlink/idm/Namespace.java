@@ -71,7 +71,7 @@ public enum Namespace {
     }
 
     /**
-     * Converts the specified uri to a {@link Namespace}.
+     * Converts the specified uri to a {@link org.wildfly.extension.picketlink.idm.Namespace}.
      *
      * @param uri a namespace uri
      *

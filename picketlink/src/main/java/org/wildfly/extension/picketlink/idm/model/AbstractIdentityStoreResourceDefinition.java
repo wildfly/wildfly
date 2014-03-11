@@ -27,8 +27,9 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 
-public abstract class AbstractIdentityStoreResourceDefinition extends AbstractResourceDefinition {
+public abstract class AbstractIdentityStoreResourceDefinition extends AbstractIDMResourceDefinition {
 
     public static final SimpleAttributeDefinition SUPPORT_ATTRIBUTE = new SimpleAttributeDefinitionBuilder(ModelElement.IDENTITY_STORE_SUPPORT_ATTRIBUTE.getName(), ModelType.BOOLEAN, true)
         .setDefaultValue(new ModelNode(true))

@@ -24,10 +24,13 @@ package org.wildfly.extension.picketlink;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
+import org.picketlink.identity.federation.core.audit.PicketLinkAuditEventType;
 
+import static org.jboss.logging.Logger.Level.ERROR;
 import static org.jboss.logging.Logger.Level.INFO;
 
 /**
@@ -45,10 +48,22 @@ public interface PicketLinkLogger extends BasicLogger {
     PicketLinkLogger ROOT_LOGGER = Logger.getMessageLogger(PicketLinkLogger.class, PicketLinkLogger.class.getPackage().getName());
 
     @LogMessage(level = INFO)
-    @Message(id = 21200, value = "Activating PicketLink Subsystem")
-    void activatingSubsystem();
+    @Message(id = 21200, value = "Activating PicketLink %s Subsystem")
+    void activatingSubsystem(String name);
+
+    @LogMessage(level = INFO)
+    @Message(id = 21201, value = "Configuring PicketLink Federation for deployment [%s]")
+    void federationConfiguringDeployment(String deploymentName);
 
     @LogMessage(level = INFO)
     @Message(id = 21299, value = "Bound [%s] to [%s]")
     void boundToJndi(String alias, String jndiName);
+
+    @LogMessage(level = INFO)
+    @Message(id = 21300, value = "Ignoring unexpected event type [%s]")
+    void federationIgnoringAuditEvent(PicketLinkAuditEventType eventType);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 21301, value = "Error while configuring the metrics collector. Metrics will not be collected.")
+    void federationErrorCollectingMetric(@Cause Throwable t);
 }

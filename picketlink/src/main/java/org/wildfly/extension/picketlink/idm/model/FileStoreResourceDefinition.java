@@ -28,6 +28,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
+import org.wildfly.extension.picketlink.common.model.ModelElement;
 
 import java.io.File;
 
@@ -41,7 +42,7 @@ public class FileStoreResourceDefinition extends AbstractIdentityStoreResourceDe
         .setDefaultValue(new ModelNode().set("picketlink" + File.separatorChar + "idm"))
         .setAllowExpression(true)
         .build();
-    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelElement.FILE_STORE_RELATIVE_TO.getName(), ModelType.STRING, true)
+    public static final SimpleAttributeDefinition RELATIVE_TO = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_RELATIVE_TO.getName(), ModelType.STRING, true)
         .setDefaultValue(new ModelNode().set(ServerEnvironment.SERVER_DATA_DIR))
         .setAllowExpression(true)
         .build();

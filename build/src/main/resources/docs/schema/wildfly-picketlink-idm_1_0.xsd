@@ -20,16 +20,15 @@
             attributeFormDefault="unqualified"
             version="1.0">
 
-  <!-- The subsystem root element -->
+    <!-- The picketlink identity management subsystem root element -->
     <xsd:element name="subsystem" type="subsystemType"/>
 
     <xsd:complexType name="subsystemType">
-        <xsd:sequence>
-            <xsd:element name="partition-manager" type="partitionManagerType" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
+      <xsd:sequence>
+         <xsd:element name="partition-manager" type="partitionManagerType" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
     </xsd:complexType>
 
-    <!-- Identity Management Domain Model -->
     <xsd:complexType name="partitionManagerType">
         <xsd:annotation>
             <xsd:documentation>Defines the Partition Manager type.</xsd:documentation>
@@ -134,7 +133,7 @@
         <xsd:annotation>
             <xsd:documentation>The credential-handler element schema.</xsd:documentation>
         </xsd:annotation>
-        <xsd:attribute name="class-name" type="xsd:string" use="required">
+        <xsd:attribute name="class-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>Defines a credential handler type that should be supported by a identity store.
                 </xsd:documentation>
@@ -277,7 +276,7 @@
         <xsd:sequence>
             <xsd:element name="attribute" type="attributeType" minOccurs="1" maxOccurs="unbounded" nillable="false"/>
         </xsd:sequence>
-        <xsd:attribute name="class-name" type="xsd:string" use="required">
+        <xsd:attribute name="class-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>Defines a type that should be supported by a identity store.</xsd:documentation>
             </xsd:annotation>
