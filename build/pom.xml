@@ -1972,7 +1972,7 @@
 
                 <dependency>
                     <groupId>org.picketlink.distribution</groupId>
-                    <artifactId>picketlink-jbas7</artifactId>
+                    <artifactId>picketlink-wildfly8</artifactId>
                 </dependency>
 
                 <dependency>
