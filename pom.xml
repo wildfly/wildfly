@@ -1380,7 +1380,7 @@
                 <version>${project.version}</version>
             </dependency>
 
-<dependency>
+            <dependency>
                 <groupId>org.wildfly</groupId>
                 <artifactId>wildfly-picketlink</artifactId>
                 <version>${project.version}</version>

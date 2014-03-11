@@ -32,6 +32,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.picketlink.idm.PartitionManager;
@@ -54,6 +55,7 @@ import static org.wildfly.extension.picketlink.common.model.ModelElement.SUPPORT
  */
 @RunWith(Arquillian.class)
 @ServerSetup({LdapServerSetupTask.class, LDAPBasedPartitionManagerTestCase.IdentityManagementServerSetupTask.class})
+@Ignore
 public class LDAPBasedPartitionManagerTestCase extends AbstractBasicIdentityManagementTestCase {
 
     static final String PARTITION_MANAGER_JNDI_NAME = "picketlink/LDAPBasedPartitionManager";

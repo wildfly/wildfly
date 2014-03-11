@@ -32,6 +32,7 @@ import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.picketlink.idm.PartitionManager;
@@ -50,6 +51,7 @@ import static org.junit.Assert.assertTrue;
 @ServerSetup({
     MultipleIdentityManagementConfigurationTestCase.IdentityManagementServerSetupTask.class
 })
+@Ignore
 public class MultipleIdentityManagementConfigurationTestCase {
 
     @Resource(mappedName = FileBasedPartitionManagerTestCase.PARTITION_MANAGER_JNDI_NAME)
