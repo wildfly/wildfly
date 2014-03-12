@@ -22,11 +22,20 @@
 
 package org.jboss.as.controller;
 
+import static org.jboss.as.controller.registry.AttributeAccess.Flag.RESTART_ALL_SERVICES;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import junit.framework.Assert;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -48,13 +57,13 @@ public class PrimitiveListAttributeDefinitionUnitTestCase {
         op.get("test").add(2).add("${test:1}");
 
         ModelNode validated = ld.validateOperation(op);
-        Assert.assertEquals(op.get("test").get(0), validated.get(0));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test").get(1).asString()), validated.get(1));
+        assertEquals(op.get("test").get(0), validated.get(0));
+        assertEquals(new ModelNode().setExpression(op.get("test").get(1).asString()), validated.get(1));
 
         ModelNode model = new ModelNode();
         ld.validateAndSet(op, model);
-        Assert.assertEquals(op.get("test").get(0), model.get("test").get(0));
-        Assert.assertEquals(new ModelNode().setExpression(op.get("test").get(1).asString()), model.get("test").get(1));
+        assertEquals(op.get("test").get(0), model.get("test").get(0));
+        assertEquals(new ModelNode().setExpression(op.get("test").get(1).asString()), model.get("test").get(1));
 
         ld = PrimitiveListAttributeDefinition.Builder.of("test", ModelType.PROPERTY)
                 .setAllowExpression(true)
@@ -66,17 +75,55 @@ public class PrimitiveListAttributeDefinitionUnitTestCase {
 
         try {
             ld.validateOperation(op);
-            org.junit.Assert.fail("Did not reject " + op);
+            fail("Did not reject " + op);
         } catch (IllegalStateException good) {
             //
         }
 
         try {
             ld.validateAndSet(op, new ModelNode());
-            org.junit.Assert.fail("Did not reject " + op);
+            fail("Did not reject " + op);
         } catch (IllegalStateException good) {
             //
         }
 
+    }
+
+    @Test
+    public void testBuilderCopyPreservesElementValidator() throws OperationFailedException {
+        PrimitiveListAttributeDefinition original = PrimitiveListAttributeDefinition.Builder.of("test", ModelType.STRING)
+                .setValidator(new StringLengthValidator(1))
+                .build();
+
+        // will use the same validator than original
+        PrimitiveListAttributeDefinition copy = new PrimitiveListAttributeDefinition.Builder(original)
+                // add a flag to distinguish the copy from the original
+                .setFlags(RESTART_ALL_SERVICES)
+                .build();
+
+        // use a different validator than original & copy
+        PrimitiveListAttributeDefinition copyWithOtherValidator = new PrimitiveListAttributeDefinition.Builder(original)
+                // add a flag to distinguish the copy from the original
+                .setFlags(RESTART_ALL_SERVICES)
+                .setValidator(new StringLengthValidator(Integer.MAX_VALUE))
+                .build();
+
+        assertFalse(original.getFlags().contains(RESTART_ALL_SERVICES));
+        assertTrue(copy.getFlags().contains(RESTART_ALL_SERVICES));
+        assertTrue(copyWithOtherValidator.getFlags().contains(RESTART_ALL_SERVICES));
+
+        assertSame(original.getElementValidator(), copy.getElementValidator());
+        assertNotSame(original.getElementValidator(), copyWithOtherValidator.getElementValidator());
+
+        ModelNode operation = new ModelNode();
+        operation.get("test").add("foo");
+
+        original.validateOperation(operation);
+        copy.validateOperation(operation);
+        try {
+            copyWithOtherValidator.validateOperation(operation);
+            fail("the operation must not be validated");
+        } catch (OperationFailedException e) {
+        }
     }
 }
