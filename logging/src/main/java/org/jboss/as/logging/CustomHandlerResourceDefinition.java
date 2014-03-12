@@ -39,16 +39,11 @@ class CustomHandlerResourceDefinition extends AbstractHandlerDefinition {
     public static final String CUSTOM_HANDLER = "custom-handler";
     static final PathElement CUSTOM_HANDLE_PATH = PathElement.pathElement(CUSTOM_HANDLER);
 
-    static final AttributeDefinition[] READ_ONLY_ATTRIBUTES = {CLASS, MODULE};
-    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, NAMED_FORMATTER, PROPERTIES);
-    // Add attributes are a combination of writable and read-only attributes
-    static final AttributeDefinition[] ADD_ATTRIBUTES = Logging.join(WRITABLE_ATTRIBUTES, READ_ONLY_ATTRIBUTES);
+    static final AttributeDefinition[] ATTRIBUTES = Logging.join(DEFAULT_ATTRIBUTES, CLASS, MODULE, NAMED_FORMATTER, PROPERTIES);
 
     public CustomHandlerResourceDefinition(final boolean includeLegacyAttributes) {
         super(CUSTOM_HANDLE_PATH, null,
-                (includeLegacyAttributes ? Logging.join(ADD_ATTRIBUTES, LEGACY_ATTRIBUTES) : ADD_ATTRIBUTES),
-                READ_ONLY_ATTRIBUTES,
-                (includeLegacyAttributes ? Logging.join(WRITABLE_ATTRIBUTES, LEGACY_ATTRIBUTES) : WRITABLE_ATTRIBUTES));
+                (includeLegacyAttributes ? Logging.join(ATTRIBUTES, LEGACY_ATTRIBUTES) : ATTRIBUTES));
     }
 
     @Override
