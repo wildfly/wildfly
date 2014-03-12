@@ -46,7 +46,7 @@ public class JSPConfig {
             servletInfo = null;
         } else {
 
-            final io.undertow.servlet.api.ServletInfo jspServlet = new ServletInfo("Default JSP Servlet", JspServlet.class)
+            final io.undertow.servlet.api.ServletInfo jspServlet = new ServletInfo("jsp", JspServlet.class)
                     .addMapping("*.jsp")
                     .addMapping("*.jspx");
 
