@@ -71,7 +71,6 @@ public class CacheConfigurationService extends AbstractCacheConfigurationService
                 throw new IllegalArgumentException(e);
             }
         }
-        this.builder.jmxStatistics().enabled(this.dependencies.getCacheContainer().getCacheManagerConfiguration().globalJmxStatistics().enabled());
         TransactionManager tm = this.dependencies.getTransactionManager();
         if (tm != null) {
             this.builder.transaction().transactionManagerLookup(new TransactionManagerProvider(tm));
