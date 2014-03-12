@@ -305,10 +305,6 @@ public class ManagementClient implements AutoCloseable, Closeable {
         if (correctedName.startsWith("/")) {
             correctedName = correctedName.substring(1);
         }
-        if (correctedName.indexOf(".") != -1) {
-            correctedName = correctedName.substring(0,
-                    correctedName.lastIndexOf("."));
-        }
         return correctedName;
     }
 
