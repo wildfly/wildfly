@@ -54,11 +54,14 @@ import org.jboss.dmr.Property;
 public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
 
     public static final String OPERATION_NAME = ADD;
-
-    private final HostFileRepository fileRepository;
+    public static final OperationStepHandler INSTANCE = new ServerGroupDeploymentAddHandler();
 
     public ServerGroupDeploymentAddHandler(final HostFileRepository fileRepository) {
-        this.fileRepository = fileRepository;
+        this();
+    }
+
+    protected ServerGroupDeploymentAddHandler() {
+        //
     }
 
     /**
@@ -75,8 +78,6 @@ public class ServerGroupDeploymentAddHandler implements OperationStepHandler {
         for (ModelNode content : deployment.require(CONTENT).asList()) {
             if ((content.hasDefined(CONTENT_HASH.getName()))) {
                 CONTENT_HASH.validateOperation(content);
-                // Ensure the local repo has the files
-                fileRepository.getDeploymentFiles(CONTENT_HASH.resolveModelAttribute(context, content).asBytes());
             }
         }
 

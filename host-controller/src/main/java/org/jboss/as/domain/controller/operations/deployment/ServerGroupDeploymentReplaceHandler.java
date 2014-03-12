@@ -26,6 +26,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
 import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 
 import java.util.NoSuchElementException;
 
@@ -85,9 +86,7 @@ public class ServerGroupDeploymentReplaceHandler implements OperationStepHandler
         final ModelNode deployment = domainDeployment.getModel();
         for (ModelNode content : deployment.require(CONTENT).asList()) {
             if ((content.hasDefined(HASH))) {
-                byte[] hash = content.require(HASH).asBytes();
-                // Ensure the local repo has the files
-                fileRepository.getDeploymentFiles(hash);
+                CONTENT_HASH.validateOperation(content);
             }
         }
 
