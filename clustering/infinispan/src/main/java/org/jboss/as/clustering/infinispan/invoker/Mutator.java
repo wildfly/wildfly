@@ -22,6 +22,9 @@
 package org.jboss.as.clustering.infinispan.invoker;
 
 import org.infinispan.Cache;
+import org.infinispan.context.Flag;
+import org.infinispan.distribution.DistributionManager;
+import org.infinispan.remoting.transport.Address;
 
 /**
  * Indicates that the value represented by this object has changed and needs to be replicated.
@@ -47,7 +50,21 @@ public interface Mutator {
 
         @Override
         public V invoke(Cache<K, V> cache) {
-            return cache.replace(this.key, this.value);
+            return this.getCache(cache).replace(this.key, this.value);
+        }
+
+        private Cache<K, V> getCache(Cache<K, V> cache) {
+            DistributionManager dist = cache.getAdvancedCache().getDistributionManager();
+            if (dist != null) {
+                Address localAddress = cache.getCacheManager().getAddress();
+                Address address = dist.getPrimaryLocation(this.key);
+                if (!localAddress.equals(address)) {
+                    // If we don't own this cache entry, replicate synchronously since
+                    // subsequent requests will likely be directed to the owning node
+                    return cache.getAdvancedCache().withFlags(Flag.FORCE_SYNCHRONOUS);
+                }
+            }
+            return cache;
         }
     }
 
