@@ -184,15 +184,15 @@ public class WeldClassFileInfo implements ClassFileInfo {
     }
 
     private String getPackageName(DotName name) {
-        // TODO https://issues.jboss.org/browse/JANDEX-20
-        // String packageName;
-        // if (name.isComponentized()) {
-        // packageName = name.prefix().toString();
-        // } else {
-        // packageName = name.local().substring(0, name.local().lastIndexOf("."));
-        // }
-        // return packageName;
-        return name.toString().substring(0, name.toString().lastIndexOf("."));
+        if (name.isComponentized()) {
+            return name.prefix().toString();
+        } else {
+            final int lastIndex = name.local().lastIndexOf(".");
+            if (lastIndex == -1) {
+                return name.local();
+            }
+            return name.local().substring(0, name.local().lastIndexOf("."));
+        }
     }
 
     /**
