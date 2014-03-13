@@ -49,8 +49,11 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingMessages;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.ValueManagedReferenceFactory;
+import org.jboss.as.naming.context.external.ExternalContexts;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
+import org.jboss.as.naming.service.ExternalContextBinderService;
+import org.jboss.as.naming.service.ExternalContextsService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -247,7 +250,7 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         environment.put(ExternalContextObjectFactory.INITIAL_CONTEXT_CLASS, className);
         environment.put(ExternalContextObjectFactory.INITIAL_CONTEXT_MODULE, moduleID);
 
-        final BinderService binderService = new BinderService(name, objectFactoryClassInstance);
+        final ExternalContextBinderService binderService = new ExternalContextBinderService(name, objectFactoryClassInstance);
         binderService.getManagedObjectInjector().inject(new ContextListAndJndiViewManagedReferenceFactory() {
             @Override
             public ManagedReference getReference() {
@@ -277,7 +280,8 @@ public class NamingBindingAdd extends AbstractAddStepHandler {
         });
 
         ServiceBuilder<ManagedReferenceFactory> builder = serviceTarget.addService(bindInfo.getBinderServiceName(), binderService)
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector());
+                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binderService.getNamingStoreInjector())
+                .addDependency(ExternalContextsService.SERVICE_NAME, ExternalContexts.class, binderService.getExternalContextsInjector());
 
         if (verificationHandler != null) {
             builder.addListener(verificationHandler);

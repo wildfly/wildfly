@@ -27,10 +27,14 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.naming.NamingContext;
 import org.jboss.as.naming.NamingStore;
+import org.jboss.as.naming.context.external.ExternalContexts;
+import org.jboss.as.naming.context.external.ExternalContextsNavigableSet;
 import org.jboss.as.naming.deployment.ContextNames;
+import org.jboss.as.naming.deployment.ExternalContextsProcessor;
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.management.JndiViewExtensionRegistry;
 import org.jboss.as.naming.service.DefaultNamespaceContextSelectorService;
+import org.jboss.as.naming.service.ExternalContextsService;
 import org.jboss.as.naming.service.NamingService;
 import org.jboss.as.naming.service.NamingStoreService;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -48,6 +52,7 @@ import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  * @author Emanuel Muckenhuber
  * @author John Bailey
+ * @author Eduardo Martins
  */
 public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
@@ -109,8 +114,13 @@ public class NamingSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
         newControllers.add(target.addService(JndiViewExtensionRegistry.SERVICE_NAME, new JndiViewExtensionRegistry()).install());
 
+        // create the subsystem's external context instance, and install related Service and DUP
+        final ExternalContexts externalContexts = new ExternalContextsNavigableSet();
+        newControllers.add(target.addService(ExternalContextsService.SERVICE_NAME, new ExternalContextsService(externalContexts)).install());
+
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(NamingExtension.SUBSYSTEM_NAME, Phase.STRUCTURE, Phase.STRUCTURE_NAMING_EXTERNAL_CONTEXTS, new ExternalContextsProcessor(externalContexts));
                 processorTarget.addDeploymentProcessor(NamingExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JNDI_DEPENDENCIES, new JndiNamingDependencyProcessor());
             }
         }, OperationContext.Stage.RUNTIME);

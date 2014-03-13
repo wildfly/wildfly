@@ -68,7 +68,7 @@ public final class LookupInjectionSource extends InjectionSource {
             lookupName = this.lookupName;
         }
         final ContextNames.BindInfo bindInfo = ContextNames.bindInfoFor(applicationName, moduleName, componentName, lookupName);
-        bindInfo.setupLookupInjection(serviceBuilder, injector);
+        bindInfo.setupLookupInjection(serviceBuilder, injector, phaseContext.getDeploymentUnit());
     }
 
 
