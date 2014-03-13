@@ -135,7 +135,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
-        final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+        final CompositeIndex rootIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
         final Map<ModuleIdentifier, BeanDeploymentModule> bdmsByIdentifier = new HashMap<ModuleIdentifier, BeanDeploymentModule>();
@@ -187,9 +187,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
             final ResourceInjectionServices resourceInjectionServices = new WeldResourceInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription);
             bdm.addService(ResourceInjectionServices.class, resourceInjectionServices);
 
-            final WeldClassFileServices classFileServices = index != null ? new WeldClassFileServices(index, subDeploymentModule.getClassLoader()) : null;
-            if (classFileServices != null) {
-                bdm.addService(ClassFileServices.class, classFileServices);
+            final CompositeIndex index = subDeployment.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+            if (index != null) {
+                bdm.addService(ClassFileServices.class, new WeldClassFileServices(index, subDeploymentModule.getClassLoader()));
             }
         }
 
@@ -210,7 +210,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(),
                 eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
         final ResourceInjectionServices resourceInjectionServices = new WeldResourceInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription);
-        final WeldClassFileServices classFileServices = (index != null ? new WeldClassFileServices(index, module.getClassLoader()) : null);
+        final WeldClassFileServices classFileServices = (rootIndex != null ? new WeldClassFileServices(rootIndex, module.getClassLoader()) : null);
 
 
         rootBeanDeploymentModule.addService(EjbInjectionServices.class, ejbInjectionServices);
