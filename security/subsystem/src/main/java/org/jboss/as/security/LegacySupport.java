@@ -53,7 +53,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -424,16 +423,19 @@ class LegacySupport {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             Resource existing = context.readResource(PathAddress.EMPTY_ADDRESS);
             OperationStepHandler addHandler = context.getResourceRegistration().getSubModel(PathAddress.EMPTY_ADDRESS.append(newKeyName)).getOperationHandler(PathAddress.EMPTY_ADDRESS, "add");
-            List<ModelNode> modules = new ArrayList<ModelNode>(operation.get(VALUE).asList());
-            Collections.reverse(modules); //need to reverse it to make sure they are added in proper order
-            for (ModelNode module : modules) {
-                ModelNode addModuleOp = module.clone();
-                String code = addModuleOp.get(Constants.CODE).asString();
-                PathElement relativePath = PathElement.pathElement(newKeyName, code);
-                PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(relativePath);
-                addModuleOp.get(OP_ADDR).set(address.toModelNode());
-                addModuleOp.get(OP).set(ADD);
-                context.addStep(new ModelNode(), addModuleOp, addHandler, OperationContext.Stage.MODEL, true);
+            ModelNode value = operation.get(VALUE);
+            if (value.isDefined()) {
+                List<ModelNode> modules = new ArrayList<ModelNode>(value.asList());
+                Collections.reverse(modules); //need to reverse it to make sure they are added in proper order
+                for (ModelNode module : modules) {
+                    ModelNode addModuleOp = module.clone();
+                    String code = addModuleOp.get(Constants.CODE).asString();
+                    PathElement relativePath = PathElement.pathElement(newKeyName, code);
+                    PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR)).append(relativePath);
+                    addModuleOp.get(OP_ADDR).set(address.toModelNode());
+                    addModuleOp.get(OP).set(ADD);
+                    context.addStep(new ModelNode(), addModuleOp, addHandler, OperationContext.Stage.MODEL, true);
+                }
             }
             //remove on the end to make sure it is executed first
             for (Resource.ResourceEntry entry : existing.getChildren(newKeyName)) {

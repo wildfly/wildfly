@@ -29,12 +29,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -50,6 +51,7 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.transform.CombinedTransformer;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
@@ -85,6 +87,7 @@ public class SecurityExtension implements Extension {
 
     private static final SecuritySubsystemParser PARSER = SecuritySubsystemParser.getInstance();
     static final PathElement ACL_PATH = PathElement.pathElement(Constants.ACL, Constants.CLASSIC);
+    static final PathElement PATH_IDENTITY_TRUST_CLASSIC = PathElement.pathElement(Constants.IDENTITY_TRUST, Constants.CLASSIC);
     static final PathElement PATH_JASPI_AUTH = PathElement.pathElement(Constants.AUTHENTICATION, Constants.JASPI);
     static final PathElement PATH_CLASSIC_AUTHENTICATION = PathElement.pathElement(Constants.AUTHENTICATION, Constants.CLASSIC);
     static final PathElement SECURITY_DOMAIN_PATH = PathElement.pathElement(Constants.SECURITY_DOMAIN);
@@ -153,32 +156,60 @@ public class SecurityExtension implements Extension {
 
     private void registerTransformers(SubsystemRegistration subsystemRegistration) {
         registerTransformers_1_1_0(subsystemRegistration);
-        registerTransformers_1_2_0(subsystemRegistration);
-        registerTransformers_1_2_1(subsystemRegistration);
+        registerTransformers_1_2_x(subsystemRegistration);
     }
 
     private void registerTransformers_1_1_0(SubsystemRegistration subsystemRegistration) {
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        final ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecuritySubsystemRootResourceDefinition.DEEP_COPY_SUBJECT_MODE);
-        ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
+        final ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
         securityDomain.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, SecurityDomainResourceDefinition.CACHE_TYPE).end();
 
+        final ModulesToAttributeTransformer authClassicLoginModule = new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES);
+        registerModuleTransformer(securityDomain, PATH_CLASSIC_AUTHENTICATION, authClassicLoginModule,
+                ChildResourceTransformersRegistrar.createBuilder()
+                .addRejectExpressions(Constants.FLAG, Constants.MODULE_OPTIONS)
+                .build());
 
-        ModulesToAttributeTransformer loginModule = new ModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES);
-        registerModuleTransformer(securityDomain, PATH_CLASSIC_AUTHENTICATION, loginModule);
         final ModulesToAttributeTransformer policyModule = new ModulesToAttributeTransformer(Constants.POLICY_MODULE, Constants.POLICY_MODULES);
-        registerModuleTransformer(securityDomain, PATH_AUTHORIZATION_CLASSIC, policyModule);
+        registerModuleTransformer(securityDomain, PATH_AUTHORIZATION_CLASSIC, policyModule,
+                ChildResourceTransformersRegistrar.createBuilder()
+                .addRejectExpressions(Constants.FLAG, Constants.MODULE_OPTIONS)
+                .build());
+
         final ModulesToAttributeTransformer mappingModule = new ModulesToAttributeTransformer(Constants.MAPPING_MODULE, Constants.MAPPING_MODULES);
-        registerModuleTransformer(securityDomain, PATH_MAPPING_CLASSIC, mappingModule);
+        registerModuleTransformer(securityDomain, PATH_MAPPING_CLASSIC, mappingModule,
+                ChildResourceTransformersRegistrar.createBuilder()
+                .addRejectExpressions(Constants.TYPE, Constants.MODULE_OPTIONS)
+                .build());
+
         final ModulesToAttributeTransformer providerModule = new ModulesToAttributeTransformer(Constants.PROVIDER_MODULE, Constants.PROVIDER_MODULES);
-        registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule);
+        registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule,
+                ChildResourceTransformersRegistrar.createBuilder()
+                .addRejectExpressions(Constants.MODULE_OPTIONS)
+                .build());
 
+        final ModulesToAttributeTransformer identityTrustModule = new ModulesToAttributeTransformer(Constants.TRUST_MODULE, Constants.TRUST_MODULES);
+        registerModuleTransformer(securityDomain, PATH_IDENTITY_TRUST_CLASSIC, identityTrustModule,
+                ChildResourceTransformersRegistrar.createBuilder()
+                .addRejectExpressions(Constants.FLAG, Constants.MODULE_OPTIONS)
+                .build());
 
-        final ModulesToAttributeTransformer authModule = new ModulesToAttributeTransformer(Constants.AUTH_MODULE, Constants.AUTH_MODULES);
+        final ModulesToAttributeTransformer aclModule = new ModulesToAttributeTransformer(Constants.ACL_MODULE, Constants.ACL_MODULES);
+        registerModuleTransformer(securityDomain, ACL_PATH, aclModule,
+                ChildResourceTransformersRegistrar.createBuilder()
+                .addRejectExpressions(Constants.FLAG, Constants.MODULE_OPTIONS)
+                .build());
 
-        ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);
-        //todo check if there are cases when child is created before authentication=jaspi
-        registerModuleTransformer(jaspiReg, PATH_LOGIN_MODULE_STACK, loginModule);
+        final ModulesToAttributeTransformer authModule = new JaspiModulesToAttributeTransformer(Constants.AUTH_MODULE, Constants.AUTH_MODULES);
+        ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule,
+                ChildResourceTransformersRegistrar.createBuilder()
+                .addRejectExpressions(Constants.FLAG, Constants.MODULE_OPTIONS)
+                .addRejectIfDefined(Constants.MODULE)
+                .build());
+
+        final ModulesToAttributeTransformer authLoginModule = new JaspiModulesToAttributeTransformer(Constants.LOGIN_MODULE, Constants.LOGIN_MODULES);
+        registerModuleTransformer(jaspiReg, PATH_LOGIN_MODULE_STACK, authLoginModule, null);
 
         //reject expressions
         builder.addChildResource(VAULT_PATH).getAttributeBuilder()
@@ -186,15 +217,12 @@ public class SecurityExtension implements Extension {
                 .end();
         securityDomain.addChildResource(JSSE_PATH).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, JSSEResourceDefinition.ADDITIONAL_PROPERTIES)
-                /*.addRejectCheck(new RejectAttributeChecker.ObjectFieldsRejectAttributeChecker(
-                        Collections.singletonMap(JSSEResourceDefinition.ADDITIONAL_PROPERTIES.getName(), RejectAttributeChecker.SIMPLE_EXPRESSIONS))
-                        , JSSEResourceDefinition.ADDITIONAL_PROPERTIES)*/
                 .end();
 
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1, 1, 0));
     }
 
-    private void registerTransformers_1_2_0(SubsystemRegistration subsystemRegistration) {
+    private void registerTransformers_1_2_x(SubsystemRegistration subsystemRegistration) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         ResourceTransformationDescriptionBuilder securityDomain = builder.addChildResource(SECURITY_DOMAIN_PATH);
@@ -208,34 +236,49 @@ public class SecurityExtension implements Extension {
         registerModuleTransformer(securityDomain, PATH_MAPPING_CLASSIC, mappingModule);
         AttributeToModulesTransformer providerModule = new AttributeToModulesTransformer(Constants.PROVIDER_MODULES);
         registerModuleTransformer(securityDomain, PATH_AUDIT_CLASSIC, providerModule);
+        final AttributeToModulesTransformer identityTrustModule = new AttributeToModulesTransformer(Constants.TRUST_MODULES);
+        registerModuleTransformer(securityDomain, PATH_IDENTITY_TRUST_CLASSIC, identityTrustModule);
+        final AttributeToModulesTransformer aclModule = new AttributeToModulesTransformer(Constants.ACL_MODULES);
+        ResourceTransformationDescriptionBuilder aclBuilder = registerModuleTransformer(securityDomain, ACL_PATH, aclModule);
+        //https://issues.jboss.org/browse/WFLY-2474 acl-module was wrongly called login-module in 7.2.0
+        aclBuilder.addChildRedirection(PathElement.pathElement(Constants.ACL_MODULE), PathElement.pathElement(Constants.LOGIN_MODULE));
+
         AttributeToModulesTransformer authModule = new AttributeToModulesTransformer(Constants.AUTH_MODULES);
         ResourceTransformationDescriptionBuilder jaspiReg = registerModuleTransformer(securityDomain, PATH_JASPI_AUTH, authModule);
-        registerModuleTransformer(jaspiReg, PATH_LOGIN_MODULE_STACK, loginModule);
 
-        // the module attribute in JASPI auth-module elements is not recognized in the 1.2.0 version of the subsystem
+        // the module attribute is not recognized in the 1.2.0 version of the subsystem.
         jaspiReg.addChildResource(PathElement.pathElement(Constants.AUTH_MODULE)).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE)
                 .end();
 
+        registerModuleTransformer(jaspiReg, PATH_LOGIN_MODULE_STACK, loginModule);
+
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1,2,0));
-    }
-
-    private void registerTransformers_1_2_1(SubsystemRegistration subsystemRegistration) {
-
-        // the module attribute in JASPI auth-module elements is not recognized in the 1.2.1 version of the subsystem
-        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        ResourceTransformationDescriptionBuilder domainBuilder = builder.addChildResource(SECURITY_DOMAIN_PATH);
-        domainBuilder.addChildResource(PATH_JASPI_AUTH).addChildResource(PathElement.pathElement(Constants.AUTH_MODULE))
-                .getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE);
-
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, ModelVersion.create(1,2,1));
     }
 
-    private ResourceTransformationDescriptionBuilder registerModuleTransformer(ResourceTransformationDescriptionBuilder parent, final PathElement childPath,
-                                                                               ModulesToAttributeTransformer transformer) {
+    private ResourceTransformationDescriptionBuilder registerModuleTransformer(final ResourceTransformationDescriptionBuilder parent, final PathElement childPath,
+                                                                               final ModulesToAttributeTransformer transformer, final ChildResourceTransformersRegistrar childRegistrar) {
+        final OperationTransformer addOrWriteTransformer = new OperationTransformer() {
+            public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation)
+                    throws OperationFailedException {
+                return transformer.transformParentOperation(context, address, operation);
+            }
+        };
+
         ResourceTransformationDescriptionBuilder child = parent.addChildResource(childPath)
                 .setCustomResourceTransformer(transformer)
-                .discardOperations(ADD);
+                .addOperationTransformationOverride(ADD).setCustomOperationTransformer(addOrWriteTransformer).inheritResourceAttributeDefinitions().end()
+                .addOperationTransformationOverride(WRITE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(addOrWriteTransformer).inheritResourceAttributeDefinitions().end()
+                .addOperationTransformationOverride(UNDEFINE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(addOrWriteTransformer).inheritResourceAttributeDefinitions().end()
+                .addOperationTransformationOverride(REMOVE)
+                    .setCustomOperationTransformer(new OperationTransformer() {
+                        public TransformedOperation transformOperation(TransformationContext context, PathAddress address,
+                                ModelNode operation) throws OperationFailedException {
+                            //Record that we removed the resource and return the original operation
+                            return new TransformedOperation(operation, TransformedOperation.ORIGINAL_RESULT);
+                        }
+                    }).end();
         ResourceTransformationDescriptionBuilder childRedirectionBuilder = child.addChildRedirection(
                     PathElement.pathElement(transformer.getResourceName()), CURRENT_PATH_TRANSFORMER)
                 .setCustomResourceTransformer(ResourceTransformer.DISCARD)
@@ -249,9 +292,8 @@ public class SecurityExtension implements Extension {
                 .setCustomOperationTransformer(transformer)
                 .inheritResourceAttributeDefinitions().end();
 
-        // the module attribute in JASPI auth-module elements is not recognized in the 1.1.0 version of the subsystem
-        if (Constants.AUTH_MODULE.equals(transformer.getResourceName())) {
-            childRedirectionBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, Constants.MODULE);
+        if (childRegistrar != null) {
+            childRegistrar.registerTransformers(childRedirectionBuilder);
         }
         return child;
     }
@@ -268,30 +310,21 @@ public class SecurityExtension implements Extension {
 
     private static class ModulesToAttributeTransformer implements CombinedTransformer {
         protected final String resourceName;
-        protected final String oldName;
-        private final Map<PathAddress, Boolean> addOps = Collections.synchronizedMap(new HashMap<PathAddress, Boolean>());
+        protected final String attributeName;
 
         private ModulesToAttributeTransformer(String resourceName, String oldName) {
             this.resourceName = resourceName;
-            this.oldName = oldName;
+            this.attributeName = oldName;
         }
 
         String getResourceName() {
             return resourceName;
         }
 
-        private boolean isAddOpAdded(PathAddress address) {
-            if (addOps.containsKey(address)) {
-                return true;
-            }
-            addOps.put(address, true);
-            return false;
-        }
-
         @Override
         public void transformResource(ResourceTransformationContext context, PathAddress address, Resource resource) throws OperationFailedException {
             ModelNode model = new ModelNode();
-            transformModulesToAttributes(address, resourceName, oldName, context, model);
+            transformModulesToAttributes(address, resourceName, attributeName, context, model);
             resource.writeModel(model);
             final ResourceTransformationContext childContext = context.addTransformedResource(PathAddress.EMPTY_ADDRESS, resource);
             childContext.processChildren(resource);
@@ -299,32 +332,112 @@ public class SecurityExtension implements Extension {
 
         public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
             ModelNode model = new ModelNode();
-            transformModulesToAttributes(address, resourceName, oldName, context, model);
-            ModelNode modules = model.get(oldName);
+            transformModulesToAttributes(address, resourceName, attributeName, context, model);
+            ModelNode modules = model.get(attributeName);
             int len = modules.asList().size();
-            boolean addOpAdded = isAddOpAdded(address);
-            if (len == 0) { //remove
-                operation = new ModelNode();
-                operation.get(OP).set(REMOVE);
-            } else if (!addOpAdded) {
-                operation = model.clone();
-                operation.get(OP).set(ADD);
+            //Here we always remove, and if we have enough information, we overwrite the value
+            if (len == 0) {
+                return new TransformedOperation(Util.createRemoveOperation(address), OperationResultTransformer.ORIGINAL_RESULT);
             } else {
-                operation.clear();
-                operation.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-                operation.get(ModelDescriptionConstants.NAME).set(oldName);
-                operation.get(ModelDescriptionConstants.VALUE).set(modules);
+                ModelNode add = Util.createAddOperation(address);
+                add.get(attributeName).set(modules);
+                return new TransformedOperation(createComposite(address, add), OperationResultTransformer.ORIGINAL_RESULT);
             }
-            operation.get(ModelDescriptionConstants.OP_ADDR).set(address.toModelNode());
-            return new TransformedOperation(operation, OperationResultTransformer.ORIGINAL_RESULT);
         }
 
-        private void transformModulesToAttributes(final PathAddress address, final String newName, final String oldName, final TransformationContext context, final ModelNode model) {
+        void transformModulesToAttributes(final PathAddress address, final String newName, final String oldName, final TransformationContext context, final ModelNode model) {
             ModelNode modules = model.get(oldName).setEmptyList();
-            for (Resource.ResourceEntry entry : context.readResourceFromRoot(address).getChildren(newName)) {
+            Set<Resource.ResourceEntry> children = context.readResourceFromRoot(address).getChildren(newName);
+            if (children != null) {
+                for (Resource.ResourceEntry entry : children) {
                 Resource moduleResource = context.readResourceFromRoot(address.append(entry.getPathElement()));
                 modules.add(moduleResource.getModel());
             }
+        }
+    }
+
+        ModelNode createComposite(PathAddress address, ModelNode...steps) {
+            ModelNode composite = Util.createEmptyOperation(COMPOSITE, PathAddress.EMPTY_ADDRESS);
+            ModelNode stepsNode = composite.get(STEPS);
+            stepsNode.add(Util.createRemoveOperation(address));
+            for (ModelNode step : steps) {
+                stepsNode.add(step);
+            }
+            return composite;
+        }
+
+        TransformedOperation transformParentOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+            //If the add is the form which has the attribute set, let it through - otherwise just discard
+            String op = operation.get(OP).asString();
+            if (ADD.equals(op)) {
+                if (operation.hasDefined(attributeName)) {
+                    return new TransformedOperation(operation, TransformedOperation.ORIGINAL_RESULT);
+                }
+            } else if (op.equals(WRITE_ATTRIBUTE_OPERATION) || op.equals(UNDEFINE_ATTRIBUTE_OPERATION)) {
+                return transformOperation(context, address, operation);
+            }
+            return OperationTransformer.DISCARD.transformOperation(context, address, operation);
+        }
+    }
+
+    private static class JaspiModulesToAttributeTransformer extends ModulesToAttributeTransformer {
+        final boolean loginModule;
+        private JaspiModulesToAttributeTransformer(String resourceName, String oldName) {
+            super(resourceName, oldName);
+            this.loginModule = oldName.equals(Constants.LOGIN_MODULES);
+        }
+
+        public TransformedOperation transformOperation(TransformationContext context, PathAddress address, ModelNode operation) throws OperationFailedException {
+            //Within the authentication=jaspi resource the structure is:
+            // authentication=jaspi
+            //    auth-module=*  (should get pulled up into authentication=jaspi)
+            //    login-module-stack=*
+            //       login-module=*  (should get pulled up into login-module-stack
+            //
+            // If there are no auth-module children, and we are the login-module-stack, we cannot be added
+            PathAddress jaspiAddress = getJaspiAuthenticationAddress(address);
+
+            ModelNode authModulesModel = new ModelNode();
+            transformModulesToAttributes(jaspiAddress, Constants.AUTH_MODULE, Constants.AUTH_MODULES, context, authModulesModel);
+
+            ModelNode authModules = authModulesModel.get(Constants.AUTH_MODULES);
+            if (authModules.asList().size() == 0) {
+                return new TransformedOperation(Util.createRemoveOperation(jaspiAddress), OperationResultTransformer.ORIGINAL_RESULT);
+            } else {
+                List<ModelNode> list = new ArrayList<ModelNode>();
+
+                ModelNode addJaspi = Util.createAddOperation(jaspiAddress);
+                addJaspi.get(Constants.AUTH_MODULES).set(authModules);
+                list.add(addJaspi);
+
+                Resource jaspiResource = context.readResourceFromRoot(jaspiAddress);
+                for (ResourceEntry entry : jaspiResource.getChildren(Constants.LOGIN_MODULE_STACK)) {
+                    PathAddress stackAddress = jaspiAddress.append(PathElement.pathElement(Constants.LOGIN_MODULE_STACK, entry.getName()));
+
+                    ModelNode loginModulesModel = new ModelNode();
+                    transformModulesToAttributes(stackAddress, Constants.LOGIN_MODULE, Constants.LOGIN_MODULES, context, loginModulesModel);
+
+                    ModelNode loginModules = loginModulesModel.get(Constants.LOGIN_MODULES);
+                    if (loginModules.asList().size() > 0) {
+                        ModelNode addStack = Util.createAddOperation(stackAddress);
+                        addStack.get(Constants.LOGIN_MODULES).set(loginModules);
+                        list.add(addStack);
+                    }
+                }
+
+                return new TransformedOperation(createComposite(jaspiAddress, list.toArray(new ModelNode[list.size()])), OperationResultTransformer.ORIGINAL_RESULT);
+            }
+        }
+
+        private PathAddress getJaspiAuthenticationAddress(PathAddress address) {
+            PathAddress jaspi = PathAddress.EMPTY_ADDRESS;
+            for (PathElement element : address) {
+                jaspi = jaspi.append(element);
+                if (element.equals(PATH_JASPI_AUTH)) {
+                    break;
+                }
+            }
+            return jaspi;
         }
     }
 
@@ -363,5 +476,59 @@ public class SecurityExtension implements Extension {
         }
     }
 
+
+    private static class ChildResourceTransformersRegistrar {
+        private String[] reject;
+        private String[] defined;
+
+        public ChildResourceTransformersRegistrar(String[] reject, String[] defined) {
+            this.reject = reject;
+            this.defined = defined;
+        }
+
+        void registerTransformers(ResourceTransformationDescriptionBuilder builder) {
+            if (reject != null) {
+                builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, reject);
+            }
+            if (defined != null) {
+                builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, defined);
+            }
+        }
+
+        static Builder createBuilder() {
+            return new Builder();
+        }
+
+        static class Builder {
+            private List<String> reject;
+            private List<String> defined;
+
+            Builder addRejectExpressions(String...attributes){
+                reject = addToList(reject, attributes);
+                return this;
+            }
+
+            Builder addRejectIfDefined(String...attributes){
+                defined = addToList(defined, attributes);
+                return this;
+            }
+
+            ChildResourceTransformersRegistrar build() {
+                return new ChildResourceTransformersRegistrar(
+                        reject == null ? null : reject.toArray(new String[reject.size()]),
+                        defined == null ? null : defined.toArray(new String[defined.size()]));
+            }
+
+            private List<String> addToList(List<String> attrs, String...attributes){
+                if (attrs == null) {
+                    attrs = new ArrayList<String>();
+                }
+                for (String attr : attributes) {
+                    attrs.add(attr);
+                }
+                return attrs;
+            }
+        }
+    }
 
 }

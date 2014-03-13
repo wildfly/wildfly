@@ -73,7 +73,7 @@ public enum ModelTestControllerVersion {
                 props.load(ModelTestControllerVersion.class.getResourceAsStream("version.properties"));
                 VERSION = props.getProperty("as.version");
             } catch (Exception e) {
-                VERSION = "7.3.0-internal-SNAPSHOT";
+                VERSION = "7.4.0-internal-SNAPSHOT";
                 e.printStackTrace();
             }
         }

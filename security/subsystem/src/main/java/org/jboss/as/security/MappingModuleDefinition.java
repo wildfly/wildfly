@@ -82,7 +82,7 @@ public class MappingModuleDefinition extends SimpleResourceDefinition {
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
         super.registerAttributes(resourceRegistration);
-        SecurityDomainReloadWriteHandler writeHandler = new SecurityDomainReloadWriteHandler(ATTRIBUTES);
+        SecurityDomainReloadWriteHandler writeHandler = new SecurityDomainReloadWriteHandler(getAttributes());
         for (AttributeDefinition attr : getAttributes()) {
             resourceRegistration.registerReadWriteAttribute(attr, null, writeHandler);
         }
