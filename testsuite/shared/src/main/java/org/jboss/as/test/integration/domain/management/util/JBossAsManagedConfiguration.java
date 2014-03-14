@@ -105,6 +105,8 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private String mgmtGroupsFile;
 
+    private boolean backupDC;
+
     public JBossAsManagedConfiguration(String jbossHome) {
         if (jbossHome != null) {
             this.jbossHome = jbossHome;
@@ -336,4 +338,11 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
         this.callbackHandler = callbackHandler;
     }
 
+    public boolean isBackupDC() {
+        return backupDC;
+    }
+
+    public void setBackupDC(boolean backupDC) {
+        this.backupDC = backupDC;
+    }
 }

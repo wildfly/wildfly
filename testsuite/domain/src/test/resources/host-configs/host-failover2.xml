@@ -55,20 +55,7 @@
     </management>
 
     <domain-controller>
-        <remote host="${jboss.test.host.master.address}" port="9999" security-realm="ManagementRealm">
-            <ignored-resources type="extension">
-                <instance name="ignored"/>
-            </ignored-resources>
-            <ignored-resources type="profile">
-                <instance name="ignored"/>
-            </ignored-resources>
-            <ignored-resources type="socket-binding-group">
-                <instance name="ignored"/>
-            </ignored-resources>
-            <ignored-resources type="foo" wildcard="true">
-                <instance name="ignored"/>
-            </ignored-resources>
-        </remote>
+        <remote host="${jboss.test.host.master.address}" port="9999" security-realm="ManagementRealm"/>
     </domain-controller>
 
     <!--
