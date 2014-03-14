@@ -75,23 +75,45 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
         }
 
         final File configDir = environment.getDomainConfigurationDir();
+        ConfigurationFile domainConfigurationFile = null;
         if (slave) {
             if (environment.isBackupDomainFiles()) {
                 // --backup
+                domainConfigurationFile = getBackupDomainConfigurationFile();
                 domainPersister = ConfigurationPersisterFactory.createRemoteBackupDomainXmlConfigurationPersister(configDir, executorService, extensionRegistry);
             } else if(environment.isUseCachedDc()) {
                 // --cached-dc
+                domainConfigurationFile = getBackupDomainConfigurationFile();
                 domainPersister = ConfigurationPersisterFactory.createCachedRemoteDomainXmlConfigurationPersister(configDir, executorService, extensionRegistry);
             } else {
                 domainPersister = ConfigurationPersisterFactory.createTransientDomainXmlConfigurationPersister(executorService, extensionRegistry);
             }
         } else {
-            final ConfigurationFile configurationFile = environment.getDomainConfigurationFile();
+            domainConfigurationFile = getStandardDomainConfigurationFile();
             if (environment.getRunningModeControl().isReloaded()) {
-                configurationFile.resetBootFile(environment.getRunningModeControl().isUseCurrentDomainConfig());
+                if (environment.isBackupDomainFiles()) {
+                    // We may have been promoted to master and reloaded.
+                    // See if we should still use the domain-cached-remote.xml.
+                    // If the standard file is newer or same age, we assume the user has either moved
+                    // the cached-remote file to the standard file location, or has copied in the
+                    // standard file from elsewhere. Prior to WFLY-3108 doing one of these was required,
+                    // so we must support people who continue to do so. Plus it's valid to want to
+                    // use the standard file name.
+                    ConfigurationFile cachedRemote = getBackupDomainConfigurationFile();
+                    File cachedRemoteFile = cachedRemote.getBootFile();
+                    if (cachedRemoteFile.exists()
+                            && cachedRemoteFile.lastModified() > domainConfigurationFile.getBootFile().lastModified()) {
+                        domainConfigurationFile = cachedRemote;
+                    }
+                }
+                domainConfigurationFile.resetBootFile(environment.getRunningModeControl().isUseCurrentDomainConfig());
             }
-            domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(configurationFile, executorService, extensionRegistry);
+
+            domainPersister = ConfigurationPersisterFactory.createDomainXmlConfigurationPersister(domainConfigurationFile, executorService, extensionRegistry);
         }
+        // Store this back to environment so mgmt api that exposes it can still work
+        environment.setDomainConfigurationFile(domainConfigurationFile);
+
         this.slave = slave;
     }
 
@@ -208,5 +230,17 @@ public class HostControllerConfigurationPersister implements ExtensibleConfigura
     @SuppressWarnings("deprecation")
     public void unregisterSubsystemDeploymentWriter(String name) {
         domainPersister.unregisterSubsystemDeploymentWriter(name);
+    }
+
+    private ConfigurationFile getStandardDomainConfigurationFile() {
+        final String defaultDomainConfig = SecurityActions.getSystemProperty(HostControllerEnvironment.JBOSS_DOMAIN_DEFAULT_CONFIG, "domain.xml");
+        final String initialDomainConfig = environment.getInitialDomainConfig();
+        return new ConfigurationFile(environment.getDomainConfigurationDir(), defaultDomainConfig,
+                initialDomainConfig == null ? environment.getDomainConfig() : initialDomainConfig, initialDomainConfig == null);
+    }
+
+    private ConfigurationFile getBackupDomainConfigurationFile() {
+        return new ConfigurationFile(environment.getDomainConfigurationDir(), ConfigurationPersisterFactory.CACHED_DOMAIN_XML,
+                null, environment.getInitialDomainConfig() == null);
     }
 }

@@ -232,6 +232,9 @@ public class DomainLifecycleUtil {
             if (configuration.isAdminOnly()) {
                 cmd.add("--admin-only");
             }
+            if (configuration.isBackupDC()) {
+                cmd.add("--backup");
+            }
 
             String domainDirectory = configuration.getDomainDirectory();
             if (domainDirectory != null) {
