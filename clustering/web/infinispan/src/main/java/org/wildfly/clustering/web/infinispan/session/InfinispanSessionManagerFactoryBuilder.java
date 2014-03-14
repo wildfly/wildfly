@@ -29,6 +29,7 @@ import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryServ
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
+import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.jboss.ReplicationConfig;
@@ -85,6 +86,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
                 .addAliases(RouteLocatorService.getCacheServiceName(deploymentServiceName))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
+                .addDependency(GlobalComponentRegistryService.getServiceName(containerName))
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;
