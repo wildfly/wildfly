@@ -22,15 +22,6 @@
 
 package org.wildfly.clustering.server.singleton;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.msc.DelegatingServiceBuilder;
 import org.jboss.as.clustering.msc.ServiceContainerHelper;
@@ -61,6 +52,15 @@ import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
 /**
  * Decorates an MSC service ensuring that it is only started on one node in the cluster at any given time.
  * @author Paul Ferraro
@@ -68,6 +68,7 @@ import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 public class SingletonService<T extends Serializable> implements Service<T>, ServiceProviderRegistration.Listener, SingletonContext<T>, Singleton {
 
     public static final String DEFAULT_CONTAINER = "server";
+    public static final String DEFAULT_CACHE = "default";
 
     private final InjectedValue<Group> group = new InjectedValue<>();
     private final InjectedValue<ServiceProviderRegistrationFactory> registrationFactory = new InjectedValue<>();
@@ -96,7 +97,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName) {
-        return this.build(target, containerName, null);
+        return this.build(target, containerName, DEFAULT_CACHE);
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName, String cacheName) {
