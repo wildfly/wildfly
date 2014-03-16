@@ -86,6 +86,7 @@ import org.jboss.security.auth.spi.BaseCertLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -107,6 +108,7 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @Category(CommonCriteria.class)
+@Ignore("Reenable once https://bugzilla.redhat.com/show_bug.cgi?id=1071331 has been fixed")
 public class HTTPSWebConnectorTestCase {
 
     private static final String STANDARD_SOCKETS = "standard-sockets";
