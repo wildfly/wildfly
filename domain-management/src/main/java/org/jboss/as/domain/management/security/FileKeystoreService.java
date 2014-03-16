@@ -44,14 +44,16 @@ public class FileKeystoreService implements Service<FileKeystore> {
      */
     private final String alias;
     private final char[] keyPassword;
+    private final String keystoreType;
 
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
 
-    private FileKeystoreService(final String path, final char[] keystorePassword, final String alias, final char[] keyPassword) {
+    private FileKeystoreService(final String path, final char[] keystorePassword, final String alias, final char[] keyPassword, final String keystoreType) {
         this.path = path;
         this.keystorePassword = keystorePassword;
         this.alias = alias;
         this.keyPassword = keyPassword;
+        this.keystoreType = keystoreType;
         this.isKeyStore = true;
     }
 
@@ -60,11 +62,12 @@ public class FileKeystoreService implements Service<FileKeystore> {
         this.keystorePassword = keystorePassword;
         this.alias = null;
         this.keyPassword = null;
+        this.keystoreType = null;
         this.isKeyStore = false;
     }
 
-    static FileKeystoreService newKeyStoreService(final String path, final char[] keystorePassword, final String alias, final char[] keyPassword) {
-        return new FileKeystoreService(path, keystorePassword, alias, keyPassword);
+    static FileKeystoreService newKeyStoreService(final String path, final char[] keystorePassword, final String alias, final char[] keyPassword, final String keystoreType) {
+        return new FileKeystoreService(path, keystorePassword, alias, keyPassword, keystoreType);
     }
 
     static FileKeystoreService newTrustStoreService(final String path, final char[] keystorePassword) {
@@ -74,7 +77,7 @@ public class FileKeystoreService implements Service<FileKeystore> {
     public void start(StartContext ctx) throws StartException {
         String relativeTo = this.relativeTo.getOptionalValue();
         String file = relativeTo == null ? path : relativeTo + "/" + path;
-        final FileKeystore fileKeystore = isKeyStore ? FileKeystore.newKeyStore(file, keystorePassword, keyPassword, alias) : FileKeystore.newTrustStore(file, keystorePassword);
+        final FileKeystore fileKeystore = isKeyStore ? FileKeystore.newKeyStore(file, keystorePassword, keystoreType, keyPassword, alias) : FileKeystore.newTrustStore(file, keystorePassword);
         fileKeystore.load();
         theKeyStore = fileKeystore;
     }

@@ -51,6 +51,7 @@ public class ModelDescriptionConstants {
     public static final String KEYSTORE_PASSWORD = "keystore-password";
     public static final String KEYSTORE_PATH = "keystore-path";
     public static final String KEYSTORE_RELATIVE_TO = "keystore-relative-to";
+    public static final String KEYSTORE_TYPE = "keystore-type";
     public static final String LDAP = "ldap";
     public static final String LOCAL = "local";
     public static final String MAPPED_ROLES = "mapped-roles";

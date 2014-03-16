@@ -607,7 +607,11 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             }
             ModelNode aliasNode = KeystoreAttributes.ALIAS.resolveModelAttribute(context, ssl);
             String alias = aliasNode.isDefined() ? aliasNode.asString() : null;
-            fileKeystoreService = FileKeystoreService.newKeyStoreService(path, keystorePassword, alias, keyPassword);
+
+            ModelNode keystoreTypeNode = KeystoreAttributes.KEYSTORE_TYPE.resolveModelAttribute(context, ssl);
+            String keystoreType = keystoreTypeNode.isDefined() ? keystoreTypeNode.asString() : null;
+
+            fileKeystoreService = FileKeystoreService.newKeyStoreService(path, keystorePassword, alias, keyPassword, keystoreType);
         } else {
             keyPassword = null;
             fileKeystoreService = FileKeystoreService.newTrustStoreService(path, keystorePassword);

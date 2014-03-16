@@ -52,6 +52,10 @@ public class KeystoreAttributes {
             .setXmlName(ModelDescriptionConstants.KEYSTORE_PASSWORD).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
+    public static final SimpleAttributeDefinition KEYSTORE_TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_TYPE, ModelType.STRING, true)
+            .setXmlName(ModelDescriptionConstants.KEYSTORE_TYPE).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+
     public static final SimpleAttributeDefinition KEYSTORE_PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PATH, ModelType.STRING, false)
             .setXmlName(ModelDescriptionConstants.PATH)
             .setAllowExpression(true)
