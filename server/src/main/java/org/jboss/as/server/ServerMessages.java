@@ -46,10 +46,10 @@ import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.services.security.VaultReaderException;
 import org.jboss.dmr.ModelNode;
 import org.jboss.invocation.proxy.MethodIdentifier;
+import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
-import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Param;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -677,4 +677,7 @@ public interface ServerMessages {
 
     @Message(id = 18786, value = "Multiple deployment unit processors registered with priority %s and class %s")
     IllegalStateException duplicateDeploymentUnitProcessor(int priority, Class aClass);
+
+    @Message(id = 18787, value = "When specifying a 'module' you also need to specify the 'code'")
+    OperationFailedException vaultModuleWithNoCode();
 }

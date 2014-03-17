@@ -30,6 +30,7 @@ import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
 import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,7 +75,7 @@ import org.jboss.logging.Logger;
  *
  * @author <a href="aslak@redhat.com">Aslak Knutsen</a>
  */
-public class ManagementClient {
+public class ManagementClient implements Closeable {
 
     private static final Logger logger = Logger.getLogger(ManagementClient.class);
 

@@ -28,6 +28,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.test.module.util.TestModule;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.EmptyAsset;
@@ -49,9 +50,9 @@ import org.wildfly.test.integration.security.picketlink.idm.entities.Relationshi
 import org.wildfly.test.integration.security.picketlink.idm.entities.RelationshipTypeEntity;
 import org.wildfly.test.integration.security.picketlink.idm.entities.RoleTypeEntity;
 import org.wildfly.test.integration.security.picketlink.idm.util.AbstractIdentityManagementServerSetupTask;
-import org.wildfly.test.integration.security.picketlink.util.TestModule;
 
 import javax.annotation.Resource;
+
 import java.io.File;
 import java.io.IOException;
 
