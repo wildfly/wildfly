@@ -304,7 +304,7 @@ class ClassPathEjbJarScanner {
                 }
                 // Mount EJB JAR
                 else if (file.getName().endsWith(EXTENSION_JAR)) {
-                    provider = TempFileProvider.create("jbossejbmodulescanner", ses);
+                    provider = TempFileProvider.create("jbossejbmodulescanner", ses, true);
                     handle = VFS.mountZip(file.getPhysicalFile(), file, provider);
                 }
                 // No conditions met

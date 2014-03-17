@@ -57,7 +57,7 @@ public class TempFileProviderService implements Service<TempFileProvider> {
                    return AccessController.getContext();
                }
            }));
-           PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(0, threadFactory));
+           PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(0, threadFactory), true);
        }
        catch (final IOException ioe) {
           throw ServerMessages.MESSAGES.failedToCreateTempFileProvider(ioe);
