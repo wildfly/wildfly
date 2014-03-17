@@ -134,6 +134,7 @@ public class DomainControllerMigrationTestCase {
         hostConfig.setHostName("failover-h" + String.valueOf(host));
         hostConfig.setHostControllerManagementPort(MGMT_PORTS[host - 1]);
         hostConfig.setStartupTimeoutInSeconds(120);
+        hostConfig.setBackupDC(true);
         File usersFile = new File(hostConfigDir, "mgmt-users.properties");
         FileOutputStream fos = new FileOutputStream(usersFile);
         PrintWriter pw = new PrintWriter(fos);
@@ -164,6 +165,13 @@ public class DomainControllerMigrationTestCase {
         Assert.assertTrue(hosts.contains(HOSTS[1]));
         Assert.assertTrue(hosts.contains(HOSTS[2]));
 
+        // Add a system property so we can prove it is still there after failover
+        ModelNode addSystemProp = new ModelNode();
+        addSystemProp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SYSTEM_PROPERTY, "hc-failover-a");
+        addSystemProp.get(ModelDescriptionConstants.OP).set("add");
+        addSystemProp.get(ModelDescriptionConstants.VALUE).set("test-a");
+        hostUtils[0].executeForResult(addSystemProp);
+
         // kill the domain process controller on failover-h1
         log.info("Stopping the domain controller on failover-h1.");
         hostUtils[0].stop();
@@ -191,6 +199,20 @@ public class DomainControllerMigrationTestCase {
 
         waitUntilHostControllerReady(hostUtils[1]);
 
+        // Read the first system property. This proves we are using the config provided via failover-h1
+        ModelNode readSysPropOp = new ModelNode();
+        readSysPropOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SYSTEM_PROPERTY, "hc-failover-a");
+        readSysPropOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
+        readSysPropOp.get(ModelDescriptionConstants.NAME).set(ModelDescriptionConstants.VALUE);
+        Assert.assertEquals("test-a", hostUtils[1].executeForResult(readSysPropOp).asString());
+
+        // Add a 2nd system property so we can prove it is still there after failover-h3 connects
+        addSystemProp = new ModelNode();
+        addSystemProp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SYSTEM_PROPERTY, "hc-failover-b");
+        addSystemProp.get(ModelDescriptionConstants.OP).set("add");
+        addSystemProp.get(ModelDescriptionConstants.VALUE).set("test-b");
+        hostUtils[1].executeForResult(addSystemProp);
+
         // Reconfigure failover-h3 to point to the new domain controller
         ModelNode changeMasterOp = new ModelNode();
         changeMasterOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.HOST, HOSTS[2]);
@@ -210,6 +232,13 @@ public class DomainControllerMigrationTestCase {
         hostUtils[2].executeAwaitConnectionClosed(restartOp);
 
         waitUntilHostControllerReady(hostUtils[2]);
+
+        // Read the second system property. This proves we correctly got the config from failover-h2.
+        readSysPropOp = new ModelNode();
+        readSysPropOp.get(ModelDescriptionConstants.ADDRESS).add(ModelDescriptionConstants.SYSTEM_PROPERTY, "hc-failover-b");
+        readSysPropOp.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
+        readSysPropOp.get(ModelDescriptionConstants.NAME).set(ModelDescriptionConstants.VALUE);
+        Assert.assertEquals("test-b", hostUtils[2].executeForResult(readSysPropOp).asString());
 
         // test some management ops on failover-h3 using new domain controller on failover-h2
 

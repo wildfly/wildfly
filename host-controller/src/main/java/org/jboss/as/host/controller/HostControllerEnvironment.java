@@ -216,7 +216,9 @@ public class HostControllerEnvironment extends ProcessEnvironment {
     private final File domainBaseDir;
     private final File domainConfigurationDir;
     private final ConfigurationFile hostConfigurationFile;
-    private final ConfigurationFile domainConfigurationFile;
+    private final String domainConfig;
+    private final String initialDomainConfig;
+    private ConfigurationFile domainConfigurationFile;
     private final File domainContentDir;
     private final File domainDataDir;
     private final File domainLogDir;
@@ -361,8 +363,8 @@ public class HostControllerEnvironment extends ProcessEnvironment {
         final String defaultHostConfig = WildFlySecurityManager.getPropertyPrivileged(JBOSS_HOST_DEFAULT_CONFIG, "host.xml");
         hostConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultHostConfig, initialHostConfig == null ? hostConfig : initialHostConfig, initialHostConfig == null);
 
-        final String defaultDomainConfig = WildFlySecurityManager.getPropertyPrivileged(JBOSS_DOMAIN_DEFAULT_CONFIG, "domain.xml");
-        domainConfigurationFile = new ConfigurationFile(domainConfigurationDir, defaultDomainConfig, initialDomainConfig == null ? domainConfig : initialDomainConfig, initialDomainConfig == null);
+        this.domainConfig = domainConfig;
+        this.initialDomainConfig = initialDomainConfig;
 
         tmp = getFileFromProperty(DOMAIN_DATA_DIR);
         if (tmp == null) {
@@ -746,6 +748,25 @@ public class HostControllerEnvironment extends ProcessEnvironment {
 
     public ConfigurationFile getDomainConfigurationFile() {
         return domainConfigurationFile;
+    }
+
+    String getDomainConfig() {
+        return domainConfig;
+    }
+
+    String getInitialDomainConfig() {
+        return initialDomainConfig;
+    }
+
+    /**
+     * This shouldn't really be a property of this class,
+     * but we expose it in the management API resource for the HC environment,
+     * so we store it here.
+     *
+     * @param domainConfigurationFile the config file, or {@code null} in a slave HC without --backup --cached-dc
+     */
+    void setDomainConfigurationFile(ConfigurationFile domainConfigurationFile) {
+        this.domainConfigurationFile = domainConfigurationFile;
     }
 
     String getModulePath() {
