@@ -1247,8 +1247,10 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             String userId = null;
             if (subject != null) {
                 Set<RealmUser> realmUsers = subject.getPrincipals(RealmUser.class);
-                RealmUser user = realmUsers.iterator().next();
-                userId = user.getName();
+                if (!realmUsers.isEmpty()) {
+                    RealmUser user = realmUsers.iterator().next();
+                    userId = user.getName();
+                }
             }
             return userId;
         }
