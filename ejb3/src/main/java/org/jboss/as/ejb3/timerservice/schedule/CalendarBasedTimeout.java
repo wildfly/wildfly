@@ -616,6 +616,10 @@ public class CalendarBasedTimeout {
                 nextCal = this.advanceTillMonthHasDate(nextCal, nextDayOfMonth);
             }
         } else if (nextDayOfMonth < currentDayOfMonth) {
+            nextCal.clear();
+            nextCal.set(Calendar.YEAR, currentCal.get(Calendar.YEAR));
+            nextCal.set(Calendar.MONTH, currentCal.get(Calendar.MONTH));
+
             // since the next day is before the current day we need to shift to the next month
             nextCal.add(Calendar.MONTH, 1);
             // also we need to reset the time
@@ -684,13 +688,20 @@ public class CalendarBasedTimeout {
 
     private Calendar advanceTillMonthHasDate(Calendar cal, Integer date) {
         Calendar copy = this.copy(cal);
+        int year;
+        int month;
         // make sure the month can handle the date
         while (monthHasDate(copy, date) == false) {
-            if (copy.get(Calendar.YEAR) > Year.MAX_YEAR) {
+            year = copy.get(Calendar.YEAR);
+            if (year > Year.MAX_YEAR) {
                 return null;
             }
             // this month can't handle the date, so advance month to next month
             // and get the next suitable matching month
+            month = copy.get(Calendar.MONTH);
+            copy.clear();
+            copy.set(Calendar.YEAR, year);
+            copy.set(Calendar.MONTH, month);
             copy.add(Calendar.MONTH, 1);
             copy = this.computeNextMonth(copy);
             if (copy == null) {
@@ -712,7 +723,7 @@ public class CalendarBasedTimeout {
 
     private Calendar copy(Calendar cal) {
         Calendar copy = new GregorianCalendar(cal.getTimeZone());
-        copy.setTime(cal.getTime());
+        copy.setTimeInMillis(cal.getTimeInMillis());
 
         return copy;
     }
