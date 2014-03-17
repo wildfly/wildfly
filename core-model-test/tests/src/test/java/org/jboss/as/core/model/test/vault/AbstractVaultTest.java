@@ -22,11 +22,9 @@
 package org.jboss.as.core.model.test.vault;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CODE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODULE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VAULT_OPTIONS;
@@ -162,6 +160,7 @@ public abstract class AbstractVaultTest extends AbstractCoreModelTest {
 
         ModelNode model = readVaultModel(kernelServices);
         Assert.assertEquals("somevault", model.get(CODE).asString());
+        Assert.assertEquals("org.jboss.test.blah", model.get(MODULE).asString());
         Assert.assertEquals(2, model.get(VAULT_OPTIONS).keys().size());
         Assert.assertEquals("zxc", model.get(VAULT_OPTIONS, "xyz").asString());
         Assert.assertEquals("def", model.get(VAULT_OPTIONS, "abc").asString());

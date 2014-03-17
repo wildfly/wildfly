@@ -3299,7 +3299,9 @@
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                    Vault Configuration.
+                    Vault Configuration. If no 'code' and 'module' are supplied the default implementation will be used.
+                    If 'code' is specified but no 'module', it will look for the class named by 'specified' in the picketbox module.
+                    If 'module' is specified, it will look for the class specified by 'code' in the module specified by 'module'.
                 ]]>
             </xs:documentation>
         </xs:annotation>
@@ -3307,6 +3309,7 @@
             <xs:element name="vault-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
         <xs:attribute name="code" type="xs:string" use="optional"/>
+        <xs:attribute name="module" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="management-client-contentType">
