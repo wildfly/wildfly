@@ -428,6 +428,8 @@ public class DataSourcesExtension implements Extension {
                         }
                         writer.writeEndElement();
 
+                    } else if (dataSourceNode.hasDefined(RECOVER_PLUGIN_PROPERTIES.getName())) {
+                        throw new XMLStreamException("The "+RECOVER_PLUGIN_PROPERTIES.getName()+" is defined without defining the "+RECOVER_PLUGIN_CLASSNAME.getName());
                     }
                     writer.writeEndElement();
                 }
@@ -462,6 +464,8 @@ public class DataSourcesExtension implements Extension {
                             }
                         }
                         writer.writeEndElement();
+                    } else if (dataSourceNode.hasDefined(VALID_CONNECTION_CHECKER_PROPERTIES.getName())) {
+                        throw new XMLStreamException("The "+VALID_CONNECTION_CHECKER_PROPERTIES.getName()+" is defined without defining the "+VALID_CONNECTION_CHECKER_CLASSNAME.getName());
                     }
                     CHECK_VALID_CONNECTION_SQL.marshallAsElement(dataSourceNode, writer);
                     VALIDATE_ON_MATCH.marshallAsElement(dataSourceNode, writer);
@@ -484,6 +488,8 @@ public class DataSourcesExtension implements Extension {
                             }
                         }
                         writer.writeEndElement();
+                    } else if (dataSourceNode.hasDefined(STALE_CONNECTION_CHECKER_PROPERTIES.getName())) {
+                        throw new XMLStreamException("The "+STALE_CONNECTION_CHECKER_PROPERTIES.getName()+" is defined without defining the "+STALE_CONNECTION_CHECKER_CLASSNAME.getName());
                     }
                     if (dataSourceNode.hasDefined(EXCEPTION_SORTER_CLASSNAME.getName())) {
                         writer.writeStartElement(Validation.Tag.EXCEPTION_SORTER.getLocalName());
@@ -500,6 +506,8 @@ public class DataSourcesExtension implements Extension {
                             }
                         }
                         writer.writeEndElement();
+                    } else if (dataSourceNode.hasDefined(EXCEPTION_SORTER_PROPERTIES.getName())) {
+                        throw new XMLStreamException("The "+EXCEPTION_SORTER_PROPERTIES.getName()+" is defined without defining the "+EXCEPTION_SORTER_CLASSNAME.getName());
                     }
                     writer.writeEndElement();
                 }
