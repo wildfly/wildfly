@@ -41,12 +41,16 @@ import org.jboss.dmr.ModelType;
  */
 class SingleSignOnDefinition extends PersistentResourceDefinition {
 
-    static final SimpleAttributeDefinition DOMAIN = new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING)
+    static final SimpleAttributeDefinition DOMAIN = new SimpleAttributeDefinitionBuilder(Constants.DOMAIN, ModelType.STRING, true)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+    static final SimpleAttributeDefinition PATH = new SimpleAttributeDefinitionBuilder("path", ModelType.STRING, true)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
 
-    static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(DOMAIN);
+    static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(DOMAIN, PATH);
 
     static final SingleSignOnDefinition INSTANCE = new SingleSignOnDefinition();
 

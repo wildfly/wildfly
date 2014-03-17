@@ -36,24 +36,27 @@ import org.jboss.msc.value.InjectedValue;
  * @author Tomaz Cerar (c) 2014 Red Hat Inc.
  * @author Paul Ferraro
  */
-public class SingleSignOnService implements Service<SingleSignOnService> {
+class SingleSignOnService implements Service<SingleSignOnService> {
 
     private static final String AUTHENTICATION_MECHANISM_NAME = "SSO";
 
     private final String domain;
+    private final String path;
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<SingleSignOnManager> manager = new InjectedValue<>();
 
-    public SingleSignOnService(String domain) {
+    SingleSignOnService(String domain,String path) {
         this.domain = domain;
+        this.path = path;
     }
 
     @Override
     public void start(StartContext startContext) {
         Host host = this.host.getValue();
         ServletSingleSignOnAuthenticationMechainism mechanism = new ServletSingleSignOnAuthenticationMechainism(this.manager.getValue());
-        mechanism.setDomain((this.domain != null) ? this.domain : host.getName());
-
+        mechanism.setDomain(this.domain);
+        //todo uncomment when we get new release of undertow
+        //mechanism.setPath(this.path);
         host.registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
     }
 

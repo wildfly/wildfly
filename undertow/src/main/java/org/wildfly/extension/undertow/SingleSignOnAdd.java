@@ -59,7 +59,9 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
                 final PathAddress serverAddress = hostAddress.subAddress(0, hostAddress.size() - 1);
 
         final ModelNode domainModelNode = SingleSignOnDefinition.DOMAIN.resolveModelAttribute(context, model);
+        final ModelNode pathNode = SingleSignOnDefinition.PATH.resolveModelAttribute(context, model);
         final String domain = domainModelNode.isDefined() ? domainModelNode.asString() : null;
+        final String path = pathNode.isDefined() ? pathNode.asString() : null;
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
         final ServiceName serviceName = UndertowService.ssoServiceName(serverName, hostName);
@@ -68,12 +70,14 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
         final ServiceTarget target = context.getServiceTarget();
 
         ServiceName managerServiceName = serviceName.append("manager");
-        ServiceController<?> factoryController = SingleSignOnManagerService.build(target, managerServiceName, virtualHostServiceName).setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        ServiceController<?> factoryController = SingleSignOnManagerService.build(target, managerServiceName, virtualHostServiceName)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install();
         if (newControllers != null) {
             newControllers.add(factoryController);
         }
 
-        final SingleSignOnService service = new SingleSignOnService(domain);
+        final SingleSignOnService service = new SingleSignOnService(domain, path);
         final ServiceController<?> sc = target.addService(serviceName, service)
                 .addDependency(virtualHostServiceName, Host.class, service.getHost())
                 .addDependency(managerServiceName, SingleSignOnManager.class, service.getSingleSignOnSessionManager())
