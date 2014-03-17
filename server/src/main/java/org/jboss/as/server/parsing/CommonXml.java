@@ -90,6 +90,7 @@ import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
+import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.OutboundSocketBindingResourceDefinition;
@@ -1176,18 +1177,17 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         ModelNode vault = new ModelNode();
         String code = null;
 
-        if (vaultAttribCount > 1) {
-            throw unexpectedAttribute(reader, vaultAttribCount);
-        }
-
         for (int i = 0; i < vaultAttribCount; i++) {
             requireNoNamespaceAttribute(reader, i);
             final String value = reader.getAttributeValue(i);
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CODE: {
-                    code = value;
-                    vault.get(Attribute.CODE.getLocalName()).set(code);
+                    VaultResourceDefinition.CODE.parseAndSetParameter(value, vault, reader);
+                    break;
+                }
+                case MODULE: {
+                    VaultResourceDefinition.MODULE.parseAndSetParameter(value, vault, reader);
                     break;
                 }
                 default:
@@ -1538,10 +1538,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected void writeVault(XMLExtendedStreamWriter writer, ModelNode vault) throws XMLStreamException {
         writer.writeStartElement(Element.VAULT.getLocalName());
-        String code = vault.hasDefined(Attribute.CODE.getLocalName()) ? vault.get(Attribute.CODE.getLocalName()).asString() : null;
-        if (code != null && !code.isEmpty()) {
-            writer.writeAttribute(Attribute.CODE.getLocalName(), code);
-        }
+        VaultResourceDefinition.CODE.marshallAsAttribute(vault, writer);
+        VaultResourceDefinition.MODULE.marshallAsAttribute(vault, writer);
 
         if (vault.hasDefined(VAULT_OPTIONS)) {
             ModelNode properties = vault.get(VAULT_OPTIONS);
