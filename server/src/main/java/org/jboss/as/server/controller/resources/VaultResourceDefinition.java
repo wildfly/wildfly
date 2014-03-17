@@ -52,11 +52,21 @@ import org.jboss.dmr.ModelType;
  */
 public class VaultResourceDefinition extends SimpleResourceDefinition {
 
+    public static final PathElement PATH = PathElement.pathElement(CORE_SERVICE, VAULT);
+
     public static final SimpleAttributeDefinition CODE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CODE, ModelType.STRING, true)
             .addFlag(Flag.RESTART_ALL_SERVICES)
             .setValidator(new ModelTypeValidator(ModelType.STRING, true))
             .setAllowExpression(true)
             .build();
+
+    public static final SimpleAttributeDefinition MODULE = SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.MODULE, ModelType.STRING, true)
+            .addFlag(Flag.RESTART_ALL_SERVICES)
+            .setValidator(new ModelTypeValidator(ModelType.STRING, true))
+            .setAllowExpression(true)
+            .setRequires(CODE.getName())
+            .build();
+
 
     public static final PropertiesAttributeDefinition VAULT_OPTIONS = new PropertiesAttributeDefinition.Builder(ModelDescriptionConstants.VAULT_OPTIONS, true)
             .addFlag(Flag.RESTART_ALL_SERVICES)
@@ -65,12 +75,12 @@ public class VaultResourceDefinition extends SimpleResourceDefinition {
             .setValidator(new StringLengthValidator(1, true, true))
             .build();
 
-    public static AttributeDefinition[] ALL_ATTRIBUTES = new AttributeDefinition[]{CODE, VAULT_OPTIONS};
+    public static AttributeDefinition[] ALL_ATTRIBUTES = new AttributeDefinition[]{CODE, MODULE, VAULT_OPTIONS};
 
     private final List<AccessConstraintDefinition> accessConstraints;
 
     public VaultResourceDefinition(AbstractVaultReader vaultReader) {
-        super(PathElement.pathElement(CORE_SERVICE, VAULT),
+        super(PATH,
                 ServerDescriptions.getResourceDescriptionResolver(VAULT),
                 new VaultAddHandler(vaultReader),
                 new VaultRemoveHandler(vaultReader));
