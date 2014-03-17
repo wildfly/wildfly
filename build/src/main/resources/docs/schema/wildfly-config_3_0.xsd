@@ -3418,7 +3418,9 @@
         <xs:annotation>
             <xs:documentation>
                 <![CDATA[
-                    Vault Configuration.
+                    Vault Configuration. If no 'code' and 'module' are supplied the default implementation will be used.
+                    If 'code' is specified but no 'module', it will look for the class named by 'specified' in the picketbox module.
+                    If 'module' is specified, it will look for the class specified by 'code' in the module specified by 'module'.
                 ]]>
             </xs:documentation>
         </xs:annotation>
