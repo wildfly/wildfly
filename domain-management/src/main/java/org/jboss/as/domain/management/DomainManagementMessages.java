@@ -648,7 +648,7 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15268, value = "Password must have at least one alphanumeric character.")
+    @Message(id = 15268, value = "Password must have at least one alphabetic character.")
     String passwordMustHaveAlpha();
 
     /**
