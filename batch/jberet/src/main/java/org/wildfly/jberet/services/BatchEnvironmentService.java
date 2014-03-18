@@ -133,11 +133,6 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
             return artifactFactory;
         }
 
-        // @Override
-        public ExecutorService getExecutorService() {
-            return executorService;
-        }
-
         @Override
         public Future<?> submitTask(final Runnable task) {
             final ContextHandle contextHandle = createContextHandle();

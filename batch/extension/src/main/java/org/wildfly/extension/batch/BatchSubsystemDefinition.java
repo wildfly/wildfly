@@ -161,7 +161,7 @@ class BatchSubsystemDefinition extends SimpleResourceDefinition {
 
         @Override
         protected String getThreadGroupName(String threadPoolName) {
-            return "batch-" + threadPoolName;
+            return "Batch Thread";
         }
     }
 
