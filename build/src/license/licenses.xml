@@ -3012,16 +3012,6 @@
       </licenses>
     </dependency>
     <dependency>
-      <groupId>org.jboss.web</groupId>
-      <artifactId>jasper-jdt</artifactId>
-      <licenses>
-        <license>
-          <name>GNU Lesser General Public License, Version 2.1</name>
-          <url>http://repository.jboss.org/licenses/lgpl-2.1.txt</url>
-        </license>
-      </licenses>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.weld</groupId>
       <artifactId>weld-api</artifactId>
       <licenses>
