@@ -280,6 +280,28 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
 
     abstract void getOperationDescriptions(ListIterator<PathElement> iterator, Map<String, OperationEntry> providers, boolean inherited);
 
+    /**
+     * Get all the handlers at a specific address.
+     *
+     * @param address the address
+     * @param inherited true to include the inherited notifcations
+     * @return the handlers
+     */
+    @Override
+    public final Map<String, NotificationEntry> getNotificationDescriptions(final PathAddress address, boolean inherited) {
+
+        if (parent != null) {
+            RootInvocation ri = getRootInvocation();
+            return ri.root.getNotificationDescriptions(ri.pathAddress.append(address), inherited);
+        }
+        // else we are the root
+        Map<String, NotificationEntry> providers = new TreeMap<String, NotificationEntry>();
+        getNotificationDescriptions(address.iterator(), providers, inherited);
+        return providers;
+    }
+
+    abstract void getNotificationDescriptions(ListIterator<PathElement> iterator, Map<String, NotificationEntry> providers, boolean inherited);
+
     /** {@inheritDoc} */
     @Override
     public final DescriptionProvider getModelDescription(final PathAddress address) {
@@ -428,12 +450,23 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         }
     }
 
+    final void getInheritedNotifications(final Map<String, NotificationEntry> providers, boolean skipSelf) {
+        if (!skipSelf) {
+            getInheritedNotificationEntries(providers);
+        }
+        if (parent != null) {
+            parent.getParent().getInheritedNotifications(providers, false);
+        }
+    }
+
     /** Gets whether this registration has an alternative wildcard registration */
     boolean hasNoAlternativeWildcardRegistration() {
         return parent == null || PathElement.WILDCARD_VALUE.equals(valueString) || !parent.getChildNames().contains(PathElement.WILDCARD_VALUE);
     }
 
     abstract void getInheritedOperationEntries(final Map<String, OperationEntry> providers);
+
+    abstract void getInheritedNotificationEntries(final Map<String, NotificationEntry> providers);
 
     private RootInvocation getRootInvocation() {
         RootInvocation result = null;

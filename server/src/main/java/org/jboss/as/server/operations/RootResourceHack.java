@@ -44,6 +44,7 @@ import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.NotificationEntry;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.controller.registry.Resource;
@@ -197,6 +198,11 @@ public class RootResourceHack implements OperationStepHandler {
         }
 
         @Override
+        public Map<String, NotificationEntry> getNotificationDescriptions(PathAddress address, boolean inherited) {
+            return Collections.emptyMap();
+        }
+
+        @Override
         public ProxyController getProxyController(PathAddress address) {
             return null;
         }
@@ -215,6 +221,5 @@ public class RootResourceHack implements OperationStepHandler {
         public List<AccessConstraintDefinition> getAccessConstraints() {
             return Collections.emptyList();
         }
-
     }
 }

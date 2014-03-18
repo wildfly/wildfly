@@ -344,6 +344,11 @@ public class ServerControllerUnitTestCase {
         }
 
         @Override
+        public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+            delegate.registerNotifications(resourceRegistration);
+        }
+
+        @Override
         public PathElement getPathElement() {
             return delegate.getPathElement();
         }

@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -122,6 +123,11 @@ public class DelegatingManagementResourceRegistration implements ManagementResou
     @Override
     public Map<String, OperationEntry> getOperationDescriptions(PathAddress address, boolean inherited) {
         return delegate.getOperationDescriptions(address, inherited);
+    }
+
+    @Override
+    public Map<String, NotificationEntry> getNotificationDescriptions(PathAddress address, boolean inherited) {
+        return delegate.getNotificationDescriptions(address, inherited);
     }
 
     @Override
@@ -302,5 +308,20 @@ public class DelegatingManagementResourceRegistration implements ManagementResou
     @Override
     public AliasEntry getAliasEntry() {
         return delegate.getAliasEntry();
+    }
+
+    @Override
+    public void registerNotification(NotificationDefinition notification, boolean inherited) {
+        delegate.registerNotification(notification, inherited);
+    }
+
+    @Override
+    public void registerNotification(NotificationDefinition notification) {
+        delegate.registerNotification(notification);
+    }
+
+    @Override
+    public void unregisterNotification(String notificationType) {
+        delegate.unregisterNotification(notificationType);
     }
 }

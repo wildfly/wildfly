@@ -2746,5 +2746,14 @@ public interface ControllerMessages {
     @Message(id = 13483, value = "The following attributes must NOT be defined as %s in the current model: %s")
     String attributesMustNotBeDefinedAs(ModelNode value, Set<String> names);
 
+    @Message(id = 13484, value = "The resource was added at the address %s.")
+    String resourceWasAdded(PathAddress address);
+
+    @Message(id = 13485, value = "The resource was removed at the address %s.")
+    String resourceWasRemoved(PathAddress address);
+
+    @Message(id = 13486, value = "The attribute %s value has been changed from %s to %s.")
+    String attributeValueWritten(String attributeName, ModelNode currentValue, ModelNode newVal);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

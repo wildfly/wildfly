@@ -140,6 +140,17 @@ public interface ResourceDescriptionResolver {
      */
     String getOperationReplyValueTypeDescription(String operationName, Locale locale, ResourceBundle bundle, String... suffixes);
 
+    /**
+     * Gets the description of one of the resource's notification.
+     *
+     * @param notificationType the type of the notification
+     * @param locale the locale
+     * @param bundle a resource bundle previously obtained from a call to {@link #getResourceBundle(java.util.Locale)},
+     *               or {@code null} if that call returned {@code null}
+     * @return the localized description
+     */
+    String getNotificationDescription(String notificationType, Locale locale, ResourceBundle bundle);
+
 
     /**
      * Gets the description of one of the resource's child types.

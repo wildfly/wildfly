@@ -64,6 +64,13 @@ public interface ResourceDefinition {
     void registerAttributes(final ManagementResourceRegistration resourceRegistration);
 
     /**
+     * Register notifications associated with this resource.
+     *
+     * @param resourceRegistration a {@link ManagementResourceRegistration} created from this definition
+     */
+    void registerNotifications(final ManagementResourceRegistration resourceRegistration);
+
+    /**
      * Register child resources associated with this resource.
      *
      * @param resourceRegistration a {@link ManagementResourceRegistration} created from this definition

@@ -44,6 +44,7 @@ import org.jboss.as.controller.ControllerLogger;
 import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersionRange;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -76,6 +77,7 @@ import org.jboss.as.controller.persistence.SubsystemXmlWriterRegistry;
 import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.NotificationEntry;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
@@ -823,6 +825,11 @@ public class ExtensionRegistry {
         }
 
         @Override
+        public Map<String, NotificationEntry> getNotificationDescriptions(PathAddress address, boolean inherited) {
+            return deployments.getNotificationDescriptions(address, inherited);
+        }
+
+        @Override
         public ProxyController getProxyController(PathAddress address) {
             return deployments.getProxyController(address);
         }
@@ -1043,6 +1050,24 @@ public class ExtensionRegistry {
         @Override
         public boolean isAlias() {
             return deployments.isAlias();
+        }
+
+        @Override
+        public void registerNotification(NotificationDefinition notification, boolean inherited) {
+            deployments.registerNotification(notification, inherited);
+            subdeployments.registerNotification(notification, inherited);
+        }
+
+        @Override
+        public void registerNotification(NotificationDefinition notification) {
+            deployments.registerNotification(notification);
+            subdeployments.registerNotification(notification);
+        }
+
+        @Override
+        public void unregisterNotification(String notificationType) {
+            deployments.unregisterNotification(notificationType);
+            subdeployments.unregisterNotification(notificationType);
         }
     }
 

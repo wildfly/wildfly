@@ -27,6 +27,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import java.util.EnumSet;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -91,12 +92,13 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     /**
      * Register the existence of an addressable sub-resource of this resource. Before this method returns the provided
      * {@code resourceDefinition} will be given the opportunity to
-     * {@link ResourceDefinition#registerAttributes(ManagementResourceRegistration) register attributes}
-     * and {@link ResourceDefinition#registerOperations(ManagementResourceRegistration) register operations}.
+     * {@link ResourceDefinition#registerAttributes(ManagementResourceRegistration) register attributes},
+     * {@link ResourceDefinition#registerOperations(ManagementResourceRegistration) register operations}
+     * and {@link ResourceDefinition#registerNotifications(ManagementResourceRegistration) register operations}
      *
      * @param resourceDefinition source for descriptive information describing this
      *                            portion of the model (must not be {@code null})
-     * @return a resource registration which may be used to add attributes, operations and sub-models
+     * @return a resource registration which may be used to add attributes, operations, notifications and sub-models
      *
      * @throws IllegalArgumentException if a submodel is already registered at {@code address}
      * @throws IllegalStateException if {@link #isRuntimeOnly()} returns {@code true}
@@ -458,6 +460,38 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
     void unregisterAlias(PathElement address);
 
     /**
+     * Record that the given notification can be emitted by this resource.
+     *
+     * @param notification the definition of the notification. Cannot be {@code null}
+     * @param inherited  {@code true} if the notification is inherited to child nodes, {@code false} otherwise
+     *
+     * @throws IllegalArgumentException if {@code notification} is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     */
+    void registerNotification(NotificationDefinition notification, boolean inherited);
+
+    /**
+     * Record that the given notification can be emitted by this resource.
+     *
+     * The notification is not inherited by child nodes.
+     *
+     * @param notification the definition of the notification. Cannot be {@code null}
+     *
+     * @throws IllegalArgumentException if {@code notificationType} or {@code notificationEntry} is {@code null}
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     */
+    void registerNotification(NotificationDefinition notification);
+
+    /**
+     * Remove that the given notification can be emitted by this resource.
+     *
+     * @param notificationType the type of the notification. Cannot be {@code null}
+     *
+     * @throws SecurityException if the caller does not have {@link ImmutableManagementResourceRegistration#ACCESS_PERMISSION}
+     */
+    void unregisterNotification(String notificationType);
+
+    /**
      * A factory for creating a new, root model node registration.
      */
     class Factory {
@@ -515,6 +549,11 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
                 }
 
                 @Override
+                public void registerNotifications(ManagementResourceRegistration resourceRegistration) {
+                    //  no-op
+                }
+
+                @Override
                 public void registerChildren(ManagementResourceRegistration resourceRegistration) {
                     //  no-op
                 }
@@ -552,6 +591,7 @@ public interface ManagementResourceRegistration extends ImmutableManagementResou
             ConcreteResourceRegistration resourceRegistration = new ConcreteResourceRegistration(null, null, resourceDefinition, constraintUtilizationRegistry, false);
             resourceDefinition.registerAttributes(resourceRegistration);
             resourceDefinition.registerOperations(resourceRegistration);
+            resourceDefinition.registerNotifications(resourceRegistration);
             resourceDefinition.registerChildren(resourceRegistration);
             return resourceRegistration;
         }
