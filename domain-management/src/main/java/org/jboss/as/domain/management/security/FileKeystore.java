@@ -54,7 +54,9 @@ final class FileKeystore {
     private final String path;
     private long lastModificationTime;
     private final char[] keystorePassword;
-    private final String keystoreType;
+
+    /** JKS is a default value */
+    private String keystoreType = "JKS";
 
     /** If not a KeyStore it is being used as a trust store. */
     private final boolean isKeyStore;
@@ -65,7 +67,6 @@ final class FileKeystore {
     private FileKeystore(final String path, final char[] keystorePassword) {
         this.path = path;
         this.keystorePassword = keystorePassword;
-        this.keystoreType = null;
         this.keyPassword = null;
         this.alias = null;
         this.lastModificationTime = 0;
@@ -75,11 +76,14 @@ final class FileKeystore {
     private FileKeystore(final String path, final char[] keystorePassword, final String keystoreType, final char[] keyPassword, final String alias) {
         this.path = path;
         this.keystorePassword = keystorePassword;
-        this.keystoreType = keystoreType != null ? keystoreType : "JKS";
         this.keyPassword = keyPassword;
         this.alias = alias;
         this.lastModificationTime = 0;
         this.isKeyStore = true;
+
+        if (keystoreType != null) {
+            this.keystoreType = keystoreType;
+        }
     }
 
     static FileKeystore newKeyStore(final String path, final char[] keystorePassword, final String keystoreType, final char[] keyPassword, final String alias) {
