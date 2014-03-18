@@ -1805,11 +1805,6 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.web</groupId>
-                    <artifactId>jasper-jdt</artifactId>
-                </dependency>
-
-                <dependency>
                     <groupId>io.undertow.jastow</groupId>
                     <artifactId>jastow</artifactId>
                 </dependency>

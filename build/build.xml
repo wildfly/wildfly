@@ -1517,9 +1517,7 @@
         </module-def>
         <module-def name="io.undertow.jsp">
             <maven-resource group="io.undertow.jastow" artifact="jastow"/>
-        </module-def>
-        <module-def name="io.undertow.jasper-jdt">
-            <maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
+            <maven-resource group="org.eclipse.jdt.core.compiler" artifact="ecj"/>
         </module-def>
         <module-def name="io.undertow.websocket">
             <maven-resource group="io.undertow" artifact="undertow-websockets-jsr"/>
