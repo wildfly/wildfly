@@ -41,11 +41,23 @@ public class ValidateUserState extends AbstractValidationState {
     private static final String[] BAD_USER_NAMES = {"admin", "administrator", "root"};
 
     private static final char[] VALID_PUNCTUATION;
+    private static final String VALID_SYMBOLS;
 
     static {
         char[] validPunctuation = { '.', '@', '\\', '=', ',', '/' };
         Arrays.sort(validPunctuation);
         VALID_PUNCTUATION = validPunctuation;
+
+        StringBuilder sb = new StringBuilder();
+        for (int i=0 ; i < VALID_PUNCTUATION.length ; i++) {
+            sb.append("\"");
+            sb.append(VALID_PUNCTUATION[i]);
+            sb.append("\"");
+            if (i < VALID_PUNCTUATION.length -1) {
+                sb.append(", ");
+            }
+        }
+        VALID_SYMBOLS = sb.toString();
     }
 
     private final StateValues stateValues;
@@ -83,7 +95,7 @@ public class ValidateUserState extends AbstractValidationState {
                 for (char currentChar : stateValues.getUserName().toCharArray()) {
                     if ((!isValidPunctuation(currentChar))
                             && (Character.isLetter(currentChar) || Character.isDigit(currentChar)) == false) {
-                        return new ErrorState(theConsole, MESSAGES.usernameNotAlphaNumeric(), getRetryState(), stateValues);
+                        return new ErrorState(theConsole, MESSAGES.usernameNotAlphaNumeric(VALID_SYMBOLS), getRetryState(), stateValues);
                     }
                 }
 
@@ -95,6 +107,8 @@ public class ValidateUserState extends AbstractValidationState {
             }
         };
     }
+
+
 
     private State getDuplicateCheckState() {
         return new State() {
