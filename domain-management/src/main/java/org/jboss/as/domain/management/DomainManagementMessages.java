@@ -907,7 +907,7 @@ public interface DomainManagementMessages {
      * Instructions for the {@link org.jboss.as.domain.management.security.adduser.AddUser.CommandLineArgument#PASSWORD} command line argument.
      * @return the message.
      */
-    @Message(id = Message.NONE, value = "Password of the user. Should not be same as the username")
+    @Message(id = Message.NONE, value = "Password of the user")
     String argPassword();
 
     /**
