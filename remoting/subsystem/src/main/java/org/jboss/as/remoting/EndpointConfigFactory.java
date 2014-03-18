@@ -41,7 +41,12 @@ public final class EndpointConfigFactory {
     }
 
     public static OptionMap populate(final ExpressionResolver resolver, final ModelNode model) throws OperationFailedException {
-        return OptionList.resolveOptions(resolver, model, RemotingEndpointResource.OPTIONS);
+        OptionMap.Builder builder = OptionMap.builder()
+        .set(Options.TCP_NODELAY, Boolean.TRUE)
+        .set(Options.REUSE_ADDRESSES, true)
+        .addAll(OptionList.resolveOptions(resolver, model, RemotingEndpointResource.OPTIONS));
+
+        return builder.getMap();
     }
 
     /**

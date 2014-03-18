@@ -3,7 +3,7 @@
         worker="default-remoting"
         send-buffer-size="8191"
         receive-buffer-size="8191"
-        buffer-region-size="1024"
+        buffer-region-size="10240"
         transmit-window-size="131071"
         receive-window-size="131071"
         max-outbound-channels="41"
@@ -22,8 +22,8 @@
     <connector name="remoting-connector" socket-binding="remoting">
         <authentication-provider name="blah"/>
         <properties>
-           <property name="c1" value="connector one"/>
-           <property name="c2" value="connector two"/>
+           <property name="TCP_NODELAY" value="true"/>
+           <property name="KEEP_ALIVE" value="true"/>
         </properties>
         <sasl>
             <include-mechanisms value="one two three"/>
@@ -45,34 +45,11 @@
             </properties>
         </sasl>
     </connector>
-    <connector name="connector-no-sasl-properties" socket-binding="remoting">
-        <authentication-provider name="blah"/>
-        <properties>
-           <property name="c1" value="connector one"/>
-           <property name="c2" value="connector two"/>
-        </properties>
-        <sasl>
-            <include-mechanisms value="one two three"/>
-            <qop value="auth auth-int"/>
-            <strength value="low high"/>
-            <server-auth value="true"/>
-            <reuse-session value="true"/>
-            <policy>
-               <forward-secrecy value="true"/>
-               <no-active value="true"/>
-               <no-anonymous value="true"/>
-               <no-dictionary value="true"/>
-               <no-plain-text value="true"/>
-               <pass-credentials value="true"/>
-            </policy>
-        </sasl>
-    </connector>
-    <connector name="simple-connector" socket-binding="test"/>
     <http-connector name="http-connector" connector-ref="http">
         <authentication-provider name="blah"/>
         <properties>
-           <property name="c1" value="connector one"/>
-           <property name="c2" value="connector two"/>
+            <property name="TCP_NODELAY" value="true"/>
+            <property name="REUSE_ADDRESSES" value="true"/>
         </properties>
         <sasl>
             <include-mechanisms value="one two three"/>
