@@ -973,7 +973,7 @@ public interface DomainManagementMessages {
      * @param minAlpha - minimum alpha numerical values.
      * @return a {@link String} for the message.
      */
-    @Message(id = Message.NONE, value = "%d alphanumeric character(s)")
+    @Message(id = Message.NONE, value = "%d alphabetic character(s)")
     String passwordMustHaveAlphaInfo(int minAlpha);
 
     /**
