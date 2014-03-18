@@ -24,9 +24,12 @@ package org.wildfly.extension.picketlink.idm.model;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.constraint.SensitivityClassification;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.idm.IDMExtension;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -34,16 +37,21 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
  */
 public class LDAPStoreResourceDefinition extends AbstractIdentityStoreResourceDefinition {
 
+    public static final SensitiveTargetAccessConstraintDefinition BASE_DN_SUFFIX_CONSTRAINT = new SensitiveTargetAccessConstraintDefinition(new SensitivityClassification(IDMExtension.SUBSYSTEM_NAME, "base-dn-suffix", false, true, true));
+
     public static final SimpleAttributeDefinition URL = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_URL.getName(), ModelType.STRING, false)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition BIND_DN = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_BIND_DN.getName(), ModelType.STRING, false)
+        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition BIND_CREDENTIAL = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_BIND_CREDENTIAL.getName(), ModelType.STRING, false)
+        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition BASE_DN_SUFFIX = new SimpleAttributeDefinitionBuilder(ModelElement.LDAP_STORE_BASE_DN_SUFFIX.getName(), ModelType.STRING, false)
+        .setAccessConstraints(BASE_DN_SUFFIX_CONSTRAINT)
         .setAllowExpression(true)
         .build();
     public static final LDAPStoreResourceDefinition INSTANCE = new LDAPStoreResourceDefinition(URL, BIND_DN, BIND_CREDENTIAL, BASE_DN_SUFFIX, SUPPORT_ATTRIBUTE, SUPPORT_CREDENTIAL);

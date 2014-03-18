@@ -24,6 +24,7 @@ package org.wildfly.extension.picketlink.federation.model.sp;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -38,6 +39,7 @@ import org.wildfly.extension.picketlink.federation.model.handlers.HandlerResourc
 public class ServiceProviderResourceDefinition extends AbstractFederationResourceDefinition {
 
     public static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_SECURITY_DOMAIN.getName(), ModelType.STRING, false)
+        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
         .build();
     public static final SimpleAttributeDefinition URL = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_URL.getName(),ModelType.STRING, false)
         .setAllowExpression(true)
