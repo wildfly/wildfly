@@ -55,12 +55,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.management.AttributeChangeNotification;
 import javax.management.Descriptor;
 import javax.management.ImmutableDescriptor;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
+import javax.management.MBeanServerNotification;
+import javax.management.Notification;
 import javax.management.ObjectName;
 import javax.management.openmbean.OpenMBeanAttributeInfo;
 import javax.management.openmbean.OpenMBeanAttributeInfoSupport;
@@ -77,10 +80,12 @@ import org.jboss.as.controller.CompositeOperationHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.ValidateAddressOperationHandler;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.AccessType;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
+import org.jboss.as.controller.registry.NotificationEntry;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.OperationEntry.Flag;
 import org.jboss.as.jmx.model.ChildAddOperationFinder.ChildAddOperationEntry;
@@ -341,8 +346,32 @@ public class MBeanInfoFactory {
     }
 
     private MBeanNotificationInfo[] getNotifications() {
-        //TODO handle notifications?
-        return null;
+        List<MBeanNotificationInfo> notifications = new ArrayList<>();
+        for (Map.Entry<String, NotificationEntry> entry : resourceRegistration.getNotificationDescriptions(PathAddress.EMPTY_ADDRESS, true).entrySet()) {
+            ModelNode descriptionModel = entry.getValue().getDescriptionProvider().getModelDescription(null);
+            String description = descriptionModel.get(DESCRIPTION).asString();
+            String notificationType = entry.getKey();
+            ObjectName rootManagementObjectName = ModelControllerMBeanHelper.createRootObjectName(configuredDomains.getLegacyDomain());
+            MBeanNotificationInfo info = null;
+            if (notificationType.equals(ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION)) {
+                info = new MBeanNotificationInfo(new String[]{ AttributeChangeNotification.ATTRIBUTE_CHANGE }, AttributeChangeNotification.class.getName(), description);
+            } else if (notificationType.equals(ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION)) {
+                if (name.equals(rootManagementObjectName)) {
+                    info = new MBeanNotificationInfo(new String[]{ MBeanServerNotification.REGISTRATION_NOTIFICATION }, MBeanServerNotification.class.getName(), description);
+                }
+            } else if (notificationType.equals(ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION)) {
+                if (name.equals(rootManagementObjectName)) {
+                    info = new MBeanNotificationInfo(new String[]{MBeanServerNotification.UNREGISTRATION_NOTIFICATION}, MBeanServerNotification.class.getName(), description);
+                }
+            } else {
+                info = new MBeanNotificationInfo(new String[] { notificationType }, Notification.class.getName(), description);
+            }
+
+            if (info != null) {
+                notifications.add(info);
+            }
+        }
+        return notifications.toArray(new MBeanNotificationInfo[notifications.size()]);
     }
 
     private Descriptor createMBeanDescriptor() {

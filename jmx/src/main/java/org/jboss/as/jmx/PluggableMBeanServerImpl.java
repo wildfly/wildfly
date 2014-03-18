@@ -112,6 +112,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
     private final Set<MBeanServerPlugin> delegates = new CopyOnWriteArraySet<MBeanServerPlugin>();
 
     private volatile JmxAuthorizer authorizer;
+    private boolean handleMBeanServerNotification = false;
 
     PluggableMBeanServerImpl(MBeanServer rootMBeanServer) {
         this.rootMBeanServer = new TcclMBeanServer(rootMBeanServer);
@@ -129,6 +130,10 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         authorizer.setNonFacadeMBeansSensitive(sensitive);
     }
 
+    void setHandleMBeanServerNotification(boolean handleMBeanServerNotification) {
+        this.handleMBeanServerNotification = handleMBeanServerNotification;
+    }
+
     public void addPlugin(MBeanServerPlugin delegate) {
         delegates.add(delegate);
     }
@@ -144,6 +149,18 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
         MBeanServerPlugin delegate = null;
         final boolean readOnly = true;
         try {
+            ObjectName delegateObjectName = ObjectName.getInstance("JMImplementation:type=MBeanServerDelegate");
+            if (name.equals(delegateObjectName) && handleMBeanServerNotification) {
+                ObjectName rootManagementDomainPattern = ObjectName.getInstance("*:management-root=server");
+                // findDelegate does not work for a pattern ObjectName
+                MBeanServerPlugin otherDelegate = findDelegateForNewObject(rootManagementDomainPattern);
+                if (otherDelegate.shouldAuthorize()) {
+                    authorizeSensitiveOperation(ADD_NOTIFICATION_LISTENER, readOnly, true);
+                }
+                ObjectName rootManagementObjectName = ObjectName.getInstance(otherDelegate.getDomains()[0] + ":management-root=server");
+                otherDelegate.addNotificationListener(rootManagementObjectName, listener, filter, handback);
+            }
+
             delegate = findDelegate(name);
             if (delegate.shouldAuthorize()) {
                 authorizeSensitiveOperation(ADD_NOTIFICATION_LISTENER, readOnly, true);

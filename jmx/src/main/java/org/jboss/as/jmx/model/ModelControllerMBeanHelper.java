@@ -472,6 +472,12 @@ public class ModelControllerMBeanHelper {
         return controller.execute(op, null, OperationTransactionControl.COMMIT, null);
     }
 
+    protected ImmutableManagementResourceRegistration getMBeanRegistration(ObjectName name) throws InstanceNotFoundException {
+        final ResourceAndRegistration reg = getRootResourceAndRegistration();
+        final PathAddress address = resolvePathAddress(name, reg);
+        return getMBeanRegistration(address, reg);
+    }
+
     private ImmutableManagementResourceRegistration getMBeanRegistration(PathAddress address, ResourceAndRegistration reg) throws InstanceNotFoundException {
         //TODO Populate MBeanInfo
         ImmutableManagementResourceRegistration resourceRegistration = reg.getRegistration().getSubModel(address);
@@ -521,5 +527,9 @@ public class ModelControllerMBeanHelper {
         } catch (MalformedObjectNameException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    TypeConverters getConverters() {
+        return converters;
     }
 }

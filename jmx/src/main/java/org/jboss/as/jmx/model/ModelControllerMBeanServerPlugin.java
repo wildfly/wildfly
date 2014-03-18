@@ -21,13 +21,19 @@
 */
 package org.jboss.as.jmx.model;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 
 import javax.management.Attribute;
+import javax.management.AttributeChangeNotification;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
@@ -36,7 +42,8 @@ import javax.management.InvalidAttributeValueException;
 import javax.management.ListenerNotFoundException;
 import javax.management.MBeanException;
 import javax.management.MBeanInfo;
-import javax.management.NotificationFilter;
+import javax.management.MBeanServerNotification;
+import javax.management.NotificationBroadcaster;
 import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
@@ -44,7 +51,14 @@ import javax.management.QueryExp;
 import javax.management.ReflectionException;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.Notification;
+import org.jboss.as.controller.notification.NotificationFilter;
+import org.jboss.as.controller.notification.NotificationHandler;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.jmx.BaseMBeanServerPlugin;
+import org.jboss.dmr.ModelNode;
 
 /**
  * An MBeanServer wrapper that exposes the ModelController via JMX.
@@ -56,10 +70,13 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
     private final ConfiguredDomains configuredDomains;
     private final ModelControllerMBeanHelper legacyHelper;
     private final ModelControllerMBeanHelper exprHelper;
+    private final ModelController controller;
+    private final AtomicLong notificationSequenceNumber = new AtomicLong(0);
 
-    public ModelControllerMBeanServerPlugin(ConfiguredDomains configuredDomains, ModelController controller, boolean legacyWithProperPropertyFormat) {
+    public ModelControllerMBeanServerPlugin(final ConfiguredDomains configuredDomains, ModelController controller, boolean legacyWithProperPropertyFormat) {
         assert configuredDomains != null;
         this.configuredDomains = configuredDomains;
+        this.controller = controller;
 
         legacyHelper = configuredDomains.getLegacyDomain() != null ?
                 new ModelControllerMBeanHelper(TypeConverters.createLegacyTypeConverters(legacyWithProperPropertyFormat), configuredDomains, configuredDomains.getLegacyDomain(), controller) : null;
@@ -141,6 +158,9 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
     }
 
     public boolean isInstanceOf(ObjectName name, String className) throws InstanceNotFoundException {
+        if (NotificationBroadcaster.class.getName().equals(className)) {
+            return true;
+        }
         return false;
     }
 
@@ -187,19 +207,23 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
         return getHelper(name).setAttributes(name, attributes);
     }
 
-    public void addNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter, Object handback)
+    public void addNotificationListener(final ObjectName name, final NotificationListener listener, final javax.management.NotificationFilter filter, final Object handback)
+            throws InstanceNotFoundException {
+        PathAddress pathAddress = getHelper(name).resolvePathAddress(name);
+        JMXNotificationHandler handler = new JMXNotificationHandler(name, listener, filter, handback);
+        controller.getNotificationSupport().registerNotificationHandler(pathAddress, handler, handler);
+    }
+
+    public void addNotificationListener(ObjectName name, ObjectName listener, javax.management.NotificationFilter filter, Object handback)
             throws InstanceNotFoundException {
         //TODO handle notifications in model?
     }
 
-    public void addNotificationListener(ObjectName name, ObjectName listener, NotificationFilter filter, Object handback)
-            throws InstanceNotFoundException {
-        //TODO handle notifications in model?
-    }
-
-    public void removeNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter, Object handback)
+    public void removeNotificationListener(ObjectName name, NotificationListener listener, javax.management.NotificationFilter filter, Object handback)
             throws InstanceNotFoundException, ListenerNotFoundException {
-        //TODO handle notifications in model?
+        PathAddress pathAddress = getHelper(name).resolvePathAddress(name);
+        JMXNotificationHandler handler = new JMXNotificationHandler(name, listener, filter, handback);
+        controller.getNotificationSupport().unregisterNotificationHandler(pathAddress, handler, handler);
     }
 
     public void removeNotificationListener(ObjectName name, NotificationListener listener) throws InstanceNotFoundException,
@@ -207,7 +231,7 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
         //TODO handle notifications in model?
     }
 
-    public void removeNotificationListener(ObjectName name, ObjectName listener, NotificationFilter filter, Object handback)
+    public void removeNotificationListener(ObjectName name, ObjectName listener, javax.management.NotificationFilter filter, Object handback)
             throws InstanceNotFoundException, ListenerNotFoundException {
         //TODO handle notifications in model?
     }
@@ -226,5 +250,96 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
         }
         //This should not happen
         throw MESSAGES.unknownDomain(domain);
+    }
+
+    private class JMXNotificationHandler implements NotificationHandler, NotificationFilter {
+
+        private final ObjectName name;
+        private final NotificationListener listener;
+        private final javax.management.NotificationFilter filter;
+        private final Object handback;
+
+        private JMXNotificationHandler(ObjectName name, NotificationListener listener, javax.management.NotificationFilter filter, Object handback) {
+            this.name = name;
+            this.listener = listener;
+            this.filter = filter;
+            this.handback = handback;
+        }
+
+        @Override
+        public boolean isNotificationEnabled(Notification notification) {
+            if (filter == null) {
+                return true;
+            } else {
+                javax.management.Notification jmxNotification = convert(name, notification);
+                return filter.isNotificationEnabled(jmxNotification);
+            }
+        }
+
+        @Override
+        public void handleNotification(Notification notification) {
+            javax.management.Notification jmxNotification = convert(name, notification);
+            listener.handleNotification(jmxNotification, handback);
+        }
+
+
+        private javax.management.Notification convert(ObjectName objectName, Notification notification) {
+            long sequenceNumber = notificationSequenceNumber.incrementAndGet();
+            String source =  notification.getResource().toJSONString(true);
+            String message = notification.getMessage();
+            long timestamp = notification.getTimestamp();
+            String notificationType = notification.getType();
+            javax.management.Notification jmxNotification;
+            if (notificationType.equals(ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION)) {
+                ModelNode data = notification.getData();
+                String attributeName = data.get(NAME).asString();
+                String jmxAttributeName =  NameConverter.convertToCamelCase(attributeName);
+                try {
+                    ModelNode modelDescription = getHelper(objectName).getMBeanRegistration(objectName).getModelDescription(PathAddress.EMPTY_ADDRESS).getModelDescription(null);
+                    ModelNode attributeDescription = modelDescription.get(ATTRIBUTES, attributeName);
+                    TypeConverters converters = getHelper(objectName).getConverters();
+                    Object oldValue = converters.fromModelNode(attributeDescription, data.get(GlobalNotifications.OLD_VALUE));
+                    Object newValue = converters.fromModelNode(attributeDescription, data.get(GlobalNotifications.NEW_VALUE));
+                    String attributeType = converters.convertToMBeanType(attributeDescription).getTypeName();
+                    jmxNotification = new AttributeChangeNotification(source, sequenceNumber, timestamp, message,  jmxAttributeName, attributeType, oldValue, newValue);
+                } catch (InstanceNotFoundException e) {
+                    // fallback to a generic notification
+                    jmxNotification = new javax.management.Notification(notification.getType(), source, sequenceNumber, timestamp, message);
+                }
+            } else if (notificationType.equals(RESOURCE_ADDED_NOTIFICATION) ||
+                    notificationType.equals(RESOURCE_REMOVED_NOTIFICATION)) {
+                String jmxType = notificationType.equals(RESOURCE_ADDED_NOTIFICATION) ? MBeanServerNotification.REGISTRATION_NOTIFICATION : MBeanServerNotification.UNREGISTRATION_NOTIFICATION;
+                ObjectName mbeanName = ObjectNameAddressUtil.createObjectName(configuredDomains.getLegacyDomain(), PathAddress.pathAddress(notification.getResource()));
+                jmxNotification = new MBeanServerNotification(jmxType, source, sequenceNumber, mbeanName);
+            } else {
+                jmxNotification = new javax.management.Notification(notification.getType(), source, sequenceNumber, timestamp, message);
+            }
+            return jmxNotification;
+        }
+
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            JMXNotificationHandler that = (JMXNotificationHandler) o;
+
+            if (filter != null ? !filter.equals(that.filter) : that.filter != null) return false;
+            if (handback != null ? !handback.equals(that.handback) : that.handback != null) return false;
+            if (!listener.equals(that.listener)) return false;
+            if (!name.equals(that.name)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = name.hashCode();
+            result = 31 * result + listener.hashCode();
+            result = 31 * result + (filter != null ? filter.hashCode() : 0);
+            result = 31 * result + (handback != null ? handback.hashCode() : 0);
+            return result;
+        }
     }
 }

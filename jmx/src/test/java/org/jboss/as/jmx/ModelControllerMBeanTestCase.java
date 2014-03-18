@@ -21,6 +21,7 @@
  */
 package org.jboss.as.jmx;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOWED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
@@ -51,16 +52,26 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.management.Attribute;
+import javax.management.AttributeChangeNotification;
 import javax.management.AttributeList;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanInfo;
+import javax.management.MBeanNotificationInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
 import javax.management.MBeanServerConnection;
+import javax.management.MBeanServerNotification;
 import javax.management.MalformedObjectNameException;
+import javax.management.Notification;
+import javax.management.NotificationFilter;
+import javax.management.NotificationFilterSupport;
+import javax.management.NotificationListener;
 import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.openmbean.CompositeData;
@@ -87,10 +98,13 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.ResolveExpressionHandler;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
@@ -311,6 +325,10 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         checkComplexTypeInfo(assertCast(CompositeType.class, op.getReturnOpenType()), false);
         Assert.assertEquals(1, op.getSignature().length);
         checkComplexTypeInfo(assertCast(CompositeType.class, assertCast(OpenMBeanParameterInfo.class, op.getSignature()[0]).getOpenType()), false);
+
+        MBeanNotificationInfo[] notifications = info.getNotifications();
+        Assert.assertEquals(1, notifications.length);
+        Assert.assertEquals(AttributeChangeNotification.ATTRIBUTE_CHANGE, notifications[0].getNotifTypes()[0]);
     }
 
     @Test
@@ -354,6 +372,10 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         Assert.assertEquals("Test1", op.getDescription());
         Assert.assertEquals(0, op.getSignature().length);
         Assert.assertEquals(Void.class.getName(), op.getReturnType());
+
+        MBeanNotificationInfo[] notifications = info.getNotifications();
+        Assert.assertEquals(1, notifications.length);
+        Assert.assertEquals(AttributeChangeNotification.ATTRIBUTE_CHANGE, notifications[0].getNotifTypes()[0]);
     }
 
     @Test
@@ -507,6 +529,107 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         CompositeData compositeData = assertCast(CompositeData.class, connection.getAttribute(name, "complex"));
         Assert.assertEquals(Integer.valueOf(1), compositeData.get("int-value"));
         Assert.assertEquals(BigDecimal.valueOf(2.0), compositeData.get("bigdecimal-value"));
+    }
+
+    @Test
+    public void testAttributeChangeNotification() throws Exception {
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new TestExtension()));
+
+        ObjectName name = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
+
+        final CountDownLatch notificationEmitted = new CountDownLatch(1);
+        final AtomicReference<Notification> notification = new AtomicReference<>();
+        NotificationListener listener = new NotificationListener() {
+            @Override
+            public void handleNotification(Notification notif, Object handback) {
+                notification.set(notif);
+                notificationEmitted.countDown();
+
+            }
+        };
+        NotificationFilterSupport filter = new NotificationFilterSupport();
+        filter.enableType(AttributeChangeNotification.ATTRIBUTE_CHANGE);
+
+        connection.addNotificationListener(name, listener, filter, null);
+
+        connection.setAttribute(name, new Attribute("int", 102));
+
+        Assert.assertTrue("Did not receive expected notification", notificationEmitted.await(1, SECONDS));
+        Assert.assertTrue(notification.get() instanceof AttributeChangeNotification);
+        AttributeChangeNotification change = (AttributeChangeNotification) notification.get();
+        Assert.assertEquals("int", change.getAttributeName());
+        Assert.assertEquals(Integer.class.getName(), change.getAttributeType());
+        Assert.assertEquals(2, change.getOldValue());
+        Assert.assertEquals(102, change.getNewValue());
+
+        connection.removeNotificationListener(name, listener, filter, null);
+    }
+
+    @Test
+    public void testMBeanServerNotification_REGISTRATION_NOTIFICATION() throws Exception {
+        final ObjectName testObjectName = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
+        final ObjectName childObjectName = createObjectName(LEGACY_DOMAIN + ":subsystem=test,single=only");
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new SubystemWithSingleFixedChildExtension()));
+
+        final ObjectName serverManagementObjectName = createObjectName("JMImplementation:type=MBeanServerDelegate");
+        final CountDownLatch notificationEmitted = new CountDownLatch(1);
+        final AtomicReference<Notification> notification = new AtomicReference<>();
+        NotificationListener listener = new NotificationListener() {
+            @Override
+            public void handleNotification(Notification notif, Object handback) {
+                notification.set(notif);
+                notificationEmitted.countDown();
+
+            }
+        };
+        NotificationFilterSupport filter = new NotificationFilterSupport();
+        filter.enableType(MBeanServerNotification.REGISTRATION_NOTIFICATION);
+
+        connection.addNotificationListener(serverManagementObjectName, listener, filter, null);
+
+        connection.invoke(testObjectName, "addSingleOnly", new Object[] {Integer.valueOf(123)}, new String[] {String.class.getName()});
+
+        Assert.assertTrue("Did not receive expected notification", notificationEmitted.await(1, SECONDS));
+        Assert.assertTrue(notification.get() instanceof MBeanServerNotification);
+        MBeanServerNotification registered = (MBeanServerNotification) notification.get();
+        Assert.assertEquals(childObjectName, registered.getMBeanName());
+
+        connection.removeNotificationListener(serverManagementObjectName, listener, filter, null);
+    }
+
+    @Test
+    public void testMBeanServerNotification_UNREGISTRATION_NOTIFICATION() throws Exception {
+        final ObjectName testObjectName = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
+        final ObjectName childObjectName = createObjectName(LEGACY_DOMAIN + ":subsystem=test,single=only");
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new SubystemWithSingleFixedChildExtension()));
+
+        final ObjectName serverManagementObjectName = createObjectName("JMImplementation:type=MBeanServerDelegate");
+        final CountDownLatch notificationEmitted = new CountDownLatch(1);
+        final AtomicReference<Notification> notification = new AtomicReference<>();
+        NotificationListener listener = new NotificationListener() {
+            @Override
+            public void handleNotification(Notification notif, Object handback) {
+                notification.set(notif);
+                notificationEmitted.countDown();
+
+            }
+        };
+        NotificationFilterSupport filter = new NotificationFilterSupport();
+        filter.enableType(MBeanServerNotification.UNREGISTRATION_NOTIFICATION);
+
+        connection.invoke(testObjectName, "addSingleOnly", new Object[] {Integer.valueOf(123)}, new String[] {String.class.getName()});
+
+        connection.addNotificationListener(serverManagementObjectName, listener, filter, null);
+
+        connection.invoke(childObjectName, "remove", null, null);
+
+        Assert.assertTrue("Did not receive expected notification", notificationEmitted.await(1, SECONDS));
+        Assert.assertTrue(notification.get() instanceof MBeanServerNotification);
+        MBeanServerNotification unregistered = (MBeanServerNotification) notification.get();
+        Assert.assertEquals(MBeanServerNotification.UNREGISTRATION_NOTIFICATION, unregistered.getType());
+        Assert.assertEquals(childObjectName, unregistered.getMBeanName());
+
+        connection.removeNotificationListener(serverManagementObjectName, listener, filter, null);
     }
 
     @Test
@@ -1266,6 +1389,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
                 ManagementResourceRegistration rootRegistration) {
             rootResource.getModel().get(LAUNCH_TYPE).set(launchType);
             rootRegistration.registerOperationHandler(ResolveExpressionHandler.DEFINITION, ResolveExpressionHandler.INSTANCE);
+            GlobalNotifications.registerGlobalNotifications(rootRegistration, ProcessType.STANDALONE_SERVER);
         }
 
         @Override

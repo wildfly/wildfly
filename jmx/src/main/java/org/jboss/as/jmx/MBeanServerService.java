@@ -96,6 +96,7 @@ public class MBeanServerService implements Service<PluggableMBeanServer> {
         pluggable.setAuditLogger(auditLoggerInfo);
         pluggable.setAuthorizer(authorizer);
         authorizer.setNonFacadeMBeansSensitive(coreMBeanSensitivity);
+        pluggable.setHandleMBeanServerNotification(true);
         if (resolvedDomainName != null || expressionsDomainName != null) {
             //TODO make these configurable
             ConfiguredDomains configuredDomains = new ConfiguredDomains(resolvedDomainName, expressionsDomainName);
