@@ -64,7 +64,7 @@ public class ErrorState implements State {
         printf(NEW_LINE, direct);
         // Throw an exception if the mode is non-interactive and there's no next state.
         if ((stateValues != null && !stateValues.isInteractive()) && nextState == null) {
-            throw new RuntimeException(errorMessage);
+            throw new AddUserFailedException(errorMessage);
         }
         return nextState;
     }
