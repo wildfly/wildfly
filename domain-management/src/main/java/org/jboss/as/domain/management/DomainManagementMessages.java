@@ -287,8 +287,8 @@ public interface DomainManagementMessages {
      *
      * @return a {@link String} for the message.
      */
-    @Message(id = 15239, value = "Only alpha/numeric usernames accepted.")
-    String usernameNotAlphaNumeric();
+    @Message(id = 15239, value = "Username must be alphanumeric with the exception of the following accepted symbols (%s)")
+    String usernameNotAlphaNumeric(String symbols);
 
     /**
      * Confirmation of the user being added.
