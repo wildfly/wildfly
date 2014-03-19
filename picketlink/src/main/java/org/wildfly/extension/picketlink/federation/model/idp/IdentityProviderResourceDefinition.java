@@ -25,6 +25,7 @@ package org.wildfly.extension.picketlink.federation.model.idp;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -42,6 +43,7 @@ public class IdentityProviderResourceDefinition extends AbstractFederationResour
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(ModelElement.COMMON_SECURITY_DOMAIN.getName(), ModelType.STRING, true)
+        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.SECURITY_DOMAIN_REF)
         .build();
     public static final SimpleAttributeDefinition ENCRYPT = new SimpleAttributeDefinitionBuilder(ModelElement.IDENTITY_PROVIDER_ENCRYPT.getName(), ModelType.BOOLEAN, true)
         .setDefaultValue(new ModelNode().set(false))

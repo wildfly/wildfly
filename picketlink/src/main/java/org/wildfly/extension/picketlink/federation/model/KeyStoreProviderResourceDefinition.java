@@ -24,6 +24,7 @@ package org.wildfly.extension.picketlink.federation.model;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 
@@ -41,12 +42,15 @@ public class KeyStoreProviderResourceDefinition extends AbstractFederationResour
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition PASSWORD = new SimpleAttributeDefinitionBuilder(ModelElement.KEY_STORE_PASSWORD.getName(), ModelType.STRING, false)
+        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition SIGN_KEY_ALIAS = new SimpleAttributeDefinitionBuilder(ModelElement.KEY_STORE_SIGN_KEY_ALIAS.getName(), ModelType.STRING, false)
+        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
         .setAllowExpression(true)
         .build();
     public static final SimpleAttributeDefinition SIGN_KEY_PASSWORD = new SimpleAttributeDefinitionBuilder(ModelElement.KEY_STORE_SIGN_KEY_PASSWORD.getName(), ModelType.STRING, false)
+        .setAccessConstraints(SensitiveTargetAccessConstraintDefinition.CREDENTIAL)
         .setAllowExpression(true)
         .build();
 

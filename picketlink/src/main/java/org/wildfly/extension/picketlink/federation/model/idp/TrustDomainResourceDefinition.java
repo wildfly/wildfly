@@ -25,8 +25,8 @@ package org.wildfly.extension.picketlink.federation.model.idp;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.dmr.ModelType;
-import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
+import org.wildfly.extension.picketlink.federation.model.AbstractFederationResourceDefinition;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
