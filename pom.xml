@@ -156,7 +156,7 @@
         <version.org.hibernate.hql>1.0.0.Alpha6</version.org.hibernate.hql>
         <version.org.hibernate.search>4.5.0.Final</version.org.hibernate.search>
         <version.org.hornetq>2.4.1.Final</version.org.hornetq>
-        <version.org.infinispan>6.0.1.Final</version.org.infinispan>
+        <version.org.infinispan>6.0.2.Final</version.org.infinispan>
         <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
         <version.org.jberet>1.0.1.CR1</version.org.jberet>
@@ -185,7 +185,7 @@
         <version.org.jboss.logging.jboss-logging-tools>1.2.0.Final</version.org.jboss.logging.jboss-logging-tools>
         <version.org.jboss.logmanager.jboss-logmanager>1.5.2.Final</version.org.jboss.logmanager.jboss-logmanager>
         <version.org.jboss.logmanager.log4j-jboss-logmanager>1.1.0.Final</version.org.jboss.logmanager.log4j-jboss-logmanager>
-        <version.org.jboss.marshalling.jboss-marshalling>1.4.3.Final</version.org.jboss.marshalling.jboss-marshalling>
+        <version.org.jboss.marshalling.jboss-marshalling>1.4.4.Final</version.org.jboss.marshalling.jboss-marshalling>
         <version.org.jboss.metadata>8.0.0.Final</version.org.jboss.metadata>
         <version.org.jboss.mod_cluster>1.3.0.Final</version.org.jboss.mod_cluster>
         <version.org.jboss.modules.jboss-modules>1.3.3.Final</version.org.jboss.modules.jboss-modules>
