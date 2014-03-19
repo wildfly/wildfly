@@ -59,7 +59,7 @@ public class EnvEntryInjectionTestCase {
                 EnvEntryInjectionServlet.class,
                 EnvEntryManagedBean.class,
                 EnvEntryInjectionTestCase.class
-                );
+        );
         war.addAsWebInfResource(getWebXml(), "web.xml");
         return war;
     }
@@ -88,10 +88,15 @@ public class EnvEntryInjectionTestCase {
         Assert.assertEquals("hi", bean.getNonExistentString());
     }
 
-    @Test(expected = NamingException.class)
+    @Test
     public void testNonExistentResourceCannotBeLookedUp() throws NamingException {
-        final InitialContext initialContext = new InitialContext();
-        initialContext.lookup("java:module/env/" + EnvEntryManagedBean.class.getName() + "/nonExistentString");
+        try {
+            final InitialContext initialContext = new InitialContext();
+            initialContext.lookup("java:module/env/" + EnvEntryManagedBean.class.getName() + "/nonExistentString");
+            Assert.fail();
+        } catch (NamingException expected) {
+
+        }
     }
 
     @Test

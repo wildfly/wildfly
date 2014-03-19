@@ -48,10 +48,15 @@ public class NonComponentResourceInjectionTestCase {
         return war;
     }
 
-    @Test(expected = NamingException.class)
+    @Test
     public void testBindingDoesNotExist() throws NamingException {
-        InitialContext context = new InitialContext();
-        Object result = context.lookup("java:module/env/" + NonComponentResourceInjectionTestCase.class.getName() + "/userTransaction");
+        try {
+            InitialContext context = new InitialContext();
+            Object result = context.lookup("java:module/env/" + NonComponentResourceInjectionTestCase.class.getName() + "/userTransaction");
+            Assert.fail();
+        } catch (NamingException expected) {
+
+        }
     }
 
 
