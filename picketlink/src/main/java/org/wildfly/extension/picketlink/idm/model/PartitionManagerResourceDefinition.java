@@ -30,7 +30,6 @@ import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraint
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
-import org.wildfly.extension.picketlink.federation.FederationExtension;
 import org.wildfly.extension.picketlink.idm.IDMExtension;
 
 import java.util.List;
