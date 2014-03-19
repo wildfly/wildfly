@@ -31,13 +31,20 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.List;
 
+import javax.jws.WebService;
+import javax.xml.ws.WebServiceProvider;
+
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.web.common.WarMetaData;
+import org.jboss.as.webservices.deployers.WebServiceAnnotationInfo;
+import org.jboss.as.webservices.deployers.WebServiceProviderAnnotationInfo;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.JAXWSDeployment;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
@@ -215,6 +222,41 @@ public final class ASHelper {
         return true;
     }
 
+    public static boolean isJaxwsEndpoint(final EEModuleClassDescription classDescription, final CompositeIndex index) {
+        ClassInfo classInfo = null;
+        WebServiceAnnotationInfo webserviceAnnoationInfo = null;
+        final ClassAnnotationInformation<WebService, WebServiceAnnotationInfo> classAnnotationInfo = classDescription.getAnnotationInformation(WebService.class);
+        if (classAnnotationInfo!= null && !classAnnotationInfo.getClassLevelAnnotations().isEmpty()) {
+            webserviceAnnoationInfo = classAnnotationInfo.getClassLevelAnnotations().get(0);
+            classInfo = (ClassInfo)webserviceAnnoationInfo.getTarget();
+        }
+        WebServiceProviderAnnotationInfo webserviceProviderAnnoationInfo = null;
+        final ClassAnnotationInformation<WebServiceProvider, WebServiceProviderAnnotationInfo> providerAnnotationInfo = classDescription.getAnnotationInformation(WebServiceProvider.class);
+        if (providerAnnotationInfo!= null && !providerAnnotationInfo.getClassLevelAnnotations().isEmpty()) {
+            webserviceProviderAnnoationInfo = providerAnnotationInfo.getClassLevelAnnotations().get(0);
+            classInfo = (ClassInfo)webserviceProviderAnnoationInfo.getTarget();
+        }
+        if (classInfo == null) {
+            return false;
+        }
+        // assert JAXWS endpoint class flags
+        final short flags = classInfo.flags();
+        if (Modifier.isInterface(flags)) return false;
+        if (Modifier.isAbstract(flags)) return false;
+        if (!Modifier.isPublic(flags)) return false;
+        if (isJaxwsService(classInfo, index)) return false;
+
+        if (webserviceAnnoationInfo !=null && webserviceProviderAnnoationInfo != null) {
+            ROOT_LOGGER.mutuallyExclusiveAnnotations(classInfo.name().toString());
+            return false;
+        }
+        if (Modifier.isFinal(flags)) {
+            ROOT_LOGGER.finalEndpointClassDetected(classInfo.name().toString());
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Gets the JBossWebMetaData from the WarMetaData attached to the provided deployment unit, if any.
      *
@@ -302,5 +344,4 @@ public final class ASHelper {
         }
         return refRegistry;
     }
-
 }
