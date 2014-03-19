@@ -25,57 +25,74 @@ package org.jboss.as.webservices.deployers;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsEjbs;
 import static org.jboss.as.webservices.util.ASHelper.getJaxwsPojos;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
-import static org.jboss.as.webservices.util.DotNames.HANDLER_CHAIN_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.WS_ENDPOINT_HANDLERS_MAPPING_KEY;
+
+import javax.jws.WebService;
+import javax.xml.ws.WebServiceProvider;
 
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
+import org.jboss.as.ee.component.EEModuleClassDescription;
+import org.jboss.as.ee.component.EEModuleDescription;
+import org.jboss.as.ee.metadata.ClassAnnotationInformation;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
-import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.injection.WSEndpointHandlersMapping;
 import org.jboss.as.webservices.metadata.model.EJBEndpoint;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
-import org.jboss.jandex.AnnotationInstance;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public final class WSIntegrationProcessorJAXWS_HANDLER extends AbstractIntegrationProcessorJAXWS {
 
     public WSIntegrationProcessorJAXWS_HANDLER() {
-        super(HANDLER_CHAIN_ANNOTATION);
     }
 
     @Override
-    protected void processAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException {
+    protected void processAnnotation(final DeploymentUnit unit, final EEModuleDescription moduleDescription) throws DeploymentUnitProcessingException {
         final WSEndpointHandlersMapping mapping = getOptionalAttachment(unit, WS_ENDPOINT_HANDLERS_MAPPING_KEY);
         if (mapping == null)
             return;
-
-        final String endpointClassName = classInfo.name().toString();
-
-        if (isEjb3(classInfo)) {
-            for (final EJBEndpoint ejbEndpoint : getJaxwsEjbs(unit)) {
-                if (endpointClassName.equals(ejbEndpoint.getClassName())) {
-                    for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
-                        final String ejbEndpointName = ejbEndpoint.getName();
-                        final String handlerName = ejbEndpointName + "-" + handlerClassName;
-                        final ComponentDescription jaxwsHandlerDescription = createComponentDescription(unit, handlerName, handlerClassName, ejbEndpointName);
-                        propagateNamingContext(jaxwsHandlerDescription, ejbEndpoint);
-                    }
-                }
+        for (EEModuleClassDescription classDescription : moduleDescription.getClassDescriptions()) {
+            ClassInfo classInfo = null;
+            ClassAnnotationInformation<WebService, WebServiceAnnotationInfo> annotationInfo = classDescription
+                    .getAnnotationInformation(WebService.class);
+            if (annotationInfo != null) {
+                classInfo = (ClassInfo) annotationInfo.getClassLevelAnnotations().get(0).getTarget();
             }
-        } else {
-            for (final POJOEndpoint pojoEndpoint : getJaxwsPojos(unit)) {
-                if (endpointClassName.equals(pojoEndpoint.getClassName())) {
-                    for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
-                        final String pojoEndpointName = pojoEndpoint.getName();
-                        final String handlerName = pojoEndpointName + "-" + handlerClassName;
-                        createComponentDescription(unit, handlerName, handlerClassName, pojoEndpointName);
+            final ClassAnnotationInformation<WebServiceProvider, WebServiceProviderAnnotationInfo> providreInfo = classDescription
+                        .getAnnotationInformation(WebServiceProvider.class);
+            if (providreInfo != null) {
+                classInfo = (ClassInfo) providreInfo.getClassLevelAnnotations().get(0).getTarget();
+            }
+            if (classInfo != null && mapping.getHandlers(classInfo.name().toString()) != null) {
+                final String endpointClassName = classInfo.name().toString();
+                if (isEjb3(classInfo)) {
+                    for (final EJBEndpoint ejbEndpoint : getJaxwsEjbs(unit)) {
+                        if (endpointClassName.equals(ejbEndpoint.getClassName())) {
+                            for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
+                                final String ejbEndpointName = ejbEndpoint.getName();
+                                final String handlerName = ejbEndpointName + "-" + handlerClassName;
+                                final ComponentDescription jaxwsHandlerDescription = createComponentDescription(unit,
+                                        handlerName, handlerClassName, ejbEndpointName);
+                                propagateNamingContext(jaxwsHandlerDescription, ejbEndpoint);
+                            }
+                        }
+                    }
+                } else {
+                    for (final POJOEndpoint pojoEndpoint : getJaxwsPojos(unit)) {
+                        if (endpointClassName.equals(pojoEndpoint.getClassName())) {
+                            for (final String handlerClassName : mapping.getHandlers(endpointClassName)) {
+                                final String pojoEndpointName = pojoEndpoint.getName();
+                                final String handlerName = pojoEndpointName + "-" + handlerClassName;
+                                createComponentDescription(unit, handlerName, handlerClassName, pojoEndpointName);
+                            }
+                        }
                     }
                 }
             }
