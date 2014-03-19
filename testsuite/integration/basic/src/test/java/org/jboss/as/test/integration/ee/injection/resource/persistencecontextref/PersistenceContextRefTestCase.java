@@ -32,6 +32,7 @@ import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -81,16 +82,26 @@ public class PersistenceContextRefTestCase {
         bean.getMypc().getMetamodel().entity(PcMyEntity.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCorrectPersistenceUnitInjectedFromAnnotation2() throws NamingException {
-        PcManagedBean bean = getManagedBean();
-        bean.getMypc().getMetamodel().entity(PcOtherEntity.class);
+        try {
+            PcManagedBean bean = getManagedBean();
+            bean.getMypc().getMetamodel().entity(PcOtherEntity.class);
+            Assert.fail();
+        } catch (IllegalArgumentException expected) {
+
+        }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCorrectPersistenceUnitInjectedFromPersistenceUnitRef() throws NamingException {
-        PcManagedBean bean = getManagedBean();
-        bean.getOtherpc().getMetamodel().entity(PcMyEntity.class);
+        try {
+            PcManagedBean bean = getManagedBean();
+            bean.getOtherpc().getMetamodel().entity(PcMyEntity.class);
+            Assert.fail();
+        } catch (IllegalArgumentException expected) {
+
+        }
     }
 
     @Test
@@ -105,10 +116,15 @@ public class PersistenceContextRefTestCase {
         bean.getMypc2().getMetamodel().entity(PcMyEntity.class);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCorrectPersistenceUnitInjectedFromRefInjectionTarget2() throws NamingException {
-        PcManagedBean bean = getManagedBean();
-        bean.getMypc2().getMetamodel().entity(PcOtherEntity.class);
+        try {
+            PcManagedBean bean = getManagedBean();
+            bean.getMypc2().getMetamodel().entity(PcOtherEntity.class);
+            Assert.fail();
+        } catch (IllegalArgumentException expected) {
+
+        }
     }
 
 
