@@ -32,7 +32,6 @@ import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 
 import java.lang.reflect.Modifier;
-import java.util.List;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentDescription;
@@ -51,23 +50,18 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.webservices.injection.WSComponentDescription;
 import org.jboss.as.webservices.service.EndpointService;
-import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.ClassInfo;
-import org.jboss.jandex.DotName;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 /**
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUnitProcessor {
 
-    private final DotName[] dotNames;
-
-    protected AbstractIntegrationProcessorJAXWS(final DotName... dotNames) {
-        this.dotNames = dotNames;
+    protected AbstractIntegrationProcessorJAXWS() {
     }
 
     @Override
@@ -76,26 +70,12 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         if (DeploymentTypeMarker.isType(DeploymentType.EAR, unit)) {
             return;
         }
-
         final CompositeIndex index = unit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
         if (index == null) {
-            ROOT_LOGGER.skippingAnnotationProcessing(unit.getName());
-        } else {
-            for (final DotName dotName : dotNames) {
-                final List<AnnotationInstance> wsAnnotations = index.getAnnotations(dotName);
-                if (!wsAnnotations.isEmpty()) {
-                    for (final AnnotationInstance wsAnnotation : wsAnnotations) {
-                        final AnnotationTarget target = wsAnnotation.target();
-                        if (target instanceof ClassInfo) {
-                            final ClassInfo classInfo = (ClassInfo) target;
-                            if (isJaxwsEndpoint(classInfo, index)) {
-                                processAnnotation(unit, classInfo, wsAnnotation, index);
-                            }
-                        }
-                    }
-                }
-            }
+            return;
         }
+        final EEModuleDescription eeModuleDescription = unit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION);
+        processAnnotation(unit, eeModuleDescription);
     }
 
     @Override
@@ -103,7 +83,7 @@ public abstract class AbstractIntegrationProcessorJAXWS implements DeploymentUni
         // does nothing
     }
 
-    protected abstract void processAnnotation(final DeploymentUnit unit, final ClassInfo classInfo, final AnnotationInstance wsAnnotation, final CompositeIndex compositeIndex) throws DeploymentUnitProcessingException;
+    protected abstract void processAnnotation(final DeploymentUnit unit, final EEModuleDescription eeModuleDescription) throws DeploymentUnitProcessingException;
 
     private static boolean isJaxwsEndpoint(final ClassInfo clazz, final CompositeIndex index) {
         // assert JAXWS endpoint class flags

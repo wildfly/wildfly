@@ -269,8 +269,9 @@ public enum Phase {
     public static final int PARSE_WEB_MERGE_METADATA                    = 0x2000;
     public static final int PARSE_OSGI_COMPONENTS                       = 0x2010;
     public static final int PARSE_WEBSERVICES_CONTEXT_INJECTION         = 0x2040;
-    public static final int PARSE_WEBSERVICES_XML                       = 0x2050;
-    public static final int PARSE_JBOSS_WEBSERVICES_XML                 = 0x2051;
+    public static final int PARSE_WEBSERVICES_XML                       = 0x2049;
+    public static final int PARSE_JBOSS_WEBSERVICES_XML                 = 0x2050;
+    public static final int PARSE_WEBSERVICES_ANNOTATION                = 0x2051;
     public static final int PARSE_JAXWS_EJB_INTEGRATION                 = 0x2052;
     public static final int PARSE_JAXRPC_POJO_INTEGRATION               = 0x2053;
     public static final int PARSE_JAXRPC_EJB_INTEGRATION                = 0x2054;
