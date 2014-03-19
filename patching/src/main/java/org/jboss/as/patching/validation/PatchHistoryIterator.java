@@ -69,7 +69,7 @@ public interface PatchHistoryIterator {
      * @return the next patch in the iteration
      * @throws NoSuchElementException if the iteration has no more elements
      */
-    String next(PatchingArtifactValidationContext context);
+    String next(PatchingValidationErrorHandler context);
 
     public static final class Builder {
 
@@ -79,14 +79,14 @@ public interface PatchHistoryIterator {
 
         private final InstalledIdentity identity;
         private final PatchHistoryValidations.PatchingArtifactStateHandlers handlers = new PatchHistoryValidations.PatchingArtifactStateHandlers();
-        private PatchingArtifactValidationContext context = PatchingArtifactValidationContext.DEFAULT;
+        private PatchingValidationErrorHandler errorHandler = PatchingValidationErrorHandler.DEFAULT;
 
         private Builder(final InstalledIdentity identity) {
             this.identity = identity;
         }
 
-        public void setValidationContext(PatchingArtifactValidationContext context) {
-            this.context = context;
+        public void setErrorHandler(PatchingValidationErrorHandler errorHandler) {
+            this.errorHandler = errorHandler;
         }
 
         public <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addStateHandler(PatchingArtifact<P, S> artifact, PatchingArtifactStateHandler<S> handler) {
@@ -98,7 +98,7 @@ public interface PatchHistoryIterator {
             final List<String> patches = new ArrayList<>(identity.getAllInstalledPatches());
             Collections.reverse(patches);
             final int size = patches.size();
-            final BasicArtifactProcessor processor = new BasicArtifactProcessor(identity, context, handlers);
+            final BasicArtifactProcessor processor = new BasicArtifactProcessor(identity, errorHandler, handlers);
             final PatchHistoryIterator iterator = new PatchHistoryIterator() {
                 int idx = 0;
 
@@ -118,11 +118,11 @@ public interface PatchHistoryIterator {
 
                 @Override
                 public String next() {
-                    return next(context);
+                    return next(errorHandler);
                 }
 
                 @Override
-                public String next(PatchingArtifactValidationContext context) {
+                public String next(PatchingValidationErrorHandler context) {
                     int i = idx;
                     if (i >= size) {
                         throw new NoSuchElementException();

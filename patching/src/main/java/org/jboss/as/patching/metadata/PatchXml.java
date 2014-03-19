@@ -30,6 +30,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -39,6 +40,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.staxmapper.XMLElementWriter;
 import org.jboss.staxmapper.XMLMapper;
 
@@ -122,13 +124,17 @@ public class PatchXml {
     }
 
     public static PatchMetadataResolver parse(final InputStream stream) throws XMLStreamException {
+        return parse(stream, null);
+    }
+
+    public static PatchMetadataResolver parse(final InputStream stream, InstalledIdentity originalIdentity) throws XMLStreamException {
         try {
             final XMLInputFactory inputFactory = INPUT_FACTORY;
             setIfSupported(inputFactory, XMLInputFactory.IS_VALIDATING, Boolean.FALSE);
             setIfSupported(inputFactory, XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
             final XMLStreamReader streamReader = inputFactory.createXMLStreamReader(stream);
             //
-            final Result<PatchMetadataResolver> result = new Result<PatchMetadataResolver>();
+            final Result<PatchMetadataResolver> result = new Result<PatchMetadataResolver>(originalIdentity);
             MAPPER.parseDocument(result, streamReader);
             return result.getResult();
         } finally {
@@ -137,9 +143,14 @@ public class PatchXml {
     }
 
     public static PatchMetadataResolver parse(final File patchXml) throws IOException, XMLStreamException {
+        return parse(patchXml, null);
+    }
+
+    public static PatchMetadataResolver parse(final File patchXml, InstalledIdentity original) throws IOException, XMLStreamException {
+
         final InputStream is = new FileInputStream(patchXml);
         try {
-            return parse(is);
+            return parse(is, original);
         } finally {
             safeClose(is);
         }
@@ -153,6 +164,15 @@ public class PatchXml {
 
     public static class Result<T> {
         private T result;
+        private final InstalledIdentity originalIdentity;
+
+        Result() {
+            this(null);
+        }
+
+        Result(InstalledIdentity originalIdentity) {
+            this.originalIdentity = originalIdentity;
+        }
 
         public T getResult() {
             return result;
@@ -160,6 +180,10 @@ public class PatchXml {
 
         public void setResult(T result) {
             this.result = result;
+        }
+
+        public InstalledIdentity getOriginalIdentity() {
+            return originalIdentity;
         }
     }
 

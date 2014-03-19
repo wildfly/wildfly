@@ -109,7 +109,7 @@ public final class PatchHistoryValidations {
     }
 
 
-    abstract static class HistoryProcessor implements PatchingArtifactValidationContext {
+    abstract static class HistoryProcessor implements PatchingValidationErrorHandler {
 
         private final List<String> errors = new ArrayList<String>();
 

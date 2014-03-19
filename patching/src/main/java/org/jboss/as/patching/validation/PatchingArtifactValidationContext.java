@@ -22,60 +22,27 @@
 
 package org.jboss.as.patching.validation;
 
+import org.jboss.as.patching.installation.InstalledIdentity;
+
 /**
- * The validation context.
- *
  * @author Alexey Loubyansky
- * @author Emanuel Muckenhuber
+ *
  */
 public interface PatchingArtifactValidationContext {
 
-    /**
-     * Add an error when trying to load an artifact.
-     *
-     * @param artifact the artifact
-     * @param state    the artifact state
-     * @param <P>      the parent type
-     * @param <S>      the current type
-     */
-    <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addError(PatchingArtifact<P, S> artifact, S state);
+    PatchingValidationErrorHandler getErrorHandler();
 
     /**
-     * Add an inconsistent artifact.
+     * Get the installed identity.
+     * <p/>
+     * NOTE: this is the original identity and cannot be used as reference to the current patched state as part of
+     * processing the history
      *
-     * @param artifact the artifact
-     * @param current  the artifact state
-     * @param expected the artifact state
-     * @param <P>      the parent type
-     * @param <S>      the current type
+     * @return the installed identity
      */
-    <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addInconsistent(PatchingArtifact<P, S> artifact, S current);
+    InstalledIdentity getOriginalIdentity();
 
-    /**
-     * Add a missing artifact.
-     *
-     * @param artifact the artifact
-     * @param state    the artifact state
-     * @param <P>      the parent type
-     * @param <S>      the current type
-     */
-    <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addMissing(PatchingArtifact<P, S> artifact, S state);
+    void setCurrentPatchIdentity(InstalledIdentity currentPatchIdentity);
 
-    PatchingArtifactValidationContext DEFAULT = new PatchingArtifactValidationContext() {
-        @Override
-        public <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addError(PatchingArtifact<P, S> artifact, S state) {
-            throw new RuntimeException("error when processing artifact " + artifact);
-        }
-
-        @Override
-        public <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addInconsistent(PatchingArtifact<P, S> artifact, S current) {
-            throw new RuntimeException("inconsistent artifact " + artifact + ": " + current);
-        }
-
-        @Override
-        public <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addMissing(PatchingArtifact<P, S> artifact, S state) {
-            throw new RuntimeException("missing artifact " + artifact + ": " + state);
-        }
-    };
-
+    InstalledIdentity getCurrentPatchIdentity();
 }

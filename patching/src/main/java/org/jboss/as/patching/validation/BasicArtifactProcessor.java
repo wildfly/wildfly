@@ -29,24 +29,51 @@ import org.jboss.as.patching.installation.InstalledIdentity;
  */
 class BasicArtifactProcessor implements PatchingArtifactProcessor {
 
-    private final InstalledIdentity installedIdentity;
-    private final PatchingArtifactValidationContext defaultValidationContext;
     private final PatchHistoryValidations.PatchingArtifactStateHandlers handlers;
+    private final PatchingArtifactValidationContext context;
 
     // The current node
     private Node current;
 
-    public BasicArtifactProcessor(final InstalledIdentity installedIdentity, final PatchingArtifactValidationContext context,
+    public BasicArtifactProcessor(final InstalledIdentity installedIdentity, final PatchingValidationErrorHandler errorHandler,
                                   final PatchHistoryValidations.PatchingArtifactStateHandlers handlers) {
         assert installedIdentity != null;
-        assert context != null;
+        assert errorHandler != null;
         assert handlers != null;
-        this.installedIdentity = installedIdentity;
-        this.defaultValidationContext = context;
+        this.context = new PatchingArtifactValidationContext() {
+
+            private InstalledIdentity currentIdentity = installedIdentity;
+
+            @Override
+            public PatchingValidationErrorHandler getErrorHandler() {
+                if (current.context != null) {
+                    return current.context;
+                }
+                return errorHandler;
+            }
+
+            @Override
+            public InstalledIdentity getOriginalIdentity() {
+                return installedIdentity;
+            }
+
+            @Override
+            public void setCurrentPatchIdentity(InstalledIdentity currentPatchIdentity) {
+                this.currentIdentity = currentPatchIdentity;
+                if(currentPatchIdentity == null) {
+                    throw new IllegalArgumentException();
+                }
+            }
+
+            @Override
+            public InstalledIdentity getCurrentPatchIdentity() {
+                return currentIdentity;
+            }
+        };
         this.handlers = handlers;
     }
 
-    protected <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> boolean processRoot(PatchingArtifact<P, S> artifact, S state, PatchingArtifactValidationContext context) {
+    protected <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> boolean processRoot(PatchingArtifact<P, S> artifact, S state, PatchingValidationErrorHandler context) {
         assert current == null;
         current = new Node(null, artifact, state, context);
         try {
@@ -111,15 +138,7 @@ class BasicArtifactProcessor implements PatchingArtifactProcessor {
 
     @Override
     public PatchingArtifactValidationContext getValidationContext() {
-        if (current.context != null) {
-            return current.context;
-        }
-        return defaultValidationContext;
-    }
-
-    @Override
-    public InstalledIdentity getInstalledIdentity() {
-        return installedIdentity;
+        return context;
     }
 
     static class Node<P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> {
@@ -127,9 +146,9 @@ class BasicArtifactProcessor implements PatchingArtifactProcessor {
         private final S state;
         private final Node parent;
         private final PatchingArtifact<P, S> artifact;
-        private final PatchingArtifactValidationContext context;
+        private final PatchingValidationErrorHandler context;
 
-        Node(Node parent, PatchingArtifact<P, S> artifact, S state, PatchingArtifactValidationContext context) {
+        Node(Node parent, PatchingArtifact<P, S> artifact, S state, PatchingValidationErrorHandler context) {
             this.state = state;
             this.parent = parent;
             this.artifact = artifact;

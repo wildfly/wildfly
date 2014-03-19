@@ -93,8 +93,11 @@ public interface PatchingFileArtifact<P extends PatchingArtifact.ArtifactState, 
 
         @Override
         public boolean isValid(PatchingArtifactValidationContext context) {
-            if (!file.exists()) {
-                context.addMissing(artifact, this);
+            if (file == null) {
+                context.getErrorHandler().addError(artifact, this);
+                return false;
+            } else if (!file.exists()) {
+                context.getErrorHandler().addMissing(artifact, this);
                 return false;
             }
             return validate0(context);
@@ -102,7 +105,7 @@ public interface PatchingFileArtifact<P extends PatchingArtifact.ArtifactState, 
 
         protected boolean validate0(PatchingArtifactValidationContext context) {
             if (file.isDirectory()) {
-                context.addInconsistent(artifact, this);
+                context.getErrorHandler().addInconsistent(artifact, this);
                 return false;
             }
             return true;
@@ -110,7 +113,11 @@ public interface PatchingFileArtifact<P extends PatchingArtifact.ArtifactState, 
 
         @Override
         public String toString() {
-            return file.getAbsolutePath();
+            if (file != null) {
+                return file.getAbsolutePath();
+            } else {
+                return artifact.getClass().getName();
+            }
         }
 
     }
@@ -124,7 +131,7 @@ public interface PatchingFileArtifact<P extends PatchingArtifact.ArtifactState, 
         @Override
         protected boolean validate0(PatchingArtifactValidationContext context) {
             if (!file.isDirectory()) {
-                context.addInconsistent(artifact, this);
+                context.getErrorHandler().addInconsistent(artifact, this);
                 return false;
             }
             return true;
