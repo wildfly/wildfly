@@ -42,7 +42,7 @@ class PatchingHistoryDirArtifact extends AbstractArtifact<PatchingArtifacts.Patc
 
     @Override
     public boolean process(PatchingArtifacts.PatchID parent, PatchingArtifactProcessor processor) {
-        final InstalledIdentity identity = processor.getInstalledIdentity();
+        final InstalledIdentity identity = processor.getValidationContext().getOriginalIdentity();
         final File history = identity.getInstalledImage().getPatchHistoryDir(parent.getPatchID());
         final PatchingFileArtifact.DirectoryArtifactState state = new PatchingFileArtifact.DirectoryArtifactState(history, this);
         return processor.process(this, state);

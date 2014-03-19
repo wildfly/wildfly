@@ -53,7 +53,7 @@ class PatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, XMLEleme
     @Override
     public void readElement(XMLExtendedStreamReader reader, PatchXml.Result<PatchMetadataResolver> factory) throws XMLStreamException {
         final PatchBuilder builder = new PatchBuilder();
-        doReadElement(reader, builder);
+        doReadElement(reader, builder, factory.getOriginalIdentity());
         factory.setResult(builder);
     }
 

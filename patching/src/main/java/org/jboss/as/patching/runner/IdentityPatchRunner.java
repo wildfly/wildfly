@@ -119,6 +119,17 @@ class IdentityPatchRunner implements InstallationManager.ModificationCompletionC
         } else {
             // Invalidate all installed patches (one-off, cumulative) - we never need to invalidate the release base
             invalidation = new ArrayList<String>(modification.getPatchIDs());
+            if (!invalidation.isEmpty()) {
+                try {
+                    // Before rolling back the one-off patches, validate that the state until that point is consistent
+                    validateRollbackState(invalidation.get(invalidation.size() - 1),
+                            modification.getUnmodifiedInstallationState());
+                } catch (PatchingException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new PatchingException(e);
+                }
+            }
         }
         // Invalidate the installed patches first
         for (final String rollback : invalidation) {

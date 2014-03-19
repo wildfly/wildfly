@@ -22,7 +22,6 @@
 
 package org.jboss.as.patching.validation;
 
-import org.jboss.as.patching.installation.InstalledIdentity;
 
 /**
  * The artifact processor.
@@ -61,15 +60,4 @@ interface PatchingArtifactProcessor {
      * @return the validation context
      */
     PatchingArtifactValidationContext getValidationContext();
-
-    /**
-     * Get the installed identity.
-     * <p/>
-     * NOTE: this is the original identity and cannot be used as reference to the current patched state as part of
-     * processing the history
-     *
-     * @return the installed identity
-     */
-    InstalledIdentity getInstalledIdentity();
-
 }

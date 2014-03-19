@@ -40,11 +40,12 @@ class RollbackTargetArtifact extends AbstractArtifact<PatchingXmlArtifact.XmlArt
     @Override
     public boolean process(PatchingXmlArtifact.XmlArtifactState<RollbackPatch> parent, PatchingArtifactProcessor processor) {
         final RollbackPatch patch = parent.getPatch();
-        final InstalledIdentity identity = patch.getIdentityState();
         final PatchingArtifacts.PatchID patchID = processor.getParentArtifact(PatchingArtifacts.HISTORY_RECORD);
+        final InstalledIdentity identity = patch.getIdentityState();
+        processor.getValidationContext().setCurrentPatchIdentity(identity);
         final State state = new State(identity, patchID);
         if (identity == null) {
-            processor.getValidationContext().addMissing(PatchingArtifacts.ROLLBACK_TARGET, state);
+            processor.getValidationContext().getErrorHandler().addMissing(PatchingArtifacts.ROLLBACK_TARGET, state);
             return false;
         } else {
             return processor.process(this, state);
@@ -79,10 +80,10 @@ class RollbackTargetArtifact extends AbstractArtifact<PatchingXmlArtifact.XmlArt
                 } else if (ref == null && Constants.BASE.equals(rollbackTo)) {
                     return true;
                 } else {
-                    context.addInconsistent(PatchingArtifacts.ROLLBACK_TARGET, this);
+                    context.getErrorHandler().addInconsistent(PatchingArtifacts.ROLLBACK_TARGET, this);
                 }
             } catch (IOException e) {
-                context.addError(PatchingArtifacts.ROLLBACK_TARGET, this);
+                context.getErrorHandler().addError(PatchingArtifacts.ROLLBACK_TARGET, this);
             }
             return false;
         }
