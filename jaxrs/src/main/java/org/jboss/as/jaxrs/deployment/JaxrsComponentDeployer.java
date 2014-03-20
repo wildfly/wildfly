@@ -29,7 +29,9 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
+import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
+import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
 import org.jboss.as.jaxrs.JaxrsMessages;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -81,6 +83,16 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
             if (!GetRestful.isRootResource(componentClass)) continue;
 
             if (component instanceof SessionBeanComponentDescription) {
+                if (component instanceof StatefulComponentDescription) {
+                    //using SFSB's as JAX-RS endpoints is not recommended, but if people really want to do it they can
+
+                    JAXRS_LOGGER.debugf("Stateful session bean %s is being used as a JAX-RS endpoint, this is not recommended", component.getComponentName());
+                    if (WeldDeploymentMarker.isPartOfWeldDeployment(deploymentUnit)) {
+                        //if possible just let CDI handle the integration
+                        continue;
+                    }
+                }
+
                 Class[] jaxrsType = GetRestful.getSubResourceClasses(componentClass);
                 final String jndiName;
                 if (component.getViews().size() == 1) {
@@ -90,14 +102,14 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                     boolean found = false;
                     String foundType = null;
                     for (final ViewDescription view : component.getViews()) {
-                        for(Class subResource : jaxrsType) {
+                        for (Class subResource : jaxrsType) {
                             if (view.getViewClassName().equals(subResource.getName())) {
                                 foundType = subResource.getName();
                                 found = true;
                                 break;
                             }
                         }
-                        if(found) {
+                        if (found) {
                             break;
                         }
                     }
