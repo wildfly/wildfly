@@ -32,7 +32,10 @@ import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jacorb.deployment.JacORBDependencyProcessor;
 import org.jboss.as.jacorb.deployment.JacORBMarkerProcessor;
 import org.jboss.as.jacorb.naming.jndi.JBossCNCtxFactory;
@@ -42,6 +45,7 @@ import org.jboss.as.jacorb.security.DomainSocketFactory;
 import org.jboss.as.jacorb.service.CorbaNamingService;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.as.jacorb.service.CorbaPOAService;
+import org.jboss.as.jacorb.service.IORSecConfigMetaDataService;
 import org.jboss.as.naming.InitialContext;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.AbstractDeploymentChainStep;
@@ -49,6 +53,10 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
+import org.jboss.metadata.ejb.jboss.IORSASContextMetaData;
+import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
+import org.jboss.metadata.ejb.jboss.IORTransportConfigMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -87,7 +95,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void populateModel(final ModelNode operation, final ModelNode model) throws OperationFailedException {
         // populate the submodel.
         for (AttributeDefinition attrDefinition : JacORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES) {
             attrDefinition.validateAndSet(operation, model);
@@ -97,16 +105,29 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                 && "on".equals(model.get(JacORBSubsystemDefinitions.ORB_INIT_SECURITY.getName()).asString())) {
             model.get(JacORBSubsystemDefinitions.ORB_INIT_SECURITY.getName()).set(JacORBSubsystemConstants.IDENTITY);
         }
-        // if generic properties have been specified, add them to the model as well.
-       /* String properties = JacORBSubsystemConstants.PROPERTIES;
-        if (operation.hasDefined(properties))
-            model.get(properties).set(operation.get(properties));*/
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
-                                  ServiceVerificationHandler verificationHandler,
-                                  List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performRuntime(final OperationContext context, final ModelNode operation, final ModelNode model,
+                                  final ServiceVerificationHandler verificationHandler,
+                                  final List<ServiceController<?>> newControllers) throws OperationFailedException {
+
+        // This needs to run after all child resources so that they can detect a fresh state
+        context.addStep(new OperationStepHandler() {
+            @Override
+            public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+                final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
+                ModelNode node = Resource.Tools.readModel(resource);
+                launchServices(context, node, verificationHandler, newControllers);
+                // Rollback handled by the parent step
+                context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
+            }
+        }, OperationContext.Stage.RUNTIME);
+
+    }
+
+    protected void launchServices(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler,
+                                  final List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         JacORBLogger.ROOT_LOGGER.activatingSubsystem();
 
@@ -199,6 +220,18 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
                         namingService.getNamingPOAInjector()).
                 addListener(verificationHandler).
                 setInitialMode(ServiceController.Mode.ACTIVE).install());
+
+        // create the IOR security config metadata service.
+        IORSecurityConfigMetaData securityConfigMetaData = null;
+        if (model.hasDefined(JacORBSubsystemConstants.IOR_SETTINGS)) {
+            securityConfigMetaData = this.createIORSecurityConfigMetaData(context,
+                    model.get(IORSettingsDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        }
+        newControllers.add(context.getServiceTarget().addService(IORSecConfigMetaDataService.SERVICE_NAME,
+                new IORSecConfigMetaDataService(securityConfigMetaData))
+                .addListener(verificationHandler)
+                .setInitialMode(ServiceController.Mode.ACTIVE).install());
+
     }
 
     /**
@@ -307,5 +340,28 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
             props.setProperty(JacORBSubsystemConstants.JACORB_SSL_SOCKET_FACTORY, DomainSocketFactory.class.getName());
             props.setProperty(JacORBSubsystemConstants.JACORB_SSL_SERVER_SOCKET_FACTORY, DomainServerSocketFactory.class.getName());
         }
+    }
+
+    private IORSecurityConfigMetaData createIORSecurityConfigMetaData(final OperationContext context, final ModelNode node)
+            throws OperationFailedException {
+
+        final IORSecurityConfigMetaData securityConfigMetaData = new IORSecurityConfigMetaData();
+
+        final IORTransportConfigMetaData transportConfigMetaData = IORTransportConfigDefinition.INSTANCE.getTransportConfigMetaData(
+                context, node.get(IORTransportConfigDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        if (transportConfigMetaData != null)
+            securityConfigMetaData.setTransportConfig(transportConfigMetaData);
+
+        final IORASContextMetaData asContextMetaData = IORASContextDefinition.INSTANCE.getIORASContextMetaData(
+                context, node.get(IORASContextDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        if (asContextMetaData != null)
+            securityConfigMetaData.setAsContext(asContextMetaData);
+
+        final IORSASContextMetaData sasContextMetaData = IORSASContextDefinition.INSTANCE.getIORSASContextMetaData(
+                context, node.get(IORSASContextDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+        if (sasContextMetaData != null)
+            securityConfigMetaData.setSasContext(sasContextMetaData);
+
+        return securityConfigMetaData;
     }
 }
