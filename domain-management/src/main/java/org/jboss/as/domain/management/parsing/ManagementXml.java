@@ -951,7 +951,7 @@ public class ManagementXml {
                             parseKeystore_1_3(reader, ssl, true);
                             break;
                         default:
-                            parseKeystore_3_0(reader, ssl, true);
+                            parseKeystore_2_1(reader, ssl, true);
                     }
                     break;
                 }
@@ -1066,7 +1066,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private static void parseKeystore_3_0(final XMLExtendedStreamReader reader, final ModelNode addOperation, final boolean extended)
+    private static void parseKeystore_2_1(final XMLExtendedStreamReader reader, final ModelNode addOperation, final boolean extended)
             throws XMLStreamException {
         boolean pathSet = false;
         boolean nonFileProvider = false;
@@ -1927,7 +1927,7 @@ public class ManagementXml {
                 parseKeystore_1_3(reader, op, true);
                 break;
             default:
-                parseKeystore_3_0(reader, op, true);
+                parseKeystore_2_1(reader, op, true);
         }
 
         list.add(op);
