@@ -1069,7 +1069,6 @@ public class ManagementXml {
     private static void parseKeystore_2_1(final XMLExtendedStreamReader reader, final ModelNode addOperation, final boolean extended)
             throws XMLStreamException {
         boolean pathSet = false;
-        boolean nonFileProvider = false;
         boolean keystorePasswordSet = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -1081,9 +1080,6 @@ public class ManagementXml {
                 switch (attribute) {
                     case PROVIDER:
                         KeystoreAttributes.KEYSTORE_PROVIDER.parseAndSetParameter(value, addOperation, reader);
-                        if (value.equals(KeystoreAttributes.KEYSTORE_PROVIDER.getDefaultValue().asString()) == false) {
-                            nonFileProvider = true;
-                        }
                         break;
                     case PATH:
                         KeystoreAttributes.KEYSTORE_PATH.parseAndSetParameter(value, addOperation, reader);
@@ -1126,21 +1122,10 @@ public class ManagementXml {
         }
 
         /*
-         * Get as many listed in the error as possible taking into account the configuration that was read.
+         * The only mandatory attribute now is the KEYSTORE_PASSWORD.
          */
-        if (nonFileProvider) {
-            if (keystorePasswordSet == false) {
-                throw missingRequired(reader, EnumSet.of(Attribute.KEYSTORE_PASSWORD));
-            }
-        } else if (pathSet == false || keystorePasswordSet == false) {
-            Set<Attribute> missing = new HashSet<Attribute>();
-            if (pathSet == false) {
-                missing.add(Attribute.PATH);
-            }
-            if (keystorePasswordSet == false) {
-                missing.add(Attribute.KEYSTORE_PASSWORD);
-            }
-            throw missingRequired(reader, missing);
+        if (keystorePasswordSet == false) {
+            throw missingRequired(reader, EnumSet.of(Attribute.KEYSTORE_PASSWORD));
         }
 
         requireNoContent(reader);

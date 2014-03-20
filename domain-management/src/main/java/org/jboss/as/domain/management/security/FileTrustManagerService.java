@@ -47,19 +47,29 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class JKSTrustManagerService extends AbstractTrustManagerService {
+class FileTrustManagerService extends AbstractTrustManagerService {
 
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
 
+    private volatile String provider;
     private volatile String path;
     private volatile char[] keystorePassword;
 
     private volatile TrustManagerFactory trustManagerFactory;
-    private volatile JKSKeystore keyStore;
+    private volatile FileKeystore keyStore;
 
-    JKSTrustManagerService(final String path, final char[] keystorePassword) {
+    FileTrustManagerService(final String provider, final String path, final char[] keystorePassword) {
+        this.provider = provider;
         this.path = path;
         this.keystorePassword = keystorePassword;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 
     public String getPath() {
@@ -93,7 +103,7 @@ class JKSTrustManagerService extends AbstractTrustManagerService {
         // expect that to be complete.
         String relativeTo = this.relativeTo.getOptionalValue();
         String file = relativeTo == null ? path : relativeTo + "/" + path;
-        keyStore = JKSKeystore.newTrustStore(file, keystorePassword);
+        keyStore = FileKeystore.newTrustStore(provider, file, keystorePassword);
         keyStore.load();
 
         super.start(context);
@@ -127,9 +137,9 @@ class JKSTrustManagerService extends AbstractTrustManagerService {
     private class DelegatingTrustManager implements X509TrustManager {
 
         private X509TrustManager delegate;
-        private final JKSKeystore theTrustStore;
+        private final FileKeystore theTrustStore;
 
-        private DelegatingTrustManager(X509TrustManager trustManager, JKSKeystore theTrustStore) {
+        private DelegatingTrustManager(X509TrustManager trustManager, FileKeystore theTrustStore) {
             this.delegate = trustManager;
             this.theTrustStore = theTrustStore;
         }

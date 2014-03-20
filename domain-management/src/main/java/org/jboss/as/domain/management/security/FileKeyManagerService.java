@@ -33,24 +33,34 @@ import org.jboss.msc.value.InjectedValue;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class JKSKeyManagerService extends AbstractKeyManagerService {
+class FileKeyManagerService extends AbstractKeyManagerService {
 
     private final InjectedValue<String> relativeTo = new InjectedValue<String>();
 
+    private volatile String provider;
     private volatile String path;
     private volatile char[] keystorePassword;
     private volatile char[] keyPassword;
     private volatile String alias;
 
-    private volatile JKSKeystore keyStore;
+    private volatile FileKeystore keyStore;
 
-    JKSKeyManagerService(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
+    FileKeyManagerService(final String provider, final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
         super(keystorePassword, keyPassword);
 
+        this.provider = provider;
         this.path = path;
         this.keystorePassword = keystorePassword;
         this.keyPassword = keyPassword;
         this.alias = alias;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
     }
 
     public String getPath() {
@@ -60,8 +70,6 @@ class JKSKeyManagerService extends AbstractKeyManagerService {
     public void setPath(String path) {
         this.path = path;
     }
-
-
 
     public char[] getKeystorePassword() {
         return keystorePassword;
@@ -107,7 +115,7 @@ class JKSKeyManagerService extends AbstractKeyManagerService {
         // expect that to be complete.
         String relativeTo = this.relativeTo.getOptionalValue();
         String file = relativeTo == null ? path : relativeTo + "/" + path;
-        keyStore = JKSKeystore.newKeyStore(file, keystorePassword, keyPassword, alias);
+        keyStore = FileKeystore.newKeyStore(provider, file, keystorePassword, keyPassword, alias);
         keyStore.load();
 
         super.start(context);

@@ -615,12 +615,13 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         String provider = KeystoreAttributes.KEYSTORE_PROVIDER.resolveModelAttribute(context, ssl).asString();
 
-        if (JKS.equals(provider) == false) {
+        ModelNode pathNode = KeystoreAttributes.KEYSTORE_PATH.resolveModelAttribute(context, ssl);
+        if (pathNode.isDefined() == false) {
             ProviderKeyManagerService keyManagerService = new ProviderKeyManagerService(provider, keystorePassword);
 
             serviceBuilder = serviceTarget.addService(serviceName, keyManagerService);
         } else {
-            String path = KeystoreAttributes.KEYSTORE_PATH.resolveModelAttribute(context, ssl).asString();
+            String path = pathNode.asString();
 
             final char[] keyPassword;
             ModelNode pwordNode = KeystoreAttributes.KEY_PASSWORD.resolveModelAttribute(context, ssl);
@@ -632,7 +633,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             ModelNode aliasNode = KeystoreAttributes.ALIAS.resolveModelAttribute(context, ssl);
             String alias = aliasNode.isDefined() ? aliasNode.asString() : null;
 
-            JKSKeyManagerService keyManagerService = new JKSKeyManagerService(path, keystorePassword, keyPassword, alias);
+            FileKeyManagerService keyManagerService = new FileKeyManagerService(path, keystorePassword, keyPassword, alias);
 
             serviceBuilder = serviceTarget.addService(serviceName, keyManagerService);
             ModelNode relativeTo = KeystoreAttributes.KEYSTORE_RELATIVE_TO.resolveModelAttribute(context, ssl);
@@ -663,7 +664,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         } else {
             String path = KeystoreAttributes.KEYSTORE_PATH.resolveModelAttribute(context, ssl).asString();
 
-            JKSTrustManagerService trustManagerService = new JKSTrustManagerService(path, keystorePassword);
+            FileTrustManagerService trustManagerService = new FileTrustManagerService(path, keystorePassword);
 
             serviceBuilder = serviceTarget.addService(serviceName, trustManagerService);
             ModelNode relativeTo = KeystoreAttributes.KEYSTORE_RELATIVE_TO.resolveModelAttribute(context, ssl);
