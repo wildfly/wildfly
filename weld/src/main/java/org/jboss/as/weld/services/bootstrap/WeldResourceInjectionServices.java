@@ -38,11 +38,15 @@ import javax.annotation.Resource;
 import javax.ejb.TimerService;
 import javax.ejb.spi.HandleDelegate;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedMember;
+import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
 import static org.jboss.as.weld.util.ResourceInjectionUtilities.getResourceAnnotated;
@@ -132,7 +136,7 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
         return new ResourceReferenceFactory<Object>() {
             @Override
             public ResourceReference<Object> createResource() {
-                return new SimpleResourceReference<Object>(resolveResource(result, null));
+                return new SimpleResourceReference<Object>(resolveResource(injectionPoint));
             }
         };
     }
@@ -164,17 +168,24 @@ public class WeldResourceInjectionServices extends AbstractResourceInjectionServ
 
     @Override
     public Object resolveResource(InjectionPoint injectionPoint) {
-        if (!injectionPoint.getAnnotated().isAnnotationPresent(Resource.class)) {
-            throw WeldMessages.MESSAGES.annotationNotFound(Resource.class, injectionPoint.getMember());
+        final Member member = injectionPoint.getMember();
+        AnnotatedMember<?> annotatedMember;
+        if (injectionPoint.getAnnotated() instanceof AnnotatedField) {
+            annotatedMember = (AnnotatedField<?>) injectionPoint.getAnnotated();
+        } else {
+            annotatedMember = ((AnnotatedParameter<?>) injectionPoint.getAnnotated()).getDeclaringCallable();
         }
-        if (injectionPoint.getMember() instanceof Method && ((Method) injectionPoint.getMember()).getParameterTypes().length != 1) {
-            throw WeldMessages.MESSAGES.injectionPointNotAJavabean((Method) injectionPoint.getMember());
+        if (!annotatedMember.isAnnotationPresent(Resource.class)) {
+            throw WeldMessages.MESSAGES.annotationNotFound(Resource.class, member);
+        }
+        if (member instanceof Method && ((Method) member).getParameterTypes().length != 1) {
+            throw WeldMessages.MESSAGES.injectionPointNotAJavabean((Method) member);
         }
         String name = getResourceName(injectionPoint);
         try {
             return context.lookup(name);
         } catch (NamingException e) {
-            throw WeldMessages.MESSAGES.coundNotFindResource(name, e);
+            throw WeldMessages.MESSAGES.coundNotFindResource(name, injectionPoint.getMember().toString(), e);
         }
     }
 
