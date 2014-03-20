@@ -70,20 +70,6 @@ public class TransactionUtil {
     }
 
     /**
-     * Register the specified entity manager (persistence context) with the current transaction.
-     * Precondition:  Only call while a transaction is active in the current thread.
-     *
-     * @param scopedPuName            is the fully (application deployment) scoped name of persistence unit
-     * @param xpc                     is the entity manager (a org.jboss.as.jpa class) to register
-     * @param underlyingEntityManager is the underlying entity manager obtained from the persistence provider
-     */
-    public static void registerExtendedUnderlyingWithTransaction(String scopedPuName, EntityManager xpc, EntityManager underlyingEntityManager) {
-        // xpc invoked this method, we cannot call xpc because it will recurse back to here, join with underloying em instead
-        underlyingEntityManager.joinTransaction();
-        putEntityManagerInTransactionRegistry(scopedPuName, xpc);
-    }
-
-    /**
      * Get current persistence context.  Only call while a transaction is active in the current thread.
      *
      * @param puScopedName

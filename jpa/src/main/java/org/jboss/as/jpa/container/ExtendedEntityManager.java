@@ -91,9 +91,12 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
 
     private final transient boolean isTraceEnabled = ROOT_LOGGER.isTraceEnabled();
 
-    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager) {
+    private final SynchronizationType synchronizationType;
+
+    public ExtendedEntityManager(final String puScopedName, final EntityManager underlyingEntityManager, final SynchronizationType synchronizationType) {
         this.underlyingEntityManager = underlyingEntityManager;
         this.puScopedName = puScopedName;
+        this.synchronizationType = synchronizationType;
     }
 
     /**
@@ -132,8 +135,13 @@ public class ExtendedEntityManager extends AbstractEntityManager implements Seri
                 // should be enough to test if not the same object
                 throw MESSAGES.cannotUseExtendedPersistenceTransaction(puScopedName, existing, this);
             } else if (existing == null) {
-                // JPA 7.9.1 join the transaction if not already done.
-                TransactionUtil.registerExtendedUnderlyingWithTransaction(puScopedName, this, underlyingEntityManager);
+
+                if (SynchronizationType.SYNCHRONIZED.equals(synchronizationType)) {
+                    // JPA 7.9.1 join the transaction if not already done for SynchronizationType.SYNCHRONIZED.
+                    underlyingEntityManager.joinTransaction();
+                }
+                // associate the entity manager with the current transaction
+                TransactionUtil.putEntityManagerInTransactionRegistry(puScopedName, this);
             }
         }
     }

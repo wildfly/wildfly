@@ -172,7 +172,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                 }
 
                 if (entityManager1 == null) {
-                    entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(properties));
+                    entityManager1 = new ExtendedEntityManager(unitName, emf.createEntityManager(properties), synchronizationType);
                     createdNewExtendedPersistence = true;
                     if (JPA_LOGGER.isDebugEnabled())
                         JPA_LOGGER.debugf("created new ExtendedEntityManager for unit name=%s, useDeepInheritance = %b", unitName, useDeepInheritance);
