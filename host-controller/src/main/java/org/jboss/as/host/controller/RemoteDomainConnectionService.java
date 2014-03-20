@@ -608,12 +608,12 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
 
         @Override
-        public final File getFile(String relativePath) {
+        public synchronized File getFile(String relativePath) {
             return getFile(relativePath, DomainControllerProtocol.PARAM_ROOT_ID_FILE);
         }
 
         @Override
-        public final File getConfigurationFile(String relativePath) {
+        public synchronized File getConfigurationFile(String relativePath) {
             return getFile(relativePath, DomainControllerProtocol.PARAM_ROOT_ID_CONFIGURATION);
         }
 
@@ -624,7 +624,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         }
 
         @Override
-        public File getDeploymentRoot(byte[] deploymentHash) {
+        public synchronized File getDeploymentRoot(byte[] deploymentHash) {
             String hex = deploymentHash == null ? "" : HashUtil.bytesToHexString(deploymentHash);
             final File file = localFileRepository.getDeploymentRoot(deploymentHash);
             if(! file.exists()) {

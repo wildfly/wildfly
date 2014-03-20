@@ -399,7 +399,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     @Override
     public HostFileRepository getRemoteFileRepository() {
         if (hostControllerInfo.isMasterDomainController()) {
-            throw MESSAGES.cannotAccessRemoteFileRepository();
+            return localFileRepository;
         }
         return remoteFileRepository;
     }

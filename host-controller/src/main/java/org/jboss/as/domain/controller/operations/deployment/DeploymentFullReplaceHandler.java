@@ -115,10 +115,6 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
                 if (!contentRepository.hasContent(newHash)) {
                     throw createFailureException(MESSAGES.noDeploymentContentWithHash(HashUtil.bytesToHexString(newHash)));
                 }
-            } else {
-                // We are a slave controller
-                // Ensure the local repo has the files
-                fileRepository.getDeploymentFiles(newHash);
             }
         } else if (DeploymentHandlerUtils.hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {

@@ -53,7 +53,7 @@ import org.jboss.as.server.controller.resources.DeploymentResourceDefinition;
 
     public static DomainDeploymentResourceDefinition createForServerGroup(ContentRepository contentRepository, HostFileRepository fileRepository) {
         return new DomainDeploymentResourceDefinition(DeploymentResourceParent.SERVER_GROUP, DeploymentAttributes.SERVER_GROUP_DEPLOYMENT_ADD_DEFINITION,
-                new ServerGroupDeploymentAddHandler(fileRepository), ServerGroupDeploymentRemoveHandler.INSTANCE);
+                ServerGroupDeploymentAddHandler.INSTANCE, ServerGroupDeploymentRemoveHandler.INSTANCE);
     }
 
     @Override

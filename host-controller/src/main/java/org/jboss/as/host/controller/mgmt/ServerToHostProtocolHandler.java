@@ -103,7 +103,7 @@ public class ServerToHostProtocolHandler implements ManagementRequestHandlerFact
         this.domainController = domainController;
         this.channelHandler = channelHandler;
         this.registrations = registrations;
-        this.deploymentFileRepository = domainController.getLocalFileRepository();
+        this.deploymentFileRepository = domainController.getRemoteFileRepository();
         this.expressionResolver = expressionResolver;
     }
 
