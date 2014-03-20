@@ -100,7 +100,7 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
 
         executeOperation(operation);
 
-        final ModelNode poolStats = address.clone();
+        /*final ModelNode poolStats = address.clone();
         poolStats.add("statistics", "pool");
         poolStats.protect();
         operation = new ModelNode();
@@ -109,7 +109,7 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
         operation.get("name").set("statistics-enabled");
         operation.get("value").set(true);
 
-        executeOperation(operation);
+        executeOperation(operation);     */
 
 
         return address;

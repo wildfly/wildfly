@@ -145,7 +145,9 @@ public class IronJacamarResourceCreator {
         setAttribute(model, JNDINAME, connDef.getJndiName());
         setAttribute(model, USE_JAVA_CONTEXT, connDef.isUseJavaContext());
         setAttribute(model, ENABLED, connDef.isEnabled());
-        setAttribute(model, CONNECTABLE, ((CommonConnDef) connDef).isConnectable());
+        if (connDef instanceof CommonConnDef) {
+            setAttribute(model, CONNECTABLE, ((CommonConnDef) connDef).isConnectable());
+        }
         setAttribute(model, USE_CCM, connDef.isUseCcm());
         if (connDef instanceof org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) {
             setAttribute(model, SHARABLE, ((org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) connDef).isSharable());
