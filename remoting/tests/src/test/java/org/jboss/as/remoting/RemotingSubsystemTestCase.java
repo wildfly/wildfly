@@ -21,39 +21,23 @@
 */
 package org.jboss.as.remoting;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.services.path.AbsolutePathService;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.ControllerInitializer;
 import org.jboss.as.subsystem.test.KernelServices;
-import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceNotFoundException;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.remoting3.Endpoint;
 import org.junit.Test;
 import org.wildfly.extension.io.IOServices;
 import org.wildfly.extension.io.WorkerService;
@@ -61,141 +45,12 @@ import org.xnio.OptionMap;
 import org.xnio.Options;
 
 /**
- * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
+ * @author Tomaz Cerar
  */
 public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     public RemotingSubsystemTestCase() {
         super(RemotingExtension.SUBSYSTEM_NAME, new RemotingExtension());
-    }
-
-    @Test
-    public void testSubsystemWithThreadParameters() throws Exception {
-        standardSubsystemTest("remoting-with-threads.xml", null, true, AdditionalInitialization.ADMIN_ONLY_HC);
-    }
-
-    @Test
-    public void testSubsystemWithThreadAttributeChange() throws Exception {
-        KernelServices services = createKernelServicesBuilder(AdditionalInitialization.ADMIN_ONLY_HC)
-                .setSubsystemXmlResource("remoting-with-threads.xml")
-                .build();
-
-        updateAndCheckThreadAttribute(services, CommonAttributes.WORKER_READ_THREADS, 5, 6);
-        updateAndCheckThreadAttribute(services, CommonAttributes.WORKER_TASK_CORE_THREADS, 6, 2);
-        updateAndCheckThreadAttribute(services, CommonAttributes.WORKER_TASK_KEEPALIVE, 7, 3);
-        updateAndCheckThreadAttribute(services, CommonAttributes.WORKER_TASK_LIMIT, 8, 4);
-        updateAndCheckThreadAttribute(services, CommonAttributes.WORKER_TASK_MAX_THREADS, 9, 5);
-        updateAndCheckThreadAttribute(services, CommonAttributes.WORKER_WRITE_THREADS, 10, 6);
-    }
-
-    private void updateAndCheckThreadAttribute(KernelServices services, String attrName, int before, int after) throws Exception {
-        assertEquals(before, services.readWholeModel().get(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME, attrName).asInt());
-        ModelNode write = new ModelNode();
-        write.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        write.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        write.get(OP_ADDR).add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME);
-        write.get(NAME).set(attrName);
-        write.get(VALUE).set(after);
-        ModelNode result = services.executeOperation(write);
-        assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.hasDefined(FAILURE_DESCRIPTION));
-
-        assertEquals(after, services.readWholeModel().get(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME, attrName).asInt());
-    }
-
-    @Test
-    public void testSubsystemWithConnectorProperties() throws Exception {
-
-        KernelServices services = createKernelServicesBuilder(createRuntimeAdditionalInitialization())
-                .setSubsystemXmlResource("remoting-with-connector.xml")
-                .build();
-
-
-        ServiceController<?> endPointService = services.getContainer().getRequiredService(RemotingServices.SUBSYSTEM_ENDPOINT);
-        assertNotNull(endPointService);
-
-        ServiceName connectorServiceName = RemotingServices.serverServiceName("test-connector");
-        ServiceController<?> connectorService = services.getContainer().getRequiredService(connectorServiceName);
-        assertNotNull(connectorService);
-
-        ModelNode model = services.readWholeModel();
-        ModelNode subsystem = model.require(SUBSYSTEM).require(RemotingExtension.SUBSYSTEM_NAME);
-        for (AttributeDefinition ad : RemotingSubsystemRootResource.ATTRIBUTES) {
-            ModelNode dflt = ad.getDefaultValue();
-            assertEquals(ad.getName(), dflt == null ? new ModelNode() : dflt, subsystem.require(ad.getName()));
-        }
-        ModelNode endpoint = subsystem.get(RemotingEndpointResource.ENDPOINT_PATH.getKey(), RemotingEndpointResource.ENDPOINT_PATH.getValue());
-        for (AttributeDefinition ad : RemotingEndpointResource.ATTRIBUTES) {
-            ModelNode dflt = ad.getDefaultValue();
-            assertEquals(ad.getName(), dflt == null ? new ModelNode() : dflt, endpoint.require(ad.getName()));
-        }
-
-
-        ModelNode connector = subsystem.require(CommonAttributes.CONNECTOR).require("test-connector");
-        assertEquals(1, connector.require(CommonAttributes.PROPERTY).require("org.xnio.Options.WORKER_ACCEPT_THREADS").require(CommonAttributes.VALUE).asInt());
-    }
-
-    @Test
-    public void testSubsystemWithConnectorPropertyChange() throws Exception {
-
-        KernelServices services = createKernelServicesBuilder(createRuntimeAdditionalInitialization())
-                .setSubsystemXmlResource("remoting-with-connector.xml")
-                .build();
-
-        CurrentConnectorAndController current = CurrentConnectorAndController.create(services, RemotingServices.SUBSYSTEM_ENDPOINT, RemotingServices.serverServiceName("test-connector"));
-
-        //Test that write property reloads the connector
-        ModelNode write = new ModelNode();
-        write.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-        write.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        write.get(OP_ADDR).add(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME).add(CommonAttributes.CONNECTOR, "test-connector").add(CommonAttributes.PROPERTY, "org.xnio.Options.WORKER_ACCEPT_THREADS");
-        write.get(NAME).set(VALUE);
-        write.get(VALUE).set(2);
-        ModelNode result = services.executeOperation(write);
-        assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.hasDefined(FAILURE_DESCRIPTION));
-        assertEquals(2, services.readWholeModel().get(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME, CommonAttributes.CONNECTOR, "test-connector", CommonAttributes.PROPERTY, "org.xnio.Options.WORKER_ACCEPT_THREADS").require(VALUE).asInt());
-        current.updateCurrentEndpoint(true);
-        current.updateCurrentConnector(false);
-
-        //remove property
-        ModelNode remove = write.clone();
-        remove.get(OP).set(REMOVE);
-        remove.remove(NAME);
-        remove.remove(VALUE);
-        result = services.executeOperation(remove);
-        assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.hasDefined(FAILURE_DESCRIPTION));
-        assertFalse(services.readWholeModel().get(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME, CommonAttributes.CONNECTOR, "test-connector", CommonAttributes.PROPERTY, "org.xnio.Options.WORKER_ACCEPT_THREADS").isDefined());
-        current.updateCurrentEndpoint(true);
-        current.updateCurrentConnector(false);
-
-        //TODO property
-        ModelNode add = remove.clone();
-        add.get(OP).set(ADD);
-        add.get(VALUE).set(1);
-        result = services.executeOperation(add);
-        assertFalse(result.get(FAILURE_DESCRIPTION).toString(), result.hasDefined(FAILURE_DESCRIPTION));
-        assertEquals(1, services.readWholeModel().get(SUBSYSTEM, RemotingExtension.SUBSYSTEM_NAME, CommonAttributes.CONNECTOR, "test-connector", CommonAttributes.PROPERTY, "org.xnio.Options.WORKER_ACCEPT_THREADS").require(VALUE).asInt());
-        current.updateCurrentEndpoint(true);
-        current.updateCurrentConnector(false);
-    }
-
-    @Test
-    public void testSubsystemWithBadConnectorProperty() throws Exception {
-
-        KernelServices services = createKernelServicesBuilder(createRuntimeAdditionalInitialization())
-                .setSubsystemXmlResource("remoting-with-bad-connector-property.xml")
-                .build();
-
-        try {
-            services.getContainer().getRequiredService(RemotingServices.SUBSYSTEM_ENDPOINT);
-            fail("Expected no " + RemotingServices.SUBSYSTEM_ENDPOINT);
-        } catch (ServiceNotFoundException expected) {
-        }
-
-        try {
-            services.getContainer().getRequiredService(RemotingServices.serverServiceName("test-connector"));
-            fail("Expected no " + RemotingServices.serverServiceName("test-connector"));
-        } catch (ServiceNotFoundException expected) {
-        }
     }
 
     /**
@@ -205,27 +60,30 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
      * @throws Exception
      */
     @Test
-    public void testOutboundConnections() throws Exception {
+    public void testRuntime() throws Exception {
         KernelServices services = createKernelServicesBuilder(createRuntimeAdditionalInitialization())
-                .setSubsystemXmlResource("remoting-with-outbound-connections.xml")
+                .setSubsystemXml(getSubsystemXml())
                 .build();
 
-        ServiceController<?> endPointService = services.getContainer().getRequiredService(RemotingServices.SUBSYSTEM_ENDPOINT);
-        assertNotNull("Endpoint service was null", endPointService);
+        ServiceController<Endpoint> endPointServiceController = (ServiceController<Endpoint>) services.getContainer().getRequiredService(RemotingServices.SUBSYSTEM_ENDPOINT);
+        endPointServiceController.setMode(ServiceController.Mode.ACTIVE);
+        Endpoint endpointService = endPointServiceController.getValue();
+        assertNotNull("Endpoint service was null", endpointService);
+        assertNotNull(endpointService.getName());
 
-        final String remoteOutboundConnectionName = "remote-conn1";
-        ServiceName remoteOutboundConnectionServiceName = RemoteOutboundConnectionService.REMOTE_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(remoteOutboundConnectionName);
-        ServiceController<?> remoteOutboundConnectionService = services.getContainer().getRequiredService(remoteOutboundConnectionServiceName);
-        assertNotNull("Remote outbound connection service for outbound connection:" + remoteOutboundConnectionName + " was null", remoteOutboundConnectionService);
-        RemoteOutboundConnectionService remoteService = (RemoteOutboundConnectionService) remoteOutboundConnectionService.getService();
-        assertEquals(2, remoteService.connectionCreationOptions.size());
 
-        final String localOutboundConnectionName = "local-conn1";
-        ServiceName localOutboundConnectionServiceName = LocalOutboundConnectionService.LOCAL_OUTBOUND_CONNECTION_BASE_SERVICE_NAME.append(localOutboundConnectionName);
-        ServiceController<?> localOutboundConnectionService = services.getContainer().getRequiredService(localOutboundConnectionServiceName);
-        assertNotNull("Local outbound connection service for outbound connection:" + localOutboundConnectionName + " was null", localOutboundConnectionService);
-        LocalOutboundConnectionService localService = (LocalOutboundConnectionService) localOutboundConnectionService.getService();
-        assertEquals(2, localService.connectionCreationOptions.size());
+        ServiceName connectorServiceName = RemotingServices.serverServiceName("remoting-connector");
+        ServiceController<?> remotingConnectorController = services.getContainer().getRequiredService(connectorServiceName);
+        remotingConnectorController.setMode(ServiceController.Mode.ACTIVE);
+        assertNotNull("Connector was null", remotingConnectorController);
+        InjectedSocketBindingStreamServerService remotingConnector = (InjectedSocketBindingStreamServerService) remotingConnectorController.getService();
+        assertEquals("remote", remotingConnector.getEndpointInjector().getValue().getName());
+
+        ServiceController<?> httpConnectorController = services.getContainer().getRequiredService(RemotingHttpUpgradeService.UPGRADE_SERVICE_NAME.append("http-connector"));
+        assertNotNull("Http connector was null", httpConnectorController);
+        httpConnectorController.setMode(ServiceController.Mode.ACTIVE);
+        InjectedSocketBindingStreamServerService httpConnector = (InjectedSocketBindingStreamServerService) remotingConnectorController.getService();
+        assertEquals("remote", httpConnector.getEndpointInjector().getValue().getName());
     }
 
     @Override
@@ -247,7 +105,7 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
         return new AdditionalInitialization() {
             @Override
             protected void setupController(ControllerInitializer controllerInitializer) {
-                controllerInitializer.addSocketBinding("test", 12345);
+                controllerInitializer.addSocketBinding("remoting", 12345);
                 controllerInitializer.addRemoteOutboundSocketBinding("dummy-outbound-socket", "localhost", 6799);
                 controllerInitializer.addRemoteOutboundSocketBinding("other-outbound-socket", "localhost", 1234);
             }
@@ -259,61 +117,12 @@ public class RemotingSubsystemTestCase extends AbstractSubsystemBaseTest {
                 target.addService(IOServices.WORKER.append("default"), new WorkerService(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap()))
                         .setInitialMode(ServiceController.Mode.ACTIVE)
                         .install();
+                target.addService(IOServices.WORKER.append("default-remoting"), new WorkerService(OptionMap.builder().set(Options.WORKER_IO_THREADS, 2).getMap()))
+                        .setInitialMode(ServiceController.Mode.ACTIVE)
+                        .install();
             }
         };
     }
 
-    private static class CurrentConnectorAndController {
-        final KernelServices services;
-        final ServiceName endpointName;
-        final ServiceName connectorName;
-        Object currentEndpoint;
-        Object currentConnector;
 
-        CurrentConnectorAndController(KernelServices services, ServiceName endpointName, ServiceName connectorName) {
-            this.services = services;
-            this.endpointName = endpointName;
-            this.connectorName = connectorName;
-            this.currentEndpoint = loadCurrentEndpoint(services);
-            this.currentConnector = loadCurrentConnector(services);
-        }
-
-        static CurrentConnectorAndController create(KernelServices services, ServiceName endpointName, ServiceName connectorName) {
-            return new CurrentConnectorAndController(services, endpointName, connectorName);
-        }
-
-        final Object loadCurrentEndpoint(KernelServices services) {
-            ServiceController<?> endPointService = services.getContainer().getRequiredService(endpointName);
-            assertNotNull(endPointService);
-            Object endpoint = endPointService.getValue();
-            assertNotNull(endpoint);
-            return endpoint;
-        }
-
-        final Object loadCurrentConnector(KernelServices services) {
-            ServiceController<?> connectorService = services.getContainer().getRequiredService(connectorName);
-            assertNotNull(connectorService);
-            Object connector = connectorService.getValue();
-            assertNotNull(connector);
-            return connector;
-        }
-
-        void updateCurrentEndpoint(final boolean equals) throws Exception {
-            this.currentEndpoint = checkStatus(this.currentEndpoint, loadCurrentEndpoint(services), equals);
-        }
-
-        void updateCurrentConnector(final boolean equals) throws Exception {
-            this.currentConnector = checkStatus(this.currentConnector, loadCurrentConnector(services), equals);
-        }
-
-
-        Object checkStatus(Object oldObject, Object newObject, boolean equals) {
-            if (!equals) {
-                assertNotSame(oldObject, newObject);
-            } else {
-                assertSame(oldObject, newObject);
-            }
-            return newObject;
-        }
-    }
 }

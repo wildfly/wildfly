@@ -66,6 +66,8 @@ public class ConnectorUtils {
 
     protected static OptionMap getFullOptions(OperationContext context, ModelNode fullModel) throws OperationFailedException {
         OptionMap.Builder builder = OptionMap.builder();
+        builder.set(Options.TCP_NODELAY, true);
+        builder.set(Options.REUSE_ADDRESSES, true);
         ModelNode properties = fullModel.get(PROPERTY);
         if (properties.isDefined() && properties.asInt() > 0) {
             addOptions(context, properties, builder);
