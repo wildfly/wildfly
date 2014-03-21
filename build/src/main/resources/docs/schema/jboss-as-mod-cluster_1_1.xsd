@@ -120,6 +120,16 @@
         <xs:documentation>The web connector on which mod_cluster will operate.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="worker-timeout" type="xs:int" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+          Number of seconds to wait for a worker to become available to handle a request. When no workers of a
+          balancer are usable, mod_cluster will retry after a while (workerTimeout/100). That is timeout in the
+          balancer mod_proxy documentation. A value of -1 indicates that the HTTPd will not wait
+          for a worker to be available and will return an error if none is available.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- general SSL definitions -->
@@ -217,6 +227,9 @@
   </xs:complexType>
 
   <xs:complexType name="common-load-metricType" abstract="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element name="property" type="propertyType"/>
+    </xs:choice>
     <xs:attribute name="weight" type="xs:int" use="optional" default="1"/>
     <xs:attribute name="capacity" type="xs:double" use="optional" default="1.0"/>
   </xs:complexType>
@@ -249,5 +262,10 @@
       <xs:enumeration value="busyness"/>
     </xs:restriction>
   </xs:simpleType>
+
+  <xs:complexType name="propertyType">
+    <xs:attribute name="name" type="xs:string" use="required"/>
+    <xs:attribute name="value" type="xs:string" use="required"/>
+  </xs:complexType>
 
 </xs:schema>
