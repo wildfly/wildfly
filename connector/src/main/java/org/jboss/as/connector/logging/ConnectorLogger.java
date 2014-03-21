@@ -42,6 +42,8 @@ import static org.jboss.logging.Logger.Level.WARN;
  * Date: 01.09.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ *
+ * id range 10400-10499
  */
 @MessageLogger(projectCode = "JBAS")
 public interface ConnectorLogger extends BasicLogger {
@@ -269,7 +271,7 @@ public interface ConnectorLogger extends BasicLogger {
     @Message(id = 10429, value = "Unable to find driver class name in \"%s\" jar")
     void cannotFindDriverClassName(String driverName);
     @LogMessage(level = ERROR)
-    @Message(id = 10500, value = "Unable to register recovery: %s (%s)")
+    @Message(id = 10490, value = "Unable to register recovery: %s (%s)")
     void unableToRegisterRecovery(String key, boolean isXa);
 
 

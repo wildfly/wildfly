@@ -66,7 +66,6 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
      */
     protected void testStatisticsDouble(ModelNode connectionNode) throws Exception {
         ModelNode statisticsNode = translateFromConnectionToStatistics(connectionNode);
-        //writeAttribute(statisticsNode, "statistics-enabled", "true");
         executeOnNode(connectionNode, "flush-all-connection-in-pool");
         executeOnNode(connectionNode, "test-connection-in-pool");
         executeOnNode(connectionNode, "test-connection-in-pool");
