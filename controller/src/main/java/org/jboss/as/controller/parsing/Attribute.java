@@ -98,6 +98,7 @@ public enum Attribute {
     JAVA_HOME("java-home"),
     KEY_PASSWORD("key-password"),
     KEYSTORE_PASSWORD("keystore-password"),
+    KEYSTORE_TYPE("keystore-type"),
     LOG_BOOT("log-boot"),
     LOG_READ_ONLY("log-read-only"),
     MANAGEMENT_SUBSYSTEM_ENDPOINT("management-subsystem-endpoint"),

@@ -27,6 +27,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -51,6 +52,10 @@ public class KeystoreAttributes {
     public static final SimpleAttributeDefinition KEYSTORE_PASSWORD = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PASSWORD, ModelType.STRING, false)
             .setXmlName(ModelDescriptionConstants.KEYSTORE_PASSWORD).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true)).setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
+
+    public static final SimpleAttributeDefinition KEYSTORE_TYPE = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_TYPE, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode("JKS")).setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, true))
+            .setAllowExpression(true).setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
     public static final SimpleAttributeDefinition KEYSTORE_PATH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.KEYSTORE_PATH, ModelType.STRING, false)
             .setXmlName(ModelDescriptionConstants.PATH)

@@ -1020,6 +1020,10 @@ public class ManagementXml {
                         KeystoreAttributes.KEYSTORE_PASSWORD.parseAndSetParameter(value, addOperation, reader);
                         break;
                     }
+                    case KEYSTORE_TYPE: {
+                        KeystoreAttributes.KEYSTORE_TYPE.parseAndSetParameter(value, addOperation, reader);
+                        break;
+                    }
                     case RELATIVE_TO: {
                         KeystoreAttributes.KEYSTORE_RELATIVE_TO.parseAndSetParameter(value, addOperation, reader);
                         break;
@@ -3325,6 +3329,7 @@ public class ManagementXml {
                 KeystoreAttributes.KEYSTORE_PATH.marshallAsAttribute(ssl, writer);
                 KeystoreAttributes.KEYSTORE_RELATIVE_TO.marshallAsAttribute(ssl, writer);
                 KeystoreAttributes.KEYSTORE_PASSWORD.marshallAsAttribute(ssl, writer);
+                KeystoreAttributes.KEYSTORE_TYPE.marshallAsAttribute(ssl, writer);
                 KeystoreAttributes.ALIAS.marshallAsAttribute(ssl, writer);
                 KeystoreAttributes.KEY_PASSWORD.marshallAsAttribute(ssl, writer);
             }
@@ -3376,6 +3381,7 @@ public class ManagementXml {
             KeystoreAttributes.KEYSTORE_PATH.marshallAsAttribute(truststore, writer);
             KeystoreAttributes.KEYSTORE_RELATIVE_TO.marshallAsAttribute(truststore, writer);
             KeystoreAttributes.KEYSTORE_PASSWORD.marshallAsAttribute(truststore, writer);
+            KeystoreAttributes.KEYSTORE_TYPE.marshallAsAttribute(truststore, writer);
         }
 
         if (authentication.hasDefined(LOCAL)) {

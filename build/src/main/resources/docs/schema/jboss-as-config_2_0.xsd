@@ -464,6 +464,15 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="keystore-type" type="xs:string" use="optional" default="JKS">
+            <xs:annotation>
+                <xs:documentation>
+                    The type of the keystore file according to Java Cryptography
+                    Architecture Standard Algorithm Name Documentation. If not
+                    specified, JKS type is used.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="extendedKeyStoreType">

@@ -411,6 +411,10 @@ public class AuditLogXml {
                     SyslogAuditLogProtocolResourceDefinition.Tls.TlsKeyStore.KEYSTORE_PASSWORD.parseAndSetParameter(value, add, reader);
                     break;
                 }
+                case KEYSTORE_TYPE: {
+                    SyslogAuditLogProtocolResourceDefinition.Tls.TlsKeyStore.KEYSTORE_TYPE.parseAndSetParameter(value, add, reader);
+                    break;
+                }
                 case PATH: {
                     SyslogAuditLogProtocolResourceDefinition.Tls.TlsKeyStore.KEYSTORE_PATH.parseAndSetParameter(value, add, reader);
                     break;

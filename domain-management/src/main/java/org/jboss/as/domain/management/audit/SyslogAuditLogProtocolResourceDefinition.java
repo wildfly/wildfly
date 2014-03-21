@@ -206,6 +206,7 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
         public static final PathElement CLIENT_CERT_ELEMENT = PathElement.pathElement(AUTHENTICATION, CLIENT_CERT_STORE);
 
         public static final SimpleAttributeDefinition KEYSTORE_PASSWORD = KeystoreAttributes.KEYSTORE_PASSWORD;
+        public static final SimpleAttributeDefinition KEYSTORE_TYPE = KeystoreAttributes.KEYSTORE_TYPE;
         public static final SimpleAttributeDefinition KEYSTORE_PATH = KeystoreAttributes.KEYSTORE_PATH;
         public static final SimpleAttributeDefinition KEYSTORE_RELATIVE_TO = KeystoreAttributes.KEYSTORE_RELATIVE_TO;
         public static final SimpleAttributeDefinition KEY_PASSWORD = KeystoreAttributes.KEY_PASSWORD;

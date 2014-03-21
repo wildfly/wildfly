@@ -54,6 +54,10 @@ final class FileKeystore {
     private final String path;
     private long lastModificationTime;
     private final char[] keystorePassword;
+
+    /** JKS is a default value */
+    private String keystoreType = "JKS";
+
     /** If not a KeyStore it is being used as a trust store. */
     private final boolean isKeyStore;
 
@@ -69,17 +73,21 @@ final class FileKeystore {
         this.isKeyStore = false;
     }
 
-    private FileKeystore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
+    private FileKeystore(final String path, final char[] keystorePassword, final String keystoreType, final char[] keyPassword, final String alias) {
         this.path = path;
         this.keystorePassword = keystorePassword;
         this.keyPassword = keyPassword;
         this.alias = alias;
         this.lastModificationTime = 0;
         this.isKeyStore = true;
+
+        if (keystoreType != null) {
+            this.keystoreType = keystoreType;
+        }
     }
 
-    static FileKeystore newKeyStore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
-        return new FileKeystore(path, keystorePassword, keyPassword, alias);
+    static FileKeystore newKeyStore(final String path, final char[] keystorePassword, final String keystoreType, final char[] keyPassword, final String alias) {
+        return new FileKeystore(path, keystorePassword, keystoreType, keyPassword, alias);
     }
 
     static FileKeystore newTrustStore(final String path, final char[] keystorePassword) {
@@ -107,7 +115,7 @@ final class FileKeystore {
     void load() throws StartException {
         FileInputStream fis = null;
         try {
-            KeyStore loadedKeystore = KeyStore.getInstance("JKS");
+            KeyStore loadedKeystore = KeyStore.getInstance(keystoreType);
 
             if (new File(path).exists()) {
                 fis = new FileInputStream(path);
@@ -125,7 +133,7 @@ final class FileKeystore {
             if (alias == null) {
                 this.setKeyStore(loadedKeystore);
             } else {
-                KeyStore newKeystore = KeyStore.getInstance("JKS");
+                KeyStore newKeystore = KeyStore.getInstance(keystoreType);
                 newKeystore.load(null);
 
                 KeyStore.ProtectionParameter passParam = new KeyStore.PasswordProtection(keyPassword == null ? keystorePassword
