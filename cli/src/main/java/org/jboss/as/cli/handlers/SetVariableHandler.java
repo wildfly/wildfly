@@ -70,6 +70,7 @@ public class SetVariableHandler extends CommandHandlerWithHelp {
             return;
         }
         for(String arg : vars) {
+            arg = ArgumentWithValue.resolveValue(arg);
             if(arg.charAt(0) == '$') {
                 arg = arg.substring(1);
                 if(arg.isEmpty()) {

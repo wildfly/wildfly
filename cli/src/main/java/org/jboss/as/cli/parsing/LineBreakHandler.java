@@ -50,7 +50,7 @@ public class LineBreakHandler implements CharacterHandler {
             } else if(fallbackToEscape){
                 ctx.enterState(EscapeCharacterState.INSTANCE);
             } else {
-                doHandle(ctx);
+                ctx.enterState(EscapeCharacterState.KEEP_ESCAPE);
             }
         } else {
             doHandle(ctx);
