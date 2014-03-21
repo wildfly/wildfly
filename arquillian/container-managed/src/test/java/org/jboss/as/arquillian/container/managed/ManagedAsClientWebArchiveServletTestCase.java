@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.jboss.arquillian.container.test.api.Deployment;
+import org.jboss.arquillian.container.test.api.OverProtocol;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
@@ -40,9 +41,12 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class ManagedAsClientWebArchiveServletTestCase {
 
+    private static final String CONTEXT_NAME = "foo-v1.2";
+
     @Deployment(testable = false)
+    @OverProtocol("Servlet 3.0")
     public static WebArchive createDeployment() throws Exception {
-        return ShrinkWrap.create(WebArchive.class).addClass(HelloWorldServlet.class);
+        return ShrinkWrap.create(WebArchive.class, CONTEXT_NAME + ".war").addClass(HelloWorldServlet.class);
     }
 
     @ArquillianResource
@@ -51,6 +55,9 @@ public class ManagedAsClientWebArchiveServletTestCase {
     @Test
     public void shouldBeAbleToInvokeServlet() throws Exception {
         Assert.assertNotNull(deploymentUrl);
+        Assert.assertTrue("deploymentUrl should end with " + CONTEXT_NAME + "/, but is " + deploymentUrl + 
+                ", the context URL seems to be wrong",
+                deploymentUrl.toString().endsWith(CONTEXT_NAME + "/"));
         String result = getContent(new URL(deploymentUrl.toString() + HelloWorldServlet.URL_PATTERN.substring(1)));
         Assert.assertEquals(HelloWorldServlet.GREETING, result);
     }

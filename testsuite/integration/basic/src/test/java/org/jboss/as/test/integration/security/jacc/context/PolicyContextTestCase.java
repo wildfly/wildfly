@@ -68,7 +68,7 @@ public class PolicyContextTestCase {
     @Test
     public void testHttpServletRequestFromPolicyContext(@ArquillianResource URL webAppURL) throws Exception {
         String externalFormURL = webAppURL.toExternalForm();
-        String servletURL = externalFormURL.substring(0, externalFormURL.length() - 1) + ".war" + PolicyContextTestServlet.SERVLET_PATH;
+        String servletURL = externalFormURL.substring(0, externalFormURL.length() - 1) + PolicyContextTestServlet.SERVLET_PATH;
         LOGGER.info("Testing JACC permissions: " + servletURL);
 
         String response = HttpRequest.get(servletURL, 1000, SECONDS);
