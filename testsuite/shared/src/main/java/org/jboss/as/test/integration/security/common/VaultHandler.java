@@ -152,6 +152,8 @@ public class VaultHandler {
 
         if (iterationCount <= 0) {
             this.iterationCount = new Random().nextInt(90) + 1;
+        } else {
+            this.iterationCount = iterationCount;
         }
 
         if (LOGGER.isDebugEnabled()) {
