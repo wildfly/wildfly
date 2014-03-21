@@ -100,18 +100,6 @@ public class DataSourcePoolStatisticsTestCase extends JcaStatisticsBase {
 
         executeOperation(operation);
 
-        /*final ModelNode poolStats = address.clone();
-        poolStats.add("statistics", "pool");
-        poolStats.protect();
-        operation = new ModelNode();
-        operation.get(OP).set("write-attribute");
-        operation.get(OP_ADDR).set(poolStats);
-        operation.get("name").set("statistics-enabled");
-        operation.get("value").set(true);
-
-        executeOperation(operation);     */
-
-
         return address;
     }
 

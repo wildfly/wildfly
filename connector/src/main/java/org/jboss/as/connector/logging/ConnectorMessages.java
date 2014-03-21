@@ -40,6 +40,8 @@ import org.jboss.vfs.VirtualFile;
  * Date: 01.09.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ *
+ * id range 10400-10499
  */
 @MessageBundle(projectCode = "JBAS")
 public interface ConnectorMessages {
