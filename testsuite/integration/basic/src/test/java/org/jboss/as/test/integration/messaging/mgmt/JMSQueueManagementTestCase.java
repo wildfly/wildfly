@@ -388,6 +388,50 @@ public class JMSQueueManagementTestCase {
         Assert.fail("queue/added" + count + " was not found");
     }
 
+    @Test
+    public void testRemoveJndi() throws Exception {
+        String jndiName = "queue/added" + count;
+        ModelNode op = getQueueOperation("add-jndi");
+        op.get("jndi-binding").set(jndiName);
+
+        ModelNode result = execute(op, true);
+        Assert.assertFalse(result.isDefined());
+
+        op = getQueueOperation("remove-jndi");
+        op.get("jndi-binding").set(jndiName);
+        result = execute(op, true);
+        Assert.assertFalse(result.isDefined());
+
+        op = getQueueOperation("read-attribute");
+        op.get("name").set("entries");
+        result = execute(op, true);
+        Assert.assertTrue(result.isDefined());
+        for (ModelNode binding : result.asList()) {
+            if (binding.asString().equals(jndiName)) {
+                Assert.fail("found " + jndiName + " while it must be removed");
+            }
+        }
+    }
+
+    @Test
+    public void testRemoveLastJndi() throws Exception {
+        ModelNode op = getQueueOperation("remove-jndi");
+        op.get("jndi-binding").set(getQueueJndiName());
+
+        // removing the last jndi name must generate a failure
+        execute(op, false);
+
+        op = getQueueOperation("read-attribute");
+        op.get("name").set("entries");
+        ModelNode result = execute(op, true);
+        Assert.assertTrue(result.isDefined());
+        for (ModelNode binding : result.asList()) {
+            if (binding.asString().equals(getQueueJndiName()))
+                return;
+        }
+        Assert.fail(getQueueJndiName() + " was not found");
+    }
+
     private ModelNode getQueueOperation(String operationName) {
         final ModelNode address = new ModelNode();
         address.add("subsystem", "messaging");

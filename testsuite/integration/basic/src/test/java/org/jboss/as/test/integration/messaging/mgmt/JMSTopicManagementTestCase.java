@@ -362,8 +362,9 @@ public class JMSTopicManagementTestCase {
 
     @Test
     public void testAddJndi() throws Exception {
+        String jndiName = "topic/added" + count;
         ModelNode op = getTopicOperation("add-jndi");
-        op.get("jndi-binding").set("topic/added" + count);
+        op.get("jndi-binding").set(jndiName);
 
         ModelNode result = execute(op, true);
         Assert.assertFalse(result.isDefined());
@@ -373,10 +374,54 @@ public class JMSTopicManagementTestCase {
         result = execute(op, true);
         Assert.assertTrue(result.isDefined());
         for (ModelNode binding : result.asList()) {
-            if (binding.asString().equals("topic/added" + count))
+            if (binding.asString().equals(jndiName))
                 return;
         }
-        Assert.fail("topic/added" + count + " was not found");
+        Assert.fail(jndiName + " was not found");
+    }
+
+    @Test
+    public void testRemoveJndi() throws Exception {
+        String jndiName = "topic/added" + count;
+        ModelNode op = getTopicOperation("add-jndi");
+        op.get("jndi-binding").set(jndiName);
+
+        ModelNode result = execute(op, true);
+        Assert.assertFalse(result.isDefined());
+
+        op = getTopicOperation("remove-jndi");
+        op.get("jndi-binding").set(jndiName);
+        result = execute(op, true);
+        Assert.assertFalse(result.isDefined());
+
+        op = getTopicOperation("read-attribute");
+        op.get("name").set("entries");
+        result = execute(op, true);
+        Assert.assertTrue(result.isDefined());
+        for (ModelNode binding : result.asList()) {
+            if (binding.asString().equals(jndiName)) {
+                Assert.fail("found " + jndiName + " while it must be removed");
+            }
+        }
+    }
+
+    @Test
+    public void testRemoveLastJndi() throws Exception {
+        ModelNode op = getTopicOperation("remove-jndi");
+        op.get("jndi-binding").set(getTopicJndiName());
+
+        // removing the last jndi name must generate a failure
+        execute(op, false);
+
+        op = getTopicOperation("read-attribute");
+        op.get("name").set("entries");
+        ModelNode result = execute(op, true);
+        Assert.assertTrue(result.isDefined());
+        for (ModelNode binding : result.asList()) {
+            if (binding.asString().equals(getTopicJndiName()))
+                return;
+        }
+        Assert.fail(getTopicJndiName() + " was not found");
     }
 
     private ModelNode getTopicOperation(String operationName) {
