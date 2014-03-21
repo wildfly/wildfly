@@ -285,7 +285,11 @@ public class WebExtension extends AbstractLegacyExtension {
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebReWriteConditionDefinition.FLAGS);
 
         final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
-        connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
+        connectorBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .end()
+                .addChildResource(SSL_PATH).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSLDefinition.SSL_PROTOCOL)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL);
 
@@ -294,7 +298,16 @@ public class WebExtension extends AbstractLegacyExtension {
     }
 
     private void registerTransformers_1_3_0(SubsystemRegistration registration) {
-        //EAP 6.2 uses 1.3.0 but at the time of writing has no differences from 2.0.0
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
+        connectorBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .end();
+
+
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 3, 0));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {

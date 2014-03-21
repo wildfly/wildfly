@@ -50,6 +50,7 @@ class KnownVersions {
         final String CORE_MODEL_7_1_2 = "1.2.0";
         final String CORE_MODEL_7_1_3 = "1.3.0";
         final String CORE_MODEL_7_2_0 = "1.4.0";
+        final String CORE_MODEL_EAP_6_2_0 = "1.5.0";
         final String CORE_MODEL_8_0_0 = "2.0.0";
 
         addSubsystemVersion(map, "configadmin", "1.0.0", CORE_MODEL_7_1_3);
@@ -111,6 +112,7 @@ class KnownVersions {
         addSubsystemVersion(map, "web", "1.1.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "web", "1.1.1", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "web", "1.2.0", CORE_MODEL_7_2_0);
+        addSubsystemVersion(map, "web", "1.3.0", CORE_MODEL_EAP_6_2_0);
         addSubsystemVersion(map, "weld", "1.0.0", CORE_MODEL_7_1_2);
         addSubsystemVersion(map, "weld", "1.0.0", CORE_MODEL_7_1_3);
         addSubsystemVersion(map, "weld", "1.0.0", CORE_MODEL_7_2_0);
