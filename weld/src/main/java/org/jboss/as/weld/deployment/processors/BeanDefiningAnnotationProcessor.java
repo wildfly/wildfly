@@ -43,14 +43,18 @@ public class BeanDefiningAnnotationProcessor implements DeploymentUnitProcessor 
 
         final CompositeIndex index = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
 
-        addAnnotations(deploymentUnit, CdiAnnotations.BUILT_IN_SCOPES);
-        // EE7 built-in scopes
+        // CDI built-in normal scopes plus @Dependent
+        addAnnotations(deploymentUnit, CdiAnnotations.BEAN_DEFINING_ANNOTATIONS);
+        // CDI @Model stereotype
+        addAnnotation(deploymentUnit, new AnnotationType(CdiAnnotations.MODEL.getDotName(), false));
+        // EE7 built-in normal scopes and stereotypes
         addAnnotation(deploymentUnit, new AnnotationType(TransactionScoped.class));
         addAnnotation(deploymentUnit, new AnnotationType(VIEW_SCOPED_NAME, true));
         addAnnotation(deploymentUnit, new AnnotationType(FLOW_SCOPED_NAME, true));
 
-        addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, CdiAnnotations.NORM_SCOPE.getDotName()));
-        addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, CdiAnnotations.SCOPE));
+        for (AnnotationType annotationType : CdiAnnotations.BEAN_DEFINING_META_ANNOTATIONS) {
+            addAnnotations(deploymentUnit, getAnnotationsAnnotatedWith(index, annotationType.getName()));
+        }
     }
 
     private static void addAnnotations(final DeploymentUnit deploymentUnit, Collection<AnnotationType> annotations) {
