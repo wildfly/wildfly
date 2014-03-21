@@ -249,6 +249,7 @@ public class ModelDescriptionConstants {
     /** Use this standard operation address field in the operation *description* ModelNode */
     public static final String OUTCOME = "outcome";
     public static final String PASSWORD = "password";
+    public static final String PROPERTY = "property";
     public static final String PATH = "path";
     public static final String PERMISSION_COMBINATION_POLICY = "permission-combination-policy";
     public static final String PATTERN = "pattern";
