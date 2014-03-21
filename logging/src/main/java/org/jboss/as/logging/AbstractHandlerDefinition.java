@@ -155,15 +155,6 @@ abstract class AbstractHandlerDefinition extends TransformerResourceDefinition {
 
     protected AbstractHandlerDefinition(final PathElement path,
                                         final Class<? extends Handler> type,
-                                        final AttributeDefinition[] addAttributes,
-                                        final AttributeDefinition[] readOnlyAttributes,
-                                        final AttributeDefinition[] writableAttributes,
-                                        final ConfigurationProperty<?>... constructionProperties) {
-        this(path, type, PropertySorter.NO_OP, addAttributes, readOnlyAttributes, writableAttributes, constructionProperties);
-    }
-
-    protected AbstractHandlerDefinition(final PathElement path,
-                                        final Class<? extends Handler> type,
                                         final PropertySorter propertySorter,
                                         final AttributeDefinition[] addAttributes,
                                         final AttributeDefinition[] readOnlyAttributes,

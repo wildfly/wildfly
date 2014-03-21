@@ -35,6 +35,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.helpers.Operations;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.ConsoleHandler;
+import org.jboss.logmanager.handlers.QueueHandler;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Before;
@@ -108,6 +109,8 @@ public class CustomHandlerOperationsTestCase extends AbstractLoggingOperationsTe
         testWrite(address, "encoding", "utf-8");
         testWrite(address, "formatter", "[test] %d{HH:mm:ss,SSS} %-5p [%c] %s%E%n");
         testWrite(address, "filter-spec", "deny");
+        testWrite(address, "class", QueueHandler.class.getName());
+        testWrite(address, "module", "org.jboss.logmanager");
         // Create a properties value
         final ModelNode properties = new ModelNode().setEmptyObject();
         properties.get("autoFlush").set(true);
