@@ -216,13 +216,6 @@ if [ "$PRESERVE_JAVA_OPTS" != "true" ]; then
         fi
     fi
 
-    if [ $CLIENT_VM = false ]; then
-        NO_COMPRESSED_OOPS=`echo $JAVA_OPTS | $GREP "\-XX:\-UseCompressedOops"`
-        if [ "x$NO_COMPRESSED_OOPS" = "x" ]; then
-            "$JAVA" $JVM_OPTVERSION -server -XX:+UseCompressedOops -version >/dev/null 2>&1 && PREPEND_JAVA_OPTS="$PREPEND_JAVA_OPTS -XX:+UseCompressedOops"
-        fi
-    fi
-
     # EAP6-121 feature disabled
     # Enable rotating GC logs if the JVM supports it and GC logs are not already enabled
     #NO_GC_LOG_ROTATE=`echo $JAVA_OPTS | $GREP "\-verbose:gc"`
