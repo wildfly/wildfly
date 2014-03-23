@@ -61,6 +61,9 @@ class PropertyReplacingBeansXmlHandler extends BeansXmlHandler {
 
     @Override
     protected String interpolate(String text) {
+        if(text == null) {
+            return null;
+        }
         return replacer.replaceProperties(text);
     }
 }
