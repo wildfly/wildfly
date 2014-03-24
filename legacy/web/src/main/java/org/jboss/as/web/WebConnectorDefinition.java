@@ -92,12 +92,21 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
                     .setDefaultValue(new ModelNode(false))
                     .setAllowExpression(true)
                     .build();
+    protected static final SimpleAttributeDefinition PROXY_BINDING =
+            new SimpleAttributeDefinitionBuilder(Constants.PROXY_BINDING, ModelType.STRING)
+                    .setAllowNull(true)
+                    .setValidator(new StringLengthValidator(1))
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                    .setAlternatives(Constants.PROXY_NAME, Constants.PROXY_PORT)
+                    .build();
     protected static final SimpleAttributeDefinition PROXY_NAME =
             new SimpleAttributeDefinitionBuilder(Constants.PROXY_NAME, ModelType.STRING)
                     .setAllowNull(true)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setValidator(new StringLengthValidator(1, true))
                     .setAllowExpression(true)
+                    .setAlternatives(Constants.PROXY_BINDING)
                     .build();
     protected static final SimpleAttributeDefinition PROXY_PORT =
             new SimpleAttributeDefinitionBuilder(Constants.PROXY_PORT, ModelType.INT)
@@ -105,6 +114,7 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
                     .setValidator(new IntRangeValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setAllowExpression(true)
+                    .setAlternatives(Constants.PROXY_BINDING)
                     .build();
     protected static final SimpleAttributeDefinition MAX_POST_SIZE =
             new SimpleAttributeDefinitionBuilder(Constants.MAX_POST_SIZE, ModelType.INT)
@@ -129,12 +139,21 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(false))
                     .build();
+    protected static final SimpleAttributeDefinition REDIRECT_BINDING =
+            new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_BINDING, ModelType.STRING)
+                    .setAllowNull(true)
+                    .setValidator(new StringLengthValidator(1))
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
+                    .setAlternatives(Constants.REDIRECT_PORT)
+                    .build();
     protected static final SimpleAttributeDefinition REDIRECT_PORT =
             new SimpleAttributeDefinitionBuilder(Constants.REDIRECT_PORT, ModelType.INT)
                     .setAllowNull(true)
                     .setValidator(new IntRangeValidator(1, true))
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setDefaultValue(new ModelNode(443))
+                    .setAlternatives(Constants.REDIRECT_BINDING)
                     .setAllowExpression(true)
                     .build();
     protected static final SimpleAttributeDefinition MAX_CONNECTIONS =
@@ -156,8 +175,10 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
             SCHEME,
             SOCKET_BINDING,
             ENABLE_LOOKUPS,
+            PROXY_BINDING,
             PROXY_NAME,
             PROXY_PORT,
+            REDIRECT_BINDING,
             REDIRECT_PORT,
             SECURE,
             MAX_POST_SIZE,

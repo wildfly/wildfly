@@ -88,7 +88,7 @@ public class WebExtension extends AbstractLegacyExtension {
     protected static final PathElement PARAM = PathElement.pathElement(Constants.PARAM);
     private static final String RESOURCE_NAME = WebExtension.class.getPackage().getName() + ".LocalDescriptions";
     private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 1;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
     private static final String extensionName = "org.jboss.as.web";
 
@@ -161,6 +161,7 @@ public class WebExtension extends AbstractLegacyExtension {
             registerTransformers_1_1_x(subsystem, 1);
             registerTransformers_1_2_0(subsystem);
             registerTransformers_1_3_0(subsystem);
+            registerTransformers_2_0_0(subsystem);
         }
         return Collections.singleton(registration);
     }
@@ -285,7 +286,11 @@ public class WebExtension extends AbstractLegacyExtension {
                 .addRejectCheck(RejectAttributeChecker.UNDEFINED, WebReWriteConditionDefinition.FLAGS);
 
         final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
-        connectorBuilder.addChildResource(SSL_PATH).getAttributeBuilder()
+        connectorBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .end()
+                .addChildResource(SSL_PATH).getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.DEFINED, WebSSLDefinition.SSL_PROTOCOL)
                 .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL);
 
@@ -294,7 +299,29 @@ public class WebExtension extends AbstractLegacyExtension {
     }
 
     private void registerTransformers_1_3_0(SubsystemRegistration registration) {
-        //EAP 6.2 uses 1.3.0 but at the time of writing has no differences from 2.0.0
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
+        connectorBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .end();
+
+
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(1, 3, 0));
+    }
+
+    private void registerTransformers_2_0_0(SubsystemRegistration registration) {
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        final ResourceTransformationDescriptionBuilder connectorBuilder = subsystemRoot.addChildResource(CONNECTOR_PATH);
+        connectorBuilder.getAttributeBuilder()
+                .addRejectCheck(RejectAttributeChecker.DEFINED, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, WebSSLDefinition.SSL_PROTOCOL, WebConnectorDefinition.PROXY_BINDING, WebConnectorDefinition.REDIRECT_BINDING)
+                .end();
+
+
+        TransformationDescription.Tools.register(subsystemRoot.build(), registration, ModelVersion.create(2, 0, 0));
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {
