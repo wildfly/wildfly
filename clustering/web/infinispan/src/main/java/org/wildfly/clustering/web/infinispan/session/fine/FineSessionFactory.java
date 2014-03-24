@@ -84,7 +84,7 @@ public class FineSessionFactory<L> implements SessionFactory<FineSessionCacheEnt
 
     @Override
     public FineSessionCacheEntry<L> findValue(String id) {
-        return this.invoker.invoke(this.sessionCache, new FindOperation<String, FineSessionCacheEntry<L>>(id));
+        return this.invoker.invoke(this.sessionCache, new LockingFindOperation<String, FineSessionCacheEntry<L>>(id));
     }
 
     @Override
