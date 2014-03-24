@@ -114,7 +114,6 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, PrimitiveListAttributeDefinition> {
         private final ModelType valueType;
 
-
         public Builder(final String name, final ModelType valueType) {
             super(name, ModelType.LIST);
             this.valueType = valueType;
@@ -123,6 +122,7 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
         public Builder(final PrimitiveListAttributeDefinition basic) {
             super(basic);
             this.valueType = basic.getValueType();
+            this.validator = basic.getElementValidator();
         }
 
         public static Builder of(final String name, final ModelType valueType) {
