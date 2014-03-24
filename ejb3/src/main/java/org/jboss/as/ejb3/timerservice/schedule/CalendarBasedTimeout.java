@@ -300,7 +300,7 @@ public class CalendarBasedTimeout {
             return currentCal;
         }
 
-        Calendar nextCal = this.copy(currentCal);
+        Calendar nextCal = this.truncate(currentCal, Calendar.MINUTE);
         // At this point, a suitable "next" second has been identified.
         // There can be 2 cases
         // 1) The "next" second is greater than the current second : This
@@ -320,7 +320,6 @@ public class CalendarBasedTimeout {
             nextCal.set(Calendar.SECOND, nextSecond);
             // advance the minute to next minute
             nextCal.add(Calendar.MINUTE, 1);
-
             return nextCal;
         }
 
@@ -344,7 +343,7 @@ public class CalendarBasedTimeout {
             return currentCal;
         }
 
-        Calendar nextCal = this.copy(currentCal);
+        Calendar nextCal = this.truncate(currentCal, Calendar.HOUR_OF_DAY);
         // At this point, a suitable "next" minute has been identified.
         // There can be 2 cases
         // 1) The "next" minute is greater than the current minute : This
@@ -397,7 +396,7 @@ public class CalendarBasedTimeout {
             return currentCal;
         }
 
-        Calendar nextCal = this.copy(currentCal);
+        Calendar nextCal = this.truncate(currentCal, Calendar.DATE);
         // At this point, a suitable "next" hour has been identified.
         // There can be 2 cases
         // 1) The "next" hour is greater than the current hour : This
@@ -457,7 +456,7 @@ public class CalendarBasedTimeout {
             return currentCal;
         }
 
-        Calendar nextCal = this.copy(currentCal);
+        Calendar nextCal = this.truncate(currentCal, Calendar.WEEK_OF_MONTH);
         // At this point, a suitable "next" day-of-week has been identified.
         // There can be 2 cases
         // 1) The "next" day-of-week is greater than the current day-of-week : This
@@ -508,7 +507,7 @@ public class CalendarBasedTimeout {
             return currentCal;
         }
 
-        Calendar nextCal = this.copy(currentCal);
+        Calendar nextCal = this.truncate(currentCal, Calendar.YEAR);
         // At this point, a suitable "next" month has been identified.
         // There can be 2 cases
         // 1) The "next" month is greater than the current month : This
@@ -600,7 +599,7 @@ public class CalendarBasedTimeout {
             return currentCal;
         }
 
-        Calendar nextCal = this.copy(currentCal);
+        Calendar nextCal = this.truncate(currentCal, Calendar.MONTH);
 
         if (nextDayOfMonth > currentDayOfMonth) {
             if (this.monthHasDate(nextCal, nextDayOfMonth)) {
@@ -660,7 +659,7 @@ public class CalendarBasedTimeout {
             return null;
         }
 
-        Calendar nextCal = this.copy(currentCal);
+        Calendar nextCal = this.truncate(currentCal, Calendar.ERA);
         // at this point we have chosen a year which is greater than the current
         // year.
         // set the chosen year
@@ -683,7 +682,11 @@ public class CalendarBasedTimeout {
     }
 
     private Calendar advanceTillMonthHasDate(Calendar cal, Integer date) {
-        Calendar copy = this.copy(cal);
+        Calendar copy = this.truncate(cal, Calendar.MONTH);
+        copy.set(Calendar.SECOND, this.second.getFirst());
+        copy.set(Calendar.MINUTE, this.minute.getFirst());
+        copy.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
+
         // make sure the month can handle the date
         while (monthHasDate(copy, date) == false) {
             if (copy.get(Calendar.YEAR) > Year.MAX_YEAR) {
@@ -700,11 +703,6 @@ public class CalendarBasedTimeout {
             if (date == null) {
                 return null;
             }
-
-            copy.set(Calendar.SECOND, this.second.getFirst());
-            copy.set(Calendar.MINUTE, this.minute.getFirst());
-            copy.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
-
         }
         copy.set(Calendar.DAY_OF_MONTH, date);
         return copy;
@@ -712,23 +710,24 @@ public class CalendarBasedTimeout {
 
     private Calendar copy(Calendar cal) {
         Calendar copy = new GregorianCalendar(cal.getTimeZone());
-        copy.setTime(cal.getTime());
+        copy.setTimeInMillis(cal.getTimeInMillis());
 
         return copy;
     }
 
-    private boolean monthHasDate(Calendar cal, int date) {
-        Calendar tmpCal = new GregorianCalendar(cal.getTimeZone());
-        tmpCal.set(Calendar.YEAR, cal.get(Calendar.YEAR));
-        tmpCal.set(Calendar.MONTH, cal.get(Calendar.MONTH));
-        tmpCal.set(Calendar.DAY_OF_MONTH, 1);
-        int maximumPossibleDateForTheMonth = tmpCal.getActualMaximum(Calendar.DAY_OF_MONTH);
-
-        if (date > maximumPossibleDateForTheMonth) {
-            return false;
+    private Calendar truncate(Calendar cal, int field) {
+        Calendar copy = new GregorianCalendar(cal.getTimeZone());
+        copy.clear();
+        for(int i=0; i <= field; i++) {
+            if(cal.isSet(i)) {
+                copy.set(i, cal.get(i));
+            }
         }
-        return true;
+        return copy;
+    }
 
+    private boolean monthHasDate(Calendar cal, int date) {
+        return date <= cal.getActualMaximum(Calendar.DAY_OF_MONTH);
     }
 
     private boolean isAfterEnd(Calendar cal) {
