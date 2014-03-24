@@ -686,7 +686,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             if (!mergedMetaData.getServlets().containsKey(ServletPathMatches.DEFAULT_SERVLET_NAME)) {
                 ServletInfo defaultServlet = Servlets.servlet("default", DefaultServlet.class);
                 handleServletMappings(is22OrOlder, seenMappings, servletMappings, defaultServlet);
-
+                defaultServlet.addInitParam(DefaultServlet.DEFAULT_ALLOWED, "true");
                 d.addServlet(defaultServlet);
             }
 
