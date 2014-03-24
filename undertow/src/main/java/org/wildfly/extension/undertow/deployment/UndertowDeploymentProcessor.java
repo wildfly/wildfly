@@ -24,7 +24,6 @@ package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
-
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -51,6 +50,7 @@ import org.jboss.as.web.session.SessionIdentifierCodec;
 import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.metadata.ear.spec.EarMetaData;
+import org.jboss.metadata.javaee.spec.ParamValueMetaData;
 import org.jboss.metadata.web.jboss.JBossServletMetaData;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.TldMetaData;
@@ -72,12 +72,23 @@ import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
+import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
 import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
 import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecService;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
-import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
 
+import javax.security.jacc.PolicyConfiguration;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -87,9 +98,14 @@ import java.util.concurrent.Executor;
 
 import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
 
-import javax.security.jacc.PolicyConfiguration;
-
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
+
+
+    private static final String DEFAULT_EXCLUDE = "/target";
+    private static final String DEFAULT_INCLUDE = "/src/main/webapp,/src/main/resources/META-INF/resources";
+    private static final String INCLUDE_PROPERTY = "external-content-include";
+    private static final String EXCLUDE_PROPERTY = "external-content-exclude";
+
 
     private final String defaultServer;
     private final String defaultHost;
@@ -183,7 +199,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         String deploymentName;
-        if(deploymentUnit.getParent() == null) {
+        if (deploymentUnit.getParent() == null) {
             deploymentName = deploymentUnit.getName();
         } else {
             deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
@@ -204,12 +220,12 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .unprefixSecurityDomain(metaDataSecurityDomain);
 
         String serverInstanceName = metaData.getServerInstanceName() == null ? defaultServer : metaData.getServerInstanceName();
-        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName,pathName);
+        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
 
         final Set<ServiceName> additionalDependencies = new HashSet<>();
-        for(final SetupAction setupAction : setupActions) {
+        for (final SetupAction setupAction : setupActions) {
             Set<ServiceName> dependencies = setupAction.dependencies();
-            if(dependencies != null) {
+            if (dependencies != null) {
                 additionalDependencies.addAll(dependencies);
             }
         }
@@ -238,6 +254,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setThreadSetupActions(deploymentUnit.getAttachmentList(UndertowAttachments.UNDERTOW_THREAD_SETUP_ACTIONS))
                 .setServletExtensions(deploymentUnit.getAttachmentList(UndertowAttachments.UNDERTOW_SERVLET_EXTENSIONS))
                 .setExplodedDeployment(ExplodedDeploymentMarker.isExplodedDeployment(deploymentUnit))
+                .setExternalRoots(findExternalRoots(deploymentUnit, metaData))
                 .createUndertowDeploymentInfoService();
 
         final ServiceName deploymentInfoServiceName = deploymentServiceName.append(UndertowDeploymentInfoService.SERVICE_NAME);
@@ -268,7 +285,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        if(componentRegistryExists) {
+        if (componentRegistryExists) {
             infoBuilder.addDependency(ComponentRegistry.serviceName(deploymentUnit), ComponentRegistry.class, undertowDeploymentInfoService.getComponentRegistryInjectedValue());
         } else {
             undertowDeploymentInfoService.getComponentRegistryInjectedValue().setValue(new ImmediateValue<>(componentRegistry));
@@ -410,6 +427,87 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
         return securityDomain;
+    }
+
+    private List<File> findExternalRoots(final DeploymentUnit deploymentUnit, JBossWebMetaData metaData) {
+
+        String systemPropertyName;
+        if (deploymentUnit.getParent() == null) {
+            systemPropertyName = deploymentUnit.getName() + ".external.content";
+        } else {
+            systemPropertyName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName() + ".external.content";
+        }
+        String basePath = System.getProperty(systemPropertyName);
+        if (basePath == null) {
+            return null;
+        }
+
+        String includeString = DEFAULT_INCLUDE;
+        String excludeString = DEFAULT_EXCLUDE;
+        if(metaData.getContextParams() != null) {
+            for(ParamValueMetaData cp : metaData.getContextParams()) {
+                if(cp.getParamName().equals(INCLUDE_PROPERTY)) {
+                    includeString = cp.getParamValue();
+                } else if(cp.getParamName().equals(EXCLUDE_PROPERTY)) {
+                    excludeString = cp.getParamValue();
+                }
+            }
+        }
+
+        final List<String> include = new ArrayList<>(Arrays.asList(includeString.split(",")));
+        final List<String> exclude = new ArrayList<>(Arrays.asList(excludeString.split(",")));
+
+
+        final Path path = Paths.get(basePath);
+        final List<File> externalRoots = new ArrayList<>();
+
+        try {
+            Files.walkFileTree(path, new FileVisitor<Path>() {
+                @Override
+                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                    if(dir.getFileName().startsWith(".")) {
+                        //skip hidden directories
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                    for(String e : exclude) {
+                        if(dir.toString().endsWith(e)) {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                    }
+                    boolean shouldInclude = false;
+
+                    for(String i : include) {
+                        if(dir.toString().endsWith(i)) {
+                            shouldInclude = true;
+                            break;
+                        }
+                    }
+                    if(shouldInclude) {
+                        externalRoots.add(dir.toAbsolutePath().toFile());
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            new RuntimeException(e);
+        }
+        return externalRoots;
     }
 
 }
