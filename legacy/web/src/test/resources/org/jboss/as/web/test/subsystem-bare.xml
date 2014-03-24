@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:web:2.0" default-virtual-server="default-host">
+<subsystem xmlns="urn:jboss:domain:web:2.1" default-virtual-server="default-host">
     <connector name="http" scheme="http" protocol="HTTP/1.1" socket-binding="http"/>
        <connector name="https" scheme="https" protocol="HTTP/1.1" secure="true" socket-binding="https">
        <ssl certificate-key-file="${jboss.server.config.dir}/keystore.p12"
