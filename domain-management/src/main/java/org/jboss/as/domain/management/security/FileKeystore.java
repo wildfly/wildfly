@@ -44,9 +44,10 @@ import org.jboss.msc.service.StartException;
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  *
  */
-final class JKSKeystore {
+final class FileKeystore {
 
     private KeyStore keyStore;
+    private final String provider;
     private final String path;
     private long lastModificationTime;
     private final char[] keystorePassword;
@@ -56,7 +57,8 @@ final class JKSKeystore {
     private final char[] keyPassword;
     private final String alias;
 
-    private JKSKeystore(final String path, final char[] keystorePassword) {
+    private FileKeystore(final String provider, final String path, final char[] keystorePassword) {
+        this.provider = provider;
         this.path = path;
         this.keystorePassword = keystorePassword;
         this.keyPassword = null;
@@ -65,7 +67,8 @@ final class JKSKeystore {
         this.isKeyStore = false;
     }
 
-    private JKSKeystore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
+    private FileKeystore(final String provider, final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
+        this.provider = provider;
         this.path = path;
         this.keystorePassword = keystorePassword;
         this.keyPassword = keyPassword;
@@ -74,12 +77,12 @@ final class JKSKeystore {
         this.isKeyStore = true;
     }
 
-    static JKSKeystore newKeyStore(final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
-        return new JKSKeystore(path, keystorePassword, keyPassword, alias);
+    static FileKeystore newKeyStore(final String provider, final String path, final char[] keystorePassword, final char[] keyPassword, final String alias) {
+        return new FileKeystore(provider, path, keystorePassword, keyPassword, alias);
     }
 
-    static JKSKeystore newTrustStore(final String path, final char[] keystorePassword) {
-        return new JKSKeystore(path, keystorePassword);
+    static FileKeystore newTrustStore(final String provider, final String path, final char[] keystorePassword) {
+        return new FileKeystore(provider, path, keystorePassword);
     }
 
     /**
@@ -103,7 +106,7 @@ final class JKSKeystore {
     void load() throws StartException {
         FileInputStream fis = null;
         try {
-            KeyStore loadedKeystore = KeyStore.getInstance("JKS");
+            KeyStore loadedKeystore = KeyStore.getInstance(provider);
 
             if (new File(path).exists()) {
                 fis = new FileInputStream(path);
