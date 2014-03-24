@@ -180,17 +180,6 @@ if not "%PRESERVE_JAVA_OPTS%" == "true" (
   )
 )
 
-if not "%PRESERVE_JAVA_OPTS%" == "true" (
-  rem Add compressed oops, if supported (64 bit VM), and not overriden
-  echo "%JAVA_OPTS%" | findstr /I "\-XX:\-UseCompressedOops \-client" > nul
-  if errorlevel == 1 (
-    "%JAVA%" -XX:+UseCompressedOops -version > nul 2>&1
-    if not errorlevel == 1 (
-      set "JAVA_OPTS=-XX:+UseCompressedOops %JAVA_OPTS%"
-    )
-  )
-)
-
 rem EAP6-121 feature disabled
 rem if not "%PRESERVE_JAVA_OPTS%" == "true" (
   rem Add rotating GC logs, if supported, and not already defined
