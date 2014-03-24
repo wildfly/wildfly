@@ -122,7 +122,7 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
-        <xs:attribute name="sasl-protocol" type="xs:string" default="remoting">
+        <xs:attribute name="sasl-protocol" type="xs:string" default="http-remoting">
             <xs:annotation>
                 <xs:documentation>
                     <![CDATA[Where a SaslServer or SaslClient are created by default the protocol specified it 'remoting', this can be used to override this.

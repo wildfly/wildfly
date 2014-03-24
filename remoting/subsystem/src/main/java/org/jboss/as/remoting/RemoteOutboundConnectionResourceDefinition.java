@@ -66,7 +66,7 @@ class RemoteOutboundConnectionResourceDefinition extends AbstractOutboundConnect
     public static final SimpleAttributeDefinition PROTOCOL = new SimpleAttributeDefinitionBuilder(
             CommonAttributes.PROTOCOL, ModelType.STRING, true).setValidator(
                     new EnumValidator<Protocol>(Protocol.class, true, false))
-            .setDefaultValue(new ModelNode(Protocol.REMOTE.toString()))
+            .setDefaultValue(new ModelNode(Protocol.HTTP_REMOTING.toString()))
             .setAllowExpression(true)
             .build();
 
