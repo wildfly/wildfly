@@ -33,6 +33,7 @@ import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -49,8 +50,19 @@ class SingleSignOnDefinition extends PersistentResourceDefinition {
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
+    static final SimpleAttributeDefinition HTTP_ONLY = new SimpleAttributeDefinitionBuilder("http-only", ModelType.BOOLEAN, true)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
 
-    static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(DOMAIN, PATH);
+    static final SimpleAttributeDefinition SECURE = new SimpleAttributeDefinitionBuilder("secure", ModelType.BOOLEAN, true)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+    static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(DOMAIN, PATH, HTTP_ONLY, SECURE);
 
     static final SingleSignOnDefinition INSTANCE = new SingleSignOnDefinition();
 

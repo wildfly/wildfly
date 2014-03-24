@@ -62,6 +62,8 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
         final ModelNode pathNode = SingleSignOnDefinition.PATH.resolveModelAttribute(context, model);
         final String domain = domainModelNode.isDefined() ? domainModelNode.asString() : null;
         final String path = pathNode.isDefined() ? pathNode.asString() : null;
+        final boolean secure = SingleSignOnDefinition.SECURE.resolveModelAttribute(context, model).asBoolean();
+        final boolean httpOnly = SingleSignOnDefinition.HTTP_ONLY.resolveModelAttribute(context, model).asBoolean();
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
         final ServiceName serviceName = UndertowService.ssoServiceName(serverName, hostName);
@@ -77,7 +79,7 @@ class SingleSignOnAdd extends AbstractAddStepHandler {
             newControllers.add(factoryController);
         }
 
-        final SingleSignOnService service = new SingleSignOnService(domain, path);
+        final SingleSignOnService service = new SingleSignOnService(domain, path, httpOnly, secure);
         final ServiceController<?> sc = target.addService(serviceName, service)
                 .addDependency(virtualHostServiceName, Host.class, service.getHost())
                 .addDependency(managerServiceName, SingleSignOnManager.class, service.getSingleSignOnSessionManager())

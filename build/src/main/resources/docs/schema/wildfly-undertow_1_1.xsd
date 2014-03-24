@@ -325,6 +325,24 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="http-only" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                              Cookie httpOnly attribute
+                              ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="secure" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                              Cookie secure attribute
+                              ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
 
