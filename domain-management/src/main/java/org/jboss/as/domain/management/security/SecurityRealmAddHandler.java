@@ -633,7 +633,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             ModelNode aliasNode = KeystoreAttributes.ALIAS.resolveModelAttribute(context, ssl);
             String alias = aliasNode.isDefined() ? aliasNode.asString() : null;
 
-            FileKeyManagerService keyManagerService = new FileKeyManagerService(path, keystorePassword, keyPassword, alias);
+            FileKeyManagerService keyManagerService = new FileKeyManagerService(provider, path, keystorePassword, keyPassword, alias);
 
             serviceBuilder = serviceTarget.addService(serviceName, keyManagerService);
             ModelNode relativeTo = KeystoreAttributes.KEYSTORE_RELATIVE_TO.resolveModelAttribute(context, ssl);
@@ -664,7 +664,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         } else {
             String path = KeystoreAttributes.KEYSTORE_PATH.resolveModelAttribute(context, ssl).asString();
 
-            FileTrustManagerService trustManagerService = new FileTrustManagerService(path, keystorePassword);
+            FileTrustManagerService trustManagerService = new FileTrustManagerService(provider, path, keystorePassword);
 
             serviceBuilder = serviceTarget.addService(serviceName, trustManagerService);
             ModelNode relativeTo = KeystoreAttributes.KEYSTORE_RELATIVE_TO.resolveModelAttribute(context, ssl);
