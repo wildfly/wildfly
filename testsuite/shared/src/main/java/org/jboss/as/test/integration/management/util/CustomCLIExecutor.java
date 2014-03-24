@@ -83,7 +83,7 @@ public class CustomCLIExecutor {
         final ProcessBuilder builder = new ProcessBuilder();
         builder.redirectErrorStream(true);
         final List<String> command = new ArrayList<String>();
-        command.add("java");
+        command.add(TestSuiteEnvironment.getJavaPath());
         TestSuiteEnvironment.getIpv6Args(command);
         if (cliConfigFile != null) {
             command.add("-Djboss.cli.config=" + cliConfigFile.getAbsolutePath());
