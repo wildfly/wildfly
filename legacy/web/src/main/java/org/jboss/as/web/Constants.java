@@ -80,11 +80,13 @@ public interface Constants {
     String PATTERN = "pattern";
     String PREFIX = "prefix";
     String PROTOCOL = "protocol";
+    String PROXY_BINDING = "proxy-binding";
     String PROXY_NAME = "proxy-name";
     String PROXY_PORT = "proxy-port";
     String REAUTHENTICATE = "reauthenticate";
     String READ_ONLY = "read-only";
     String RECOMPILE_ON_FAIL = "recompile-on-fail";
+    String REDIRECT_BINDING = "redirect-binding";
     String REDIRECT_PORT = "redirect-port";
     String RELATIVE_TO = "relative-to";
     String RESOLVE_HOSTS = "resolve-hosts";
