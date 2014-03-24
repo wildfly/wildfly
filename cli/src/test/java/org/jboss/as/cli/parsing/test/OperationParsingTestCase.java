@@ -299,6 +299,40 @@ public class OperationParsingTestCase {
         assertEquals("\"substituteAll(\\\"JBAS\\\",\\\"DUMMY\\\")\"", handler.getPropertyValue("value"));
     }
 
+    @Test
+    public void testOpenQuote() throws Exception {
+        DefaultCallbackHandler handler = new DefaultCallbackHandler(false);
+
+        try {
+            handler.parse(null, "./subsystem=logging:add(a=\"", null);
+        } catch(OperationFormatException e) {
+        }
+
+        assertTrue(handler.hasAddress());
+        assertTrue(handler.hasOperationName());
+        assertTrue(handler.hasProperties());
+        assertFalse(handler.endsOnAddressOperationNameSeparator());
+        assertFalse(handler.endsOnPropertyListStart());
+        assertFalse(handler.endsOnPropertySeparator());
+        assertFalse(handler.endsOnPropertyValueSeparator());
+        assertFalse(handler.endsOnNodeSeparator());
+        assertFalse(handler.endsOnNodeTypeNameSeparator());
+        assertFalse(handler.isRequestComplete());
+
+        OperationRequestAddress address = handler.getAddress();
+        Iterator<Node> i = address.iterator();
+        assertTrue(i.hasNext());
+        Node node = i.next();
+        assertEquals("subsystem", node.getType());
+        assertEquals("logging", node.getName());
+        assertFalse(i.hasNext());
+        
+        assertEquals("add", handler.getOperationName());
+        
+        assertEquals("a", handler.getLastParsedPropertyName());
+        assertEquals("\"", handler.getLastParsedPropertyValue());
+    }
+
     protected void parse(String opReq, DefaultCallbackHandler handler) throws CommandFormatException {
         parser.parse(opReq, handler);
     }

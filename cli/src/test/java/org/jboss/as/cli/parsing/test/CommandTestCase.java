@@ -241,10 +241,22 @@ public class CommandTestCase {
         assertEquals("command.log", cmd.getOutputTarget());
     }
 
+    @Test
+    public void testQuotedArgument() throws Exception {
+
+        DefaultCallbackHandler cmd = parse(" some-command \"a b\"");
+        assertEquals("some-command", cmd.getOperationName());
+        assertTrue(cmd.hasProperties());
+        assertTrue(cmd.getPropertyNames().isEmpty());
+        final List<String> props = cmd.getOtherProperties();
+        assertEquals(1, props.size());
+        assertEquals("\"a b\"", props.get(0));
+    }
+
     protected DefaultCallbackHandler parse(String line) {
         DefaultCallbackHandler args = new DefaultCallbackHandler();
         try {
-            args.parse(null, line);
+            args.parse(null, line, null);
         } catch (CommandFormatException e) {
             e.printStackTrace();
             org.junit.Assert.fail(e.getLocalizedMessage());

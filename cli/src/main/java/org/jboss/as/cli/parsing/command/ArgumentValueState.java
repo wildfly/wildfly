@@ -22,6 +22,7 @@
 package org.jboss.as.cli.parsing.command;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.BackQuotesState;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultStateWithEndCharacter;
 import org.jboss.as.cli.parsing.ExpressionBaseState;
@@ -53,6 +54,7 @@ public class ArgumentValueState extends ExpressionBaseState {
         setLeaveOnWhitespace(true);
         setDefaultHandler(new WordCharacterHandler(true, false));
         enterState('"', new QuotesState(true, false));
+        enterState('`', new BackQuotesState(true, false));
         setReturnHandler(new CharacterHandler() {
             @Override
             public void handle(ParsingContext ctx) throws CommandFormatException {

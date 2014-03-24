@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 import org.jboss.as.cli.operation.OperationFormatException;
 import org.jboss.as.cli.operation.OperationRequestAddress;
 import org.jboss.as.cli.operation.impl.DefaultOperationRequestBuilder;
+import org.jboss.as.cli.parsing.CommandSubstitutionException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.dmr.ModelNode;
@@ -947,5 +948,30 @@ public class Util {
             StreamUtils.safeClose(is);
         }
         return bytes;
+    }
+
+    public static String getResult(CommandContext cmdCtx, final String cmd) throws CommandSubstitutionException {
+        final ModelNode request;
+        try {
+            request = cmdCtx.buildRequest(cmd);
+        } catch(CommandFormatException e) {
+            throw new CommandSubstitutionException(cmd, "Failed to substitute " + cmd, e);
+        }
+        final ModelControllerClient client = cmdCtx.getModelControllerClient();
+        if(client == null) {
+            throw new CommandSubstitutionException(cmd, "Substitution of " + cmd +
+                    " requires connection to the controller.");
+        }
+        final ModelNode response;
+        try {
+            response = client.execute(request);
+        } catch (IOException e) {
+            throw new CommandSubstitutionException(cmd, "Failed to substitute " + cmd, e);
+        }
+        if(!Util.isSuccess(response)) {
+            throw new CommandSubstitutionException(cmd, "Failed to substitute " + cmd +
+                    ": " + Util.getFailureDescription(response));
+        }
+        return response.get(Util.RESULT).asString();
     }
 }

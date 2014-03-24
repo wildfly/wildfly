@@ -22,6 +22,7 @@
 package org.jboss.as.cli.parsing.operation;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.BackQuotesState;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultStateWithEndCharacter;
 import org.jboss.as.cli.parsing.ExpressionBaseState;
@@ -44,6 +45,7 @@ public class HeaderValueState extends ExpressionBaseState {
         putHandler(';', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         putHandler('}', GlobalCharacterHandlers.LEAVE_STATE_HANDLER);
         enterState('"', QuotesState.QUOTES_INCLUDED);
+        enterState('`', BackQuotesState.QUOTES_INCLUDED);
         enterState('[', new DefaultStateWithEndCharacter("BRACKETS", ']', true, true, enterStateHandlers));
         enterState('(', new DefaultStateWithEndCharacter("PARENTHESIS", ')', true, true, enterStateHandlers));
         enterState('{', new DefaultStateWithEndCharacter("BRACES", '}', true, true, enterStateHandlers));

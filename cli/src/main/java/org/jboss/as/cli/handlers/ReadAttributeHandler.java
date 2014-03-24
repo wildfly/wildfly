@@ -247,7 +247,7 @@ public class ReadAttributeHandler extends BaseOperationCommand {
             CommandLineParser.CallbackHandler handler = new DefaultCallbackHandler(address);
 
             // this is for correct parsing of escaped characters
-            String nodePath = args.getOriginalLine();
+            String nodePath = args.getSubstitutedLine();
             int nodeArgInd = nodePath.indexOf(" --node=");
             if(nodeArgInd < 0) {
                 throw new CommandFormatException("Couldn't locate ' --node=' in the line: '" + nodePath + "'");

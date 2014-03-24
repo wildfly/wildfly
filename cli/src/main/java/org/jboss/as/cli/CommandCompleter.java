@@ -29,7 +29,8 @@ import org.jboss.as.cli.impl.CommandCandidatesProvider;
 import org.jboss.as.cli.operation.OperationCandidatesProvider;
 import org.jboss.as.cli.operation.OperationRequestCompleter;
 import org.jboss.as.cli.operation.impl.DefaultCallbackHandler;
-import org.jboss.as.cli.parsing.UnresolvedExpressionException;
+import org.jboss.as.cli.parsing.CommandSubstitutionException;
+import org.jboss.as.cli.parsing.UnresolvedVariableException;
 import org.jboss.as.cli.parsing.command.CommandFormat;
 import org.jboss.as.cli.parsing.operation.OperationFormat;
 
@@ -53,17 +54,20 @@ public class CommandCompleter implements CommandLineCompleter {
 
     @Override
     public int complete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
-
-/*        if(cursor != buffer.length()) {
-            return -1;
-        }
-*/
         // support for commands and operations spread across multiple lines
         int offset = 0;
         if(ctx.getArgumentsString() != null) {
             offset = ctx.getArgumentsString().length();
             buffer = ctx.getArgumentsString() + buffer;
         }
+        final int result = doComplete(ctx, buffer, cursor, candidates);
+        if(result < 0) {
+            return result;
+        }
+        return result - offset;
+    }
+
+    protected int doComplete(CommandContext ctx, String buffer, int cursor, List<String> candidates) {
 
         if(buffer.isEmpty()) {
             for(String cmd : cmdRegistry.getTabCompletionCommands()) {
@@ -80,7 +84,7 @@ public class CommandCompleter implements CommandLineCompleter {
         final DefaultCallbackHandler parsedCmd = (DefaultCallbackHandler) ctx.getParsedCommandLine();
         try {
             parsedCmd.parse(ctx.getCurrentNodePath(), buffer, false, ctx);
-        } catch(UnresolvedExpressionException e) {
+        } catch(UnresolvedVariableException e) {
             final String variable = e.getExpression();
             if(buffer.endsWith(variable)) {
                 for(String var : ctx.getVariables()) {
@@ -92,6 +96,18 @@ public class CommandCompleter implements CommandLineCompleter {
                 return buffer.length() - variable.length();
             } else {
                 // failed to resolve a variable in the middle of the line
+            }
+            return -1;
+        } catch(CommandSubstitutionException e) {
+            final String cmd = e.getExpression();
+            if(buffer.endsWith(cmd)) {
+                int i = doComplete(ctx, cmd, 0, candidates);
+                if(i < 0) {
+                    return -1;
+                }
+                return buffer.length() - cmd.length() + i;
+            } else {
+                // failed to substitute a command in the middle of the line
             }
             return -1;
         } catch(CommandFormatException e) {
@@ -107,16 +123,13 @@ public class CommandCompleter implements CommandLineCompleter {
             candidatesProvider = ctx.getOperationCandidatesProvider();
         }
 
-        final int result = OperationRequestCompleter.INSTANCE.complete(ctx, parsedCmd, candidatesProvider, buffer, cursor, candidates);
+        final int result = OperationRequestCompleter.INSTANCE.complete(ctx, candidatesProvider, buffer, cursor, candidates);
         // if there is nothing else to suggest, check whether it could be a start of a variable
         if(candidates.isEmpty() && buffer.charAt(buffer.length() - 1) == '$' && !ctx.getVariables().isEmpty()) {
             candidates.addAll(ctx.getVariables());
             Collections.sort(candidates);
             return buffer.length();
         }
-        if(result <= 0) {
-            return result;
-        }
-        return result - offset;
+        return result;
     }
 }

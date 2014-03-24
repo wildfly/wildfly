@@ -22,6 +22,7 @@
 package org.jboss.as.cli.parsing.arguments;
 
 import org.jboss.as.cli.CommandFormatException;
+import org.jboss.as.cli.parsing.BackQuotesState;
 import org.jboss.as.cli.parsing.CharacterHandler;
 import org.jboss.as.cli.parsing.DefaultParsingState;
 import org.jboss.as.cli.parsing.ParsingContext;
@@ -53,6 +54,9 @@ public class ArgumentValueState extends DefaultParsingState {
                         break;
                     case '{':
                         break;
+                    case '`':
+                        ctx.enterState(BackQuotesState.QUOTES_INCLUDED);
+                        break;
                     default:
                         ctx.getCallbackHandler().character(ctx);
                 }
@@ -62,6 +66,7 @@ public class ArgumentValueState extends DefaultParsingState {
         enterState(',', ListItemSeparatorState.INSTANCE);
         enterState('[', new ListState(this));
         enterState('"', QuotesState.QUOTES_INCLUDED);
+        enterState('`', BackQuotesState.QUOTES_INCLUDED);
         leaveState(']');
         enterState('{', this);
         leaveState('}');
