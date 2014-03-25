@@ -42,6 +42,8 @@ import org.wildfly.clustering.web.session.SessionManager;
  */
 public class DistributableSessionManager implements UndertowSessionManager {
 
+    private static final int MAX_SESSION_ID_GENERATION_ATTEMPTS = 10;
+
     private final String deploymentName;
     private final SessionListeners sessionListeners = new SessionListeners();
     private final SessionManager<LocalSessionContext> manager;
@@ -79,12 +81,15 @@ public class DistributableSessionManager implements UndertowSessionManager {
 
         String id = config.findSessionId(exchange);
 
-        if (id != null) {
-            if (this.manager.containsSession(id)) {
-                throw UndertowMessages.MESSAGES.sessionAlreadyExists(id);
-            }
-        } else {
-            id = this.manager.createIdentifier();
+        if (id == null) {
+            int attempts = 0;
+            do {
+                if (++attempts > MAX_SESSION_ID_GENERATION_ATTEMPTS) {
+                    throw UndertowMessages.MESSAGES.couldNotGenerateUniqueSessionId();
+                }
+                id = this.manager.createIdentifier();
+            } while (this.manager.containsSession(id));
+
             config.setSessionId(exchange, id);
         }
 
