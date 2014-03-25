@@ -31,12 +31,12 @@ import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
 import org.jboss.modules.ModuleLoader;
+import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceActivator;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 import org.jboss.threads.JBossExecutors;
@@ -78,55 +78,49 @@ final class BootstrapImpl implements Bootstrap {
         tracker.addService(Services.JBOSS_AS, applicationServerService)
             .install();
         final ServiceController<?> rootService = container.getRequiredService(Services.JBOSS_AS);
-
-        final StabilityMonitor monitor = new StabilityMonitor();
-        monitor.addController(rootService);
-        try {
-            monitor.awaitStability();
-        } catch (final InterruptedException e) {
-            future.failed(e);
-        } finally {
-            monitor.removeController(rootService);
-        }
-
-        switch (rootService.getState()) {
-            case UP: {
-                final ServiceController<?> controllerServiceController = rootService.getServiceContainer().getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
-                monitor.addController(controllerServiceController);
-                try {
-                    monitor.awaitStability();
-                } catch (final InterruptedException e) {
-                    future.failed(e);
-                } finally {
-                    monitor.removeController(controllerServiceController);
+        rootService.addListener(new AbstractServiceListener<Object>() {
+            @Override
+            public void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
+                switch (transition) {
+                    case STARTING_to_UP: {
+                        controller.removeListener(this);
+                        final ServiceController<?> controllerServiceController = controller.getServiceContainer().getRequiredService(Services.JBOSS_SERVER_CONTROLLER);
+                        controllerServiceController.addListener(new AbstractServiceListener<Object>() {
+                            public void transition(final ServiceController<?> controller, final ServiceController.Transition transition) {
+                                switch (transition) {
+                                    case STARTING_to_UP: {
+                                        future.done();
+                                        controller.removeListener(this);
+                                        break;
+                                    }
+                                    case STARTING_to_START_FAILED: {
+                                        future.failed(controller.getStartException());
+                                        controller.removeListener(this);
+                                        break;
+                                    }
+                                    case REMOVING_to_REMOVED: {
+                                        future.failed(ServerMessages.MESSAGES.serverControllerServiceRemoved());
+                                        controller.removeListener(this);
+                                        break;
+                                    }
+                                }
+                            }
+                        });
+                        break;
+                    }
+                    case STARTING_to_START_FAILED: {
+                        controller.removeListener(this);
+                        future.failed(controller.getStartException());
+                        break;
+                    }
+                    case REMOVING_to_REMOVED: {
+                        controller.removeListener(this);
+                        future.failed(ServerMessages.MESSAGES.rootServiceRemoved());
+                        break;
+                    }
                 }
-
-                switch (controllerServiceController.getState()) {
-                    case UP: {
-                        future.done();
-                        break;
-                    }
-                    case START_FAILED: {
-                        future.failed(controllerServiceController.getStartException());
-                        break;
-                    }
-                    case REMOVED: {
-                        future.failed(ServerMessages.MESSAGES.serverControllerServiceRemoved());
-                        break;
-                    }
-                }
-
-                break;
             }
-            case START_FAILED: {
-                future.failed(rootService.getStartException());
-                break;
-            }
-            case REMOVED: {
-                future.failed(ServerMessages.MESSAGES.rootServiceRemoved());
-                break;
-            }
-        }
+        });
         return future;
     }
 
