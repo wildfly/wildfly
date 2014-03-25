@@ -86,7 +86,7 @@ public class InfinispanBeanFactory<G, I, T> implements BeanFactory<G, I, T> {
 
     @Override
     public BeanEntry<G> findValue(I id) {
-        return this.invoker.invoke(this.cache, new FindOperation<BeanKey<I>, BeanEntry<G>>(this.createKey(id)));
+        return this.invoker.invoke(this.cache, new LockingFindOperation<BeanKey<I>, BeanEntry<G>>(this.createKey(id)));
     }
 
     @Override

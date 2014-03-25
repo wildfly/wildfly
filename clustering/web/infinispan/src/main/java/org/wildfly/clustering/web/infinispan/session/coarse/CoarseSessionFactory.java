@@ -106,7 +106,7 @@ public class CoarseSessionFactory<L> implements SessionFactory<CoarseSessionEntr
 
     @Override
     public CoarseSessionEntry<L> findValue(String id) {
-        CoarseSessionCacheEntry<L> entry = this.invoker.invoke(this.sessionCache, new FindOperation<String, CoarseSessionCacheEntry<L>>(id));
+        CoarseSessionCacheEntry<L> entry = this.invoker.invoke(this.sessionCache, new LockingFindOperation<String, CoarseSessionCacheEntry<L>>(id));
         if (entry == null) return null;
         MarshalledValue<Map<String, Object>, MarshallingContext> value = this.invoker.invoke(this.attributesCache, new FindOperation<SessionAttributesCacheKey, MarshalledValue<Map<String, Object>, MarshallingContext>>(new SessionAttributesCacheKey(id)), Flag.SKIP_LOCKING);
         return new CoarseSessionEntry<>(entry, value);

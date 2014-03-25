@@ -22,6 +22,8 @@
 package org.jboss.as.clustering.infinispan.invoker;
 
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.TransactionConfiguration;
+import org.infinispan.transaction.LockingMode;
 
 /**
  * Locates a value from the cache.
@@ -40,7 +42,7 @@ public interface Locator<K, V> {
      * Reusable lookup operation.
      */
     class FindOperation<K, V> implements CacheInvoker.Operation<K, V, V> {
-        private final K key;
+        final K key;
 
         public FindOperation(K key) {
             this.key = key;
@@ -49,6 +51,27 @@ public interface Locator<K, V> {
         @Override
         public V invoke(Cache<K, V> cache) {
             return cache.get(this.key);
+        }
+    }
+
+    /**
+     * Reusable lookup operation.that first acquires a pessimistic lock if necessary.
+     */
+    class LockingFindOperation<K, V> extends FindOperation<K, V> {
+        public LockingFindOperation(K key) {
+            super(key);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public V invoke(Cache<K, V> cache) {
+            TransactionConfiguration transaction = cache.getCacheConfiguration().transaction();
+            if (transaction.transactionMode().isTransactional()) {
+                if (transaction.lockingMode() == LockingMode.PESSIMISTIC) {
+                    cache.getAdvancedCache().lock(this.key);
+                }
+            }
+            return super.invoke(cache);
         }
     }
 }
