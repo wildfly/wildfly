@@ -100,6 +100,11 @@ public abstract class SessionBeanComponentCreateService extends EJBComponentCrea
                 processTxAttr(sessionBeanComponentDescription, MethodIntf.TIMER, method);
             }
         }
+        if (sessionBeanComponentDescription.getTimeoutMethod() != null) {
+            this.processTxAttr(sessionBeanComponentDescription, MethodIntf.TIMER,
+                    sessionBeanComponentDescription.getTimeoutMethod());
+        }
+
         final EJBViewDescription local = sessionBeanComponentDescription.getEjbLocalView();
         ejbLocalObjectView = local == null ? null : local.getServiceName();
         final EJBViewDescription remote = sessionBeanComponentDescription.getEjbRemoteView();
