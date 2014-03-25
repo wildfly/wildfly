@@ -21,21 +21,20 @@
   ~ Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
-<web-app version="2.5"
-         xmlns="http://java.sun.com/xml/ns/javaee"
+<web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
 
     <env-entry>
         <env-entry-name>simpleString</env-entry-name>
-        <env-entry-value>It's Friday!!!</env-entry-value>
         <env-entry-type>java.lang.String</env-entry-type>
+        <env-entry-value>It's Friday!!!</env-entry-value>
     </env-entry>
 
     <env-entry>
         <env-entry-name>primitiveInt</env-entry-name>
-        <env-entry-value>10</env-entry-value>
         <env-entry-type>int</env-entry-type>
+        <env-entry-value>10</env-entry-value>
     </env-entry>
 
     <env-entry>
@@ -53,5 +52,17 @@
         <env-entry-name>missingEnvEntryValIntResource</env-entry-name>
         <env-entry-type>int</env-entry-type>
     </env-entry>
+
+    <resource-ref>
+        <res-ref-name>url1</res-ref-name>
+        <res-type>java.net.URL</res-type>
+        <lookup-name>https://www.widlfly.org</lookup-name>
+    </resource-ref>
+
+    <resource-env-ref>
+        <resource-env-ref-name>ldapContext1</resource-env-ref-name>
+        <resource-env-ref-type>javax.naming.ldap.LdapContext</resource-env-ref-type>
+        <lookup-name>ldap://localhost:389/ou=users,dc=example,dc=com</lookup-name>
+    </resource-env-ref>
 
 </web-app>

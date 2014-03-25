@@ -31,6 +31,9 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
+import javax.naming.ldap.LdapContext;
+import java.net.URL;
 
 /**
  * User: jpai
@@ -59,6 +62,30 @@ public class SimpleSLSB extends Parent {
 
     // @Resource is used on the setter
     private String wontBeInjectedString = DEFAULT_UNINJECTED_STRING_VAL;
+
+    @Resource(name = "url1")
+    private URL url1;
+
+    @Resource(lookup = "http://jboss.org")
+    private URL url2;
+
+    @Resource(lookup = "file://dev/null")
+    private Object url3;
+
+    @Resource(lookup = "java:comp/env/url1")
+    private URL url4;
+
+    @Resource(name = "ldapContext1")
+    private LdapContext ldapContext1;
+
+    @Resource(lookup = "ldap://localhost:389")
+    private DirContext ldapContext2;
+
+    @Resource(lookup = "java:comp/env")
+    private Context context1;
+
+    @Resource(lookup = "java:comp/null")
+    private Context context2;
 
     public String sayHello(String user) {
         return this.commonBean.sayHello(user);
@@ -119,5 +146,13 @@ public class SimpleSLSB extends Parent {
 
     public boolean isTimerServiceInjected() {
         return this.timerService != null;
+    }
+
+    public boolean validURLInjections() {
+        return this.url1 != null && this.url2 != null && url3 != null && url4 != null;
+    }
+
+    public boolean validContextInjections() {
+        return this.context1 != null && this.context2 == null;
     }
 }

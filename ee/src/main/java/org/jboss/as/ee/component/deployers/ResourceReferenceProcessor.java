@@ -31,7 +31,6 @@ import org.jboss.as.ee.component.FixedInjectionSource;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.ee.component.LookupInjectionSource;
 import org.jboss.as.ee.component.ResourceInjectionTarget;
-import org.jboss.as.ee.utils.InjectionUtils;
 import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -65,6 +64,7 @@ import static org.jboss.as.ee.EeMessages.MESSAGES;
  */
 public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBindingsProcessor {
 
+    private static final String JAVAX_NAMING_CONTEXT = "javax.naming.Context";
 
     @Override
     protected List<BindingConfiguration> processDescriptorEntries(DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ResourceInjectionTarget resourceInjectionTarget, final ComponentDescription componentDescription, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
@@ -80,7 +80,6 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
         final ResourceEnvironmentReferencesMetaData resourceEnvRefs = environment.getEnvironment().getResourceEnvironmentReferences();
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
-
         if (resourceEnvRefs == null) {
             return bindings;
         }
@@ -100,12 +99,10 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 }
             }
             // our injection (source) comes from the local (ENC) lookup, no matter what.
-            LookupInjectionSource injectionSource = new LookupInjectionSource(name);
-
+            InjectionSource injectionSource = new LookupInjectionSource(name);
             classType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, resourceEnvRef, classType);
-            final BindingConfiguration bindingConfiguration;
             if (!isEmpty(resourceEnvRef.getLookupName())) {
-                bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(resourceEnvRef.getLookupName()));
+                injectionSource = new LookupInjectionSource(resourceEnvRef.getLookupName(), classType != null && JAVAX_NAMING_CONTEXT.equals(classType.getName()));
             } else {
                 if (classType == null) {
                     throw MESSAGES.cannotDetermineType(name);
@@ -113,32 +110,29 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                 //check if it is a well known type
                 final String lookup = ResourceInjectionAnnotationParsingProcessor.FIXED_LOCATIONS.get(classType.getName());
                 if (lookup != null) {
-                    bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource(lookup));
+                    injectionSource = new LookupInjectionSource(lookup);
                 } else {
-
                     final EEResourceReferenceProcessor resourceReferenceProcessor = registry.getResourceReferenceProcessor(classType.getName());
                     if (resourceReferenceProcessor != null) {
-                        InjectionSource valueSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
-                        bindingConfiguration = new BindingConfiguration(name, valueSource);
+                        injectionSource = resourceReferenceProcessor.getResourceReferenceBindingSource();
                     } else {
                         //TODO: how are we going to handle these? Previously they would have been handled by jboss-*.xml
                         if (resourceEnvRef.getResourceEnvRefName().startsWith("java:")) {
                             ROOT_LOGGER.cannotResolve("resource-env-ref", name);
                             continue;
                         } else {
-                            bindingConfiguration = new BindingConfiguration(name, new LookupInjectionSource("java:jboss/resources/" + resourceEnvRef.getResourceEnvRefName()));
+                            injectionSource = new LookupInjectionSource("java:jboss/resources/" + resourceEnvRef.getResourceEnvRefName());
                         }
                     }
                 }
             }
-            bindings.add(bindingConfiguration);
+            bindings.add(new BindingConfiguration(name, injectionSource));
         }
         return bindings;
     }
 
     private List<BindingConfiguration> getResourceRefEntries(final DeploymentUnit deploymentUnit, DeploymentDescriptorEnvironment environment, ClassLoader classLoader, DeploymentReflectionIndex deploymentReflectionIndex, ResourceInjectionTarget resourceInjectionTarget) throws DeploymentUnitProcessingException {
         List<BindingConfiguration> bindings = new ArrayList<BindingConfiguration>();
-
         final EEResourceReferenceProcessorRegistry registry = deploymentUnit.getAttachment(Attachments.RESOURCE_REFERENCE_PROCESSOR_REGISTRY);
         final ResourceReferencesMetaData resourceRefs = environment.getEnvironment().getResourceReferences();
         if (resourceRefs == null) {
@@ -151,7 +145,6 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
             } else {
                 name = environment.getDefaultContext() + resourceRef.getName();
             }
-
             Class<?> classType = null;
             if (resourceRef.getType() != null) {
                 try {
@@ -160,16 +153,11 @@ public class ResourceReferenceProcessor extends AbstractDeploymentDescriptorBind
                     throw MESSAGES.cannotLoad(e, resourceRef.getType());
                 }
             }
-
             // our injection (source) comes from the local (ENC) lookup, no matter what.
             InjectionSource injectionSource = new LookupInjectionSource(name);
             classType = processInjectionTargets(resourceInjectionTarget, injectionSource, classLoader, deploymentReflectionIndex, resourceRef, classType);
             if (!isEmpty(resourceRef.getLookupName())) {
-                if (classType != null) {
-                    injectionSource = InjectionUtils.getInjectionSource(resourceRef.getLookupName(), classType.getName());
-                } else {
-                    injectionSource = new LookupInjectionSource(resourceRef.getLookupName());
-                }
+                injectionSource = new LookupInjectionSource(resourceRef.getLookupName(), classType != null && JAVAX_NAMING_CONTEXT.equals(classType.getName()));
             } else if (!isEmpty(resourceRef.getResUrl())) {
                 final String url = resourceRef.getResUrl();
                 if (classType != null && classType.equals(URI.class)) {

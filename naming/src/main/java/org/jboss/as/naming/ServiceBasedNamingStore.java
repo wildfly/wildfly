@@ -128,7 +128,8 @@ public class ServiceBasedNamingStore implements NamingStore {
             if (controller != null) {
                 final Object object = controller.getValue();
                 if (dereference && object instanceof ManagedReferenceFactory) {
-                    return ManagedReferenceFactory.class.cast(object).getReference().getInstance();
+                    final ManagedReference managedReference = ManagedReferenceFactory.class.cast(object).getReference();
+                    return managedReference != null ? managedReference.getInstance() : null;
                 } else {
                     return object;
                 }

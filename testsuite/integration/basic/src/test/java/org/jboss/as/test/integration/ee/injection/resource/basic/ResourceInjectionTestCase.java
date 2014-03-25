@@ -158,4 +158,20 @@ public class ResourceInjectionTestCase {
                 + CheckORBRemote.class.getName());
         bean.checkForInjectedORB();
     }
+
+    /**
+     * Tests that a EJB with a URL Connection Factory @Resource deploys fine and is injected as expected
+     */
+    @Test
+    public void testURLInjection() {
+        Assert.assertTrue("URL injection not valid", this.slsb.validURLInjections());
+    }
+
+    /**
+     * Tests that a EJB with several Context (and sub classes) @Resource deploys fine and is injected as expected
+     */
+    @Test
+    public void testContextInjection() {
+        Assert.assertTrue("Context injection not valid", this.slsb.validContextInjections());
+    }
 }
