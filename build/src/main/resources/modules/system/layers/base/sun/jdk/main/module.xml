@@ -72,6 +72,7 @@
                 <path name="sun/awt/X11"/>
                 <path name="sun/print"/>
                 <path name="sun/print/resources"/>
+                <path name="sun/security/action"/>
                 <path name="sun/security/pkcs"/>
                 <path name="sun/security/x509"/>
                 <path name="sun/jdbc/odbc"/>
