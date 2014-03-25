@@ -256,6 +256,7 @@
         <xs:attribute name="worker" use="optional" type="xs:string" default="default"/>
         <xs:attribute name="directory" use="optional" type="xs:string" default="${jboss.server.log.dir}"/>
         <xs:attribute name="prefix" use="optional" type="xs:string" default="access_log"/>
+        <xs:attribute name="suffix" use="optional" type="xs:string" default=".log"/>
         <xs:attribute name="rotate" use="optional" type="xs:string" default="true"/>
     </xs:complexType>
     <xs:complexType name="errorPageType">

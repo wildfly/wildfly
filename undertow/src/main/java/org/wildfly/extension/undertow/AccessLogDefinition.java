@@ -60,6 +60,10 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             .setValidator(new StringLengthValidator(1, true))
             .setAllowExpression(true)
             .build();
+    protected static final SimpleAttributeDefinition SUFFIX = new SimpleAttributeDefinitionBuilder(Constants.SUFFIX, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode(".log"))
+            .setAllowExpression(true)
+            .build();
     protected static final SimpleAttributeDefinition ROTATE = new SimpleAttributeDefinitionBuilder(Constants.ROTATE, ModelType.BOOLEAN, true)
             .setDefaultValue(new ModelNode(true))
             .setAllowExpression(true)
@@ -75,6 +79,7 @@ public class AccessLogDefinition extends PersistentResourceDefinition {
             WORKER,
             PATTERN,
             PREFIX,
+            SUFFIX,
             ROTATE,
             DIRECTORY
     );

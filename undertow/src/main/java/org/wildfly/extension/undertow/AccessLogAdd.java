@@ -58,9 +58,10 @@ class AccessLogAdd extends AbstractAddStepHandler {
         final String pattern = AccessLogDefinition.PATTERN.resolveModelAttribute(context, model).asString();
         final String directory = AccessLogDefinition.DIRECTORY.resolveModelAttribute(context, model).asString();
         final String filePrefix = AccessLogDefinition.PREFIX.resolveModelAttribute(context, model).asString();
+        final String fileSuffix = AccessLogDefinition.SUFFIX.resolveModelAttribute(context, model).asString();
 
 
-        final AccessLogService service = new AccessLogService(pattern, new File(directory), filePrefix);
+        final AccessLogService service = new AccessLogService(pattern, new File(directory), filePrefix, fileSuffix);
         final String serverName = serverAddress.getLastElement().getValue();
         final String hostName = hostAddress.getLastElement().getValue();
 
