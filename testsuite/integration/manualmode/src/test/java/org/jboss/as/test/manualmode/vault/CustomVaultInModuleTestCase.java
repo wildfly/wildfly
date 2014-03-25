@@ -44,6 +44,7 @@ import org.jboss.as.test.manualmode.vault.module.TestVaultResolveExpressionHandl
 import org.jboss.as.test.manualmode.vault.module.TestVaultSubsystemResourceDescription;
 import org.jboss.as.test.module.util.TestModule;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ValueExpression;
 import org.jboss.shrinkwrap.api.ArchivePath;
@@ -173,9 +174,11 @@ public class CustomVaultInModuleTestCase {
 
     	} finally {
     		containerController.stop(CONTAINER);
-            while (managementClient.isServerInRunningState()) {
-                Thread.sleep(50);
-            }
+    		long end = System.currentTimeMillis() + TimeoutUtil.adjust(3000);
+    		do {
+    		    Thread.sleep(50);
+    		} while (managementClient.isServerInRunningState() && System.currentTimeMillis() < end);
+
     		IoUtils.safeClose(client);
     		IoUtils.safeClose(managementClient);
     	}

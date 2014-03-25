@@ -410,7 +410,22 @@ public class HostXml extends CommonXml {
             element = nextElement(reader, namespace);
         }
         if (element == Element.VAULT) {
-            parseVault(reader, address, namespace, list);
+            switch (namespace) {
+                //Less than 1.1 does not end up in this method
+                case DOMAIN_1_1:
+                case DOMAIN_1_2:
+                case DOMAIN_1_3:
+                case DOMAIN_1_4:
+                case DOMAIN_1_5:
+                case DOMAIN_2_0:
+                case DOMAIN_2_1: {
+                    parseVault_1_1(reader, address, namespace, list);
+                    break;
+                }
+                default: {
+                    parseVault_3_0(reader, address, namespace, list);
+                }
+            }
             element = nextElement(reader, namespace);
         }
         if (element == Element.MANAGEMENT) {
