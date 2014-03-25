@@ -27,8 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
@@ -113,10 +113,13 @@ public class ModelControllerMBeanHelper {
     int getMBeanCount() {
         return new RootResourceIterator<Integer>(accessControlUtil, getRootResourceAndRegistration().getResource(), new ResourceAction<Integer>() {
             int count;
-            public boolean onResource(PathAddress address) {
-                if (isExcludeAddress(address)) {
-                    return false;
-                }
+
+            @Override
+            public ObjectName onAddress(PathAddress address) {
+                return isExcludeAddress(address) ? null : ObjectNameAddressUtil.createObjectName(domain, address);
+            }
+
+            public boolean onResource(ObjectName address) {
                 count++;
                 return true;
             }
@@ -128,15 +131,13 @@ public class ModelControllerMBeanHelper {
     }
 
     Set<ObjectInstance> queryMBeans(final ObjectName name, final QueryExp query) {
-        return new RootResourceIterator<Set<ObjectInstance>>(accessControlUtil, getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectInstance>>() {
+        return new RootResourceIterator<Set<ObjectInstance>>(accessControlUtil, getRootResourceAndRegistration().getResource(),
+                new ObjectNameMatchResourceAction<Set<ObjectInstance>>(name) {
+
             Set<ObjectInstance> set = new HashSet<ObjectInstance>();
 
             @Override
-            public boolean onResource(PathAddress address) {
-                if (isExcludeAddress(address)) {
-                    return false;
-                }
-                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(domain, address);
+            public boolean onResource(ObjectName resourceName) {
                 if (name == null || name.apply(resourceName)) {
                     //TODO check query
                     set.add(new ObjectInstance(resourceName, CLASS_NAME));
@@ -155,15 +156,13 @@ public class ModelControllerMBeanHelper {
     }
 
     Set<ObjectName> queryNames(final ObjectName name, final QueryExp query) {
-        return new RootResourceIterator<Set<ObjectName>>(accessControlUtil, getRootResourceAndRegistration().getResource(), new ResourceAction<Set<ObjectName>>() {
+        return new RootResourceIterator<Set<ObjectName>>(accessControlUtil, getRootResourceAndRegistration().getResource(),
+                new ObjectNameMatchResourceAction<Set<ObjectName>>(name) {
+
             Set<ObjectName> set = new HashSet<ObjectName>();
 
             @Override
-            public boolean onResource(PathAddress address) {
-                if (isExcludeAddress(address)) {
-                    return false;
-                }
-                ObjectName resourceName = ObjectNameAddressUtil.createObjectName(domain, address);
+            public boolean onResource(ObjectName resourceName) {
                 if (name == null || name.apply(resourceName)) {
                     //TODO check query
                     set.add(resourceName);
@@ -520,6 +519,67 @@ public class ModelControllerMBeanHelper {
             return ObjectName.getInstance(domain, "management-root", "server");
         } catch (MalformedObjectNameException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private abstract class ObjectNameMatchResourceAction<T> implements ResourceAction<T> {
+
+        private final ObjectName baseName;
+        private final Map<String, String> properties;
+        private final ObjectName domainOnlyName;
+
+        protected ObjectNameMatchResourceAction(ObjectName baseName) {
+            this.baseName = baseName;
+            this.properties = baseName == null ? Collections.<String, String>emptyMap() : baseName.getKeyPropertyList();
+            try {
+                this.domainOnlyName = baseName == null ? null : ObjectName.getInstance(baseName.getDomain() + ":*");
+            } catch (MalformedObjectNameException e) {
+                throw new IllegalStateException(e);
+            }
+        }
+
+        @Override
+        public ObjectName onAddress(PathAddress address) {
+            if (isExcludeAddress(address)) {
+                return null;
+            }
+
+            ObjectName result = null;
+            ObjectName toMatch = ObjectNameAddressUtil.createObjectName(domain, address);
+            if (baseName == null) {
+                result = toMatch;
+            } else if (address.size() == 0) {
+                // We can't compare the ObjectName properties a la the final 'else' block,
+                // because the special management=server property will not match
+                // Just confirm correct domain
+                if (domainOnlyName.apply(toMatch)) {
+                    result = toMatch;
+                }
+            } else if (address.size() >= properties.size()) {
+                // We have same or more elements than our target has properties; let it do the match
+                if (baseName.apply(toMatch)) {
+                    result = toMatch;
+                }
+            } else {
+                // Address may be a parent of an interesting address, so see if it matches all elements it has
+                boolean matches = domainOnlyName.apply(toMatch);
+                if (matches) {
+                    for (Map.Entry<String, String> entry : toMatch.getKeyPropertyList().entrySet()) {
+
+                        String propertyValue = properties.get(entry.getKey());
+                        if (propertyValue == null
+                                || (!entry.getValue().equals(propertyValue))
+                                        && !baseName.isPropertyValuePattern(entry.getKey())) {
+                            matches = false;
+                            break;
+                        }
+                    }
+                }
+                if (matches) {
+                    result = toMatch;
+                }
+            }
+            return result;
         }
     }
 }
