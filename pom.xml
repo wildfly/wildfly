@@ -246,7 +246,7 @@
         <version.org.jboss.xnio>3.0.9.GA-redhat-1</version.org.jboss.xnio>
         <version.org.jboss.xnio.xnio-api>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-api>
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
-        <version.org.jgroups>3.2.13.Final</version.org.jgroups>
+        <version.org.jgroups>3.2.13.Final-redhat-1</version.org.jgroups>
         <version.org.jvnet>1.6</version.org.jvnet>
         <version.org.kohsuke.rngom>201103-redhat-2</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
