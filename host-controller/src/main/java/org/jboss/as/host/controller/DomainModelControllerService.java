@@ -121,7 +121,6 @@ import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.controller.resources.VersionModelInitializer;
 import org.jboss.as.server.mgmt.HttpManagementService;
 import org.jboss.as.server.services.security.AbstractVaultReader;
-import org.jboss.as.version.Version;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -258,7 +257,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     private static ManagedAuditLogger createAuditLogger(HostControllerEnvironment environment) {
         final File auditLogDir = new File(environment.getDomainDataDir(), "mgmt-audit");
         final File domainLogFile = new File(auditLogDir, "mgmt-audit.log");
-        return new ManagedAuditLoggerImpl(Version.AS_VERSION, false);
+        return new ManagedAuditLoggerImpl(environment.getProductConfig().resolveVersion(), false);
     }
 
     @Override
