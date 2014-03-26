@@ -774,7 +774,7 @@
         </module-def>
 
         <module-def name="org.glassfish.javax.el">
-            <maven-resource group="org.glassfish" artifact="javax.el"/>
+            <maven-resource-with-filtering group="org.glassfish" artifact="javax.el" excludes="javax/**"/>
         </module-def>
 
         <module-def name="org.glassfish.javax.enterprise.concurrent">
