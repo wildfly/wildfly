@@ -45,12 +45,14 @@ class AccessLogService implements Service<AccessLogService> {
     private final String pattern;
     private final File directory;
     private final String filePrefix;
+    private final String fileSuffix;
     private volatile AccessLogReceiver logReceiver;
 
-    AccessLogService(String pattern, File directory, String filePrefix) {
+    AccessLogService(String pattern, File directory, String filePrefix, String fileSuffix) {
         this.pattern = pattern;
         this.directory = directory;
         this.filePrefix = filePrefix;
+        this.fileSuffix = fileSuffix;
     }
 
     @Override
@@ -61,7 +63,7 @@ class AccessLogService implements Service<AccessLogService> {
             }
         }
         try {
-            logReceiver = new DefaultAccessLogReceiver(worker.getValue(), directory, filePrefix);
+            logReceiver = new DefaultAccessLogReceiver(worker.getValue(), directory, filePrefix, fileSuffix);
         } catch (IllegalStateException e) {
             throw new StartException(e);
         }

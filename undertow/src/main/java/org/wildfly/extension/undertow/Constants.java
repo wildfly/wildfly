@@ -56,6 +56,7 @@ public interface Constants {
     String HOST = "host";
     String PATTERN = "pattern";
     String PREFIX = "prefix";
+    String SUFFIX = "suffix";
     String ROTATE = "rotate";
     //String CLASS = "class";
     String DEFAULT_HOST = "default-host";
