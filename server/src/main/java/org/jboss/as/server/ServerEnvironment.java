@@ -45,7 +45,6 @@ import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.version.ProductConfig;
-import org.jboss.as.version.Version;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoader;
@@ -1058,6 +1057,6 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     }
 
     ManagedAuditLogger createAuditLogger() {
-        return new ManagedAuditLoggerImpl(Version.AS_VERSION, true);
+        return new ManagedAuditLoggerImpl(getProductConfig().resolveVersion(), true);
     }
 }
