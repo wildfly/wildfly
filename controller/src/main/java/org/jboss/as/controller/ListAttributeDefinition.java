@@ -48,6 +48,12 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
 
     private final ParameterValidator elementValidator;
 
+    @Deprecated
+    public ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator) {
+        this(name, name, allowNull, false, 0, Integer.MAX_VALUE, elementValidator, null, null, null,false, null,
+                null, null, null, (AttributeAccess.Flag[]) null);
+    }
+
     public ListAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator,
                                       final AttributeAccess.Flag... flags) {
         this(name, name, allowNull, false, 0, Integer.MAX_VALUE, elementValidator, null, null, null,false, null, null, null, null, flags);
@@ -58,6 +64,21 @@ public abstract class ListAttributeDefinition extends AttributeDefinition {
                                    final int minSize, final int maxSize, final ParameterValidator elementValidator) {
         this(name, xmlName, allowNull, false, minSize, maxSize, elementValidator, null, null, null, false, null, null,
                 (Boolean) null);
+    }
+
+    @Deprecated
+    protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
+                                      final int minSize, final int maxSize, final ParameterValidator elementValidator,
+                                      final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, boolean resourceOnly, DeprecationData deprecated, final AttributeAccess.Flag... flags) {
+        this(name, xmlName, allowNull, false, minSize, maxSize, elementValidator, alternatives, requires, attributeMarshaller, resourceOnly,
+                deprecated, null, null, null, flags);
+    }
+
+    @Deprecated
+    protected ListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
+                                      final int minSize, final int maxSize, final ParameterValidator elementValidator,
+                                      final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
+        this(name, xmlName, allowNull, false, minSize, maxSize, elementValidator, alternatives, requires, null, false, null, null, null, null, flags);
     }
 
     @Deprecated
