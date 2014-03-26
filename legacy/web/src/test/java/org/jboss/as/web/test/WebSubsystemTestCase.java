@@ -116,7 +116,21 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Override
     protected AdditionalInitialization createAdditionalInitialization() {
-        return new MyAdditionalInitialization();
+        return new AdditionalInitialization() {
+
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected ProcessType getProcessType() {
+                return ProcessType.HOST_CONTROLLER;
+            }
+
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.ADMIN_ONLY;
+            }
+        };
+
     }
 
     @Override
@@ -428,17 +442,16 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformation_2_0(ModelTestControllerVersion.WILDFLY_8_0_0_FINAL);
     }
 
-    
+
     private void testTransformation_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(2, 0, 0);
         String subsystemXml = readResource("subsystem-2.0.0.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.wildfly:wildfly-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
-                .addSingleChildFirstClass(MyAdditionalInitialization.class)
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
 
         KernelServices mainServices = builder.build();
@@ -448,17 +461,16 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         checkSubsystemModelTransformation(mainServices, modelVersion, new ModelFixer.CumulativeModelFixer(SSLConfigurationNameFixer.INSTANCE, AccessLogPrefixFixer_1_2_0.INSTANCE));
     }
-    
+
     private void testTransformation_1_3_0(ModelTestControllerVersion controllerVersion) throws Exception {
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
         String subsystemXml = readResource("subsystem-1.3.0.xml");
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
-                .addSingleChildFirstClass(MyAdditionalInitialization.class)
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
 
         KernelServices mainServices = builder.build();
@@ -550,7 +562,7 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         ModelVersion modelVersion = ModelVersion.create(1, 3, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
@@ -570,13 +582,13 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
 
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, xmlOps, config);
     }
-    
+
     private void testRejectingTransformers_2_0(ModelTestControllerVersion controllerVersion) throws Exception {
 
         ModelVersion modelVersion = ModelVersion.create(2, 0, 0);
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
 
-        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.wildfly:wildfly-web:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.web.WebExtension")
                 .configureReverseControllerCheck(createAdditionalInitialization(), null);
@@ -777,28 +789,11 @@ public class WebSubsystemTestCase extends AbstractSubsystemBaseTest {
         @Override
         protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
             return !attribute.isDefined();
-                }
+        }
 
         @Override
         protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
             return new ModelNode("NC");
-            }
-
         }
-
-    private static class MyAdditionalInitialization extends AdditionalInitialization implements java.io.Serializable {
-
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            protected ProcessType getProcessType() {
-                return ProcessType.HOST_CONTROLLER;
-    }
-
-            @Override
-            protected RunningMode getRunningMode() {
-                return RunningMode.ADMIN_ONLY;
-            }
-        };
-    }
-
+	}
+}
