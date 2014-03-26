@@ -176,7 +176,7 @@
         <version.org.jboss.jbossts>4.17.18.Final-redhat-1</version.org.jboss.jbossts>
         <version.org.jboss.jboss-vfs>3.2.2.Final-redhat-1</version.org.jboss.jboss-vfs>
         <version.org.jboss.jsfunit>2.0.0.Beta1</version.org.jboss.jsfunit>
-        <version.org.jboss.logging.jboss-logging>3.1.2.GA-redhat-1</version.org.jboss.logging.jboss-logging>
+        <version.org.jboss.logging.jboss-logging>3.1.4.GA</version.org.jboss.logging.jboss-logging>
         <version.org.jboss.logging.jboss-logging-processor>1.1.0.Final</version.org.jboss.logging.jboss-logging-processor>
         <version.org.jboss.logmanager.jboss-logmanager>1.5.2.Final-redhat-1</version.org.jboss.logmanager.jboss-logmanager>
         <version.org.jboss.logmanager.log4j-jboss-logmanager>1.1.0.Final-redhat-2</version.org.jboss.logmanager.log4j-jboss-logmanager>
