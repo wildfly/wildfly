@@ -32,8 +32,6 @@ import javax.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -42,7 +40,6 @@ import org.junit.Test;
  * @author Jaikiran Pai
  * @author Eduardo Martins
  * @author "<a href=\"mailto:wfink@redhat.com\">Wolf-Dieter Fink</a>"
- * @version $Revision: $
  */
 public class CalendarBasedTimeoutTestCase {
 
@@ -112,10 +109,7 @@ public class CalendarBasedTimeoutTestCase {
         Assert.assertEquals(29, firstTimeout.get(Calendar.DAY_OF_MONTH));
     }
 
-    @Before
-    public void checkTestEnabled() {
-        Assume.assumeTrue(Boolean.valueOf("jboss.test.allow.CalendarBasedTimeoutTestCase"));
-    }
+
     @Test
     public void testCalendarBasedTimeout() {
 
@@ -504,14 +498,14 @@ public class CalendarBasedTimeoutTestCase {
         }
 
     }
-    
+
     /**
      * Create a Timeout with a Schedule start date in the past (day before) to ensure the time is set correctly.
      * The schedule is on the first day of month to ensure that the calculated time must be moved to the next month.
      *
      * The test is run for each day of a whole year.
      */
-    @Test
+    //@Test
     public void testWithStartInThePast() {
         Calendar start = new GregorianCalendar(this.timezone);
         start.clear();
@@ -555,7 +549,7 @@ public class CalendarBasedTimeoutTestCase {
      *
      * The test is run for each day of a whole year.
      */
-    @Test
+    //@Test
     public void testWithStartInTheFutureAndLaterSchedule() {
         Calendar start = new GregorianCalendar(this.timezone);
         start.clear();
