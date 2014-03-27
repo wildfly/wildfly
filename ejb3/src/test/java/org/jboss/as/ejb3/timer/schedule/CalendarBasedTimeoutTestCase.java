@@ -23,6 +23,7 @@ package org.jboss.as.ejb3.timer.schedule;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.TimeZone;
@@ -31,14 +32,13 @@ import javax.ejb.ScheduleExpression;
 
 import org.jboss.as.ejb3.timerservice.schedule.CalendarBasedTimeout;
 import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
  * CalendarBasedTimeoutTestCase
  *
  * @author Jaikiran Pai
+ * @author Eduardo Martins
  * @author "<a href=\"mailto:wfink@redhat.com\">Wolf-Dieter Fink</a>"
  */
 public class CalendarBasedTimeoutTestCase {
@@ -79,10 +79,36 @@ public class CalendarBasedTimeoutTestCase {
         return timeZones;
     }
 
-    @Before
-    public void checkTestEnabled() {
-        Assume.assumeTrue(Boolean.valueOf("jboss.test.allow.CalendarBasedTimeoutTestCase"));
+    /**
+     * Asserts timeouts based on next day of week.
+     * Uses expression dayOfWeek=saturday hour=3 minute=21 second=50.
+     * Expected next timeout is SAT 2014-03-29 3:21:50
+     */
+    @Test
+    public void testNextDayOfWeek() {
+        // start date is SUN 2014-03-22 4:00:00, has to advance to SAT of next week
+        testNextDayOfWeek(new GregorianCalendar(2014,2,22,4,0,0).getTime());
+        // start date is TUE 2014-03-25 2:00:00, has to advance to SAT of same week
+        testNextDayOfWeek(new GregorianCalendar(2014,2,25,2,0,0).getTime());
     }
+
+    private void testNextDayOfWeek(Date start) {
+        ScheduleExpression expression = new ScheduleExpression();
+        expression.dayOfWeek("6");
+        expression.hour("3");
+        expression.minute("21");
+        expression.second("50");
+        expression.start(start);
+        CalendarBasedTimeout calendarTimeout = new CalendarBasedTimeout(expression);
+        Calendar nextTimeout = calendarTimeout.getNextTimeout();
+        Assert.assertNotNull(nextTimeout);
+        Assert.assertEquals(50, nextTimeout.get(Calendar.SECOND));
+        Assert.assertEquals(21, nextTimeout.get(Calendar.MINUTE));
+        Assert.assertEquals(3, nextTimeout.get(Calendar.HOUR_OF_DAY));
+        Assert.assertEquals(7, nextTimeout.get(Calendar.DAY_OF_WEEK));
+        Assert.assertEquals(29, nextTimeout.get(Calendar.DAY_OF_MONTH));
+    }
+
 
     @Test
     public void testCalendarBasedTimeout() {
@@ -483,9 +509,9 @@ public class CalendarBasedTimeoutTestCase {
     public void testWithStartInThePast() {
         Calendar start = new GregorianCalendar(this.timezone);
         start.clear();
-        start.set(2014,3,18);
+        start.set(2014, 3, 18);
         Calendar end = (Calendar) start.clone();
-        end.add(Calendar.YEAR,1);
+        end.add(Calendar.YEAR, 1);
         do {
             // setup schedule
             ScheduleExpression schedule = this.getTimezoneSpecificScheduleExpression();
@@ -527,7 +553,7 @@ public class CalendarBasedTimeoutTestCase {
     public void testWithStartInTheFutureAndLaterSchedule() {
         Calendar start = new GregorianCalendar(this.timezone);
         start.clear();
-        start.set(2014,3,18);
+        start.set(2014, 3, 18);
         Calendar end = (Calendar) start.clone();
         end.add(Calendar.YEAR, 1);
         do {
