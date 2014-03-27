@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,24 +19,36 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.registry;
+package org.wildfly.clustering.server.dispatcher;
 
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
-import org.infinispan.Cache;
-import org.infinispan.remoting.transport.Address;
-import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
-import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.dispatcher.CommandResponse;
 
 /**
- * Configuration for a {@link RegistryFactoryService}.
+ * Simple {@link CommandResponse} implementation
  * @author Paul Ferraro
+ * @param <T> a response type
  */
-public interface RegistryFactoryConfiguration<K, V> {
-    CacheInvoker getCacheInvoker();
-    Group getGroup();
-    Cache<Node, Map.Entry<K, V>> getCache();
-    NodeFactory<Address> getNodeFactory();
+public class SimpleCommandResponse<T> implements CommandResponse<T> {
+    private final T value;
+    private final ExecutionException exception;
+
+    public SimpleCommandResponse(T value) {
+        this.value = value;
+        this.exception = null;
+    }
+
+    public SimpleCommandResponse(Throwable exception) {
+        this.value = null;
+        this.exception = new ExecutionException(exception);
+    }
+
+    @Override
+    public T get() throws ExecutionException {
+        if (this.exception != null) {
+            throw this.exception;
+        }
+        return this.value;
+    }
 }

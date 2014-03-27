@@ -24,6 +24,7 @@ package org.wildfly.clustering.server.singleton;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.subsystem.CacheServiceProvider;
 import org.jboss.modules.ModuleIdentifier;
@@ -49,13 +50,17 @@ public class SingletonServiceBuilderFactoryProvider implements CacheServiceProvi
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, boolean defaultCache, ModuleIdentifier moduleId) {
-        ServiceBuilder<?> builder = target.addService(getServiceName(containerName, cacheName), new SingletonServiceBuilderFactoryService(containerName, cacheName))
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-        ;
+    public Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, CacheMode mode, boolean defaultCache, ModuleIdentifier moduleId) {
+        ServiceName name = getServiceName(containerName, cacheName);
+
+        ServiceBuilder<SingletonServiceBuilderFactory> builder = target.addService(name, mode.isClustered() ? new SingletonServiceBuilderFactoryService(containerName, cacheName) : new LocalSingletonServiceBuilderFactoryService());
+
         if (defaultCache) {
             builder.addAliases(getServiceName(containerName, CacheContainer.DEFAULT_CACHE_ALIAS));
         }
-        return Collections.<ServiceController<?>>singleton(builder.install());
+
+        ServiceController<SingletonServiceBuilderFactory> controller = builder.setInitialMode(ServiceController.Mode.ACTIVE).install();
+
+        return Collections.<ServiceController<?>>singleton(controller);
     }
 }

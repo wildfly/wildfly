@@ -44,8 +44,9 @@ public interface ChannelServiceProvider {
      * Installs services for the specified channel
      * @param target the service target in which to install services
      * @param cluster a cluster name
+     * @param clustered indicates whether this is a real cluster, or is simulated
      * @param moduleId the unique identifier of the module upon which these services should operate
      * @return a collection of installed services
      */
-    Collection<ServiceController<?>> install(ServiceTarget target, String cluster, ModuleIdentifier moduleId);
+    Collection<ServiceController<?>> install(ServiceTarget target, String cluster, boolean clustered, ModuleIdentifier moduleId);
 }

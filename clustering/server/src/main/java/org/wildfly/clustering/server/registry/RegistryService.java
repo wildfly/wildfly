@@ -34,7 +34,7 @@ import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
 
 /**
- * {@link Registry} service that creates a {@link Registry} from a factory and entry provider.
+ * Service that create a {@link Registry} from a factory and entry provider.
  * @author Paul Ferraro
  */
 public class RegistryService<K, V> implements Service<Registry<K, V>> {

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,54 +19,53 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.server.dispatcher;
 
-import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jgroups.Channel;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.server.group.ChannelGroupProvider;
 
 /**
- * Service providing a channel-based {@link NodeFactory}.
+ * Service that provides a non-clustered {@link CommandDispatcherFactory}.
  * @author Paul Ferraro
  */
-public class ChannelNodeFactoryService implements Service<ChannelNodeFactory> {
+public class LocalCommandDispatcherFactoryService implements Service<CommandDispatcherFactory> {
 
-    public static ServiceBuilder<ChannelNodeFactory> build(ServiceTarget target, ServiceName name, String cluster) {
-        ChannelNodeFactoryService service = new ChannelNodeFactoryService();
+    public static ServiceBuilder<CommandDispatcherFactory> build(ServiceTarget target, ServiceName name, String cluster) {
+        LocalCommandDispatcherFactoryService service = new LocalCommandDispatcherFactoryService();
         return target.addService(name, service)
-                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
-                .addDependency(ChannelService.getServiceName(cluster), Channel.class, service.channel)
+                .addDependency(ChannelGroupProvider.getServiceName(cluster), Group.class, service.group)
         ;
     }
 
-    private final InjectedValue<Channel> channel = new InjectedValue<>();
+    private final InjectedValue<Group> group = new InjectedValue<>();
 
-    private volatile ChannelNodeFactoryImpl factory;
+    private volatile CommandDispatcherFactory factory;
 
-    private ChannelNodeFactoryService() {
+    private LocalCommandDispatcherFactoryService() {
         // Hide
     }
 
     @Override
-    public ChannelNodeFactory getValue() {
+    public CommandDispatcherFactory getValue() {
         return this.factory;
     }
 
     @Override
-    public void start(StartContext context) {
-        this.factory = new ChannelNodeFactoryImpl(this.channel.getValue());
+    public void start(StartContext context) throws StartException {
+        this.factory = new LocalCommandDispatcherFactory(this.group.getValue());
     }
 
     @Override
     public void stop(StopContext context) {
-        this.factory.close();
         this.factory = null;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
@@ -43,81 +42,51 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
-import org.wildfly.clustering.registry.RegistryFactory;
 
 /**
- * Factory for creating a single {@link Registry} instance per node.
+ * Clustered {@link Registry} backed by an Infinispan cache.
  * @author Paul Ferraro
+ * @param <K> key type
+ * @param <V> value type
  */
 @org.infinispan.notifications.Listener
-public class RegistryFactoryService<K, V> implements RegistryFactory<K, V>, Service<RegistryFactory<K, V>>, Registry<K, V> {
+public class CacheRegistry<K, V> implements Registry<K, V> {
 
     private final List<Registry.Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
-    private final AtomicReference<RegistryEntryProvider<K, V>> provider = new AtomicReference<>();
-    private final RegistryFactoryConfiguration<K, V> config;
+    private final RegistryEntryProvider<K, V> provider;
+    private final Cache<Node, Map.Entry<K, V>> cache;
+    private final CacheInvoker invoker;
+    private final Group group;
+    private final NodeFactory<Address> factory;
 
-    private volatile CacheInvoker invoker = null;
-    private volatile Group group = null;
-    private volatile Cache<Node, Map.Entry<K, V>> cache = null;
-    private volatile NodeFactory<Address> factory = null;
-
-    public RegistryFactoryService(RegistryFactoryConfiguration<K, V> config) {
-        this.config = config;
-    }
-
-    @Override
-    public RegistryFactory<K, V> getValue() {
-        return this;
-    }
-
-    @Override
-    public void start(StartContext context) {
-        this.invoker = this.config.getCacheInvoker();
-        this.group = this.config.getGroup();
-        this.cache = this.config.getCache();
-        this.factory = this.config.getNodeFactory();
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        // Ensure that any created registry created was closed.
-        this.close();
-        this.cache = null;
-    }
-
-    @Override
-    public Registry<K, V> createRegistry(RegistryEntryProvider<K, V> provider) {
-        if (!this.provider.compareAndSet(null, provider)) {
-            throw new IllegalStateException();
-        }
+    public CacheRegistry(CacheRegistryFactoryConfiguration<K, V> config, RegistryEntryProvider<K, V> provider) {
+        this.cache = config.getCache();
+        this.invoker = config.getCacheInvoker();
+        this.group = config.getGroup();
+        this.factory = config.getNodeFactory();
+        this.provider = provider;
         this.getLocalEntry();
         this.cache.addListener(this);
-        return this;
     }
 
     @Override
     public void close() {
-        if (this.provider.getAndSet(null) != null) {
-            this.cache.removeListener(this);
-            this.listeners.clear();
-            final Node node = this.group.getLocalNode();
-            Operation<Void> operation = new Operation<Void>() {
-                @Override
-                public Void invoke(Cache<Node, Entry<K, V>> cache) {
-                    cache.remove(node);
-                    return null;
-                }
-            };
-            this.invoker.invoke(this.cache, operation, Flag.IGNORE_RETURN_VALUES);
-        }
+        this.cache.removeListener(this);
+        this.listeners.clear();
+        final Node node = this.getGroup().getLocalNode();
+        Operation<Void> operation = new Operation<Void>() {
+            @Override
+            public Void invoke(Cache<Node, Entry<K, V>> cache) {
+                cache.remove(node);
+                return null;
+            }
+        };
+        this.invoker.invoke(this.cache, operation, Flag.IGNORE_RETURN_VALUES);
     }
 
     @Override
@@ -154,21 +123,18 @@ public class RegistryFactoryService<K, V> implements RegistryFactory<K, V>, Serv
 
     @Override
     public Map.Entry<K, V> getLocalEntry() {
-        RegistryEntryProvider<K, V> provider = this.provider.get();
-        if (provider == null) return null;
-        K key = provider.getKey();
-        final Map.Entry<K, V> entry = (key != null) ? new AbstractMap.SimpleImmutableEntry<>(key, provider.getValue()) : null;
-        if (entry != null) {
-            final Node node = this.group.getLocalNode();
-            Operation<Void> operation = new Operation<Void>() {
-                @Override
-                public Void invoke(Cache<Node, Entry<K, V>> cache) {
-                    cache.put(node, entry);
-                    return null;
-                }
-            };
-            this.invoker.invoke(this.cache, operation, Flag.IGNORE_RETURN_VALUES);
-        }
+        K key = this.provider.getKey();
+        if (key == null) return null;
+        final Map.Entry<K, V> entry = new AbstractMap.SimpleImmutableEntry<>(key, this.provider.getValue());
+        final Node node = this.getGroup().getLocalNode();
+        Operation<Void> operation = new Operation<Void>() {
+            @Override
+            public Void invoke(Cache<Node, Entry<K, V>> cache) {
+                cache.put(node, entry);
+                return null;
+            }
+        };
+        this.invoker.invoke(this.cache, operation, Flag.IGNORE_RETURN_VALUES);
         return entry;
     }
 

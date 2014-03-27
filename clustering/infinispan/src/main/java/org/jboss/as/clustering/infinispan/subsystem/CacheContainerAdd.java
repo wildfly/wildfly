@@ -156,29 +156,37 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         String transportExecutor = null ;
 
         Collection<ServiceController<?>> controllers = new LinkedList<>();
+        boolean clustered = (transportConfig != null);
+        String clusterName = name;
 
-        if (transportConfig != null) {
+        if (clustered) {
             ModelNode transport = containerModel.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
-            stack = (resolvedValue = TransportResourceDefinition.STACK.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null ;
+            if ((resolvedValue = TransportResourceDefinition.STACK.resolveModelAttribute(context, transport)).isDefined()) {
+                stack = resolvedValue.asString();
+            }
             // if cluster is not defined, use the cache container name as the default
-            final String cluster = (resolvedValue = TransportResourceDefinition.CLUSTER.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : name ;
+            if ((resolvedValue = TransportResourceDefinition.CLUSTER.resolveModelAttribute(context, transport)).isDefined()) {
+                clusterName = resolvedValue.asString();
+            }
             long lockTimeout = TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong();
-            transportExecutor = (resolvedValue = TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null ;
+            if ((resolvedValue = TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport)).isDefined()) {
+                transportExecutor = resolvedValue.asString();
+            }
 
             // initialise the Transport
-            transportConfig.setClusterName(cluster);
+            transportConfig.setClusterName(clusterName);
             transportConfig.setLockTimeout(lockTimeout);
 
-            controllers.addAll(this.installChannelServices(target, name, cluster, stack, verificationHandler));
+            controllers.addAll(this.installChannelServices(target, name, clusterName, stack, verificationHandler));
 
             // register the protocol metrics by adding a step
-            ChannelInstanceResourceDefinition.addChannelProtocolMetricsRegistrationStep(context, cluster, stack);
+            ChannelInstanceResourceDefinition.addChannelProtocolMetricsRegistrationStep(context, clusterName, stack);
+        }
 
-            for (ChannelServiceProvider provider: ServiceLoader.load(ChannelServiceProvider.class, ChannelServiceProvider.class.getClassLoader())) {
-                log.debugf("Installing %s for channel %s", provider.getClass().getSimpleName(), cluster);
-                controllers.addAll(provider.install(target, name, moduleId));
-            }
+        for (ChannelServiceProvider provider: ServiceLoader.load(ChannelServiceProvider.class, ChannelServiceProvider.class.getClassLoader())) {
+            log.debugf("Installing %s for channel %s", provider.getClass().getSimpleName(), clusterName);
+            controllers.addAll(provider.install(target, name, clustered, moduleId));
         }
 
         // install the cache container configuration service

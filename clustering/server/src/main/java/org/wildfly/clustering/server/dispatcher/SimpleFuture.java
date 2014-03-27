@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,21 +21,42 @@
  */
 package org.wildfly.clustering.server.dispatcher;
 
-import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
-import org.jgroups.Address;
-import org.jgroups.Channel;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.NodeFactory;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Configuration for a {@link CommandDispatcherFactoryService}.
+ * Simple {@link Future} implementation for synchronous responses.
  * @author Paul Ferraro
+ * @param <T> command response type
  */
-public interface CommandDispatcherFactoryConfiguration {
-    Channel getChannel();
-    Group getGroup();
-    NodeFactory<Address> getNodeFactory();
-    ModuleLoader getModuleLoader();
-    ModuleIdentifier getModuleIdentifier();
+public class SimpleFuture<T> extends SimpleCommandResponse<T> implements Future<T> {
+
+    public SimpleFuture(T value) {
+        super(value);
+    }
+
+    public SimpleFuture(Throwable exception) {
+        super(exception);
+    }
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return false;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return false;
+    }
+
+    @Override
+    public boolean isDone() {
+        return true;
+    }
+
+    @Override
+    public T get(long timeout, TimeUnit unit) throws ExecutionException {
+        return this.get();
+    }
 }

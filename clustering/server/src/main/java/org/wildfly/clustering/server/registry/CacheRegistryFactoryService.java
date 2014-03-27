@@ -19,10 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.group;
+package org.wildfly.clustering.server.registry;
+
+import java.util.Map.Entry;
 
 import org.infinispan.Cache;
+import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.infinispan.invoker.BatchCacheInvoker;
+import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -31,54 +37,73 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.registry.RegistryFactory;
+import org.wildfly.clustering.server.group.CacheGroupProvider;
+import org.wildfly.clustering.server.group.CacheNodeFactory;
+import org.wildfly.clustering.server.group.CacheNodeFactoryProvider;
 
 /**
- * {@link Group} implementation based on a cache view.
+ * Service that provides a clustered {@link RegistryFactory}.
  * @author Paul Ferraro
  */
-public class CacheGroupService implements Service<Group>, CacheGroupConfiguration {
+@org.infinispan.notifications.Listener
+public class CacheRegistryFactoryService<K, V> implements Service<RegistryFactory<K, V>>, CacheRegistryFactoryConfiguration<K, V> {
 
-    public static ServiceBuilder<Group> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
-        CacheGroupService service = new CacheGroupService();
-        return target.addService(name, service)
-                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
+    public static <K, V> ServiceBuilder<RegistryFactory<K, V>> build(ServiceTarget target, ServiceName name, String containerName, String cacheName) {
+        CacheRegistryFactoryService<K, V> service = new CacheRegistryFactoryService<>();
+        return AsynchronousService.addService(target, name, service)
                 .addDependency(CacheNodeFactoryProvider.getServiceName(containerName, cacheName), CacheNodeFactory.class, service.factory)
+                .addDependency(CacheGroupProvider.getServiceName(containerName, cacheName), Group.class, service.group)
+                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, service.cache)
         ;
     }
 
+    private final CacheInvoker invoker = new BatchCacheInvoker();
+    private final InjectedValue<Group> group = new InjectedValue<>();
     @SuppressWarnings("rawtypes")
     private final InjectedValue<Cache> cache = new InjectedValue<>();
     private final InjectedValue<CacheNodeFactory> factory = new InjectedValue<>();
 
-    private volatile CacheGroup group;
+    private volatile CacheRegistryFactory<K, V> value = null;
 
-    private CacheGroupService() {
+    private CacheRegistryFactoryService() {
         // Hide
     }
 
     @Override
-    public Group getValue() {
-        return this.group;
+    public RegistryFactory<K, V> getValue() {
+        return this.value;
     }
 
     @Override
     public void start(StartContext context) {
-        this.group = new CacheGroup(this);
+        this.value = new CacheRegistryFactory<>(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        this.group.close();
-        this.group = null;
+        this.value = null;
     }
 
     @Override
-    public Cache<?, ?> getCache() {
+    public CacheInvoker getCacheInvoker() {
+        return this.invoker;
+    }
+
+    @Override
+    public Group getGroup() {
+        return this.group.getValue();
+    }
+
+    @Override
+    public Cache<Node, Entry<K, V>> getCache() {
         return this.cache.getValue();
     }
 
     @Override
-    public CacheNodeFactory getNodeFactory() {
+    public NodeFactory<Address> getNodeFactory() {
         return this.factory.getValue();
     }
 }
