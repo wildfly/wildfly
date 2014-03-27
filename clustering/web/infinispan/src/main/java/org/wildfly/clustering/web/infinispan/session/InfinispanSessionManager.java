@@ -52,6 +52,7 @@ import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
@@ -75,17 +76,19 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
     private final Cache<String, V> cache;
     private final SessionFactory<V, L> factory;
     private final IdentifierFactory<String> identifierFactory;
+    private final CommandDispatcherFactory dispatcherFactory;
     private final List<Scheduler<ImmutableSession>> schedulers = new CopyOnWriteArrayList<>();
     private final int maxActiveSessions;
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
     private final boolean persistent;
 
-    public InfinispanSessionManager(SessionContext context, IdentifierFactory<String> identifierFactory, Cache<String, V> cache, SessionFactory<V, L> factory, Batcher batcher, JBossWebMetaData metaData) {
+    public InfinispanSessionManager(SessionContext context, IdentifierFactory<String> identifierFactory, Cache<String, V> cache, SessionFactory<V, L> factory, Batcher batcher, CommandDispatcherFactory dispatcherFactory, JBossWebMetaData metaData) {
         this.context = context;
         this.factory = factory;
         this.identifierFactory = identifierFactory;
         this.cache = cache;
         this.batcher = batcher;
+        this.dispatcherFactory = dispatcherFactory;
         this.maxActiveSessions = metaData.getMaxActiveSessions().intValue();
         Configuration config = cache.getCacheConfiguration();
         // If cache is clustered or configured with a write-through cache store
@@ -100,7 +103,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
         this.identifierFactory.start();
         this.schedulers.add(new SessionExpirationScheduler(this.batcher, new ExpiredSessionRemover<>(this.factory)));
         if (this.maxActiveSessions >= 0) {
-            this.schedulers.add(new SessionEvictionScheduler(this.batcher, this.factory, this.maxActiveSessions));
+            this.schedulers.add(new SessionEvictionScheduler(this.cache.getName(), this.batcher, this.factory, this.dispatcherFactory, this.maxActiveSessions));
         }
     }
 

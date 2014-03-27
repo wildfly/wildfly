@@ -19,30 +19,18 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
+import org.jboss.as.clustering.infinispan.invoker.Evictor;
+import org.wildfly.clustering.web.Batcher;
 
 /**
- * Service that provides the {@link RegistryEntryProvider} for the routing {@link Registry}.
+ * Encapsulates the context for session eviction.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderService extends AbstractService<RegistryEntryProvider<String, Void>> {
+public interface SessionEvictionContext {
 
-    public static final ServiceName SERVICE_NAME = InfinispanRouteLocatorService.REGISTRY_SERVICE_NAME.append("entry");
+    Batcher getBatcher();
 
-    private final Value<? extends Value<String>> route;
-
-    public RouteRegistryEntryProviderService(Value<? extends Value<String>> route) {
-        this.route = route;
-    }
-
-    @Override
-    public RegistryEntryProvider<String, Void> getValue() {
-        return new RouteRegistryEntryProvider(this.route.getValue());
-    }
+    Evictor<String> getEvictor();
 }

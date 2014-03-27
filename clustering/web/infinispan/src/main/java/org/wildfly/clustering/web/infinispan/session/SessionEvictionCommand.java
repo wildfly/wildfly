@@ -19,30 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
+import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.web.Batch;
+import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 
 /**
- * Service that provides the {@link RegistryEntryProvider} for the routing {@link Registry}.
+ * Command that evicts a session.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderService extends AbstractService<RegistryEntryProvider<String, Void>> {
+public class SessionEvictionCommand implements Command<Void, SessionEvictionContext> {
+    private static final long serialVersionUID = -4778211331615647237L;
 
-    public static final ServiceName SERVICE_NAME = InfinispanRouteLocatorService.REGISTRY_SERVICE_NAME.append("entry");
+    private final String id;
 
-    private final Value<? extends Value<String>> route;
-
-    public RouteRegistryEntryProviderService(Value<? extends Value<String>> route) {
-        this.route = route;
+    SessionEvictionCommand(String id) {
+        this.id = id;
     }
 
     @Override
-    public RegistryEntryProvider<String, Void> getValue() {
-        return new RouteRegistryEntryProvider(this.route.getValue());
+    public Void execute(SessionEvictionContext context) throws Exception {
+        Batch batch = context.getBatcher().startBatch();
+        boolean success = false;
+        try {
+            InfinispanWebLogger.ROOT_LOGGER.tracef("Passivating session %s", this.id);
+            context.getEvictor().evict(this.id);
+            success = true;
+        } finally {
+            if (success) {
+                batch.close();
+            } else {
+                batch.discard();
+            }
+        }
+        return null;
     }
 }

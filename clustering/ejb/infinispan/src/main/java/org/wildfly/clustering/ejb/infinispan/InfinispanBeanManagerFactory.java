@@ -41,6 +41,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ejb.BeanContext;
 import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.BeanManagerFactory;
@@ -77,8 +78,9 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
                 .addDependency(deploymentUnitServiceName.append("marshalling"), VersionedMarshallingConfiguration.class, factory.config)
                 .addDependency(deploymentUnitServiceName.append(name, "expiration"), ScheduledExecutorService.class, factory.scheduler)
                 .addDependency(deploymentUnitServiceName.append(name, "eviction"), Executor.class, factory.executor)
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "registry", containerName, "default"), Registry.class, factory.registry)
-                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "nodes", containerName, "default"), NodeFactory.class, factory.nodeFactory)
+                .addDependency(ServiceName.JBOSS.append("clustering", "dispatcher", containerName), CommandDispatcherFactory.class, factory.dispatcherFactory)
+                .addDependency(ServiceName.JBOSS.append("clustering", "registry", containerName, "default"), Registry.class, factory.registry)
+                .addDependency(ServiceName.JBOSS.append("clustering", "nodes", containerName, "default"), NodeFactory.class, factory.nodeFactory)
         ;
     }
 
@@ -92,6 +94,7 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
     private final BeanPassivationConfiguration passivationConfig;
     private final InjectedValue<NodeFactory> nodeFactory = new InjectedValue<>();
     private final InjectedValue<Registry> registry = new InjectedValue<>();
+    private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
 
     private InfinispanBeanManagerFactory(BeanContext context, BeanPassivationConfiguration passivationConfig) {
         this.context = context;
@@ -118,6 +121,8 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
         Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration = new SimpleConfiguration<>(beanCache, beanFactory, beanIdentifierFactory);
         NodeFactory<Address> nodeFactory = this.nodeFactory.getValue();
         Registry<String, ?> registry = this.registry.getValue();
+        KeyAffinityServiceFactory affinityFactory = this.affinityFactory.getValue();
+        CommandDispatcherFactory dispatcherFactory = this.dispatcherFactory.getValue();
         final Time timeout = this.context.getTimeout();
         final ScheduledExecutorService scheduler = this.scheduler.getValue();
         ExpirationConfiguration<T> expiration = new ExpirationConfiguration<T>() {
@@ -164,7 +169,7 @@ public class InfinispanBeanManagerFactory<G, I, T> extends AbstractService<BeanM
                 return executor;
             }
         };
-        return new InfinispanBeanManager<>(beanName, beanConfiguration, groupConfiguration, this.affinityFactory.getValue(), registry, nodeFactory, expiration, passivation);
+        return new InfinispanBeanManager<>(beanName, beanConfiguration, groupConfiguration, affinityFactory, registry, nodeFactory, dispatcherFactory, expiration, passivation);
     }
 
     @Override
