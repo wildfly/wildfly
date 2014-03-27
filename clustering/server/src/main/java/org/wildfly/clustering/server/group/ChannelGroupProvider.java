@@ -24,11 +24,7 @@ package org.wildfly.clustering.server.group;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
-import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -36,13 +32,10 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
 
 /**
@@ -66,21 +59,14 @@ public class ChannelGroupProvider implements ChannelServiceProvider {
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String cluster, ModuleIdentifier moduleId) {
+    public Collection<ServiceController<?>> install(ServiceTarget target, String cluster, boolean clustered, ModuleIdentifier moduleId) {
         ServiceName name = getServiceName(cluster);
         ContextNames.BindInfo bindInfo = createBinding(cluster);
 
         logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
 
-        ChannelGroupConfig config = new ChannelGroupConfig();
-        Service<Group> service = new ChannelGroupService(config);
-        ServiceBuilder<?> builder = AsynchronousService.addService(target, name, service)
-                // Make sure Infinispan starts its channel before we try to use it..
-                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
-                .addDependency(EmbeddedCacheManagerService.getServiceName(cluster), EmbeddedCacheManager.class, config.getCacheManagerInjector())
-                .addDependency(ChannelNodeFactoryProvider.getServiceName(cluster), ChannelNodeFactory.class, config.getNodeFactoryInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
+        ServiceBuilder<Group> builder = clustered ? ChannelGroupService.build(target, name, cluster) : LocalGroupService.build(target, name, cluster);
+        ServiceController<Group> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         BinderService binder = new BinderService(bindInfo.getBindName());
         ServiceBuilder<?> binderBuilder = target.addService(bindInfo.getBinderServiceName(), binder)
@@ -90,29 +76,6 @@ public class ChannelGroupProvider implements ChannelServiceProvider {
                 .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
 
-        return Arrays.asList(builder.install(), binderBuilder.install());
-    }
-
-    static class ChannelGroupConfig implements ChannelGroupConfiguration {
-        private final InjectedValue<EmbeddedCacheManager> manager = new InjectedValue<>();
-        private final InjectedValue<ChannelNodeFactory> factory = new InjectedValue<>();
-
-        @Override
-        public EmbeddedCacheManager getCacheContainer() {
-            return this.manager.getValue();
-        }
-
-        @Override
-        public ChannelNodeFactory getNodeFactory() {
-            return this.factory.getValue();
-        }
-
-        Injector<EmbeddedCacheManager> getCacheManagerInjector() {
-            return this.manager;
-        }
-
-        Injector<ChannelNodeFactory> getNodeFactoryInjector() {
-            return this.factory;
-        }
+        return Arrays.asList(controller, binderBuilder.install());
     }
 }

@@ -24,11 +24,9 @@ package org.wildfly.clustering.server.group;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheServiceProvider;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -36,13 +34,10 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
 
 /**
@@ -66,19 +61,13 @@ public class CacheGroupProvider implements CacheServiceProvider {
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, boolean defaultCache, ModuleIdentifier moduleId) {
+    public Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, CacheMode mode, boolean defaultCache, ModuleIdentifier moduleId) {
         ServiceName name = getServiceName(containerName, cacheName);
         ContextNames.BindInfo bindInfo = createBinding(containerName, cacheName);
 
         logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
 
-        CacheGroupConfig config = new CacheGroupConfig();
-        Service<Group> service = new CacheGroupService(config);
-        ServiceBuilder<?> builder = AsynchronousService.addService(target, name, service)
-                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, config.getCacheInjector())
-                .addDependency(CacheNodeFactoryProvider.getServiceName(containerName, cacheName), CacheNodeFactory.class, config.getNodeFactoryInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
+        ServiceBuilder<Group> builder = mode.isClustered() ? CacheGroupService.build(target, name, containerName, cacheName) : LocalGroupService.build(target, name, containerName);
 
         BinderService binder = new BinderService(bindInfo.getBindName());
         ServiceBuilder<?> binderBuilder = target.addService(bindInfo.getBinderServiceName(), binder)
@@ -94,30 +83,8 @@ public class CacheGroupProvider implements CacheServiceProvider {
             builder.addAliases(getServiceName(containerName, CacheContainer.DEFAULT_CACHE_ALIAS));
         }
 
-        return Arrays.asList(builder.install(), binderBuilder.install());
-    }
+        ServiceController<Group> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
-    @SuppressWarnings("rawtypes")
-    static class CacheGroupConfig implements CacheGroupConfiguration {
-        private final InjectedValue<Cache> cache = new InjectedValue<>();
-        private final InjectedValue<CacheNodeFactory> factory = new InjectedValue<>();
-
-        @Override
-        public Cache<?, ?> getCache() {
-            return this.cache.getValue();
-        }
-
-        @Override
-        public CacheNodeFactory getNodeFactory() {
-            return this.factory.getValue();
-        }
-
-        Injector<Cache> getCacheInjector() {
-            return this.cache;
-        }
-
-        Injector<CacheNodeFactory> getNodeFactoryInjector() {
-            return this.factory;
-        }
+        return Arrays.asList(controller, binderBuilder.install());
     }
 }

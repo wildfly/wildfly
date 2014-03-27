@@ -24,32 +24,19 @@ package org.wildfly.clustering.server.dispatcher;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
-import org.jboss.as.server.Services;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.modules.ModuleLoader;
-import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.jgroups.Channel;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
-import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.server.group.ChannelGroupProvider;
-import org.wildfly.clustering.server.group.ChannelNodeFactory;
-import org.wildfly.clustering.server.group.ChannelNodeFactoryProvider;
 
 /**
  * Installs a {@link CommandDispatcherFactory} service per channel.
@@ -72,23 +59,15 @@ public class CommandDispatcherFactoryProvider implements ChannelServiceProvider 
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String cluster, ModuleIdentifier moduleId) {
+    public Collection<ServiceController<?>> install(ServiceTarget target, String cluster, boolean clustered, ModuleIdentifier moduleId) {
         ServiceName name = getServiceName(cluster);
         ContextNames.BindInfo bindInfo = createBinding(cluster);
 
         logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
 
-        CommandDispatcherFactoryConfig config = new CommandDispatcherFactoryConfig(moduleId);
-        Service<CommandDispatcherFactory> service = new CommandDispatcherFactoryService(config);
-        ServiceBuilder<?> builder = AsynchronousService.addService(target, name, service)
-                // Make sure Infinispan starts its channel before we try to use it.
-                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
-                .addDependency(ChannelGroupProvider.getServiceName(cluster), Group.class, config.getGroupInjector())
-                .addDependency(ChannelNodeFactoryProvider.getServiceName(cluster), ChannelNodeFactory.class, config.getNodeFactoryInjector())
-                .addDependency(ChannelService.getServiceName(cluster), Channel.class, config.getChannelInjector())
-                .addDependency(Services.JBOSS_SERVICE_MODULE_LOADER, ModuleLoader.class, config.getModuleLoaderInjector())
-                .setInitialMode(ServiceController.Mode.ON_DEMAND)
-        ;
+        ServiceBuilder<CommandDispatcherFactory> builder = clustered ? ChannelCommandDispatcherFactoryService.build(target, name, cluster, moduleId) : LocalCommandDispatcherFactoryService.build(target, name, cluster);
+
+        ServiceController<CommandDispatcherFactory> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
 
         BinderService binder = new BinderService(bindInfo.getBindName());
         ServiceBuilder<?> binderBuilder = target.addService(bindInfo.getBinderServiceName(), binder)
@@ -98,60 +77,6 @@ public class CommandDispatcherFactoryProvider implements ChannelServiceProvider 
                 .setInitialMode(ServiceController.Mode.PASSIVE)
         ;
 
-        return Arrays.asList(builder.install(), binderBuilder.install());
-    }
-
-    private static class CommandDispatcherFactoryConfig implements CommandDispatcherFactoryConfiguration {
-        private final InjectedValue<Channel> channel = new InjectedValue<>();
-        private final InjectedValue<Group> group = new InjectedValue<>();
-        private final InjectedValue<ChannelNodeFactory> factory = new InjectedValue<>();
-        private final InjectedValue<ModuleLoader> loader = new InjectedValue<>();
-
-        private final ModuleIdentifier identifier;
-
-        CommandDispatcherFactoryConfig(ModuleIdentifier identifier) {
-            this.identifier = identifier;
-        }
-
-        @Override
-        public Channel getChannel() {
-            return this.channel.getValue();
-        }
-
-        @Override
-        public Group getGroup() {
-            return this.group.getValue();
-        }
-
-        @Override
-        public ChannelNodeFactory getNodeFactory() {
-            return this.factory.getValue();
-        }
-
-        @Override
-        public ModuleLoader getModuleLoader() {
-            return this.loader.getValue();
-        }
-
-        @Override
-        public ModuleIdentifier getModuleIdentifier() {
-            return this.identifier;
-        }
-
-        Injector<Channel> getChannelInjector() {
-            return this.channel;
-        }
-
-        Injector<Group> getGroupInjector() {
-            return this.group;
-        }
-
-        Injector<ChannelNodeFactory> getNodeFactoryInjector() {
-            return this.factory;
-        }
-
-        Injector<ModuleLoader> getModuleLoaderInjector() {
-            return this.loader;
-        }
+        return Arrays.asList(controller, binderBuilder.install());
     }
 }

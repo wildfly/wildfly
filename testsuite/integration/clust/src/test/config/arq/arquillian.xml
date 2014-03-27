@@ -11,7 +11,7 @@
     <container qualifier="clustering-udp-single">
         <configuration>
             <property name="jbossHome">${basedir}/target/jbossas-clustering-SYNC-tcp-0</property>
-            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-SYNC-tcp-0</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-SYNC-tcp-0 -Djboss.node.name=node-0</property>
             <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
             <property name="managementAddress">${node0}</property>
             <property name="managementPort">${as.managementPort:9990}</property>
@@ -25,7 +25,7 @@
     <container qualifier="clustering-udp-single-jdbc-store">
         <configuration>
             <property name="jbossHome">${basedir}/target/jbossas-clustering-udp-jdbc-store</property>
-            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-jdbc-store</property>
+            <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-udp-jdbc-store -Djboss.node.name=node-0</property>
             <property name="serverConfig">${jboss.server.config.file.name:standalone.xml}</property>
             <property name="managementAddress">${node0}</property>
             <property name="managementPort">${as.managementPort:9990}</property>
@@ -70,7 +70,7 @@
         <container qualifier="container-single" mode="custom" managed="false">
             <configuration>
                 <property name="jbossHome">${basedir}/target/jbossas-clustering-SYNC-tcp-0</property>
-                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-SYNC-tcp-0</property>
+                <property name="javaVmArguments">${server.jvm.args} -Djboss.inst=${basedir}/target/jbossas-clustering-SYNC-tcp-0 -Djboss.node.name=node-0</property>
                 <property name="serverConfig">standalone.xml</property>
                 <property name="managementAddress">${node0}</property>
                 <property name="managementPort">${as.managementPort:9990}</property>

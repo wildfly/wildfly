@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -21,37 +21,37 @@
  */
 package org.wildfly.clustering.server.group;
 
-import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.as.server.ServerEnvironment;
+import org.jboss.as.server.ServerEnvironmentService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-import org.jgroups.Channel;
 
 /**
- * Service providing a channel-based {@link NodeFactory}.
+ * Service providing a non-clustered {@link ChannelNodeFactory}.
  * @author Paul Ferraro
  */
-public class ChannelNodeFactoryService implements Service<ChannelNodeFactory> {
+public class LocalNodeFactoryService implements Service<ChannelNodeFactory> {
 
     public static ServiceBuilder<ChannelNodeFactory> build(ServiceTarget target, ServiceName name, String cluster) {
-        ChannelNodeFactoryService service = new ChannelNodeFactoryService();
+        LocalNodeFactoryService service = new LocalNodeFactoryService(cluster);
         return target.addService(name, service)
-                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
-                .addDependency(ChannelService.getServiceName(cluster), Channel.class, service.channel)
+                .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, service.environment)
         ;
     }
 
-    private final InjectedValue<Channel> channel = new InjectedValue<>();
+    private final InjectedValue<ServerEnvironment> environment = new InjectedValue<>();
+    private final String cluster;
 
-    private volatile ChannelNodeFactoryImpl factory;
+    private volatile ChannelNodeFactory factory;
 
-    private ChannelNodeFactoryService() {
-        // Hide
+    private LocalNodeFactoryService(String cluster) {
+        this.cluster = cluster;
     }
 
     @Override
@@ -60,13 +60,12 @@ public class ChannelNodeFactoryService implements Service<ChannelNodeFactory> {
     }
 
     @Override
-    public void start(StartContext context) {
-        this.factory = new ChannelNodeFactoryImpl(this.channel.getValue());
+    public void start(StartContext context) throws StartException {
+        this.factory = new LocalNodeFactory(this.cluster, this.environment.getValue());
     }
 
     @Override
     public void stop(StopContext context) {
-        this.factory.close();
         this.factory = null;
     }
 }

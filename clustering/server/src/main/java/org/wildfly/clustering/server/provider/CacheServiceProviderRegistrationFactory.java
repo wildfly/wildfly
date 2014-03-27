@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -33,36 +33,44 @@ import org.infinispan.context.Flag;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.group.Group;
 import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistration;
-import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 import org.wildfly.clustering.provider.ServiceProviderRegistration.Listener;
+import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 
 /**
- * Service provider registration factory implementation.
+ * Infinispan {@link Cache} based {@link ServiceProviderRegistrationFactory}.
+ * This factory can create multiple {@link ServiceProviderRegistration} instance,
+ * all of which share the same {@link Cache} instance.
  * @author Paul Ferraro
  */
 @org.infinispan.notifications.Listener
-public class ServiceProviderRegistrationFactoryService implements ServiceProviderRegistrationFactory, ServiceRegistry, Group.Listener, Service<ServiceProviderRegistrationFactory> {
-
-    private final ServiceProviderRegistrationFactoryConfiguration config;
+public class CacheServiceProviderRegistrationFactory implements ServiceProviderRegistrationFactory, ServiceRegistry, Group.Listener, AutoCloseable {
 
     final ConcurrentMap<Object, Listener> listeners = new ConcurrentHashMap<>();
+    final CacheInvoker invoker;
+    final Cache<Object, Set<Node>> cache;
 
-    volatile Group group = null;
-    volatile Cache<Object, Set<Node>> cache = null;
-    volatile CacheInvoker invoker = null;
+    private final Group group;
+    private final CommandDispatcher<ServiceRegistry> dispatcher;
 
-    private volatile CommandDispatcher<ServiceRegistry> dispatcher = null;
+    public CacheServiceProviderRegistrationFactory(CacheServiceProviderRegistrationFactoryConfiguration config) {
+        this.group = config.getGroup();
+        this.cache = config.getCache();
+        this.invoker = config.getCacheInvoker();
+        this.dispatcher = config.getCommandDispatcherFactory().<ServiceRegistry>createCommandDispatcher(config.getId(), this);
+        this.cache.addListener(this);
+        this.group.addListener(this);
+    }
 
-    public ServiceProviderRegistrationFactoryService(ServiceProviderRegistrationFactoryConfiguration config) {
-        this.config = config;
+    @Override
+    public void close() {
+        this.group.removeListener(this);
+        this.cache.removeListener(this);
+        this.dispatcher.close();
     }
 
     @Override
@@ -90,21 +98,11 @@ public class ServiceProviderRegistrationFactoryService implements ServiceProvide
             }
         };
         this.invoker.invoke(this.cache, operation);
-        return new ServiceProviderRegistration() {
-            @Override
-            public Object getService() {
-                return service;
-            }
-
-            @Override
-            public Set<Node> getProviders() {
-                return ServiceProviderRegistrationFactoryService.this.getProviders(service);
-            }
-
+        return new AbstractServiceProviderRegistration(service, this) {
             @Override
             public void close() {
-                if (ServiceProviderRegistrationFactoryService.this.listeners.remove(service) != null) {
-                    final Node node = ServiceProviderRegistrationFactoryService.this.group.getLocalNode();
+                if (CacheServiceProviderRegistrationFactory.this.listeners.remove(service) != null) {
+                    final Node node = CacheServiceProviderRegistrationFactory.this.getGroup().getLocalNode();
                     Operation<Void> operation = new Operation<Void>() {
                         @Override
                         public Void invoke(Cache<Object, Set<Node>> cache) {
@@ -119,7 +117,7 @@ public class ServiceProviderRegistrationFactoryService implements ServiceProvide
                             return null;
                         }
                     };
-                    ServiceProviderRegistrationFactoryService.this.invoker.invoke(ServiceProviderRegistrationFactoryService.this.cache, operation, Flag.IGNORE_RETURN_VALUES);
+                    CacheServiceProviderRegistrationFactory.this.invoker.invoke(CacheServiceProviderRegistrationFactory.this.cache, operation, Flag.IGNORE_RETURN_VALUES);
                 }
             }
         };
@@ -143,30 +141,8 @@ public class ServiceProviderRegistrationFactoryService implements ServiceProvide
     }
 
     @Override
-    public ServiceProviderRegistrationFactory getValue() {
-        return this;
-    }
-
-    @Override
-    public void start(StartContext context) {
-        this.invoker = this.config.getCacheInvoker();
-        this.group = this.config.getGroup();
-        this.cache = this.config.getCache();
-        this.dispatcher = this.config.getCommandDispatcherFactory().<ServiceRegistry>createCommandDispatcher(this.config.getId(), this);
-        this.cache.addListener(this);
-        this.group.addListener(this);
-    }
-
-    @Override
-    public void stop(StopContext context) {
-        this.group.removeListener(this);
-        this.cache.removeListener(this);
-        this.dispatcher.close();
-    }
-
-    @Override
     public void membershipChanged(List<Node> previousMembers, List<Node> members, final boolean merged) {
-        if (this.group.isCoordinator()) {
+        if (this.getGroup().isCoordinator()) {
             final Set<Node> deadNodes = new HashSet<>(previousMembers);
             deadNodes.removeAll(members);
             final Set<Node> newNodes = new HashSet<>(members);
@@ -187,7 +163,7 @@ public class ServiceProviderRegistrationFactoryService implements ServiceProvide
                     if (merged) {
                         for (Node node: newNodes) {
                             // Re-assert services for new members following merge since these may have been lost following split
-                            List<Object> services = ServiceProviderRegistrationFactoryService.this.getServices(node);
+                            List<Object> services = CacheServiceProviderRegistrationFactory.this.getServices(node);
                             for (Object service: services) {
                                 Set<Node> nodes = new HashSet<>(Collections.singleton(node));
                                 Set<Node> existing = cache.putIfAbsent(service, nodes);

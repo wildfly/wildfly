@@ -226,11 +226,9 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         controllers.add(this.installJndiService(target, containerName, cacheName, defaultCache, jndiName, verificationHandler));
         log.debugf("Cache service for cache %s installed for container %s", cacheName, containerName);
 
-        if (this.mode.isClustered()) {
-            for (CacheServiceProvider provider: ServiceLoader.load(CacheServiceProvider.class, CacheServiceProvider.class.getClassLoader())) {
-                log.debugf("Installing %s for cache %s/%s", provider.getClass().getSimpleName(), containerName, cacheName);
-                controllers.addAll(provider.install(target, containerName, cacheName, defaultCache, moduleId));
-            }
+        for (CacheServiceProvider provider: ServiceLoader.load(CacheServiceProvider.class, CacheServiceProvider.class.getClassLoader())) {
+            log.debugf("Installing %s for cache %s/%s", provider.getClass().getSimpleName(), containerName, cacheName);
+            controllers.addAll(provider.install(target, containerName, cacheName, this.mode, defaultCache, moduleId));
         }
 
         return controllers;

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -33,18 +33,10 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
 
 /**
- * Service for building {@link SingletonService} instances.
+ * Service that provides a non-clustered {@link SingletonServiceBuilderFactory}
  * @author Paul Ferraro
  */
-public class SingletonServiceBuilderFactoryService extends AbstractService<SingletonServiceBuilderFactory> implements SingletonServiceBuilderFactory {
-
-    final String containerName;
-    final String cacheName;
-
-    public SingletonServiceBuilderFactoryService(String containerName, String cacheName) {
-        this.containerName = containerName;
-        this.cacheName = cacheName;
-    }
+public class LocalSingletonServiceBuilderFactoryService extends AbstractService<SingletonServiceBuilderFactory> implements SingletonServiceBuilderFactory {
 
     @Override
     public SingletonServiceBuilderFactory getValue() {
@@ -52,24 +44,23 @@ public class SingletonServiceBuilderFactoryService extends AbstractService<Singl
     }
 
     @Override
-    public <T extends Serializable> SingletonServiceBuilder<T> createSingletonServiceBuilder(ServiceName name, Service<T> service) {
-        final SingletonService<T> singleton = new SingletonService<>(name, service);
+    public <T extends Serializable> SingletonServiceBuilder<T> createSingletonServiceBuilder(final ServiceName name, final Service<T> service) {
         return new SingletonServiceBuilder<T>() {
             @Override
             public SingletonServiceBuilder<T> requireQuorum(int quorum) {
-                singleton.setQuorum(quorum);
+                // Quorum requirements are inconsequential to a local singleton
                 return this;
             }
 
             @Override
             public SingletonServiceBuilder<T> electionPolicy(SingletonElectionPolicy policy) {
-                singleton.setElectionPolicy(policy);
+                // Election policies are inconsequential to a local singleton
                 return this;
             }
 
             @Override
             public ServiceBuilder<T> build(ServiceTarget target) {
-                return singleton.build(target, SingletonServiceBuilderFactoryService.this.containerName, SingletonServiceBuilderFactoryService.this.cacheName);
+                return target.addService(name, service);
             }
         };
     }
