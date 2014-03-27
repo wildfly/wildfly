@@ -21,6 +21,14 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule;
 
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.TimeZone;
+
+import javax.ejb.ScheduleExpression;
+
 import org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfMonth;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.DayOfWeek;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Hour;
@@ -29,18 +37,14 @@ import org.jboss.as.ejb3.timerservice.schedule.attribute.Month;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Second;
 import org.jboss.as.ejb3.timerservice.schedule.attribute.Year;
 
-import javax.ejb.ScheduleExpression;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * CalendarBasedTimeout
  *
  * @author Jaikiran Pai
+ * @author "<a href=\"mailto:wfink@redhat.com\">Wolf-Dieter Fink</a>"
+ * @author Eduardo Martins
  * @version $Revision: $
  */
 public class CalendarBasedTimeout {
@@ -461,38 +465,22 @@ public class CalendarBasedTimeout {
         // 2) The "next" day-of-week is lesser than the current day-of-week : This implies
         // that the next day-of-week is in the next week (i.e. current week needs to
         // be advanced to next week).
-
-        // handle case#1
-        if (nextDayOfWeek > currentDayOfWeek) {
-            // set the chosen day-of-week
-            int dayDiff = nextDayOfWeek - currentDayOfWeek;
-            nextCal.add(Calendar.DAY_OF_MONTH, dayDiff);
-            // since we are moving to a different day-of-week (as compared to the current day-of-week),
-            // we should reset the second, minute and hour appropriately, to their first possible
-            // values
-            nextCal.set(Calendar.SECOND, this.second.getFirst());
-            nextCal.set(Calendar.MINUTE, this.minute.getFirst());
-            nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
-            return nextCal;
-        }
-
-        // case#2
+        nextCal.set(Calendar.DAY_OF_WEEK, nextDayOfWeek);
         if (nextDayOfWeek < currentDayOfWeek) {
-            // set the chosen day-of-week
-            nextCal.set(Calendar.DAY_OF_WEEK, nextDayOfWeek);
-            // advance to next week
             nextCal.add(Calendar.WEEK_OF_MONTH, 1);
-
-            // since we are moving to a different day-of-week (as compared to the current day-of-week),
-            // we should reset the second, minute and hour appropriately, to their first possible
-            // values
-            nextCal.set(Calendar.SECOND, this.second.getFirst());
-            nextCal.set(Calendar.MINUTE, this.minute.getFirst());
-            nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
-
-            return nextCal;
         }
-        return null;
+
+        // since we are moving to a different day-of-week (as compared to the current day-of-week),
+        // we should reset the second, minute and hour appropriately, to their first possible
+        // values
+        nextCal.set(Calendar.SECOND, this.second.getFirst());
+        nextCal.set(Calendar.MINUTE, this.minute.getFirst());
+        nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
+
+        if (nextCal.get(Calendar.MONTH) != currentCal.get(Calendar.MONTH)) {
+            nextCal = computeNextMonth(nextCal);
+        }
+        return nextCal;
     }
 
     private Calendar computeNextMonth(Calendar currentCal) {
@@ -620,7 +608,12 @@ public class CalendarBasedTimeout {
                 nextCal = this.advanceTillMonthHasDate(nextCal, nextDayOfMonth);
             }
         } else if (nextDayOfMonth < currentDayOfMonth) {
+            // since the next day is before the current day we need to shift to the next month
             nextCal.add(Calendar.MONTH, 1);
+            // also we need to reset the time
+            nextCal.set(Calendar.SECOND, this.second.getFirst());
+            nextCal.set(Calendar.MINUTE, this.minute.getFirst());
+            nextCal.set(Calendar.HOUR_OF_DAY, this.hour.getFirst());
             nextCal = this.computeNextMonth(nextCal);
             if (nextCal == null) {
                 return null;
