@@ -114,6 +114,11 @@
 
             <basename file="${@{group}:@{artifact}:jar:@{classifier}}" property="resourcename.@{group}.@{artifact}.@{classifier}"/>
 
+            <!-- Generate the Jandex Index -->
+            <jandex run="@{jandex}" newJar="true" >
+                <fileset dir="${module.repo.output.dir}/${current.module.path}" />
+            </jandex>
+
             <!-- Update the resource entry in module.xml -->
             <define-resource-root path="${resourcename.@{group}.@{artifact}.@{classifier}}"/>
             <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
@@ -131,6 +136,45 @@
                <include name="lib/**"/>
            </patternset>
        </unzip>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="maven-resource-with-filtering">
+        <attribute name="group"/>
+        <attribute name="artifact"/>
+        <attribute name="jandex" default="false"/>
+        <attribute name="excludes" />
+
+        <sequential>
+            <!-- Copy the jar to the module dir -->
+            <copy todir="${module.repo.output.dir}/${current.module.path}" failonerror="true">
+                <fileset file="${@{group}:@{artifact}:jar}"/>
+                <mapper type="flatten"/>
+            </copy>
+
+            <basename file="${@{group}:@{artifact}:jar}" property="resourcename.@{group}.@{artifact}"/>
+
+            <property name="file.path" value="${module.repo.output.dir}/${current.module.path}/${resourcename.@{group}.@{artifact}}" />
+            <property name="file.tmp.path" value="${file.path}.tmp" />
+            <move file="${file.path}" tofile="${file.tmp.path}" />
+
+            <echo message="${file.path}" />
+            <echo message="${file.tmp.path}" />
+
+            <jar destfile="${file.path}">
+                <zipfileset src="${file.tmp.path}" excludes="@{excludes}"/>
+            </jar>
+            <delete file="${file.tmp.path}" />
+
+            <!-- Generate the Jandex Index -->
+            <jandex run="@{jandex}" newJar="true">
+                <fileset dir="${module.repo.output.dir}/${current.module.path}"/>
+            </jandex>
+            <!-- Update the resource entry in module.xml -->
+            <define-resource-root path="${resourcename.@{group}.@{artifact}}" jandex="@{jandex}"/>
+            <replace file="${module.repo.output.dir}/${current.module.path}/${module.xml}">
+                <replacefilter token="&lt;!-- Insert resources here --&gt;" value="${current.resource.root}&#10;        &lt;!-- Insert resources here --&gt;"/>
+            </replace>
         </sequential>
     </macrodef>
 

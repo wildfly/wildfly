@@ -31,4 +31,8 @@
     <resources>
         <!-- Insert resources here -->
     </resources>
+    <dependencies>
+            <module name="javax.api"/>
+            <module name="javax.el.api" services="import" export="true"/>
+    </dependencies>
 </module>
