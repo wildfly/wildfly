@@ -24,22 +24,28 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
 
 import java.util.List;
+import java.util.Map;
 
+import org.jboss.as.connector.logging.ConnectorMessages;
 import org.jboss.as.connector.subsystems.common.pool.PoolConfigurationRWHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
+import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
@@ -48,8 +54,11 @@ import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.access.management.ApplicationTypeAccessConstraintDefinition;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.TransformationContext;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.dmr.ModelNode;
 
 /**
  * @author Stefano Maestri
@@ -104,18 +113,25 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
             }
 
         } else {
+            DisableRequiredWriteAttributeHandler disableRequiredWriteHandler = new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_ATTRIBUTE);
             for (final SimpleAttributeDefinition attribute : XA_DATASOURCE_ATTRIBUTE) {
                 if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, PoolConfigurationRWHandler.PoolConfigurationReadHandler.INSTANCE, PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
                 } else {
-                    resourceRegistration.registerReadWriteAttribute(attribute, null, new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_ATTRIBUTE));
+                    if (attribute.equals(STATISTICS_ENABLED)) {
+                        resourceRegistration.registerReadWriteAttribute(attribute, null, new ReloadRequiredWriteAttributeHandler());
+                    } else {
+                        resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredWriteHandler);
+                    }
+
                 }
             }
+            DisableRequiredWriteAttributeHandler disableRequiredPropertiesWriteHandler = new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_PROPERTIES_ATTRIBUTES);
             for (final PropertiesAttributeDefinition attribute : XA_DATASOURCE_PROPERTIES_ATTRIBUTES) {
                 if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, PoolConfigurationRWHandler.PoolConfigurationReadHandler.INSTANCE, PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
                 } else {
-                    resourceRegistration.registerReadWriteAttribute(attribute, null, new DisableRequiredWriteAttributeHandler(XA_DATASOURCE_PROPERTIES_ATTRIBUTES));
+                    resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredPropertiesWriteHandler);
                 }
             }
         }
@@ -138,32 +154,92 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
 
     static void registerTransformers110(ResourceTransformationDescriptionBuilder parentBuilder) {
         parentBuilder.addChildResource(PATH_XA_DATASOURCE).getAttributeBuilder()
-                .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return ConnectorMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                    }
+
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                      TransformationContext context) {
+                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                    }
+                }, STATISTICS_ENABLED).addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
                 .end();
     }
 
 
     static void registerTransformers111(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
-                builder.getAttributeBuilder()
+        builder.getAttributeBuilder()
                 //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
                 //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return ConnectorMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                    }
+
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                      TransformationContext context) {
+                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                    }
+                }, STATISTICS_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
                 .end();
     }
 
     static void registerTransformers112(ResourceTransformationDescriptionBuilder parentBuilder) {
         ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
-                builder.getAttributeBuilder()
+        builder.getAttributeBuilder()
 
                 //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
                 //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return ConnectorMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                    }
+
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                      TransformationContext context) {
+                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                    }
+                }, STATISTICS_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
                 .end();
     }
 
     static void registerTransformers120(ResourceTransformationDescriptionBuilder parentBuilder) {
-        //No change
+        ResourceTransformationDescriptionBuilder builder = parentBuilder.addChildResource(PATH_XA_DATASOURCE);
+        builder.getAttributeBuilder()
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
+
+                    @Override
+                    public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
+                        return ConnectorMessages.MESSAGES.rejectAttributesMustBeTrue(attributes.keySet());
+                    }
+
+                    @Override
+                    protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue,
+                                                      TransformationContext context) {
+                        //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
+                        return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
+                    }
+                }, STATISTICS_ENABLED).end();
     }
 
 }

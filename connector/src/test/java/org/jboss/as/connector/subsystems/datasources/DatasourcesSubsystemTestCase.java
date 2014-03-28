@@ -55,10 +55,11 @@ import org.junit.Test;
  */
 public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    static final AttributeDefinition[] ALL_DS_ATTRIBUTES_REJECTED_1_1_0  = new AttributeDefinition[Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length + 1];
+    static final AttributeDefinition[] ALL_DS_ATTRIBUTES_REJECTED_1_1_0  = new AttributeDefinition[Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length + 2];
     static {
         System.arraycopy(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES, 0, ALL_DS_ATTRIBUTES_REJECTED_1_1_0, 0, Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length);
         ALL_DS_ATTRIBUTES_REJECTED_1_1_0[Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length] = Constants.CONNECTABLE;
+        ALL_DS_ATTRIBUTES_REJECTED_1_1_0[Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length + 1] = Constants.STATISTICS_ENABLED;
     }
 
     public DatasourcesSubsystemTestCase() {
@@ -105,6 +106,16 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
         testRejectTransformers1_1_0("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_0_0);
     }
+    @Test
+    public void testTransformerAS712() throws Exception {
+        testRejectTransformers1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_2_FINAL);
+    }
+
+    @Test
+    public void testTransformerAS713() throws Exception {
+        testRejectTransformers1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
+    }
+
 
     @Test
     public void testExpressionsEAP601() throws Exception {
@@ -127,11 +138,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         testTransformer1_1_2("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_1_1);
     }
 
-    @Test
-    public void testTransformersEAP620() throws Exception {
-        ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testTransformer1_2_0("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_2_0);
-    }
 
     @Test
     public void testRejectingTransformersEAP620() throws Exception {
@@ -155,6 +161,21 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                   .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
                   .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
                   .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
+                .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
+                .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
+                .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
+                .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, new ModelFixer() {
+                    @Override
+                    public ModelNode fixModel(ModelNode modelNode) {
+                        //Replace the value used in the xml
+                        modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
+                        //modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.STATISTICS_ENABLED.getName());
+                        modelNode.get(Constants.DATA_SOURCE, "complexDs_Pool", Constants.STATISTICS_ENABLED.getName()).set(true);
+                        return modelNode;
+
+                    }
+                });
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -286,17 +307,17 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         List<ModelNode> ops = builder.parseXmlResource(subsystemXml);
         PathAddress subsystemAddress = PathAddress.pathAddress(DataSourcesSubsystemRootDefinition.PATH_SUBSYSTEM);
         ModelTestUtils.checkFailedTransformedBootOperations(mainServices, modelVersion, ops, new FailedOperationTransformationConfig()
-                .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),FAILED_TRANSFORMER_1_1_1)
-                .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), FAILED_TRANSFORMER_1_1_1)
+                .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),FAILED_TRANSFORMER_1_2_0)
+                .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), FAILED_TRANSFORMER_1_2_0)
         );
     }
 
 
     private static FailedOperationTransformationConfig.ChainedConfig FAILED_TRANSFORMER_1_1_0 =
             FailedOperationTransformationConfig.ChainedConfig.createBuilder(ALL_DS_ATTRIBUTES_REJECTED_1_1_0)
-            .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
-            .build();
-
+                    .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
+                    .addConfig(new SetToTrue(Constants.STATISTICS_ENABLED)).
+                    build();
 
 
     private static class NonWritableChainedConfig extends FailedOperationTransformationConfig.ChainedConfig {
@@ -330,11 +351,17 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
 
-
     private static FailedOperationTransformationConfig.ChainedConfig FAILED_TRANSFORMER_1_1_1 = NonWritableChainedConfig.createBuilder(
             Constants.CONNECTABLE.getName())
-                         .addConfig(new RejectExpressionsAndSetToTrue(Constants.CONNECTABLE))
-                        .build();
+            .addConfig(new RejectExpressionsAndSetToTrue(Constants.CONNECTABLE))
+            .addConfig(new SetToTrue(Constants.STATISTICS_ENABLED))
+            .build();
+
+    private static FailedOperationTransformationConfig.ChainedConfig FAILED_TRANSFORMER_1_2_0 = NonWritableChainedConfig.createBuilder(
+            Constants.CONNECTABLE.getName(), Constants.STATISTICS_ENABLED.getName())
+            .addConfig(new RejectExpressionsAndSetToTrue(Constants.CONNECTABLE))
+            .addConfig(new SetToTrue(Constants.STATISTICS_ENABLED))
+            .build();
 
     private static class RejectExpressionsAndSetToTrue extends FailedOperationTransformationConfig.RejectExpressionsConfig {
 
@@ -382,4 +409,30 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
             return modelNode;
         }
     };
+
+    private static class SetToTrue extends FailedOperationTransformationConfig.AttributesPathAddressConfig<SetToTrue> {
+        public SetToTrue(AttributeDefinition... attributes) {
+            super(convert(attributes));
+        }
+
+        public SetToTrue(String... attributes) {
+            super(attributes);
+        }
+
+        @Override
+        protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+            //Fix if undefined or false
+            return !attribute.isDefined() || !attribute.asBoolean();
+        }
+
+        @Override
+        protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+            return new ModelNode(true);
+        }
+
+        @Override
+        protected boolean isAttributeWritable(String attributeName) {
+            return true;
+        }
+    }
 }

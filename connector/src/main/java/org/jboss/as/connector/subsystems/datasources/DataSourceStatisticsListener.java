@@ -48,11 +48,13 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
     private final ManagementResourceRegistration registration;
     private final Resource resource;
     private final String dsName;
+    private final boolean statsEnabled;
 
-    public DataSourceStatisticsListener(final ManagementResourceRegistration registration, Resource resource, final String dsName) {
-        this.registration = registration;
+    public DataSourceStatisticsListener(final ManagementResourceRegistration overrideRegistration, Resource resource, final String dsName, final boolean statsEnabled) {
+        this.registration = overrideRegistration;
         this.resource = resource;
         this.dsName = dsName;
+        this.statsEnabled = statsEnabled;
     }
 
     public void transition(final ServiceController<? extends Object> controller,
@@ -65,8 +67,9 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
 
                 StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
                 StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
-                jdbcStats.setEnabled(false);
-                poolStats.setEnabled(false);
+                jdbcStats.setEnabled(statsEnabled);
+                poolStats.setEnabled(statsEnabled);
+
                 int jdbcStatsSize = jdbcStats.getNames().size();
                 int poolStatsSize = poolStats.getNames().size();
                 if (jdbcStatsSize > 0 || poolStatsSize > 0) {

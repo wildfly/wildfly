@@ -25,6 +25,7 @@ package org.jboss.as.connector.subsystems.datasources;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DRIVER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JNDI_NAME;
 import static org.jboss.as.connector.subsystems.datasources.Constants.JTA;
+import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import java.sql.Driver;
@@ -117,6 +118,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
         final String dsName = PathAddress.pathAddress(address).getLastElement().getValue();
         final String jndiName = model.get(JNDI_NAME.getName()).asString();
         boolean jta = JTA.resolveModelAttribute(context, operation).asBoolean();
+        final boolean statsEnabled = STATISTICS_ENABLED.resolveModelAttribute(context, operation).asBoolean();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
@@ -162,7 +164,7 @@ public abstract class AbstractDataSourceAdd extends AbstractAddStepHandler {
                     .addDependency(ConnectorServices.CCM_SERVICE, CachedConnectionManager.class, dataSourceService.getCcmInjector());
 
         }
-        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, resource, dsName));
+        dataSourceServiceBuilder.addListener(new DataSourceStatisticsListener(registration, resource, dsName, statsEnabled));
         dataSourceServiceBuilder.addListener(verificationHandler);
         startConfigAndAddDependency(dataSourceServiceBuilder, dataSourceService, dsName, serviceTarget, operation, verificationHandler);
 

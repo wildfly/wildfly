@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.logging;
 
+import java.util.Set;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -547,5 +549,54 @@ public interface ConnectorMessages {
      */
     @Message(id = 10480, value = "RAR '%s' not yet deployed.")
     OperationFailedException RARNotYetDeployed(String raName);
+
+    /**
+     * MDR empty during deployment of deployment annotation
+     * @param jndiName The JNDI name
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 10481, value = "Empty MDR while deploying %s")
+    DeploymentUnitProcessingException emptyMdr(String jndiName);
+
+    /**
+     * Resource adapter not found during deployment of deployment annotation
+     * @param ra The resource adapter
+     * @param jndiName The JNDI name
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 10482, value = "Resource adapter (%s) not found while deploying %s")
+    DeploymentUnitProcessingException raNotFound(String ra, String jndiName);
+
+    /**
+     * Invalid connection factory interface defined
+     * @param cf The connection factory
+     * @param ra The resource adapter
+     * @param jndiName The JNDI name
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 10483, value = "Connection factory interface (%s) is incorrect for resource adapter '%s' while deploying %s")
+    DeploymentUnitProcessingException invalidConnectionFactory(String cf, String ra, String jndiName);
+
+    /**
+     * Admin object declared for JCA 1.0 archive
+     * @param ra The resource adapter
+     * @param jndiName The JNDI name
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 10484, value = "Admin object declared for JCA 1.0 resource adapter '%s' while deploying %s")
+    DeploymentUnitProcessingException adminObjectForJCA10(String ra, String jndiName);
+
+    /**
+     * Invalid admin object class defined
+     * @param ao The admin object
+     * @param ra The resource adapter
+     * @param jndiName The JNDI name
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 10485, value = "Admin object class (%s) is incorrect for resource adapter '%s' while deploying %s")
+    DeploymentUnitProcessingException invalidAdminObject(String ao, String ra, String jndiName);
+
+    @Message(id = 10486, value = "Attributes %s rejected. Must be true")
+    String rejectAttributesMustBeTrue(Set<String> key);
 
 }

@@ -37,6 +37,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -385,6 +386,12 @@ class Constants {
             .setAllowExpression(true)
             .build();
 
+    static SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
 
     static final SimpleAttributeDefinition[] DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[]{CONNECTION_URL,
             DRIVER_CLASS, Constants.DATASOURCE_CLASS, JNDI_NAME,
@@ -415,7 +422,7 @@ class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, SPY,
-            USE_CCM, ENABLED, CONNECTABLE};
+            USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED};
 
     static final PropertiesAttributeDefinition[] DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
             REAUTHPLUGIN_PROPERTIES,
@@ -480,7 +487,7 @@ class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, XA_RESOURCE_TIMEOUT,
-            SPY, USE_CCM, ENABLED,
+            SPY, USE_CCM, ENABLED, STATISTICS_ENABLED,
             RECOVERY_USERNAME, RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN, RECOVER_PLUGIN_CLASSNAME,
             NO_RECOVERY};

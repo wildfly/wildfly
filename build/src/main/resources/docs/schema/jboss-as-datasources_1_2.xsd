@@ -407,6 +407,15 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute default="false" name="statistics-enabled" type="xs:boolean">
+          <xs:annotation>
+            <xs:documentation>
+                <![CDATA[[
+                      Enable statistics for this datasource
+                     ]]>
+            </xs:documentation>
+          </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:simpleType name="transaction-isolationType">
     <xs:annotation>
