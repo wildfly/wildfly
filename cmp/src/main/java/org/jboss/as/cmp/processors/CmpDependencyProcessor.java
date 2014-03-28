@@ -41,7 +41,7 @@ public class CmpDependencyProcessor implements DeploymentUnitProcessor {
 
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
-        if (!CmpDeploymentMarker.isCmpDeployment(deploymentUnit)) {
+        if (!CmpDeploymentMarker.isCmpDeployment(deploymentUnit) && !CmpDeploymentMarker.containsCmpSubDeployment(deploymentUnit)) {
             return;
         }
 

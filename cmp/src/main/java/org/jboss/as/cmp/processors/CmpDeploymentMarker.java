@@ -30,13 +30,25 @@ import org.jboss.as.server.deployment.DeploymentUnit;
  */
 public class CmpDeploymentMarker {
     private static final AttachmentKey<Boolean> ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
+    private static final AttachmentKey<Boolean> TOP_LEVEL_ATTACHMENT_KEY = AttachmentKey.create(Boolean.class);
 
     public static void mark(final DeploymentUnit deployment) {
         deployment.putAttachment(ATTACHMENT_KEY, true);
+
+        DeploymentUnit topDeploymentUnit = deployment;
+        while (topDeploymentUnit.getParent() != null) {
+            topDeploymentUnit = topDeploymentUnit.getParent();
+        }
+        topDeploymentUnit.putAttachment(TOP_LEVEL_ATTACHMENT_KEY, true);
     }
 
     public static boolean isCmpDeployment(final DeploymentUnit deploymentUnit) {
         final Boolean val = deploymentUnit.getAttachment(ATTACHMENT_KEY);
+        return val != null && val;
+    }
+
+    public static boolean containsCmpSubDeployment(final DeploymentUnit deploymentUnit) {
+        final Boolean val = deploymentUnit.getAttachment(TOP_LEVEL_ATTACHMENT_KEY);
         return val != null && val;
     }
 }
