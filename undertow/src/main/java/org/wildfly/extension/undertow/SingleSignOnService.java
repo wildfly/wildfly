@@ -55,8 +55,7 @@ class SingleSignOnService implements Service<SingleSignOnService> {
         Host host = this.host.getValue();
         ServletSingleSignOnAuthenticationMechainism mechanism = new ServletSingleSignOnAuthenticationMechainism(this.manager.getValue());
         mechanism.setDomain(this.domain);
-        //todo uncomment when we get new release of undertow
-        //mechanism.setPath(this.path);
+        mechanism.setPath(this.path);
         host.registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
     }
 
