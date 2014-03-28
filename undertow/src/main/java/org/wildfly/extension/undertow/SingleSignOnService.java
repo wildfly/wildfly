@@ -42,12 +42,16 @@ class SingleSignOnService implements Service<SingleSignOnService> {
 
     private final String domain;
     private final String path;
+    private final boolean httpOnly;
+    private final boolean secure;
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<SingleSignOnManager> manager = new InjectedValue<>();
 
-    SingleSignOnService(String domain,String path) {
+    SingleSignOnService(String domain, String path, boolean httpOnly, boolean secure) {
         this.domain = domain;
         this.path = path;
+        this.httpOnly = httpOnly;
+        this.secure = secure;
     }
 
     @Override
@@ -55,8 +59,9 @@ class SingleSignOnService implements Service<SingleSignOnService> {
         Host host = this.host.getValue();
         ServletSingleSignOnAuthenticationMechainism mechanism = new ServletSingleSignOnAuthenticationMechainism(this.manager.getValue());
         mechanism.setDomain(this.domain);
-        //todo uncomment when we get new release of undertow
-        //mechanism.setPath(this.path);
+        mechanism.setPath(this.path);
+        mechanism.setHttpOnly(httpOnly);
+        mechanism.setSecure(secure);
         host.registerAdditionalAuthenticationMechanism(AUTHENTICATION_MECHANISM_NAME, mechanism);
     }
 
