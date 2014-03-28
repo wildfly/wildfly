@@ -57,10 +57,11 @@ import org.junit.Test;
  */
 public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
-    static final AttributeDefinition[] ALL_DS_ATTRIBUTES_REJECTED_1_1_0  = new AttributeDefinition[Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length + 1];
+    static final AttributeDefinition[] ALL_DS_ATTRIBUTES_REJECTED_1_1_0  = new AttributeDefinition[Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length + 2];
     static {
         System.arraycopy(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES, 0, ALL_DS_ATTRIBUTES_REJECTED_1_1_0, 0, Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length);
         ALL_DS_ATTRIBUTES_REJECTED_1_1_0[Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length] = Constants.CONNECTABLE;
+        ALL_DS_ATTRIBUTES_REJECTED_1_1_0[Constants.DATASOURCE_PROPERTIES_ATTRIBUTES.length + 1] = Constants.STATISTICS_ENABLED;
     }
 
     public DatasourcesSubsystemTestCase() {
@@ -89,17 +90,17 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformerAS712() throws Exception {
-        testTransformer("datasources-full110.xml", ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0));
+        testRejectTransformers1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testTransformer("datasources-full110.xml", ModelTestControllerVersion.V7_1_3_FINAL, ModelVersion.create(1, 1, 0));
+        testRejectTransformers1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
     @Test
     public void testTransformerAS720() throws Exception {
-        testTransformer("datasources-full110.xml", ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 1, 1));
+        testTransformer("datasources-full.xml", ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 1, 1));
     }
 
     @Test
@@ -149,8 +150,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                     public ModelNode fixModel(ModelNode modelNode) {
                         //Replace the value used in the xml
                         modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
-                        //modelNode.get(Constants.DATA_SOURCE).get("complexDs_Pool").remove(Constants.ENABLED.getName());
-                        //modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.ENABLED.getName());
+                        //modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.STATISTICS_ENABLED.getName());
+                        //modelNode.get(Constants.DATA_SOURCE).get("complexDs_Pool").remove(Constants.STATISTICS_ENABLED.getName());
                         return modelNode;
 
                     }
@@ -169,6 +170,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                 Assert.assertTrue(modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").get(Constants.JTA.getName()).asBoolean());
                 //Replace the value used in the xml
                 modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
+                modelNode.get(Constants.DATA_SOURCE).get("complexDs_Pool").get(Constants.STATISTICS_ENABLED.getName()).set(false);
+                modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").get(Constants.STATISTICS_ENABLED.getName()).set(false);
                 return modelNode;
 
             }
@@ -283,7 +286,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS.getName(), org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS.getName(),
                                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES.getName(),
                                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName()
-                                ) {
+                        ) {
 
                             @Override
                             protected boolean isAttributeWritable(String attributeName) {
@@ -305,6 +308,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                             }
                         })
                         .addConfig(new RejectExpressionsAndSetToTrue(Constants.CONNECTABLE))
+                        .addConfig(new RejectExpressionsAndSetToTrue(Constants.STATISTICS_ENABLED))
                         .build();
 
     private static class RejectExpressionsAndSetToTrue extends FailedOperationTransformationConfig.RejectExpressionsConfig {

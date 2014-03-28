@@ -38,10 +38,8 @@ import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 
 /**
-*
  * Listener that registers data source statistics with the management model
- *
-*/
+ */
 public class DataSourceStatisticsListener extends AbstractServiceListener<Object> {
 
     private static final PathElement JDBC_STATISTICS = PathElement.pathElement("statistics", "jdbc");
@@ -50,11 +48,13 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
     private final ManagementResourceRegistration overrideRegistration;
     private final Resource resource;
     private final String dsName;
+    private final boolean statsEnabled;
 
-    public DataSourceStatisticsListener(final ManagementResourceRegistration overrideRegistration, Resource resource, final String dsName) {
+    public DataSourceStatisticsListener(final ManagementResourceRegistration overrideRegistration, Resource resource, final String dsName, final boolean statsEnabled) {
         this.overrideRegistration = overrideRegistration;
         this.resource = resource;
         this.dsName = dsName;
+        this.statsEnabled = statsEnabled;
     }
 
     public void transition(final ServiceController<? extends Object> controller,
@@ -67,8 +67,9 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
 
                 StatisticsPlugin jdbcStats = deploymentMD.getDataSources()[0].getStatistics();
                 StatisticsPlugin poolStats = deploymentMD.getDataSources()[0].getPool().getStatistics();
-                jdbcStats.setEnabled(false);
-                poolStats.setEnabled(false);
+                jdbcStats.setEnabled(statsEnabled);
+                poolStats.setEnabled(statsEnabled);
+
                 int jdbcStatsSize = jdbcStats.getNames().size();
                 int poolStatsSize = poolStats.getNames().size();
                 if (jdbcStatsSize > 0 || poolStatsSize > 0) {
