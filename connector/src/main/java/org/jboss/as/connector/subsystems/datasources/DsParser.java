@@ -568,7 +568,16 @@ public class DsParser extends AbstractParser {
                     break;
                 }
                 default:
-                    throw ParseUtils.unexpectedAttribute(reader, i);
+                    if (Constants.STATISTICS_ENABLED.getName().equals(reader.getAttributeLocalName(i))) {
+                        final String value = rawAttributeText(reader, Constants.STATISTICS_ENABLED.getXmlName());
+                        if (value != null) {
+                            Constants.STATISTICS_ENABLED.parseAndSetParameter(value, operation, reader);
+                        }
+                        break;
+
+                    } else {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
             }
         }
 
@@ -979,7 +988,16 @@ public class DsParser extends AbstractParser {
                     break;
                 }
                 default:
-                    throw ParseUtils.unexpectedAttribute(reader, i);
+                    if (Constants.STATISTICS_ENABLED.getName().equals(reader.getAttributeLocalName(i))) {
+                        final String value = rawAttributeText(reader, Constants.STATISTICS_ENABLED.getXmlName());
+                        if (value != null) {
+                            Constants.STATISTICS_ENABLED.parseAndSetParameter(value, operation, reader);
+                        }
+                        break;
+
+                    } else {
+                        throw ParseUtils.unexpectedAttribute(reader, i);
+                    }
             }
         }
         final ModelNode dsAddress = parentAddress.clone();
