@@ -660,11 +660,12 @@ public class CoreModelTestDelegate {
             return this;
         }
 
+
         private void addOperationValidationConfig(String name, PathAddress pathAddress, Action action) {
             if (operationValidationExcludeFilterBuilder == null) {
                 operationValidationExcludeFilterBuilder = ModelTestOperationValidatorFilter.createBuilder();
             }
-            operationValidationExcludeFilterBuilder.addOperation(pathAddress, name, action);
+            operationValidationExcludeFilterBuilder.addOperation(pathAddress, name, action, null);
         }
 
         @Override

@@ -670,25 +670,32 @@ final class SubsystemTestDelegate {
 
         @Override
         public LegacyKernelServicesInitializer addOperationValidationExclude(String name, PathAddress pathAddress) {
-            addOperationValidationConfig(name, pathAddress, Action.NOCHECK);
+            addOperationValidationConfig(name, pathAddress, Action.NOCHECK, null);
             return this;
         }
 
 
         @Override
         public LegacyKernelServicesInitializer addOperationValidationResolve(String name, PathAddress pathAddress) {
-            addOperationValidationConfig(name, pathAddress, Action.RESOLVE);
+            addOperationValidationConfig(name, pathAddress, Action.RESOLVE, null);
             return this;
         }
 
-        private void addOperationValidationConfig(String name, PathAddress pathAddress, Action action) {
+        @Override
+        public LegacyKernelServicesInitializer addOperationValidationFixer(String name, PathAddress pathAddress, OperationFixer operationFixer) {
+            addOperationValidationConfig(name, pathAddress, null, operationFixer);
+            return this;
+        }
+
+
+        private void addOperationValidationConfig(String name, PathAddress pathAddress, Action action, OperationFixer operationFixer) {
             if (!additionalInit.isValidateOperations()) {
                 throw new IllegalStateException("The additional initialization used to create this builder has turned off operation validation. That is not compatible with calling this method");
             }
             if (operationValidationExcludeBuilder == null) {
                 operationValidationExcludeBuilder = ModelTestOperationValidatorFilter.createBuilder();
             }
-            operationValidationExcludeBuilder.addOperation(pathAddress, name, action);
+            operationValidationExcludeBuilder.addOperation(pathAddress, name, action, operationFixer);
         }
 
         @Override
@@ -841,6 +848,8 @@ final class SubsystemTestDelegate {
                 return ModelTestOperationValidatorFilter.createValidateNone();
             }
         }
+
+
     }
 
     @SuppressWarnings("deprecation")
