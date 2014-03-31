@@ -39,7 +39,7 @@ public class SingleClassFilter implements ClassFilter {
         return className != null && className.startsWith(this.filteredClassName);
     }
 
-    public static ClassFilter createFilter(Class filteredClass) {
+    public static ClassFilter createFilter(Class<?> filteredClass) {
         return new SingleClassFilter(filteredClass.getName());
     }
 

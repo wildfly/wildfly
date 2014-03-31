@@ -88,8 +88,10 @@ public class ModelTestOperationValidatorFilter implements Serializable {
                         if (pathElementMatch(address.getElement(i), entry.address.getElement(i))) {
                             if (entry.action == Action.NOCHECK) {
                                 return null;
-                            } else {
-                                return op.resolve();
+                            } else if (entry.action == Action.RESOLVE){
+                                op = op.resolve();
+                            } else if (entry.operationFixer != null){
+                                op = entry.operationFixer.fixOperation(op);
                             }
                         }
                     }
@@ -124,8 +126,8 @@ public class ModelTestOperationValidatorFilter implements Serializable {
         private Builder() {
         }
 
-        public Builder addOperation(PathAddress pathAddress, String name, Action action) {
-            entries.add(new OperationEntry(pathAddress, name, action));
+        public Builder addOperation(PathAddress pathAddress, String name, Action action, OperationFixer operationFixer) {
+            entries.add(new OperationEntry(pathAddress, name, action, operationFixer));
             return this;
         }
 
@@ -139,11 +141,16 @@ public class ModelTestOperationValidatorFilter implements Serializable {
         private volatile PathAddress address;
         private volatile String name;
         private volatile Action action;
+        private volatile OperationFixer operationFixer;
 
-        public OperationEntry(PathAddress address, String name, Action action) {
+        public OperationEntry(PathAddress address, String name, Action action, OperationFixer operationFixer) {
+            if (operationFixer != null && operationFixer instanceof Serializable == false){
+                throw new IllegalArgumentException("operationFixer must be serializable");
+            }
             this.address = address;
             this.name = name;
             this.action = action;
+            this.operationFixer = operationFixer;
         }
 
         public OperationEntry() {
@@ -154,6 +161,7 @@ public class ModelTestOperationValidatorFilter implements Serializable {
             out.writeObject(name);
             out.writeObject(address.toModelNode());
             out.writeObject(action);
+            out.writeObject(operationFixer);
         }
 
         @Override
@@ -161,6 +169,7 @@ public class ModelTestOperationValidatorFilter implements Serializable {
             name = (String)in.readObject();
             address = PathAddress.pathAddress((ModelNode)in.readObject());
             action = (Action)in.readObject();
+            operationFixer = (OperationFixer)in.readObject();
         }
     }
 
