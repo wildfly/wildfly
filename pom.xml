@@ -97,6 +97,7 @@
         <version.commons-io>2.1-redhat-2</version.commons-io>
         <version.commons-configuration>1.6.redhat-3</version.commons-configuration>
         <version.commons-lang>2.6-redhat-2</version.commons-lang>
+        <version.commons-net>3.3</version.commons-net>
         <version.commons-pool>1.6.redhat-6</version.commons-pool>
         <version.dom4j>1.6.1.redhat-6</version.dom4j>
         <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
@@ -1644,6 +1645,12 @@
                 <groupId>commons-lang</groupId>
                 <artifactId>commons-lang</artifactId>
                 <version>${version.commons-lang}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${version.commons-net}</version>
             </dependency>
 
             <dependency>
@@ -6717,15 +6724,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- lastly define extra BOMs -->
-
-            <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-parent</artifactId>
-                <version>${version.org.apache.ds}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
