@@ -149,28 +149,26 @@
         </xs:annotation>
     </xs:element>
     
+
     <xs:complexType name="vaultType">
         <xs:annotation>
             <xs:documentation>
-                Element of this type points to a file with vault configuration.
+                <![CDATA[
+                    Vault Configuration. If no 'code' and 'module' are supplied the default implementation will be used.
+                    If 'code' is specified but no 'module', it will look for the class named by 'specified' in the picketbox module.
+                    If 'module' is specified, it will look for the class specified by 'code' in the module specified by 'module'.
+                ]]>
             </xs:documentation>
         </xs:annotation>
-        <xs:attribute name="file" type="xs:string" use="required">
-            <xs:annotation>
-                <xs:documentation>
-                    Absolute or relative file system path to the XML file
-                    containing the vault configuration.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
-        <xs:attribute name="relative-to" type="xs:string" use="optional">
-            <xs:annotation>
-                <xs:documentation>
-                    One of the system-provided named paths (such as jboss.home.dir,
-                    user.home, user.dir) relative to which the absolute path
-                    will be calculated for the path specified in the file attribute.
-                </xs:documentation>
-            </xs:annotation>
-        </xs:attribute>
+        <xs:sequence>
+            <xs:element name="vault-option" type="propertyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="code" type="xs:string" use="optional"/>
+        <xs:attribute name="module" type="xs:string" use="optional"/>
+    </xs:complexType>
+
+    <xs:complexType name="propertyType">
+        <xs:attribute name="name" use="required"/>
+        <xs:attribute name="value" use="optional"/>
     </xs:complexType>
 </xs:schema>

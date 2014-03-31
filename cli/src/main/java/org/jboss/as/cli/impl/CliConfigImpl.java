@@ -26,6 +26,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.security.GeneralSecurityException;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -487,42 +488,11 @@ class CliConfigImpl implements CliConfig {
                 final String localName = reader.getLocalName();
 
                 if("vault".equals(localName)) {
-                    final String vaultXml = reader.getAttributeValue(null, "file");
-                    final String relativeTo = reader.getAttributeValue(null, "relative-to");
-                    requireNoContent(reader);
-                    if(vaultXml == null) {
-                        throw new XMLStreamException("'file' attribute is missing for element 'vault'");
-                    }
-
-                    File parent = null;
-                    if(relativeTo != null) {
-                        if(relativeTo.equals("jboss.home.dir")) {
-                            final String jbossHome = SecurityActions.getEnvironmentVariable("JBOSS_HOME");
-                            if(jbossHome == null) {
-                                throw new XMLStreamException("JBOSS_HOME is not set");
-                            }
-                            parent = new File(jbossHome);
-                        } else if(relativeTo.equals("user.home")) {
-                            final String userHome = SecurityActions.getSystemProperty("user.home");
-                            if(userHome == null) {
-                                throw new XMLStreamException("user.home is not set");
-                            }
-                            parent = new File(userHome);
-                        } else if(relativeTo.equals("user.dir")) {
-                            final String userDir = SecurityActions.getSystemProperty("user.dir");
-                            if(userDir == null) {
-                                throw new XMLStreamException("user.dir is not set");
-                            }
-                            parent = new File(userDir);
-                        } else {
-                            throw new XMLStreamException("Unrecognized named path '" + relativeTo + "'");
-                        }
-                    }
-                    final File vaultFile = new File(parent, vaultXml);
-                    final VaultConfig vaultConfig = VaultConfig.load(vaultFile);
+                    assertExpectedNamespace(reader, expectedNs);
+                    final VaultConfig vaultConfig = VaultConfig.readVaultElement_1_3(reader, expectedNs);
                     try {
-                        vaultReader.init(vaultConfig.getOptions());
-                    } catch (SecurityVaultException e) {
+                        vaultReader.init(vaultConfig);
+                    } catch (GeneralSecurityException e) {
                         throw new XMLStreamException("Failed to initialize vault", e);
                     }
                 } else if ("alias".equals(localName)) {
