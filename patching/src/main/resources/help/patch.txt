@@ -36,7 +36,8 @@ ACTION: rollback
 
     Rollback a patch that has been applied
 
-    patch rollback --patch-id=<id> --reset-configuration=(true|false)
+    patch rollback  --reset-configuration=(true|false)
+      [--patch-id=<id>]
       [--rollback-to]
       [--override-all]
       [--override-modules]
@@ -44,7 +45,8 @@ ACTION: rollback
       [--preserve=path(,path)*]
       [--host=<host>]
 
-    --patch-id=<id>      - the ID of the patch to rollback
+    --patch-id=<id>      - the ID of the patch to rollback; for backward
+                           compatibility.
 
     --reset-configuration  - The argument is required for the rollback action
                              and expects a boolean value.
