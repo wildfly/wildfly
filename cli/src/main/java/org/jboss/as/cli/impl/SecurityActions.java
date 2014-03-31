@@ -21,11 +21,18 @@
  */
 package org.jboss.as.cli.impl;
 
-import org.wildfly.security.manager.action.AddShutdownHookAction;
-import org.wildfly.security.manager.WildFlySecurityManager;
-
 import static java.lang.Runtime.getRuntime;
 import static java.security.AccessController.doPrivileged;
+
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.AddShutdownHookAction;
+import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
 
 /**
  * Package privileged actions
@@ -42,4 +49,64 @@ class SecurityActions {
             doPrivileged(new AddShutdownHookAction(hook));
         }
     }
+
+    static <T> T loadAndInstantiateFromClassClassLoader(final Class<?> base, final Class<T> iface, final String name) throws Exception {
+        if (!WildFlySecurityManager.isChecking()){
+            return internalLoadAndInstantiateFromClassClassLoader(base, iface, name);
+        } else {
+            try {
+                return doPrivileged(new PrivilegedExceptionAction<T>() {
+                    @Override
+                    public T run() throws Exception {
+                        return internalLoadAndInstantiateFromClassClassLoader(base, iface, name);
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                Throwable t = e.getCause();
+                if (t instanceof RuntimeException){
+                    throw (RuntimeException)t;
+                }
+                throw new Exception(t);
+            }
+        }
+    }
+
+    private static <T> T internalLoadAndInstantiateFromClassClassLoader(Class<?> base, Class<T> iface, String name) throws Exception {
+        ClassLoader cl = base.getClassLoader();
+        if (cl == null){
+            cl = ClassLoader.getSystemClassLoader();
+        }
+        Class<?> clazz = cl.loadClass(name);
+        return iface.cast(clazz.newInstance());
+    }
+
+    static <T> T loadAndInstantiateFromModule(final String moduleId, final Class<T> iface, final String name) throws Exception {
+        if (!WildFlySecurityManager.isChecking()) {
+            return internalLoadAndInstantiateFromModule(moduleId, iface, name);
+        } else {
+            try {
+                return doPrivileged(new PrivilegedExceptionAction<T>() {
+                    @Override
+                    public T run() throws Exception {
+                        return internalLoadAndInstantiateFromModule(moduleId, iface, name);
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                Throwable t = e.getCause();
+                if (t instanceof RuntimeException){
+                    throw (RuntimeException)t;
+                }
+                throw new Exception(t);
+            }
+        }
+    }
+
+    private static <T> T internalLoadAndInstantiateFromModule(String moduleId, final Class<T> iface, final String name) throws Exception {
+        ModuleLoader loader = Module.getCallerModuleLoader();
+        final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleId));
+        ClassLoader cl = WildFlySecurityManager.isChecking() ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
+        Class<?> clazz = cl.loadClass(moduleId);
+        return iface.cast(clazz.newInstance());
+    }
+
 }

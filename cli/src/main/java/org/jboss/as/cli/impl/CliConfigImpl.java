@@ -751,7 +751,7 @@ class CliConfigImpl implements CliConfig {
                     final File vaultFile = new File(parent, vaultXml);
                     final VaultConfig vaultConfig = VaultConfig.load(vaultFile);
                     try {
-                        vaultReader.init(vaultConfig.getOptions());
+                        vaultReader.init(vaultConfig);
                     } catch (GeneralSecurityException e) {
                         throw new XMLStreamException("Failed to initialize vault", e);
                     }
