@@ -2,7 +2,7 @@
    This file should be kept in sync with subsystem-1.1.0.xml
   -->
 
-        <subsystem xmlns="urn:jboss:domain:web:2.0" default-virtual-server="default-host" native="${prop.native:true}">
+        <subsystem xmlns="urn:jboss:domain:web:2.1" default-virtual-server="default-host" native="${prop.native:true}">
             <configuration>
                 <static-resources listings="${prop.listings:true}"
                                  sendfile="${prop.sendfile:1000}"

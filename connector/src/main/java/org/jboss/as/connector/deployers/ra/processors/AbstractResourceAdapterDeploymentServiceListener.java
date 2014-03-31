@@ -26,6 +26,8 @@ import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsDes
 import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
 import org.jboss.as.connector.dynamicresource.operations.ClearWorkManagerStatisticsHandler;
 import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
+import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeReadHandler;
+import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeWriteHandler;
 import org.jboss.as.connector.subsystems.resourceadapters.CommonAttributes;
 import org.jboss.as.connector.subsystems.resourceadapters.Constants;
 import org.jboss.as.connector.subsystems.resourceadapters.IronJacamarResource;
@@ -87,6 +89,7 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                     for (ConnectionManager cm : deploymentMD.getConnectionManagers()) {
                         if (cm.getPool() != null) {
                             StatisticsPlugin poolStats = cm.getPool().getStatistics();
+                            poolStats.setEnabled(false);
                             final ServiceController<?> bootstrapContextController = controller.getServiceContainer().getService(ConnectorServices.BOOTSTRAP_CONTEXT_SERVICE.append(bootstrapCtx));
                             WorkManager wm = null;
                             if (bootstrapContextController != null) {
@@ -179,9 +182,15 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                     }
                                     if (deploymentMD.getConnector() != null && deploymentMD.getConnector().getResourceAdapter() != null && deploymentMD.getConnector().getResourceAdapter().getStatistics() != null) {
                                         StatisticsPlugin raStats = deploymentMD.getConnector().getResourceAdapter().getStatistics();
+                                        raStats.setEnabled(false);
                                         for (String statName : raStats.getNames()) {
                                             raRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(raStats));
                                         }
+                                        //adding enable/disable for pool stats
+                                        OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(raStats);
+                                        OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(raStats);
+                                        raRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
+
                                     }
                                     if (poolStats.getNames().size() != 0 && raRegistration.getSubModel(PathAddress.pathAddress(peCD)) == null) {
                                         ManagementResourceRegistration cdSubRegistration = raRegistration.registerSubModel(peCD, statsResourceDescriptionProvider);
@@ -193,6 +202,12 @@ public abstract class AbstractResourceAdapterDeploymentServiceListener extends A
                                         for (String statName : poolStats.getNames()) {
                                             cdSubRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
                                         }
+
+                                        //adding enable/disable for pool stats
+                                        OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(poolStats);
+                                        OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(poolStats);
+                                        cdSubRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
+
                                         cdSubRegistration.registerOperationHandler(ClearStatisticsHandler.DEFINITION, new ClearStatisticsHandler(poolStats));
                                     }
 

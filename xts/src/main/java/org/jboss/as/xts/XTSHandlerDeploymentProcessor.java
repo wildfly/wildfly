@@ -62,7 +62,7 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
 
     public void deploy(final DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit unit = phaseContext.getDeploymentUnit();
-        final WebservicesMetaData webservicesMetaData = new WebservicesMetaData();
+        final List<WebserviceDescriptionMetaData> webserviceDescriptions = new ArrayList<WebserviceDescriptionMetaData>();
         boolean modifiedWSMeta = false;
 
         for (String endpoint : getDeploymentClasses(unit)) {
@@ -71,7 +71,7 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
 
                 if (endpointMetaData.isXTSEnabled()) {
                     XTSDeploymentMarker.mark(unit);
-                    final boolean result = updateXTSEndpoint(endpoint, endpointMetaData, webservicesMetaData, unit);
+                    final boolean result = updateXTSEndpoint(endpoint, endpointMetaData, webserviceDescriptions, unit);
                     modifiedWSMeta = modifiedWSMeta || result;
                 }
             } catch (XTSException e) {
@@ -80,12 +80,12 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         if (modifiedWSMeta) {
-            unit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, webservicesMetaData);
+            unit.putAttachment(WSAttachmentKeys.WEBSERVICES_METADATA_KEY, new WebservicesMetaData(null, webserviceDescriptions));
         }
     }
 
     private boolean updateXTSEndpoint(final String endpoint, final EndpointMetaData endpointMetaData,
-            final WebservicesMetaData webservicesMetaData, final DeploymentUnit unit) {
+            final List<WebserviceDescriptionMetaData> webserviceDescriptions, final DeploymentUnit unit) {
 
         if (endpointMetaData.isWebservice()) {
             final List<String> handlers = new ArrayList<String>();
@@ -96,7 +96,10 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
             handlers.add(TX_CONTEXT_HANDLER);
 
             if (!isAnyOfHandlersRegistered(unit, endpoint, handlers)) {
-                addHandlerToEndpoint(webservicesMetaData, endpointMetaData, endpoint, handlers);
+                final UnifiedHandlerChainsMetaData unifiedHandlerChainsMetaData = buildHandlerChains(handlers);
+                final QName portQname = endpointMetaData.getWebServiceAnnotation().buildPortQName();
+                webserviceDescriptions.add(new WebserviceDescriptionMetaData(null, null, null,
+                        buildPortComponent(endpointMetaData.isEJB(), endpoint, portQname, unifiedHandlerChainsMetaData)));
                 registerHandlersWithAS(unit, endpoint, handlers);
 
                 return true;
@@ -106,47 +109,17 @@ public class XTSHandlerDeploymentProcessor implements DeploymentUnitProcessor {
         return false;
     }
 
-    private void addHandlerToEndpoint(WebservicesMetaData wsWebservicesMetaData, EndpointMetaData endpointMetaData, String endpointClass, List<String> handlers) {
-
-        WebserviceDescriptionMetaData descriptionMetaData = new WebserviceDescriptionMetaData(wsWebservicesMetaData);
-
-        final UnifiedHandlerChainsMetaData unifiedHandlerChainsMetaData = buildHandlerChains(handlers);
-        final QName portQname = endpointMetaData.getWebServiceAnnotation().buildPortQName();
-        final PortComponentMetaData portComponent = buildPortComponent(endpointMetaData.isEJB(), endpointClass, portQname, unifiedHandlerChainsMetaData, descriptionMetaData);
-        descriptionMetaData.addPortComponent(portComponent);
-        wsWebservicesMetaData.addWebserviceDescription(descriptionMetaData);
-    }
-
-    private PortComponentMetaData buildPortComponent(boolean isEJB, String endpointClass, QName portQname, UnifiedHandlerChainsMetaData unifiedHandlerChainsMetaData, WebserviceDescriptionMetaData descriptionMetaData) {
-
-        PortComponentMetaData portComponent = new PortComponentMetaData(descriptionMetaData);
-        portComponent.setHandlerChains(unifiedHandlerChainsMetaData);
-        portComponent.setServiceEndpointInterface(endpointClass);
-        portComponent.setWsdlPort(portQname);
-
-        if (isEJB) {
-            portComponent.setEjbLink(getClassName(endpointClass));
-        } else {
-            portComponent.setServletLink(endpointClass);
-        }
-
-        return portComponent;
+    private PortComponentMetaData buildPortComponent(boolean isEJB, String endpointClass, QName portQname, UnifiedHandlerChainsMetaData unifiedHandlerChainsMetaData) {
+        return new PortComponentMetaData(null, portQname, endpointClass, isEJB ? getClassName(endpointClass) : null, isEJB ? null : endpointClass, null, null, null, null, unifiedHandlerChainsMetaData);
     }
 
     private UnifiedHandlerChainsMetaData buildHandlerChains(List<String> handlerClasses) {
 
-        UnifiedHandlerChainMetaData unifiedHandlerChainMetaData = new UnifiedHandlerChainMetaData();
-
+        List<UnifiedHandlerMetaData> handlers = new ArrayList<UnifiedHandlerMetaData>();
         for (String handlerClass : handlerClasses) {
-            UnifiedHandlerMetaData handlerMetaData = new UnifiedHandlerMetaData();
-            handlerMetaData.setHandlerClass(handlerClass);
-            unifiedHandlerChainMetaData.addHandler(handlerMetaData);
+            handlers.add(new UnifiedHandlerMetaData(handlerClass, null, null, null, null, null));
         }
-
-        UnifiedHandlerChainsMetaData unifiedHandlerChainsMetaData = new UnifiedHandlerChainsMetaData();
-        unifiedHandlerChainsMetaData.addHandlerChain(unifiedHandlerChainMetaData);
-
-        return unifiedHandlerChainsMetaData;
+        return new UnifiedHandlerChainsMetaData(new UnifiedHandlerChainMetaData(null, null, null, handlers, false, null));
     }
 
     private void registerHandlersWithAS(DeploymentUnit unit, String endpointClass, List<String> handlersToAdd) {

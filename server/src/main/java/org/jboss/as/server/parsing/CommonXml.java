@@ -65,8 +65,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
 
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -74,6 +72,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -90,6 +91,7 @@ import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
 import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
+import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
 import org.jboss.as.server.services.net.OutboundSocketBindingResourceDefinition;
@@ -1170,15 +1172,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     }
 
-    protected void parseVault(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+    protected void parseVault_1_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         final int vaultAttribCount = reader.getAttributeCount();
 
         ModelNode vault = new ModelNode();
         String code = null;
-
-        if (vaultAttribCount > 1) {
-            throw unexpectedAttribute(reader, vaultAttribCount);
-        }
 
         for (int i = 0; i < vaultAttribCount; i++) {
             requireNoNamespaceAttribute(reader, i);
@@ -1186,8 +1184,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
             switch (attribute) {
                 case CODE: {
-                    code = value;
-                    vault.get(Attribute.CODE.getLocalName()).set(code);
+                    VaultResourceDefinition.CODE.parseAndSetParameter(value, vault, reader);
                     break;
                 }
                 default:
@@ -1215,6 +1212,52 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         }
         list.add(vault);
     }
+
+    protected void parseVault_3_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        final int vaultAttribCount = reader.getAttributeCount();
+
+        ModelNode vault = new ModelNode();
+        String code = null;
+
+        for (int i = 0; i < vaultAttribCount; i++) {
+            requireNoNamespaceAttribute(reader, i);
+            final String value = reader.getAttributeValue(i);
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case CODE: {
+                    VaultResourceDefinition.CODE.parseAndSetParameter(value, vault, reader);
+                    break;
+                }
+                case MODULE: {
+                    VaultResourceDefinition.MODULE.parseAndSetParameter(value, vault, reader);
+                    break;
+                }
+                default:
+                    throw unexpectedAttribute(reader, i);
+            }
+        }
+
+        ModelNode vaultAddress = address.clone();
+        vaultAddress.add(CORE_SERVICE, VAULT);
+        if (code != null) {
+            vault.get(Attribute.CODE.getLocalName()).set(code);
+        }
+        vault.get(OP_ADDR).set(vaultAddress);
+        vault.get(OP).set(ADD);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case VAULT_OPTION: {
+                    parseModuleOption(reader, vault.get(VAULT_OPTIONS));
+                    break;
+                }
+            }
+        }
+        list.add(vault);
+    }
+
 
     protected void parseVaultOption(XMLExtendedStreamReader reader, ModelNode vaultOptions) throws XMLStreamException {
         String name = null;
@@ -1538,10 +1581,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
     protected void writeVault(XMLExtendedStreamWriter writer, ModelNode vault) throws XMLStreamException {
         writer.writeStartElement(Element.VAULT.getLocalName());
-        String code = vault.hasDefined(Attribute.CODE.getLocalName()) ? vault.get(Attribute.CODE.getLocalName()).asString() : null;
-        if (code != null && !code.isEmpty()) {
-            writer.writeAttribute(Attribute.CODE.getLocalName(), code);
-        }
+        VaultResourceDefinition.CODE.marshallAsAttribute(vault, writer);
+        VaultResourceDefinition.MODULE.marshallAsAttribute(vault, writer);
 
         if (vault.hasDefined(VAULT_OPTIONS)) {
             ModelNode properties = vault.get(VAULT_OPTIONS);

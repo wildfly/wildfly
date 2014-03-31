@@ -55,6 +55,10 @@ public class VaultAddHandler extends AbstractAddStepHandler {
         for (AttributeDefinition attr : VaultResourceDefinition.ALL_ATTRIBUTES) {
             attr.validateAndSet(operation, model);
         }
+        if (model.hasDefined(VaultResourceDefinition.MODULE.getName()) && !model.hasDefined(VaultResourceDefinition.CODE.getName())){
+            throw ServerMessages.MESSAGES.vaultModuleWithNoCode();
+        }
+
     }
 
 
@@ -67,7 +71,9 @@ public class VaultAddHandler extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         ModelNode codeNode = VaultResourceDefinition.CODE.resolveModelAttribute(context, model);
+        ModelNode moduleNode = VaultResourceDefinition.MODULE.resolveModelAttribute(context, model);
         String vaultClass = codeNode.isDefined() ? codeNode.asString() : null;
+        String module = moduleNode.isDefined() ? moduleNode.asString() : null;
 
         if (vaultReader != null) {
             final Map<String, Object> vaultOptions = new HashMap<String, Object>();
@@ -77,7 +83,7 @@ public class VaultAddHandler extends AbstractAddStepHandler {
                 }
             }
             try {
-                vaultReader.createVault(vaultClass, vaultOptions);
+                vaultReader.createVault(vaultClass, module, vaultOptions);
             } catch (VaultReaderException e) {
                 throw ServerMessages.MESSAGES.cannotCreateVault(e, e);
             }

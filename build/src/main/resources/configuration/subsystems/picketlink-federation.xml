@@ -1,0 +1,207 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--
+  ~ /*
+  ~  * JBoss, Home of Professional Open Source.
+  ~  * Copyright 2013, Red Hat, Inc., and individual contributors
+  ~  * as indicated by the @author tags. See the copyright.txt file in the
+  ~  * distribution for a full listing of individual contributors.
+  ~  *
+  ~  * This is free software; you can redistribute it and/or modify it
+  ~  * under the terms of the GNU Lesser General Public License as
+  ~  * published by the Free Software Foundation; either version 2.1 of
+  ~  * the License, or (at your option) any later version.
+  ~  *
+  ~  * This software is distributed in the hope that it will be useful,
+  ~  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+  ~  * Lesser General Public License for more details.
+  ~  *
+  ~  * You should have received a copy of the GNU Lesser General Public
+  ~  * License along with this software; if not, write to the Free
+  ~  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+  ~  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+  ~  */
+  -->
+
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <extension-module>org.wildfly.extension.picketlink</extension-module>
+    <subsystem xmlns="urn:jboss:domain:picketlink-federation:1.0">
+
+        <federation name="federation-simple-redirect-binding">
+            <identity-provider name="idp-redirect.war" url="http://localhost:8080/idp-redirect/" security-domain="idp" support-signatures="false" strict-post-binding="false">
+                <trust>
+                    <trust-domain name="localhost"/>
+                </trust>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="sp-redirect1.war" security-domain="sp" url="http://localhost:8080/sp-redirect1/" post-binding="false" support-signatures="false"/>
+                <service-provider name="sp-redirect2.war" security-domain="sp" url="http://localhost:8080/sp-redirect2/" post-binding="false" support-signatures="false"/>
+            </service-providers>
+        </federation>
+        <federation name="federation-redirect-with-signatures">
+            <key-store file="/jbid_test_keystore.jks" password="store123" sign-key-alias="servercert" sign-key-password="test123"/>
+            <identity-provider name="idp-redirect-sig.war" url="http://localhost:8080/idp-redirect-sig/" security-domain="idp" support-signatures="true" strict-post-binding="false">
+                <trust>
+                    <trust-domain name="localhost" cert-alias="servercert"/>
+                    <trust-domain name="127.0.0.1" cert-alias="servercert"/>
+                </trust>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="sp-redirect-sig1.war" security-domain="sp" url="http://localhost:8080/sp-redirect-sig1/" post-binding="false" support-signatures="true"/>
+                <service-provider name="sp-redirect-sig2.war" security-domain="sp" url="http://localhost:8080/sp-redirect-sig2/" post-binding="false" support-signatures="true"/>
+            </service-providers>
+        </federation>
+        <federation name="federation-simple-post-binding">
+            <identity-provider name="idp-post.war" url="http://localhost:8080/idp-post/" security-domain="idp">
+                <trust>
+                    <trust-domain name="localhost"/>
+                </trust>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="sp-post1.war" security-domain="sp" url="http://localhost:8080/sp-post1/"/>
+                <service-provider name="sp-post2.war" security-domain="sp" url="http://localhost:8080/sp-post2/"/>
+            </service-providers>
+        </federation>
+        <federation name="federation-post-with-signatures">
+            <key-store file="/jbid_test_keystore.jks" password="store123" sign-key-alias="servercert" sign-key-password="test123"/>
+            <identity-provider name="idp-post-sig.war" url="http://localhost:8080/idp-post-sig/" security-domain="idp" support-signatures="true">
+                <trust>
+                    <trust-domain name="localhost" cert-alias="servercert"/>
+                    <trust-domain name="127.0.0.1" cert-alias="servercert"/>
+                </trust>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="sp-post-sig1.war" security-domain="sp" url="http://localhost:8080/sp-post-sig1/" support-signatures="true"/>
+                <service-provider name="sp-post-sig2.war" security-domain="sp" url="http://localhost:8080/sp-post-sig2/" support-signatures="true"/>
+            </service-providers>
+        </federation>
+        <federation name="federation-with-metadata">
+            <key-store file="/jbid_test_keystore.jks" password="store123" sign-key-alias="servercert" sign-key-password="test123"/>
+            <identity-provider name="idp-metadata.war" url="http://localhost:8080/idp-metadata/" security-domain="idp" support-signatures="true" support-metadata="true">
+                <trust>
+                    <trust-domain name="localhost" cert-alias="servercert"/>
+                    <trust-domain name="127.0.0.1" cert-alias="servercert"/>
+                </trust>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="sp-metadata1.war" security-domain="sp" url="http://localhost:8080/sp-metadata1/" support-signatures="true" support-metadata="true"/>
+                <service-provider name="sp-metadata2.war" security-domain="sp" url="http://localhost:8080/sp-metadata2/" support-signatures="true" support-metadata="true"/>
+            </service-providers>
+        </federation>
+        <federation name="federation-with-external-idp">
+            <identity-provider name="idp-external" url="http://idp.external.com/" external="true"/>
+            <service-providers>
+                <service-provider name="sales-on-external.war" security-domain="sp" url="http://localhost:8080/sales-on-external/" post-binding="false" support-signatures="false"/>
+            </service-providers>
+        </federation>
+
+        <!--
+        <federation name="federation-without-signatures">
+            <saml token-timeout="4000" clock-skew="0"/>
+            <identity-provider name="idp.war" security-domain="idp" support-signatures="false" url="http://localhost:8080/idp/">
+                <trust>
+                    <trust-domain name="localhost"/>
+                    <trust-domain name="mycompany.com2"/>
+                    <trust-domain name="mycompany.com3"/>
+                    <trust-domain name="mycompany.com4"/>
+                </trust>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="sales-redirect.war"
+                            post-binding="false" security-domain="sp"
+                            url="http://localhost:8080/sales-redirect/" support-signatures="false"/>
+                <service-provider name="sales-post.war"
+                            post-binding="true" security-domain="sp"
+                            url="http://localhost:8080/sales-post/" support-signatures="false"/>
+                <service-provider name="fake.war" post-binding="true"
+                            security-domain="sp" url="http://localhost:8080/fake/"
+                            support-signatures="false"/>
+            </service-providers>
+        </federation>
+        <federation name="federation-with-signatures">
+            <saml token-timeout="4000" clock-skew="0"/>
+            <key-store password="changeit" sign-key-alias="localhost" sign-key-password="changeit" file="/jbid_test_keystore.jks"/>
+            <identity-provider name="idp-sig.war"
+                               security-domain="idp" support-signatures="true"
+                               url="http://localhost:8080/idp-sig/" strict-post-binding="false">
+                <trust>
+                    <trust-domain name="localhost" cert-alias="localhost"/>
+                    <trust-domain name="127.0.0.1" cert-alias="localhost"/>
+                </trust>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="sales-post-sig.war"
+                                post-binding="true" security-domain="sp"
+                                url="http://localhost:8080/sales-post-sig/" support-signatures="true"/>
+                <service-provider name="sales-redirect-sig.war"
+                                post-binding="false" security-domain="sp"
+                                url="http://localhost:8080/sales-redirect-sig/" support-signatures="true"
+                                strict-post-binding="false"/>
+            </service-providers>
+        </federation>
+        <federation name="federation-with-handlers">
+            <identity-provider url="http://localhost:8080/idp/" name="idp.war" security-domain="idp" strict-post-binding="false">
+                <trust>
+                    <trust-domain name="localhost"/>
+                </trust>
+                <handlers>
+                    <handler code="SAML2IssuerTrustHandler"/>
+                    <handler code="SAML2LogOutHandler"/>
+                    <handler code="SAML2AuthenticationHandler"/>
+                    <handler code="RolesGenerationHandler"/>
+                </handlers>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="employee.war" security-domain="sp" url="http://localhost:8080/employee/" post-binding="false"/>
+            </service-providers>
+        </federation>
+        <federation name="federation-with-handler-parameters">
+            <key-store password="changeit" sign-key-alias="localhost" sign-key-password="changeit" file="/jbid_test_keystore.jks"/>
+            <identity-provider name="idp-handler-param.war"
+                               security-domain="idp" support-signatures="true"
+                               url="http://localhost:8080/idp/" strict-post-binding="false">
+                <trust>
+                    <trust-domain name="localhost" cert-alias="localhost"/>
+                    <trust-domain name="127.0.0.1" cert-alias="localhost"/>
+                </trust>
+                <handlers>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureGenerationHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureValidationHandler">
+                        <handler-parameter name="SIGN_RESPONSE_AND_ASSERTION" value="true"/>
+                    </handler>
+                </handlers>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="sales-post-handler-parameter.war"
+                                  post-binding="true" security-domain="sp"
+                                  url="http://localhost:8080/sales-post-sig/" support-signatures="true"/>
+                <service-provider name="sales-redirect-handler-parameter"
+                                  post-binding="false" security-domain="sp"
+                                  url="http://localhost:8080/sales-redirect-sig/" support-signatures="true"
+                                  strict-post-binding="false"/>
+            </service-providers>
+        </federation>
+        <federation name="federation-with-ssl-authentication">
+            <identity-provider url="http://localhost:8080/idp/" name="idp-ssl.war" security-domain="idp" strict-post-binding="false" ssl-authentication="true">
+                <trust>
+                    <trust-domain name="localhost"/>
+                </trust>
+                <handlers>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
+                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
+                </handlers>
+            </identity-provider>
+            <service-providers>
+                <service-provider name="employee-ssl.war" security-domain="sp" url="http://localhost:8080/employee/" post-binding="false"/>
+            </service-providers>
+        </federation>
+        -->
+    </subsystem>
+</config>

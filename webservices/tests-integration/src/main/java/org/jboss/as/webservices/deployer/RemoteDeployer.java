@@ -81,7 +81,11 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRU
 import static org.jboss.as.security.Constants.CLASSIC;
 import static org.jboss.as.security.Constants.CODE;
 import static org.jboss.as.security.Constants.FLAG;
+import static org.jboss.as.security.Constants.AUTH_MODULE;
+import static org.jboss.as.security.Constants.JASPI;
 import static org.jboss.as.security.Constants.LOGIN_MODULE;
+import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK;
+import static org.jboss.as.security.Constants.LOGIN_MODULE_STACK_REF;
 import static org.jboss.as.security.Constants.MODULE_OPTIONS;
 import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
 
@@ -90,6 +94,7 @@ import static org.jboss.as.security.Constants.SECURITY_DOMAIN;
  *
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 public final class RemoteDeployer implements Deployer {
 
@@ -255,6 +260,67 @@ public final class RemoteDeployer implements Deployer {
             applyUpdates(updates);
         }
     }
+
+    public void addJaspiSecurityDomain(String name, String loginModuleStackName, Map<String, String> loginModuleOptions,
+          String authModuleName, Map<String, String> authModuleOptions) throws Exception {
+      synchronized (securityDomainUsers) {
+          if (securityDomainUsers.containsKey(name)) {
+              int count = securityDomainUsers.get(name);
+              securityDomainUsers.put(name, (count + 1));
+              return;
+          } else {
+              securityDomainUsers.put(name, 1);
+          }
+
+          final List<ModelNode> updates = new ArrayList<ModelNode>();
+
+          final ModelNode compositeOp = new ModelNode();
+          compositeOp.get(OP).set(COMPOSITE);
+          compositeOp.get(OP_ADDR).setEmptyList();
+          compositeOp.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+
+          ModelNode steps = compositeOp.get(STEPS);
+          PathAddress address = PathAddress.pathAddress().append(SUBSYSTEM, "security").append(SECURITY_DOMAIN, name);
+          steps.add(Util.createAddOperation(address));
+
+          PathAddress parentAddress = address.append(AUTHENTICATION, JASPI);
+          steps.add(Util.createAddOperation(parentAddress));
+
+          // step 3
+          PathAddress loignStackAddress = parentAddress.append(LOGIN_MODULE_STACK, loginModuleStackName);
+          ModelNode loginStack = Util.createAddOperation(loignStackAddress);
+          steps.add(loginStack);
+
+          // step 4
+          ModelNode loginModule = Util.createAddOperation(loignStackAddress.append(LOGIN_MODULE, "UsersRoles"));
+          loginModule.get(CODE).set("UsersRoles");
+          loginModule.get(FLAG).set(REQUIRED);
+          loginModule.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+          final ModelNode moduleOptions = loginModule.get(MODULE_OPTIONS);
+          if (loginModuleOptions != null) {
+              for (final String k : loginModuleOptions.keySet()) {
+                  moduleOptions.add(k, loginModuleOptions.get(k));
+              }
+          }
+          steps.add(loginModule);
+
+          PathAddress authModule = parentAddress.append(AUTH_MODULE, authModuleName);
+          ModelNode authModuleNode = Util.createAddOperation(authModule);
+          authModuleNode.get(LOGIN_MODULE_STACK_REF).set(loginModuleStackName);
+          authModuleNode.get(CODE).set(authModuleName);
+          ModelNode options = authModuleNode.get(MODULE_OPTIONS);
+          if (authModuleOptions != null) {
+              for (final String k : authModuleOptions.keySet()) {
+                  options.add(k, authModuleOptions.get(k));
+              }
+          }
+          steps.add(authModuleNode);
+
+          updates.add(compositeOp);
+
+          applyUpdates(updates);
+      }
+  }
 
     @Override
     public void removeSecurityDomain(String name) throws Exception {

@@ -22,7 +22,6 @@
 
 package org.jboss.as.jacorb;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
 import static org.jboss.as.jacorb.JacORBSubsystemConstants.IDENTITY;
 import static org.jboss.as.jacorb.JacORBSubsystemConstants.SECURITY;
 
@@ -66,11 +65,15 @@ public class JacORBExtension implements Extension {
     private static final String RESOURCE_NAME = JacORBExtension.class.getPackage().getName() + ".LocalDescriptions";
 
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 4;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
-    static ResourceDescriptionResolver getResourceDescriptionResolver(final String keyPrefix) {
-        return new StandardResourceDescriptionResolver(keyPrefix, RESOURCE_NAME, JacORBExtension.class.getClassLoader(), true, false);
+    static ResourceDescriptionResolver getResourceDescriptionResolver(final String... keyPrefix) {
+        StringBuilder prefix = new StringBuilder(SUBSYSTEM_NAME);
+        for (String kp : keyPrefix) {
+            prefix.append('.').append(kp);
+        }
+        return new StandardResourceDescriptionResolver(prefix.toString(), RESOURCE_NAME, JacORBExtension.class.getClassLoader(), true, false);
     }
 
     @Override
@@ -83,7 +86,9 @@ public class JacORBExtension implements Extension {
 
         if (context.isRegisterTransformers()) {
             // Register the model transformers
-            registerTransformers(subsystem);
+            registerTransformers_1_1(subsystem);
+            registerTransformers_1_2(subsystem);
+            registerTransformers_1_3(subsystem);
         }
     }
 
@@ -93,15 +98,15 @@ public class JacORBExtension implements Extension {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_1.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_2.getUriString(), PARSER);
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_3.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JacORBSubsystemParser.Namespace.JacORB_1_4.getUriString(), PARSER);
     }
 
     /**
-     * Register the transformers for older model versions.
+     * Register the transformers for the 1.1.0 version.
      *
      * @param subsystem the subsystems registration
      */
-    protected static void registerTransformers(final SubsystemRegistration subsystem) {
-        final ModelVersion version110 = ModelVersion.create(1, 1, 0);
+    protected static void registerTransformers_1_1(final SubsystemRegistration subsystem) {
         final Set<String> expressionKeys = new HashSet<String>();
         for(final AttributeDefinition def : JacORBSubsystemDefinitions.ATTRIBUTES_BY_NAME.values()) {
             if(def.isAllowExpression()) {
@@ -109,6 +114,7 @@ public class JacORBExtension implements Extension {
             }
         }
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.rejectChildResource(IORSettingsDefinition.INSTANCE.getPathElement());
         builder.getAttributeBuilder()
             .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, expressionKeys.toArray(new String[expressionKeys.size()]))
             .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
@@ -137,18 +143,28 @@ public class JacORBExtension implements Extension {
                 }
             }, SECURITY)
             .end();
-        TransformationDescription.Tools.register(builder.build(), subsystem, version110);
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 1, 0));
     }
 
-    private static ModelNode replaceSecurityClient(ModelNode model) {
-        if (model.hasDefined(SECURITY) && model.get(SECURITY).asString().equals(JacORBSubsystemConstants.CLIENT)) {
-            //security=CLIENT in the new model == security=OFF plus these extra initializers in the old model
-            //Since the write-attribute is restart-required I am not doing anything for the write-attribute operation
-            model.get(SECURITY).set("off");
-            model.get(PROPERTIES).add("org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jacorb.csiv2.CSIv2Initializer", "");
-            model.get(PROPERTIES).add("org.omg.PortableInterceptor.ORBInitializerClass.org.jboss.as.jacorb.csiv2.SASClientInitializer", "");
-            return model;
-        }
-        return null;
+    /**
+     * Register the transformers for the 1.2.0 version.
+     *
+     * @param subsystem the subsystems registration
+     */
+    protected static void registerTransformers_1_2(final SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.rejectChildResource(IORSettingsDefinition.INSTANCE.getPathElement());
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 2, 0));
+    }
+
+    /**
+     * Register the transformers for the 1.3.0 version.
+     *
+     * @param subsystem the subsystems registration
+     */
+    protected static void registerTransformers_1_3(final SubsystemRegistration subsystem) {
+        ResourceTransformationDescriptionBuilder builder = ResourceTransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.rejectChildResource(IORSettingsDefinition.INSTANCE.getPathElement());
+        TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 3, 0));
     }
 }

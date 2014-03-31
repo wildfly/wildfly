@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<host xmlns="urn:jboss:domain:2.1">
+<host xmlns="urn:jboss:domain:3.0">
 
-    <vault code="somevault">
+    <vault code="somevault" module="org.jboss.test.blah">
         <vault-option name="xyz" value="zxc"/>
         <vault-option name="abc" value="def"/>
     </vault>

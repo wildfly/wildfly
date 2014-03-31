@@ -25,15 +25,13 @@
 <module xmlns="urn:jboss:module:1.3" name="org.picketlink.common">
 
     <resources>
-            <!-- Insert resources here -->
+        <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="javax.api" />
-        <module name="javax.xml.stream.api" />
-        <module name="javax.xml.bind.api"/>
-        <module name="javax.xml.ws.api"/>
-        <module name="org.jboss.logging" />
+        <module name="javax.api"/>
+        <module name="javax.xml.stream.api"/>
+        <module name="org.jboss.logging"/>
     </dependencies>
 
 </module>
