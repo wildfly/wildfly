@@ -23,7 +23,6 @@
 package org.jboss.as.cli.impl;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -44,10 +43,24 @@ class CLIVaultReader {
     CLIVaultReader() {
     }
 
-    void init(Map<String, Object> options) throws SecurityVaultException {
-        vault = new PicketBoxSecurityVault();
-        vault.init(options);
+    void init(VaultConfig vaultConfig) throws SecurityVaultException {
+        if (vaultConfig.getCode() == null) {
+            vault = new PicketBoxSecurityVault();
+        } else {
+            try {
+                if (vaultConfig.getModule() == null){
+                    vault = SecurityActions.loadAndInstantiateFromClassClassLoader(PicketBoxSecurityVault.class, SecurityVault.class, vaultConfig.getCode());
+                } else {
+                    vault = SecurityActions.loadAndInstantiateFromModule(vaultConfig.getModule(), SecurityVault.class, vaultConfig.getCode());
+                }
+            } catch (Exception e) {
+                throw new SecurityVaultException(e);
+            }
+        }
+        vault.init(vaultConfig.getOptions());
     }
+
+
 
     String retrieve(String password) throws SecurityVaultException {
         if(isVaultFormat(password)) {
@@ -85,4 +98,5 @@ class CLIVaultReader {
         }
         return tokens;
     }
+
 }
