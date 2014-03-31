@@ -20,7 +20,7 @@
 package org.apache.directory.api.ldap.model.url;
 
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -253,7 +253,7 @@ public class LdapUrl {
             throw new LdapURLEncodingException(I18n.err(I18n.ERR_04408));
         }
 
-        bytes = string.getBytes(StandardCharsets.UTF_8);
+        bytes = string.getBytes(Charset.forName("UTF-8"));
         this.string = string;
         parse(string.toCharArray());
     }
@@ -478,7 +478,7 @@ public class LdapUrl {
             throw new IllegalArgumentException(I18n.err(I18n.ERR_04411));
         }
 
-        return data.getBytes(StandardCharsets.US_ASCII);
+        return data.getBytes(Charset.forName("US-ASCII"));
     }
 
     /**
