@@ -171,8 +171,19 @@ public interface LegacyKernelServicesInitializer {
      */
     LegacyKernelServicesInitializer addOperationValidationResolve(String name, PathAddress pathAddress);
 
+    /**
+     * By default all operations sent into the model controller will be validated on boot. Operations matching what is
+     * set up here will be validated, but allow you to adjust the operation before validating.
+     *
+     * @param name the name of the operation, or {@code *} as a wildcard capturing all names
+     * @param pathAddress the address of the operation, the pathAddress may use {@code *} as a wildcard for both the key and the value of {@link org.jboss.as.controller.PathElement}s
+     * @param operationFixer an operation fixer to fix the operation before validation. This must be Serializable, and must be added via {@link #addSingleChildFirstClass(Class...)}
+     * @return this initializer
+     */
+    LegacyKernelServicesInitializer addOperationValidationFixer(String name, PathAddress pathAddress, OperationFixer operationFixer);
+
      /**
-     * By default all the parent classloader classes are available to be kernel which may provides conflict with classesloaded
+     * By default all the parent classloader classes are available to be kernel which may provides conflict with classes loaded
      * through the service initializer. Thus we provide an exclusion mecanism.
      *
      * @param exclusionFilter the class filter used to exclude class from the the parent classloader when resolving.

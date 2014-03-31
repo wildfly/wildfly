@@ -194,7 +194,7 @@ public abstract class ModelTestModelControllerService extends AbstractController
             preBoot(bootOperations, rollbackOnRuntimeFailure);
             OperationValidator validator = new OperationValidator(rootRegistration);
             for (ModelNode op : bootOperations) {
-                ModelNode toValidate = validateOpsFilter.adjustForValidation(op);
+                ModelNode toValidate = validateOpsFilter.adjustForValidation(op.clone());
                 if (toValidate != null) {
                     validator.validateOperation(toValidate);
                 }
