@@ -918,4 +918,15 @@ public interface EeMessages {
 
     @Message(id = 16714, value = "Instance data can only be set during construction")
     IllegalStateException instanceDataCanOnlyBeSetDuringConstruction();
+
+    /**
+     * Creates an exception indicating that there was a exception while deploying AroundInvokeInterceptor
+     *
+     * @param className the name of the class.
+     * @param numberOfAnnotatedMethods the number of @aroundInvoke annotations in the specified class.
+     *
+     * @return a {@link DeploymentUnitProcessingException} for the error.
+     */
+    @Message(id = 16715, value = "A class must not declare more than one AroundInvoke method. %s has %s methods annotated.")
+    DeploymentUnitProcessingException aroundInvokeAnnotionUsedTooManyTimes(DotName className, int numberOfAnnotatedMethods);
 }

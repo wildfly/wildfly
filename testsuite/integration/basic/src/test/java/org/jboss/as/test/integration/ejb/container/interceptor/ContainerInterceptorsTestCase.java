@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.test.integration.ejb.container.interceptor;
 
 import static org.junit.Assert.fail;
@@ -30,24 +29,28 @@ import java.util.Map;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import org.jboss.arquillian.container.test.api.Deployer;
 
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.ShouldThrowException;
 import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.ejb.container.interceptor.incorrect.IncorrectContainerInterceptor;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
-import org.junit.Ignore;
+import static org.junit.Assert.assertThat;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * Tests that the <code>container-interceptors</code> configured in jboss-ejb3.xml and processed and applied correctly to the
  * relevant EJBs.
- * 
+ *
  * @author Jaikiran Pai
  */
 @RunWith(Arquillian.class)
@@ -57,6 +60,9 @@ public class ContainerInterceptorsTestCase {
 
     private static final String EJB_JAR_NAME = "ejb-container-interceptors";
 
+    @ArquillianResource
+    Deployer deployer;
+    
     @Deployment
     public static JavaArchive createDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, EJB_JAR_NAME + ".jar");
@@ -67,12 +73,10 @@ public class ContainerInterceptorsTestCase {
 
     /**
      * Deployment which should fail. It contains an interceptor with 2 methods annotated with the @AroundInvoke.
-     * 
+     *
      * @return
      */
-    //    @Deployment(name = "incorrect-deployment")
-    @Ignore("JBPAPP6-1792 - AroundInvokeAnnotationParsingProcessor should fail when more methods with @AroundInvoke annotation are found in the class")
-    @ShouldThrowException(Exception.class)
+    @Deployment(name = "incorrect-deployment", managed = false)
     public static JavaArchive createIncorrectDeployment() {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "incorrect-deployment.jar");
         jar.addPackage(IncorrectContainerInterceptor.class.getPackage());
@@ -80,9 +84,22 @@ public class ContainerInterceptorsTestCase {
         return jar;
     }
 
+    @Test
+    public void testMultipleAnnotatedInovkeAroundClass() throws Throwable {
+        try {
+            deployer.deploy("incorrect-deployment");
+            fail("Deployment should fail");
+        } catch (Exception ex) {
+            assertThat(ex.getCause(), is(notNullValue()));
+            assertThat(ex.getCause().getCause(), is(notNullValue()));
+            assertThat(ex.getCause().getCause(), is(notNullValue()));
+            assertThat(ex.getCause().getCause().getCause().getMessage(), containsString("JBAS016715"));
+        }
+    }
+
     /**
      * Tests that the container-interceptor(s) are invoked when a EJB method on a local view is invoked
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -107,7 +124,7 @@ public class ContainerInterceptorsTestCase {
 
     /**
      * Tests that the container-interceptor(s) are invoked when a EJB method on a remote view is invoked
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -181,7 +198,7 @@ public class ContainerInterceptorsTestCase {
     /**
      * Tests that class level and method level container-interceptors (and other eligible interceptors) are invoked during a EJB
      * invocation
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -210,7 +227,7 @@ public class ContainerInterceptorsTestCase {
 
     /**
      * Tests that the explicit ordering specified for container-interceptors in the jboss-ejb3.xml is honoured
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -231,7 +248,7 @@ public class ContainerInterceptorsTestCase {
 
     /**
      * Tests that exception thrown in a container-interceptor is propagated.
-     * 
+     *
      * @throws Exception
      */
     @Test
