@@ -98,12 +98,6 @@
                     <config-property-type>java.lang.Boolean</config-property-type>
                     <config-property-value>true</config-property-value>
                 </config-property>
-                <config-property>
-                   <description>The JNDI name to lookup the TransactionSynchronizationRegistry.</description>
-                   <config-property-name>TransactionSynchronizationRegistryLookup</config-property-name>
-                   <config-property-type>java.lang.String</config-property-type>
-                   <config-property-value>java:jboss/TransactionSynchronizationRegistry</config-property-value>
-                </config-property>
                 <connectionfactory-interface>org.jboss.resource.adapter.jms.JmsConnectionFactory
                 </connectionfactory-interface>
                 <connectionfactory-impl-class>org.jboss.resource.adapter.jms.JmsConnectionFactoryImpl
