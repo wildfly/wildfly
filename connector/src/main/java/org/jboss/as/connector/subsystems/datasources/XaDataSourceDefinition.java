@@ -216,7 +216,13 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
                     .inheritResourceAttributeDefinitions()
                     .setCustomOperationTransformer(ENABLE_ADD_TRANSFORMER)
-                    .end();
+                    .end()
+                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
+                .end();
+
         ConnectionPropertyDefinition.registerTransformers11x(builder);
     }
 
@@ -272,7 +278,12 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 .addOperationTransformationOverride(ModelDescriptionConstants.ADD)
                     .inheritResourceAttributeDefinitions()
                     .setCustomOperationTransformer(ENABLE_ADD_TRANSFORMER)
-                    .end();
+                    .end()
+                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
+                .end();
 
         ConnectionPropertyDefinition.registerTransformers11x(builder);
     }
@@ -295,7 +306,11 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
                         return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
                     }
-                }, STATISTICS_ENABLED).end();
-
+                }, STATISTICS_ENABLED).end()
+                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
+                .end();
     }
 }
