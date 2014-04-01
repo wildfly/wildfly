@@ -44,6 +44,7 @@ import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
  *
  * @author Jaikiran Pai
  * @author "<a href=\"mailto:wfink@redhat.com\">Wolf-Dieter Fink</a>"
+ * @author Eduardo Martins
  * @version $Revision: $
  */
 public class CalendarBasedTimeout {
@@ -464,19 +465,11 @@ public class CalendarBasedTimeout {
         // 2) The "next" day-of-week is lesser than the current day-of-week : This implies
         // that the next day-of-week is in the next week (i.e. current week needs to
         // be advanced to next week).
-
-        // handle case#1
-        if (nextDayOfWeek > currentDayOfWeek) {
-            // set the chosen day-of-week
-            int dayDiff = nextDayOfWeek - currentDayOfWeek;
-            nextCal.add(Calendar.DAY_OF_MONTH, dayDiff);
-        } else {
-            // case#2 nextDayOfWeek < currentDayOfWeek
-            // set the chosen day-of-week
-            nextCal.set(Calendar.DAY_OF_WEEK, nextDayOfWeek);
-            // advance to next week
+        nextCal.set(Calendar.DAY_OF_WEEK, nextDayOfWeek);
+        if (nextDayOfWeek < currentDayOfWeek) {
             nextCal.add(Calendar.WEEK_OF_MONTH, 1);
         }
+
         // since we are moving to a different day-of-week (as compared to the current day-of-week),
         // we should reset the second, minute and hour appropriately, to their first possible
         // values
