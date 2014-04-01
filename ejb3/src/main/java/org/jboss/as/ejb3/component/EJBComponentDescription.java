@@ -315,9 +315,7 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                     configuration.addTimeoutViewInterceptor(new ImmediateInterceptorFactory(new ContextClassLoaderInterceptor(classLoader)), InterceptorOrder.View.TCCL_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(configuration.getNamespaceContextInterceptorFactory(), InterceptorOrder.View.JNDI_NAMESPACE_INTERCEPTOR);
                     configuration.addTimeoutViewInterceptor(CurrentInvocationContextInterceptor.FACTORY, InterceptorOrder.View.INVOCATION_CONTEXT_INTERCEPTOR);
-                    if (isSecurityEnabled()) {
-                        configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(true), InterceptorOrder.View.SECURITY_CONTEXT);
-                    }
+                    configuration.addTimeoutViewInterceptor(new SecurityContextInterceptorFactory(hasBeanLevelSecurityMetadata()), InterceptorOrder.View.SECURITY_CONTEXT);
                     for (final Method method : configuration.getClassIndex().getClassMethods()) {
                         configuration.addTimeoutViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(method)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     }
@@ -746,12 +744,39 @@ public abstract class EJBComponentDescription extends ComponentDescription {
 
 
     /**
-     * Returns true if this bean is secured. Else returns false.
+     * Returns true if this component description has any security metadata configured at the EJB level.
+     * Else returns false. Note that this method does *not* consider method level security metadata.
      *
+     * @param ejbComponentDescription The EJB component description
      * @return
      */
-    public boolean isSecurityEnabled() {
-        return this.securityDomain != null;
+    public boolean hasBeanLevelSecurityMetadata() {
+     // if an explicit security-domain is present, then we consider it the bean to be processed by security interceptors
+        if (securityDomain != null) {
+            return true;
+        }
+        // if a run-as is present, then we consider it the bean to be processed by security interceptors
+        if (runAsRole != null) {
+            return true;
+        }
+        // if a run-as-principal is present, then we consider it the bean to be processed by security interceptors
+        if (runAsPrincipal != null) {
+            return true;
+        }
+        // if security roles are configured then we consider the bean to be processed by security interceptors
+        if (securityRoles != null && !securityRoles.isEmpty()) {
+            return true;
+        }
+        // if security role links are configured then we consider the bean to be processed by security interceptors
+        if (securityRoleLinks != null && !securityRoleLinks.isEmpty()) {
+            return true;
+        }
+        // if declared roles are configured then we consider the bean to be processed by security interceptors
+        if (declaredRoles != null && !declaredRoles.isEmpty()) {
+            return true;
+        }
+        // no security metadata at bean level
+        return false;
     }
 
     private static class Ejb2ViewTypeConfigurator implements ViewConfigurator {
