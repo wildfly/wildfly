@@ -64,6 +64,8 @@
                                 <goals><goal>run</goal></goals>
                                 <configuration>
                                     <target>
+                                        <property name="node0" value="${node0}"/>
+                                        <property name="node1" value="${node1}"/>
                                         <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/picketlink-build.xml">
                                             <target name="build-picketlink"/>
                                         </ant>
