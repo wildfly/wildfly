@@ -48,7 +48,7 @@ class PatchableTargetsArtifact extends AbstractArtifact<PatchingXmlArtifact.XmlA
 
     @Override
     public boolean process(PatchingXmlArtifact.XmlArtifactState<Patch> parent, PatchingArtifactProcessor processor) {
-        final InstalledIdentity identity = processor.getValidationContext().getCurrentPatchIdentity();
+        final InstalledIdentity identity = processor.getValidationContext().getInstalledIdentity();
         final Patch patch = parent.getPatch();
         if (Constants.BASE.equals(patch.getPatchId())) {
             return true;

@@ -29,6 +29,9 @@ import org.jboss.as.patching.installation.InstalledIdentity;
  */
 class BasicArtifactProcessor implements PatchingArtifactProcessor {
 
+    private InstalledIdentity currentIdentity;
+    private InstalledIdentity next;
+
     private final PatchHistoryValidations.PatchingArtifactStateHandlers handlers;
     private final PatchingArtifactValidationContext context;
 
@@ -42,8 +45,6 @@ class BasicArtifactProcessor implements PatchingArtifactProcessor {
         assert handlers != null;
         this.context = new PatchingArtifactValidationContext() {
 
-            private InstalledIdentity currentIdentity = installedIdentity;
-
             @Override
             public PatchingValidationErrorHandler getErrorHandler() {
                 if (current.context != null) {
@@ -53,24 +54,21 @@ class BasicArtifactProcessor implements PatchingArtifactProcessor {
             }
 
             @Override
-            public InstalledIdentity getOriginalIdentity() {
-                return installedIdentity;
+            public InstalledIdentity getInstalledIdentity() {
+                return currentIdentity;
             }
 
             @Override
             public void setCurrentPatchIdentity(InstalledIdentity currentPatchIdentity) {
-                this.currentIdentity = currentPatchIdentity;
                 if(currentPatchIdentity == null) {
                     throw new IllegalArgumentException();
                 }
+                next = currentPatchIdentity;
             }
 
-            @Override
-            public InstalledIdentity getCurrentPatchIdentity() {
-                return currentIdentity;
-            }
         };
         this.handlers = handlers;
+        currentIdentity = next = installedIdentity;
     }
 
     protected <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> boolean processRoot(PatchingArtifact<P, S> artifact, S state, PatchingValidationErrorHandler context) {
@@ -79,6 +77,8 @@ class BasicArtifactProcessor implements PatchingArtifactProcessor {
         try {
             return doProcess(artifact, state);
         } finally {
+            // Swap identity for the next patch-id
+            currentIdentity = next;
             current = null;
         }
     }
