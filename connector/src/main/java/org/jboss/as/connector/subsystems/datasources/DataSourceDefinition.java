@@ -175,7 +175,13 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                         CONNECTABLE
                 )
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
+                .end()
+                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
                 .end();
+
     }
 
     static void registerTransformers111(ResourceTransformationDescriptionBuilder parentBuilder) {
@@ -202,6 +208,11 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                 //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
                 //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
+                .end()
+                //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
                 .end();
     }
 
@@ -229,7 +240,13 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                                 //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
                 //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
+                .end()
+                //We're rejecting operations when statistics-enabled=false, so let them true in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
                 .end();
+
     }
 
 
@@ -251,7 +268,14 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
                         //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
                         return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
                     }
-                }, STATISTICS_ENABLED).end();
+                }, STATISTICS_ENABLED)
+                .end()
+                //We're rejecting operations when statistics-enabled=false, so let them true in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
+                .end();
+
 
     }
 

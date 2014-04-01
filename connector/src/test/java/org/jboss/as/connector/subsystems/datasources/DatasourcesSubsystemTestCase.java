@@ -21,6 +21,8 @@
 */
 package org.jboss.as.connector.subsystems.datasources;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -31,13 +33,18 @@ import java.util.List;
 import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.transform.OperationTransformer.TransformedOperation;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.AttributesPathAddressConfig;
 import org.jboss.as.model.test.FailedOperationTransformationConfig.ChainedConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.model.test.OperationFixer;
 import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -108,12 +115,12 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
     @Test
     public void testTransformerAS712() throws Exception {
-        testRejectTransformers1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_2_FINAL);
+        testRejectTransformers1_1_0("datasources-full-expression110.xml", ModelTestControllerVersion.V7_1_2_FINAL);
     }
 
     @Test
     public void testTransformerAS713() throws Exception {
-        testRejectTransformers1_1_0("datasources-full110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
+        testRejectTransformers1_1_0("datasources-full-expression110.xml", ModelTestControllerVersion.V7_1_3_FINAL);
     }
 
 
@@ -129,13 +136,13 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
     @Test
     public void testTransformersEAP610() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testTransformer1_1_2("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_1_0);
+        testTransformer1_1_2("datasources-full110.xml", ModelTestControllerVersion.EAP_6_1_0);
     }
 
     @Test
     public void testTransformersEAP611() throws Exception {
         ignoreThisTestIfEAPRepositoryIsNotReachable();
-        testTransformer1_1_2("datasources-full-expression110.xml", ModelTestControllerVersion.EAP_6_1_1);
+        testTransformer1_1_2("datasources-full110.xml", ModelTestControllerVersion.EAP_6_1_1);
     }
 
 
@@ -156,11 +163,6 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .setSubsystemXmlResource(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null,controllerVersion,  modelVersion)
-                  .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
-                  .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
-                  .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
-                  .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
@@ -170,12 +172,10 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                     public ModelNode fixModel(ModelNode modelNode) {
                         //Replace the value used in the xml
                         modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.JTA.getName());
-                        //modelNode.get(Constants.XA_DATASOURCE).get("complexXaDs_Pool").remove(Constants.STATISTICS_ENABLED.getName());
-                        modelNode.get(Constants.DATA_SOURCE, "complexDs_Pool", Constants.STATISTICS_ENABLED.getName()).set(true);
                         return modelNode;
 
                     }
-                });
+                }, REVERSE_CONTROLLER);
 
         KernelServices mainServices = builder.build();
         Assert.assertTrue(mainServices.isSuccessfulBoot());
@@ -184,6 +184,11 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(legacyServices);
 
         checkSubsystemModelTransformation(mainServices, modelVersion, XA_JTA_MODEL_FIXER);
+
+        ModelNode enable = Util.createEmptyOperation("enable", PathAddress.pathAddress(Constants.XA_DATASOURCE, "complexXaDs_Pool"));
+        TransformedOperation transformed = mainServices.transformOperation(modelVersion, enable);
+        Assert.assertFalse(transformed.getFailureDescription(), transformed.rejectOperation(SUCCESS));
+
     }
 
     private void testTransformer1_1_2(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
@@ -196,7 +201,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null,controllerVersion,  modelVersion)
                   .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                   .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
-                  .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null)
+                  .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, null, REVERSE_CONTROLLER)
                   .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
 
         KernelServices mainServices = builder.build();
@@ -260,6 +265,10 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE), FAILED_TRANSFORMER_1_1_0)
                 .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), FAILED_TRANSFORMER_1_1_0)
         );
+
+        checkCanEnableAndDisable(mainServices, modelVersion,
+                PathAddress.pathAddress(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE)),
+                PathAddress.pathAddress(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE)));
     }
 
     public void testRejectTransformers1_1_1(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
@@ -285,6 +294,10 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),FAILED_TRANSFORMER_1_1_1)
                 .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), FAILED_TRANSFORMER_1_1_1)
         );
+
+        checkCanEnableAndDisable(mainServices, modelVersion,
+                PathAddress.pathAddress(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE)),
+                PathAddress.pathAddress(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE)));
     }
 
     public void testRejectTransformers1_2_0(String subsystemXml, ModelTestControllerVersion controllerVersion) throws Exception {
@@ -310,14 +323,60 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                 .addFailedAttribute(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE),FAILED_TRANSFORMER_1_2_0)
                 .addFailedAttribute(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE), FAILED_TRANSFORMER_1_2_0)
         );
+
+        checkCanEnableAndDisable(mainServices, modelVersion,
+                PathAddress.pathAddress(subsystemAddress.append(DataSourceDefinition.PATH_DATASOURCE)),
+                PathAddress.pathAddress(subsystemAddress.append(XaDataSourceDefinition.PATH_XA_DATASOURCE)));
     }
 
+    /**
+     * For the reverse controller checks, the 'working' tests are booted with statistics-enabled="true" (anything else gets rejected).
+     * Since statistics-enabled isn't in the legacy model, it is removed from the boot ops. In the current model the default is true.
+     * So correct the relevant add operations to include statistics-enabled="true" again for the model comparison to work.
+     *
+     */
+    private static final OperationFixer REVERSE_CONTROLLER = new OperationFixer() {
+		@Override
+		public ModelNode fixOperation(ModelNode operation) {
+			if (operation.get(OP).asString().equals(ModelDescriptionConstants.ADD)){
+				PathAddress addr = PathAddress.pathAddress(operation.get(OP_ADDR));
+				if (addr.size() == 2 && addr.getElement(0).getKey().equals(ModelDescriptionConstants.SUBSYSTEM)){
+					String type = addr.getElement(1).getKey();
+					if (type.equals(DataSourceDefinition.PATH_DATASOURCE.getKey()) || type.equals(XaDataSourceDefinition.PATH_XA_DATASOURCE.getKey())){
+						operation.get(Constants.STATISTICS_ENABLED.getName()).set(true);
+						return operation;
+					}
+				}
+			}
+			return operation;
+		}
+	};
 
     private static FailedOperationTransformationConfig.ChainedConfig FAILED_TRANSFORMER_1_1_0 =
             FailedOperationTransformationConfig.ChainedConfig.createBuilder(ALL_DS_ATTRIBUTES_REJECTED_1_1_0)
                     .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.DATASOURCE_PROPERTIES_ATTRIBUTES))
                     .addConfig(new SetToTrue(Constants.STATISTICS_ENABLED)).
                     build();
+
+    private void checkCanEnableAndDisable(KernelServices services, ModelVersion modelVersion, PathAddress...pathAddresses) throws OperationFailedException {
+        final ModelNode success = new ModelNode();
+        success.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
+        success.get(ModelDescriptionConstants.RESULT);
+        success.protect();
+
+        for (PathAddress address : pathAddresses) {
+            ModelNode enable = Util.createEmptyOperation("enable", address);
+            TransformedOperation transformedEnable = services.transformOperation(modelVersion, enable);
+            Assert.assertNotNull(transformedEnable.getTransformedOperation());
+            Assert.assertFalse(transformedEnable.getFailureDescription(), transformedEnable.rejectOperation(success));
+
+            ModelNode disable = Util.createEmptyOperation("disable", address);
+            TransformedOperation transformedDisable = services.transformOperation(modelVersion, disable);
+            Assert.assertNotNull(transformedDisable.getTransformedOperation());
+            Assert.assertFalse(transformedDisable.getFailureDescription(), transformedDisable.rejectOperation(success));
+        }
+
+    }
 
 
     private static class NonWritableChainedConfig extends FailedOperationTransformationConfig.ChainedConfig {
@@ -420,6 +479,19 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
         }
 
         @Override
+		public boolean expectFailed(ModelNode operation) {
+        	//Override the AttributesPathAddressConfig.expectFailed() method to totally turn off checking for these methods
+        	//The issue is that statistics-enabled must be true, however :enable and :disable don't have this attribute,
+        	//and the checkValue method does not have access to the operation name
+
+        	String name = operation.get(OP).asString();
+        	if (name.equals("enable") || name.equals("disable")) {
+        		return false;
+        	}
+			return super.expectFailed(operation);
+		}
+
+		@Override
         protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
             //Fix if undefined or false
             return !attribute.isDefined() || !attribute.asBoolean();
@@ -435,4 +507,14 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
             return true;
         }
     }
+
+    private static final ModelNode SUCCESS;
+    static
+    {
+        SUCCESS = new ModelNode();
+        SUCCESS.get(ModelDescriptionConstants.OUTCOME).set(ModelDescriptionConstants.SUCCESS);
+        SUCCESS.get(ModelDescriptionConstants.RESULT);
+        SUCCESS.protect();
+    }
+
 }

@@ -24,7 +24,6 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
@@ -169,6 +168,11 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
                     }
                 }, STATISTICS_ENABLED).addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
+                .end()
+                //We're rejecting operations when statistics-enabled=false, so let them true in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
                 .end();
     }
 
@@ -194,7 +198,13 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                     }
                 }, STATISTICS_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
+                .end()
+                //We're rejecting operations when statistics-enabled=false, so let them true in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
                 .end();
+
     }
 
     static void registerTransformers112(ResourceTransformationDescriptionBuilder parentBuilder) {
@@ -219,7 +229,13 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                     }
                 }, STATISTICS_ENABLED)
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.ENABLED)
+                .end()
+                //We're rejecting operations when statistics-enabled=false, so let them true in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
                 .end();
+
     }
 
     static void registerTransformers120(ResourceTransformationDescriptionBuilder parentBuilder) {
@@ -239,7 +255,13 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
                         return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
                     }
-                }, STATISTICS_ENABLED).end();
+                }, STATISTICS_ENABLED).end()
+                //We're rejecting operations when statistics-enabled=false, so let them true in the enable/disable ops which do not use that attribute
+                .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
+                .end()
+                .addOperationTransformationOverride(DATASOURCE_DISABLE.getName())
+                .end();
+
     }
 
 }
