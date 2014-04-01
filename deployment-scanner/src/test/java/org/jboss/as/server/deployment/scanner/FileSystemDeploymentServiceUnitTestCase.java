@@ -966,6 +966,51 @@ public class FileSystemDeploymentServiceUnitTestCase {
         assertFalse(Arrays.equals(newbytes, bytes));
     }
 
+
+    @Test
+    public void testRedeployUndeployedEnabled() throws Exception {
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File undeployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] bytes = ts.controller.deployed.get("foo.war");
+
+        assertTrue(deployed.delete());
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertTrue(undeployed.exists());
+        assertEquals(0, ts.controller.added.size());
+        assertEquals(0, ts.controller.deployed.size());
+
+        ts.controller.added.put("foo.war", bytes);
+        ts.controller.deployed.put("foo.war", bytes);
+        //as .undeployed timestamp is after the war file timestamp, only the re-enabling of the deployment removes it
+
+        testSupport.createZip(war, 0, false, false, false, false);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] newbytes = ts.controller.deployed.get("foo.war");
+        assertFalse(Arrays.equals(newbytes, bytes));
+    }
+
     @Test
     public void testDirectory() throws Exception {
         final File war = createDirectory("foo.war", "index.html");
