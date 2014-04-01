@@ -81,7 +81,7 @@
         <!-- A configuration using a LDAP-based identity store. -->
         <partition-manager name="ldap.idm" jndi-name="picketlink/LDAPBasedPartitionManager">
             <identity-configuration name="ldap.store">
-                <ldap-store url="ldap://localhost:10389" bind-dn="uid=admin,ou=system" bind-credential="secret" base-dn-suffix="dc=jboss,dc=org">
+                <ldap-store url="ldap://${jboss.bind.address:127.0.0.1}:10389" bind-dn="uid=admin,ou=system" bind-credential="secret" base-dn-suffix="dc=jboss,dc=org">
                     <supported-types supports-all="false">
                         <supported-type code="IdentityType"/>
                         <supported-type code="Relationship"/>
@@ -122,7 +122,7 @@
                         <supported-type class-name="org.picketlink.idm.model.Relationship"/>
                     </supported-types>
                 </jpa-store>
-                <ldap-store url="ldap://localhost:10389" bind-dn="uid=admin,ou=system" bind-credential="secret" base-dn-suffix="dc=jboss,dc=org" support-attribute="false" support-credential="true">
+                <ldap-store url="ldap://${jboss.bind.address:127.0.0.1}:10389" bind-dn="uid=admin,ou=system" bind-credential="secret" base-dn-suffix="dc=jboss,dc=org" support-attribute="false" support-credential="true">
                     <supported-types supports-all="false">
                         <supported-type code="IdentityType"/>
                     </supported-types>

@@ -56,6 +56,26 @@
 
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-picketlink.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <property name="node0" value="${node0}"/>
+                                        <property name="node1" value="${node1}"/>
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/picketlink-build.xml">
+                                            <target name="build-picketlink"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                     <!--
                        Surefire test executions
                     -->
