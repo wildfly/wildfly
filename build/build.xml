@@ -1502,7 +1502,7 @@
         </module-def>
 
         <module-def name="nu.xom">
-            <maven-resource group="xom" artifact="xom"/>
+            <maven-resource group="com.io7m.xom" artifact="xom"/>
         </module-def>
 
         <module-def name="sun.jdk"/>
