@@ -168,45 +168,26 @@ public class TransactionExtension implements Extension {
     private static void registerTransformers(final SubsystemRegistration subsystem) {
 
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        final ResourceTransformationDescriptionBuilder subsystemRoot120 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         //Versions < 1.3.0 assume 'true' for the hornetq-store-enable-async-io attribute (in which case it will look for the native libs
         //and enable async io if found. The default value if not defined is 'false' though. This should only be rejected if use-hornetq-store is not false.
-        subsystemRoot120.getAttributeBuilder()
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(false)),
-                        TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID)
-                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
-                        TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                // Legacy name for enabling/disabling statistics
-                .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS);
-
-
-        final ModelVersion version120 = ModelVersion.create(1, 2, 0);
-        final TransformationDescription description120 = subsystemRoot120.build();
-        TransformationDescription.Tools.register(description120, subsystem, version120);
-
         subsystemRoot.getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                .setDiscard(UnneededJDBCStoreChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.attributes_1_2)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, TransactionSubsystemRootResourceDefinition.attributes_1_2)
-                .setValueConverter(new AttributeConverter() {
-                    @Override
-                    public void convertOperationParameter(PathAddress address, String attributeName, ModelNode attributeValue, ModelNode operation, TransformationContext context) {
-                        // nothing here
-                    }
-
-                    @Override
-                    public void convertResourceAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-                        if (!attributeValue.isDefined()) {
-                            attributeValue.set(false);
-                        }
-                    }
-                }, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID)
                 // Legacy name for enabling/disabling statistics
-                .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS);
+                .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS)
+                //Before 2.0.0 this value was not nillable in practise. Set it to 'false' if undefined.
+                .setValueConverter(ProcessIdUuidConverter.INSTANCE, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID);
+
+
+        final ModelVersion version120 = ModelVersion.create(1, 2, 0);
+        final TransformationDescription description120 = subsystemRoot.build();
+        TransformationDescription.Tools.register(description120, subsystem, version120);
+
+        subsystemRoot.getAttributeBuilder()
+                .setDiscard(UnneededJDBCStoreChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.attributes_1_2)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TransactionSubsystemRootResourceDefinition.attributes_1_2);
 
         // Transformations to the 1.1.1 Model:
         // 1) Remove JDBC store attributes if not used
@@ -232,8 +213,6 @@ public class TransactionExtension implements Extension {
         final TransformationDescription description110 = subsystemRoot.build();
         TransformationDescription.Tools.register(description110, subsystem, version110);
     }
-
-
 
     private static class UnneededJDBCStoreChecker implements DiscardAttributeChecker {
 
@@ -320,6 +299,17 @@ public class TransactionExtension implements Extension {
             //will not get called since we've overridden the other methods
             return false;
         }
+    }
+
+    private static class ProcessIdUuidConverter extends AttributeConverter.DefaultAttributeConverter {
+        static final ProcessIdUuidConverter INSTANCE = new ProcessIdUuidConverter();
+        @Override
+        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
+            if (!attributeValue.isDefined()){
+                attributeValue.set(false);
+            }
+        }
+
     }
 
 }
