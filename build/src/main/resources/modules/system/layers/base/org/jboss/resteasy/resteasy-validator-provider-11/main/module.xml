@@ -34,5 +34,7 @@
         <module name="org.hibernate.validator"/>
         <module name="com.fasterxml.classmate"/>
         <module name="javax.persistence.api"/>
+        <module name="org.jboss.resteasy.resteasy-cdi"/>
+        <module name="javax.enterprise.api"/>
     </dependencies>
 </module>
