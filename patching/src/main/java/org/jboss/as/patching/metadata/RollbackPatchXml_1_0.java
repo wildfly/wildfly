@@ -177,7 +177,8 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
             }
         }
         //
-        final WrappedIdentity installation = new WrappedIdentity(identity);
+        final DirectoryStructure structure = identity.getDirectoryStructure();
+        final WrappedIdentity installation = new WrappedIdentity(identity, structure);
         for (final Map.Entry<String, LayerInfo> entry : layers.entrySet()) {
             installation.putLayer(entry.getKey(), entry.getValue());
         }
@@ -267,7 +268,7 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
     static class WrappedIdentity extends InstalledIdentityImpl {
 
         final PatchableTarget identity;
-        WrappedIdentity(final PatchableTarget identity) {
+        WrappedIdentity(final PatchableTarget identity, final DirectoryStructure structure) {
             super(new org.jboss.as.patching.installation.Identity() {
 
                 @Override
@@ -287,9 +288,9 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
 
                 @Override
                 public DirectoryStructure getDirectoryStructure() {
-                    return null;
+                    return identity.getDirectoryStructure();
                 }
-            }, Collections.<String>emptyList(), null);
+            }, Collections.<String>emptyList(), structure == null ? null : structure.getInstalledImage());
             this.identity = identity;
         }
 

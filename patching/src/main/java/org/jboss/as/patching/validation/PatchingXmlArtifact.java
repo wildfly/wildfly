@@ -73,7 +73,7 @@ class PatchingXmlArtifact<E extends Patch> extends AbstractArtifact<PatchingFile
                 return true;
             }
             try {
-                final PatchMetadataResolver resolver = PatchXml.parse(xmlFile, context.getCurrentPatchIdentity());
+                final PatchMetadataResolver resolver = PatchXml.parse(xmlFile, context.getInstalledIdentity());
                 patch = artifact.resolveMetaData(resolver);
                 return true;
             } catch (Exception e) {

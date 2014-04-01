@@ -30,19 +30,20 @@ import org.jboss.as.patching.installation.InstalledIdentity;
  */
 public interface PatchingArtifactValidationContext {
 
+    /**
+     * Get the error handler.
+     *
+     * @return the error handler
+     */
     PatchingValidationErrorHandler getErrorHandler();
 
     /**
      * Get the installed identity.
-     * <p/>
-     * NOTE: this is the original identity and cannot be used as reference to the current patched state as part of
-     * processing the history
      *
      * @return the installed identity
      */
-    InstalledIdentity getOriginalIdentity();
+    InstalledIdentity getInstalledIdentity();
 
     void setCurrentPatchIdentity(InstalledIdentity currentPatchIdentity);
 
-    InstalledIdentity getCurrentPatchIdentity();
 }
