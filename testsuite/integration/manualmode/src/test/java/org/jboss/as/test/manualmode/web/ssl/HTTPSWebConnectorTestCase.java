@@ -86,7 +86,6 @@ import org.jboss.security.auth.spi.BaseCertLoginModule;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assume;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
@@ -108,7 +107,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @RunAsClient
 @Category(CommonCriteria.class)
-@Ignore("Reenable once https://bugzilla.redhat.com/show_bug.cgi?id=1071331 has been fixed")
 public class HTTPSWebConnectorTestCase {
 
     private static final String STANDARD_SOCKETS = "standard-sockets";
@@ -133,9 +131,6 @@ public class HTTPSWebConnectorTestCase {
     private static final String HTTPS_NAME_VERIFY_FALSE = "https-verify-false";
     private static final String HTTPS_NAME_VERIFY_WANT = "https-verify-want";
     private static final String HTTPS_NAME_VERIFY_TRUE = "https-verify-true";
-    private static final String HTTPS_NAME_VERIFY_NOT_REQUESTED = "https-verify-not-requested";
-    private static final String HTTPS_NAME_VERIFY_REQUESTED = "https-verify-requested";
-    private static final String HTTPS_NAME_VERIFY_REQUIRED = "https-verify-required";
 
     private static final String APP_CONTEXT = HTTPS;
     private static final String SECURED_SERVLET_WITH_SESSION = SimpleSecuredServlet.SERVLET_PATH + "?"
@@ -316,8 +311,11 @@ public class HTTPSWebConnectorTestCase {
 
             responseBody = makeCall(unsecuredUrl, httpClientUntrusted, HttpServletResponse.SC_OK);
             assertEquals("Secured page was not reached", SimpleServlet.RESPONSE_BODY, responseBody);
-
-            makeCall(securedUrl, httpClientUntrusted, HttpServletResponse.SC_UNAUTHORIZED);
+            try {
+                makeCall(securedUrl, httpClientUntrusted, HttpServletResponse.SC_UNAUTHORIZED);
+            } catch (java.net.SocketException se) {
+                // OK - on windows usually fails with this one
+            }
         } finally {
             httpClient.getConnectionManager().shutdown();
             httpClientUntrusted.getConnectionManager().shutdown();
