@@ -33,6 +33,7 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.config.SecurityDomain;
 import org.jboss.as.test.integration.security.common.config.SecurityModule;
+import org.jboss.logging.Logger;
 import org.junit.Test;
 import org.picketlink.identity.federation.bindings.jboss.auth.SAML2LoginModule;
 
@@ -61,6 +62,9 @@ public abstract class AbstractBasicFederationTestCase {
     @ArquillianResource
     @OperateOnDeployment("service-provider-2")
     private URL serviceProvider2;
+    
+    public static final String LOGOUT_URL = "?GLO=true"; 
+    private static Logger LOGGER = Logger.getLogger(AbstractBasicFederationTestCase.class);
 
     @Test
     public void testFederation() throws Exception {
@@ -88,8 +92,21 @@ public abstract class AbstractBasicFederationTestCase {
         response = conversation.getResponse(request);
 
         assertTrue(response.getText().contains("Welcome to " + formatContextPath(this.serviceProvider2)));
-    }
+        
+        // global logout from serviceProvider2 
+        response = conversation.getResponse(formatUrl(this.serviceProvider2) + LOGOUT_URL);
+        LOGGER.debug("GLO response(" + this.serviceProvider2 +
+                "):" + response.getText());
+        assertTrue("cannot reach logged out page", response.getText().contains("Logout"));
 
+        // check if GLO was successful, so serviceProvider1 is requesting IDP login form
+        request = new GetMethodWebRequest(formatUrl(this.serviceProvider1));
+        response = conversation.getResponse(request);
+        assertTrue("cannot reach IDP", response.getURL().getPath().startsWith("/idp"));
+        assertEquals("no form present on supposed IDP login page", 1, response.getForms().length);
+        
+    }
+    
     private String formatUrl(URL url) {
         String stringUrl = url.toString();
 
