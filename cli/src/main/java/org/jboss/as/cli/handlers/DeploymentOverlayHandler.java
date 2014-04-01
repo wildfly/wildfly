@@ -48,6 +48,9 @@ import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.impl.PermittedCandidates;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.parsing.ExpressionBaseState;
+import org.jboss.as.cli.parsing.ParsingState;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.dmr.ModelNode;
@@ -216,6 +219,17 @@ public class DeploymentOverlayHandler extends BatchModeCommandHandler {//Command
                     return super.canAppearNext(ctx);
                 }
                 return false;
+            }
+            @Override
+            protected ParsingState initParsingState() {
+                final ExpressionBaseState state = new ExpressionBaseState("EXPR", true, false);
+                if(Util.isWindows()) {
+                    // to not require escaping FS name separator
+                    state.setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_OFF);
+                } else {
+                    state.setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+                }
+                return state;
             }
         };
         content.addRequiredPreceding(name);
