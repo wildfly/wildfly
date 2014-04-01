@@ -94,17 +94,6 @@ public class DatasourceTestCase {
     public void testDatasourceConnection() throws IOException {
 
         // AS7-6062 -- validate that  ExampleDS works on a domain server
-        final ModelNode poolStats = MAIN_RUNNING_SERVER_DS_ADDRESS.clone();
-        poolStats.add("statistics", "pool");
-        poolStats.protect();
-        final ModelNode operation = new ModelNode();
-        operation.get(OP).set("write-attribute");
-        operation.get(OP_ADDR).set(poolStats);
-        operation.get("name").set("statistics-enabled");
-        operation.get("value").set(true);
-
-
-        masterClient.execute(operation);
         ModelNode response = masterClient.execute(getEmptyOperation("test-connection-in-pool", MAIN_RUNNING_SERVER_DS_ADDRESS));
         validateResponse(response);
     }

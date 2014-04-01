@@ -41,13 +41,8 @@ import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.junit.Assert.assertTrue;
 
 
@@ -104,13 +99,6 @@ public class RaTestConnectionTestCase extends ContainerResourceMgmtTestBase {
     public void testConnection() throws Exception {
         ModelNode testAddress = address.clone();
         testAddress.add("connection-definitions", "Pool1");
-        ModelNode statNode = new ModelNode();
-        statNode.add(DEPLOYMENT, testAddress.get(1).get("resource-adapter").asString());
-        statNode.add(SUBSYSTEM, "resource-adapters");
-        statNode.add("statistics", "statistics");
-        statNode.add("connection-definitions", "java:jboss/exported/name1");
-        writeAttribute(statNode, "statistics-enabled", "true");
-
         ModelNode op = new ModelNode();
         op.get(OP).set("test-connection-in-pool");
         op.get(OP_ADDR).set(testAddress);
@@ -126,15 +114,5 @@ public class RaTestConnectionTestCase extends ContainerResourceMgmtTestBase {
         op.get(OP).set("flush-idle-connection-in-pool");
         op.get(OP_ADDR).set(testAddress);
         executeOperation(op);
-    }
-
-
-    public ModelNode writeAttribute(ModelNode address, String attributeName, String attributeValue) throws Exception {
-        ModelNode op = new ModelNode();
-        op.get(OP).set(WRITE_ATTRIBUTE_OPERATION);
-        op.get(NAME).set(attributeName);
-        op.get(VALUE).set(attributeValue);
-        op.get(OP_ADDR).set(address);
-        return executeOperation(op);
     }
 }
