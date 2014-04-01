@@ -35,6 +35,7 @@
     <domain-controller>
        <remote host="${jboss.test.host.master.address}" port="${jboss.domain.master.port:9999}" security-realm="ManagementRealm">
            <ignored-resources type="profile">
+                <instance name="full-ha"/>
                 <instance name="full-ha-6.0.x"/>
             </ignored-resources>
        </remote>       
