@@ -29,7 +29,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.runner.RunWith;
 
 import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.identityProviderWithKeyStore;
-import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.serviceProvider;
 import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.serviceProviderWithKeyStore;
 
 /**
