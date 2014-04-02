@@ -24,7 +24,6 @@ package org.jboss.as.domain.management.security;
 
 import org.jboss.as.controller.descriptions.common.ControllerResolver;
 import org.jboss.as.domain.management.ModelDescriptionConstants;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -34,6 +33,7 @@ import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
@@ -56,7 +56,13 @@ public class LocalAuthenticationResourceDefinition extends SimpleResourceDefinit
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).build();
 
-    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { DEFAULT_USER, ALLOWED_USERS };
+    public static final SimpleAttributeDefinition SKIP_GROUP_LOADING = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.SKIP_GROUP_LOADING, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .build();
+
+    public static final AttributeDefinition[] ATTRIBUTE_DEFINITIONS = { DEFAULT_USER, ALLOWED_USERS, SKIP_GROUP_LOADING };
 
     public LocalAuthenticationResourceDefinition() {
         super(PathElement.pathElement(ModelDescriptionConstants.AUTHENTICATION, ModelDescriptionConstants.LOCAL),
