@@ -16,9 +16,6 @@ import java.util.Random;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -34,7 +31,6 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logging.Logger;
 import org.jboss.threads.AsyncFuture;
-import org.jboss.threads.AsyncFutureTask;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -882,6 +878,50 @@ public class FileSystemDeploymentServiceUnitTestCase {
         // new content will be ignored unless it has a timestamp newer than .undeployed
         // so, rather than sleeping...
         undeployed.setLastModified(0);
+
+        testSupport.createZip(war, 0, false, false, false, false);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertFalse(undeployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] newbytes = ts.controller.deployed.get("foo.war");
+        assertFalse(Arrays.equals(newbytes, bytes));
+    }
+
+    @Test
+    public void testRedeployUndeployedEnabled() throws Exception {
+        File war = createFile("foo.war");
+        File dodeploy = createFile("foo.war" + FileSystemDeploymentService.DO_DEPLOY);
+        File deployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.DEPLOYED);
+        File undeployed = new File(tmpDir, "foo.war" + FileSystemDeploymentService.UNDEPLOYED);
+        TesteeSet ts = createTestee();
+        ts.testee.setAutoDeployZippedContent(true);
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertTrue(deployed.exists());
+        assertEquals(1, ts.controller.added.size());
+        assertEquals(1, ts.controller.deployed.size());
+        byte[] bytes = ts.controller.deployed.get("foo.war");
+
+        assertTrue(deployed.delete());
+        ts.controller.addCompositeSuccessResponse(1);
+        ts.testee.scan();
+        assertTrue(war.exists());
+        assertFalse(dodeploy.exists());
+        assertFalse(deployed.exists());
+        assertTrue(undeployed.exists());
+        assertEquals(0, ts.controller.added.size());
+        assertEquals(0, ts.controller.deployed.size());
+
+        ts.controller.added.put("foo.war", bytes);
+        ts.controller.deployed.put("foo.war", bytes);
+        //as .undeployed timestamp is after the war file timestamp, only the re-enabling of the deployment removes it
 
         testSupport.createZip(war, 0, false, false, false, false);
         ts.controller.addCompositeSuccessResponse(1);
