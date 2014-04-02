@@ -1262,7 +1262,17 @@ public class ManagementXml {
                     if (localFound) {
                         throw unexpectedElement(reader);
                     }
-                    parseLocalAuthentication(reader, expectedNs, realmAddress, list);
+
+                    switch (expectedNs) {
+                        case DOMAIN_1_3:
+                        case DOMAIN_1_4:
+                        case DOMAIN_1_5:
+                            parseLocalAuthentication_1_3(reader, expectedNs, realmAddress, list);
+                            break;
+                        default:
+                            parseLocalAuthentication_1_6(reader, expectedNs, realmAddress, list);
+                    }
+
                     localFound = true;
                     break;
                 }
@@ -1524,7 +1534,7 @@ public class ManagementXml {
         list.add(local);
     }
 
-    private static void parseLocalAuthentication(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+    private static void parseLocalAuthentication_1_3(final XMLExtendedStreamReader reader, final Namespace expectedNs,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, LOCAL);
         ModelNode local = Util.getEmptyOperation(ADD, addr);
@@ -1550,6 +1560,47 @@ public class ManagementXml {
                         break;
                     case ALLOWED_USERS:
                         LocalAuthenticationResourceDefinition.ALLOWED_USERS.parseAndSetParameter(value, local, reader);
+                        break;
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+        // All attributes are optional.
+
+        requireNoContent(reader);
+    }
+
+    private static void parseLocalAuthentication_1_6(final XMLExtendedStreamReader reader, final Namespace expectedNs,
+            final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
+        ModelNode addr = realmAddress.clone().add(AUTHENTICATION, LOCAL);
+        ModelNode local = Util.getEmptyOperation(ADD, addr);
+        list.add(local);
+
+        final int count = reader.getAttributeCount();
+        Set<Attribute> attributesFound = new HashSet<Attribute>(count);
+
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                if (attributesFound.contains(attribute)) {
+                    throw unexpectedAttribute(reader, i);
+                }
+                attributesFound.add(attribute);
+
+                switch (attribute) {
+                    case DEFAULT_USER:
+                        LocalAuthenticationResourceDefinition.DEFAULT_USER.parseAndSetParameter(value, local, reader);
+                        break;
+                    case ALLOWED_USERS:
+                        LocalAuthenticationResourceDefinition.ALLOWED_USERS.parseAndSetParameter(value, local, reader);
+                        break;
+                    case SKIP_GROUP_LOADING:
+                        LocalAuthenticationResourceDefinition.SKIP_GROUP_LOADING.parseAndSetParameter(value, local, reader);
                         break;
                     default: {
                         throw unexpectedAttribute(reader, i);
@@ -3074,6 +3125,7 @@ public class ManagementXml {
             writer.writeStartElement(Element.LOCAL.getLocalName());
             LocalAuthenticationResourceDefinition.DEFAULT_USER.marshallAsAttribute(local, writer);
             LocalAuthenticationResourceDefinition.ALLOWED_USERS.marshallAsAttribute(local, writer);
+            LocalAuthenticationResourceDefinition.SKIP_GROUP_LOADING.marshallAsAttribute(local, writer);
             writer.writeEndElement();
         }
 

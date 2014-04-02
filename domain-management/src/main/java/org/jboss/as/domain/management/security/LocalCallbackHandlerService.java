@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.LOCAL_DEFAULT_USER;
+import static org.jboss.as.domain.management.security.SecurityRealmService.SKIP_GROUP_LOADING_KEY;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -53,7 +54,7 @@ import org.jboss.msc.service.StopContext;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-class LocalCallbackHandlerService implements Service<CallbackHandlerService>, CallbackHandlerService, CallbackHandler {
+class LocalCallbackHandlerService implements Service<CallbackHandlerService>, CallbackHandlerService {
 
     private static final String SERVICE_SUFFIX = "local";
 
@@ -61,10 +62,12 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
     private final String allowedUsers;
     private boolean allowAll;
     private final Set<String> allowedUsersSet = new HashSet<String>();
+    private final boolean skipGroupLoading;
 
-    LocalCallbackHandlerService(final String defaultUser, final String allowedUsers) {
+    LocalCallbackHandlerService(final String defaultUser, final String allowedUsers, final boolean skipGroupLoading) {
         this.defaultUser = defaultUser;
         this.allowedUsers = allowedUsers;
+        this.skipGroupLoading = skipGroupLoading;
     }
 
     /*
@@ -92,7 +95,7 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
     }
 
     public CallbackHandler getCallbackHandler(Map<String, Object> sharedState) {
-        return this;
+        return new LocalCallbackHander(sharedState);
     }
 
     /*
@@ -129,29 +132,42 @@ class LocalCallbackHandlerService implements Service<CallbackHandlerService>, Ca
      * CallbackHandler Method
      */
 
-    /**
-     * @see javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
-     */
-    public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
-        for (Callback current : callbacks) {
-            if (current instanceof NameCallback) {
-                NameCallback ncb = (NameCallback) current;
-                String userName = ncb.getDefaultName();
-                if ((allowAll || allowedUsersSet.contains(userName)) == false) {
-                    SECURITY_LOGGER.tracef("Username '%s' is not permitted for local authentication.", userName);
-                    throw MESSAGES.invalidLocalUser(userName);
+    private final class LocalCallbackHander implements CallbackHandler {
+
+        private final Map<String, Object> sharedState;
+
+        private LocalCallbackHander(final Map<String, Object> sharedState) {
+            this.sharedState = sharedState;
+        }
+
+        /**
+         * @see javax.security.auth.callback.CallbackHandler#handle(javax.security.auth.callback.Callback[])
+         */
+        public void handle(Callback[] callbacks) throws IOException, UnsupportedCallbackException {
+            for (Callback current : callbacks) {
+                if (current instanceof NameCallback) {
+                    NameCallback ncb = (NameCallback) current;
+                    String userName = ncb.getDefaultName();
+                    if ((allowAll || allowedUsersSet.contains(userName)) == false) {
+                        SECURITY_LOGGER.tracef("Username '%s' is not permitted for local authentication.", userName);
+                        throw MESSAGES.invalidLocalUser(userName);
+                    }
+                } else if (current instanceof AuthorizeCallback) {
+                    AuthorizeCallback acb = (AuthorizeCallback) current;
+                    boolean authorized = acb.getAuthenticationID().equals(acb.getAuthorizationID());
+                    if (authorized == false) {
+                        SECURITY_LOGGER.tracef(
+                                "Checking 'AuthorizeCallback', authorized=false, authenticationID=%s, authorizationID=%s.",
+                                acb.getAuthenticationID(), acb.getAuthorizationID());
+                    }
+                    acb.setAuthorized(authorized);
+
+                    if (authorized && skipGroupLoading) {
+                        sharedState.put(SKIP_GROUP_LOADING_KEY, Boolean.TRUE);
+                    }
+                } else {
+                    throw new UnsupportedCallbackException(current);
                 }
-            } else if (current instanceof AuthorizeCallback) {
-                AuthorizeCallback acb = (AuthorizeCallback) current;
-                boolean authorized = acb.getAuthenticationID().equals(acb.getAuthorizationID());
-                if (authorized == false) {
-                    SECURITY_LOGGER.tracef(
-                            "Checking 'AuthorizeCallback', authorized=false, authenticationID=%s, authorizationID=%s.",
-                            acb.getAuthenticationID(), acb.getAuthorizationID());
-                }
-                acb.setAuthorized(authorized);
-            } else {
-                throw new UnsupportedCallbackException(current);
             }
         }
     }

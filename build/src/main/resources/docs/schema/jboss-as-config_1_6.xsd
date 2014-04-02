@@ -642,6 +642,21 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="skip-group-loading" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    After authentication has occurred the username of the authenticated user is then passed
+                    to the configured authorization mechanism to load the group membership information for
+                    the authenticated user.
+
+                    As the local authenitication mechanism is a special case with an artificial identifier
+                    for the authenticated user this can cause problems during group loading where a user
+                    with the same name does not exist.
+
+                    Setting this attribute to 'false' will disable the loading of groups for the local user.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="authenticationType">
