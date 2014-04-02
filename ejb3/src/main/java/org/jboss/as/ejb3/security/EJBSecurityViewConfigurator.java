@@ -25,10 +25,8 @@ package org.jboss.as.ejb3.security;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -127,7 +125,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             }
         }
 
-        final boolean securityRequired = beanHasMethodLevelSecurityMetadata || this.hasSecurityMetaData(ejbComponentDescription);
+        final boolean securityRequired = beanHasMethodLevelSecurityMetadata || ejbComponentDescription.hasBeanLevelSecurityMetadata();
         // setup the security context interceptor
         viewConfiguration.addViewInterceptor(new SecurityContextInterceptorFactory(securityRequired), InterceptorOrder.View.SECURITY_CONTEXT);
         // now add the security interceptor if the bean has *any* security metadata applicable
@@ -212,47 +210,9 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
             // add the interceptor
             final Interceptor authorizationInterceptor = new AuthorizationInterceptor(ejbMethodSecurityMetaData, viewClassName, viewMethod, contextID);
             viewConfiguration.addViewInterceptor(viewMethod, new ImmediateInterceptorFactory(authorizationInterceptor), InterceptorOrder.View.EJB_SECURITY_AUTHORIZATION_INTERCEPTOR);
-            return true;
-        }
-        return false;
-    }
 
-    /**
-     * Returns true if the passed EJB component description has any security metadata configured at the EJB level.
-     * Else returns false. Note that this method does *not* consider method level security metadata.
-     *
-     * @param ejbComponentDescription The EJB component description
-     * @return
-     */
-    private boolean hasSecurityMetaData(final EJBComponentDescription ejbComponentDescription) {
-        // if an explicit security-domain is present, then we consider it the bean to be processed by security interceptors
-        if (ejbComponentDescription.isExplicitSecurityDomainConfigured()) {
             return true;
         }
-        // if a run-as is present, then we consider it the bean to be processed by security interceptors
-        if (ejbComponentDescription.getRunAs() != null) {
-            return true;
-        }
-        // if a run-as-principal is present, then we consider it the bean to be processed by security interceptors
-        if (ejbComponentDescription.getRunAsPrincipal() != null) {
-            return true;
-        }
-        // if security roles are configured then we consider the bean to be processed by security interceptors
-        final Collection securityRoles = ejbComponentDescription.getSecurityRoles();
-        if (securityRoles != null && !securityRoles.isEmpty()) {
-            return true;
-        }
-        // if security role links are configured then we consider the bean to be processed by security interceptors
-        final Map<String, Collection<String>> securityRoleLinks = ejbComponentDescription.getSecurityRoleLinks();
-        if (securityRoleLinks != null && !securityRoleLinks.isEmpty()) {
-            return true;
-        }
-        // if declared roles are configured then we consider the bean to be processed by security interceptors
-        final Set<String> declaredRoles = ejbComponentDescription.getDeclaredRoles();
-        if (declaredRoles != null && !declaredRoles.isEmpty()) {
-            return true;
-        }
-        // no security metadata at bean level
         return false;
     }
 }
