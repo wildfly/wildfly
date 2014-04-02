@@ -338,7 +338,9 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         String defaultUser = node.isDefined() ? node.asString() : null;
         node = LocalAuthenticationResourceDefinition.ALLOWED_USERS.resolveModelAttribute(context, local);
         String allowedUsers = node.isDefined() ? node.asString() : null;
-        LocalCallbackHandlerService localCallbackHandler = new LocalCallbackHandlerService(defaultUser, allowedUsers);
+        node = LocalAuthenticationResourceDefinition.SKIP_GROUP_LOADING.resolveModelAttribute(context, local);
+        boolean skipGroupLoading = node.asBoolean();
+        LocalCallbackHandlerService localCallbackHandler = new LocalCallbackHandlerService(defaultUser, allowedUsers, skipGroupLoading);
 
         ServiceBuilder<?> jaasBuilder = serviceTarget.addService(localServiceName, localCallbackHandler);
         final ServiceController<?> serviceController = jaasBuilder.setInitialMode(ON_DEMAND).install();
