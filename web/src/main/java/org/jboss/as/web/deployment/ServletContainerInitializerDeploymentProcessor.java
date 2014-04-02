@@ -36,6 +36,7 @@ import java.util.Set;
 
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.annotation.HandlesTypes;
+import org.apache.tomcat.websocket.server.WsSci;
 
 import org.jboss.as.ee.structure.DeploymentType;
 import org.jboss.as.ee.structure.DeploymentTypeMarker;
@@ -116,6 +117,9 @@ public class ServletContainerInitializerDeploymentProcessor implements Deploymen
                     throw MESSAGES.errorLoadingSCIFromModule(dependency.getIdentifier(), e);
                 }
             }
+        }
+        if(warMetaData.getJBossWebMetaData()!= null && warMetaData.getJBossWebMetaData().isEnableWebSockets()) {
+            scis.add(new WsSci());
         }
         // Find local ServletContainerInitializer services
         List<String> order = warMetaData.getOrder();
