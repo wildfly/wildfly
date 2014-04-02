@@ -11,7 +11,7 @@
                 </server-identities>
 
                 <authentication>
-                    <local default-user="$local" />
+                    <local default-user="$local" skip-group-loading="true"/>
                     <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir"/>
                 </authentication>
                 <authorization map-groups-to-roles="false">
@@ -20,7 +20,7 @@
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <authentication>
-                    <local default-user="$local" allowed-users="*" />
+                    <local default-user="$local" allowed-users="*" skip-group-loading="true" />
                     <properties path="application-users.properties" relative-to="jboss.domain.config.dir" />
                 </authentication>
                 <authorization>

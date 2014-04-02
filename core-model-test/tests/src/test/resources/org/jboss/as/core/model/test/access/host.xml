@@ -4,7 +4,7 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <authentication>
-                    <local default-user="$local" />
+                    <local default-user="$local" skip-group-loading="true" />
                 </authentication>
             </security-realm>
         </security-realms>
