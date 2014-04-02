@@ -245,16 +245,6 @@
                 </dependency>
                 
                 <dependency>
-					<groupId>com.redhat.gss</groupId>
-					<artifactId>redhat-access-plugin</artifactId>
-				</dependency>
-                
-				<dependency>
-					<groupId>com.redhat.gss</groupId>
-					<artifactId>redhat-support-lib-java</artifactId>
-				</dependency>
-
-                <dependency>
                     <groupId>com.sun.codemodel</groupId>
                     <artifactId>codemodel</artifactId>
                 </dependency>
@@ -274,25 +264,6 @@
                     <artifactId>istack-commons-tools</artifactId>
                 </dependency>
                 
-                <dependency>
-                    <groupId>com.sun.jersey</groupId>
-                    <artifactId>jersey-client</artifactId>
-                </dependency>
-                
-                <dependency>
-                    <groupId>com.sun.jersey</groupId>
-                    <artifactId>jersey-core</artifactId>
-                </dependency>
-                
-                <dependency>
-                    <groupId>com.sun.jersey.contribs</groupId>
-                    <artifactId>jersey-apache-client4</artifactId>
-                </dependency>
-                
-                <dependency>
-                    <groupId>com.sun.jersey.contribs</groupId>
-                    <artifactId>jersey-multipart</artifactId>
-                </dependency>
 
                 <dependency>
                     <groupId>com.sun.xml.bind</groupId>
@@ -354,11 +325,6 @@
                     <artifactId>commons-lang</artifactId>
                 </dependency>
                 
-                <dependency>
-                    <groupId>commons-net</groupId>
-                    <artifactId>commons-net</artifactId>
-                </dependency>
-
                 <dependency>
                     <groupId>commons-pool</groupId>
                     <artifactId>commons-pool</artifactId>

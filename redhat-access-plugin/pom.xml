@@ -28,6 +28,17 @@
 
 	<name>JBoss Application Server: Red Hat Access Plugin</name>
 
+    <properties>
+        <!-- 
+        	These versions are for  EAP6-13 which is not part of the distribution for 6.3.x.
+        	Once we get going with 6.4 we should remove the ones that can be removed following
+        	the move from jersey to resteasy, and put the support-lib-java one in the root pom.
+       	-->
+        <version.com.redhat.gss.redhat-support-lib-java>1.0.4.jbossorg-1</version.com.redhat.gss.redhat-support-lib-java>
+        <version.com.sun.jersey>1.17.1</version.com.sun.jersey>
+        <version.commons-net>3.3</version.commons-net>
+    </properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.jboss.as</groupId>
@@ -56,4 +67,58 @@
             <scope>test</scope>
         </dependency>
 	</dependencies>
+    <dependencyManagement>
+        <!-- 
+        	These versions are for  EAP6-13 which is not part of the distribution for 6.3.x.
+        	Once we get going with 6.4 we should remove the ones that can be removed following
+        	the move from jersey to resteasy, and put the support-lib-java one in the root pom.
+       	-->
+    
+   	    <dependencies>
+            <dependency>
+                <groupId>com.redhat.gss</groupId>
+                <artifactId>redhat-support-lib-java</artifactId>
+                <version>${version.com.redhat.gss.redhat-support-lib-java}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${version.com.sun.jersey}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey</groupId>
+                <artifactId>jersey-core</artifactId>
+                <version>${version.com.sun.jersey}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey.contribs</groupId>
+                <artifactId>jersey-apache-client4</artifactId>
+                <version>${version.com.sun.jersey}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.sun.jersey.contribs</groupId>
+                <artifactId>jersey-multipart</artifactId>
+                <version>${version.com.sun.jersey}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jvnet</groupId>
+                        <artifactId>mimepull</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            
+            <dependency>
+                <groupId>commons-net</groupId>
+                <artifactId>commons-net</artifactId>
+                <version>${version.commons-net}</version>
+            </dependency>
+
+   	    </dependencies>
+   	</dependencyManagement>
+ 
+	
 </project>
