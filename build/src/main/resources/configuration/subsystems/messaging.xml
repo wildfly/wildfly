@@ -102,7 +102,6 @@
            <broadcast-groups>
                <broadcast-group name="bg-group1">
                    <socket-binding>messaging-group</socket-binding>
-                   <broadcast-period>5000</broadcast-period>
                    <connector-ref>http-connector</connector-ref>
                </broadcast-group>
            </broadcast-groups>
@@ -129,7 +128,6 @@
        <replacement placeholder="HA-REMOTE-CONNECTION-FACTORY">
            <ha>true</ha>
            <block-on-acknowledge>true</block-on-acknowledge>
-           <retry-interval>1000</retry-interval>
            <reconnect-attempts>-1</reconnect-attempts>
        </replacement>
    </supplement>
