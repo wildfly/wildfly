@@ -80,7 +80,6 @@ public class VaultPasswordsInCLITestCase {
 
     // see genseckey-cli-vault-keystore in pom.xml for the keystore creation
     public static final File VAULT_KEYSTORE_FILE = new File("../cli-vault.keystore");
-    public static final File VAULT_CONFIG_FILE = new File(WORK_DIR, "vault-config-xml");
     public static final String VAULT_KEYSTORE_PASS = "secret_1";
     public static final String ALIAS_NAME = "vault";
 
@@ -241,19 +240,17 @@ public class VaultPasswordsInCLITestCase {
         String wrongBlock = "wrong";
         String attributeName = "password";
 
-        // write vault configuration to file
-        FileUtils.write(VAULT_CONFIG_FILE, nonInteractiveSession.vaultConfiguration());
-
         // add right and wrong password for clients keystore into vault
         String vaultPasswordString = nonInteractiveSession.addSecuredAttribute(rightBlock, attributeName, rightPassword.toCharArray());
         String wrongVaultPasswordString = nonInteractiveSession.addSecuredAttribute(wrongBlock, attributeName, wrongPassword.toCharArray());
 
-        // create jboss-cli configuration file with ssl and vaulted
-        // passwords
+        String vaultConfiguration = nonInteractiveSession.vaultConfiguration();
+
+        // create jboss-cli configuration file with ssl and vaulted passwords
         FileUtils.write(RIGHT_VAULT_PASSWORD_FILE, Utils.propertiesReplacer(JBOSS_CLI_FILE, CLIENT_KEYSTORE_FILE, CLIENT_TRUSTSTORE_FILE,
-                vaultPasswordString, VAULT_CONFIG_FILE));
+                vaultPasswordString, vaultConfiguration));
         FileUtils.write(WRONG_VAULT_PASSWORD_FILE, Utils.propertiesReplacer(JBOSS_CLI_FILE, CLIENT_KEYSTORE_FILE, CLIENT_TRUSTSTORE_FILE,
-                wrongVaultPasswordString, VAULT_CONFIG_FILE));
+                wrongVaultPasswordString, vaultConfiguration));
 
     }
 
