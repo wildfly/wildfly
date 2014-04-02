@@ -25,7 +25,7 @@
                    </ssl>
                 </server-identities>
                 <authentication>
-                    <local default-user="$local"/>
+                    <local default-user="$local" skip-group-loading="true"/>
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>                            
             </security-realm>
@@ -37,7 +37,7 @@
                 </server-identities>
                 <authentication>                                    
                     <truststore path="server.truststore" relative-to="jboss.server.config.dir" keystore-password="truststore_password" />
-                    <local default-user="$local"/>                    
+                    <local default-user="$local" skip-group-loading="true"/>                    
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>                            
             </security-realm>            
@@ -58,7 +58,7 @@
                    </ssl>
                 </server-identities>
                 <authentication>
-                    <local default-user="$local"/>
+                    <local default-user="$local" skip-group-loading="true"/>
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>                            
             </security-realm>
@@ -70,7 +70,7 @@
                 </server-identities>
                 <authentication>                                    
                     <truststore provider="PKCS11-ServerTrustStore" keystore-password="truststore_password" />
-                    <local default-user="$local"/>                    
+                    <local default-user="$local" skip-group-loading="true"/>                    
                     <properties path="mgmt-users.properties" relative-to="jboss.server.config.dir"/>
                 </authentication>                            
             </security-realm>            

@@ -36,7 +36,7 @@
                     <secret value="c2xhdmVfdXMzcl9wYXNzd29yZA==" />
                 </server-identities>
                 <authentication>
-                    <local default-user="$local" />
+                    <local default-user="$local" skip-group-loading="true" />
                     <properties path="mgmt-users.properties" relative-to="jboss.domain.config.dir" />
                 </authentication>
                 <authorization>
@@ -45,7 +45,7 @@
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <authentication>
-                    <local default-user="$local" allowed-users="*" />
+                    <local default-user="$local" allowed-users="*" skip-group-loading="true" />
                     <properties path="domain/configuration/application-users.properties" relative-to="jboss.home.dir" />
                 </authentication>
             </security-realm>
