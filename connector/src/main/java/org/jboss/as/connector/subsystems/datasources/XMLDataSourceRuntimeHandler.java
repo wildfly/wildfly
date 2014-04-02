@@ -305,6 +305,9 @@ public class XMLDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeHan
         } else if (attributeName.equals(Constants.CONNECTABLE.getName())) {
             //Just set to false
             context.getResult().set(false);
+        } else if (attributeName.equals(Constants.STATISTICS_ENABLED.getName())) {
+            //Just set to false
+            context.getResult().set(false);
         } else {
             throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
         }
