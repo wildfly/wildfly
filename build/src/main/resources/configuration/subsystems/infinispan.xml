@@ -51,13 +51,13 @@
             </cache-container>
             <cache-container name="web" default-cache="dist" module="org.wildfly.clustering.web.infinispan">
                 <transport lock-timeout="60000"/>
-                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" owners="4">
+                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" owners="2">
                     <file-store/>
                 </distributed-cache>
             </cache-container>
             <cache-container name="ejb" aliases="sfsb" default-cache="dist" module="org.wildfly.clustering.ejb.infinispan">
                 <transport lock-timeout="60000"/>
-                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" owners="4">
+                <distributed-cache name="dist" mode="ASYNC" batching="true" l1-lifespan="0" owners="2">
                     <file-store/>
                 </distributed-cache>
             </cache-container>
