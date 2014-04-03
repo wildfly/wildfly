@@ -32,7 +32,9 @@ import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADA
 import static org.jboss.as.webservices.util.WebMetaDataHelper.getServlets;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.jws.WebService;
 import javax.xml.ws.WebServiceProvider;
@@ -80,10 +82,11 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
         final JBossWebMetaData jbossWebMD = getJBossWebMetaData(unit);
         final JAXWSDeployment jaxwsDeployment = getJaxwsDeployment(unit);
         if (jbossWebMD != null) {
+            final Set<String> matchedEps = new HashSet<String>();
             for (final ServletMetaData servletMD : getServlets(jbossWebMD)) {
                 final String endpointClassName = getEndpointClassName(servletMD);
                 final String endpointName = getEndpointName(servletMD);
-                if (classDescriptionMap.containsKey(endpointClassName)) {
+                if (classDescriptionMap.containsKey(endpointClassName) || matchedEps.contains(endpointClassName)) {
                     // creating component description for POJO endpoint
                     final ComponentDescription pojoComponent = createComponentDescription(unit, endpointName,
                             endpointClassName, endpointName);
@@ -91,6 +94,7 @@ public class WSIntegrationProcessorJAXWS_POJO extends AbstractIntegrationProcess
                     final String urlPattern = getUrlPattern(endpointName, unit);
                     jaxwsDeployment.addEndpoint(new POJOEndpoint(endpointName, endpointClassName, pojoViewName, urlPattern));
                     classDescriptionMap.remove(endpointClassName);
+                    matchedEps.add(endpointClassName);
                 } else {
                     if (unit.getParent() != null && DeploymentTypeMarker.isType(DeploymentType.EAR, unit.getParent())) {
                         final EEModuleDescription eeModuleDescription = unit.getParent().getAttachment(
