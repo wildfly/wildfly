@@ -22,6 +22,13 @@
 
 package org.jboss.as.server.mgmt.domain;
 
+import java.io.Closeable;
+import java.io.DataInput;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
@@ -35,15 +42,8 @@ import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.repository.RemoteFileRequestAndHandler;
 import org.jboss.as.server.ServerLogger;
 import org.jboss.as.server.ServerMessages;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.operations.ServerProcessStateHandler;
 import org.jboss.dmr.ModelNode;
-
-import java.io.Closeable;
-import java.io.DataInput;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 /**
  * Client used to interact with the local host controller.
@@ -97,7 +97,7 @@ public class HostControllerClient implements Closeable {
         if(! connection.reConnect(uri, authKey) || mgmtEndpointChanged) {
             // It would be nicer if we'd have direct access to the ControlledProcessState
             final ModelNode operation = new ModelNode();
-            operation.get(ModelDescriptionConstants.OP).set(ServerRestartRequiredHandler.OPERATION_NAME); // TODO only require reload
+            operation.get(ModelDescriptionConstants.OP).set(ServerProcessStateHandler.REQUIRE_RELOAD_OPERATION);
             operation.get(ModelDescriptionConstants.OP_ADDR).setEmptyList();
             controller.execute(operation, OperationMessageHandler.DISCARD, ModelController.OperationTransactionControl.COMMIT, OperationAttachments.EMPTY);
         }

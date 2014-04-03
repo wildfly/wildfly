@@ -21,7 +21,6 @@
 */
 package org.jboss.as.domain.controller.operations;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -70,6 +69,14 @@ public class DomainServerLifecycleHandlers {
 
     private static final int TIMEOUT = 10000;
 
+    private static final AttributeDefinition BLOCKING = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.BLOCKING, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
+    private static final AttributeDefinition IF_REQUIRED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.IF_REQUIRED, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(false))
+            .build();
+
     public static void initializeServerInventory(ServerInventory serverInventory) {
         StopServersLifecycleHandler.INSTANCE.setServerInventory(serverInventory);
         StartServersLifecycleHandler.INSTANCE.setServerInventory(serverInventory);
@@ -88,17 +95,23 @@ public class DomainServerLifecycleHandlers {
     private static void registerHandlers(ManagementResourceRegistration registration, boolean serverGroup) {
         registration.registerOperationHandler(getOperationDefinition(serverGroup, StopServersLifecycleHandler.OPERATION_NAME), StopServersLifecycleHandler.INSTANCE);
         registration.registerOperationHandler(getOperationDefinition(serverGroup, StartServersLifecycleHandler.OPERATION_NAME), StartServersLifecycleHandler.INSTANCE);
-        registration.registerOperationHandler(getOperationDefinition(serverGroup, RestartServersLifecycleHandler.OPERATION_NAME), RestartServersLifecycleHandler.INSTANCE);
-        registration.registerOperationHandler(getOperationDefinition(serverGroup, ReloadServersLifecycleHandler.OPERATION_NAME), ReloadServersLifecycleHandler.INSTANCE);
+        registration.registerOperationHandler(getOperationDefinition(serverGroup, RestartServersLifecycleHandler.OPERATION_NAME, true), RestartServersLifecycleHandler.INSTANCE);
+        registration.registerOperationHandler(getOperationDefinition(serverGroup, ReloadServersLifecycleHandler.OPERATION_NAME, true), ReloadServersLifecycleHandler.INSTANCE);
     }
 
     private static OperationDefinition getOperationDefinition(boolean serverGroup, String operationName) {
-        final AttributeDefinition blocking = SimpleAttributeDefinitionBuilder.create(BLOCKING, ModelType.BOOLEAN, true).build();
-        return new SimpleOperationDefinitionBuilder(operationName,
+        return getOperationDefinition(serverGroup, operationName, false);
+    }
+
+    private static OperationDefinition getOperationDefinition(boolean serverGroup, String operationName, boolean hasIfRequired) {
+        final SimpleOperationDefinitionBuilder builder =  new SimpleOperationDefinitionBuilder(operationName,
                 DomainResolver.getResolver(serverGroup ? ModelDescriptionConstants.SERVER_GROUP : ModelDescriptionConstants.DOMAIN))
-                .addParameter(blocking)
-                .setRuntimeOnly()
-                .build();
+                .addParameter(BLOCKING)
+                .setRuntimeOnly();
+        if (hasIfRequired) {
+            builder.addParameter(IF_REQUIRED);
+        }
+        return builder.build();
     }
 
     private abstract static class AbstractHackLifecycleHandler implements OperationStepHandler {
@@ -151,7 +164,7 @@ public class DomainServerLifecycleHandlers {
             context.acquireControllerLock();
             context.readResource(PathAddress.EMPTY_ADDRESS, false);
             final String group = getServerGroupName(operation);
-            final boolean blocking = operation.get(BLOCKING).asBoolean(false);
+            final boolean blocking = BLOCKING.resolveModelAttribute(context, operation).asBoolean();
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -188,7 +201,7 @@ public class DomainServerLifecycleHandlers {
             context.readResource(PathAddress.EMPTY_ADDRESS, false);
             final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
             final String group = getServerGroupName(operation);
-            final boolean blocking = operation.get(BLOCKING).asBoolean(false);
+            final boolean blocking = BLOCKING.resolveModelAttribute(context, operation).asBoolean();
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -233,7 +246,8 @@ public class DomainServerLifecycleHandlers {
             context.readResource(PathAddress.EMPTY_ADDRESS, false);
             final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
             final String group = getServerGroupName(operation);
-            final boolean blocking = operation.get(BLOCKING).asBoolean(false);
+            final boolean blocking = BLOCKING.resolveModelAttribute(context, operation).asBoolean();
+            final boolean ifRequired = IF_REQUIRED.resolveModelAttribute(context, operation).asBoolean();
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -245,7 +259,7 @@ public class DomainServerLifecycleHandlers {
                     for (String serverName : processes.keySet()) {
                         final String serverModelName = serverInventory.getProcessServerName(serverName);
                         if (group == null || serversInGroup.contains(serverModelName)) {
-                            serverInventory.restartServer(serverModelName, TIMEOUT, model);
+                            serverInventory.restartServer(serverModelName, TIMEOUT, model, false, ifRequired);
                             waitForServers.add(serverModelName);
                         }
                     }
@@ -270,7 +284,8 @@ public class DomainServerLifecycleHandlers {
             context.readResource(PathAddress.EMPTY_ADDRESS, false);
             final ModelNode model = Resource.Tools.readModel(context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, true));
             final String group = getServerGroupName(operation);
-            final boolean blocking = operation.get(BLOCKING).asBoolean(false);
+            final boolean blocking = BLOCKING.resolveModelAttribute(context, operation).asBoolean();
+            final boolean ifRequired = IF_REQUIRED.resolveModelAttribute(context, operation).asBoolean();
             context.addStep(new OperationStepHandler() {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
@@ -282,7 +297,7 @@ public class DomainServerLifecycleHandlers {
                     for (String serverName : processes.keySet()) {
                         final String serverModelName = serverInventory.getProcessServerName(serverName);
                         if (group == null || serversInGroup.contains(serverModelName)) {
-                            serverInventory.reloadServer(serverModelName, false);
+                            serverInventory.reloadServer(serverModelName, false, ifRequired);
                             waitForServers.add(serverModelName);
                         }
                     }

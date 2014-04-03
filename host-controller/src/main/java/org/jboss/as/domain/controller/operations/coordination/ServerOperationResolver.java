@@ -84,7 +84,7 @@ import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.ResolveExpressionOnDomainHandler;
 import org.jboss.as.domain.controller.operations.deployment.DeploymentFullReplaceHandler;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.operations.ServerProcessStateHandler;
 import org.jboss.as.server.operations.SystemPropertyAddHandler;
 import org.jboss.as.server.operations.SystemPropertyRemoveHandler;
 import org.jboss.dmr.ModelNode;
@@ -487,7 +487,7 @@ public class ServerOperationResolver {
             if (PROFILE.equals(attr)) {
                 String groupName = address.getElement(0).getValue();
                 Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
-                return getServerRestartRequiredOperations(servers);
+                return getServerReloadRequiredOperations(servers);
             } else if (SOCKET_BINDING_GROUP.equals(attr)) {
                 String groupName = address.getElement(0).getValue();
                 Set<ServerIdentity> servers = getServersForGroup(groupName, host, localHostName, serverProxies);
@@ -502,7 +502,7 @@ public class ServerOperationResolver {
                     }
                     servers = affectedServers;
                 }
-                return getServerRestartRequiredOperations(servers);
+                return getServerReloadRequiredOperations(servers);
             }
         }
 
@@ -803,7 +803,7 @@ public class ServerOperationResolver {
                     if(serverProxies.containsKey(serverName)) {
                         final String group = host.get(address.getLastElement().getKey(), address.getLastElement().getValue(), GROUP).asString();
                         final ServerIdentity id = new ServerIdentity(localHostName, group, serverName);
-                        result = getServerRestartRequiredOperations(Collections.singleton(id));
+                        result = getServerReloadRequiredOperations(Collections.singleton(id));
                         return result;
                     }
                 }
@@ -821,9 +821,17 @@ public class ServerOperationResolver {
         return result;
     }
 
-    private Map<Set<ServerIdentity>, ModelNode> getServerRestartRequiredOperations(Set<ServerIdentity> servers) {
+    private static Map<Set<ServerIdentity>, ModelNode> getServerRestartRequiredOperations(Set<ServerIdentity> servers) {
+        return getSimpleServerOperations(servers, ServerProcessStateHandler.REQUIRE_RESTART_OPERATION);
+    }
+
+    private static Map<Set<ServerIdentity>, ModelNode> getServerReloadRequiredOperations(Set<ServerIdentity> servers) {
+        return getSimpleServerOperations(servers, ServerProcessStateHandler.REQUIRE_RELOAD_OPERATION);
+    }
+
+    private static Map<Set<ServerIdentity>, ModelNode> getSimpleServerOperations(Set<ServerIdentity> servers, String operationName) {
         ModelNode op = new ModelNode();
-        op.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
+        op.get(OP).set(operationName);
         op.get(OP_ADDR).setEmptyList();
         return Collections.singletonMap(servers, op);
     }

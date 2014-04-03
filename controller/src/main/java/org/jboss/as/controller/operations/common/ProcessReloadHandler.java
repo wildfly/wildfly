@@ -52,6 +52,9 @@ public abstract class ProcessReloadHandler<T extends RunningModeControl> impleme
     protected static final AttributeDefinition ADMIN_ONLY = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.ADMIN_ONLY, ModelType.BOOLEAN, true)
                                                                     .setDefaultValue(new ModelNode(false)).build();
 
+    protected static final AttributeDefinition IF_REQUIRED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.IF_REQUIRED, ModelType.BOOLEAN, true)
+                                                                    .setDefaultValue(new ModelNode(false)).build();
+
     private final T runningModeControl;
     private final ControlledProcessState processState;
 
@@ -67,6 +70,10 @@ public abstract class ProcessReloadHandler<T extends RunningModeControl> impleme
     /** {@inheritDoc} */
     @Override
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+        if (skipReload(context, operation)) {
+            context.stepCompleted();
+            return;
+        }
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
@@ -101,6 +108,18 @@ public abstract class ProcessReloadHandler<T extends RunningModeControl> impleme
     }
 
     protected abstract ReloadContext<T> initializeReloadContext(OperationContext context, ModelNode operation) throws OperationFailedException;
+
+    protected boolean skipReload(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+        return false;
+    }
+
+    protected boolean isReloadRequired() {
+        return processState.getState()  == ControlledProcessState.State.RELOAD_REQUIRED;
+    }
+
+    protected boolean isRestartRequired() {
+        return processState.getState() == ControlledProcessState.State.RESTART_REQUIRED;
+    }
 
     protected interface ReloadContext<T> {
         void reloadInitiated(T runningModeControl);
