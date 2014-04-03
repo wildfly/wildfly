@@ -46,7 +46,7 @@ public class DiscoveryOptionsResourceDefinition extends SimpleResourceDefinition
 
     public static final PrimitiveListAttributeDefinition DISCOVERY_OPTIONS = new PrimitiveListAttributeDefinition.Builder(ModelDescriptionConstants.DISCOVERY_OPTIONS, ModelType.PROPERTY)
         .setAllowNull(true)
-        .setValidator(new PropertyValidator(false, new StringLengthValidator(1)))
+        .setElementValidator(new PropertyValidator(false, new StringLengthValidator(1)))
         .build();
 
     private DiscoveryOptionsResourceDefinition() {

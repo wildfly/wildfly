@@ -45,7 +45,6 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
@@ -61,7 +60,6 @@ import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.operations.validation.ParametersOfValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -99,9 +97,7 @@ class LegacySupport {
 
 
         public JASPIAuthenticationModulesAttributeDefinition() {
-            super(Constants.AUTH_MODULES, Constants.AUTH_MODULE, true, false, 1, Integer.MAX_VALUE, validator,
-                   null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), null, (Boolean) null,
-                    AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(LegacySupportListAttributeBuilder.of(Constants.AUTH_MODULES, Constants.AUTH_MODULE, validator));
         }
 
         @Override
@@ -186,8 +182,7 @@ class LegacySupport {
 
 
         public LoginModulesAttributeDefinition(String name, String xmlName) {
-            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false,
-                    new DeprecationData(ModelVersion.create(1, 2)), null, (Boolean) null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(LegacySupportListAttributeBuilder.of(name, xmlName, validator));
         }
 
         @Override
@@ -267,9 +262,7 @@ class LegacySupport {
 
 
         public MappingModulesAttributeDefinition() {
-            super(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, true, false, 1, Integer.MAX_VALUE, validator,
-                    null, null, null, false, new DeprecationData(ModelVersion.create(1, 2)), null, (Boolean) null,
-                    AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(LegacySupportListAttributeBuilder.of(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, validator));
         }
 
         @Override
@@ -338,8 +331,7 @@ class LegacySupport {
 
 
         public ProviderModulesAttributeDefinition(String name, String xmlName) {
-            super(name, xmlName, true, false, 1, Integer.MAX_VALUE, validator, null, null, null, false,
-                    new DeprecationData(ModelVersion.create(1, 2)), null, (Boolean) null, AttributeAccess.Flag.RESTART_ALL_SERVICES);
+            super(LegacySupportListAttributeBuilder.of(name, xmlName, validator));
         }
 
         @Override
@@ -484,6 +476,32 @@ class LegacySupport {
                 context.addStep(new ModelNode(), removeModuleOp, new SecurityDomainReloadRemoveHandler(), OperationContext.Stage.MODEL, true);
             }
             context.stepCompleted();
+        }
+    }
+
+    private static class LegacySupportListAttributeBuilder
+            extends ListAttributeDefinition.Builder<LegacySupportListAttributeBuilder, ListAttributeDefinition> {
+
+        private static LegacySupportListAttributeBuilder of(String attributeName, String xmlName,
+                                                            ParameterValidator elementValidator) {
+            return new LegacySupportListAttributeBuilder(attributeName)
+                    .setXmlName(xmlName)
+                    .setElementValidator(elementValidator)
+                    .setAllowNull(true)
+                    .setMinSize(1)
+                    .setMaxSize(Integer.MAX_VALUE)
+                    .setDeprecated(ModelVersion.create(1, 2))
+                    .setRestartAllServices();
+        }
+
+        private LegacySupportListAttributeBuilder(String attributeName) {
+            super(attributeName);
+        }
+
+        @Override
+        public ListAttributeDefinition build() {
+            // This should not be called. We only use this class to carry properties to the AD constructors
+            throw new UnsupportedOperationException();
         }
     }
 }

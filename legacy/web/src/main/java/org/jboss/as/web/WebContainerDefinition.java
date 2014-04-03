@@ -45,7 +45,7 @@ public class WebContainerDefinition extends ModelOnlyResourceDefinition {
     protected static final ListAttributeDefinition WELCOME_FILES = new StringListAttributeDefinition.Builder(Constants.WELCOME_FILE)
             .setXmlName(Constants.WELCOME_FILE)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .setValidator(new StringLengthValidator(1, true, true))
+            .setElementValidator(new StringLengthValidator(1, true, true))
             .setAllowExpression(true)
             .setAllowNull(true)
             .build();

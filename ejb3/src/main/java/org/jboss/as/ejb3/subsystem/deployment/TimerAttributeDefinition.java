@@ -56,6 +56,7 @@ import org.jboss.dmr.ModelType;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
+// TODO Convert to ObjectListAttributeDefinition
 public class TimerAttributeDefinition extends ListAttributeDefinition {
 
     public static final TimerAttributeDefinition INSTANCE = new TimerAttributeDefinition();

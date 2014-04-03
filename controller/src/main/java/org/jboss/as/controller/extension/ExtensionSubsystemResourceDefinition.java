@@ -51,7 +51,7 @@ public class ExtensionSubsystemResourceDefinition extends SimpleResourceDefiniti
     public static final ListAttributeDefinition XML_NAMESPACES = new StringListAttributeDefinition.Builder(ModelDescriptionConstants.XML_NAMESPACES)
             .setAllowNull(false)
             .setStorageRuntime()
-            .setValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
+            .setElementValidator(new StringLengthValidator(1, Integer.MAX_VALUE, false, false))
             .build();
 
     public static final SimpleAttributeDefinition MAJOR_VERSION = new SimpleAttributeDefinitionBuilder(MANAGEMENT_MAJOR_VERSION, ModelType.INT, true)

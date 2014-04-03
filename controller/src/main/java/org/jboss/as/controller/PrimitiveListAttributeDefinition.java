@@ -44,7 +44,11 @@ import org.jboss.dmr.ModelType;
 public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
     private final ModelType valueType;
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.PrimitiveListAttributeDefinition.Builder Builder}
+     */
     @Deprecated
+    @SuppressWarnings("deprecation")
     protected PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions, final ModelType valueType, final int minSize, final int maxSize,
             final String[] alternatives, final String[] requires, ParameterValidator elementValidator, final AttributeMarshaller attributeMarshaller,
             final boolean resourceOnly, final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
@@ -52,6 +56,11 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
                 attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, null, flags);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.PrimitiveListAttributeDefinition.Builder Builder}
+     */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     protected PrimitiveListAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                                final boolean allowExpressions, final ModelType valueType,
                                                final int minSize, final int maxSize,final ParameterValidator elementValidator,
@@ -64,6 +73,11 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
                                                final AttributeAccess.Flag... flags) {
         super(name, xmlName, allowNull, allowExpressions, minSize, maxSize, elementValidator, alternatives, requires,
                 attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser,flags);
+        this.valueType = valueType;
+    }
+
+    protected PrimitiveListAttributeDefinition(final ListAttributeDefinition.Builder builder, ModelType valueType) {
+        super(builder);
         this.valueType = valueType;
     }
 
@@ -111,33 +125,32 @@ public class PrimitiveListAttributeDefinition extends ListAttributeDefinition {
         addValueTypeDescription(node);
     }
 
-    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, PrimitiveListAttributeDefinition> {
+    public static class Builder extends ListAttributeDefinition.Builder<Builder, PrimitiveListAttributeDefinition> {
+
         private final ModelType valueType;
 
         public Builder(final String name, final ModelType valueType) {
-            super(name, ModelType.LIST);
+            super(name);
             this.valueType = valueType;
+            setElementValidator(new ModelTypeValidator(valueType));
         }
 
-        public Builder(final PrimitiveListAttributeDefinition basic) {
-            super(basic);
-            this.valueType = basic.getValueType();
-            this.validator = basic.getElementValidator();
+        public Builder(final PrimitiveListAttributeDefinition basis) {
+            super(basis);
+            this.valueType = basis.getValueType();
+            setElementValidator(basis.getElementValidator());
         }
 
         public static Builder of(final String name, final ModelType valueType) {
             return new Builder(name, valueType);
         }
 
+        public ModelType getValueType() {
+            return valueType;
+        }
+
         public PrimitiveListAttributeDefinition build() {
-            if (xmlName == null) { xmlName = name; }
-            if (maxSize < 1) { maxSize = Integer.MAX_VALUE; }
-            if (validator == null) {
-                validator = new ModelTypeValidator(valueType, allowNull, allowExpression);
-            }
-            return new PrimitiveListAttributeDefinition(name, xmlName, allowNull, allowExpression, valueType, minSize,
-                    maxSize, validator, alternatives, requires,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, parser, flags);
+            return new PrimitiveListAttributeDefinition(this, getValueType());
         }
     }
 }

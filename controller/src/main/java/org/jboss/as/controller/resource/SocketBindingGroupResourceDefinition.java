@@ -90,7 +90,7 @@ public class SocketBindingGroupResourceDefinition extends SimpleResourceDefiniti
             .setAllowNull(true)
             .setMinSize(0)
             .setMaxSize(Integer.MAX_VALUE)
-            .setValidator(new StringLengthValidator(1, true))
+            .setElementValidator(new StringLengthValidator(1, true))
             .setAttributeMarshaller(new AttributeMarshaller() {
                 @Override
                 public void marshallAsElement(AttributeDefinition attribute, ModelNode resourceModel, boolean marshallDefault, XMLStreamWriter writer) throws XMLStreamException {

@@ -72,7 +72,7 @@ public class BroadcastGroupDefinition extends SimpleResourceDefinition {
 
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(CONNECTORS, STRING)
             .setAllowNull(true)
-            .setValidator(new StringLengthValidator(1))
+            .setElementValidator(new StringLengthValidator(1))
             .setXmlName(CONNECTOR_REF_STRING)
             .setAttributeMarshaller(new AttributeMarshallers.WrappedListAttributeMarshaller(null))
             // disallow expressions since the attribute references other configuration items

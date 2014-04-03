@@ -24,13 +24,11 @@ package org.jboss.as.logging;
 
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.AttributeParser;
 import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess.Flag;
@@ -48,23 +46,21 @@ public class PropertyAttributeDefinition extends SimpleAttributeDefinition imple
 
     /** @deprecated Use {@link Builder} */
     @Deprecated
+    @SuppressWarnings("deprecation")
     public PropertyAttributeDefinition(final String name, final String xmlName, final String propertyName, final ModelNodeResolver<String> resolver, final ModelNode defaultValue, final ModelType type,
                                        final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit, final ParameterCorrector corrector,
                                        final ParameterValidator validator, final boolean validateNull, final String[] alternatives, final String[] requires,
                                        final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecationData, final Flag... flags) {
-        this(name, xmlName, propertyName, resolver, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires, attributeMarshaller,
-                resourceOnly, deprecationData, null, null, null, flags);
-    }
-
-    private PropertyAttributeDefinition(final String name, final String xmlName, final String propertyName, final ModelNodeResolver<String> resolver, final ModelNode defaultValue, final ModelType type,
-            final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit, final ParameterCorrector corrector,
-            final ParameterValidator validator, final boolean validateNull, final String[] alternatives, final String[] requires,
-            final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecationData,
-            final AccessConstraintDefinition[] accessConstraints, Boolean nullSignificant, final AttributeParser parser, final Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires, attributeMarshaller,
-                resourceOnly, deprecationData, accessConstraints, nullSignificant, parser, flags);
+                resourceOnly, deprecationData, null, null, null, flags);
         this.propertyName = propertyName;
         this.resolver = resolver;
+    }
+
+    private PropertyAttributeDefinition(final Builder builder) {
+        super(builder);
+        this.propertyName = builder.propertyName;
+        this.resolver = builder.resolver;
     }
 
     @Override
@@ -161,11 +157,8 @@ public class PropertyAttributeDefinition extends SimpleAttributeDefinition imple
         }
 
         public PropertyAttributeDefinition build() {
-            if (xmlName == null) xmlName = name;
             if (propertyName == null) propertyName = name;
-            return new PropertyAttributeDefinition(name, xmlName, propertyName, resolver, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                    corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly,
-                    deprecated, accessConstraints, nullSignficant, parser, flags);
+            return new PropertyAttributeDefinition(this);
         }
 
         public Builder setPropertyName(final String propertyName) {

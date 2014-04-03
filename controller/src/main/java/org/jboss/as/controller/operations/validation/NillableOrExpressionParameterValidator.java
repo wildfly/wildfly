@@ -26,6 +26,7 @@ import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.util.List;
 
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -44,12 +45,17 @@ public class NillableOrExpressionParameterValidator implements ParameterValidato
     /**
      * Creates a new {@code NillableOrExpressionParameterValidator}.
      *
-     * @param delegate validator to delegate to once null and expression validation is done
+     * @param delegate validator to delegate to once null and expression validation is done. Cannot be {@code null}
      * @param allowNull whether undefined values are allowed. If this param is {@code null}, checking for undefined
      *                  is delegated to the provided {@code delegate}
      * @param allowExpression  whether expressions are allowed
+     *
+     * @throws java.lang.IllegalArgumentException if {@code delegate} is {@code null}
      */
     public NillableOrExpressionParameterValidator(ParameterValidator delegate, Boolean allowNull, boolean allowExpression) {
+        if (delegate == null) {
+            throw ControllerMessages.MESSAGES.nullVar("delegate");
+        }
         this.delegate = delegate;
         this.allowNull = allowNull;
         this.allowExpression = allowExpression;
@@ -104,6 +110,18 @@ public class NillableOrExpressionParameterValidator implements ParameterValidato
     @Override
     public Long getMax() {
         return (delegate instanceof MinMaxValidator) ? ((MinMaxValidator) delegate).getMax() : null;
+    }
+
+    public ParameterValidator getDelegate() {
+        return delegate;
+    }
+
+    public Boolean getAllowNull() {
+        return allowNull;
+    }
+
+    public boolean isAllowExpression() {
+        return allowExpression;
     }
 
     @Override

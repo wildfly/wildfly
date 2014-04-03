@@ -28,15 +28,12 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * AttributeDefinition suitable for managing LISTs of OBJECTs, which takes into account
@@ -51,12 +48,9 @@ import org.jboss.dmr.ModelType;
 public class ObjectListAttributeDefinition extends ListAttributeDefinition {
     private final ObjectTypeAttributeDefinition valueType;
 
-    private ObjectListAttributeDefinition(final String name, final String xmlName, final ObjectTypeAttributeDefinition valueType, final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires,
-                                          final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated,
-                                          final AccessConstraintDefinition[] accessConstraints, Boolean nullSignificant, final AttributeParser parser, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, false, minSize, maxSize, valueType.getValidator(), alternatives, requires, attributeMarshaller,
-                resourceOnly, deprecated, accessConstraints, nullSignificant, parser, flags);
-        this.valueType = valueType;
+    private ObjectListAttributeDefinition(Builder builder) {
+        super(builder);
+        this.valueType = builder.valueType;
     }
 
     @Override
@@ -179,12 +173,13 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
     }
 
 
-    public static final class Builder extends AbstractAttributeDefinitionBuilder<Builder, ObjectListAttributeDefinition> {
+    public static final class Builder extends ListAttributeDefinition.Builder<Builder, ObjectListAttributeDefinition> {
         private final ObjectTypeAttributeDefinition valueType;
 
         public Builder(final String name, final ObjectTypeAttributeDefinition valueType) {
-            super(name, ModelType.LIST);
+            super(name);
             this.valueType = valueType;
+            setElementValidator(valueType.getValidator());
         }
 
         public static Builder of(final String name, final ObjectTypeAttributeDefinition valueType) {
@@ -192,11 +187,7 @@ public class ObjectListAttributeDefinition extends ListAttributeDefinition {
         }
 
         public ObjectListAttributeDefinition build() {
-            if (xmlName == null) { xmlName = name; }
-            if (maxSize < 1) { maxSize = Integer.MAX_VALUE; }
-            return new ObjectListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize,
-                    alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints,
-                    nullSignficant, parser, flags);
+            return new ObjectListAttributeDefinition(this);
         }
 
         /*
