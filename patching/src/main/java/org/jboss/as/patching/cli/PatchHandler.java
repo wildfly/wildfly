@@ -28,11 +28,18 @@ import static java.lang.System.getenv;
 import static java.security.AccessController.doPrivileged;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
+
+import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandFormatException;
@@ -48,9 +55,14 @@ import org.jboss.as.cli.impl.ArgumentWithoutValue;
 import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.util.SimpleTable;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.PatchingException;
+import org.jboss.as.patching.metadata.Identity;
+import org.jboss.as.patching.metadata.Patch;
+import org.jboss.as.patching.metadata.PatchXml;
 import org.jboss.as.patching.tool.PatchOperationBuilder;
 import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.dmr.ModelNode;
@@ -67,6 +79,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
     static final String ROLLBACK = "rollback";
     static final String HISTORY = "history";
     static final String INFO = "info";
+    static final String INSPECT = "inspect";
 
     private final ArgumentWithValue host;
 
@@ -92,7 +105,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
     public PatchHandler(final CommandContext context) {
         super(PATCH, false);
 
-        action = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{APPLY, ROLLBACK, INFO, HISTORY}), 0, "--action");
+        action = new ArgumentWithValue(this, new SimpleTabCompleter(new String[]{APPLY, ROLLBACK, HISTORY, INFO, INSPECT}), 0, "--action");
 
         host = new ArgumentWithValue(this, new DefaultCompleter(CandidatesProviders.HOSTS), "--host") {
             @Override
@@ -154,7 +167,7 @@ public class PatchHandler extends CommandHandlerWithHelp {
         path = new FileSystemPathArgument(this, pathCompleter, 1, "--path") {
             @Override
             public boolean canAppearNext(CommandContext ctx) throws CommandFormatException {
-                if (canOnlyAppearAfterActions(ctx, APPLY)) {
+                if (canOnlyAppearAfterActions(ctx, APPLY, INSPECT)) {
                     return super.canAppearNext(ctx);
                 }
                 return false;
@@ -238,8 +251,13 @@ public class PatchHandler extends CommandHandlerWithHelp {
 
     @Override
     protected void doHandle(CommandContext ctx) throws CommandLineException {
+        final ParsedCommandLine parsedLine = ctx.getParsedCommandLine();
+        if(INSPECT.equals(action.getValue(parsedLine))) {
+            doInspect(ctx);
+            return;
+        }
         final PatchOperationTarget target = createPatchOperationTarget(ctx);
-        final PatchOperationBuilder builder = createPatchOperationBuilder(ctx.getParsedCommandLine());
+        final PatchOperationBuilder builder = createPatchOperationBuilder(parsedLine);
         final ModelNode result;
         try {
             result = builder.execute(target);
@@ -274,6 +292,56 @@ public class PatchHandler extends CommandHandlerWithHelp {
             }
         }
         ctx.printLine(result.toJSONString(false));
+    }
+
+    protected void doInspect(CommandContext ctx) throws CommandLineException {
+        final ParsedCommandLine parsedLine = ctx.getParsedCommandLine();
+        final String patchPath = path.getValue(parsedLine, true);
+        final File patchFile = new File(patchPath);
+        if(!patchFile.exists()) {
+            throw new CommandLineException("Failed to locate " + patchFile.getAbsolutePath());
+        }
+        ZipFile patchZip = null;
+        InputStream is = null;
+        Patch patch;
+        try {
+            patchZip = new ZipFile(patchFile);
+            final ZipEntry patchXmlEntry = patchZip.getEntry("patch.xml");
+            if(patchXmlEntry == null) {
+                throw new CommandLineException("Failed to locate patch.xml inside " + patchFile.getAbsolutePath());
+            }
+            is = patchZip.getInputStream(patchXmlEntry);
+            patch = PatchXml.parse(is).resolvePatch(null, null);
+        } catch (ZipException e) {
+            throw new CommandLineException("Failed to open " + patchFile.getAbsolutePath(), e);
+        } catch (IOException e) {
+            throw new CommandLineException("Failed to open " + patchFile.getAbsolutePath(), e);
+        } catch (PatchingException e) {
+            throw new CommandLineException("Failed to resolve parsed patch", e);
+        } catch (XMLStreamException e) {
+            throw new CommandLineException("Failed to parse patch.xml", e);
+        } finally {
+            if(is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                }
+            }
+            if (patchZip != null) {
+                try {
+                    patchZip.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
+        final Identity identity = patch.getIdentity();
+        final SimpleTable table = new SimpleTable(2);
+        table.addLine(new String[]{"Patch ID:", patch.getPatchId()});
+        table.addLine(new String[]{"Type:", identity.getPatchType().getName()});
+        table.addLine(new String[]{"Target:", identity.getName() + ' ' + identity.getVersion()});
+        table.addLine(new String[]{"Description:", patch.getDescription() == null ? "n/a" : patch.getDescription()});
+        ctx.printLine(table.toString(false));
     }
 
     protected void formatConflictsList(final StringBuilder buf, final ModelNode conflicts, String title, String contentType) {
