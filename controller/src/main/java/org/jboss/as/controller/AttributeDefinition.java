@@ -898,13 +898,12 @@ public abstract class AttributeDefinition {
 
         if (!immutableValue) {
             node = convertParameterExpressions(node);
+            node = correctValue(node, node);
         }
 
         if (!node.isDefined() && defaultValue.isDefined()) {
-            if (!immutableValue) correctValue(node, node);
             validator.validateParameter(name, defaultValue);
         } else {
-            if (!immutableValue) correctValue(node, node);
             validator.validateParameter(name, node);
         }
 

@@ -39,6 +39,7 @@ import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
@@ -142,6 +143,7 @@ public class DeploymentAttributes {
                             .build())
                     .setMinSize(1)
                     .setMaxSize(1)
+                    .setCorrector(ContentListCorrector.INSTANCE)
                     .build();
     public static final ObjectListAttributeDefinition CONTENT_ALL_NILLABLE =
             ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
@@ -158,6 +160,7 @@ public class DeploymentAttributes {
                 .setMinSize(1)
                 .setMaxSize(1)
                 .setAllowNull(true)
+                .setCorrector(ContentListCorrector.INSTANCE)
                 .build();
     public static final ObjectListAttributeDefinition CONTENT_RESOURCE =
                 ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
@@ -382,6 +385,22 @@ public class DeploymentAttributes {
                     def.validateOperation(contentItemNode);
                 }
             }
+        }
+    }
+
+    private static class ContentListCorrector implements ParameterCorrector {
+
+        private static final ContentListCorrector INSTANCE = new ContentListCorrector();
+
+        @Override
+        public ModelNode correct(ModelNode newValue, ModelNode currentValue) {
+            ModelNode result = newValue;
+            if (newValue.getType() == ModelType.OBJECT) {
+                // WFLY-3184 user probably forgot the list wrapper
+                result = new ModelNode();
+                result.add(newValue);
+            }
+            return result;
         }
     }
 
