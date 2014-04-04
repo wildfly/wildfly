@@ -90,7 +90,6 @@ public class BeanValidationIntegrationTestCase {
 
         HttpGet get = new HttpGet(url + "myjaxrs/validate/3");
         HttpResponse result = client.execute(get);
-        result = client.execute(get);
 
         Assert.assertEquals("Parameter constraint violated", 400, result.getStatusLine().getStatusCode());
     }
@@ -101,7 +100,6 @@ public class BeanValidationIntegrationTestCase {
 
         HttpGet get = new HttpGet(url + "myjaxrs/another-validate/3");
         HttpResponse result = client.execute(get);
-        result = client.execute(get);
 
         Assert.assertEquals("Property constraint violated", 400, result.getStatusLine().getStatusCode());
     }
@@ -128,7 +126,6 @@ public class BeanValidationIntegrationTestCase {
 
         HttpGet get = new HttpGet(url + "myjaxrs/validate/11");
         HttpResponse result = client.execute(get);
-        result = client.execute(get);
 
         Assert.assertEquals("Return value constraint violated", 500, result.getStatusLine().getStatusCode());
     }
