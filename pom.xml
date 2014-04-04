@@ -79,22 +79,22 @@
 
         <version.antlr>2.7.7.redhat-4</version.antlr>
         <version.asm>3.3.1-redhat-5</version.asm>
-        <version.ch.qos.cal10n>0.7.3-redhat-2</version.ch.qos.cal10n>
+        <version.ch.qos.cal10n>0.7.3.redhat-4</version.ch.qos.cal10n>
         <version.com.github.relaxng>2011.1-redhat-6</version.com.github.relaxng>
         <version.com.google.guava>13.0.1-redhat-1</version.com.google.guava>
-        <version.com.h2database>1.3.168-redhat-2</version.com.h2database>
+        <version.com.h2database>1.3.168.redhat-4</version.com.h2database>
         <version.com.sun.codemodel>2.6-redhat-2</version.com.sun.codemodel>
         <version.com.sun.faces>2.1.27.redhat-9</version.com.sun.faces>
         <version.com.sun.istack>2.6.1-redhat-2</version.com.sun.istack>
-        <version.com.sun.xml.txw2>20110809-redhat-2</version.com.sun.xml.txw2>
+        <version.com.sun.xml.txw2>20110809-redhat-4</version.com.sun.xml.txw2>
         <version.com.sun.xsom>20110809-redhat-3</version.com.sun.xsom>
         <version.commons-beanutils>1.8.3.redhat-6</version.commons-beanutils>
-        <version.commons-cli>1.2.redhat-3</version.commons-cli>
-        <version.commons-codec>1.4-redhat-2</version.commons-codec>
+        <version.commons-cli>1.2.redhat-4</version.commons-cli>
+        <version.commons-codec>1.4.redhat-3</version.commons-codec>
         <version.commons-collections>3.2.1-redhat-2</version.commons-collections>
-        <version.commons-io>2.1-redhat-2</version.commons-io>
+        <version.commons-io>2.1.redhat-3</version.commons-io>
         <version.commons-configuration>1.6.redhat-3</version.commons-configuration>
-        <version.commons-lang>2.6-redhat-2</version.commons-lang>
+        <version.commons-lang>2.6.redhat-3</version.commons-lang>
         <version.commons-pool>1.6.redhat-6</version.commons-pool>
         <version.dom4j>1.6.1.redhat-6</version.dom4j>
         <version.gnu.getopt>1.0.13.redhat-4</version.gnu.getopt>
@@ -107,7 +107,7 @@
         <version.javax.jws.jsr181-api>1.0-MR1-redhat-6</version.javax.jws.jsr181-api>
         <version.javax.mail>1.4.5-redhat-1</version.javax.mail>
         <version.javax.validation>1.0.0.GA-redhat-2</version.javax.validation>
-        <version.jaxen>1.1.3.redhat-3</version.jaxen>
+        <version.jaxen>1.1.3.redhat-4</version.jaxen>
         <version.jboss.jaxbintros>1.0.2.GA-redhat-6</version.jboss.jaxbintros>
         <version.joda-time>1.6.2-redhat-4</version.joda-time>
         <version.junit>4.11</version.junit>
@@ -132,15 +132,15 @@
         <version.org.apache.velocity>1.7.redhat-3</version.org.apache.velocity>
         <version.org.apache.ws.security>1.6.14.redhat-1</version.org.apache.ws.security>
         <version.org.apache.ws.xmlschema>2.0.2.redhat-3</version.org.apache.ws.xmlschema>
-        <version.org.apache.xalan>2.7.1-redhat-3</version.org.apache.xalan>
+        <version.org.apache.xalan>2.7.1.redhat-5</version.org.apache.xalan>
         <version.org.apache.xerces>2.9.1.redhat-5</version.org.apache.xerces>
         <version.org.codehaus.jackson>1.9.9-redhat-2</version.org.codehaus.jackson>
-        <version.org.codehaus.jettison>1.3.1.redhat-3</version.org.codehaus.jettison>
+        <version.org.codehaus.jettison>1.3.1.redhat-4</version.org.codehaus.jettison>
         <version.org.codehaus.plexus.plexus-utils>3.0.12</version.org.codehaus.plexus.plexus-utils>
-        <version.org.codehaus.woodstox.stax2-api>3.1.1-redhat-3</version.org.codehaus.woodstox.stax2-api>
-        <version.org.codehaus.woodstox.woodstox-core-asl>4.2.0-redhat-2</version.org.codehaus.woodstox.woodstox-core-asl>
+        <version.org.codehaus.woodstox.stax2-api>3.1.3.redhat-1</version.org.codehaus.woodstox.stax2-api>
+        <version.org.codehaus.woodstox.woodstox-core-asl>4.2.0.redhat-4</version.org.codehaus.woodstox.woodstox-core-asl>
         <version.org.eclipse.jdt.core.compiler>4.3.1.redhat-1</version.org.eclipse.jdt.core.compiler>
-        <version.org.fusesource.jansi>1.9.redhat-3</version.org.fusesource.jansi>
+        <version.org.fusesource.jansi>1.9.redhat-4</version.org.fusesource.jansi>
         <version.org.hibernate>4.2.11.Final-redhat-1</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.1.Final-redhat-2</version.org.hibernate.commons.annotations>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>1.0.1.Final-redhat-2</version.org.hibernate.javax.persistence.hibernate-jpa-2.0-api>
@@ -151,7 +151,7 @@
         <version.org.infinispan>5.2.8.Final-redhat-1</version.org.infinispan>
         <version.org.jacorb>2.3.2.redhat-6</version.org.jacorb>
         <version.org.javassist>3.18.1-GA-redhat-1</version.org.javassist>
-        <version.org.jdom>1.1.2.redhat-3</version.org.jdom>
+        <version.org.jdom>1.1.2.redhat-4</version.org.jdom>
         <version.org.jboss.aesh>0.33.11.redhat-1</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.0.0.Final</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>1.0.3.Final</version.org.jboss.arquillian.osgi>
@@ -246,7 +246,7 @@
         <version.org.jboss.xnio.xnio-nio>${version.org.jboss.xnio}</version.org.jboss.xnio.xnio-nio>
         <version.org.jgroups>3.2.13.Final-redhat-1</version.org.jgroups>
         <version.org.jvnet>1.6</version.org.jvnet>
-        <version.org.kohsuke.rngom>201103-redhat-2</version.org.kohsuke.rngom>
+        <version.org.kohsuke.rngom>201103-redhat-3</version.org.kohsuke.rngom>
         <version.org.mockito>1.9.5</version.org.mockito>
         <version.org.opensaml.opensaml>2.5.3.redhat-2</version.org.opensaml.opensaml>
         <version.org.opensaml.openws>1.4.4.redhat-2</version.org.opensaml.openws>
@@ -263,7 +263,7 @@
         <version.org.yaml.snakeyaml>1.8-redhat-2</version.org.yaml.snakeyaml>
         <version.osgi>4.2.0.redhat-4</version.osgi>
         <version.sun.jaxb>2.2.5.redhat-7</version.sun.jaxb>
-        <version.sun.saaj-impl>1.3.16-redhat-2</version.sun.saaj-impl>
+        <version.sun.saaj-impl>1.3.16.redhat-3</version.sun.saaj-impl>
         <version.rhino.js>1.7R2</version.rhino.js>
         <version.wsdl4j>1.6.3.redhat-1</version.wsdl4j>
         <version.xml-resolver>1.2.redhat-9</version.xml-resolver> <!-- Apache xml-resolver -->
