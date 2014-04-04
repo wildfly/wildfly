@@ -108,13 +108,13 @@ public class EJBTransactionRecoveryService implements Service<EJBTransactionReco
 
     @Override
     public XAResource[] getXAResources() {
-        final XAResource[] xaResources = new XAResource[receiverContexts.size()];
         synchronized (receiverContexts) {
+            final XAResource[] xaResources = new XAResource[receiverContexts.size()];
             for (int i = 0; i < receiverContexts.size(); i++) {
                 xaResources[i] = EJBClientManagedTransactionContext.getEJBXAResourceForRecovery(receiverContexts.get(i), arjunaTxCoreEnvironmentBean.getValue().getNodeIdentifier());
             }
+            return xaResources;
         }
-        return xaResources;
     }
 
     @Override
