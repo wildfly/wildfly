@@ -53,6 +53,8 @@ public class LazyConnectionContextSelector implements ContextSelector<EJBClientC
 
     private final String hostUrl;
     private final CallbackHandler callbackHandler;
+    private final ClassLoader classLoader;
+
 
     private Endpoint endpoint;
     private Connection connection;
@@ -60,9 +62,10 @@ public class LazyConnectionContextSelector implements ContextSelector<EJBClientC
     private volatile EJBClientContext clientContext;
 
 
-    public LazyConnectionContextSelector(final String hostUrl, final CallbackHandler callbackHandler) {
+    public LazyConnectionContextSelector(final String hostUrl, final CallbackHandler callbackHandler, ClassLoader classLoader) {
         this.hostUrl = hostUrl;
         this.callbackHandler = callbackHandler;
+        this.classLoader = classLoader;
     }
 
     private synchronized void createConnection() {
@@ -76,7 +79,7 @@ public class LazyConnectionContextSelector implements ContextSelector<EJBClientC
             final IoFuture<Connection> futureConnection = endpoint.connect(new URI(hostUrl), OptionMap.create(Options.SASL_POLICY_NOANONYMOUS, Boolean.FALSE, Options.SASL_POLICY_NOPLAINTEXT, Boolean.FALSE), callbackHandler);
             connection = IoFutureHelper.get(futureConnection, 30L, TimeUnit.SECONDS);
 
-            final EJBClientContext ejbClientContext = EJBClientContext.create();
+            final EJBClientContext ejbClientContext = EJBClientContext.create(classLoader);
             ejbClientContext.registerConnection(connection);
 
             this.clientContext = ejbClientContext;
