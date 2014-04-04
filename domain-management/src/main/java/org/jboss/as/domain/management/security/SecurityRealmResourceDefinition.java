@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
+
 import java.util.List;
 
 import org.jboss.as.controller.PathElement;
@@ -58,7 +60,7 @@ public class SecurityRealmResourceDefinition extends SimpleResourceDefinition {
     private final List<AccessConstraintDefinition> sensitivity;
 
     private SecurityRealmResourceDefinition() {
-        super(PathElement.pathElement(ModelDescriptionConstants.SECURITY_REALM),
+        super(PathElement.pathElement(SECURITY_REALM),
                 ControllerResolver.getResolver("core.management.security-realm"),
                 SecurityRealmAddHandler.INSTANCE,
                 SecurityRealmRemoveHandler.INSTANCE,

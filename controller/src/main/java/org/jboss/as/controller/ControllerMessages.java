@@ -2746,5 +2746,9 @@ public interface ControllerMessages {
     @Message(id = 13483, value = "The following attributes must NOT be defined as %s in the current model: %s")
     String attributesMustNotBeDefinedAs(ModelNode value, Set<String> names);
 
+
+    @Message(id = 13484, value="A uri with bad syntax '%s' was passed for validation.")
+    OperationFailedException badUriSyntax(String uri);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }

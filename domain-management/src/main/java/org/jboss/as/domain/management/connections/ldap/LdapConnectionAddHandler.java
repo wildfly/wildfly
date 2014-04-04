@@ -23,13 +23,20 @@
 package org.jboss.as.domain.management.connections.ldap;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.SECURITY_REALM;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.HANDLES_REFERRALS_FOR;
 import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY;
-import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.URL;
-import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.SEARCH_DN;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.REFERRALS;
 import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.SEARCH_CREDENTIAL;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.SEARCH_DN;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.SECURITY_REALM;
+import static org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.URL;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -39,6 +46,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService.Config;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.ReferralHandling;
 import org.jboss.as.domain.management.security.SSLContextService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -52,7 +60,11 @@ import org.jboss.msc.service.ServiceTarget;
  */
 public class LdapConnectionAddHandler extends AbstractAddStepHandler {
 
-    public static final LdapConnectionAddHandler INSTANCE = new LdapConnectionAddHandler();
+    private final LdapConnectionManagerRegistry connectionManagerRegistry = new LdapConnectionManagerRegistry();
+
+    static LdapConnectionAddHandler newInstance() {
+        return new LdapConnectionAddHandler();
+    }
 
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         for (AttributeDefinition attr : LdapConnectionResourceDefinition.ATTRIBUTE_DEFINITIONS) {
@@ -71,12 +83,12 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
         final String name = address.getLastElement().getValue();
 
         final ServiceTarget serviceTarget = context.getServiceTarget();
-        final LdapConnectionManagerService connectionManagerService = new LdapConnectionManagerService();
+        final LdapConnectionManagerService connectionManagerService = new LdapConnectionManagerService(name, connectionManagerRegistry);
         updateRuntime(context, model, connectionManagerService);
 
-        ServiceBuilder<LdapConnectionManagerService> sb = serviceTarget.addService(
+        ServiceBuilder<LdapConnectionManager> sb = serviceTarget.addService(
                 LdapConnectionManagerService.ServiceUtil.createServiceName(name), connectionManagerService).setInitialMode(
-                ServiceController.Mode.ON_DEMAND);
+                ServiceController.Mode.ACTIVE);
 
         if (verificationHandler != null) {
             sb.addListener(verificationHandler);
@@ -89,7 +101,7 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
             SSLContextService.ServiceUtil.addDependency(sb, connectionManagerService.getTrustOnlySSLContextInjector(), SecurityRealm.ServiceUtil.createServiceName(realmName), true);
         }
 
-        ServiceController<LdapConnectionManagerService> sc = sb.install();
+        ServiceController<LdapConnectionManager> sc = sb.install();
         if (controllers != null) {
             controllers.add(sc);
         }
@@ -103,8 +115,25 @@ public class LdapConnectionAddHandler extends AbstractAddStepHandler {
         String searchDn = searchDnNode.isDefined() ? searchDnNode.asString() : null;
         ModelNode searchCredentialNode = SEARCH_CREDENTIAL.resolveModelAttribute(context, model);
         String searchCredential = searchCredentialNode.isDefined() ? searchCredentialNode.asString() : null;
+        ReferralHandling referralHandling = ReferralHandling.valueOf(REFERRALS.resolveModelAttribute(context, model).asString());
+        final Set<URI> handlesReferralsForSet;
+        ModelNode handlesReferralsFor = HANDLES_REFERRALS_FOR.resolveModelAttribute(context, model);
+        if (handlesReferralsFor.isDefined()) {
+            List<ModelNode> list = handlesReferralsFor.asList();
+            handlesReferralsForSet = new HashSet<URI>(list.size());
+            for (ModelNode current : list) {
+                try {
+                    handlesReferralsForSet.add(new URI(current.asString()));
+                } catch (URISyntaxException e) {
+                    // TODO - Add an error but this should not be possible as the attribute was previously validated.
+                    throw new OperationFailedException(e);
+                }
+            }
+        } else {
+            handlesReferralsForSet = Collections.emptySet();
+        }
 
-        return connectionManagerService.setConfiguration(initialContextFactory, url, searchDn, searchCredential);
+        return connectionManagerService.setConfiguration(initialContextFactory, url, searchDn, searchCredential, referralHandling, handlesReferralsForSet);
     }
 
 }

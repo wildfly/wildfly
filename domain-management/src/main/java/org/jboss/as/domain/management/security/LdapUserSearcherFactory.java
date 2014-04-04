@@ -26,13 +26,14 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.IOException;
 
+import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.naming.ldap.LdapReferralException;
 
 /**
  * Factory to create searchers for user in LDAP.
@@ -47,7 +48,7 @@ class LdapUserSearcherFactory {
         return new LdapSearcher<LdapEntry, String>() {
 
             @Override
-            public LdapEntry search(DirContext dirContext, String suppliedName) {
+            public LdapEntry search(LdapConnectionHandler connectionHandler, String suppliedName) {
                 return new LdapEntry(suppliedName, suppliedName);
             }
         };
@@ -89,8 +90,9 @@ class LdapUserSearcherFactory {
             }
         }
 
+
         @Override
-        public LdapEntry search(DirContext dirContext, String suppliedName) throws IOException, NamingException {
+        public LdapEntry search(LdapConnectionHandler connectionHandler, String suppliedName) throws IOException, NamingException {
             NamingEnumeration<SearchResult> searchEnumeration = null;
 
             try {
@@ -113,10 +115,19 @@ class LdapUserSearcherFactory {
                 String filter = userNameAttribute != null ? "(" + userNameAttribute + "={0})" : advancedFilter;
                 SECURITY_LOGGER.tracef("Searching for user '%s' using filter '%s'.", suppliedName, filter);
 
-                searchEnumeration = dirContext.search(baseDn, filter, filterArguments, searchControls);
-                if (searchEnumeration.hasMore() == false) {
-                    SECURITY_LOGGER.tracef("User '%s' not found in directory.", suppliedName);
-                    throw MESSAGES.userNotFoundInDirectory(suppliedName);
+                searchEnumeration = connectionHandler.getConnection().search(baseDn, filter, filterArguments, searchControls);
+                try {
+                    if (searchEnumeration.hasMore() == false) {
+                        SECURITY_LOGGER.tracef("User '%s' not found in directory.", suppliedName);
+                        throw MESSAGES.userNotFoundInDirectory(suppliedName);
+                    }
+                } catch (LdapReferralException e) {
+                    Object into = e.getReferralInfo();
+                    Object resolved = e.getResolvedObj();
+                    Context context = e.getReferralContext();
+
+
+                    System.out.println("Had a referral.");
                 }
 
                 String distinguishedUserDN = null;

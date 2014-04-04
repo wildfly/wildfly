@@ -186,7 +186,6 @@ public class ModelDescriptionConstants {
     public static final String INCLUDE_RUNTIME = "include-runtime";
     public static final String INET_ADDRESS = "inet-address";
     public static final String INHERITED = "inherited";
-    public static final String INITIAL_CONTEXT_FACTORY = "initial-context-factory";
     public static final String INITIAL_SERVER_GROUPS = "initial-server-groups";
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String INTERFACE = "interface";
@@ -331,9 +330,7 @@ public class ModelDescriptionConstants {
     public static final String RUNTIME_UPDATE_SKIPPED = "runtime-update-skipped";
     public static final String SCHEMA_LOCATION = "schema-location";
     public static final String SCHEMA_LOCATIONS = "schema-locations";
-    public static final String SEARCH_CREDENTIAL = "search-credential";
     public static final String SEARCH_BY = "search-by";
-    public static final String SEARCH_DN = "search-dn";
     public static final String SECRET = "secret";
     public static final String SECURE_PORT = "secure-port";
     public static final String SECURE_SOCKET_BINDING = "secure-socket-binding";

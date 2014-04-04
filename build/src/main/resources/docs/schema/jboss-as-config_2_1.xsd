@@ -268,7 +268,8 @@
             <xs:annotation>
                 <xs:documentation>
                     A reference to a security realm to obtain an initialised SSLContext to use when establishing a
-                    connection to the LDAP server.
+                    connection
+                    to the LDAP server.
 
                     The realm referenced here MUST NOT be a realm that is also configured to use this connection.
                 </xs:documentation>
@@ -281,7 +282,47 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="referrals" default="IGNORE" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    Defines how referrals should be handled if encountered when using this connection, by default they are
+                    ignored.
+
+                    If set to FOLLOW then if referrals are encountered using this connection they will automatically be followed. Apart from the alternative
+                    location if set to FOLLOW it is assumed the remainder of settings for this connection can be applied to the connection
+                    for the referral.
+
+                    Finally if this option is set to THROW an exception is thrown by the connection when referrals are encountered, the security realm will then
+                    use information from the Exception to identify an alternative connection to use.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:string">
+                    <xs:enumeration value="IGNORE" />
+                    <xs:enumeration value="FOLLOW" />
+                    <xs:enumeration value="THROW" />
+                </xs:restriction>
+            </xs:simpleType>
+        </xs:attribute>
+        <xs:attribute name="handles-referrals-for" type="urlListType" use="optional">
+            <xs:annotation>
+                <xs:documentation>
+                    A space seaparated list of URLs that this connection will handle referrals for.
+                    
+                    Note: Only the prototocol, host and port should be specified in the URLs.  The LDAP connections are not ordered so a single URL should only
+                    be listed against a single connection, if multpile connections are defined as handling the same URL which connection will be selected is undefined
+                    and subject to change.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
+
+    <xs:simpleType name="urlListType">
+        <xs:annotation>
+            <xs:documentation>A list of URLs.</xs:documentation>
+        </xs:annotation>
+        <xs:list itemType="xs:anyURI"/>
+    </xs:simpleType>
 
     <xs:complexType name="security-realmType">
         <xs:annotation>

@@ -33,7 +33,6 @@ import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
-import javax.naming.directory.DirContext;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -43,9 +42,8 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
 import org.jboss.as.domain.management.security.LdapSearcherCache.AttachmentKey;
-import org.jboss.as.domain.management.security.LdapSearcherCache.DirContextFactory;
 import org.jboss.as.domain.management.security.LdapSearcherCache.SearchResult;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -69,7 +67,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
 
     public static final String DEFAULT_USER_DN = "dn";
 
-    private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
+    private final InjectedValue<LdapConnectionManager> connectionManager = new InjectedValue<LdapConnectionManager>();
     private final InjectedValue<LdapSearcherCache<LdapEntry, String>> userSearcherInjector = new InjectedValue<LdapSearcherCache<LdapEntry, String>>();
 
     private final boolean allowEmptyPassword;
@@ -123,7 +121,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
      *  Access to Injectors
      */
 
-    public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
+    public InjectedValue<LdapConnectionManager> getConnectionManagerInjector() {
         return connectionManager;
     }
 
@@ -131,6 +129,11 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
         return userSearcherInjector;
     }
 
+    private LdapConnectionHandler createLdapConnectionHandler() {
+        LdapConnectionManager connectionManager = this.connectionManager.getValue();
+
+        return LdapConnectionHandler.newInstance(connectionManager);
+    }
 
     /*
      *  CallbackHandler Method
@@ -160,7 +163,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                 return;
             }
 
-            final ConnectionManager connectionManager = UserLdapCallbackHandler.this.connectionManager.getValue();
+
             VerifyPasswordCallback verifyPasswordCallback = null;
             String username = null;
 
@@ -191,36 +194,11 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
             }
 
             final VerifyPasswordCallback theVpc = verifyPasswordCallback;
-            DirContextFactory dcf = new DirContextFactory() {
 
-                private DirContext context;
-
-                @Override
-                public DirContext getDirContext() throws IOException {
-                    if (context != null) {
-                        return context;
-                    }
-
-                    try {
-                        return context = (DirContext) connectionManager.getConnection();
-                    } catch (Exception e) {
-                        if (e instanceof IOException) {
-                            throw (IOException) e;
-                        }
-                        throw new IOException(e);
-                    }
-                }
-
-                @Override
-                public void close() {
-                    safeClose(theVpc, context);
-                }
-            };
-
-            DirContext userContext = null;
+            LdapConnectionHandler lch = createLdapConnectionHandler();
             try {
                 // 2 - Search to identify the DN of the user connecting
-                SearchResult<LdapEntry> searchResult = userSearcherInjector.getValue().search(dcf, username);
+                SearchResult<LdapEntry> searchResult = userSearcherInjector.getValue().search(lch, username);
                 LdapEntry ldapEntry = searchResult.getResult();
 
                 // 3 - Connect as user once their DN is identified
@@ -239,15 +217,13 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                     }
                 } else {
                     try {
-                        userContext = (DirContext) connectionManager.getConnection(ldapEntry.getDistinguishedName(), password);
-                        if (userContext != null) {
-                            SECURITY_LOGGER.tracef("Password verified for user '%s' (using connection attempt)", username);
-                            verifyPasswordCallback.setVerified(true);
-                            searchResult.attach(PASSWORD_KEY, new PasswordCredential(password));
-                            sharedState.put(LdapEntry.class.getName(), ldapEntry);
-                            if (username.equals(ldapEntry.getSimpleName()) == false) {
-                                sharedState.put(SecurityRealmService.LOADED_USERNAME_KEY, ldapEntry.getSimpleName());
-                            }
+                        lch.verifyIdentity(ldapEntry.getDistinguishedName(), password);
+                        SECURITY_LOGGER.tracef("Password verified for user '%s' (using connection attempt)", username);
+                        verifyPasswordCallback.setVerified(true);
+                        searchResult.attach(PASSWORD_KEY, new PasswordCredential(password));
+                        sharedState.put(LdapEntry.class.getName(), ldapEntry);
+                        if (username.equals(ldapEntry.getSimpleName()) == false) {
+                            sharedState.put(SecurityRealmService.LOADED_USERNAME_KEY, ldapEntry.getSimpleName());
                         }
                     } catch (Exception e) {
                         SECURITY_LOGGER.tracef("Password verification failed for user (using connection attempt) '%s'",
@@ -259,16 +235,11 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                 SECURITY_LOGGER.trace("Unable to verify identity.", e);
                 throw MESSAGES.cannotPerformVerification(e);
             } finally {
-                dcf.close();
-                UserLdapCallbackHandler.this.safeClose(userContext);
-            }
-        }
-
-        private void safeClose(final VerifyPasswordCallback vpc, final DirContext context) {
-            if (shareConnection && context != null && vpc != null && vpc.isVerified()) {
-                sharedState.put(DirContext.class.getName(), context);
-            } else {
-                UserLdapCallbackHandler.this.safeClose(context);
+                if (shareConnection && lch != null && theVpc != null && theVpc.isVerified()) {
+                    sharedState.put(LdapConnectionHandler.class.getName(), lch);
+                } else {
+                    lch.close();
+                }
             }
         }
 

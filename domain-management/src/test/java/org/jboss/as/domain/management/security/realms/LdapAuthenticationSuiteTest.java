@@ -40,7 +40,7 @@ import javax.security.sasl.RealmCallback;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManagerService;
 import org.jboss.as.domain.management.security.operations.SecurityRealmAddBuilder;
 import org.jboss.dmr.ModelNode;
@@ -69,26 +69,24 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
 
     @Test
     public void testConnection() throws Exception {
-        ConnectionManager connectionManager = getConnectionManager(CONNECTION_NAME);
+        LdapConnectionManager connectionManager = getConnectionManager(CONNECTION_NAME);
         assertNotNull("Connection Manager.", connectionManager);
         // Configured Credentials.
         DirContext connection = (DirContext) connectionManager.getConnection();
         assertNotNull("Connection with configured credentials.", connection);
         connection.close();
         // Supplied Credentials.
-        connection = (DirContext) connectionManager.getConnection("uid=UserOne,dc=simple,dc=wildfly,dc=org","one_password");
-        assertNotNull("Connection with configured credentials.", connection);
-        connection.close();
+        connectionManager.verifyIdentity("uid=UserOne,dc=simple,dc=wildfly,dc=org","one_password");
 
         // Bad Supplied Credentials.
         try {
-            connectionManager.getConnection("uid=UserOne,dc=simple,dc=wildfly,dc=org","bad_password");
+            connectionManager.verifyIdentity("uid=UserOne,dc=simple,dc=wildfly,dc=org","bad_password");
             fail("Expected exception not thrown.");
         } catch (Exception ignored) {}
     }
 
-    private ConnectionManager getConnectionManager(final String name) {
-        return (ConnectionManager) getContainer().getService(LdapConnectionManagerService.ServiceUtil.createServiceName(name)).getValue();
+    private LdapConnectionManager getConnectionManager(final String name) {
+        return (LdapConnectionManager) getContainer().getService(LdapConnectionManagerService.ServiceUtil.createServiceName(name)).getValue();
     }
 
     @Test

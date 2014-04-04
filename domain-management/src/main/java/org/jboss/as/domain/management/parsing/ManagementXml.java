@@ -57,7 +57,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLE_MAPPING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SENSITIVITY_CLASSIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP_SCOPED_ROLE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
@@ -83,16 +82,17 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.CACHE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_ACCESS_TIME;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.BY_SEARCH_TIME;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.CACHE;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_DEFAULT_USER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.DEFAULT_USER;
-import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PROVIDER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JKS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PROVIDER;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PLUG_IN;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PROPERTY;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -407,8 +407,11 @@ public class ManagementXml {
                         case DOMAIN_1_5:
                             parseLdapConnection_1_4(reader, address, list);
                             break;
-                        default:
+                        case DOMAIN_2_0:
                             parseLdapConnection_2_0(reader, address, expectedNs, list);
+                            break;
+                        default:
+                            parseLdapConnection_2_1(reader, address, expectedNs, list);
                             break;
                     }
                     break;
@@ -605,6 +608,92 @@ public class ManagementXml {
         }
     }
 
+    private static void parseLdapConnection_2_1(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list)
+            throws XMLStreamException {
+
+        final ModelNode add = new ModelNode();
+        add.get(OP).set(ADD);
+
+        list.add(add);
+
+        ModelNode connectionAddress = null;
+
+        Set<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.URL);
+        final int count = reader.getAttributeCount();
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            } else {
+                final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+                required.remove(attribute);
+                switch (attribute) {
+                    case NAME: {
+                        connectionAddress = address.clone().add(LDAP_CONNECTION, value);
+                        add.get(OP_ADDR).set(connectionAddress);
+                        break;
+                    }
+                    case URL: {
+                        LdapConnectionResourceDefinition.URL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case SEARCH_DN: {
+                        LdapConnectionResourceDefinition.SEARCH_DN.parseAndSetParameter(value,  add, reader);
+                        break;
+                    }
+                    case SEARCH_CREDENTIAL: {
+                        LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case SECURITY_REALM: {
+                        LdapConnectionResourceDefinition.SECURITY_REALM.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case INITIAL_CONTEXT_FACTORY: {
+                        LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case REFERRALS: {
+                        LdapConnectionResourceDefinition.REFERRALS.parseAndSetParameter(value, add, reader);
+                        break;
+                    }
+                    case HANDLES_REFERRALS_FOR: {
+                        for (String url : reader.getListAttributeValue(i)) {
+                            LdapConnectionResourceDefinition.HANDLES_REFERRALS_FOR.parseAndAddParameterElement(url, add, reader);
+                        }
+                        break;
+                    }
+                    default: {
+                        throw unexpectedAttribute(reader, i);
+                    }
+                }
+            }
+        }
+
+        if (required.size() > 0) {
+            throw missingRequired(reader, required);
+        }
+
+        boolean propertiesFound = false;
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+                case PROPERTIES: {
+                    if (propertiesFound) {
+                        throw unexpectedElement(reader);
+                    }
+                    propertiesFound = true;
+                    parseLdapConnectionProperties(reader, connectionAddress, expectedNs, list);
+                    break;
+                }
+                default: {
+                    throw unexpectedElement(reader);
+                }
+            }
+        }
+    }
     private static void parseLdapConnectionProperties(final XMLExtendedStreamReader reader, final ModelNode address,
             final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
 
@@ -3711,6 +3800,9 @@ public class ManagementXml {
             LdapConnectionResourceDefinition.SEARCH_CREDENTIAL.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.SECURITY_REALM.marshallAsAttribute(connection, writer);
             LdapConnectionResourceDefinition.INITIAL_CONTEXT_FACTORY.marshallAsAttribute(connection, writer);
+            LdapConnectionResourceDefinition.REFERRALS.marshallAsAttribute(connection, writer);
+            LdapConnectionResourceDefinition.HANDLES_REFERRALS_FOR.marshallAsElement(connection, writer);
+
             if (connection.hasDefined(PROPERTY)) {
                 List<Property> propertyList = connection.get(PROPERTY).asPropertyList();
                 if (propertyList.size() > 0) {

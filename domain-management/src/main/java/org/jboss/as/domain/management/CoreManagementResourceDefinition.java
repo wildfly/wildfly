@@ -88,7 +88,7 @@ public class CoreManagementResourceDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         if (environment != Environment.DOMAIN) {
             resourceRegistration.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
-            resourceRegistration.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
+            resourceRegistration.registerSubModel(LdapConnectionResourceDefinition.newInstance());
         }
 
         for (ResourceDefinition current : interfaces) {

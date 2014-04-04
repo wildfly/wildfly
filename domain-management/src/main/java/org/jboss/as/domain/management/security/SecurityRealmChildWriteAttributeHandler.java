@@ -22,13 +22,14 @@
 
 package org.jboss.as.domain.management.security;
 
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RestartParentWriteAttributeHandler;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.dmr.ModelNode;
@@ -45,7 +46,7 @@ public class SecurityRealmChildWriteAttributeHandler extends RestartParentWriteA
     private final AttributeDefinition[] attributeDefinitions;
 
     public SecurityRealmChildWriteAttributeHandler(AttributeDefinition... attributes) {
-        super(ModelDescriptionConstants.SECURITY_REALM, attributes);
+        super(SECURITY_REALM, attributes);
         this.attributeDefinitions = attributes;
     }
 

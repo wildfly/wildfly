@@ -117,7 +117,7 @@ public class LdapGroupSearcherFactory {
         }
 
         @Override
-        public LdapEntry[] search(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
+        public LdapEntry[] search(LdapConnectionHandler connectionHandler, LdapEntry entry) throws IOException, NamingException {
             SearchControls searchControls = createSearchControl(recursive, attributeArray); // TODO - Can we create this in
                                                                                             // advance?
             Set<LdapEntry> foundEntries = new HashSet<LdapEntry>();
@@ -127,7 +127,7 @@ public class LdapGroupSearcherFactory {
                 SECURITY_LOGGER.tracef("Performing search baseDn=%s, filterString=%s, searchParameter=%s", baseDn,
                         filterString, Arrays.toString(searchParameter));
             }
-            NamingEnumeration<SearchResult> searchResults = dirContext.search(baseDn, filterString, searchParameter, searchControls);
+            NamingEnumeration<SearchResult> searchResults = connectionHandler.getConnection().search(baseDn, filterString, searchParameter, searchControls);
             if (trace && searchResults.hasMore() == false) {
                 SECURITY_LOGGER.trace("No search results found.");
             }
@@ -201,8 +201,9 @@ public class LdapGroupSearcherFactory {
         }
 
         @Override
-        public LdapEntry[] search(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
+        public LdapEntry[] search(LdapConnectionHandler connectionHandler, LdapEntry entry) throws IOException, NamingException {
             Set<LdapEntry> foundEntries = new HashSet<LdapEntry>();
+            DirContext dirContext = connectionHandler.getConnection();
             // Load the list of group.
             Attributes groups = dirContext.getAttributes(entry.getDistinguishedName(), new String[] { groupAttribute });
             Attribute groupRef = groups.get(groupAttribute);
