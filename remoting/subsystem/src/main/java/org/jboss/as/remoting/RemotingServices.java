@@ -91,6 +91,13 @@ public class RemotingServices {
         return endpointName.append("channel").append(channelName);
     }
 
+    /**
+     * Add a service controller, registering a verification listener if present and adding the controller
+     * to the given list, if present
+     * @param newControllers the list of new controllers to add the controller to. May be {@code null}
+     * @param verificationHandler the verification listener to register. May be {@code null}
+     * @param builder the builder for the service controller. Will not be {@code null}
+     */
     public static void addController(final List<ServiceController<?>> newControllers,
             final ServiceVerificationHandler verificationHandler, final ServiceBuilder<?> builder) {
         if (verificationHandler != null) {

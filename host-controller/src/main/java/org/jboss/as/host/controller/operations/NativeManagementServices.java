@@ -5,6 +5,7 @@ import java.util.List;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
 import org.jboss.as.host.controller.DomainModelControllerService;
+import org.jboss.as.host.controller.HostControllerService;
 import org.jboss.as.host.controller.jmx.RemotingConnectorService;
 import org.jboss.as.host.controller.mgmt.ServerToHostOperationHandlerFactoryService;
 import org.jboss.as.protocol.ProtocolChannelClient;
@@ -53,7 +54,8 @@ public class NativeManagementServices {
 
             ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                     new ModelControllerClientOperationHandlerFactoryService(),
-                    DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.MANAGEMENT_CHANNEL, verificationHandler, newControllers);
+                    DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.MANAGEMENT_CHANNEL,
+                    HostControllerService.HC_EXECUTOR_SERVICE_NAME, verificationHandler, newControllers);
 
             RemotingConnectorService.addService(serviceTarget, verificationHandler);
 

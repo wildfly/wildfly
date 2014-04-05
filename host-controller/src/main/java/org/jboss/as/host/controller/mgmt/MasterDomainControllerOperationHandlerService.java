@@ -87,10 +87,6 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
         this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
     }
 
-    protected String getThreadGroupName() {
-        return "domain-mgmt-handler-thread";
-    }
-
     @Override
     public synchronized void start(StartContext context) throws StartException {
         pongRequestHandler.resetConnectionId();

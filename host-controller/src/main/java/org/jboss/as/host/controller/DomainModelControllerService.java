@@ -521,7 +521,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                         InternalExecutor executor = new InternalExecutor();
                         ManagementRemotingServices.installManagementChannelServices(serviceTarget, ManagementRemotingServices.MANAGEMENT_ENDPOINT,
                                 new MasterDomainControllerOperationHandlerService(this, executor, executor, runtimeIgnoreTransformationRegistry),
-                                DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
+                                DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL,
+                                HostControllerService.HC_EXECUTOR_SERVICE_NAME, null, null);
 
                         // Block for the ServerInventory
                         establishServerInventory(inventoryFuture);

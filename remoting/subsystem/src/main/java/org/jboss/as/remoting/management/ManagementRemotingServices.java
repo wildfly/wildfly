@@ -79,10 +79,10 @@ public final class ManagementRemotingServices extends RemotingServices {
      * @param endpointName the name of the endpoint to install the stream server into
      * @param networkInterfaceBinding the network interface binding
      * @param port the port
-     * @param securityRealmName the security real name
+     * @param securityRealm the security real name
      * @param options the remoting options
-     * @param verificationHandler
-     * @param newControllers
+     * @param verificationHandler the verification listener to register. May be {@code null}
+     * @param newControllers the list of new controllers to add the controller to. May be {@code null}
      */
     public static void installDomainConnectorServices(final ServiceTarget serviceTarget,
                                                       final ServiceName endpointName,
@@ -106,8 +106,8 @@ public final class ManagementRemotingServices extends RemotingServices {
      * @param channelName the name of the channel
      * @param operationHandlerName the name of the operation handler to handle request for this channel
      * @param options the remoting options
-     * @param verificationHandler
-     * @param newControllers list to add the new services to
+     * @param verificationHandler the verification listener to register. May be {@code null}
+     * @param newControllers the list of new controllers to add the controller to. May be {@code null}
      * @param onDemand whether to install the services on demand
      */
     public static void installManagementChannelOpenListenerService(
@@ -137,12 +137,12 @@ public final class ManagementRemotingServices extends RemotingServices {
 
     /**
      * Set up the services to create a channel listener and operation handler service.
-     *
-     * @param serviceTarget the service target to install the services into
+     *  @param serviceTarget the service target to install the services into
      * @param endpointName the endpoint name to install the services into
      * @param channelName the name of the channel
-     * @param verificationHandler
-     * @param newControllers list to add the new services to
+     * @param executorServiceName service name of the executor service to use in the operation handler service
+     * @param verificationHandler the verification listener to register. May be {@code null}
+     * @param newControllers the list of new controllers to add the controller to. May be {@code null}
      */
     public static void installManagementChannelServices(
             final ServiceTarget serviceTarget,
@@ -150,7 +150,7 @@ public final class ManagementRemotingServices extends RemotingServices {
             final AbstractModelControllerOperationHandlerFactoryService operationHandlerService,
             final ServiceName modelControllerName,
             final String channelName,
-            final ServiceVerificationHandler verificationHandler,
+            ServiceName executorServiceName, final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
 
         final OptionMap options = OptionMap.create(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE,
@@ -159,6 +159,7 @@ public final class ManagementRemotingServices extends RemotingServices {
 
         final ServiceBuilder<?> builder = serviceTarget.addService(operationHandlerName, operationHandlerService)
             .addDependency(modelControllerName, ModelController.class, operationHandlerService.getModelControllerInjector())
+            .addDependency(executorServiceName, ExecutorService.class, operationHandlerService.getExecutorInjector())
             .setInitialMode(ACTIVE);
 
         addController(newControllers, verificationHandler, builder);
