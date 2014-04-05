@@ -41,9 +41,16 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 
 import java.io.DataInput;
 import java.io.IOException;
+import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.security.auth.Subject;
 
@@ -65,6 +72,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.as.protocol.mgmt.ProtocolUtils;
 import org.jboss.dmr.ModelNode;
+import org.jboss.threads.JBossThreadFactory;
 
 /**
  * Operation handlers for the remote implementation of {@link org.jboss.as.controller.client.ModelControllerClient}
@@ -74,9 +82,16 @@ import org.jboss.dmr.ModelNode;
  */
 public class ModelControllerClientOperationHandler implements ManagementRequestHandlerFactory {
 
+
+    // The defaults if no executor was defined
+    private static final int WORK_QUEUE_SIZE = 512;
+    private static final int POOL_CORE_SIZE = 4;
+    private static final int POOL_MAX_SIZE = 4;
+
     private final ModelController controller;
 
     private final ManagementChannelAssociation channelAssociation;
+    private final Executor clientRequestExecutor;
     private final Subject subject;
 
     public ModelControllerClientOperationHandler(final ModelController controller,
@@ -89,6 +104,15 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
         this.controller = controller;
         this.channelAssociation = channelAssociation;
         this.subject = subject;
+        // Create the client request executor
+        final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(WORK_QUEUE_SIZE);
+        final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("management-handler-thread"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
+        ThreadPoolExecutor executor = new ThreadPoolExecutor(POOL_CORE_SIZE, POOL_MAX_SIZE,
+                60L, TimeUnit.SECONDS, workQueue,
+                threadFactory);
+        // Allow the core threads to time out as well
+        executor.allowCoreThreadTimeOut(true);
+        clientRequestExecutor = executor;
     }
 
     @Override
@@ -134,7 +158,7 @@ public class ModelControllerClientOperationHandler implements ManagementRequestH
                         throw e.getException();
                     }
                 }
-            });
+            }, clientRequestExecutor);
         }
 
         private void doExecute(final ModelNode operation, final int attachmentsLength, final ManagementRequestContext<Void> context, final CompletedCallback callback) {

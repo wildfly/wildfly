@@ -527,7 +527,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                         return executeReadOnlyOperation(operation, handler, control, attachments, step, permit);
                                     }
                                 }, environment.getDomainTempDir()),
-                                DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
+                                DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL,
+                                HostControllerService.HC_EXECUTOR_SERVICE_NAME, null, null);
 
                         // Block for the ServerInventory
                         establishServerInventory(inventoryFuture);

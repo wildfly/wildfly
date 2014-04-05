@@ -22,8 +22,6 @@
 
 package org.jboss.as.server.operations;
 
-import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.ATTRIBUTE_DEFINITIONS;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.INTERFACE;
 import static org.jboss.as.server.mgmt.NativeManagementResourceDefinition.NATIVE_PORT;
@@ -39,13 +37,12 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
-import org.jboss.as.domain.management.security.SecurityRealmService;
-
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.remoting.EndpointService;
 import org.jboss.as.remoting.RemotingServices;
+import org.jboss.as.remoting.management.ManagementChannelRegistryService;
 import org.jboss.as.remoting.management.ManagementRemotingServices;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerLogger;
@@ -58,7 +55,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.RemotingOptions;
 import org.xnio.OptionMap;
-import org.xnio.Options;
 
 
 /**
@@ -103,6 +99,7 @@ public class NativeManagementAddHandler extends AbstractAddStepHandler {
                 new ModelControllerClientOperationHandlerFactoryService(),
                 Services.JBOSS_SERVER_CONTROLLER,
                 ManagementRemotingServices.MANAGEMENT_CHANNEL,
+                Services.JBOSS_SERVER_EXECUTOR,
                 verificationHandler,
                 newControllers);
     }

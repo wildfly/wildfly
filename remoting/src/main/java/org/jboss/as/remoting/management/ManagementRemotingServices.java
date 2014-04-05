@@ -23,8 +23,6 @@
 package org.jboss.as.remoting.management;
 
 
-import org.jboss.as.protocol.ProtocolChannelClient;
-import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.ON_DEMAND;
 
@@ -36,6 +34,8 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
+import org.jboss.as.protocol.ProtocolChannelClient;
+import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
 import org.jboss.as.remoting.RemotingServices;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -44,7 +44,6 @@ import org.jboss.msc.service.ServiceTarget;
 import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.xnio.OptionMap;
-import org.xnio.Options;
 
 /**
  * Utility class to add remoting services
@@ -78,10 +77,10 @@ public final class ManagementRemotingServices extends RemotingServices {
      * @param endpointName the name of the endpoint to install the stream server into
      * @param networkInterfaceBinding the network interface binding
      * @param port the port
-     * @param securityRealmName the security real name
+     * @param securityRealm the security realm name
      * @param options the remoting options
-     * @param verificationHandler
-     * @param newControllers
+     * @param verificationHandler the verification listener to register. May be {@code null}
+     * @param newControllers the list of new controllers to add the controller to. May be {@code null}
      */
     public static void installDomainConnectorServices(final ServiceTarget serviceTarget,
                                                       final ServiceName endpointName,
@@ -105,8 +104,8 @@ public final class ManagementRemotingServices extends RemotingServices {
      * @param channelName the name of the channel
      * @param operationHandlerName the name of the operation handler to handle request for this channel
      * @param options the remoting options
-     * @param verificationHandler
-     * @param newControllers list to add the new services to
+     * @param verificationHandler the verification listener to register. May be {@code null}
+     * @param newControllers the list of new controllers to add the controller to. May be {@code null}
      * @param onDemand whether to install the services on demand
      */
     public static void installManagementChannelOpenListenerService(
@@ -140,8 +139,9 @@ public final class ManagementRemotingServices extends RemotingServices {
      * @param serviceTarget the service target to install the services into
      * @param endpointName the endpoint name to install the services into
      * @param channelName the name of the channel
-     * @param verificationHandler
-     * @param newControllers list to add the new services to
+     * @param executorServiceName service name of the executor service to use in the operation handler service
+     * @param verificationHandler the verification listener to register. May be {@code null}
+     * @param newControllers the list of new controllers to add the controller to. May be {@code null}
      */
     public static void installManagementChannelServices(
             final ServiceTarget serviceTarget,
@@ -149,7 +149,7 @@ public final class ManagementRemotingServices extends RemotingServices {
             final AbstractModelControllerOperationHandlerFactoryService operationHandlerService,
             final ServiceName modelControllerName,
             final String channelName,
-            final ServiceVerificationHandler verificationHandler,
+            ServiceName executorServiceName, final ServiceVerificationHandler verificationHandler,
             final List<ServiceController<?>> newControllers) {
 
         final OptionMap options = OptionMap.create(RemotingOptions.RECEIVE_WINDOW_SIZE, ProtocolChannelClient.Configuration.WINDOW_SIZE,
@@ -158,6 +158,7 @@ public final class ManagementRemotingServices extends RemotingServices {
 
         final ServiceBuilder<?> builder = serviceTarget.addService(operationHandlerName, operationHandlerService)
             .addDependency(modelControllerName, ModelController.class, operationHandlerService.getModelControllerInjector())
+            .addDependency(executorServiceName, ExecutorService.class, operationHandlerService.getExecutorInjector())
             .setInitialMode(ACTIVE);
 
         addController(newControllers, verificationHandler, builder);
