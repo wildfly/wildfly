@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -265,12 +266,37 @@ final class ProxyControllerRegistration extends AbstractResourceRegistration imp
     }
 
     @Override
+    public void registerNotification(NotificationDefinition notification, boolean inherited) {
+        throw alreadyRegistered();
+    }
+
+    @Override
+    public void registerNotification(NotificationDefinition notification) {
+        throw alreadyRegistered();
+    }
+
+    @Override
+    public void unregisterNotification(String notificationType) {
+        throw alreadyRegistered();
+    }
+
+    @Override
     void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, OperationEntry> providers, final boolean inherited) {
         checkPermission();
     }
 
     @Override
     void getInheritedOperationEntries(final Map<String, OperationEntry> providers) {
+        checkPermission();
+    }
+
+    @Override
+    void getNotificationDescriptions(ListIterator<PathElement> iterator, Map<String, NotificationEntry> providers, boolean inherited) {
+        checkPermission();
+    }
+
+    @Override
+    void getInheritedNotificationEntries(Map<String, NotificationEntry> providers) {
         checkPermission();
     }
 

@@ -157,6 +157,22 @@ final class NodeSubregistry {
         }
     }
 
+    void getNotificationDescriptions(final ListIterator<PathElement> iterator, final String child, final Map<String, NotificationEntry> providers, final boolean inherited) {
+
+        final RegistrySearchControl searchControl = new RegistrySearchControl(iterator, child);
+
+        // First search the wildcard child, then if there is a non-wildcard child search it
+        // Non-wildcard goes second so its description overwrites in case of duplicates
+
+        if (searchControl.getWildCardRegistry() != null) {
+            searchControl.getWildCardRegistry().getNotificationDescriptions(searchControl.getIterator(), providers, inherited);
+        }
+
+        if (searchControl.getSpecifiedRegistry() != null) {
+            searchControl.getSpecifiedRegistry().getNotificationDescriptions(searchControl.getIterator(), providers, inherited);
+        }
+    }
+
     String getLocationString() {
         return parent.getLocationString() + "(" + keyName + " => ";
     }

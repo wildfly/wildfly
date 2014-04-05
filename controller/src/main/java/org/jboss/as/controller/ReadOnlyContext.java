@@ -31,6 +31,7 @@ import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
@@ -59,7 +60,7 @@ class ReadOnlyContext extends AbstractOperationContext {
     ReadOnlyContext(final ProcessType processType, final RunningMode runningMode, final ModelController.OperationTransactionControl transactionControl,
                     final ControlledProcessState processState, final boolean booting,
                     final AbstractOperationContext primaryContext, final ModelControllerImpl controller, final int operationId) {
-        super(processType, runningMode, transactionControl, processState, booting, controller.getAuditLogger());
+        super(processType, runningMode, transactionControl, processState, booting, controller.getAuditLogger(), controller.getNotificationSupport());
         this.primaryContext = primaryContext;
         this.controller = controller;
         this.operationId = operationId;
@@ -301,6 +302,10 @@ class ReadOnlyContext extends AbstractOperationContext {
     @Override
     public AuthorizationResult authorize(ModelNode operation, String attribute, ModelNode currentValue, Set<Action.ActionEffect> effects) {
         return primaryContext.authorize(operation, attribute, currentValue, effects);
+    }
+
+    public void emit(Notification notification) {
+        throw readOnlyContext();
     }
 
     IllegalStateException readOnlyContext() {

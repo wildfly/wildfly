@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_REQUIRES_RELOAD;
@@ -63,6 +64,10 @@ import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.access.Environment;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.Notification;
+import org.jboss.as.controller.notification.NotificationSupport;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.Resource;
@@ -90,10 +95,15 @@ abstract class AbstractOperationContext implements OperationContext {
     private final EnumMap<Stage, Deque<Step>> steps;
     private final ModelController.OperationTransactionControl transactionControl;
     private final ControlledProcessState processState;
+    private final NotificationSupport notificationSupport;
     private final boolean booting;
     private final ProcessType processType;
     private final RunningMode runningMode;
     private final Environment callEnvironment;
+
+    /** List of notifications that will be emitted at the end of the operation execution if it is successful */
+    private final List<Notification> notifications;
+
     // We only respect interruption on the way in; once we complete all steps
     // and begin
     // returning, any calls that can throw InterruptedException are converted to
@@ -125,13 +135,16 @@ abstract class AbstractOperationContext implements OperationContext {
                              final ModelController.OperationTransactionControl transactionControl,
                              final ControlledProcessState processState,
                              final boolean booting,
-                             final AuditLogger auditLogger) {
+                             final AuditLogger auditLogger,
+                             final NotificationSupport notificationSupport) {
         this.processType = processType;
         this.runningMode = runningMode;
         this.transactionControl = transactionControl;
         this.processState = processState;
         this.booting = booting;
         this.auditLogger = auditLogger;
+        this.notificationSupport = notificationSupport;
+        this.notifications = new ArrayList<Notification>();
         steps = new EnumMap<Stage, Deque<Step>>(Stage.class);
         for (Stage stage : Stage.values()) {
             if (booting && stage == Stage.VERIFY) {
@@ -550,6 +563,23 @@ abstract class AbstractOperationContext implements OperationContext {
         }
 
         logAuditRecord();
+
+        // fire the notifications only after the eventual persistent resource is committed
+        emitNotifications();
+    }
+
+    @Override
+    public void emit(Notification notification) {
+        // buffer the notifications but emit them only when a step is completed
+        notifications.add(notification);
+    }
+
+    private void emitNotifications() {
+        if (resultAction != ResultAction.ROLLBACK
+                && !notifications.isEmpty()) {
+            notificationSupport.emit(notifications.toArray(new Notification[notifications.size()]));
+            notifications.clear();
+        }
     }
 
     private boolean canContinueProcessing() {
@@ -671,6 +701,8 @@ abstract class AbstractOperationContext implements OperationContext {
     }
 
     private void finishStep(Step step) {
+        fireAttributeValueWrittenNotification(step);
+
         boolean finalize = true;
         Throwable toThrow = null;
         try {
@@ -715,6 +747,29 @@ abstract class AbstractOperationContext implements OperationContext {
                 throw (RuntimeException) toThrow;
             } else {
                 throw (Error) toThrow;
+            }
+        }
+    }
+
+    /**
+     * Fire a {@code ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION} notification if the resource was updated during the step execution.
+     */
+    private void fireAttributeValueWrittenNotification(Step step) {
+        if (step.resourceForUpdate != null) {
+            // if the operation is a write-attribute or undefine-attribute, we have the name of the attribute in the NAME parameter
+            if (step.operation.hasDefined(NAME)) {
+                String attributeName = step.operation.get(NAME).asString();
+                ModelNode oldValue = step.resourceForUpdate.get(attributeName);
+                ModelNode newValue = readResourceFromRoot(step.address, false).getModel().get(attributeName);
+                // only emit a notification if the value has changed
+                if (oldValue != null && !oldValue.equals(newValue)) {
+                    ModelNode data = new ModelNode();
+                    data.get(NAME).set(attributeName);
+                    data.get(GlobalNotifications.OLD_VALUE).set(oldValue);
+                    data.get(GlobalNotifications.NEW_VALUE).set(newValue);
+                    Notification notification = new Notification(ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION, step.address.toModelNode(), MESSAGES.attributeValueWritten(attributeName, oldValue, newValue), data);
+                    emit(notification);
+                }
             }
         }
     }
@@ -857,6 +912,8 @@ abstract class AbstractOperationContext implements OperationContext {
         final ModelNode operation;
         final PathAddress address;
         final OperationId operationId;
+        ModelNode resourceForUpdate;
+
         private Object restartStamp;
         private ResultHandler resultHandler;
         Step predecessor;

@@ -65,6 +65,7 @@ import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.extension.ExtensionAddHandler;
 import org.jboss.as.controller.extension.ParallelExtensionAddHandler;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
@@ -106,6 +107,7 @@ class ModelControllerImpl implements ModelController {
 
     private final ConcurrentMap<Integer, AbstractOperationContext> activeOperations = new ConcurrentHashMap<>();
     private final ManagedAuditLogger auditLogger;
+    private final NotificationSupport notificationSupport;
 
     /** Tracks the relationship between domain resources and hosts and server groups */
     private final HostServerGroupTracker hostServerGroupTracker;
@@ -115,7 +117,7 @@ class ModelControllerImpl implements ModelController {
                         final ProcessType processType, final RunningModeControl runningModeControl,
                         final OperationStepHandler prepareStep, final ControlledProcessState processState, final ExecutorService executorService,
                         final ExpressionResolver expressionResolver, final Authorizer authorizer,
-                        final ManagedAuditLogger auditLogger) {
+                        final ManagedAuditLogger auditLogger, final NotificationSupport notificationSupport) {
         this.serviceRegistry = serviceRegistry;
         this.serviceTarget = serviceTarget;
         this.rootRegistration = rootRegistration;
@@ -130,6 +132,7 @@ class ModelControllerImpl implements ModelController {
         this.expressionResolver = expressionResolver;
         this.authorizer = authorizer;
         this.auditLogger = auditLogger;
+        this.notificationSupport = notificationSupport;
         this.hostServerGroupTracker = processType.isManagedDomain() ? new HostServerGroupTracker() : null;
         auditLogger.startBoot();
     }
@@ -627,6 +630,11 @@ class ModelControllerImpl implements ModelController {
 
     ServiceTarget getServiceTarget() {
         return serviceTarget;
+    }
+
+    @Override
+    public NotificationSupport getNotificationSupport() {
+        return notificationSupport;
     }
 
     ModelNode resolveExpressions(ModelNode node) throws OperationFailedException {

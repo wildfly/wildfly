@@ -27,6 +27,7 @@ import java.util.concurrent.Executor;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.notification.NotificationSupport;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -65,6 +66,13 @@ public interface ModelController {
      * @throws SecurityException if the caller does not have {@link #ACCESS_PERMISSION}
      */
     ModelControllerClient createClient(Executor executor);
+
+    /**
+     * Returns the {@code NotificationSupport} that handles notifications for this model controller.
+     *
+     * @return the notification support
+     */
+    NotificationSupport getNotificationSupport();
 
     /**
      * A callback interface for the operation's completion status.  Implemented in order to control whether a complete

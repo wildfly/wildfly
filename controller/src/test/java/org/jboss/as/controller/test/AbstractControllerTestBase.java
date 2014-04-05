@@ -91,6 +91,21 @@ public abstract class AbstractControllerTestBase {
         return container;
     }
 
+    protected ModelNode createOperation(String operationName, PathAddress address) {
+        ModelNode operation = new ModelNode();
+        operation.get(OP).set(operationName);
+        if (address.size() > 0) {
+            for (PathElement element : address) {
+                operation.get(OP_ADDR).add(element.getKey());
+                operation.get(OP_ADDR).add(element.getValue());
+            }
+        } else {
+            operation.get(OP_ADDR).setEmptyList();
+        }
+
+        return operation;
+    }
+
     protected ModelNode createOperation(String operationName, String... address) {
         ModelNode operation = new ModelNode();
         operation.get(OP).set(operationName);

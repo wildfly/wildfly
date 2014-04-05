@@ -31,6 +31,7 @@ import org.jboss.as.controller.access.ResourceAuthorization;
 import org.jboss.as.controller.access.AuthorizationResult;
 import org.jboss.as.controller.access.Caller;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -723,6 +724,13 @@ public interface OperationContext extends ExpressionResolver {
      * @return the call environment
      */
     Environment getCallEnvironment();
+
+    /**
+     * Emit a {@link org.jboss.as.controller.notification.Notification}.
+     *
+     * @param notification the notification to emit
+     */
+    void emit(final Notification notification);
 
     /**
      * The stage at which a step should apply.

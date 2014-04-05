@@ -21,6 +21,7 @@ package org.jboss.as.host.controller.operations;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
+import static org.jboss.as.host.controller.resources.ServerConfigResourceDefinition.SERVER_STARTED_NOTIFICATION;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
@@ -35,6 +36,7 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.client.helpers.domain.ServerStatus;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.as.controller.registry.Resource;
@@ -121,6 +123,7 @@ public class ServerStartHandler implements OperationStepHandler {
             }
         }, OperationContext.Stage.RUNTIME);
 
+        context.emit(new Notification(SERVER_STARTED_NOTIFICATION, operation.require(OP_ADDR), MESSAGES.serverHasBeenStarted()));
         context.stepCompleted();
     }
 }

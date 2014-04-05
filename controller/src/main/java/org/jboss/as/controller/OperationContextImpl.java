@@ -34,6 +34,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
@@ -64,6 +66,7 @@ import org.jboss.as.controller.access.TargetAttribute;
 import org.jboss.as.controller.access.TargetResource;
 import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.client.MessageSeverity;
+import org.jboss.as.controller.notification.Notification;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -167,7 +170,7 @@ final class OperationContextImpl extends AbstractOperationContext {
                             final Resource model, final ModelController.OperationTransactionControl transactionControl,
                             final ControlledProcessState processState, final AuditLogger auditLogger, final boolean booting,
                             final Integer operationId, final HostServerGroupTracker hostServerGroupTracker) {
-        super(processType, runningMode, transactionControl, processState, booting, auditLogger);
+        super(processType, runningMode, transactionControl, processState, booting, auditLogger, modelController.getNotificationSupport());
         this.model = model;
         this.originalModel = model;
         this.modelController = modelController;
@@ -608,6 +611,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             }
             resource = requireChild(resource, element, address);
         }
+
+        // keep a copy of the resource's model to compare it after the execution and emit a attribute-value-written notification
+        activeStep.resourceForUpdate = resource.getModel().clone();
         return resource;
     }
 
@@ -679,6 +685,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                 }
             }
         }
+
+        Notification notification = new Notification(RESOURCE_ADDED_NOTIFICATION, absoluteAddress.toModelNode(), MESSAGES.resourceWasAdded(absoluteAddress));
+        emit(notification);
     }
 
     public Resource removeResource(final PathAddress requestAddress) {
@@ -712,6 +721,9 @@ final class OperationContextImpl extends AbstractOperationContext {
                 model = requireChild(model, element, address);
             }
         }
+
+        Notification notification = new Notification(RESOURCE_REMOVED_NOTIFICATION, address.toModelNode(), MESSAGES.resourceWasRemoved(address));
+        emit(notification);
         return model;
     }
 

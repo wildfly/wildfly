@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.NotificationDefinition;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
@@ -216,6 +217,21 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
     }
 
     @Override
+    public void registerNotification(NotificationDefinition notification, boolean inherited) {
+        throw alreadyRegistered();
+    }
+
+    @Override
+    public void registerNotification(NotificationDefinition notification) {
+        throw alreadyRegistered();
+    }
+
+    @Override
+    public void unregisterNotification(String notificationType) {
+        throw alreadyRegistered();
+    }
+
+    @Override
     void getOperationDescriptions(final ListIterator<PathElement> iterator, final Map<String, OperationEntry> providers, final boolean inherited) {
         Map<String, OperationEntry> temp = new HashMap<String, OperationEntry>();
         target.getOperationDescriptions(iterator, temp, inherited);
@@ -230,6 +246,21 @@ final class AliasResourceRegistration extends AbstractResourceRegistration imple
     @Override
     void getInheritedOperationEntries(final Map<String, OperationEntry> providers) {
         target.getInheritedOperationEntries(providers);
+    }
+
+    @Override
+    void getNotificationDescriptions(ListIterator<PathElement> iterator, Map<String, NotificationEntry> providers, boolean inherited) {
+        Map<String, NotificationEntry> temp = new HashMap<String, NotificationEntry>();
+        target.getNotificationDescriptions(iterator, temp, inherited);
+        for (Map.Entry<String, NotificationEntry> entry : providers.entrySet()) {
+            providers.put(entry.getKey(),
+                    new NotificationEntry(entry.getValue().getDescriptionProvider(), entry.getValue().isInherited()));
+        }
+    }
+
+    @Override
+    void getInheritedNotificationEntries(Map<String, NotificationEntry> providers) {
+        target.getInheritedNotificationEntries(providers);
     }
 
     @Override

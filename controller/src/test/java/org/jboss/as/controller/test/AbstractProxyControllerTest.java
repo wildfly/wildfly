@@ -23,6 +23,7 @@ package org.jboss.as.controller.test;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILD_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
@@ -32,6 +33,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MIN_OCCURS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MODEL_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATIONS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NOTIFICATION_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
@@ -50,6 +53,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUEST_PROPERTIES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_ADDED_NOTIFICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESOURCE_REMOVED_NOTIFICATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
@@ -87,6 +92,7 @@ import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.ValidateOperationHandler;
+import org.jboss.as.controller.operations.global.GlobalNotifications;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
@@ -173,13 +179,13 @@ public abstract class AbstractProxyControllerTest {
 
         ModelNode result = proxiedControllerClient.execute(operation);
 
-        checkHostSubModelDescription(result.get(RESULT), false);
+        checkHostSubModelDescription(result.get(RESULT), false, false);
 
         result = mainControllerClient.execute(operation);
-        checkRootSubModelDescription(result.get(RESULT), false);
+        checkRootSubModelDescription(result.get(RESULT), false, false);
 
         result = mainControllerClient.execute(operation);
-        checkRootSubModelDescription(result.get(RESULT), false);
+        checkRootSubModelDescription(result.get(RESULT), false, false);
     }
 
     @Test
@@ -189,10 +195,10 @@ public abstract class AbstractProxyControllerTest {
 
         ModelNode result = mainControllerClient.execute(operation);
 
-        checkHostSubModelDescription(result.get(RESULT), false);
+        checkHostSubModelDescription(result.get(RESULT), false, false);
 
         result = mainControllerClient.execute(operation);
-        checkHostSubModelDescription(result.get(RESULT), false);
+        checkHostSubModelDescription(result.get(RESULT), false, false);
     }
 
     @Test
@@ -203,7 +209,18 @@ public abstract class AbstractProxyControllerTest {
         operation.getOperation().get(OPERATIONS).set(true);
 
         ModelNode result = mainControllerClient.execute(operation);
-        checkRootSubModelDescription(result.get(RESULT), true);
+        checkRootSubModelDescription(result.get(RESULT), true, false);
+    }
+
+    @Test
+    public void testRecursiveReadResourceDescriptionWitNotifications() throws Exception {
+        Operation operation = createOperation(READ_RESOURCE_DESCRIPTION_OPERATION);
+        operation.getOperation().get(PROXIES).set(true);
+        operation.getOperation().get(RECURSIVE).set(true);
+        operation.getOperation().get(NOTIFICATIONS).set(true);
+
+        ModelNode result = mainControllerClient.execute(operation);
+        checkRootSubModelDescription(result.get(RESULT), false, true);
     }
 
     @Test
@@ -429,7 +446,7 @@ public abstract class AbstractProxyControllerTest {
         assertEquals(size, operationNamesList.asList().size());
     }
 
-    private void checkRootSubModelDescription(ModelNode result, boolean operations) {
+    private void checkRootSubModelDescription(ModelNode result, boolean operations, boolean notifications) {
         assertEquals("description", result.get(DESCRIPTION).asString());
         assertEquals("server", result.get(CHILDREN, SERVER, DESCRIPTION).asString());
         assertEquals(1, result.get(CHILDREN, SERVER, MODEL_DESCRIPTION).keys().size());
@@ -451,14 +468,24 @@ public abstract class AbstractProxyControllerTest {
             }
         }
 
+        if (notifications) {
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+            assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+            assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
+            for (String notif : notifs) {
+                assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+            }
+        }
+
         ModelNode proxy = result.get(CHILDREN, SERVER, MODEL_DESCRIPTION, "serverA");
 
-        checkHostSubModelDescription(proxy, operations);
+        checkHostSubModelDescription(proxy, operations, notifications);
     }
 
-    private void checkHostSubModelDescription(ModelNode result, boolean operations) {
+    private void checkHostSubModelDescription(ModelNode result, boolean operations, boolean notifications) {
 
-        assertEquals(4, result.keys().size());
+        assertEquals(5, result.keys().size());
         assertEquals("description", result.get(DESCRIPTION).asString());
         assertEquals("serverchild", result.get(CHILDREN, "serverchild", DESCRIPTION).asString());
         assertEquals(1, result.get(CHILDREN, "serverchild", MODEL_DESCRIPTION).keys().size());
@@ -477,12 +504,22 @@ public abstract class AbstractProxyControllerTest {
                 assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
             }
         }
+        if (notifications) {
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+            assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+            assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
+            for (String notif : notifs) {
+                assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+            }
+        }
 
-        checkHostChildSubModelDescription(result.get(CHILDREN, "serverchild", MODEL_DESCRIPTION, "*"), operations);
+
+        checkHostChildSubModelDescription(result.get(CHILDREN, "serverchild", MODEL_DESCRIPTION, "*"), operations, notifications);
     }
 
-    private void checkHostChildSubModelDescription(ModelNode result, boolean operations) {
-        int expectedChildren = operations ? 4 : 3;
+    private void checkHostChildSubModelDescription(ModelNode result, boolean operations, boolean notifications) {
+        int expectedChildren = 3 + (operations ? 1 : 0) + (notifications ? 1 : 0);
         assertEquals(expectedChildren, result.keys().size());
         assertEquals("A server child", result.get(DESCRIPTION).asString());
         assertEquals(1, result.get(ATTRIBUTES).keys().size());
@@ -513,12 +550,24 @@ public abstract class AbstractProxyControllerTest {
             }
         }
 
+        if (!notifications) {
+            assertFalse(result.has(NOTIFICATIONS));
+        } else {
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            assertTrue(notifs.contains(RESOURCE_ADDED_NOTIFICATION));
+            assertTrue(notifs.contains(RESOURCE_REMOVED_NOTIFICATION));
+            assertTrue(notifs.contains(ATTRIBUTE_VALUE_WRITTEN_NOTIFICATION));
+            for (String notif : notifs) {
+                assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
+            }
+        }
 
-        checkHostChildChildSubModelDescription(result.get(CHILDREN, "child", MODEL_DESCRIPTION, "*"), operations);
+
+        checkHostChildChildSubModelDescription(result.get(CHILDREN, "child", MODEL_DESCRIPTION, "*"), operations, notifications);
     }
 
-    private void checkHostChildChildSubModelDescription(ModelNode result, boolean operations) {
-        int expectedChildren = operations ? 3 : 2;
+    private void checkHostChildChildSubModelDescription(ModelNode result, boolean operations, boolean  notifications) {
+        int expectedChildren = 2 + (operations ? 1 : 0) + (notifications ? 1 : 0);
         assertEquals(expectedChildren, result.keys().size());
         assertEquals("A named set of children", result.get(DESCRIPTION).asString());
         assertEquals(2, result.get(ATTRIBUTES).keys().size());
@@ -538,6 +587,15 @@ public abstract class AbstractProxyControllerTest {
             assertTrue(ops.contains("test-op"));
             for (String op : ops) {
                 assertEquals(op, result.require(OPERATIONS).require(op).require(OPERATION_NAME).asString());
+            }
+        }
+
+        if (!notifications) {
+            assertFalse(result.has(NOTIFICATIONS));
+        } else {
+            Set<String> notifs = result.require(NOTIFICATIONS).keys();
+            for (String notif : notifs) {
+                assertEquals(notif, result.require(NOTIFICATIONS).require(notif).require(NOTIFICATION_TYPE).asString());
             }
         }
 
@@ -585,6 +643,7 @@ public abstract class AbstractProxyControllerTest {
 
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+            GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
             rootRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION, ValidateOperationHandler.INSTANCE);
 
             rootRegistration.registerOperationHandler(new SimpleOperationDefinitionBuilder("setup", new NonResolvingResourceDescriptionResolver())
@@ -618,6 +677,7 @@ public abstract class AbstractProxyControllerTest {
 
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
+            GlobalNotifications.registerGlobalNotifications(rootRegistration, processType);
             rootRegistration.registerOperationHandler(ValidateOperationHandler.DEFINITION, ValidateOperationHandler.INSTANCE);
             rootRegistration.registerOperationHandler("Test",
                     new OperationStepHandler() {
