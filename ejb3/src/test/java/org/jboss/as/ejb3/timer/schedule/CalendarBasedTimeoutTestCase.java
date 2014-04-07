@@ -587,7 +587,11 @@ public class CalendarBasedTimeoutTestCase {
     }
 
     private ScheduleExpression getTimezoneSpecificScheduleExpression() {
-        return new ScheduleExpression().timezone(this.timezone.getID());
+        ScheduleExpression scheduleExpression = new ScheduleExpression().timezone(this.timezone.getID());
+        GregorianCalendar start = new GregorianCalendar(this.timezone);
+        start.clear();
+        start.set(2014,0,1,1,0,0);
+        return scheduleExpression.start(start.getTime());
     }
 
     private boolean isLeapYear(Calendar cal) {
