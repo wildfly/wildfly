@@ -66,4 +66,9 @@ public class SAMLMetadataTestCase extends AbstractBasicFederationTestCase {
         return serviceProvider;
     }
 
+    // GLO for SAML metadata not supported
+    public boolean performGlobalLogout() {
+        return false;
+    }
+    
 }
