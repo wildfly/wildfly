@@ -53,6 +53,7 @@ import org.jboss.as.test.integration.domain.mixed.util.MixedDomainTestSupport;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.xnio.IoUtils;
@@ -102,6 +103,12 @@ public abstract class SimpleMixedDomainTest  {
         }
 
         cleanupKnownDifferencesInModelsForVersioningCheck(masterModel, slaveModel);
+
+        //There is a known bug, so EAP 6.2.0 does not behave correctly: WFLY-3228.
+        //In short the versions in its root domain resource come from itself, rather
+        //than from the master controller.
+        Assume.assumeFalse(version.equals(Version.AsVersion.EAP_6_2_0));
+
         //The version fields should be the same
         assertEquals(masterModel, slaveModel);
     }

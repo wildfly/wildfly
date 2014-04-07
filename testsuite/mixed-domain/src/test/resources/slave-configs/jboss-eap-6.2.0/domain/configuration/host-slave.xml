@@ -37,14 +37,14 @@
            <ignored-resources type="profile">
                 <instance name="full-ha"/>
                 <instance name="full-ha-6.0.x"/>
-                <instance name="full-ha-6.2.x"/>
+                <instance name="full-ha-6.1.x"/>
             </ignored-resources>
        </remote>       
     </domain-controller>
 
     <interfaces>
         <interface name="management">
-            <inet-address value="${jboss.test.host.slave.address}"/>
+           <inet-address value="${jboss.test.host.slave.address}"/>
         </interface>
         <interface name="public">
            <inet-address value="${jboss.test.host.slave.address}"/>
@@ -52,7 +52,7 @@
         <interface name="unsecure">
             <!-- Used for IIOP sockets in the standard configuration.
                  To secure JacORB you need to setup SSL -->
-           <inet-address value="${jboss.test.host.slave.address}"/>
+             <inet-address value="${jboss.test.host.slave.address}"/>
         </interface>
     </interfaces>
 
@@ -67,6 +67,6 @@
    	</jvms>
 
     <servers>
-        <server name="server-one" group="6.1.0-server-group"/>
+        <server name="server-one" group="6.2.0-server-group"/>
     </servers>
 </host>

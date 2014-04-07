@@ -105,7 +105,9 @@ public class DomainTransformers {
     }
 
     private static void initializeDomainRegistry15(TransformerRegistry registry) {
-        // currently no transformation needed
+        TransformersSubRegistration domain = registry.getDomainRegistration(VERSION_1_5);
+
+
     }
 
     private static final ResourceTransformer IGNORED_EXTENSIONS = new IgnoreExtensionResourceTransformer();
