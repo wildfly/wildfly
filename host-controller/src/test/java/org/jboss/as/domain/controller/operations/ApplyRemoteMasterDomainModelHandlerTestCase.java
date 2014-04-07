@@ -33,7 +33,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SYSTEM_PROPERTY;
 import static org.junit.Assert.assertEquals;
@@ -106,6 +105,29 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         final MockOperationContext operationContext = getOperationContext(root, true);
         handler.execute(operationContext, operation);
         operationContext.verify();
+    }
+
+    @Test
+    public void testRootResource() throws Exception {
+        Resource root = createRootResource();
+
+        final ModelNode rootValues = new ModelNode();
+        rootValues.get("my-version").set(42);
+        rootValues.get("product-name").set("my-product");
+
+        final ModelNode change = new ModelNode();
+        change.get("domain-resource-address").set(PathAddress.EMPTY_ADDRESS.toModelNode());
+        change.get("domain-resource-model").set(rootValues);
+
+
+        final ModelNode operation = new ModelNode();
+        operation.get(DOMAIN_MODEL).add(change);
+        final MockOperationContext operationContext = getOperationContext(root, true);
+        handler.execute(operationContext, operation);
+        operationContext.verify();
+
+        ModelNode appliedRootValues = root.getModel();
+        Assert.assertEquals(rootValues, appliedRootValues);
     }
 
     @Test
