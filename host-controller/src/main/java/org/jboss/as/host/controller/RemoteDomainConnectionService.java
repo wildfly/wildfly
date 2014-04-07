@@ -170,8 +170,8 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
     private final InjectedValue<SecurityRealm> securityRealmInjector = new InjectedValue<SecurityRealm>();
     private final InjectedValue<ServerInventory> serverInventoryInjector = new InjectedValue<ServerInventory>();
+    private final ExecutorService executor;
 
-    private ExecutorService executor;
     private ScheduledExecutorService scheduledExecutorService;
 
     private ManagementChannelHandler handler;
@@ -184,6 +184,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                                           final HostControllerRegistrationHandler.OperationExecutor operationExecutor,
                                           final DomainController domainController,
                                           final HostControllerEnvironment hostControllerEnvironment,
+                                          final ExecutorService executor,
                                           final RunningMode runningMode){
         this.controller = controller;
         this.extensionRegistry = extensionRegistry;
@@ -195,6 +196,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         this.operationExecutor = operationExecutor;
         this.domainController = domainController;
         this.hostControllerEnvironment = hostControllerEnvironment;
+        this.executor = executor;
         this.runningMode = runningMode;
     }
 
@@ -205,10 +207,11 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                                                                final HostControllerRegistrationHandler.OperationExecutor operationExecutor,
                                                                final DomainController domainController,
                                                                final HostControllerEnvironment hostControllerEnvironment,
+                                                               final ExecutorService executor,
                                                                final RunningMode currentRunningMode) {
         RemoteDomainConnectionService service = new RemoteDomainConnectionService(controller, extensionRegistry, localHostControllerInfo,
                 productConfig, remoteFileRepository, ignoredDomainResourceRegistry, operationExecutor, domainController,
-                hostControllerEnvironment, currentRunningMode);
+                hostControllerEnvironment, executor, currentRunningMode);
         ServiceBuilder<MasterDomainControllerClient> builder = serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
                 .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpointInjector)
                 .addDependency(ServerInventoryService.SERVICE_NAME, ServerInventory.class, service.serverInventoryInjector)
@@ -369,8 +372,6 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         final ManagementChannelHandler handler;
         try {
 
-            ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("domain-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
-            this.executor = Executors.newCachedThreadPool(threadFactory);
             ThreadFactory scheduledThreadFactory = new JBossThreadFactory(new ThreadGroup("domain-connection-pinger-threads"), Boolean.TRUE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
             this.scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(scheduledThreadFactory);
 

@@ -572,7 +572,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     private void connectToDomainMaster(ServiceTarget serviceTarget, RunningMode currentRunningMode) {
         Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
-                getValue(), extensionRegistry,
+                getValue(),
+                extensionRegistry,
                 hostControllerInfo,
                 environment.getProductConfig(),
                 hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
@@ -580,7 +581,9 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 ignoredRegistry,
                 new DomainModelControllerService.InternalExecutor(),
                 this,
-                environment, currentRunningMode);
+                environment,
+                getExecutorServiceInjector().getValue(),
+                currentRunningMode);
         MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
         //Registers us with the master and gets down the master copy of the domain model to our DC
         //TODO make sure that the RDCS checks env.isUseCachedDC, and if true falls through to that
