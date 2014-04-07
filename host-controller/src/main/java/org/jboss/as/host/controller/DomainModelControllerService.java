@@ -588,13 +588,15 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
     private void connectToDomainMaster(ServiceTarget serviceTarget, RunningMode currentRunningMode) {
         Future<MasterDomainControllerClient> clientFuture = RemoteDomainConnectionService.install(serviceTarget,
-                getValue(), extensionRegistry,
+                getValue(),
+                extensionRegistry,
                 hostControllerInfo,
                 environment.getProductConfig(),
                 hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
                 remoteFileRepository,
                 ignoredRegistry,
                 environment,
+                getExecutorServiceInjector().getValue(),
                 currentRunningMode);
         MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
         //Registers us with the master and gets down the master copy of the domain model to our DC
