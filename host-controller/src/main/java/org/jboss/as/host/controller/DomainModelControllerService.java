@@ -137,8 +137,8 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.threads.JBossThreadFactory;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Creates the service that acts as the {@link org.jboss.as.controller.ModelController} for a Host Controller process.
@@ -190,8 +190,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
     // @GuardedBy(serverInventoryLock), after the HC started reads just use the volatile value
     private volatile ServerInventory serverInventory;
 
-    // TODO look into using the controller executor
-    private volatile ExecutorService proxyExecutor;
     private volatile ScheduledExecutorService pingScheduler;
 
 
@@ -409,8 +407,6 @@ public class DomainModelControllerService extends AbstractControllerService impl
         this.hostControllerConfigurationPersister = new HostControllerConfigurationPersister(environment, hostControllerInfo, executorService, extensionRegistry);
         setConfigurationPersister(hostControllerConfigurationPersister);
         prepareStepHandler.setExecutorService(executorService);
-        ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("proxy-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
-        proxyExecutor = Executors.newCachedThreadPool(threadFactory);
         ThreadFactory pingerThreadFactory = new JBossThreadFactory(new ThreadGroup("proxy-pinger-threads"), Boolean.TRUE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
         pingScheduler = Executors.newScheduledThreadPool(PINGER_POOL_SIZE, pingerThreadFactory);
 
@@ -532,7 +528,8 @@ public class DomainModelControllerService extends AbstractControllerService impl
 
             if (ok) {
                 // Install the server > host operation handler
-                ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME, proxyExecutor, new InternalExecutor(), this, expressionResolver);
+                ServerToHostOperationHandlerFactoryService.install(serviceTarget, ServerInventoryService.SERVICE_NAME,
+                        getExecutorServiceInjector().getValue(), new InternalExecutor(), this, expressionResolver);
 
                 // demand native mgmt services
                 serviceTarget.addService(ServiceName.JBOSS.append("native-mgmt-startup"), Service.NULL)
@@ -674,11 +671,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
     }
 
     protected void stopAsynchronous(StopContext context)  {
-        try {
-            pingScheduler.shutdownNow();
-        } finally {
-            proxyExecutor.shutdown();
-        }
+        pingScheduler.shutdownNow();
     }
 
 
