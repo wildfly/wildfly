@@ -27,6 +27,7 @@ import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -217,13 +218,26 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                     }
                 } else {
                     try {
-                        lch.verifyIdentity(ldapEntry.getDistinguishedName(), password);
-                        SECURITY_LOGGER.tracef("Password verified for user '%s' (using connection attempt)", username);
-                        verifyPasswordCallback.setVerified(true);
-                        searchResult.attach(PASSWORD_KEY, new PasswordCredential(password));
-                        sharedState.put(LdapEntry.class.getName(), ldapEntry);
-                        if (username.equals(ldapEntry.getSimpleName()) == false) {
-                            sharedState.put(SecurityRealmService.LOADED_USERNAME_KEY, ldapEntry.getSimpleName());
+                        LdapConnectionHandler verificationHandler = lch;
+                        URI referralUri = ldapEntry.getReferralUri();
+                        if (referralUri != null) {
+                            verificationHandler = verificationHandler.findForReferral(referralUri);
+                        }
+
+                        if (verificationHandler != null) {
+                            verificationHandler.verifyIdentity(ldapEntry.getDistinguishedName(), password);
+                            SECURITY_LOGGER.tracef("Password verified for user '%s' (using connection attempt)", username);
+                            verifyPasswordCallback.setVerified(true);
+                            searchResult.attach(PASSWORD_KEY, new PasswordCredential(password));
+                            sharedState.put(LdapEntry.class.getName(), ldapEntry);
+                            if (username.equals(ldapEntry.getSimpleName()) == false) {
+                                sharedState.put(SecurityRealmService.LOADED_USERNAME_KEY, ldapEntry.getSimpleName());
+                            }
+                        } else {
+                            SECURITY_LOGGER.tracef(
+                                    "Password verification failed for user '%s', no connection for referral '%s'", username,
+                                    referralUri.toString());
+                            verifyPasswordCallback.setVerified(false);
                         }
                     } catch (Exception e) {
                         SECURITY_LOGGER.tracef("Password verification failed for user (using connection attempt) '%s'",

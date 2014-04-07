@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security.realms;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -33,6 +35,20 @@ import org.junit.Test;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public abstract class LdapGroupAssignmentBaseSuiteTest extends BaseLdapSuiteTest {
+
+    private static boolean initialised;
+
+    @BeforeClass
+    public static void startLdapServer() throws Exception {
+        initialised = LdapTestSuite.startLdapServers(false);
+    }
+
+    @AfterClass
+    public static void stopLdapServer() throws Exception {
+        if (initialised) {
+            LdapTestSuite.stopLdapServers();
+        }
+    }
 
     /**
      * Expected membership (CycleGroupA, CycleGroupB, CycleGroupC)

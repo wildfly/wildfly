@@ -163,6 +163,10 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
      * @return true if this {@code LdapConnectionManagerService} can handle the referral, false otherwise.
      */
     boolean handlesReferralFor(final URI uri) {
+        // TODO - Implement this.
+        // NOTE - This connection may not actually support referrals but it can support being used for referrals regardless of that.
+
+
         return false;
     }
 
@@ -284,6 +288,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         final Hashtable<String, String> result = new Hashtable<String, String>(properties);
         result.put(Context.INITIAL_CONTEXT_FACTORY, configuration.initialContextFactory);
         result.put(Context.PROVIDER_URL, configuration.url);
+        result.put(Context.REFERRAL, configuration.referralHandling.getValue());
         return result;
     }
 

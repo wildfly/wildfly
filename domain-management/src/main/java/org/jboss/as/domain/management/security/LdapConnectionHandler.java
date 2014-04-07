@@ -84,14 +84,21 @@ class LdapConnectionHandler implements LdapConnectionManager, Closeable {
     }
 
     @Override
-    public LdapConnectionManager findForReferral(URI referralUri) {
+    public LdapConnectionHandler findForReferral(URI referralUri) {
         if (cachedLdapConnectionHandlers != null && cachedLdapConnectionHandlers.containsKey(referralUri)) {
             return cachedLdapConnectionHandlers.get(referralUri);
         }
 
         LdapConnectionManager nextConnectionManager = ldapConnectionManager.findForReferral(referralUri);
+        if (nextConnectionManager == null) {
+            return null;
+        }
+
         final LdapConnectionHandler nextLdapConnectionHandler;
-        if (nextConnectionManager == null || nextConnectionManager == ldapConnectionManager) {
+        if (nextConnectionManager == ldapConnectionManager) {
+            /*
+             * This would cover a referral to a different DN on the same server.
+             */
             nextLdapConnectionHandler = this;
         } else {
             nextLdapConnectionHandler = new LdapConnectionHandler(this, nextConnectionManager);

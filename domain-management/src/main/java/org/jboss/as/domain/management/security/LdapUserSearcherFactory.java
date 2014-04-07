@@ -25,6 +25,8 @@ import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOG
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
@@ -92,7 +94,7 @@ class LdapUserSearcherFactory {
 
 
         @Override
-        public LdapEntry search(LdapConnectionHandler connectionHandler, String suppliedName) throws IOException, NamingException {
+        public LdapEntry search(final LdapConnectionHandler connectionHandler, final String suppliedName) throws IOException, NamingException {
             NamingEnumeration<SearchResult> searchEnumeration = null;
 
             try {
@@ -115,7 +117,8 @@ class LdapUserSearcherFactory {
                 String filter = userNameAttribute != null ? "(" + userNameAttribute + "={0})" : advancedFilter;
                 SECURITY_LOGGER.tracef("Searching for user '%s' using filter '%s'.", suppliedName, filter);
 
-                searchEnumeration = connectionHandler.getConnection().search(baseDn, filter, filterArguments, searchControls);
+                LdapConnectionHandler currentConnectionHandler = connectionHandler;
+                searchEnumeration = currentConnectionHandler.getConnection().search(baseDn, filter, filterArguments, searchControls);
                 try {
                     if (searchEnumeration.hasMore() == false) {
                         SECURITY_LOGGER.tracef("User '%s' not found in directory.", suppliedName);
@@ -132,13 +135,35 @@ class LdapUserSearcherFactory {
 
                 String distinguishedUserDN = null;
                 String username = usernameLoad == null ? suppliedName : null;
+                URI referralAddress = null;
 
                 SearchResult result = searchEnumeration.next();
+                if(result.isRelative() == false) {
+                    /*
+                     * In this scenario we have a result so any referral must have been followed automatically, we need to
+                     * capture the address but we don't need to do anything with it at the moment.
+                     */
+
+                    String name = result.getName();
+
+                    try {
+                        URI fullUri = new URI(name);
+
+                        referralAddress = new URI(fullUri.getScheme(), null, fullUri.getHost(), fullUri.getPort(), null, null, null);
+                        distinguishedUserDN = fullUri.getPath().substring(1);
+                        SECURITY_LOGGER.tracef("Received referral with address '%s' for dn '%s'", referralAddress.toString(), distinguishedUserDN);
+                    } catch (URISyntaxException usi) {
+                        SECURITY_LOGGER.tracef("Unable to construct URI from referral name: %s", name);
+                        throw MESSAGES.nameNotFound(suppliedName);
+                    }
+                }
                 Attributes attributes = result.getAttributes();
                 if (attributes != null) {
-                    Attribute dn = attributes.get(userDnAttribute);
-                    if (dn != null) {
-                        distinguishedUserDN = (String) dn.get();
+                    if (distinguishedUserDN == null) {
+                        Attribute dn = attributes.get(userDnAttribute);
+                        if (dn != null) {
+                            distinguishedUserDN = (String) dn.get();
+                        }
                     }
                     if (usernameLoad != null) {
                         Attribute usernameAttr = attributes.get(usernameLoad);
@@ -148,21 +173,20 @@ class LdapUserSearcherFactory {
                         }
                     }
                 }
+
                 if (distinguishedUserDN == null) {
-                    if (result.isRelative() == true) {
-                        distinguishedUserDN = result.getName() + ("".equals(baseDn) ? "" : "," + baseDn);
-                    } else {
-                        String name = result.getName();
-                        SECURITY_LOGGER.tracef("Can't follow referral for authentication: %s", name);
-                        throw MESSAGES.nameNotFound(suppliedName);
-                    }
+                    /*
+                     * If this was a referral it would have been handled above.
+                     */
+                    distinguishedUserDN = result.getName() + ("".equals(baseDn) ? "" : "," + baseDn);
                 }
+
                 if (username == null) {
                     throw MESSAGES.usernameNotLoaded(suppliedName);
                 }
                 SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, username);
 
-                return new LdapEntry(username, distinguishedUserDN);
+                return new LdapEntry(username, distinguishedUserDN, referralAddress);
             } finally {
                 if (searchEnumeration != null) {
                     try {
@@ -174,5 +198,7 @@ class LdapUserSearcherFactory {
         }
 
     }
+
+
 
 }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security;
 
+import java.net.URI;
+
 
 /**
  * Representation of an entry in LDAP by both it's simple name and distinguished name.
@@ -34,7 +36,7 @@ final class LdapEntry {
     private final String distinguishedName;
 
     private final LdapEntry previousEntry;
-    private final String referralConnection;
+    private final URI referralURI;
 
     private final int hashCode;
 
@@ -42,17 +44,21 @@ final class LdapEntry {
         this(simpleName, distinguishedName, null, null);
     }
 
-    LdapEntry(final String simpleName, final String distinguishedName, final LdapEntry previousEntry, final String referralConnection) {
+    LdapEntry(final String simpleName, final String distinguishedName, final URI referralURI) {
+        this(simpleName, distinguishedName, null, referralURI);
+    }
+
+    LdapEntry(final String simpleName, final String distinguishedName, final LdapEntry previousEntry, final URI referralURI) {
         this.simpleName = simpleName;
         this.distinguishedName = distinguishedName;
 
         this.previousEntry = previousEntry;
-        this.referralConnection = referralConnection;
+        this.referralURI = referralURI;
 
         hashCode = (simpleName == null ? 7 : simpleName.hashCode())
                 * (distinguishedName == null ? 31 : distinguishedName.hashCode()
                 * (previousEntry == null ? 37 : previousEntry.hashCode)
-                * (referralConnection == null ? 41 : referralConnection.hashCode()));
+                * (referralURI == null ? 41 : referralURI.hashCode()));
     }
 
     public String getSimpleName() {
@@ -67,8 +73,8 @@ final class LdapEntry {
         return previousEntry;
     }
 
-    public String getReferralConnection() {
-        return referralConnection;
+    public URI getReferralUri() {
+        return referralURI;
     }
 
     @Override
@@ -89,12 +95,12 @@ final class LdapEntry {
                 && (simpleName == null ? obj.simpleName == null : simpleName.equals(obj.simpleName))
                 && (distinguishedName == null ? obj.distinguishedName == null : distinguishedName.equals(obj.distinguishedName)
                 && (previousEntry == null ? obj.previousEntry == null : previousEntry.equals(obj.previousEntry))
-                && (referralConnection == null ? obj.referralConnection == null : referralConnection.equals(obj.referralConnection)));
+                && (referralURI == null ? obj.referralURI == null : referralURI.equals(obj.referralURI)));
     }
 
     @Override
     public String toString() {
-        return String.format("LdapEntry simpleName='%s', distinguishedName='%s', previousEntry='%s', referralConnection='%s'", simpleName, distinguishedName, previousEntry, referralConnection);
+        return String.format("LdapEntry simpleName='%s', distinguishedName='%s', previousEntry='%s', referralConnection='%s'", simpleName, distinguishedName, previousEntry, referralURI);
     }
 
 }
