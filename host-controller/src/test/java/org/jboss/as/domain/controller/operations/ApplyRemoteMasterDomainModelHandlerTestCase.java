@@ -55,7 +55,6 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.access.Authorizer;
 import org.jboss.as.controller.access.management.WritableAuthorizerConfiguration;
 import org.jboss.as.controller.access.rbac.StandardRBACAuthorizer;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -122,6 +121,29 @@ public class ApplyRemoteMasterDomainModelHandlerTestCase extends AbstractOperati
         final MockOperationContext operationContext = getOperationContext(root, true);
         handler.execute(operationContext, operation);
         operationContext.verify();
+    }
+
+    @Test
+    public void testRootResource() throws Exception {
+        Resource root = createRootResource();
+
+        final ModelNode rootValues = new ModelNode();
+        rootValues.get("my-version").set(42);
+        rootValues.get("product-name").set("my-product");
+
+        final ModelNode change = new ModelNode();
+        change.get("domain-resource-address").set(PathAddress.EMPTY_ADDRESS.toModelNode());
+        change.get("domain-resource-model").set(rootValues);
+
+
+        final ModelNode operation = new ModelNode();
+        operation.get(DOMAIN_MODEL).add(change);
+        final MockOperationContext operationContext = getOperationContext(root, true);
+        handler.execute(operationContext, operation);
+        operationContext.verify();
+
+        ModelNode appliedRootValues = root.getModel();
+        Assert.assertEquals(rootValues, appliedRootValues);
     }
 
     @Test

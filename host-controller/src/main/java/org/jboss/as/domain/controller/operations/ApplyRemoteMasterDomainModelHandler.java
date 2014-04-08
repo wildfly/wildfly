@@ -287,6 +287,9 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     protected Resource getResource(PathAddress resourceAddress, Resource rootResource, ModelNode resourceModel,
                                    OperationContext context, List<ModelNode> addOps) {
         if(resourceAddress.size() == 0) {
+            //The applied root resource values should override this so that the domain configuration is exactly the
+            //same on the slave as on the master. i.e. the slave domain config is a total copy of that on the master.
+            rootResource.writeModel(resourceModel.clone());
             return rootResource;
         }
         boolean allowCreate = true;
