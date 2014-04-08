@@ -580,15 +580,6 @@
             </properties>
         </profile>
 
-        <!-- Security manager. -->
-        <profile>
-            <id>ts.security.manager</id>
-            <activation><property><name>security.manager</name></property></activation>
-            <properties>
-                <jvm.args.securityManager>-Djava.security.manager</jvm.args.securityManager>
-            </properties>
-        </profile>
-
         <!-- Security Manager Other -->
         <profile>
             <id>ts.security.manager.other</id>
