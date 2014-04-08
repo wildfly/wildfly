@@ -43,6 +43,9 @@ import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -50,6 +53,7 @@ import org.junit.Test;
  */
 public class PatchModuleInvalidationTestCase extends AbstractPatchingTest {
 
+    private static final Boolean INVALIDATION_ENABLED = Boolean.getBoolean("org.wildfly.patching.jar.invalidation");
     private static final String MODULE_NAME = "org.jboss.test.module";
     private static final String RESOURCE = "resource0.jar";
 
@@ -60,6 +64,11 @@ public class PatchModuleInvalidationTestCase extends AbstractPatchingTest {
             return new String[] { RESOURCE };
         }
     };
+
+    @BeforeClass
+    public static void checkValidationEnabled() {
+        Assume.assumeTrue(INVALIDATION_ENABLED);
+    }
 
     @Test
     public void test() throws Exception {
