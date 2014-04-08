@@ -118,6 +118,9 @@ public class JdbcDriverAdd extends AbstractAddStepHandler {
                 for (Driver driver : serviceLoader) {
                     startDriverServices(target, moduleId, driver, driverName, majorVersion, minorVersion, dataSourceClassName, xaDataSourceClassName, verificationHandler);
                     driverLoaded = true;
+                    //just consider first definition and create service for this. User can use different implementation only
+                    // w/ explicit declaration of driver-class attribute
+                    break;
                 }
             }
             if (!driverLoaded)
