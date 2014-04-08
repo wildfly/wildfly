@@ -241,11 +241,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
     }
 
     @Test
-    public void testRejectTransformersAS712() throws Exception {
-        testRejectTransformers(ModelTestControllerVersion.V7_1_2_FINAL, ModelVersion.create(1, 1, 0), get1_1_0_config());
-    }
-
-    @Test
     public void testRejectTransformerEAP600() throws Exception {
         testRejectTransformers(ModelTestControllerVersion.EAP_6_0_0, ModelVersion.create(1, 1, 0), get1_1_0_config());
     }

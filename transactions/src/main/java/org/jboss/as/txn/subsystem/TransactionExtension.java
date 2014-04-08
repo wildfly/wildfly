@@ -167,15 +167,12 @@ public class TransactionExtension implements Extension {
      */
     private static void registerTransformers(final SubsystemRegistration subsystem) {
 
-        final ResourceTransformationDescriptionBuilder subsystemRoot130 = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-
-        //Versions < 1.4.0 is not able to handle commit-markable-resource
-        subsystemRoot130.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
-        final ModelVersion version130 = ModelVersion.create(1, 3, 0);
-        TransformationDescription.Tools.register(subsystemRoot130.build(), subsystem, version130);
-
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
+        //Versions < 1.4.0 is not able to handle commit-markable-resource
+        subsystemRoot.rejectChildResource(CMResourceResourceDefinition.PATH_CM_RESOURCE);
+        final ModelVersion version130 = ModelVersion.create(1, 3, 0);
+        TransformationDescription.Tools.register(subsystemRoot.build(), subsystem, version130);
 
         //Versions < 1.3.0 assume 'true' for the hornetq-store-enable-async-io attribute (in which case it will look for the native libs
         //and enable async io if found. The default value if not defined is 'false' though. This should only be rejected if use-hornetq-store is not false.
@@ -183,8 +180,6 @@ public class TransactionExtension implements Extension {
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)),
                         TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
-                // Legacy name for enabling/disabling statistics
-                .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS)
                 //Before 2.0.0 this value was not nillable in practise. Set it to 'false' if undefined.
                 .setValueConverter(ProcessIdUuidConverter.INSTANCE, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID);
 
