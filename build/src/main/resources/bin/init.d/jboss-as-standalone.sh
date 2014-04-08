@@ -106,7 +106,14 @@ start() {
     sleep 1
     let count=$count+1;
   done
-  
+
+  if [ "$launched" = "false" ] ; then
+    echo "$prog failed to startup in the time allotted"
+    failure
+    echo
+    return 7
+  fi
+
   success
   echo
   return 0

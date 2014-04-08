@@ -102,7 +102,7 @@ start() {
 
   until [ $count -gt $STARTUP_WAIT ]
   do
-    grep 'JBoss AS.*started in' $JBOSS_CONSOLE_LOG > /dev/null
+    grep 'JBAS015874:' $JBOSS_CONSOLE_LOG > /dev/null
     if [ $? -eq 0 ] ; then
       launched=true
       break
@@ -110,6 +110,13 @@ start() {
     sleep 1
     let count=$count+1;
   done
+
+  if [ "$launched" = "false" ] ; then
+    echo "$prog failed to startup in the time allotted"
+    failure
+    echo
+    return 7
+  fi
 
   success
   echo
