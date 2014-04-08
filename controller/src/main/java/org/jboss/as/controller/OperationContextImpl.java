@@ -150,6 +150,7 @@ final class OperationContextImpl extends AbstractOperationContext {
     /** The step that acquired the container monitor  */
     private Step containerMonitorStep;
     private volatile Boolean requiresModelUpdateAuthorization;
+    private volatile boolean readOnly = true;
 
     /**
      * Cache of resource descriptions generated during operation execution. Primarily intended for
@@ -235,8 +236,11 @@ final class OperationContextImpl extends AbstractOperationContext {
 
 
     public ManagementResourceRegistration getResourceRegistrationForUpdate() {
-        final PathAddress address = activeStep.address;
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress address = activeStep.address;
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -275,6 +279,11 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     public ServiceRegistry getServiceRegistry(final boolean modify) throws UnsupportedOperationException {
         assert isControllingThread();
+
+        if (modify) {
+            readOnly = false;
+        }
+
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -294,6 +303,9 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     public ServiceController<?> removeService(final ServiceName name) throws UnsupportedOperationException {
         assert isControllingThread();
+
+        readOnly = false;
+
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -342,6 +354,9 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     public void removeService(final ServiceController<?> controller) throws UnsupportedOperationException {
         assert isControllingThread();
+
+        readOnly = false;
+
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -392,6 +407,9 @@ final class OperationContextImpl extends AbstractOperationContext {
 
     public ServiceTarget getServiceTarget() throws UnsupportedOperationException {
         assert isControllingThread();
+
+        readOnly = false;
+
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -464,8 +482,11 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     public ModelNode readModelForUpdate(final PathAddress requestAddress) {
-        final PathAddress address = activeStep.address.append(requestAddress);
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -584,8 +605,11 @@ final class OperationContextImpl extends AbstractOperationContext {
     }
 
     public Resource readResourceForUpdate(PathAddress requestAddress) {
-        final PathAddress address = activeStep.address.append(requestAddress);
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -593,12 +617,22 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
-        rejectUserDomainServerUpdates();
+
+        // WFLY-3017 See if this write means a persistent config change
+        // For speed, we assume all calls during boot relate to persistent config
+        boolean runtimeOnly = !isBooting() && isResourceRuntimeOnly(address);
+
+        if (!runtimeOnly) {
+            rejectUserDomainServerUpdates();
+        }
         checkHostServerGroupTracker(address);
-        authorize(false, READ_WRITE_CONFIG);
-        if (!isModelAffected()) {
+        authorize(false, runtimeOnly ? READ_WRITE_RUNTIME : READ_WRITE_CONFIG);
+        if ((!runtimeOnly && !isModelAffected()) || (runtimeOnly && !affectsRuntime)) {
             takeWriteLock();
             model = model.clone();
+            if (runtimeOnly) {
+                affectsRuntime = true;
+            }
         }
         affectsModel.put(address, NULL);
         Resource resource = this.model;
@@ -611,21 +645,45 @@ final class OperationContextImpl extends AbstractOperationContext {
         return resource;
     }
 
+    private boolean isResourceRuntimeOnly(PathAddress fullAddress) {
+        Resource resource = this.model;
+        for (Iterator<PathElement> it = fullAddress.iterator(); it.hasNext() && resource != null;) {
+            PathElement element = it.next();
+            if (element.isMultiTarget()) {
+                resource = null;
+            } else {
+                resource = resource.getChild(element);
+            }
+        }
+
+        if (resource != null) {
+            return resource.isRuntime();
+        }
+        // No resource -- op will eventually fail
+        ImmutableManagementResourceRegistration mrr = modelController.getRootRegistration().getSubModel(fullAddress);
+        return mrr != null && mrr.isRuntimeOnly();
+    }
+
     @Override
     public Resource getOriginalRootResource() {
         // TODO restrict
         return originalModel.clone();
     }
 
+    @Override
     public Resource createResource(PathAddress relativeAddress) {
         final Resource toAdd = Resource.Factory.create();
         addResource(relativeAddress, toAdd);
         return toAdd;
     }
 
+    @Override
     public void addResource(PathAddress relativeAddress, Resource toAdd) {
-        final PathAddress absoluteAddress = activeStep.address.append(relativeAddress);
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress absoluteAddress = activeStep.address.append(relativeAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -636,13 +694,21 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (absoluteAddress.size() == 0) {
             throw MESSAGES.duplicateResourceAddress(absoluteAddress);
         }
-        // Check for user updates to a domain server model
-        rejectUserDomainServerUpdates();
+
+        boolean runtimeOnly = toAdd.isRuntime();
+
+        if (!runtimeOnly) {
+            // Check for user updates to a domain server model
+            rejectUserDomainServerUpdates();
+        }
         checkHostServerGroupTracker(absoluteAddress);
-        authorizeAdd();
-        if (!isModelAffected()) {
+        authorizeAdd(runtimeOnly);
+        if ((!runtimeOnly && !isModelAffected()) || (runtimeOnly && !affectsRuntime)) {
             takeWriteLock();
             model = model.clone();
+            if (runtimeOnly) {
+                affectsRuntime = true;
+            }
         }
         affectsModel.put(absoluteAddress, NULL);
         Resource model = this.model;
@@ -681,9 +747,13 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
+    @Override
     public Resource removeResource(final PathAddress requestAddress) {
-        final PathAddress address = activeStep.address.append(requestAddress);
         assert isControllingThread();
+
+        readOnly = false;
+
+        final PathAddress address = activeStep.address.append(requestAddress);
         Stage currentStage = this.currentStage;
         if (currentStage == null) {
             throw MESSAGES.operationAlreadyComplete();
@@ -691,12 +761,21 @@ final class OperationContextImpl extends AbstractOperationContext {
         if (currentStage != Stage.MODEL) {
             throw MESSAGES.stageAlreadyComplete(Stage.MODEL);
         }
-        rejectUserDomainServerUpdates();
+
+        // WFLY-3017 See if this write means a persistent config change
+        // For speed, we assume all calls during boot relate to persistent config
+        boolean runtimeOnly = isResourceRuntimeOnly(address);
+        if (runtimeOnly) {
+            rejectUserDomainServerUpdates();
+        }
         checkHostServerGroupTracker(address);
-        authorize(false, READ_WRITE_CONFIG);
-        if (!isModelAffected()) {
+        authorize(false, runtimeOnly ? READ_WRITE_RUNTIME : READ_WRITE_CONFIG);
+        if ((!runtimeOnly && !isModelAffected()) || (runtimeOnly && !affectsRuntime)) {
             takeWriteLock();
             model = model.clone();
+            if (runtimeOnly) {
+                affectsRuntime = true;
+            }
         }
         affectsModel.put(address, NULL);
         Resource model = this.model;
@@ -715,10 +794,12 @@ final class OperationContextImpl extends AbstractOperationContext {
         return model;
     }
 
+    @Override
     public void acquireControllerLock() {
         takeWriteLock();
     }
 
+    @Override
     public Resource getRootResource() {
         // TODO limit children
         authorize(false, READ_CONFIG);
@@ -726,22 +807,27 @@ final class OperationContextImpl extends AbstractOperationContext {
         return readOnlyModel.clone();
     }
 
+    @Override
     public boolean isModelAffected() {
         return affectsModel.size() > 0;
     }
 
+    @Override
     public boolean isRuntimeAffected() {
         return affectsRuntime;
     }
 
+    @Override
     public boolean isResourceRegistryAffected() {
         return affectsResourceRegistration;
     }
 
+    @Override
     public Stage getCurrentStage() {
         return currentStage;
     }
 
+    @Override
     public void report(final MessageSeverity severity, final String message) {
         try {
             if(messageHandler != null) {
@@ -780,6 +866,11 @@ final class OperationContextImpl extends AbstractOperationContext {
                 containerMonitorStep = null;
             }
         }
+    }
+
+    @Override
+    boolean isReadOnly() {
+        return readOnly;
     }
 
     private static Resource requireChild(final Resource resource, final PathElement childPath, final PathAddress fullAddress) {
@@ -933,6 +1024,7 @@ final class OperationContextImpl extends AbstractOperationContext {
         return authResp;
     }
 
+    @Override
     Resource getModel() {
         return model;
     }
@@ -1027,18 +1119,19 @@ final class OperationContextImpl extends AbstractOperationContext {
         }
     }
 
-    private void authorizeAdd() {
+    private void authorizeAdd(boolean runtimeOnly) {
         AuthorizationResult accessResult = authorize(activeStep.operationId, activeStep.operation, false, ADDRESS);
         if (accessResult.getDecision() == AuthorizationResult.Decision.DENY) {
             throw ControllerMessages.MESSAGES.managementResourceNotFound(activeStep.address);
         }
-        AuthorizationResult authResult = authorize(activeStep.operationId, activeStep.operation, true, WRITE_CONFIG);
+        final Set<Action.ActionEffect> writeEffect = runtimeOnly ? WRITE_RUNTIME : WRITE_CONFIG;
+        AuthorizationResult authResult = authorize(activeStep.operationId, activeStep.operation, true, writeEffect);
         if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
             AuthorizationResponseImpl authResp = authorizations.get(activeStep.operationId);
             assert authResp != null : "no AuthorizationResponse";
             String opName = activeStep.operation.get(OP).asString();
             authResp.addOperationResult(opName, authResult);
-            authResult = authResp.validateAddAttributeEffects(opName, WRITE_CONFIG);
+            authResult = authResp.validateAddAttributeEffects(opName, writeEffect);
             authResp.addOperationResult(opName, authResult);
             if (authResult.getDecision() == AuthorizationResult.Decision.DENY) {
                 throw ControllerMessages.MESSAGES.unauthorized(activeStep.operationId.name, activeStep.address, authResult.getExplanation());

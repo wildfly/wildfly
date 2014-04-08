@@ -240,8 +240,16 @@ abstract class AbstractOperationContext implements OperationContext {
             deque.addLast(new Step(step, response, operation, address));
         }
 
-        if (!executing) {
+        if (!executing && stage == Stage.MODEL) {
             recordControllerOperation(operation);
+        }
+    }
+
+    void addBootStep(ParsedBootOp parsedBootOp) {
+        addStep(parsedBootOp.response, parsedBootOp.operation, parsedBootOp.handler, Stage.MODEL);
+        // If the op is controlling other ops (i.e. for parallel boot) then record those for audit logging
+        for (ModelNode childOp : parsedBootOp.getChildOperations()) {
+            recordControllerOperation(childOp);
         }
     }
 
@@ -345,6 +353,13 @@ abstract class AbstractOperationContext implements OperationContext {
     abstract void waitForRemovals() throws InterruptedException;
 
     /**
+     * Gets whether any steps have taken actions that indicate a wish to write to the model or the service container.
+     *
+     * @return {@code true} if no
+     */
+    abstract boolean isReadOnly();
+
+    /**
      * Gets whether the currently executing thread is allowed to control this operation context.
      *
      * @return {@code true} if the currently executing thread is allowed to control the context
@@ -363,7 +378,7 @@ abstract class AbstractOperationContext implements OperationContext {
                 Caller caller = getCaller();
                 Subject subject = SecurityActions.getSubject(caller);
                 auditLogger.log(
-                        !isModelAffected(),
+                        isReadOnly(),
                         resultAction,
                         caller == null ? null : caller.getName(),
                         accessContext == null ? null : accessContext.getDomainUuid(),
@@ -401,7 +416,7 @@ abstract class AbstractOperationContext implements OperationContext {
      * @param operation the operation
      */
     private void recordControllerOperation(ModelNode operation) {
-        controllerOperations.add(operation);
+        controllerOperations.add(operation.clone()); // clone so we don't log op nodes mutated during execution
     }
 
     abstract Resource getModel();

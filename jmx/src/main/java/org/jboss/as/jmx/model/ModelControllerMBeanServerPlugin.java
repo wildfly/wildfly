@@ -57,14 +57,16 @@ public class ModelControllerMBeanServerPlugin extends BaseMBeanServerPlugin {
     private final ModelControllerMBeanHelper legacyHelper;
     private final ModelControllerMBeanHelper exprHelper;
 
-    public ModelControllerMBeanServerPlugin(ConfiguredDomains configuredDomains, ModelController controller, boolean legacyWithProperPropertyFormat) {
+    public ModelControllerMBeanServerPlugin(ConfiguredDomains configuredDomains, ModelController controller,
+                                            boolean legacyWithProperPropertyFormat, boolean forStandalone) {
         assert configuredDomains != null;
         this.configuredDomains = configuredDomains;
-
         legacyHelper = configuredDomains.getLegacyDomain() != null ?
-                new ModelControllerMBeanHelper(TypeConverters.createLegacyTypeConverters(legacyWithProperPropertyFormat), configuredDomains, configuredDomains.getLegacyDomain(), controller) : null;
+                new ModelControllerMBeanHelper(TypeConverters.createLegacyTypeConverters(legacyWithProperPropertyFormat),
+                        configuredDomains, configuredDomains.getLegacyDomain(), controller, forStandalone) : null;
         exprHelper = configuredDomains.getExprDomain() != null ?
-                new ModelControllerMBeanHelper(TypeConverters.createExpressionTypeConverters(), configuredDomains, configuredDomains.getExprDomain(), controller) : null;
+                new ModelControllerMBeanHelper(TypeConverters.createExpressionTypeConverters(), configuredDomains,
+                        configuredDomains.getExprDomain(), controller, forStandalone) : null;
     }
 
     @Override

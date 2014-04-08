@@ -29,6 +29,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -42,9 +46,14 @@ public class ParsedBootOp {
     public final PathAddress address;
     public final OperationStepHandler handler;
     public final ModelNode response;
+    private List<ModelNode> childOperations;
 
-    ParsedBootOp(final ModelNode operation, final ModelNode response) {
-        this(operation, null, response);
+    ParsedBootOp(final ModelNode operation) {
+        this(operation, null, new ModelNode());
+    }
+
+    public ParsedBootOp(final ModelNode operation, final OperationStepHandler handler) {
+        this(operation, handler, new ModelNode());
     }
 
     ParsedBootOp(final ModelNode operation, final OperationStepHandler handler, final ModelNode response) {
@@ -64,6 +73,13 @@ public class ParsedBootOp {
 
     }
 
+    public void addChildOperation(ParsedBootOp child) {
+        if (childOperations == null) {
+            childOperations = new ArrayList<ModelNode>();
+        }
+        childOperations.add(child.operation);
+    }
+
     boolean isExtensionAdd() {
         return address.size() == 1 && address.getElement(0).getKey().equals(EXTENSION)
                     && operationName.equals(ADD);
@@ -75,5 +91,9 @@ public class ParsedBootOp {
 
     boolean isSocketOperation() {
         return address.size() > 0 && address.getElement(0).getKey().equals(SOCKET_BINDING_GROUP);
+    }
+
+    List<ModelNode> getChildOperations() {
+        return childOperations == null ? Collections.<ModelNode>emptyList() : childOperations;
     }
 }

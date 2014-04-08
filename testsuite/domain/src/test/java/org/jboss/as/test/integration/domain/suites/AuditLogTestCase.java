@@ -233,12 +233,11 @@ public class AuditLogTestCase {
         Assert.assertTrue(slaveServerAuditLog.exists());
 
         ModelNode masterRecord = readFile(masterAuditLog, 1).get(0);
-        Assert.assertFalse(masterRecord.get(DOMAIN_UUID).isDefined());
+        Assert.assertTrue(masterRecord.get(JsonAuditLogItemFormatter.DOMAIN_UUID).isDefined());
+        String domainUUID = masterRecord.get(JsonAuditLogItemFormatter.DOMAIN_UUID).asString();
         ModelNode masterOp = getOp(masterRecord);
         compareOpsWithoutHeaders(addOp, masterOp);
-        Assert.assertTrue(masterOp.get(OPERATION_HEADERS, DOMAIN_UUID).isDefined());
-        String domainUUID = masterOp.get(OPERATION_HEADERS, DOMAIN_UUID).asString();
-
+        Assert.assertFalse(masterOp.get(OPERATION_HEADERS, DOMAIN_UUID).isDefined());
 
         ModelNode masterServerRecord = readFile(masterServerAuditLog, 1).get(0);
         Assert.assertEquals(domainUUID, masterServerRecord.get(JsonAuditLogItemFormatter.DOMAIN_UUID).asString());
@@ -400,13 +399,12 @@ public class AuditLogTestCase {
             masterLifecycleUtil.executeForResult(addHostLoggerHandlerReference);
             removed = false;
             try {
-                boolean master = baseAddress.getElement(0).getValue().equals("master");
-                expectSyslogData(hostLoggerHandlerReferenceAddress, addHostLoggerHandlerReference, master);
+                expectSyslogData(hostLoggerHandlerReferenceAddress, addHostLoggerHandlerReference, false);
                 expectNoSyslogData();
                 final ModelNode removeHostLoggerHandlerReference = Util.createRemoveOperation(hostLoggerHandlerReferenceAddress);
                 masterLifecycleUtil.executeForResult(removeHostLoggerHandlerReference);
                 removed = true;
-                expectSyslogData(hostLoggerHandlerReferenceAddress, removeHostLoggerHandlerReference, master);
+                expectSyslogData(hostLoggerHandlerReferenceAddress, removeHostLoggerHandlerReference, false);
                 expectNoSyslogData();
             } finally {
                 if (!removed) {

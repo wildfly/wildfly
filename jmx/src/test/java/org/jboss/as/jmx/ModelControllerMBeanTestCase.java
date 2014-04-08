@@ -87,6 +87,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.extension.ExtensionRegistry;
@@ -127,10 +128,6 @@ import org.xnio.OptionMap;
  */
 public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
-    private static final String LAUNCH_TYPE = "launch-type";
-    private static final String TYPE_STANDALONE = "STANDALONE";
-    private static final String TYPE_DOMAIN = "DOMAIN";
-
     private static final String LEGACY_DOMAIN = "jboss.resolved";
     private final static ObjectName LEGACY_ROOT_NAME = ModelControllerMBeanHelper.createRootObjectName(LEGACY_DOMAIN);
     private final static ObjectName LEGACY_INTERFACE_NAME = createObjectName(LEGACY_DOMAIN + ":interface=test-interface");
@@ -164,7 +161,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testExposedMBeans() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new BaseAdditionalInitialization(TYPE_STANDALONE));
+        MBeanServerConnection connection = setupAndGetConnection(new BaseAdditionalInitialization(ProcessType.STANDALONE_SERVER));
 
         int count = connection.getMBeanCount();
         checkQueryMBeans(connection, count, null);
@@ -205,7 +202,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testGetObjectInstance() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new BaseAdditionalInitialization(TYPE_STANDALONE));
+        MBeanServerConnection connection = setupAndGetConnection(new BaseAdditionalInitialization(ProcessType.STANDALONE_SERVER));
 
         Assert.assertNotNull(connection.getObjectInstance(LEGACY_ROOT_NAME));
         Assert.assertEquals(LEGACY_ROOT_NAME, connection.getObjectInstance(LEGACY_ROOT_NAME).getObjectName());
@@ -232,7 +229,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testGetMBeanInfoStandalone() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new TestExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new TestExtension()));
 
         MBeanInfo info = connection.getMBeanInfo(LEGACY_ROOT_NAME);
         Assert.assertNotNull(info);
@@ -315,7 +312,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testGetMBeanInfoDomain() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_DOMAIN, new TestExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.DOMAIN_SERVER, new TestExtension()));
 
         MBeanInfo info = connection.getMBeanInfo(LEGACY_ROOT_NAME);
         Assert.assertNotNull(info);
@@ -358,7 +355,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testGetMBeanInfoExpressionsStandalone() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new TestExtension(true)));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new TestExtension(true)));
 
         MBeanInfo info = connection.getMBeanInfo(EXPR_ROOT_NAME);
         Assert.assertNotNull(info);
@@ -468,7 +465,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testReadWriteAttributeStandalone() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new TestExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new TestExtension()));
 
         ObjectName name = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
         checkAttributeValues(connection, name, 1, null, 2, BigInteger.valueOf(3), BigDecimal.valueOf(4), false, new byte[] {5, 6}, 7.0, "8",
@@ -511,7 +508,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testReadWriteAttributeDomain() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_DOMAIN, new TestExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.DOMAIN_SERVER, new TestExtension()));
 
 
         ObjectName name = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
@@ -635,7 +632,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testReadWriteAttributeExpressionsStandalone() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new TestExtension(true)));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new TestExtension(true)));
 
         ObjectName name = createObjectName(EXPR_DOMAIN + ":subsystem=test");
         checkAttributeValues(connection, name, "1", null, "2", "3", "4", "false", new byte[] {5, 6}, "7.0", "8",
@@ -710,7 +707,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testReadWriteAttributeListStandalone() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new TestExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new TestExtension()));
 
         ObjectName name = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
         String[] attrNames = new String[] {"roInt", "int", "bigint", "bigdec", "boolean", "bytes", "double", "string", "list", "long", "type"};
@@ -740,7 +737,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testReadWriteAttributeListDomain() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_DOMAIN, new TestExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.DOMAIN_SERVER, new TestExtension()));
 
         ObjectName name = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
         String[] attrNames = new String[] {"roInt", "int", "bigint", "bigdec", "boolean", "bytes", "double", "string", "list", "long", "type"};
@@ -796,7 +793,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testReadWriteAttributeListExpressionsStandalone() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new TestExtension(true)));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new TestExtension(true)));
 
         ObjectName name = createObjectName(EXPR_DOMAIN + ":subsystem=test");
         String[] attrNames = new String[] {"roInt", "int", "bigint", "bigdec", "boolean", "bytes", "double", "string", "list", "long", "type"};
@@ -847,7 +844,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testInvokeOperationStandalone() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new TestExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new TestExtension()));
 
         ObjectName name = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
 
@@ -875,7 +872,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testInvokeOperationDomain() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_DOMAIN, new TestExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.DOMAIN_SERVER, new TestExtension()));
 
         ObjectName name = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
 
@@ -897,7 +894,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testInvokeOperationExpressionsStandalone() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new TestExtension(true)));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new TestExtension(true)));
 
         ObjectName name = createObjectName(EXPR_DOMAIN + ":subsystem=test");
 
@@ -928,7 +925,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
     public void testAddMethodSingleFixedChild() throws Exception {
         final ObjectName testObjectName = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
         final ObjectName childObjectName = createObjectName(LEGACY_DOMAIN + ":subsystem=test,single=only");
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new SubystemWithSingleFixedChildExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new SubystemWithSingleFixedChildExtension()));
 
         Set<ObjectName> names = connection.queryNames(createObjectName(LEGACY_DOMAIN + ":subsystem=test,*"), null);
         Assert.assertEquals(1, names.size());
@@ -985,7 +982,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         final ObjectName testObjectName = createObjectName(LEGACY_DOMAIN + ":subsystem=test");
         final ObjectName child1ObjectName = createObjectName(LEGACY_DOMAIN + ":subsystem=test,siblings=test1");
         final ObjectName child2ObjectName = createObjectName(LEGACY_DOMAIN + ":subsystem=test,siblings=test2");
-        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(TYPE_STANDALONE, new SubystemWithSiblingChildrenChildExtension()));
+        MBeanServerConnection connection = setupAndGetConnection(new MBeanInfoAdditionalInitialization(ProcessType.STANDALONE_SERVER, new SubystemWithSiblingChildrenChildExtension()));
 
         Set<ObjectName> names = connection.queryNames(createObjectName(LEGACY_DOMAIN + ":subsystem=test,*"), null);
         Assert.assertEquals(1, names.size());
@@ -1076,7 +1073,7 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     @Test
     public void testResolveExpressions() throws Exception {
-        MBeanServerConnection connection = setupAndGetConnection(new BaseAdditionalInitialization(TYPE_STANDALONE));
+        MBeanServerConnection connection = setupAndGetConnection(new BaseAdditionalInitialization(ProcessType.STANDALONE_SERVER));
         System.clearProperty("jboss.test.resolve.expressions.test");
         Assert.assertEquals("123", connection.invoke(LEGACY_ROOT_NAME, "resolveExpression", new String[] {"${jboss.test.resolve.expressions.test:123}"}, new String[] {String.class.getName()}));
 
@@ -1255,16 +1252,16 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
     private static class BaseAdditionalInitialization extends AdditionalInitialization {
 
-        final String launchType;
+        final ProcessType processType;
 
-        public BaseAdditionalInitialization(String launchType) {
-            this.launchType = launchType;
+        public BaseAdditionalInitialization(ProcessType processType) {
+            assert processType.isServer();
+            this.processType = processType;
         }
 
         @Override
         protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource,
                 ManagementResourceRegistration rootRegistration) {
-            rootResource.getModel().get(LAUNCH_TYPE).set(launchType);
             rootRegistration.registerOperationHandler(ResolveExpressionHandler.DEFINITION, ResolveExpressionHandler.INSTANCE);
         }
 
@@ -1283,6 +1280,10 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
             RemotingServices.installConnectorServicesForSocketBinding(target, ManagementRemotingServices.MANAGEMENT_ENDPOINT, "server", SocketBinding.JBOSS_BINDING_NAME.append("server"), OptionMap.EMPTY, null, null);
         }
 
+        @Override
+        protected ProcessType getProcessType() {
+            return processType;
+        }
 
         String getExtraXml() {
             return "";
@@ -1294,8 +1295,8 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
         private final Extension extension;
 
 
-        public MBeanInfoAdditionalInitialization(String launchType, Extension extension) {
-            super(launchType);
+        public MBeanInfoAdditionalInitialization(ProcessType processType, Extension extension) {
+            super(processType);
             this.extension = extension;
         }
 
@@ -1416,9 +1417,17 @@ public class ModelControllerMBeanTestCase extends AbstractSubsystemTest {
 
 
             //Register the operation handlers
-            registration.registerOperationHandler(VoidOperationNoParams.OPERATION_NAME, VoidOperationNoParams.INSTANCE, VoidOperationNoParams.INSTANCE, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+
+            // TODO for domain server we have to register ops as RUNTIME_ONLY or they get stripped from r-r-d results,
+            // which is not ideal but not relevant to this test
+            boolean forStandalone = context.getProcessType() == ProcessType.STANDALONE_SERVER;
+            registration.registerOperationHandler(VoidOperationNoParams.OPERATION_NAME, VoidOperationNoParams.INSTANCE, VoidOperationNoParams.INSTANCE,
+                    forStandalone
+                            ? EnumSet.of(OperationEntry.Flag.READ_ONLY)
+                            : EnumSet.of(OperationEntry.Flag.READ_ONLY, OperationEntry.Flag.RUNTIME_ONLY));
             IntOperationWithParams intOp = allowExpressions ? IntOperationWithParams.INSTANCE_EXPRESSIONS : IntOperationWithParams.INSTANCE_NO_EXPRESSIONS;
-            registration.registerOperationHandler(IntOperationWithParams.OPERATION_NAME, intOp, intOp);
+            registration.registerOperationHandler(IntOperationWithParams.OPERATION_NAME, intOp, intOp,
+                    forStandalone ? EnumSet.noneOf(OperationEntry.Flag.class) : EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY));
             ComplexOperation op = new ComplexOperation(complexValueType);
             registration.registerOperationHandler(ComplexOperation.OPERATION_NAME, op, op);
 
