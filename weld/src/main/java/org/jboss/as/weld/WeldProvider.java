@@ -31,7 +31,7 @@ import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.weld.Container;
 import org.jboss.weld.ContainerState;
-import org.jboss.weld.Weld;
+import org.jboss.weld.AbstractCDI;
 import org.jboss.weld.bean.builtin.BeanManagerProxy;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.logging.BeanManagerLogger;
@@ -70,7 +70,7 @@ public class WeldProvider implements CDIProvider {
         }
     }
 
-    private static class CdiImpl extends Weld {
+    private static class CdiImpl extends AbstractCDI<Object> {
 
         private final Container container;
         private final BeanManagerProxy rootBeanManager;

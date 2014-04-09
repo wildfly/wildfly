@@ -46,18 +46,18 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests accessibility between modules deployed in WF.
- * 
+ *
  * There are four built-in modules installed at the beginning of the test case: alpha, bravo, charlie and delta.
  * The deployed testing application has a dependency on each of these modules. The following additional dependencies
  * exist:
- * 
+ *
  * alpha -> bravo
  * bravo -> charlie
- * 
+ *
  * Otherwise, the modules cannot access each other.
- * 
+ *
  * @see WFLY-1746
- * 
+ *
  * @author Jozef Hartinger
  *
  */
@@ -93,12 +93,7 @@ public class CrossModuleAccessibilityTestCase {
         Set<String> accessibleImplementations = getAccessibleImplementations(alpha.getInstance());
         Assert.assertTrue(accessibleImplementations.contains(AlphaBean.class.getSimpleName()));
         Assert.assertTrue(accessibleImplementations.contains(BravoBean.class.getSimpleName()));
-        /*
-         * Alpha does not have a dependency on Charlie and thus Charlie would ideally not be accessible.
-         * Unfortunately, Weld resolves dependencies transitively and therefore does not follow classloader
-         * accessibility in this case. This should change once WELD-1536 is resolved.
-         */
-        Assert.assertTrue(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
+        Assert.assertFalse(accessibleImplementations.contains(CharlieBean.class.getSimpleName()));
         Assert.assertFalse(accessibleImplementations.contains(DeltaBean.class.getSimpleName()));
     }
 

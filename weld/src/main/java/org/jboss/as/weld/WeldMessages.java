@@ -39,6 +39,7 @@ import org.jboss.logging.Messages;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
+import org.jboss.weld.resources.spi.ClassFileInfoException;
 
 /**
  * Date: 05.11.2011
@@ -147,4 +148,9 @@ public interface WeldMessages {
     @Message(id = 16080, value = "These attributes must be 'true' for use with CDI 1.0 '%s'")
     String rejectAttributesMustBeTrue(Set<String> keySet);
 
+    @Message(id = 16081, value = "%s was not found in composite index")
+    ClassFileInfoException nameNotFoundInIndex(String name);
+
+    @Message(id = 16082, value = "Cannot load %s")
+    ClassFileInfoException cannotLoadClass(String name, @Cause Throwable throwable);
 }

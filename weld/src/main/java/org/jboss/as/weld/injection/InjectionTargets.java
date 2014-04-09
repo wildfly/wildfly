@@ -19,9 +19,9 @@ package org.jboss.as.weld.injection;
 import javax.enterprise.inject.spi.Bean;
 
 import org.jboss.weld.annotated.enhanced.EnhancedAnnotatedType;
-import org.jboss.weld.injection.producer.BasicInjectionTarget;
-import org.jboss.weld.injection.producer.NonProducibleInjectionTarget;
 import org.jboss.weld.manager.BeanManagerImpl;
+import org.jboss.weld.manager.api.WeldInjectionTarget;
+import org.jboss.weld.manager.api.WeldInjectionTargetBuilder;
 import org.jboss.weld.resources.ClassTransformer;
 import org.jboss.weld.util.Beans;
 
@@ -47,7 +47,7 @@ public class InjectionTargets {
     * @param interceptionSupport
     * @return
     */
-    public static <T> BasicInjectionTarget<T> createInjectionTarget(Class<?> componentClass, Bean<T> bean, BeanManagerImpl beanManager,
+    public static <T> WeldInjectionTarget<T> createInjectionTarget(Class<?> componentClass, Bean<T> bean, BeanManagerImpl beanManager,
             boolean interceptionSupport) {
         final ClassTransformer transformer = beanManager.getServices().get(ClassTransformer.class);
         @SuppressWarnings("unchecked")
@@ -69,12 +69,15 @@ public class InjectionTargets {
              * For example, AsyncListeners may be CDI-incompatible as long as the application never calls javax.servletAsyncContext#createListener(Class)
              * and only instantiates the listener itself.
              */
-            return new NonProducibleInjectionTarget<>(type, bean, beanManager);
+            return beanManager.getInjectionTargetFactory(type).createNonProducibleInjectionTarget();
         }
+        WeldInjectionTargetBuilder<T> builder = beanManager.createInjectionTargetBuilder(type);
+        builder.setResourceInjectionEnabled(false); // because these are all EE components where resource injection is not handled by Weld
         if (interceptionSupport) {
-            return new InterceptedNonContextualComponentInjectionTarget<>(type, bean, beanManager);
+            return builder.build();
         } else {
-            return new NonContextualComponentInjectionTarget<>(type, bean, beanManager);
+            // suppress interception/decoration because this is a component for which WF provides interception support
+            return builder.setInterceptionEnabled(false).setTargetClassLifecycleCallbacksEnabled(false).setDecorationEnabled(false).build();
         }
     }
 }

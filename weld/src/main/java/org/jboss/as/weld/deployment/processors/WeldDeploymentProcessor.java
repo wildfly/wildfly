@@ -51,6 +51,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.DeploymentUtils;
 import org.jboss.as.server.deployment.SetupAction;
+import org.jboss.as.server.deployment.annotation.CompositeIndex;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.ResourceRoot;
@@ -65,6 +66,7 @@ import org.jboss.as.weld.deployment.CdiAnnotationMarker;
 import org.jboss.as.weld.deployment.WeldAttachments;
 import org.jboss.as.weld.deployment.WeldDeployment;
 import org.jboss.as.weld.deployment.WeldPortableExtensions;
+import org.jboss.as.weld.discovery.WeldClassFileServices;
 import org.jboss.as.weld.services.TCCLSingletonService;
 import org.jboss.as.weld.services.bootstrap.WeldEjbInjectionServices;
 import org.jboss.as.weld.services.bootstrap.WeldEjbServices;
@@ -90,6 +92,7 @@ import org.jboss.weld.injection.spi.EjbInjectionServices;
 import org.jboss.weld.injection.spi.JaxwsInjectionServices;
 import org.jboss.weld.injection.spi.JpaInjectionServices;
 import org.jboss.weld.injection.spi.ResourceInjectionServices;
+import org.jboss.weld.resources.spi.ClassFileServices;
 import org.jboss.weld.resources.spi.ResourceLoader;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
@@ -132,6 +135,7 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
         final Module module = deploymentUnit.getAttachment(Attachments.MODULE);
         final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        final CompositeIndex rootIndex = deploymentUnit.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
 
         final Set<BeanDeploymentArchiveImpl> beanDeploymentArchives = new HashSet<BeanDeploymentArchiveImpl>();
         final Map<ModuleIdentifier, BeanDeploymentModule> bdmsByIdentifier = new HashMap<ModuleIdentifier, BeanDeploymentModule>();
@@ -182,6 +186,11 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
 
             final ResourceInjectionServices resourceInjectionServices = new WeldResourceInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription);
             bdm.addService(ResourceInjectionServices.class, resourceInjectionServices);
+
+            final CompositeIndex index = subDeployment.getAttachment(Attachments.COMPOSITE_ANNOTATION_INDEX);
+            if (index != null) {
+                bdm.addService(ClassFileServices.class, new WeldClassFileServices(index, subDeploymentModule.getClassLoader()));
+            }
         }
 
         for (Map.Entry<ModuleIdentifier, BeanDeploymentModule> entry : bdmsByIdentifier.entrySet()) {
@@ -201,14 +210,22 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         final EjbInjectionServices ejbInjectionServices = new WeldEjbInjectionServices(deploymentUnit.getServiceRegistry(),
                 eeModuleDescription, eeApplicationDescription, deploymentRoot.getRoot());
         final ResourceInjectionServices resourceInjectionServices = new WeldResourceInjectionServices(deploymentUnit.getServiceRegistry(), eeModuleDescription);
+        final WeldClassFileServices classFileServices = (rootIndex != null ? new WeldClassFileServices(rootIndex, module.getClassLoader()) : null);
+
 
         rootBeanDeploymentModule.addService(EjbInjectionServices.class, ejbInjectionServices);
         rootBeanDeploymentModule.addService(ResourceInjectionServices.class, resourceInjectionServices);
+        if (classFileServices != null) {
+            rootBeanDeploymentModule.addService(ClassFileServices.class, classFileServices);
+        }
 
         for (final BeanDeploymentArchiveImpl additional : deploymentUnit.getAttachmentList(WeldAttachments.ADDITIONAL_BEAN_DEPLOYMENT_MODULES)) {
             beanDeploymentArchives.add(additional);
             additional.getServices().add(EjbInjectionServices.class, ejbInjectionServices);
             additional.getServices().add(ResourceInjectionServices.class, resourceInjectionServices);
+            if (classFileServices != null) {
+                additional.getServices().add(ClassFileServices.class, classFileServices);
+            }
         }
 
         final Collection<Metadata<Extension>> extensions = WeldPortableExtensions.getPortableExtensions(deploymentUnit).getExtensions();
@@ -222,7 +239,9 @@ public class WeldDeploymentProcessor implements DeploymentUnitProcessor {
         weldBootstrapService.addWeldService(EjbInjectionServices.class, ejbInjectionServices);
         weldBootstrapService.addWeldService(ResourceInjectionServices.class, resourceInjectionServices);
         weldBootstrapService.addWeldService(EjbServices.class, new WeldEjbServices(deploymentUnit.getServiceRegistry()));
-
+        if (classFileServices != null) {
+            weldBootstrapService.addWeldService(ClassFileServices.class, classFileServices);
+        }
 
         final JpaInjectionServices rootJpaInjectionServices = new WeldJpaInjectionServices(deploymentUnit);
         final JaxwsInjectionServices rootJaxWsInjectionServices = new WeldJaxwsInjectionServices(deploymentUnit);

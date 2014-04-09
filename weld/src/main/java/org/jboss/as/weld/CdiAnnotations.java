@@ -142,6 +142,10 @@ public enum CdiAnnotations {
      */
     private static class Constants {
         /**
+         * javax.interceptor package.
+         */
+        public static final DotName JAVAX_INTERCEPTOR = DotName.createSimple("javax.interceptor");
+        /**
          * javax.decorator package.
          */
         public static final DotName JAVAX_DECORATOR = DotName.createSimple("javax.decorator");
@@ -181,6 +185,7 @@ public enum CdiAnnotations {
     }
 
     public static final DotName SCOPE = DotName.createComponentized(Constants.JAVAX_INJ, "Scope");
+
     public static final Set<DotName> BUILT_IN_SCOPE_NAMES = ImmutableSet.<DotName>of(DEPENDENT.getDotName(), REQ_SCOPED.getDotName(), CONV_SCOPED.getDotName(), SESS_SCOPED.getDotName(), APP_SCOPED.getDotName(), SINGLETON.getDotName());
 
     public static final Set<AnnotationType> BUILT_IN_SCOPES = ImmutableSet.copyOf(Collections2.transform(BUILT_IN_SCOPE_NAMES,
@@ -189,4 +194,21 @@ public enum CdiAnnotations {
                     return new AnnotationType(input, true);
                 }
             }));
+
+    public static final Set<AnnotationType> BEAN_DEFINING_ANNOTATIONS = ImmutableSet.of(
+            new AnnotationType(DotName.createComponentized(Constants.JAVAX_INTERCEPTOR, "Interceptor"), false), asAnnotationType(DECORATOR, false),
+            asAnnotationType(DEPENDENT), asAnnotationType(REQ_SCOPED), asAnnotationType(CONV_SCOPED), asAnnotationType(SESS_SCOPED),
+            asAnnotationType(APP_SCOPED));
+
+    public static final Set<AnnotationType> BEAN_DEFINING_META_ANNOTATIONS = ImmutableSet.of(asAnnotationType(NORM_SCOPE, false),
+            asAnnotationType(STEREOTYPE, false));
+
+    private static AnnotationType asAnnotationType(CdiAnnotations annotation) {
+        return new AnnotationType(annotation.getDotName(), true);
+    }
+
+    private static AnnotationType asAnnotationType(CdiAnnotations annotation, boolean inherited) {
+        return new AnnotationType(annotation.getDotName(), inherited);
+    }
+
 }

@@ -176,7 +176,7 @@
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.invocation>1.2.1.Final</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.1.5.Final</version.org.jboss.ironjacamar>
-        <version.org.jboss.jandex>1.1.0.Final</version.org.jboss.jandex>
+        <version.org.jboss.jandex>1.2.0.Beta1</version.org.jboss.jandex>
         <version.org.jboss.jboss-dmr>1.2.0.Final</version.org.jboss.jboss-dmr>
         <version.org.jboss.jboss-transaction-spi>7.1.0.Final</version.org.jboss.jboss-transaction-spi>
         <version.org.jboss.jboss-vfs>3.2.4.Final</version.org.jboss.jboss-vfs>
@@ -229,8 +229,8 @@
         <version.org.jboss.staxmapper>1.1.0.Final</version.org.jboss.staxmapper>
         <version.org.jboss.stdio>1.0.2.GA</version.org.jboss.stdio>
         <version.org.jboss.threads>2.1.1.Final</version.org.jboss.threads>
-        <version.org.jboss.weld.weld>2.1.2.Final</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>2.1.Final</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>2.2.0.CR2</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>2.2.CR1</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.2.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>2.2.2.Final</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>2.2.3.Final</version.org.jboss.ws.common>
