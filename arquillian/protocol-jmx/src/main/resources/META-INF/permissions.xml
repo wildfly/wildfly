@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<permissions>
+<permissions xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+             http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd"
+             version="7">
     <permission>
-        <classname>java.security.AllPermission</classname>
+        <class-name>java.security.AllPermission</class-name>
     </permission>
 </permissions>
