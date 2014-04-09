@@ -120,6 +120,8 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
         SIGNATURE("signature"),
         FACTORY_CLASS("factory-class"),
         FACTORY_METHOD("factory-method"),
+        FACTORY_CLASS_LEGACY("factoryClass"),
+        FACTORY_METHOD_LEGACY("factoryMethod"),
         STATE("state"),
         TARGET_STATE("targetState"),
         UNKNOWN(null);
@@ -326,9 +328,11 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
             switch (attribute) {
                 case FACTORY_CLASS:
+                case FACTORY_CLASS_LEGACY:
                     ctorConfig.setFactoryClass(attributeValue);
                     break;
                 case FACTORY_METHOD:
+                case FACTORY_METHOD_LEGACY:
                     ctorConfig.setFactoryMethod(attributeValue);
                     break;
                 default:
