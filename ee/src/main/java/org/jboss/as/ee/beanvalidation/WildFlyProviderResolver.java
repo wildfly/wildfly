@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ee.beanvalidation;
 
+import java.security.PrivilegedAction;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,14 +54,27 @@ public class WildFlyProviderResolver implements ValidationProviderResolver {
     @Override
     public List<ValidationProvider<?>> getValidationProviders() {
         // first try the TCCL
-        List<ValidationProvider<?>> providers = loadProviders(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+        List<ValidationProvider<?>> providers = getValidationProviders(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
 
         if (providers != null && !providers.isEmpty()) {
             return providers;
         }
         // otherwise use the loader of this class
         else {
-            return loadProviders(WildFlySecurityManager.getClassLoaderPrivileged(WildFlyProviderResolver.class));
+            return getValidationProviders(WildFlySecurityManager.getClassLoaderPrivileged(WildFlyProviderResolver.class));
+        }
+    }
+
+    private List<ValidationProvider<?>> getValidationProviders(final ClassLoader classLoader) {
+        if(WildFlySecurityManager.isChecking()) {
+            return WildFlySecurityManager.doUnchecked(new PrivilegedAction<List<ValidationProvider<?>>>() {
+                @Override
+                public List<ValidationProvider<?>> run() {
+                    return loadProviders(classLoader);
+                }
+            });
+        } else {
+            return loadProviders(classLoader);
         }
     }
 
