@@ -240,8 +240,8 @@
                             <!-- Multinode UDP clustering tests with manual containers with unmanaged deployment. -->
                             <!-- Tests which are placed in clust module but they're not run by default -->
                             <execution>
-                                <id>ts.surefire.clust.multinode-manual-udp-extended</id>
-                                <phase>test</phase>
+                                <id>ts.surefire.clust.multinode-manual-tcp-sync-extended</id>
+                                <phase>test</phase> 
                                 <goals><goal>test</goal></goals>
                                 <configuration>
                                     <!-- Tests to execute. -->
@@ -253,11 +253,12 @@
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-all</arquillian.launch>
                                         <jboss.server.config.file.name>${standalone.ha.xml}</jboss.server.config.file.name>
-                                        <stack>udp</stack>
+                                        <cacheMode>SYNC</cacheMode>
+                                        <stack>tcp</stack>
                                     </systemPropertyVariables>
 
                                     <!-- Differentiate surefire TCP and UDP reports. -->
-                                    <reportNameSuffix>UDP</reportNameSuffix>
+                                    <reportNameSuffix>SYNC-tcp-extended</reportNameSuffix>
                                 </configuration>
                             </execution>
 
