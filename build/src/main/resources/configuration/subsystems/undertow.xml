@@ -44,8 +44,8 @@
             <file name="welcome-content" path="${jboss.home.dir}/welcome-content" />
         </handlers>
         <filters>
-            <response-header name="server-header" header-name="Server" header-value="Wildfly 8"/>
-            <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow 1"/>
+            <response-header name="server-header" header-name="Server" header-value="WildFly/8"/>
+            <response-header name="x-powered-by-header" header-name="X-Powered-By" header-value="Undertow/1"/>
         </filters>
     </subsystem>
     <supplement name="ha">
