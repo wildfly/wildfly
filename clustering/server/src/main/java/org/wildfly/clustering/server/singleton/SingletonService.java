@@ -68,6 +68,7 @@ import org.wildfly.clustering.singleton.election.SimpleSingletonElectionPolicy;
 public class SingletonService<T extends Serializable> implements Service<T>, ServiceProviderRegistration.Listener, SingletonContext<T>, Singleton {
 
     public static final String DEFAULT_CONTAINER = "server";
+    public static final String DEFAULT_CACHE = "default";
 
     private final InjectedValue<Group> group = new InjectedValue<>();
     private final InjectedValue<ServiceProviderRegistrationFactory> registrationFactory = new InjectedValue<>();
@@ -96,7 +97,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName) {
-        return this.build(target, containerName, null);
+        return this.build(target, containerName, DEFAULT_CACHE);
     }
 
     public ServiceBuilder<T> build(ServiceTarget target, String containerName, String cacheName) {

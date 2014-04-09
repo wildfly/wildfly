@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,40 +20,29 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.validation;
+package org.jboss.as.txn;
 
-import java.io.File;
+import java.io.Serializable;
+
+import org.jboss.as.model.test.OperationFixer;
+import org.jboss.dmr.ModelNode;
 
 /**
- * @author Alexey Loubyansky
  *
+ * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class AppliedAtArtifact extends AbstractArtifact<PatchHistoryDir.State, AppliedAtArtifact.State> {
+public class RemoveProcessUUIDOperationFixer implements OperationFixer, Serializable {
+    private static final long serialVersionUID = 1L;
+    static transient final RemoveProcessUUIDOperationFixer INSTANCE = new RemoveProcessUUIDOperationFixer();
 
-    public static final AppliedAtArtifact INSTANCE = new AppliedAtArtifact();
-
-    public static class State implements Artifact.State {
-
-        private final File file;
-
-        State(File file) {
-            this.file = file;
-        }
-
-        @Override
-        public void validate(Context ctx) {
-            // TODO exists, can be parsed
-            file.exists();
-        }
+    private RemoveProcessUUIDOperationFixer(){
     }
 
     @Override
-    protected State getInitialState(PatchHistoryDir.State historyDir, Context ctx) {
-        State state = historyDir.getAppliedAt();
-        if(state == null) {
-            state = new State(new File(historyDir.getDirectory(), "timestamp"));
-            historyDir.setAppliedAt(state);
+    public ModelNode fixOperation(ModelNode operation) {
+        if (operation.hasDefined("process-id-uuid") && operation.get("process-id-uuid").asString() == "false"){
+            operation.remove("process-id-uuid");
         }
-        return state;
+        return operation;
     }
 }

@@ -47,10 +47,6 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
         if ((modulePath == null || modulePath.isEmpty()) && jbossHome != null) {
             modulePath = jbossHome + "/modules";
         }
-
-        if ((bundlePath == null || bundlePath.isEmpty()) && jbossHome != null) {
-            bundlePath = jbossHome + "/bundles";
-        }
     }
 
     /**
@@ -100,7 +96,9 @@ public class EmbeddedContainerConfiguration extends CommonContainerConfiguration
     public void validate() throws ConfigurationException {
         super.validate();
         Validate.configurationDirectoryExists(jbossHome, "jbossHome '" + jbossHome + "' must exist");
-        Validate.configurationDirectoryExists(jbossHome, "modulePath '" + modulePath + "' must exist");
-        Validate.configurationDirectoryExists(jbossHome, "bundlePath '" + bundlePath + "' must exist");
+        Validate.configurationDirectoryExists(modulePath, "modulePath '" + modulePath + "' must exist");
+        if (bundlePath != null) {
+            Validate.configurationDirectoryExists(bundlePath, "bundlePath '" + bundlePath + "' must exist");
+        }
     }
 }

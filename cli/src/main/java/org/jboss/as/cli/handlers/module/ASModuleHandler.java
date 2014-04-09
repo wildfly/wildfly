@@ -52,6 +52,9 @@ import org.jboss.as.cli.impl.DefaultCompleter;
 import org.jboss.as.cli.impl.DefaultCompleter.CandidatesProvider;
 import org.jboss.as.cli.impl.FileSystemPathArgument;
 import org.jboss.as.cli.operation.ParsedCommandLine;
+import org.jboss.as.cli.parsing.ExpressionBaseState;
+import org.jboss.as.cli.parsing.ParsingState;
+import org.jboss.as.cli.parsing.WordCharacterHandler;
 import org.jboss.staxmapper.XMLExtendedStreamWriter;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -127,7 +130,19 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
             }
         };
 
-        name = new ArgumentWithValue(this, moduleNameCompleter, "--name");
+        name = new ArgumentWithValue(this, moduleNameCompleter, "--name") {
+            @Override
+            protected ParsingState initParsingState() {
+                final ExpressionBaseState state = new ExpressionBaseState("EXPR", true, false);
+                if(Util.isWindows()) {
+                    // to not require escaping FS name separator
+                    state.setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_OFF);
+                } else {
+                    state.setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+                }
+                return state;
+            }
+        };
         name.addRequiredPreceding(action);
 
         mainClass = new AddModuleArgument("--main-class");
@@ -151,6 +166,17 @@ public class ASModuleHandler extends CommandHandlerWithHelp {
                     value = pathCompleter.translatePath(value);
                 }
                 return value;
+            }
+            @Override
+            protected ParsingState initParsingState() {
+                final ExpressionBaseState state = new ExpressionBaseState("EXPR", true, false);
+                if(Util.isWindows()) {
+                    // to not require escaping FS name separator
+                    state.setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_OFF);
+                } else {
+                    state.setDefaultHandler(WordCharacterHandler.IGNORE_LB_ESCAPE_ON);
+                }
+                return state;
             }
         };
 

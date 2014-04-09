@@ -32,10 +32,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstalledIdentity;
-import org.jboss.as.patching.runner.PatchingAssert;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.junit.Assert;
 import org.junit.Test;
@@ -444,5 +442,48 @@ public class BasicHistoryUnitTestCase extends AbstractPatchingTest {
 
     }
 
+    @Test
+    public void testAddExistingFile() throws Exception {
 
+        final PatchingTestBuilder test = createDefaultBuilder();
+
+        // Create a file
+        final File existing = test.getFile(FILE_EXISTING);
+        touch(existing);
+        dump(existing, randomString());
+        final byte[] existingHash = hashFile(existing);
+        final byte[] resultingHash = Arrays.copyOf(existingHash, existingHash.length);
+
+        final PatchingTestStepBuilder oop1 = test.createStepBuilder();
+        oop1.setPatchId("oop1")
+                .oneOffPatchIdentity(PRODUCT_VERSION)
+                .oneOffPatchElement("base-oop1", "base", false)
+                .addModuleWithRandomContent("org.jboss.test", null)
+                .getParent()
+                .addFileWithRandomContent(resultingHash, FILE_EXISTING);
+        ;
+
+        apply(oop1, ContentVerificationPolicy.OVERRIDE_ALL);
+
+        Assert.assertTrue(test.hasFile(FILE_EXISTING));
+
+        final byte[] moduleHash = new byte[20];
+
+        final PatchingTestStepBuilder cp1 = test.createStepBuilder();
+        cp1.setPatchId("CP1")
+                .upgradeIdentity(PRODUCT_VERSION, PRODUCT_VERSION)
+                .upgradeElement("base-CP1", "base", false)
+                .addModuleWithRandomContent("org.jboss.test", moduleHash)
+                .getParent()
+        ;
+        // Apply CP1
+        apply(cp1, ContentVerificationPolicy.OVERRIDE_ALL);
+
+        Assert.assertTrue(test.hasFile(FILE_EXISTING));
+
+        rollback(cp1);
+        rollback(oop1);
+
+        Assert.assertTrue(test.hasFile(FILE_EXISTING));
+    }
 }

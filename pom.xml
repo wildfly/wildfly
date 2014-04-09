@@ -80,7 +80,7 @@
         <version.asm>3.3.1</version.asm>
         <version.ch.qos.cal10n>0.8.1</version.ch.qos.cal10n>
         <version.com.fasterxml.classmate>1.0.0</version.com.fasterxml.classmate>
-        <version.com.fasterxml.jackson>2.2.3</version.com.fasterxml.jackson>
+        <version.com.fasterxml.jackson>2.3.2</version.com.fasterxml.jackson>
         <version.com.github.relaxng>2011.1</version.com.github.relaxng>
         <version.com.google.guava>16.0.1</version.com.google.guava>
         <version.com.h2database>1.3.173</version.com.h2database>
@@ -149,7 +149,7 @@
         <version.org.glassfish.javax.el>3.0.0</version.org.glassfish.javax.el>
         <version.org.glassfish.javax.enterprise.concurrent>1.0</version.org.glassfish.javax.enterprise.concurrent>
         <version.org.glassfish.javax.json>1.0.3</version.org.glassfish.javax.json>
-        <version.org.hibernate>4.3.4.Final</version.org.hibernate>
+        <version.org.hibernate>4.3.5.Final</version.org.hibernate>
         <version.org.hibernate.commons.annotations>4.0.4.Final</version.org.hibernate.commons.annotations>
         <version.org.hibernate.validator>5.1.0.Final</version.org.hibernate.validator>
         <version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>1.0.0.Final</version.org.hibernate.javax.persistence.hibernate-jpa-2.1-api>
@@ -159,12 +159,12 @@
         <version.org.infinispan>6.0.2.Final</version.org.infinispan>
         <version.org.jacorb>2.3.2-jbossorg-5</version.org.jacorb>
         <version.org.javassist>3.18.1-GA</version.org.javassist>
-        <version.org.jberet>1.0.1.CR1</version.org.jberet>
+        <version.org.jberet>1.0.1.Final</version.org.jberet>
         <version.org.jdom>1.1.2</version.org.jdom>
         <version.org.jboss.aesh>0.33.11</version.org.jboss.aesh>
         <version.org.jboss.arquillian.core>1.1.2.Final-wildfly-1</version.org.jboss.arquillian.core>
         <version.org.jboss.arquillian.osgi>2.1.0.CR2</version.org.jboss.arquillian.osgi>
-        <version.org.jboss.hal.release-stream>2.2.1.Final</version.org.jboss.hal.release-stream>
+        <version.org.jboss.hal.release-stream>2.2.2.Final</version.org.jboss.hal.release-stream>
         <version.org.jboss.byteman>2.1.4</version.org.jboss.byteman>
         <version.org.jboss.classfilewriter>1.0.4.Final</version.org.jboss.classfilewriter>
         <version.org.jboss.common.jboss-common-beans>1.1.0.Final</version.org.jboss.common.jboss-common-beans>
@@ -172,7 +172,7 @@
         <version.org.jboss.com.sun.httpserver>1.0.1.Final</version.org.jboss.com.sun.httpserver>
         <version.org.jboss.ejb-client>2.0.0.Final</version.org.jboss.ejb-client>
         <version.org.jboss.ejb3.ext-api>2.1.0</version.org.jboss.ejb3.ext-api>
-        <version.org.jboss.genericjms>1.0.3.Final</version.org.jboss.genericjms>
+        <version.org.jboss.genericjms>1.0.4.Final</version.org.jboss.genericjms>
         <version.org.jboss.iiop-client>1.0.0.Final</version.org.jboss.iiop-client>
         <version.org.jboss.invocation>1.2.1.Final</version.org.jboss.invocation>
         <version.org.jboss.ironjacamar>1.1.4.Final</version.org.jboss.ironjacamar>
@@ -716,6 +716,9 @@
                                             <goal>clean</goal>
                                             <goal>genkey</goal>
                                             <goal>generateKeyPair</goal>
+                                            <goal>
+                                            	generateSecretKey
+                                            </goal>
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
@@ -6470,15 +6473,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- lastly define extra BOMs -->
-
-            <dependency>
-                <groupId>org.apache.directory.server</groupId>
-                <artifactId>apacheds-parent</artifactId>
-                <version>${version.org.apache.ds}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 

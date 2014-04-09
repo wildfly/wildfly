@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,10 +22,10 @@
 
 package org.jboss.as.patching.validation;
 
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,19 +35,20 @@ import java.util.Set;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.PatchLogger;
-import org.jboss.as.patching.installation.InstallationManager;
+import org.jboss.as.patching.PatchingException;
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.installation.Layer;
-
+import org.jboss.as.patching.installation.PatchableTarget;
 
 /**
- * @author Alexey Loubyansky
+ * Locate unreferenced directories and files and clean them up. This walks through the history checking for the entries
+ * which are still able to get rolled back. Everything else is considered as garbage, except the current active state.
  *
+ * @author Alexey Loubyansky
  */
-public class PatchingGarbageLocator implements PatchStateHandler {
+public class PatchingGarbageLocator {
 
     private static final PatchLogger log = PatchLogger.ROOT_LOGGER;
-    private static final String OVERLAYS = Constants.OVERLAYS;
-
     static final FilenameFilter ALL = new FilenameFilter() {
         @Override
         public boolean accept(File dir, String name) {
@@ -55,64 +56,129 @@ public class PatchingGarbageLocator implements PatchStateHandler {
         }
     };
 
-    public static PatchingGarbageLocator getIninitialized(InstallationManager im) {
-        final PatchingGarbageLocator garbageLocator = new PatchingGarbageLocator(im);
-        final Context ctx = getContext(im, false);
-        PatchingHistory.State history = PatchingHistory.getInstance().getState(ctx);
-        history.handlePatches(ctx, garbageLocator);
-        return garbageLocator;
+    /**
+     * Get the garbage locator.
+     *
+     * @param installedIdentity the installed identity
+     * @return the garbage locator
+     */
+    public static PatchingGarbageLocator getIninitialized(InstalledIdentity installedIdentity) {
+        return new PatchingGarbageLocator(installedIdentity);
     }
 
-    private final InstallationManager manager;
+    private final InstalledIdentity installedIdentity;
 
-    private Set<String> activeHistory = new HashSet<String>();
-    private Set<File> activeOverlays = new HashSet<File>();
+    private Set<String> validHistory;
+    private Set<File> referencedOverlayDirectories;
 
-    public PatchingGarbageLocator(InstallationManager manager) {
-        if(manager == null) {
-            throw new IllegalArgumentException("Installation manager is null");
+    protected PatchingGarbageLocator(final InstalledIdentity installedIdentity) {
+        this.installedIdentity = installedIdentity;
+    }
+
+    private void walk() throws PatchingException {
+        validHistory = new HashSet<String>();
+        referencedOverlayDirectories = new HashSet<File>();
+        // Get the active history
+        final Set<String> activeHistory = new HashSet<String>();
+        try {
+            final PatchableTarget.TargetInfo info = installedIdentity.getIdentity().loadTargetInfo();
+            activeHistory.addAll(info.getPatchIDs());
+            activeHistory.add(info.getCumulativePatchID());
+        } catch(IOException e) {
+            throw new RuntimeException(e);
         }
-        this.manager = manager;
+        final PatchHistoryIterator.Builder builder = PatchHistoryIterator.Builder.create(installedIdentity);
+        builder.addStateHandler(PatchingArtifacts.MODULE_OVERLAY, new PatchingArtifactStateHandler<PatchingFileArtifact.DirectoryArtifactState>() {
+            @Override
+            public void handleValidatedState(PatchingFileArtifact.DirectoryArtifactState state) {
+                referencedOverlayDirectories.add(state.getFile());
+            }
+        });
+        builder.addStateHandler(PatchingArtifacts.BUNDLE_OVERLAY, new PatchingArtifactStateHandler<PatchingFileArtifact.DirectoryArtifactState>() {
+            @Override
+            public void handleValidatedState(PatchingFileArtifact.DirectoryArtifactState state) {
+                referencedOverlayDirectories.add(state.getFile());
+            }
+        });
+        final PatchHistoryValidations.HistoryProcessor processor = new PatchHistoryValidations.HistoryProcessor() {
+            boolean failed = false;
+
+            @Override
+            protected boolean includeCurrent() {
+                return true;
+            }
+
+            @Override
+            protected boolean canProceed() {
+                return !activeHistory.isEmpty() || !failed;
+            }
+
+            @Override
+            protected <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> boolean handleError(PatchingArtifact<P, S> artifact, S state) {
+                // If (specific) parts of the history are is missing we can rollback to this patch, but no further
+                failed = true;
+                if (artifact == PatchingArtifacts.PATCH_XML
+                        || artifact == PatchingArtifacts.ROLLBACK_XML
+                        || artifact == PatchingArtifacts.MISC_BACKUP) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            protected void processedPatch(String patch) {
+                activeHistory.remove(patch);
+                validHistory.add(patch);
+            }
+        };
+        // Process
+        processor.process(builder.iterator());
     }
 
-    @Override
-    public void handle(PatchArtifact.State patch) {
-        activeHistory.add(patch.getHistoryDir().getDirectory().getName());
-        PatchElementArtifact.State patchElements = patch.getHistoryDir().getPatchXml().getPatchElements();
-        patchElements.resetIndex();
-        while(patchElements.hasNext()) {
-            final File bundlesDir = patchElements.getState().getLayer().getBundlesDir();
-            if(bundlesDir != null) {
-                activeOverlays.add(bundlesDir);
-            }
-            final File modulesDir = patchElements.getState().getLayer().getModulesDir();
-            if(modulesDir != null) {
-                activeOverlays.add(modulesDir);
-            }
-            patchElements.next();
+    public void reset() {
+        validHistory = null;
+        referencedOverlayDirectories = null;
+    }
+
+    /**
+     * Get the inactive history directories.
+     *
+     * @return the inactive history
+     */
+    public List<File> getInactiveHistory() throws PatchingException {
+        if (validHistory == null) {
+            walk();
         }
-    }
-
-    public List<File> getInactiveHistory() {
-        final File[] inactiveDirs = manager.getInstalledImage().getPatchesDir().listFiles(new FileFilter(){
+        final File[] inactiveDirs = installedIdentity.getInstalledImage().getPatchesDir().listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
-                return pathname.isDirectory() && !activeHistory.contains(pathname.getName());
-            }});
+                return pathname.isDirectory() && !validHistory.contains(pathname.getName());
+            }
+        });
         return inactiveDirs == null ? Collections.<File>emptyList() : Arrays.asList(inactiveDirs);
     }
 
-    public List<File> getInactiveOverlays() {
+    /**
+     * Get the inactive overlay directories.
+     *
+     * @return the inactive overlay directories
+     */
+    public List<File> getInactiveOverlays() throws PatchingException {
+        if (referencedOverlayDirectories == null) {
+            walk();
+        }
         List<File> inactiveDirs = null;
-        for(Layer layer : manager.getLayers()) {
-            final File overlaysDir = new File(layer.getDirectoryStructure().getModuleRoot(), OVERLAYS);
-            final File[] inactiveLayerDirs = overlaysDir.listFiles(new FileFilter(){
+        for (Layer layer : installedIdentity.getLayers()) {
+            final File overlaysDir = new File(layer.getDirectoryStructure().getModuleRoot(), Constants.OVERLAYS);
+            final File[] inactiveLayerDirs = overlaysDir.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File pathname) {
-                    return pathname.isDirectory() && !activeOverlays.contains(pathname);
-                }});
-            if(inactiveLayerDirs != null && inactiveLayerDirs.length > 0) {
-                if(inactiveDirs == null) {
+                    return pathname.isDirectory() && !referencedOverlayDirectories.contains(pathname);
+                }
+            });
+            if (inactiveLayerDirs != null && inactiveLayerDirs.length > 0) {
+                if (inactiveDirs == null) {
                     inactiveDirs = new ArrayList<File>();
                 }
                 inactiveDirs.addAll(Arrays.asList(inactiveLayerDirs));
@@ -121,16 +187,19 @@ public class PatchingGarbageLocator implements PatchStateHandler {
         return inactiveDirs == null ? Collections.<File>emptyList() : inactiveDirs;
     }
 
-    public void deleteInactiveContent() {
+    /**
+     * Delete inactive contents.
+     */
+    public void deleteInactiveContent() throws PatchingException {
         List<File> dirs = getInactiveHistory();
-        if(!dirs.isEmpty()) {
-            for(File dir : dirs) {
+        if (!dirs.isEmpty()) {
+            for (File dir : dirs) {
                 deleteDir(dir, ALL);
             }
         }
         dirs = getInactiveOverlays();
-        if(!dirs.isEmpty()) {
-            for(File dir : dirs) {
+        if (!dirs.isEmpty()) {
+            for (File dir : dirs) {
                 deleteDir(dir, ALL);
             }
         }
@@ -146,17 +215,13 @@ public class PatchingGarbageLocator implements PatchStateHandler {
                     // delete the directory and all of its contents.
                     if (!deleteDir(f, filter)) {
                         success = false;
-                        if(log.isDebugEnabled()) {
-                            log.debug("Failed to delete dir: " + f.getAbsolutePath());
-                        }
+                        log.debugf("Failed to delete dir: %s", f.getAbsolutePath());
                     }
                 }
                 // delete each file in the directory
                 else if (!f.delete()) {
                     success = false;
-                    if(log.isDebugEnabled()) {
-                        log.debug("Failed to delete file: " + f.getAbsolutePath());
-                    }
+                    log.debugf("Failed to delete file: %s", f.getAbsolutePath());
                 }
             }
         }
@@ -164,37 +229,9 @@ public class PatchingGarbageLocator implements PatchStateHandler {
         // finally delete the directory
         if (!dir.delete()) {
             success = false;
-            if(log.isDebugEnabled()) {
-                log.debug("Failed to delete dir: " + dir.getAbsolutePath());
-            }
+            log.debugf("Failed to delete dir: %s", dir.getAbsolutePath());
         }
         return success;
     }
 
-    private static Context getContext(final InstallationManager manager, final boolean failOnError) {
-        return new Context() {
-
-            @Override
-            public InstallationManager getInstallationManager() {
-                return manager;
-            }
-
-            @Override
-            public ErrorHandler getErrorHandler() {
-                return new ErrorHandler(){
-                    @Override
-                    public void error(String msg) {
-                        if(failOnError) {
-                            throw new IllegalStateException(msg);
-                        }
-                    }
-
-                    @Override
-                    public void error(String msg, Throwable t) {
-                        if(failOnError) {
-                            throw new IllegalStateException(msg, t);
-                        }
-                    }};
-            }};
-    }
 }

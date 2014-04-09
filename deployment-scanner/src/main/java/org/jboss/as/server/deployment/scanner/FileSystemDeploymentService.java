@@ -648,7 +648,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (autoDeployable) {
                     if (!isAutoDeployDisabled(child)) {
                         long timestamp = getDeploymentTimestamp(child);
-                        if (isFailedOrUndeployed(directory, fileName, timestamp)) continue;
+                        if (isFailedOrUndeployed(scanContext, directory, fileName, timestamp)) continue;
 
                         DeploymentMarker marker = deployed.get(fileName);
                         if (marker == null || marker.lastModified != timestamp) {
@@ -679,7 +679,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (autoDeployXml) {
                     if (!isAutoDeployDisabled(child)) {
                         long timestamp = getDeploymentTimestamp(child);
-                        if (isFailedOrUndeployed(directory, fileName, timestamp)) continue;
+                        if (isFailedOrUndeployed(scanContext, directory, fileName, timestamp)) continue;
 
                         DeploymentMarker marker = deployed.get(fileName);
                         if (marker == null || marker.lastModified != timestamp) {
@@ -732,13 +732,14 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private boolean isFailedOrUndeployed(final File directory, final String fileName, final long timestamp) {
+    private boolean isFailedOrUndeployed(final ScanContext scanContext, final File directory, final String fileName, final long timestamp) {
         final File failedMarker = new File(directory, fileName + FAILED_DEPLOY);
         if (failedMarker.exists() && timestamp <= failedMarker.lastModified()) {
             return true;
         }
         final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
-        if (undeployedMarker.exists() && timestamp <= undeployedMarker.lastModified()) {
+        boolean isRegistredDeployment = scanContext.registeredDeployments.get(fileName) == null ? false : scanContext.registeredDeployments.get(fileName);
+        if (undeployedMarker.exists() && timestamp <= undeployedMarker.lastModified() && !isRegistredDeployment) {
             return true;
         }
         return false;

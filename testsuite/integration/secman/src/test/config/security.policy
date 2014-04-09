@@ -1,0 +1,24 @@
+// ****************************************************************************
+// AS + Arquillian related grants 
+// ****************************************************************************
+
+// Grant all to the jboss-modules.jar
+grant codeBase "file:${jboss.home.dir}/jboss-modules.jar" {
+  permission java.security.AllPermission;
+};
+
+// Standard extensions get all permissions by default
+grant codeBase "file:${{java.ext.dirs}}/*" {
+	permission java.security.AllPermission;
+};
+
+// Grant all to Arquillian
+grant codeBase "vfs:/content/arquillian-service" {
+  permission java.security.AllPermission;
+};
+// Workaround for windows VFS issue - https://issues.jboss.org/browse/WFLY-3195
+grant codeBase "vfs:/${user.dir}/content/arquillian-service" {
+  permission java.security.AllPermission;
+};
+
+// No more grants here.

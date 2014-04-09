@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -22,21 +22,28 @@
 
 package org.jboss.as.patching.validation;
 
-import java.util.Collection;
+import org.jboss.as.patching.installation.InstalledIdentity;
 
 /**
  * @author Alexey Loubyansky
  *
  */
-public interface Artifact<P extends Artifact.State, S extends Artifact.State> {
+public interface PatchingArtifactValidationContext {
 
-    interface State {
-        void validate(Context ctx);
-    }
+    /**
+     * Get the error handler.
+     *
+     * @return the error handler
+     */
+    PatchingValidationErrorHandler getErrorHandler();
 
-    S getState(P parent, Context ctx);
+    /**
+     * Get the installed identity.
+     *
+     * @return the installed identity
+     */
+    InstalledIdentity getInstalledIdentity();
 
-    Collection<Artifact<S, ? extends Artifact.State>> getArtifacts();
+    void setCurrentPatchIdentity(InstalledIdentity currentPatchIdentity);
 
-    S validate(P parent, Context ctx);
 }

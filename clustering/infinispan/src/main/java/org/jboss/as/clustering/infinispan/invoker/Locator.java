@@ -23,6 +23,7 @@ package org.jboss.as.clustering.infinispan.invoker;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.TransactionConfiguration;
+import org.infinispan.context.Flag;
 import org.infinispan.transaction.LockingMode;
 
 /**
@@ -62,13 +63,12 @@ public interface Locator<K, V> {
             super(key);
         }
 
-        @SuppressWarnings("unchecked")
         @Override
         public V invoke(Cache<K, V> cache) {
             TransactionConfiguration transaction = cache.getCacheConfiguration().transaction();
             if (transaction.transactionMode().isTransactional()) {
                 if (transaction.lockingMode() == LockingMode.PESSIMISTIC) {
-                    cache.getAdvancedCache().lock(this.key);
+                    return super.invoke(cache.getAdvancedCache().withFlags(Flag.FORCE_WRITE_LOCK));
                 }
             }
             return super.invoke(cache);

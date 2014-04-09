@@ -10,13 +10,13 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <authentication>
-                    <local default-user="${user.authentication.default-user:$local}" />
+                    <local default-user="${user.authentication.default-user:$local}" skip-group-loading="${user.authentication.skip-group-loading:true}" />
                     <properties path="${authentication.props.path:mgmt-users.properties}" relative-to="jboss.domain.config.dir"/>
                 </authentication>
             </security-realm>
             <security-realm name="ApplicationRealm">
                 <authentication>
-                    <local default-user="${local.auth.default-user:$local}" allowed-users="${local.auth.allowed-user:*}" />
+                    <local default-user="${local.auth.default-user:$local}" allowed-users="${local.auth.allowed-user:*}" skip-group-loading="${user.authentication.skip-group-loading:true}" />
                     <properties path="${authentication.props.path:application-users.properties}" relative-to="jboss.domain.config.dir" />
                 </authentication>
                 <authorization>

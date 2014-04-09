@@ -36,11 +36,7 @@ ACTION: rollback
 
     Rollback a patch that has been applied
 
-    NOTE: by default this operation will restore all *.xml files in the
-          configuration directories to the state when the patch was applied.
-
-    patch rollback --patch-id=<id>
-      [--reset-configuration=(true|false)]
+    patch rollback --patch-id=<id> --reset-configuration=(true|false)
       [--rollback-to]
       [--override-all]
       [--override-modules]

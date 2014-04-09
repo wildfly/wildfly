@@ -51,7 +51,7 @@ import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainServerUtils;
 import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.operations.ServerProcessStateHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -135,9 +135,9 @@ public class ApplyExtensionsHandler implements OperationStepHandler {
                         continue;
                     }
                     final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, serverIdentity.getHostName()), PathElement.pathElement(SERVER, serverIdentity.getServerName()));
-                    final OperationStepHandler handler = context.getResourceRegistration().getOperationHandler(serverAddress, ServerRestartRequiredHandler.OPERATION_NAME);
+                    final OperationStepHandler handler = context.getResourceRegistration().getOperationHandler(serverAddress, ServerProcessStateHandler.REQUIRE_RELOAD_OPERATION);
                     final ModelNode op = new ModelNode();
-                    op.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
+                    op.get(OP).set(ServerProcessStateHandler.REQUIRE_RELOAD_OPERATION);
                     op.get(OP_ADDR).set(serverAddress.toModelNode());
                     context.addStep(op, handler, OperationContext.Stage.MODEL, true);
                 }

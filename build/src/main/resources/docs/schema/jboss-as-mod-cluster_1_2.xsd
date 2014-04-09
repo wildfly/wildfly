@@ -125,16 +125,16 @@
         <xs:documentation>Session draining strategy used during undeployment of a web application.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-      <xs:attribute name="worker-timeout" type="xs:int" use="optional">
-          <xs:annotation>
-              <xs:documentation>
-                  Number of seconds to wait for a worker to become available to handle a request. When no workers of a
-                  balancer are usable, mod_cluster will retry after a while (workerTimeout/100). That is timeout in the
-                  balancer mod_proxy documentation. A value of -1 indicates that the HTTPd will not wait
-                  for a worker to be available and will return an error if none is available.
-              </xs:documentation>
-          </xs:annotation>
-      </xs:attribute>
+    <xs:attribute name="worker-timeout" type="xs:int" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+          Number of seconds to wait for a worker to become available to handle a request. When no workers of a
+          balancer are usable, mod_cluster will retry after a while (workerTimeout/100). That is timeout in the
+          balancer mod_proxy documentation. A value of -1 indicates that the HTTPd will not wait
+          for a worker to be available and will return an error if none is available.
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:complexType>
 
   <!-- general SSL definitions -->

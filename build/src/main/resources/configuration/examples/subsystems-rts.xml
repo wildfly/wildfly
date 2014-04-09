@@ -26,7 +26,6 @@
       <subsystem>configuration/subsystems/resource-adapters.xml</subsystem>
       <subsystem>configuration/subsystems/sar.xml</subsystem>
       <subsystem supplement="standalone">configuration/subsystems/security.xml</subsystem>
-      <subsystem>configuration/subsystems/threads.xml</subsystem>
       <subsystem>configuration/subsystems/transactions.xml</subsystem>
       <subsystem>configuration/subsystems/undertow.xml</subsystem>
       <subsystem>configuration/subsystems/webservices.xml</subsystem>

@@ -4,7 +4,7 @@
         <security-realms>
             <security-realm name="ManagementRealm">
                 <authentication>
-                    <local default-user="$local" />
+                    <local default-user="$local" skip-group-loading="true" />
                     <ldap connection="LocalLdap" base-dn="ou=users,dc=group-to-principal,dc=wildfly,dc=org">
                         <username-filter attribute="uid" />
                     </ldap>

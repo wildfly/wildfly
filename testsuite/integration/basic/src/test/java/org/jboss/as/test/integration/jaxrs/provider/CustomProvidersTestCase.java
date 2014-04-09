@@ -49,6 +49,7 @@ import org.junit.runner.RunWith;
  */
 @RunWith(Arquillian.class)
 @RunAsClient
+@Ignore("JBPAPP-9963")
 public class CustomProvidersTestCase {
 
     private static Logger LOGGER = Logger.getLogger(CustomProvidersTestCase.class);
@@ -90,7 +91,6 @@ public class CustomProvidersTestCase {
      * @throws Exception
      */
     @Test
-    @Ignore("JBPAPP-9963")
     @OperateOnDeployment(WEBAPP_TEST_EXCEPTION_MAPPER)
     public void testProvidersInTwoWars(@ArquillianResource URL webAppURL) throws Exception {
         final String path = webAppURL.toExternalForm() + ExceptionMapperProvider.PATH_EXCEPTION.substring(1);

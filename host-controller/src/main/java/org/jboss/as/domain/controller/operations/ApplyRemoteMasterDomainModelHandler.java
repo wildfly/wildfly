@@ -81,7 +81,7 @@ import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.management.client.content.ManagedDMRContentTypeResource;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
-import org.jboss.as.server.operations.ServerRestartRequiredHandler;
+import org.jboss.as.server.operations.ServerProcessStateHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -287,6 +287,9 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
     protected Resource getResource(PathAddress resourceAddress, Resource rootResource, ModelNode resourceModel,
                                    OperationContext context, List<ModelNode> addOps) {
         if(resourceAddress.size() == 0) {
+            //The applied root resource values should override this so that the domain configuration is exactly the
+            //same on the slave as on the master. i.e. the slave domain config is a total copy of that on the master.
+            rootResource.writeModel(resourceModel.clone());
             return rootResource;
         }
         boolean allowCreate = true;
@@ -377,44 +380,45 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         final ModelNode hostModel = endRoot.require(HOST).asPropertyList().iterator().next().getValue();
         final ModelNode existingHostModel = startRoot.require(HOST).asPropertyList().iterator().next().getValue();
 
-        final Set<ServerIdentity> affectedServers;
-        //Path that gets called when missing data is piggy-backed as a result of changes to the domain model
-        affectedServers = new HashSet<ServerIdentity>();
-
-        if (!hostModel.hasDefined(SERVER_CONFIG)) {
-            return;
-        }
-
+        final Set<ServerIdentity> restartServers = new HashSet<ServerIdentity>();
+        final Set<ServerIdentity> reloadServers = new HashSet<ServerIdentity>();
         for (String serverName : hostModel.get(SERVER_CONFIG).keys()) {
-            ModelNode startOps = createBootOps(context, serverName, startRoot, existingHostModel);
-            ModelNode endOps = createBootOps(context, serverName, endRoot, hostModel);
-            if (bootOpsChanged(startOps, endOps)) {
-                affectedServers.add(createServerIdentity(hostModel, serverName));
-            }
+            // Compare boot cmd (requires restart)
             ManagedServerBootConfiguration startConfig = new ManagedServerBootCmdFactory(serverName, startRoot, existingHostModel, hostControllerEnvironment, domainController.getExpressionResolver()).createConfiguration();
             ManagedServerBootConfiguration endConfig = new ManagedServerBootCmdFactory(serverName, endRoot, hostModel, hostControllerEnvironment, domainController.getExpressionResolver()).createConfiguration();
             if (!startConfig.getServerLaunchCommand().equals(endConfig.getServerLaunchCommand())) {
-                affectedServers.add(createServerIdentity(hostModel, serverName));
+                restartServers.add(createServerIdentity(hostModel, serverName));
+                continue;
+            }
+
+            // Compare boot ops (requires reload)
+            ModelNode startOps = createBootOps(context, serverName, startRoot, existingHostModel);
+            ModelNode endOps = createBootOps(context, serverName, endRoot, hostModel);
+            if (bootOpsChanged(startOps, endOps)) {
+                reloadServers.add(createServerIdentity(hostModel, serverName));
             }
         }
 
         final Map<String, ProxyController> serverProxies = DomainServerUtils.getServerProxies(localHostInfo.getLocalHostName(), domainRootResource, context.getResourceRegistration());
 
-        if (!affectedServers.isEmpty()) {
-            ROOT_LOGGER.domainModelChangedOnReConnect(affectedServers);
+        if (!restartServers.isEmpty()) {
+            ROOT_LOGGER.domainModelChangedOnReConnect(restartServers);
             final Set<ServerIdentity> runningServers = DomainServerUtils.getAllRunningServers(hostModel, localHostInfo.getLocalHostName(), serverProxies);
-            for (ServerIdentity serverIdentity : affectedServers) {
+            for (ServerIdentity serverIdentity : restartServers) {
                 if(!runningServers.contains(serverIdentity)) {
                     continue;
                 }
-                //TODO https://issues.jboss.org/browse/AS7-6858 If the launch command did not change, we should put the server into reload-required
-                // If the launch command changed, restart-required is still needed
-                final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, serverIdentity.getHostName()), PathElement.pathElement(SERVER, serverIdentity.getServerName()));
-                final OperationStepHandler handler = context.getResourceRegistration().getOperationHandler(serverAddress, ServerRestartRequiredHandler.OPERATION_NAME);
-                final ModelNode op = new ModelNode();
-                op.get(OP).set(ServerRestartRequiredHandler.OPERATION_NAME);
-                op.get(OP_ADDR).set(serverAddress.toModelNode());
-                context.addStep(op, handler, OperationContext.Stage.MODEL, true);
+                addLifecycleStep(context, serverIdentity, ServerProcessStateHandler.REQUIRE_RESTART_OPERATION);
+            }
+        }
+        if (!reloadServers.isEmpty()) {
+            ROOT_LOGGER.domainModelChangedOnReConnect(reloadServers);
+            final Set<ServerIdentity> runningServers = DomainServerUtils.getAllRunningServers(hostModel, localHostInfo.getLocalHostName(), serverProxies);
+            for (ServerIdentity serverIdentity : reloadServers) {
+                if(!runningServers.contains(serverIdentity)) {
+                    continue;
+                }
+                addLifecycleStep(context, serverIdentity, ServerProcessStateHandler.REQUIRE_RELOAD_OPERATION);
             }
         }
     }
@@ -445,14 +449,13 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
 
     }
 
-    private static class ResourceAddition {
-        private final Resource addedResource;
-        private final List<ModelNode> addOps;
-
-
-        private ResourceAddition(Resource addedResource, List<ModelNode> addOps) {
-            this.addedResource = addedResource;
-            this.addOps = addOps;
-        }
+    private static void addLifecycleStep(final OperationContext context, final ServerIdentity serverIdentity, final String operationName) {
+        final PathAddress serverAddress = PathAddress.pathAddress(PathElement.pathElement(HOST, serverIdentity.getHostName()), PathElement.pathElement(SERVER, serverIdentity.getServerName()));
+        final OperationStepHandler handler = context.getResourceRegistration().getOperationHandler(serverAddress, operationName);
+        final ModelNode op = new ModelNode();
+        op.get(OP).set(operationName);
+        op.get(OP_ADDR).set(serverAddress.toModelNode());
+        context.addStep(op, handler, OperationContext.Stage.MODEL, true);
     }
+
 }

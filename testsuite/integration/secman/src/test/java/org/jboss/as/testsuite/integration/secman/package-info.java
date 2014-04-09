@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,32 +20,9 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.validation;
-
-import java.io.File;
-
 /**
- * @author Alexey Loubyansky
- *
+ * This package contains a part of the AS integration testsuite, which checks permissions granted when running
+ * the AS with Java Security Manager (JSM) enabled.<br>
+ * <i>Permissions for the tests are defined in src/test/config/security.policy</i>
  */
-public class RollbackXmlArtifact extends AbstractArtifact<PatchHistoryDir.State, RollbackXmlArtifact.State> {
-
-    public static final RollbackXmlArtifact INSTANCE = new RollbackXmlArtifact();
-
-    public static class State extends XmlFileState {
-
-        State(File file) {
-            super(file);
-        }
-    }
-
-    @Override
-    protected State getInitialState(PatchHistoryDir.State historyDir, Context ctx) {
-        State state = historyDir.getRollbackXml();
-        if(state == null) {
-            state = new State(new File(historyDir.getDirectory(), "rollback.xml"));
-            historyDir.setRollbackXml(state);
-        }
-        return state;
-    }
-}
+package org.jboss.as.testsuite.integration.secman;

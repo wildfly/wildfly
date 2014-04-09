@@ -144,6 +144,7 @@ public enum Attribute {
     SECURITY_REALM("security-realm"),
     SHA1("sha1"),
     SIZE("size"),
+    SKIP_GROUP_LOADING("skip-group-loading"),
     SOCKET_BINDING_GROUP("socket-binding-group"),
     SOCKET_BINDING_REF("socket-binding-ref"),
     SOURCE_INTERFACE("source-interface"),

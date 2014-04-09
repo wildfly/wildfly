@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -20,17 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.as.patching.validation;
-
-import org.jboss.as.patching.installation.InstallationManager;
-
 /**
- * @author Alexey Loubyansky
- *
+ * This package contains tests for permissions assigned to custom AS modules (<i>i.e. Permissions defined in module.xml</i>).
  */
-public interface Context {
-
-    InstallationManager getInstallationManager();
-
-    ErrorHandler getErrorHandler();
-}
+package org.jboss.as.testsuite.integration.secman.module;

@@ -80,7 +80,7 @@ public class ApplicationClientStartService implements Service<ApplicationClientS
         this.namespaceContextSelectorInjectedValue = namespaceContextSelectorInjectedValue;
         this.classLoader = classLoader;
         this.setupActions = setupActions;
-        this.contextSelector = new LazyConnectionContextSelector(hostUrl, callbackHandler);
+        this.contextSelector = new LazyConnectionContextSelector(hostUrl, callbackHandler, classLoader);
     }
 
     public ApplicationClientStartService(final Method mainMethod, final String[] parameters, final InjectedEENamespaceContextSelector namespaceContextSelectorInjectedValue, final ClassLoader classLoader,  final List<SetupAction> setupActions, final EJBClientConfiguration configuration) {

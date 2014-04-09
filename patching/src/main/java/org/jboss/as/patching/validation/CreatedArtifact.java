@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,12 +23,19 @@
 package org.jboss.as.patching.validation;
 
 /**
- * @author Alexey Loubyansky
+ * An artifact which has been created by it's parent, but has different child {@code PatchingArtifact}s.
  *
+ * @author Emanuel Muckenhuber
  */
-public interface ErrorHandler {
+class CreatedArtifact<T extends PatchingArtifact.ArtifactState> extends AbstractArtifact<T, T> {
 
-    void error(String msg);
+    protected CreatedArtifact(PatchingArtifact<T, ? extends ArtifactState>... artifacts) {
+        super(artifacts);
+    }
 
-    void error(String msg, Throwable t);
+    @Override
+    public boolean process(T parent, PatchingArtifactProcessor processor) {
+        return true;
+    }
+
 }

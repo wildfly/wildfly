@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<module xmlns="urn:jboss:module:1.2" name="org.jboss.test.secman.limited">
+
+	<permissions>
+		<grant permission="java.lang.RuntimePermission" name="secman.test.*" />
+<!--
+		<grant permission="" name="" actions=""/> 
+-->
+	</permissions>
+
+	<resources>
+		<resource-root path="modperm.jar" />
+	</resources>
+</module>

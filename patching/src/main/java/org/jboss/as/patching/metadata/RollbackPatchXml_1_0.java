@@ -120,16 +120,16 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
     @Override
     public void readElement(XMLExtendedStreamReader reader, PatchXml.Result<PatchMetadataResolver> factory) throws XMLStreamException {
         final RollbackPatchBuilder builder = new RollbackPatchBuilder();
-        doReadElement(reader, builder);
+        doReadElement(reader, builder, factory.getOriginalIdentity());
         factory.setResult(builder);
     }
 
     @Override
-    protected void handleRootElement(String localName, XMLExtendedStreamReader reader, PatchBuilder patch) throws XMLStreamException {
+    protected void handleRootElement(String localName, XMLExtendedStreamReader reader, PatchBuilder patch, InstalledIdentity originalIdentity) throws XMLStreamException {
         final RollbackPatchBuilder builder = (RollbackPatchBuilder) patch;
         final Element element = Element.forName(localName);
         if (element == Element.INSTALLATION) {
-            final InstalledIdentity identity = processInstallation(reader);
+            final InstalledIdentity identity = processInstallation(reader, originalIdentity);
             builder.setIdentity(identity);
         } else {
             throw unexpectedElement(reader);
@@ -152,7 +152,7 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
         writer.writeEndDocument();
     }
 
-    static InstalledIdentity processInstallation(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    static InstalledIdentity processInstallation(final XMLExtendedStreamReader reader, InstalledIdentity originalIdentity) throws XMLStreamException {
 
         LayerInfo identity = null;
         final Map<String, LayerInfo> layers = new LinkedHashMap<String, LayerInfo>();
@@ -162,14 +162,14 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
                 case IDENTITY:
-                    identity = parseTargetInfo(reader);
+                    identity = parseTargetInfo(reader, originalIdentity, element);
                     break;
                 case LAYER: {
-                    final LayerInfo info = parseTargetInfo(reader);
+                    final LayerInfo info = parseTargetInfo(reader, originalIdentity, element);
                     layers.put(info.getName(), info);
                     break;
                 } case ADD_ON:
-                    final LayerInfo info = parseTargetInfo(reader);
+                    final LayerInfo info = parseTargetInfo(reader, originalIdentity, element);
                     addOns.put(info.getName(), info);
                     break;
                 default:
@@ -177,7 +177,8 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
             }
         }
         //
-        final WrappedIdentity installation = new WrappedIdentity(identity);
+        final DirectoryStructure structure = identity.getDirectoryStructure();
+        final WrappedIdentity installation = new WrappedIdentity(identity, structure);
         for (final Map.Entry<String, LayerInfo> entry : layers.entrySet()) {
             installation.putLayer(entry.getKey(), entry.getValue());
         }
@@ -187,7 +188,7 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
         return installation;
     }
 
-    static LayerInfo parseTargetInfo(final XMLExtendedStreamReader reader) throws XMLStreamException {
+    static LayerInfo parseTargetInfo(final XMLExtendedStreamReader reader, InstalledIdentity originalIdentity, Element target) throws XMLStreamException {
 
         String name = null;
         final Properties properties = new Properties();
@@ -211,8 +212,23 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
         }
 
         requireNoContent(reader);
-        final LayerInfo.TargetInfo info = LayerInfo.loadTargetInfo(properties, null);
-        return new LayerInfo(name, info, null);
+        final DirectoryStructure dirStructure;
+        if(originalIdentity != null) {
+            switch(target) {
+                case LAYER:
+                    dirStructure = originalIdentity.getLayer(name).getDirectoryStructure();
+                    break;
+                case ADD_ON:
+                    dirStructure = originalIdentity.getAddOn(name).getDirectoryStructure();
+                    break;
+                default:
+                    dirStructure = originalIdentity.getIdentity().getDirectoryStructure();
+            }
+        } else {
+            dirStructure = null;
+        }
+        final LayerInfo.TargetInfo info = LayerInfo.loadTargetInfo(properties, dirStructure);
+        return new LayerInfo(name, info, dirStructure);
     }
 
     static void writeInstallation(final XMLExtendedStreamWriter writer, final InstalledIdentity identity) throws XMLStreamException {
@@ -252,7 +268,7 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
     static class WrappedIdentity extends InstalledIdentityImpl {
 
         final PatchableTarget identity;
-        WrappedIdentity(final PatchableTarget identity) {
+        WrappedIdentity(final PatchableTarget identity, final DirectoryStructure structure) {
             super(new org.jboss.as.patching.installation.Identity() {
 
                 @Override
@@ -272,9 +288,9 @@ class RollbackPatchXml_1_0 extends PatchXmlUtils implements XMLStreamConstants, 
 
                 @Override
                 public DirectoryStructure getDirectoryStructure() {
-                    return null;
+                    return identity.getDirectoryStructure();
                 }
-            }, Collections.<String>emptyList(), null);
+            }, Collections.<String>emptyList(), structure == null ? null : structure.getInstalledImage());
             this.identity = identity;
         }
 

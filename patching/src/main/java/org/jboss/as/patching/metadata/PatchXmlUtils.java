@@ -32,6 +32,7 @@ import static org.jboss.as.patching.metadata.ModuleItem.MAIN_SLOT;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -39,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.patching.installation.InstalledIdentity;
 import org.jboss.as.patching.metadata.impl.PatchElementImpl;
 import org.jboss.as.patching.metadata.impl.PatchElementProviderImpl;
 import org.jboss.as.patching.metadata.impl.RequiresCallback;
@@ -322,7 +324,7 @@ class PatchXmlUtils implements XMLStreamConstants {
         }
     }
 
-    protected void doReadElement(final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+    protected void doReadElement(final XMLExtendedStreamReader reader, final PatchBuilder builder, InstalledIdentity originalIdentity) throws XMLStreamException {
 
         final PatchBuilder patch = builder;
         final int count = reader.getAttributeCount();
@@ -363,12 +365,12 @@ class PatchXmlUtils implements XMLStreamConstants {
                     parseMiscFiles(reader, modifications);
                     break;
                 default:
-                    handleRootElement(localName, reader, patch);
+                    handleRootElement(localName, reader, patch, originalIdentity);
             }
         }
     }
 
-    protected void handleRootElement(final String localName, final XMLExtendedStreamReader reader, final PatchBuilder builder) throws XMLStreamException {
+    protected void handleRootElement(final String localName, final XMLExtendedStreamReader reader, final PatchBuilder builder, InstalledIdentity originalIdentity) throws XMLStreamException {
         throw unexpectedElement(reader);
     }
 

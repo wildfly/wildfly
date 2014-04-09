@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,10 +23,17 @@
 package org.jboss.as.patching.validation;
 
 /**
- * @author Alexey Loubyansky
+ * State handler for patching artifacts.
  *
+ * @author Alexey Loubyansky
  */
-public interface PatchStateHandler {
+public interface PatchingArtifactStateHandler<S extends PatchingArtifact.ArtifactState> {
 
-    void handle(PatchArtifact.State patch);
+    /**
+     * Handle the state after all children have been validated.
+     *
+     * @param state the validated state
+     */
+    void handleValidatedState(S state);
+
 }

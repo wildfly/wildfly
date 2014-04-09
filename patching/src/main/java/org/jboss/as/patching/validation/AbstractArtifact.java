@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -25,79 +25,51 @@ package org.jboss.as.patching.validation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * @author Alexey Loubyansky
- *
  */
-public abstract class AbstractArtifact<P extends Artifact.State, S extends Artifact.State> implements Artifact<P,S> {
+abstract class AbstractArtifact<P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> implements PatchingArtifact<P, S> {
 
-    protected Artifact<? extends Artifact.State, P> parent;
+    private Collection<PatchingArtifact<S, ? extends ArtifactState>> artifacts = Collections.emptyList();
 
-    protected List<Artifact<S, ? extends Artifact.State>> artifacts = Collections.emptyList();
-
-    public S getState(Context ctx) {
-        return getState2(this, ctx);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected <A extends Artifact.State, B extends Artifact.State, C extends Artifact.State> A getState2(AbstractArtifact<B,C> artifact, Context ctx) {
-        Artifact.State state = null;
-        if(artifact.parent != null) {
-            B parentState = getState2((AbstractArtifact<B,C>)artifact.parent, ctx);
-            return (A)artifact.getState((B)parentState, ctx);
-        }
-        return (A)artifact.getState((B)state, ctx);
-    }
-
-    void addArtifact(Artifact<S, ? extends Artifact.State> a) {
-        if(a == null) {
-            throw new IllegalArgumentException("Artifact is null");
-        }
-        switch(artifacts.size()) {
-            case 0:
-                artifacts = Collections.<Artifact<S, ? extends Artifact.State>>singletonList(a);
-                break;
-            case 1:
-                final Artifact<S, ? extends Artifact.State> first = artifacts.get(0);
-                artifacts = new ArrayList<Artifact<S, ? extends Artifact.State>>();
-                artifacts.add(first);
-            default:
-                artifacts.add(a);
+    protected AbstractArtifact(PatchingArtifact<S, ? extends ArtifactState>... artifacts) {
+        for (final PatchingArtifact<S, ? extends ArtifactState> artifact : artifacts) {
+            addArtifact(artifact);
         }
     }
-    /* (non-Javadoc)
-     * @see org.jboss.as.patching.validation.Artifact#getArtifacts()
-     */
+
     @Override
-    public Collection<Artifact<S, ? extends Artifact.State>> getArtifacts() {
+    public Collection<PatchingArtifact<S, ? extends ArtifactState>> getArtifacts() {
         return artifacts;
     }
 
-    /* (non-Javadoc)
-     * @see org.jboss.as.patching.validation.Artifact#validate()
-     */
-    @Override
-    public S validate(P parent, Context ctx) {
-        final S state = getInitialState(parent, ctx);
-        if(state != null) {
-            validateForState(ctx, state);
-        }
-        return state;
-    }
-
-    protected void validateForState(Context ctx, final S state) {
-        state.validate(ctx);
-        for(Artifact<S, ? extends Artifact.State> a : getArtifacts()) {
-            a.validate(state, ctx);
+    protected void addArtifact(PatchingArtifact<S, ? extends ArtifactState> artifact) {
+        assert artifact != null;
+        switch (artifacts.size()) {
+            case 0:
+                artifacts = Collections.<PatchingArtifact<S, ? extends ArtifactState>>singletonList(artifact);
+                break;
+            case 1:
+                artifacts = new ArrayList<PatchingArtifact<S, ? extends ArtifactState>>(artifacts);
+            default:
+                artifacts.add(artifact);
         }
     }
 
-    protected abstract S getInitialState(P parent, Context ctx);
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode());
+    }
 
     @Override
-    public S getState(P parent, Context ctx) {
-        return validate(parent, ctx);
+    public int hashCode() {
+        return System.identityHashCode(this);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return (obj == this);
+    }
+
 }

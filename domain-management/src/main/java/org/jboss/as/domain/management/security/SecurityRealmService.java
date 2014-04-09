@@ -67,6 +67,7 @@ import org.jboss.msc.value.InjectedValue;
 public class SecurityRealmService implements Service<SecurityRealm>, SecurityRealm {
 
     public static final String LOADED_USERNAME_KEY = SecurityRealmService.class.getName() + ".LOADED_USERNAME";
+    public static final String SKIP_GROUP_LOADING_KEY = SecurityRealmService.class.getName() + ".SKIP_GROUP_LOADING";
 
     private final InjectedValue<SubjectSupplementalService> subjectSupplemental = new InjectedValue<SubjectSupplementalService>();
     private final InjectedValue<SSLContext> sslContext = new InjectedValue<SSLContext>();
@@ -191,19 +192,22 @@ public class SecurityRealmService implements Service<SecurityRealm>, SecurityRea
                     }
                 }
 
-                SubjectSupplementalService subjectSupplementalService = subjectSupplemental.getOptionalValue();
-                if (subjectSupplementalService != null) {
-                    SubjectSupplemental subjectSupplemental = subjectSupplementalService.getSubjectSupplemental(sharedState);
-                    subjectSupplemental.supplementSubject(subject);
-                }
-
-                if (mapGroupsToRoles) {
-                    Set<RealmGroup> groups = subject.getPrincipals(RealmGroup.class);
-                    Set<RealmRole> roles = new HashSet<RealmRole>(groups.size());
-                    for (RealmGroup current : groups) {
-                        roles.add(new RealmRole(current.getName()));
+                Object skipGroupLoading = sharedState.get(SKIP_GROUP_LOADING_KEY);
+                if (skipGroupLoading == null || Boolean.parseBoolean(skipGroupLoading.toString()) == false) {
+                    SubjectSupplementalService subjectSupplementalService = subjectSupplemental.getOptionalValue();
+                    if (subjectSupplementalService != null) {
+                        SubjectSupplemental subjectSupplemental = subjectSupplementalService.getSubjectSupplemental(sharedState);
+                        subjectSupplemental.supplementSubject(subject);
                     }
-                    subject.getPrincipals().addAll(roles);
+
+                    if (mapGroupsToRoles) {
+                        Set<RealmGroup> groups = subject.getPrincipals(RealmGroup.class);
+                        Set<RealmRole> roles = new HashSet<RealmRole>(groups.size());
+                        for (RealmGroup current : groups) {
+                            roles.add(new RealmRole(current.getName()));
+                        }
+                        subject.getPrincipals().addAll(roles);
+                    }
                 }
 
                 return new RealmSubjectUserInfo(subject);

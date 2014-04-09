@@ -35,7 +35,7 @@ import org.jboss.as.patching.metadata.PatchElementBuilder;
 /**
  * @author Emanuel Muckenhuber
  */
-class PatchingTestStepBuilder extends AbstractPatchTestBuilder<PatchingTestStepBuilder> implements Builder {
+public class PatchingTestStepBuilder extends AbstractPatchTestBuilder<PatchingTestStepBuilder> implements Builder {
 
     private String patchId;
     private final PatchBuilder builder;

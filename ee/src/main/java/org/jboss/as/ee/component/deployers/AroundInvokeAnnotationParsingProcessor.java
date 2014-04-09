@@ -56,6 +56,7 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
 
     private static final DotName AROUND_INVOKE_ANNOTATION_NAME = DotName.createSimple(AroundInvoke.class.getName());
 
+    @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
         final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         final EEModuleDescription eeModuleDescription = deploymentUnit.getAttachment(Attachments.EE_MODULE_DESCRIPTION);
@@ -67,6 +68,7 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
         }
     }
 
+    @Override
     public void undeploy(final DeploymentUnit context) {
     }
 
@@ -77,7 +79,10 @@ public class AroundInvokeAnnotationParsingProcessor implements DeploymentUnitPro
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
         final EEModuleClassDescription classDescription = eeModuleDescription.addOrGetLocalClassDescription(classInfo.name().toString());
-
+        final List<AnnotationInstance> classAroundInvokes = classInfo.annotations().get(AROUND_INVOKE_ANNOTATION_NAME);
+        if(classAroundInvokes.size() > 1) {
+           throw MESSAGES.aroundInvokeAnnotionUsedTooManyTimes(classInfo.name(), classAroundInvokes.size());
+        }
         validateArgumentType(classInfo, methodInfo);
         InterceptorClassDescription.Builder builder = InterceptorClassDescription.builder(classDescription.getInterceptorClassDescription());
         builder.setAroundInvoke(MethodIdentifier.getIdentifier(Object.class, methodInfo.name(), InvocationContext.class));

@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * @author Emanuel Muckenhuber
  */
-class PatchingTestBuilder {
+public class PatchingTestBuilder {
 
     private final File root;
     public PatchingTestBuilder(File file) {
@@ -44,7 +44,7 @@ class PatchingTestBuilder {
         return new PatchingTestStepBuilder(this);
     }
 
-    protected File getFile(String... segments) {
+    public File getFile(String... segments) {
         File dir = new File(root, AbstractPatchingTest.JBOSS_INSTALLATION);
         for (String segment : segments) {
             dir = new File(dir, segment);
@@ -52,7 +52,7 @@ class PatchingTestBuilder {
         return dir;
     }
 
-    protected boolean hasFile(String... segments) {
+    public boolean hasFile(String... segments) {
         return getFile(segments).exists();
     }
 
