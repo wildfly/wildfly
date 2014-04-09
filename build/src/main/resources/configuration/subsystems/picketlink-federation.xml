@@ -67,7 +67,6 @@
             <identity-provider name="idp-post-sig.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-post-sig/" security-domain="idp" support-signatures="true">
                 <trust>
                     <trust-domain name="${jboss.bind.address:127.0.0.1}" cert-alias="servercert"/>
-                    <!-- trust-domain name="127.0.0.1" cert-alias="servercert"/ -->
                 </trust>
             </identity-provider>
             <service-providers>
@@ -80,7 +79,6 @@
             <identity-provider name="idp-metadata.war" url="http://${jboss.bind.address:127.0.0.1}:8080/idp-metadata/" security-domain="idp" support-signatures="true" support-metadata="true">
                 <trust>
                     <trust-domain name="${jboss.bind.address:127.0.0.1}" cert-alias="servercert"/>
-                    <!-- trust-domain name="127.0.0.1" cert-alias="servercert"/ -->
                 </trust>
             </identity-provider>
             <service-providers>
@@ -94,113 +92,5 @@
                 <service-provider name="sales-on-external.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/sales-on-external/" post-binding="false" support-signatures="false"/>
             </service-providers>
         </federation>
-
-        <!--
-        <federation name="federation-without-signatures">
-            <saml token-timeout="4000" clock-skew="0"/>
-            <identity-provider name="idp.war" security-domain="idp" support-signatures="false" url="http://${jboss.bind.address:127.0.0.1}:8080/idp/">
-                <trust>
-                    <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
-                    <trust-domain name="mycompany.com2"/>
-                    <trust-domain name="mycompany.com3"/>
-                    <trust-domain name="mycompany.com4"/>
-                </trust>
-            </identity-provider>
-            <service-providers>
-                <service-provider name="sales-redirect.war"
-                            post-binding="false" security-domain="sp"
-                            url="http://${jboss.bind.address:127.0.0.1}:8080/sales-redirect/" support-signatures="false"/>
-                <service-provider name="sales-post.war"
-                            post-binding="true" security-domain="sp"
-                            url="http://${jboss.bind.address:127.0.0.1}:8080/sales-post/" support-signatures="false"/>
-                <service-provider name="fake.war" post-binding="true"
-                            security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/fake/"
-                            support-signatures="false"/>
-            </service-providers>
-        </federation>
-        <federation name="federation-with-signatures">
-            <saml token-timeout="4000" clock-skew="0"/>
-            <key-store password="changeit" sign-key-alias="${jboss.bind.address:127.0.0.1}" sign-key-password="changeit" file="/jbid_test_keystore.jks"/>
-            <identity-provider name="idp-sig.war"
-                               security-domain="idp" support-signatures="true"
-                               url="http://${jboss.bind.address:127.0.0.1}:8080/idp-sig/" strict-post-binding="false">
-                <trust>
-                    <trust-domain name="${jboss.bind.address:127.0.0.1}" cert-alias="localhost"/>
-                    <trust-domain name="127.0.0.1" cert-alias="localhost"/>
-                </trust>
-            </identity-provider>
-            <service-providers>
-                <service-provider name="sales-post-sig.war"
-                                post-binding="true" security-domain="sp"
-                                url="http://${jboss.bind.address:127.0.0.1}:8080/sales-post-sig/" support-signatures="true"/>
-                <service-provider name="sales-redirect-sig.war"
-                                post-binding="false" security-domain="sp"
-                                url="http://${jboss.bind.address:127.0.0.1}:8080/sales-redirect-sig/" support-signatures="true"
-                                strict-post-binding="false"/>
-            </service-providers>
-        </federation>
-        <federation name="federation-with-handlers">
-            <identity-provider url="http://${jboss.bind.address:127.0.0.1}:8080/idp/" name="idp.war" security-domain="idp" strict-post-binding="false">
-                <trust>
-                    <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
-                </trust>
-                <handlers>
-                    <handler code="SAML2IssuerTrustHandler"/>
-                    <handler code="SAML2LogOutHandler"/>
-                    <handler code="SAML2AuthenticationHandler"/>
-                    <handler code="RolesGenerationHandler"/>
-                </handlers>
-            </identity-provider>
-            <service-providers>
-                <service-provider name="employee.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/employee/" post-binding="false"/>
-            </service-providers>
-        </federation>
-        <federation name="federation-with-handler-parameters">
-            <key-store password="changeit" sign-key-alias="localhost" sign-key-password="changeit" file="/jbid_test_keystore.jks"/>
-            <identity-provider name="idp-handler-param.war"
-                               security-domain="idp" support-signatures="true"
-                               url="http://${jboss.bind.address:127.0.0.1}:8080/idp/" strict-post-binding="false">
-                <trust>
-                    <trust-domain name="${jboss.bind.address:127.0.0.1}" cert-alias="localhost"/>
-                    <trust-domain name="127.0.0.1" cert-alias="localhost"/>
-                </trust>
-                <handlers>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureGenerationHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureValidationHandler">
-                        <handler-parameter name="SIGN_RESPONSE_AND_ASSERTION" value="true"/>
-                    </handler>
-                </handlers>
-            </identity-provider>
-            <service-providers>
-                <service-provider name="sales-post-handler-parameter.war"
-                                  post-binding="true" security-domain="sp"
-                                  url="http://${jboss.bind.address:127.0.0.1}:8080/sales-post-sig/" support-signatures="true"/>
-                <service-provider name="sales-redirect-handler-parameter"
-                                  post-binding="false" security-domain="sp"
-                                  url="http://${jboss.bind.address:127.0.0.1}:8080/sales-redirect-sig/" support-signatures="true"
-                                  strict-post-binding="false"/>
-            </service-providers>
-        </federation>
-        <federation name="federation-with-ssl-authentication">
-            <identity-provider url="http://${jboss.bind.address:127.0.0.1}:8080/idp/" name="idp-ssl.war" security-domain="idp" strict-post-binding="false" ssl-authentication="true">
-                <trust>
-                    <trust-domain name="${jboss.bind.address:127.0.0.1}"/>
-                </trust>
-                <handlers>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2IssuerTrustHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler"/>
-                    <handler class-name="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
-                </handlers>
-            </identity-provider>
-            <service-providers>
-                <service-provider name="employee-ssl.war" security-domain="sp" url="http://${jboss.bind.address:127.0.0.1}:8080/employee/" post-binding="false"/>
-            </service-providers>
-        </federation>
-        -->
     </subsystem>
 </config>
