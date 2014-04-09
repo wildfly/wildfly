@@ -203,7 +203,11 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
         for (ModelNode op : operations) {
             executeOperation(op);
         }
-		//executeOperation(operationListToCompositeOperation(operations));
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("activate");
+        operation.get(OP_ADDR).set(address);
+        executeOperation(operation);
+        //executeOperation(operationListToCompositeOperation(operations));
     }
 
 	/**
