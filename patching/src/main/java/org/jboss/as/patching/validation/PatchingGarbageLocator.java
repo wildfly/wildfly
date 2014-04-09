@@ -184,16 +184,14 @@ public class PatchingGarbageLocator implements PatchStateHandler {
                 return new ErrorHandler(){
                     @Override
                     public void error(String msg) {
-                        if(failOnError) {
-                            throw new IllegalStateException(msg);
-                        }
+                        // Don't fail, artifacts in error can be removed
+                        PatchLogger.ROOT_LOGGER.debugf(msg);
                     }
 
                     @Override
                     public void error(String msg, Throwable t) {
-                        if(failOnError) {
-                            throw new IllegalStateException(msg, t);
-                        }
+                        // Don't fail, artifacts in error can be removed
+                        PatchLogger.ROOT_LOGGER.debugf(t, msg);
                     }};
             }};
     }

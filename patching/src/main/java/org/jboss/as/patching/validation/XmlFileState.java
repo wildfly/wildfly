@@ -48,12 +48,12 @@ public class XmlFileState implements Artifact.State {
     @Override
     public void validate(Context ctx) {
         if(!file.exists()) {
-            ctx.getErrorHandler().error("File doesn't exist: " + file.getAbsolutePath());
+            ctx.getErrorHandler().error("File doesn't exist: " + file.getAbsolutePath()); // no i18n needed
         } else {
             try {
                 patchBuilder = (PatchBuilder) PatchXml.parse(file);
             } catch (Exception e) {
-                ctx.getErrorHandler().error("Failed to parse file: " + file.getAbsolutePath(), e);
+                ctx.getErrorHandler().error("Failed to parse file: " + file.getAbsolutePath(), e); // no i18n needed
             }
         }
     }

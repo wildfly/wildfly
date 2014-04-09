@@ -81,7 +81,7 @@ public class PatchElementProviderArtifact extends AbstractArtifact<PatchElementA
         final PatchElementProvider metadata = parent.getMetadata().getProvider();
         final Layer layer = ctx.getInstallationManager().getLayer(metadata.getName());
         if(layer == null) {
-            ctx.getErrorHandler().error("Layer not found: " + metadata.getName());
+            ctx.getErrorHandler().error("Layer not found: " + metadata.getName()); // no i18n needed
             return null;
         }
 

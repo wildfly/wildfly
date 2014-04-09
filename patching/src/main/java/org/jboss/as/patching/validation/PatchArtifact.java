@@ -99,7 +99,7 @@ public class PatchArtifact extends AbstractArtifact<PatchingHistory.State, Patch
             try {
                 targetInfo = patch.getIdentityState().getIdentity().loadTargetInfo();
             } catch (IOException e) {
-                ctx.getErrorHandler().error("Failed to load identity info for patch " + patch.getPatchId(), e);
+                ctx.getErrorHandler().error("Failed to load identity info for patch " + patch.getPatchId(), e); // no i18n needed
                 return false;
             }
             return !Constants.BASE.equals(targetInfo.getCumulativePatchID()) || !targetInfo.getPatchIDs().isEmpty();
@@ -113,7 +113,7 @@ public class PatchArtifact extends AbstractArtifact<PatchingHistory.State, Patch
                 try {
                     previous = new State((RollbackPatch)historyDir.getRollbackXml().getPatch(), ctx);
                 } catch (IOException e) {
-                    ctx.getErrorHandler().error("Failed to load previous patch", e);
+                    ctx.getErrorHandler().error("Failed to load previous patch", e); // no i18n needed
                     return null;
                 }
                 validateForState(ctx, previous);
