@@ -148,15 +148,14 @@
     </xsl:template>
 
     <xsl:template match="//*[local-name()='trust-domain' and starts-with(namespace-uri(), $pl-fed)]/@name">
-        <xsl:variable name="origin" select="current()"/>
         <xsl:attribute name="name">
             <xsl:choose>
-              <xsl:when test="contains($origin, $pl-default-ip)">
-                <xsl:value-of select="concat(substring-before($origin, $pl-default-ip), $publicIPAddress, substring-after($origin, $pl-default-ip))"/>
-              </xsl:when>
-              <xsl:otherwise>
-              	<xsl:value-of select="$origin"/>
-              </xsl:otherwise>
+                <xsl:when test="contains($publicIPAddress,':')">
+                    <xsl:value-of select="concat('[', $publicIPAddress, ']')"/>
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="$publicIPAddress"/>
+                </xsl:otherwise>
             </xsl:choose>
         </xsl:attribute>
     </xsl:template>
