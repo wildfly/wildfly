@@ -166,7 +166,6 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
         boolean archiveOrModuleMatched = false;
         boolean txSupportMatched = false;
         boolean isXa = false;
-        boolean isModule = false;
         String id = null;
 
         int attributeSize = reader.getAttributeCount();
@@ -257,13 +256,6 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                         }
 
 
-                        if (isModule) {
-                            final ModelNode activateOp = new ModelNode();
-                            activateOp.get(OP).set(Constants.ACTIVATE);
-                            activateOp.get(OP_ADDR).set(raAddress);
-                            list.add(activateOp);
-                        }
-
                         return;
 
                     } else {
@@ -337,7 +329,6 @@ public class ResourceAdapterParser extends CommonIronJacamarParser {
                             String moduleSlot = rawAttributeText(reader, "slot", "main");
                             archiveOrModuleName = moduleId + ":" + moduleSlot;
                             MODULE.parseAndSetParameter(archiveOrModuleName, operation, reader);
-                            isModule = true;
 
                             archiveOrModuleMatched = true;
                             break;

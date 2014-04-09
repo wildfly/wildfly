@@ -48,6 +48,9 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.ResourceAdapterArchive;
 import org.xnio.IoUtils;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 /**
  * AS7-5768 -Support for RA module deployment
  *
@@ -197,6 +200,11 @@ public abstract class AbstractModuleDeploymentTestCaseSetup extends AbstractMgmt
         for (ModelNode op : operations) {
             executeOperation(op);
         }
+        final ModelNode operation = new ModelNode();
+        operation.get(OP).set("activate");
+        operation.get(OP_ADDR).set(address);
+        executeOperation(operation);
+
         //executeOperation(operationListToCompositeOperation(operations));
     }
 
