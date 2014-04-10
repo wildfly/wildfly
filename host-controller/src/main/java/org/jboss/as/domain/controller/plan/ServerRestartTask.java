@@ -39,9 +39,8 @@ class ServerRestartTask extends ServerUpdateTask {
 
     ServerRestartTask(final ServerIdentity serverId,
                       final ServerUpdatePolicy updatePolicy,
-                      final ServerUpdateResultHandler resultHandler,
                       final long gracefulTimeout) {
-        super(serverId, updatePolicy, resultHandler);
+        super(serverId, updatePolicy);
         this.gracefulTimeout = gracefulTimeout;
     }
 

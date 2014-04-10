@@ -22,19 +22,16 @@
 
 package org.jboss.as.domain.controller.plan;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import java.security.PrivilegedAction;
+import java.util.List;
+
+import javax.security.auth.Subject;
 
 import org.jboss.as.controller.AccessAuditContext;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
 import org.jboss.as.domain.controller.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
-
-import java.security.PrivilegedAction;
-import java.util.List;
-
-import javax.security.auth.Subject;
 
 /**
  * Task responsible for updating a single server-group.
@@ -47,14 +44,12 @@ abstract class AbstractServerGroupRolloutTask implements Runnable {
     protected final List<ServerUpdateTask> tasks;
     protected final ServerUpdatePolicy updatePolicy;
     protected final ServerTaskExecutor executor;
-    protected final ServerUpdateTask.ServerUpdateResultHandler resultHandler;
     protected final Subject subject;
 
-    public AbstractServerGroupRolloutTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy, ServerTaskExecutor executor, final ServerUpdateTask.ServerUpdateResultHandler resultHandler, Subject subject) {
+    public AbstractServerGroupRolloutTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy, ServerTaskExecutor executor, Subject subject) {
         this.tasks = tasks;
         this.updatePolicy = updatePolicy;
         this.executor = executor;
-        this.resultHandler = resultHandler;
         this.subject = subject;
     }
 
@@ -92,13 +87,10 @@ abstract class AbstractServerGroupRolloutTask implements Runnable {
         // final ModelNode transformedResult = prepared.getOperation().transformResult(preparedResult);
         updatePolicy.recordServerResult(identity, preparedResult);
         executor.recordPreparedOperation(prepared);
-        resultHandler.handleServerUpdateResult(identity, preparedResult);
     }
 
-    protected void sendCancelledResponse(ServerIdentity serverId) {
-        final ModelNode response = new ModelNode();
-        response.get(OUTCOME).set(CANCELLED);
-        resultHandler.handleServerUpdateResult(serverId, response);
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{server-group=" + updatePolicy.getServerGroupName() + "}";
     }
-
 }
