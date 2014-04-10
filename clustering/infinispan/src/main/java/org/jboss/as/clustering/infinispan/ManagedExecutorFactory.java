@@ -24,14 +24,17 @@ package org.jboss.as.clustering.infinispan;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadFactory;
 
+import org.infinispan.commons.executors.ExecutorFactory;
+import org.infinispan.commons.executors.ThreadPoolExecutorFactory;
 import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 
 /**
  * Executor factory that produces {@link ManagedExecutorService} instances.
  * @author Paul Ferraro
  */
-public class ManagedExecutorFactory implements org.infinispan.commons.executors.ExecutorFactory {
+public class ManagedExecutorFactory implements ExecutorFactory, ThreadPoolExecutorFactory {
 
     private final Executor executor;
 
@@ -41,6 +44,20 @@ public class ManagedExecutorFactory implements org.infinispan.commons.executors.
 
     @Override
     public ExecutorService getExecutor(Properties p) {
+        return this.createExecutor();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public ExecutorService createExecutor(ThreadFactory factory) {
+        return this.createExecutor();
+    }
+
+    private ExecutorService createExecutor() {
         return new ManagedExecutorService(this.executor);
+    }
+
+    @Override
+    public void validate() {
     }
 }

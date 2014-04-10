@@ -24,6 +24,7 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.NoSuchElementException;
 
+import org.infinispan.configuration.cache.Index;
 import org.jboss.as.clustering.controller.AttributeMarshallerFactory;
 import org.jboss.as.clustering.controller.validation.ModuleIdentifierValidator;
 import org.jboss.as.controller.AttributeDefinition;
@@ -73,8 +74,8 @@ public class CacheResourceDefinition extends SimpleResourceDefinition {
             .setXmlName(Attribute.INDEX.getLocalName())
             .setAllowExpression(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
-            .setValidator(new EnumValidator<>(Indexing.class, true, false))
-            .setDefaultValue(new ModelNode().set(Indexing.NONE.name()))
+            .setValidator(new EnumValidator<>(Index.class, true, false))
+            .setDefaultValue(new ModelNode().set(Index.NONE.name()))
             .build();
 
     static final SimpleMapAttributeDefinition INDEXING_PROPERTIES = new SimpleMapAttributeDefinition.Builder(ModelKeys.INDEXING_PROPERTIES, true)

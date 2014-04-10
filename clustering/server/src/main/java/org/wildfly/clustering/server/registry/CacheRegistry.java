@@ -33,11 +33,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
 import org.infinispan.notifications.cachelistener.annotation.TopologyChanged;
-import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
+import org.infinispan.notifications.cachelistener.event.Event;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.wildfly.clustering.ee.Batch;
@@ -159,32 +161,42 @@ public class CacheRegistry<K, V> implements Registry<K, V> {
         }
     }
 
+    @CacheEntryCreated
     @CacheEntryModified
-    public void modified(CacheEntryModifiedEvent<Node, Map.Entry<K, V>> event) {
+    public void event(CacheEntryEvent<Node, Map.Entry<K, V>> event) {
         if (event.isOriginLocal() || event.isPre()) return;
         if (!this.listeners.isEmpty()) {
-            Map.Entry<K, V> entry = event.getValue();
-            if (entry != null) {
-                Map<K, V> entries = Collections.singletonMap(entry.getKey(), entry.getValue());
-                for (Listener<K, V> listener: this.listeners) {
-                    if (event.isCreated()) {
-                        listener.addedEntries(entries);
-                    } else {
-                        listener.updatedEntries(entries);
-                    }
-                }
-            }
+            this.notifyListeners(event.getType(), event.getValue());
         }
     }
 
     @CacheEntryRemoved
     public void removed(CacheEntryRemovedEvent<Node, Map.Entry<K, V>> event) {
         if (event.isOriginLocal() || event.isPre()) return;
-        Map.Entry<K, V> entry = event.getOldValue();
-        if (entry != null) {
-            Map<K, V> entries = Collections.singletonMap(entry.getKey(), entry.getValue());
-            for (Listener<K, V> listener: this.listeners) {
-                listener.removedEntries(entries);
+        if (!this.listeners.isEmpty()) {
+            this.notifyListeners(event.getType(), event.getOldValue());
+        }
+    }
+
+    public void notifyListeners(Event.Type type, Map.Entry<K, V> entry) {
+        Map<K, V> entries = Collections.singletonMap(entry.getKey(), entry.getValue());
+        for (Listener<K, V> listener: this.listeners) {
+            switch (type) {
+                case CACHE_ENTRY_CREATED: {
+                    listener.addedEntries(entries);
+                    break;
+                }
+                case CACHE_ENTRY_MODIFIED: {
+                    listener.updatedEntries(entries);
+                    break;
+                }
+                case CACHE_ENTRY_REMOVED: {
+                    listener.removedEntries(entries);
+                    break;
+                }
+                default: {
+                    throw new IllegalStateException(type.name());
+                }
             }
         }
     }

@@ -29,6 +29,7 @@
 
     <resources>
         <artifact name="${org.infinispan:infinispan-query}"/>
+        <artifact name="${org.infinispan:infinispan-objectfilter}"/>
     </resources>
 
     <dependencies>

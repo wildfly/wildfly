@@ -26,14 +26,15 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.infinispan.AbstractDelegatingAdvancedCache;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
+import org.infinispan.cache.impl.AbstractDelegatingAdvancedCache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.manager.AbstractDelegatingEmbeddedCacheManager;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.manager.impl.AbstractDelegatingEmbeddedCacheManager;
+import org.infinispan.notifications.Listener;
 import org.wildfly.clustering.ee.Batch;
 import org.wildfly.clustering.ee.Batcher;
 
@@ -237,6 +238,14 @@ public class DefaultCacheContainer extends AbstractDelegatingEmbeddedCacheManage
                 } finally {
                     CURRENT_BATCH.remove();
                 }
+            }
+        }
+
+        // Workaround for https://hibernate.atlassian.net/browse/HHH-9337
+        @Override
+        public void removeListener(Object listener) {
+            if (listener.getClass().isAnnotationPresent(Listener.class)) {
+                super.removeListener(listener);
             }
         }
 

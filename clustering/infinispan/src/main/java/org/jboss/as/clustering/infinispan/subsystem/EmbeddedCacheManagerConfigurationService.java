@@ -166,7 +166,7 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
 
             Executor executor = transport.getExecutor();
             if (executor != null) {
-                builder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
+                transportBuilder.asyncTransportExecutor().factory(new ManagedExecutorFactory(executor));
             }
 
             RelayConfiguration relay = stack.getRelay();
@@ -177,15 +177,15 @@ public class EmbeddedCacheManagerConfigurationService implements Service<Embedde
 
         Executor listenerExecutor = this.dependencies.getListenerExecutor();
         if (listenerExecutor != null) {
-            builder.asyncListenerExecutor().factory(new ManagedExecutorFactory(listenerExecutor));
+            builder.listenerThreadPool().threadPoolFactory(new ManagedExecutorFactory(listenerExecutor));
         }
         ScheduledExecutorService evictionExecutor = this.dependencies.getEvictionExecutor();
         if (evictionExecutor != null) {
-            builder.evictionScheduledExecutor().factory(new ManagedScheduledExecutorFactory(evictionExecutor));
+            builder.evictionThreadPool().threadPoolFactory(new ManagedScheduledExecutorFactory(evictionExecutor));
         }
         ScheduledExecutorService replicationQueueExecutor = this.dependencies.getReplicationQueueExecutor();
         if (replicationQueueExecutor != null) {
-            builder.replicationQueueScheduledExecutor().factory(new ManagedScheduledExecutorFactory(replicationQueueExecutor));
+            builder.replicationQueueThreadPool().threadPoolFactory(new ManagedExecutorFactory(replicationQueueExecutor));
         }
 
         GlobalJmxStatisticsConfigurationBuilder jmxBuilder = builder.globalJmxStatistics().cacheManagerName(this.name);

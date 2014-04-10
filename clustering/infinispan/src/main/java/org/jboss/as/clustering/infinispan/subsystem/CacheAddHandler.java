@@ -44,6 +44,7 @@ import org.infinispan.commons.util.TypedProperties;
 import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.Index;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.StoreConfigurationBuilder;
@@ -80,7 +81,6 @@ import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
 import org.jboss.as.network.OutboundSocketBinding;
-import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.Services;
 import org.jboss.as.txn.service.TxnServices;
 import org.jboss.dmr.ModelNode;
@@ -193,7 +193,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
         ServiceController.Mode initialMode = StartMode.valueOf(CacheResourceDefinition.START.resolveModelAttribute(context, cacheModel).asString()).getMode();
 
         ModuleIdentifier module = ModelNodes.asModuleIdentifier(CacheResourceDefinition.MODULE.resolveModelAttribute(context, cacheModel));
-        if ((module == null) && Indexing.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cacheModel).asString()).isEnabled()) {
+        if ((module == null) && Index.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cacheModel).asString()).isEnabled()) {
             module = QUERY_MODULE;
         }
 
@@ -321,7 +321,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
             builder.jmxStatistics().enabled(CacheContainerResourceDefinition.STATISTICS_ENABLED.resolveModelAttribute(context, containerModel).asBoolean());
         }
 
-        final Indexing indexing = Indexing.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cache).asString());
+        final Index indexing = Index.valueOf(CacheResourceDefinition.INDEXING.resolveModelAttribute(context, cache).asString());
 
         // set the cache mode (may be modified when setting up clustering attributes)
         builder.clustering().cacheMode(this.mode);
@@ -334,8 +334,7 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
             }
         }
         builder.indexing()
-                .enabled(indexing.isEnabled())
-                .indexLocalOnly(indexing.isLocalOnly())
+                .index(indexing)
                 .withProperties(indexingProperties)
         ;
 
@@ -482,9 +481,10 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
             case FILE: {
                 final SingleFileStoreConfigurationBuilder builder = persistenceBuilder.addSingleFileStore();
                 final String path = ModelNodes.asString(FileStoreResourceDefinition.RELATIVE_PATH.resolveModelAttribute(context, store), InfinispanExtension.SUBSYSTEM_NAME + File.separatorChar + containerName);
-                final String relativeTo = ModelNodes.asString(FileStoreResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, store), ServerEnvironment.SERVER_DATA_DIR);
+                final String relativeTo = FileStoreResourceDefinition.RELATIVE_TO.resolveModelAttribute(context, store).asString();
                 Injector<PathManager> injector = new Injector<PathManager>() {
                     private volatile PathManager.Callback.Handle callbackHandle;
+
                     @Override
                     public void inject(PathManager value) {
                         this.callbackHandle = value.registerCallback(relativeTo, PathManager.ReloadServerCallback.create(), PathManager.Event.UPDATED, PathManager.Event.REMOVED);
@@ -504,9 +504,9 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
             case STRING_KEYED_JDBC:
             case BINARY_KEYED_JDBC:
             case MIXED_KEYED_JDBC: {
-                DatabaseType type = ModelNodes.asEnum(JDBCStoreResourceDefinition.DIALECT.resolveModelAttribute(context, store), DatabaseType.class);
+                DatabaseType dialect = ModelNodes.asEnum(JDBCStoreResourceDefinition.DIALECT.resolveModelAttribute(context, store), DatabaseType.class);
 
-                AbstractJdbcStoreConfigurationBuilder<?, ?> builder = buildJdbcStore(persistenceBuilder, context, store, type);
+                AbstractJdbcStoreConfigurationBuilder<?, ?> builder = buildJdbcStore(persistenceBuilder, context, store).dialect(dialect);
 
                 String datasource = JDBCStoreResourceDefinition.DATA_SOURCE.resolveModelAttribute(context, store).asString();
 
@@ -553,36 +553,35 @@ public abstract class CacheAddHandler extends AbstractAddStepHandler {
         }
     }
 
-    private static AbstractJdbcStoreConfigurationBuilder<?, ?> buildJdbcStore(PersistenceConfigurationBuilder persistenceBuilder, OperationContext context, ModelNode store, DatabaseType type) throws OperationFailedException {
+    private static AbstractJdbcStoreConfigurationBuilder<?, ?> buildJdbcStore(PersistenceConfigurationBuilder persistenceBuilder, OperationContext context, ModelNode store) throws OperationFailedException {
         boolean useStringKeyedTable = store.hasDefined(JDBCStoreResourceDefinition.STRING_KEYED_TABLE.getName());
         boolean useBinaryKeyedTable = store.hasDefined(JDBCStoreResourceDefinition.BINARY_KEYED_TABLE.getName());
         if (useStringKeyedTable && !useBinaryKeyedTable) {
             JdbcStringBasedStoreConfigurationBuilder builder = persistenceBuilder.addStore(JdbcStringBasedStoreConfigurationBuilder.class);
-            buildStringKeyedTable(builder.table(), context, store.get(JDBCStoreResourceDefinition.STRING_KEYED_TABLE.getName()), type);
+            buildStringKeyedTable(builder.table(), context, store.get(JDBCStoreResourceDefinition.STRING_KEYED_TABLE.getName()));
             return builder;
         } else if (useBinaryKeyedTable && !useStringKeyedTable) {
             JdbcBinaryStoreConfigurationBuilder builder = persistenceBuilder.addStore(JdbcBinaryStoreConfigurationBuilder.class);
-            buildBinaryKeyedTable(builder.table(), context, store.get(JDBCStoreResourceDefinition.BINARY_KEYED_TABLE.getName()), type);
+            buildBinaryKeyedTable(builder.table(), context, store.get(JDBCStoreResourceDefinition.BINARY_KEYED_TABLE.getName()));
             return builder;
         }
         // Else, use mixed mode
         JdbcMixedStoreConfigurationBuilder builder = persistenceBuilder.addStore(JdbcMixedStoreConfigurationBuilder.class);
-        buildStringKeyedTable(builder.stringTable(), context, store.get(JDBCStoreResourceDefinition.STRING_KEYED_TABLE.getName()), type);
-        buildBinaryKeyedTable(builder.binaryTable(), context, store.get(JDBCStoreResourceDefinition.BINARY_KEYED_TABLE.getName()), type);
+        buildStringKeyedTable(builder.stringTable(), context, store.get(JDBCStoreResourceDefinition.STRING_KEYED_TABLE.getName()));
+        buildBinaryKeyedTable(builder.binaryTable(), context, store.get(JDBCStoreResourceDefinition.BINARY_KEYED_TABLE.getName()));
         return builder;
     }
 
-    private static void buildBinaryKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, DatabaseType type) throws OperationFailedException {
-        buildTable(builder, context, table, type, "ispn_bucket");
+    private static void buildBinaryKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table) throws OperationFailedException {
+        buildTable(builder, context, table, "ispn_bucket");
     }
 
-    private static void buildStringKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, DatabaseType type) throws OperationFailedException {
-        buildTable(builder, context, table, type, "ispn_entry");
+    private static void buildStringKeyedTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table) throws OperationFailedException {
+        buildTable(builder, context, table, "ispn_entry");
     }
 
-    private static void buildTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, DatabaseType type, String defaultTableNamePrefix) throws OperationFailedException {
-        builder.databaseType(type)
-                .batchSize(JDBCStoreResourceDefinition.BATCH_SIZE.resolveModelAttribute(context, table).asInt())
+    private static void buildTable(TableManipulationConfigurationBuilder<?, ?> builder, OperationContext context, ModelNode table, String defaultTableNamePrefix) throws OperationFailedException {
+        builder.batchSize(JDBCStoreResourceDefinition.BATCH_SIZE.resolveModelAttribute(context, table).asInt())
                 .fetchSize(JDBCStoreResourceDefinition.FETCH_SIZE.resolveModelAttribute(context, table).asInt())
                 .tableNamePrefix(ModelNodes.asString(JDBCStoreResourceDefinition.PREFIX.resolveModelAttribute(context, table), defaultTableNamePrefix))
                 .idColumnName(getColumnProperty(context, table, JDBCStoreResourceDefinition.ID_COLUMN, JDBCStoreResourceDefinition.COLUMN_NAME, "id"))
