@@ -413,7 +413,7 @@ public class AdvancedLdapLoginModuleTestCase {
                 e.printStackTrace();
                 throw e;
             }
-            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024);
+            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024, hostname);
             final ManagedCreateLdapServer createLdapServer = new ManagedCreateLdapServer(
                     (CreateLdapServer) AnnotationUtils.getInstance(CreateLdapServer.class));
             createLdapServer.setSaslHost(secondaryTestAddress);

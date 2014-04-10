@@ -423,7 +423,7 @@ public class SPNEGOLoginModuleTestCase {
                 e.printStackTrace();
                 throw e;
             }
-            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024);
+            kdcServer = KDCServerAnnotationProcessor.getKdcServer(directoryService, 1024, hostname);
         }
 
         /**

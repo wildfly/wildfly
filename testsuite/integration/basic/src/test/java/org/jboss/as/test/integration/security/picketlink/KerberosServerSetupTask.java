@@ -214,7 +214,7 @@ public class KerberosServerSetupTask implements ServerSetupTask {
         fixTransportAddress(createLdapServer, cannonicalHost);
 
         ldapServer1 = ServerAnnotationProcessor.instantiateLdapServer(createLdapServer, directoryService1);
-        krbServer1 = KDCServerAnnotationProcessor.getKdcServer(directoryService1, KERBEROS_PORT);
+        krbServer1 = KDCServerAnnotationProcessor.getKdcServer(directoryService1, KERBEROS_PORT, cannonicalHost);
         ldapServer1.start();
 
         createKrb5Conf(cannonicalHost, KRB5_CONF_FILE, KERBEROS_PORT);

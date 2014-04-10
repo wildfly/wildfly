@@ -66,9 +66,9 @@ public class KDCServerAnnotationProcessor {
      * @return
      * @throws Exception
      */
-    public static KdcServer getKdcServer(DirectoryService directoryService, int startPort) throws Exception {
+    public static KdcServer getKdcServer(DirectoryService directoryService, int startPort, String address) throws Exception {
         final CreateKdcServer createKdcServer = (CreateKdcServer) AnnotationUtils.getInstance(CreateKdcServer.class);
-        return createKdcServer(createKdcServer, directoryService, startPort);
+        return createKdcServer(createKdcServer, directoryService, startPort, address);
     }
 
     // Private methods -------------------------------------------------------
@@ -82,7 +82,7 @@ public class KDCServerAnnotationProcessor {
      * @return
      */
     private static KdcServer createKdcServer(CreateKdcServer createKdcServer, DirectoryService directoryService,
-            int startPort) {
+            int startPort, String bindAddress) {
         if (createKdcServer == null) {
             return null;
         }
@@ -102,13 +102,30 @@ public class KDCServerAnnotationProcessor {
 
         if (transportBuilders == null) {
             // create only UDP transport if none specified
-            UdpTransport defaultTransport = new UdpTransport(AvailablePortFinder.getNextAvailable(startPort));
+            UdpTransport defaultTransport = new UdpTransport(bindAddress, AvailablePortFinder.getNextAvailable(startPort));
             kdcServer.addTransports(defaultTransport);
         } else if (transportBuilders.length > 0) {
             for (CreateTransport transportBuilder : transportBuilders) {
-                Transport t = createTransport(transportBuilder, startPort);
-                startPort = t.getPort() + 1;
-                kdcServer.addTransports(t);
+               String protocol = transportBuilder.protocol();
+                int port = transportBuilder.port();
+                int nbThreads = transportBuilder.nbThreads();
+                int backlog = transportBuilder.backlog();
+                final String address = bindAddress != null ? bindAddress : transportBuilder.address();
+
+                if (port == -1) {
+                    port = AvailablePortFinder.getNextAvailable(startPort);
+                    startPort = port + 1;
+                }
+
+                if (protocol.equalsIgnoreCase("TCP")) {
+                    Transport tcp = new TcpTransport(address, port, nbThreads, backlog);
+                    kdcServer.addTransports(tcp);
+                } else if (protocol.equalsIgnoreCase("UDP")) {
+                    UdpTransport udp = new UdpTransport(address, port);
+                    kdcServer.addTransports(udp);
+                } else {
+                    throw new IllegalArgumentException(I18n.err(I18n.ERR_689, protocol));
+                }
             }
         }
 
