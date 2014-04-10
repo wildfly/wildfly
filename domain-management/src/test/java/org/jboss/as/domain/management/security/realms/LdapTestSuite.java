@@ -58,7 +58,8 @@ import org.junit.runners.Suite;
     LdapAuthenticationSuiteTest.class,
     GroupToPrincipalLdapSuiteTest.class,
     PrincipalToGroupLdapSuiteTest.class,
-    LdapAuthenticationFollowSuiteTest.class
+    LdapAuthenticationFollowSuiteTest.class,
+    LdapAuthenticationThrowSuiteTest.class
 })
 public class LdapTestSuite {
 

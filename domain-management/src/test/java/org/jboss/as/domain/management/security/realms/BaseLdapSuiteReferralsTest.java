@@ -57,7 +57,7 @@ public abstract class BaseLdapSuiteReferralsTest extends BaseLdapSuiteTest {
                 .setUrl("ldap://" + HOST_NAME + ":" + SLAVE_LDAP_PORT)
                 .setSearchDn(DEFAULT_SEARCH_DN)
                 .setSearchCredential(DEFAULT_SEARCH_CREDENTIAL)
-                .addHandlesReferralsFor("ldap://" + HOST_NAME + ":" + MASTER_LDAP_PORT)
+                .addHandlesReferralsFor("ldap://" + HOST_NAME + ":" + SLAVE_LDAP_PORT)
                 .addHandlesReferralsFor("ldap://dummy:389")
                 .build());
     }

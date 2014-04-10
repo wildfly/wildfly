@@ -22,13 +22,38 @@
 
 package org.jboss.as.domain.management.security.realms;
 
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.ReferralHandling;
+
 /**
- * Test case to test authentication when the referral mode is FOLLOW.
+ * Test case to test authentication when the referral mode is THROW. When the mode is THROW it allows for entirely different
+ * connection defintions to be selected to handle the referral.
  *
  * Tests both following referrals from the master to the slave and also directly authenticating against the slave.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LdapAuthenticationFollowSuiteTest extends BaseLdapSuiteAuthenticationReferralsTest {
+public class LdapAuthenticationThrowSuiteTest extends BaseLdapSuiteAuthenticationReferralsTest {
+
+    private static final String SEARCH_DN = "uid=master_only,dc=simple,dc=wildfly,dc=org";
+    private static final String SEARCH_CREDENTIAL = "master_password";
+
+    /*
+     * This user is only defined on master, any attempt to use FOLLOW would fail as the connection to the slave would not be established.
+     */
+
+    @Override
+    protected String getSearchDn() {
+        return SEARCH_DN;
+    }
+
+    @Override
+    protected String getSearchCredential() {
+        return SEARCH_CREDENTIAL;
+    }
+
+    @Override
+    protected ReferralHandling getReferrals() {
+        return ReferralHandling.THROW;
+    }
 
 }

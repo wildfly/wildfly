@@ -28,11 +28,11 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.Attribute;
 import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 import javax.naming.ldap.LdapReferralException;
@@ -117,6 +117,11 @@ class LdapUserSearcherFactory {
                 String filter = userNameAttribute != null ? "(" + userNameAttribute + "={0})" : advancedFilter;
                 SECURITY_LOGGER.tracef("Searching for user '%s' using filter '%s'.", suppliedName, filter);
 
+                String distinguishedUserDN = null;
+                String username = usernameLoad == null ? suppliedName : null;
+                URI referralAddress = null;
+                Attributes attributes = null;
+
                 LdapConnectionHandler currentConnectionHandler = connectionHandler;
                 searchEnumeration = currentConnectionHandler.getConnection().search(baseDn, filter, filterArguments, searchControls);
                 try {
@@ -125,39 +130,61 @@ class LdapUserSearcherFactory {
                         throw MESSAGES.userNotFoundInDirectory(suppliedName);
                     }
                 } catch (LdapReferralException e) {
-                    Object into = e.getReferralInfo();
-                    Object resolved = e.getResolvedObj();
-                    Context context = e.getReferralContext();
-
-
-                    System.out.println("Had a referral.");
-                }
-
-                String distinguishedUserDN = null;
-                String username = usernameLoad == null ? suppliedName : null;
-                URI referralAddress = null;
-
-                SearchResult result = searchEnumeration.next();
-                if(result.isRelative() == false) {
-                    /*
-                     * In this scenario we have a result so any referral must have been followed automatically, we need to
-                     * capture the address but we don't need to do anything with it at the moment.
-                     */
-
-                    String name = result.getName();
-
+                    Object info = e.getReferralInfo();
                     try {
-                        URI fullUri = new URI(name);
-
-                        referralAddress = new URI(fullUri.getScheme(), null, fullUri.getHost(), fullUri.getPort(), null, null, null);
+                        URI fullUri = new URI(info.toString());
+                        referralAddress = new URI(fullUri.getScheme(), null, fullUri.getHost(), fullUri.getPort(), null, null,
+                                null);
                         distinguishedUserDN = fullUri.getPath().substring(1);
-                        SECURITY_LOGGER.tracef("Received referral with address '%s' for dn '%s'", referralAddress.toString(), distinguishedUserDN);
-                    } catch (URISyntaxException usi) {
-                        SECURITY_LOGGER.tracef("Unable to construct URI from referral name: %s", name);
+                        SECURITY_LOGGER.tracef("Received referral with address '%s' for dn '%s'", referralAddress.toString(),
+                                distinguishedUserDN);
+
+                        currentConnectionHandler = currentConnectionHandler.findForReferral(referralAddress);
+                        if (currentConnectionHandler == null) {
+                            SECURITY_LOGGER.tracef("Unable to follow referral to '%s' for user '%s'", fullUri, suppliedName);
+                            throw MESSAGES.userNotFoundInDirectory(suppliedName);
+                        }
+                    } catch (URISyntaxException ue) {
+                        SECURITY_LOGGER.tracef("Unable to construct URI from referral: %s", info);
                         throw MESSAGES.nameNotFound(suppliedName);
                     }
+
+                    DirContext context = currentConnectionHandler.getConnection();
+
+                    attributes = context.getAttributes(distinguishedUserDN, searchControls.getReturningAttributes());
                 }
-                Attributes attributes = result.getAttributes();
+
+                SearchResult result = null;
+                if (attributes == null) {
+                    /*
+                     * If a referral has already been handled due to a LdapReferralException then the attributes would have been
+                     * loaded after following the referral.
+                     */
+
+                    result = searchEnumeration.next();
+                    if (result.isRelative() == false) {
+                        /*
+                         * In this scenario we have a result so any referral must have been followed automatically, we need to
+                         * capture the address but we don't need to do anything with it at the moment.
+                         */
+
+                        String name = result.getName();
+
+                        try {
+                            URI fullUri = new URI(name);
+
+                            referralAddress = new URI(fullUri.getScheme(), null, fullUri.getHost(), fullUri.getPort(), null,
+                                    null, null);
+                            distinguishedUserDN = fullUri.getPath().substring(1);
+                            SECURITY_LOGGER.tracef("Received referral with address '%s' for dn '%s'",
+                                    referralAddress.toString(), distinguishedUserDN);
+                        } catch (URISyntaxException usi) {
+                            SECURITY_LOGGER.tracef("Unable to construct URI from referral name: %s", name);
+                            throw MESSAGES.nameNotFound(suppliedName);
+                        }
+                    }
+                    attributes = result.getAttributes();
+                }
                 if (attributes != null) {
                     if (distinguishedUserDN == null) {
                         Attribute dn = attributes.get(userDnAttribute);
@@ -174,7 +201,7 @@ class LdapUserSearcherFactory {
                     }
                 }
 
-                if (distinguishedUserDN == null) {
+                if (distinguishedUserDN == null && result != null) {
                     /*
                      * If this was a referral it would have been handled above.
                      */
