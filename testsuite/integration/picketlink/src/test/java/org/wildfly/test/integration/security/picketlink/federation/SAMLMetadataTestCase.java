@@ -21,15 +21,16 @@
  */
 package org.wildfly.test.integration.security.picketlink.federation;
 
+import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.identityProviderWithKeyStore;
+import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.serviceProviderWithKeyStore;
+
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
-
-import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.identityProviderWithKeyStore;
-import static org.wildfly.test.integration.security.picketlink.federation.util.FederationArchiveUtil.serviceProviderWithKeyStore;
 
 /**
  * @author Pedro Igor
@@ -37,6 +38,7 @@ import static org.wildfly.test.integration.security.picketlink.federation.util.F
 @RunWith(Arquillian.class)
 @ServerSetup({SAMLMetadataTestCase.BasicSecurityDomainServerSetupTask.class})
 @RunAsClient
+@Ignore("https://bugzilla.redhat.com/show_bug.cgi?id=1075971")
 public class SAMLMetadataTestCase extends AbstractBasicFederationTestCase {
 
     @Deployment(name = "identity-provider")
@@ -70,5 +72,5 @@ public class SAMLMetadataTestCase extends AbstractBasicFederationTestCase {
     public boolean performGlobalLogout() {
         return false;
     }
-    
+
 }
