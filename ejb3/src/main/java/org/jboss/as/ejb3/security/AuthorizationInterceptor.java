@@ -28,6 +28,9 @@ import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.security.ProtectionDomain;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -110,9 +113,28 @@ public class AuthorizationInterceptor implements Interceptor {
         // set the JACC contextID before calling the security manager.
         final String previousContextID = setContextID(this.contextID);
         try {
-            if (!securityManager.authorize(ejbComponent.getComponentName(), componentView.getProxyClass().getProtectionDomain().getCodeSource(),
-                methodIntfType.name(), this.viewMethod, this.getMethodRolesAsPrincipals(), this.contextID))
-                throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
+            if(WildFlySecurityManager.isChecking()) {
+                try {
+                    AccessController.doPrivileged(new PrivilegedExceptionAction<Object>() {
+                        @Override
+                        public ProtectionDomain run() {
+
+                            if (!securityManager.authorize(ejbComponent.getComponentName(), componentView.getProxyClass().getProtectionDomain().getCodeSource(),
+                                    methodIntfType.name(), AuthorizationInterceptor.this.viewMethod, AuthorizationInterceptor.this.getMethodRolesAsPrincipals(), AuthorizationInterceptor.this.contextID)) {
+                                throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
+                            }
+                            return null;
+                        }
+                    });
+                } catch (PrivilegedActionException e) {
+                    throw e.getException();
+                }
+            } else {
+                if (!securityManager.authorize(ejbComponent.getComponentName(), componentView.getProxyClass().getProtectionDomain().getCodeSource(),
+                        methodIntfType.name(), this.viewMethod, this.getMethodRolesAsPrincipals(), this.contextID)) {
+                    throw MESSAGES.invocationOfMethodNotAllowed(invokedMethod,ejbComponent.getComponentName());
+                }
+            }
         }
         finally {
             // reset the previous JACC contextID.
