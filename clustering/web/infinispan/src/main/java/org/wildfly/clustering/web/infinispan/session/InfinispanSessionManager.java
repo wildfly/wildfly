@@ -39,7 +39,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.distribution.DistributionManager;
-import org.infinispan.notifications.KeyFilter;
+import org.infinispan.filter.KeyFilter;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryActivated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryPassivated;
@@ -79,7 +79,7 @@ import org.wildfly.clustering.web.session.SessionMetaData;
  * @author Paul Ferraro
  */
 @Listener(primaryOnly = true)
-public class InfinispanSessionManager<V, L> implements SessionManager<L, TransactionBatch>, KeyFilter {
+public class InfinispanSessionManager<V, L> implements SessionManager<L, TransactionBatch>, KeyFilter<Object> {
     private final SessionContext context;
     private final Batcher<TransactionBatch> batcher;
     private final Cache<String, ?> cache;

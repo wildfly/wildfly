@@ -25,11 +25,11 @@ import org.infinispan.configuration.cache.CacheMode;
 import org.infinispan.configuration.cache.HashConfigurationBuilder;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.distribution.ch.ConsistentHashFactory;
-import org.infinispan.distribution.ch.DefaultConsistentHashFactory;
-import org.infinispan.distribution.ch.ReplicatedConsistentHashFactory;
-import org.infinispan.distribution.ch.SyncConsistentHashFactory;
-import org.infinispan.distribution.ch.TopologyAwareConsistentHashFactory;
-import org.infinispan.distribution.ch.TopologyAwareSyncConsistentHashFactory;
+import org.infinispan.distribution.ch.impl.DefaultConsistentHashFactory;
+import org.infinispan.distribution.ch.impl.ReplicatedConsistentHashFactory;
+import org.infinispan.distribution.ch.impl.SyncConsistentHashFactory;
+import org.infinispan.distribution.ch.impl.TopologyAwareConsistentHashFactory;
+import org.infinispan.distribution.ch.impl.TopologyAwareSyncConsistentHashFactory;
 
 /**
  * Defines the consistent hash behavior for a distributed cache.

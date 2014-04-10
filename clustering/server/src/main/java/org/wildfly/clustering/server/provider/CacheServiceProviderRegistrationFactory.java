@@ -30,8 +30,9 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
-import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.ee.Batch;
@@ -163,8 +164,9 @@ public class CacheServiceProviderRegistrationFactory implements ServiceProviderR
         }
     }
 
+    @CacheEntryCreated
     @CacheEntryModified
-    public void modified(CacheEntryModifiedEvent<ServiceName, Set<Node>> event) {
+    public void modified(CacheEntryEvent<ServiceName, Set<Node>> event) {
         if (event.isPre()) return;
         Listener listener = this.listeners.get(event.getKey());
         if (listener != null) {

@@ -22,56 +22,28 @@
   -->
 <!-- N.B. This is *not* meant to be a usable cache configuration -->
 <!-- This file supplies the internal configuration defaults per cache mode -->
-<infinispan xmlns="urn:infinispan:config:6.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:6.0 http://infinispan.org/schemas/infinispan-config-6.0.xsd">
-    <global/>
-    <default>
-        <locking isolationLevel="REPEATABLE_READ" lockAcquisitionTimeout="15000" useLockStriping="false" concurrencyLevel="1000"/>
-        <transaction lockingMode="PESSIMISTIC">
-            <recovery enabled="false"/>
-        </transaction>
-        <storeAsBinary enabled="false"/>
-        <clustering mode="local">
-            <hash>
-                <groups enabled="true"></groups>
-            </hash>
-        </clustering>
-        <eviction strategy="NONE"/>
-        <expiration reaperEnabled="false"/>
-    </default>
-    <namedCache name="REPL_SYNC">
-        <clustering mode="replication">
-            <stateTransfer timeout="60000" fetchInMemoryState="true"/>
-            <sync replTimeout="17500"/>
-        </clustering>
-    </namedCache>
-    <namedCache name="REPL_ASYNC">
-        <clustering mode="replication">
-            <stateTransfer timeout="60000" fetchInMemoryState="true"/>
-            <async/>
-        </clustering>
-    </namedCache>
-    <namedCache name="DIST_SYNC">
-        <clustering mode="distribution">
-            <stateTransfer timeout="60000" fetchInMemoryState="true"/>
-            <sync replTimeout="17500"/>
-        </clustering>
-    </namedCache>
-    <namedCache name="DIST_ASYNC">
-        <clustering mode="distribution">
-            <stateTransfer timeout="60000" fetchInMemoryState="true"/>
-            <async/>
-        </clustering>
-    </namedCache>
-    <namedCache name="INVALIDATION_SYNC">
-        <clustering mode="invalidation">
-            <stateTransfer fetchInMemoryState="false"/>
-            <sync replTimeout="17500"/>
-        </clustering>
-    </namedCache>
-    <namedCache name="INVALIDATION_ASYNC">
-        <clustering mode="invalidation">
-            <stateTransfer fetchInMemoryState="false"/>
-            <async/>
-        </clustering>
-    </namedCache>
+<infinispan xmlns="urn:infinispan:config:7.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:7.0 http://infinispan.org/schemas/infinispan-config-7.0.xsd">
+    <cache-container default-cache="LOCAL">
+        <local-cache name="LOCAL">
+            <locking isolation="REPEATABLE_READ" acquire-timeout="15000" concurrency-level="1000"/>
+            <transaction locking="PESSIMISTIC"/>
+            <store-as-binary keys="false" values="false"/>
+        </local-cache>
+        <distributed-cache name="DIST_ASYNC" mode="ASYNC">
+            <state-transfer timeout="60000"/>
+            <groups enabled="true"/>
+        </distributed-cache>
+        <distributed-cache name="DIST_SYNC" mode="SYNC" remote-timeout="17500">
+            <state-transfer timeout="60000"/>
+            <groups enabled="true"/>
+        </distributed-cache>
+        <replicated-cache name="REPL_ASYNC" mode="ASYNC">
+            <state-transfer timeout="60000"/>
+        </replicated-cache>
+        <replicated-cache name="REPL_SYNC" mode="SYNC" remote-timeout="17500">
+            <state-transfer timeout="60000"/>
+        </replicated-cache>
+        <invalidation-cache name="INVALIDATION_ASYNC" mode="ASYNC"/>
+        <invalidation-cache name="INVALIDATION_SYNC" mode="SYNC" remote-timeout="17500"/>
+    </cache-container>
 </infinispan>

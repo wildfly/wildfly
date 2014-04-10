@@ -26,9 +26,9 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.infinispan.eviction.ActivationManager;
+import org.infinispan.eviction.PassivationManager;
 import org.infinispan.interceptors.CacheMgmtInterceptor;
 import org.infinispan.interceptors.InvalidationInterceptor;
-import org.infinispan.interceptors.PassivationInterceptor;
 import org.infinispan.interceptors.base.CommandInterceptor;
 import org.jboss.as.clustering.controller.Metric;
 import org.jboss.as.controller.AttributeDefinition;
@@ -42,7 +42,7 @@ import org.jboss.dmr.ModelType;
  */
 public enum CacheMetric implements Metric<Cache<?, ?>> {
 
-    ACTIVATIONS(MetricKeys.ACTIVATIONS, ModelType.STRING) {
+    ACTIVATIONS(MetricKeys.ACTIVATIONS, ModelType.LONG) {
         @Override
         public ModelNode getValue(Cache<?, ?> cache) {
             ActivationManager manager = cache.getAdvancedCache().getComponentRegistry().getComponent(ActivationManager.class);
@@ -111,11 +111,11 @@ public enum CacheMetric implements Metric<Cache<?, ?>> {
             return new ModelNode((interceptor != null) ? interceptor.getNumberOfEntries() : 0);
         }
     },
-    PASSIVATIONS(MetricKeys.PASSIVATIONS, ModelType.STRING) {
+    PASSIVATIONS(MetricKeys.PASSIVATIONS, ModelType.LONG) {
         @Override
         public ModelNode getValue(Cache<?, ?> cache) {
-            PassivationInterceptor interceptor = findInterceptor(cache, PassivationInterceptor.class);
-            return new ModelNode((interceptor != null) ? interceptor.getPassivations() : "");
+            PassivationManager manager = cache.getAdvancedCache().getComponentRegistry().getComponent(PassivationManager.class);
+            return new ModelNode((manager != null) ? manager.getPassivations() : 0);
         }
     },
     READ_WRITE_RATIO(MetricKeys.READ_WRITE_RATIO, ModelType.DOUBLE) {
