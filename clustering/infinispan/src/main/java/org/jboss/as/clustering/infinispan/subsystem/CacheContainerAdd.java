@@ -255,20 +255,17 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
     Collection<ServiceController<?>> installChannelServices(ServiceTarget target, String containerName, String cluster, String stack, ServiceVerificationHandler verificationHandler) {
 
-        ServiceName name = ChannelService.getServiceName(containerName);
         ContextNames.BindInfo bindInfo = createChannelBinding(containerName);
         BinderService binder = new BinderService(bindInfo.getBindName());
         ServiceController<?> binderService = target.addService(bindInfo.getBinderServiceName(), binder)
                 .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(bindInfo.getBindName()))
-                .addDependency(name, Channel.class, new ManagedReferenceInjector<Channel>(binder.getManagedObjectInjector()))
+                .addDependency(ChannelService.getServiceName(containerName), Channel.class, new ManagedReferenceInjector<Channel>(binder.getManagedObjectInjector()))
                 .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
                 .setInitialMode(ServiceController.Mode.PASSIVE)
                 .install()
         ;
 
-        InjectedValue<ChannelFactory> channelFactory = new InjectedValue<>();
-        ServiceController<?> channelService = AsynchronousService.addService(target, name, new ChannelService(cluster, channelFactory))
-                .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, channelFactory)
+        ServiceController<?> channelService = ChannelService.build(target, containerName, stack)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;

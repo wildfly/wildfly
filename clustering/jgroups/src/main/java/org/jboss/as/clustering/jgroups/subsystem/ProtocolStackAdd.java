@@ -38,8 +38,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 
-import javax.management.MBeanServer;
-
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
@@ -56,7 +54,6 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
@@ -245,7 +242,6 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         ServiceBuilder<ChannelFactory> builder = target
                 .addService(ChannelFactoryService.getServiceName(name), new ChannelFactoryService(stackConfig))
                 .addDependency(ProtocolDefaultsService.SERVICE_NAME, ProtocolDefaults.class, stackConfig.getDefaultsInjector())
-                .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, stackConfig.getMBeanServerInjector())
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, stackConfig.getEnvironmentInjector())
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
         ;
@@ -346,7 +342,6 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
     static class ProtocolStack implements ProtocolStackConfiguration {
         private final InjectedValue<ProtocolDefaults> defaults = new InjectedValue<ProtocolDefaults>();
-        private final InjectedValue<MBeanServer> mbeanServer = new InjectedValue<MBeanServer>();
         private final InjectedValue<ServerEnvironment> environment = new InjectedValue<ServerEnvironment>();
 
         private final String name;
@@ -362,10 +357,6 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
         Injector<ProtocolDefaults> getDefaultsInjector() {
             return this.defaults;
-        }
-
-        Injector<MBeanServer> getMBeanServerInjector() {
-            return this.mbeanServer;
         }
 
         Injector<ServerEnvironment> getEnvironmentInjector() {
@@ -390,11 +381,6 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
         @Override
         public ProtocolDefaults getDefaults() {
             return this.defaults.getValue();
-        }
-
-        @Override
-        public MBeanServer getMBeanServer() {
-            return this.mbeanServer.getOptionalValue();
         }
 
         @Override

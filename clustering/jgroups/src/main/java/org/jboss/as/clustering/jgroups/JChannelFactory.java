@@ -25,26 +25,20 @@ import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-
-import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.network.SocketBinding;
 import org.jgroups.Channel;
-import org.jgroups.ChannelListener;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
 import org.jgroups.conf.ProtocolStackConfigurator;
-import org.jgroups.jmx.JmxConfigurator;
 import org.jgroups.protocols.TP;
 import org.jgroups.protocols.relay.RELAY2;
 import org.jgroups.protocols.relay.config.RelayConfig;
@@ -56,10 +50,9 @@ import org.jgroups.util.SocketFactory;
  * @author Paul Ferraro
  *
  */
-public class JChannelFactory implements ChannelFactory, ChannelListener, ProtocolStackConfigurator {
+public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurator {
 
     private final ProtocolStackConfiguration configuration;
-    private final Map<Channel, String> channels = Collections.synchronizedMap(new WeakHashMap<Channel, String>());
 
     public JChannelFactory(ProtocolStackConfiguration configuration) {
         this.configuration = configuration;
@@ -128,17 +121,6 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
         TransportConfiguration.Topology topology = this.configuration.getTransport().getTopology();
         if (topology != null) {
             channel.setAddressGenerator(new TopologyAddressGenerator(channel, topology.getSite(), topology.getRack(), topology.getMachine()));
-        }
-
-        MBeanServer server = this.configuration.getMBeanServer();
-        if (server != null) {
-            try {
-                this.channels.put(channel, id);
-                JmxConfigurator.registerChannel(channel, server, id);
-            } catch (Exception e) {
-                ROOT_LOGGER.warn(e.getMessage(), e);
-            }
-            channel.addChannelListener(this);
         }
 
         return channel;
@@ -303,28 +285,6 @@ public class JChannelFactory implements ChannelFactory, ChannelListener, Protoco
             protocol.setValue(property, value);
         } catch (IllegalArgumentException e) {
             ROOT_LOGGER.nonExistentProtocolPropertyValue(e, protocol.getName(), property, value);
-        }
-    }
-
-    @Override
-    public void channelConnected(Channel channel) {
-        // no-op
-    }
-
-    @Override
-    public void channelDisconnected(Channel channel) {
-        // no-op
-    }
-
-    @Override
-    public void channelClosed(Channel channel) {
-        MBeanServer server = this.configuration.getMBeanServer();
-        if (server != null) {
-            try {
-                JmxConfigurator.unregisterChannel((JChannel) channel, server, this.channels.remove(channel));
-            } catch (Exception e) {
-                ROOT_LOGGER.warn(e.getMessage(), e);
-            }
         }
     }
 }
