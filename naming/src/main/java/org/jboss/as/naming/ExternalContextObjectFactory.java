@@ -23,6 +23,8 @@ import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * An ObjectFactory that binds an arbitrary InitialContext into JNDI.
+ * Context environment, passed down from this factory contains up to two additional entries( compared to user configured env.)
+ *  Check {@link #CLASSLOADER_DEPLOYMENT} and {@link #CLASSLOADER_MODULE}.
  */
 public class ExternalContextObjectFactory implements ObjectFactory {
 
@@ -31,7 +33,16 @@ public class ExternalContextObjectFactory implements ObjectFactory {
     public static final String CACHE_CONTEXT = "cache-context";
     public static final String INITIAL_CONTEXT_CLASS = "initial-context-class";
     public static final String INITIAL_CONTEXT_MODULE = "initial-context-module";
-
+    /**
+     * ENV key used in context creation. Value mapped by this key is deployment(module/sub-deployment ie. EJB jar) classloader.
+     *
+     */
+    public static final String CLASSLOADER_DEPLOYMENT = "loader.deployment";
+    /**
+     * ENV key used in context creation. Value mapped by this key is module classloader configured as
+     * external-object-context-factory->moduleID.
+     */
+    public static final String CLASSLOADER_MODULE = "loader.module";
 
     private volatile Context cachedObject;
 
@@ -53,14 +64,14 @@ public class ExternalContextObjectFactory implements ObjectFactory {
         }
     }
 
+    @SuppressWarnings("all")
     private Context createContext(final Hashtable<?, ?> environment, boolean useProxy) throws NamingException, ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, InvocationTargetException, ModuleLoadException {
         String initialContextClassName = (String) environment.get(INITIAL_CONTEXT_CLASS);
         String initialContextModule = (String) environment.get(INITIAL_CONTEXT_MODULE);
-        final Hashtable<?, ?> newEnvironment = new Hashtable<>(environment);
+        final Hashtable newEnvironment = new Hashtable(environment);
         newEnvironment.remove(CACHE_CONTEXT);
         newEnvironment.remove(INITIAL_CONTEXT_CLASS);
         newEnvironment.remove(INITIAL_CONTEXT_MODULE);
-
 
         ClassLoader loader;
         if (! WildFlySecurityManager.isChecking()) {
@@ -73,6 +84,8 @@ public class ExternalContextObjectFactory implements ObjectFactory {
                 }
             });
         }
+        final ClassLoader currentClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+        newEnvironment.put(CLASSLOADER_DEPLOYMENT, currentClassLoader);
         Class initialContextClass = null;
         final Context context;
         if (initialContextModule == null) {
@@ -80,9 +93,9 @@ public class ExternalContextObjectFactory implements ObjectFactory {
             Constructor ctor = initialContextClass.getConstructor(Hashtable.class);
             context = (Context) ctor.newInstance(newEnvironment);
         } else {
-            Module module = Module.getBootModuleLoader().loadModule(ModuleIdentifier.fromString(initialContextModule));
+            final Module module = Module.getBootModuleLoader().loadModule(ModuleIdentifier.fromString(initialContextModule));
             loader = module.getClassLoader();
-            final ClassLoader currentClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            newEnvironment.put(CLASSLOADER_MODULE, loader);
             try {
                 WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(loader);
                 initialContextClass = Class.forName(initialContextClassName, true, loader);
