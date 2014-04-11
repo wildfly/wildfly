@@ -21,45 +21,49 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import java.security.AccessController;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
+import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Session eviction scheduler that eagerly evicts the oldest sessions when
  * the number of active sessions exceeds the configured maximum.
  * @author Paul Ferraro
  */
-public class SessionEvictionScheduler implements Scheduler<ImmutableSession>, SessionEvictionContext {
+public class SessionEvictionScheduler implements Scheduler<ImmutableSession> {
 
     private final Set<String> evictionQueue = new LinkedHashSet<>();
-    private final Batcher batcher;
-    private final Evictor<String> evictor;
-    private final CommandDispatcher<SessionEvictionContext> dispatcher;
+    final Batcher batcher;
+    final Evictor<String> evictor;
+    private final ExecutorService executor;
     private final int maxSize;
 
-    public SessionEvictionScheduler(String cacheName, Batcher batcher, Evictor<String> evictor, CommandDispatcherFactory dispatcherFactory, int maxSize) {
+    public SessionEvictionScheduler(Batcher batcher, Evictor<String> evictor, int maxSize) {
+        this(batcher, evictor, maxSize, Executors.newCachedThreadPool(createThreadFactory()));
+    }
+
+    private static ThreadFactory createThreadFactory() {
+        return new JBossThreadFactory(new ThreadGroup(SessionEvictionScheduler.class.getSimpleName()), Boolean.FALSE, null, "%G - %t", null, null, AccessController.doPrivileged(GetAccessControlContextAction.getInstance()));
+    }
+
+    public SessionEvictionScheduler(Batcher batcher, Evictor<String> evictor, int maxSize, ExecutorService executor) {
         this.batcher = batcher;
         this.evictor = evictor;
-        this.dispatcher = dispatcherFactory.<SessionEvictionContext>createCommandDispatcher(cacheName, this);
         this.maxSize = maxSize;
-    }
-
-    @Override
-    public Batcher getBatcher() {
-        return this.batcher;
-    }
-
-    @Override
-    public Evictor<String> getEvictor() {
-        return this.evictor;
+        this.executor = executor;
     }
 
     @Override
@@ -76,7 +80,7 @@ public class SessionEvictionScheduler implements Scheduler<ImmutableSession>, Se
             // Trigger eviction of oldest session if necessary
             if (this.evictionQueue.size() > this.maxSize) {
                 Iterator<String> sessions = this.evictionQueue.iterator();
-                this.dispatcher.submitOnCluster(new SessionEvictionCommand(sessions.next()));
+                this.executor.submit(new EvictionTask(sessions.next()));
                 sessions.remove();
             }
         }
@@ -84,9 +88,32 @@ public class SessionEvictionScheduler implements Scheduler<ImmutableSession>, Se
 
     @Override
     public void close() {
-        synchronized (this.evictionQueue) {
-            this.evictionQueue.clear();
+        this.evictionQueue.clear();
+        this.executor.shutdown();
+    }
+
+    private class EvictionTask implements Runnable {
+        private final String id;
+
+        EvictionTask(String id) {
+            this.id = id;
         }
-        this.dispatcher.close();
+
+        @Override
+        public void run() {
+            Batch batch = SessionEvictionScheduler.this.batcher.startBatch();
+            boolean success = false;
+            try {
+                InfinispanWebLogger.ROOT_LOGGER.tracef("Passivating session %s", this.id);
+                SessionEvictionScheduler.this.evictor.evict(this.id);
+                success = true;
+            } finally {
+                if (success) {
+                    batch.close();
+                } else {
+                    batch.discard();
+                }
+            }
+        }
     }
 }

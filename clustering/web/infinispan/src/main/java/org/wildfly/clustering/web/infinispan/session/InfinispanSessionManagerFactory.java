@@ -25,10 +25,8 @@ import java.util.Map;
 
 import org.infinispan.Cache;
 import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
-import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.jboss.as.clustering.infinispan.invoker.RetryingCacheInvoker;
-import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.marshalling.MarshalledValue;
 import org.jboss.as.clustering.marshalling.MarshalledValueFactory;
 import org.jboss.as.clustering.marshalling.MarshallingContext;
@@ -37,11 +35,7 @@ import org.jboss.as.clustering.marshalling.SimpleMarshallingContextFactory;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.InjectedValue;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.jboss.msc.value.Value;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.LocalContextFactory;
@@ -64,25 +58,16 @@ import org.wildfly.clustering.web.session.SessionManagerFactory;
  */
 @SuppressWarnings("rawtypes")
 public class InfinispanSessionManagerFactory extends AbstractService<SessionManagerFactory> implements SessionManagerFactory {
-
-    public static ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, String containerName, String cacheName, Module module, JBossWebMetaData metaData) {
-        InfinispanSessionManagerFactory factory = new InfinispanSessionManagerFactory(module, metaData);
-        return target.addService(name, factory)
-                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, factory.cache)
-                .addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, factory.affinityFactory)
-                .addDependency(ServiceName.JBOSS.append("clustering", "dispatcher", containerName), CommandDispatcherFactory.class, factory.dispatcherFactory)
-        ;
-    }
-
     private final Module module;
     private final JBossWebMetaData metaData;
     private final CacheInvoker invoker = new RetryingCacheInvoker(10, 100);
-    private final InjectedValue<Cache> cache = new InjectedValue<>();
-    private final InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
-    private final InjectedValue<CommandDispatcherFactory> dispatcherFactory = new InjectedValue<>();
+    private final Value<Cache> cache;
+    private final Value<KeyAffinityServiceFactory> affinityFactory;
 
-    private InfinispanSessionManagerFactory(Module module, JBossWebMetaData metaData) {
+    public InfinispanSessionManagerFactory(Module module, JBossWebMetaData metaData, Value<Cache> cache, Value<KeyAffinityServiceFactory> affinityFactory) {
         this.module = module;
+        this.cache = cache;
+        this.affinityFactory = affinityFactory;
         this.metaData = metaData;
     }
 
@@ -95,7 +80,7 @@ public class InfinispanSessionManagerFactory extends AbstractService<SessionMana
     public <L> SessionManager<L> createSessionManager(SessionContext context, IdentifierFactory<String> identifierFactory, LocalContextFactory<L> localContextFactory) {
         Batcher batcher = new InfinispanBatcher(this.cache.getValue());
         IdentifierFactory<String> factory = new AffinityIdentifierFactory<>(identifierFactory, this.cache.getValue(), this.affinityFactory.getValue());
-        return new InfinispanSessionManager<>(context, factory, this.cache.getValue(), this.<L>getSessionFactory(context, localContextFactory), batcher, this.dispatcherFactory.getValue(), this.metaData);
+        return new InfinispanSessionManager<>(context, factory, this.cache.getValue(), this.<L>getSessionFactory(context, localContextFactory), batcher, this.metaData);
     }
 
     private <L> SessionFactory<?, L> getSessionFactory(SessionContext context, LocalContextFactory<L> localContextFactory) {

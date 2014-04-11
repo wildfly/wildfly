@@ -33,7 +33,7 @@ import org.wildfly.clustering.registry.RegistryEntryProvider;
  */
 public class RouteRegistryEntryProviderService extends AbstractService<RegistryEntryProvider<String, Void>> {
 
-    public static final ServiceName SERVICE_NAME = InfinispanRouteLocatorService.REGISTRY_SERVICE_NAME.append("entry");
+    public static final ServiceName SERVICE_NAME = RouteLocatorService.REGISTRY_SERVICE_NAME.append("entry");
 
     private final Value<? extends Value<String>> route;
 

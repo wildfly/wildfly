@@ -21,69 +21,61 @@
  */
 package org.wildfly.clustering.ejb.infinispan;
 
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
+import java.util.concurrent.ExecutorService;
 
 import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.as.clustering.infinispan.invoker.Evictor;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.wildfly.clustering.dispatcher.Command;
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.Batcher;
 import org.wildfly.clustering.ejb.Bean;
 import org.wildfly.clustering.ejb.BeanPassivationConfiguration;
 
 public class BeanEvictionSchedulerTestCase {
-    @SuppressWarnings("rawtypes")
     @Test
-    public void test() throws Exception {
-        String beanName = "bean";
+    public void test() {
         String evictedBeanId = "evicted";
         String activeBeanId = "active";
         Bean<Object, String, Object> evictedBean = mock(Bean.class);
         Bean<Object, String, Object> activeBean = mock(Bean.class);
-        CommandDispatcherFactory dispatcherFactory = mock(CommandDispatcherFactory.class);
-        CommandDispatcher<BeanEvictionContext<String>> dispatcher = mock(CommandDispatcher.class);
         Batcher batcher = mock(Batcher.class);
         Batch batch = mock(Batch.class);
         Evictor<String> evictor = mock(Evictor.class);
+        ExecutorService executor = mock(ExecutorService.class);
         PassivationConfiguration<Bean<Object, String, Object>> config = mock(PassivationConfiguration.class);
         BeanPassivationConfiguration passivationConfig = mock(BeanPassivationConfiguration.class);
-        ArgumentCaptor<Command> capturedCommand = ArgumentCaptor.forClass(Command.class);
-        ArgumentCaptor<BeanEvictionContext> capturedContext = ArgumentCaptor.forClass(BeanEvictionContext.class);
+        ArgumentCaptor<Runnable> capturedTask = ArgumentCaptor.forClass(Runnable.class);
 
-        when(dispatcherFactory.createCommandDispatcher(same(beanName), (BeanEvictionContext<String>) capturedContext.capture())).thenReturn(dispatcher);
+        when(config.getExecutor()).thenReturn(executor);
         when(config.getConfiguration()).thenReturn(passivationConfig);
         when(passivationConfig.getMaxSize()).thenReturn(1);
 
-        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanEvictionScheduler<>(beanName, batcher, evictor, dispatcherFactory, config)) {
-            BeanEvictionContext<String> context = capturedContext.getValue();
-
-            assertSame(scheduler, context);
-            
+        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanEvictionScheduler<>(batcher, evictor, config)) {
             when(evictedBean.getId()).thenReturn(evictedBeanId);
             when(activeBean.getId()).thenReturn(activeBeanId);
 
             scheduler.schedule(evictedBean);
 
-            verifyZeroInteractions(dispatcher);
+            verifyZeroInteractions(executor);
 
             scheduler.schedule(activeBean);
 
-            verify(dispatcher).submitOnCluster(capturedCommand.capture());
+            verify(executor).execute(capturedTask.capture());
             
             when(batcher.startBatch()).thenReturn(batch);
             
-            capturedCommand.getValue().execute(context);
+            capturedTask.getValue().run();
             
             verify(evictor).evict(evictedBeanId);
             verify(evictor, never()).evict(activeBeanId);
             verify(batch).close();
         }
-
-        verify(dispatcher).close();
     }
 }

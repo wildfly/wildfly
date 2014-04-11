@@ -21,8 +21,11 @@
  */
 package org.wildfly.clustering.web.infinispan.session;
 
+import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.jboss.as.clustering.infinispan.CacheContainer;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
+import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactoryService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigurationService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
@@ -80,7 +83,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
             }
         };
         AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
-                .addAliases(InfinispanRouteLocatorService.getCacheServiceName(deploymentServiceName))
+                .addAliases(RouteLocatorService.getCacheServiceName(deploymentServiceName))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
                 .addDependency(GlobalComponentRegistryService.getServiceName(containerName))
@@ -88,7 +91,14 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
                 .install()
         ;
 
-        return InfinispanSessionManagerFactory.build(target, name, containerName, cacheName, module, metaData);
+        @SuppressWarnings("rawtypes")
+        InjectedValue<Cache> cache = new InjectedValue<>();
+        InjectedValue<KeyAffinityServiceFactory> affinityFactory = new InjectedValue<>();
+        InfinispanSessionManagerFactory factory = new InfinispanSessionManagerFactory(module, metaData, cache, affinityFactory);
+        return target.addService(name, factory)
+                .addDependency(cacheServiceName, Cache.class, cache)
+                .addDependency(KeyAffinityServiceFactoryService.getServiceName(containerName), KeyAffinityServiceFactory.class, affinityFactory)
+        ;
     }
 
     private static ServiceName getCacheServiceName(ReplicationConfig config) {

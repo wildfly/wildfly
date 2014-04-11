@@ -31,11 +31,11 @@ import org.wildfly.clustering.web.session.RouteLocator;
  * Builds a {@link RouteLocator} service.
  * @author Paul Ferraro
  */
-public class InfinispanRouteLocatorBuilder implements org.wildfly.clustering.web.session.RouteLocatorBuilder {
+public class RouteLocatorBuilder implements org.wildfly.clustering.web.session.RouteLocatorBuilder {
 
     @Override
     public ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName) {
-        return InfinispanRouteLocatorService.build(target, name, deploymentServiceName);
+        return RouteLocatorService.build(target, name, deploymentServiceName);
     }
 
     @Override
