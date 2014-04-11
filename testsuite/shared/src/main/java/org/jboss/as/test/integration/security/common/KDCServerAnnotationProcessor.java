@@ -31,11 +31,13 @@ import org.apache.directory.server.annotations.CreateTransport;
 import org.apache.directory.server.core.annotations.AnnotationUtils;
 import org.apache.directory.server.core.api.DirectoryService;
 import static org.apache.directory.server.factory.ServerAnnotationProcessor.createTransport;
+import org.apache.directory.server.i18n.I18n;
 import org.apache.directory.server.kerberos.ChangePasswordConfig;
 import org.apache.directory.server.kerberos.KerberosConfig;
 import org.apache.directory.server.kerberos.changepwd.ChangePasswordServer;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
 import org.apache.directory.server.kerberos.shared.replay.ReplayCache;
+import org.apache.directory.server.protocol.shared.transport.TcpTransport;
 import org.apache.directory.server.protocol.shared.transport.Transport;
 import org.apache.directory.server.protocol.shared.transport.UdpTransport;
 import org.apache.directory.shared.kerberos.KerberosTime;
@@ -62,9 +64,9 @@ public class KDCServerAnnotationProcessor {
      * @return
      * @throws Exception
      */
-    public static KdcServer getKdcServer(DirectoryService directoryService, int startPort) throws Exception {
+    public static KdcServer getKdcServer(DirectoryService directoryService, int startPort, String address) throws Exception {
         final CreateKdcServer createKdcServer = (CreateKdcServer) AnnotationUtils.getInstance(CreateKdcServer.class);
-        return createKdcServer(createKdcServer, directoryService, startPort);
+        return createKdcServer(createKdcServer, directoryService, startPort, address);
     }
 
     // Private methods -------------------------------------------------------
@@ -77,7 +79,7 @@ public class KDCServerAnnotationProcessor {
      * @return
      */
     private static KdcServer createKdcServer(CreateKdcServer createKdcServer, DirectoryService directoryService,
-            int startPort) {
+            int startPort, String bindAddress) {
         if (createKdcServer == null) {
             return null;
         }
@@ -97,13 +99,30 @@ public class KDCServerAnnotationProcessor {
 
         if (transportBuilders == null) {
             // create only UDP transport if none specified
-            UdpTransport defaultTransport = new UdpTransport(AvailablePortFinder.getNextAvailable(startPort));
+            UdpTransport defaultTransport = new UdpTransport(bindAddress, AvailablePortFinder.getNextAvailable(startPort));
             kdcServer.addTransports(defaultTransport);
         } else if (transportBuilders.length > 0) {
             for (CreateTransport transportBuilder : transportBuilders) {
-                Transport t = createTransport(transportBuilder, startPort);
-                startPort = t.getPort() + 1;
-                kdcServer.addTransports(t);
+               String protocol = transportBuilder.protocol();
+                int port = transportBuilder.port();
+                int nbThreads = transportBuilder.nbThreads();
+                int backlog = transportBuilder.backlog();
+                final String address = bindAddress != null ? bindAddress : transportBuilder.address();
+
+                if (port == -1) {
+                    port = AvailablePortFinder.getNextAvailable(startPort);
+                    startPort = port + 1;
+                }
+
+                if (protocol.equalsIgnoreCase("TCP")) {
+                    Transport tcp = new TcpTransport(address, port, nbThreads, backlog);
+                    kdcServer.addTransports(tcp);
+                } else if (protocol.equalsIgnoreCase("UDP")) {
+                    UdpTransport udp = new UdpTransport(address, port);
+                    kdcServer.addTransports(udp);
+                } else {
+                    throw new IllegalArgumentException(I18n.err(I18n.ERR_689, protocol));
+                }
             }
         }
 
