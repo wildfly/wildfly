@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.subsystem;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 
 import javax.transaction.TransactionManager;
@@ -32,10 +33,16 @@ import javax.transaction.UserTransaction;
 
 import com.arjuna.ats.jbossatx.jta.RecoveryManagerService;
 
+import org.infinispan.configuration.cache.CacheMode;
+import org.jboss.as.clustering.infinispan.subsystem.CacheContainerResourceDefinition;
+import org.jboss.as.clustering.infinispan.subsystem.CacheServiceProvider;
+import org.jboss.as.clustering.infinispan.subsystem.InfinispanExtension;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.EjbMessages;
@@ -55,6 +62,7 @@ import org.jboss.as.txn.service.TxnServices;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -125,6 +133,20 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
             registryInstallerBuilder.addListener(verificationHandler);
         }
         services.add(registryInstallerBuilder.install());
+
+        // Handle case where no ejb cache-container exists
+        Resource resource = context.readResourceFromRoot(PathAddress.pathAddress(InfinispanExtension.SUBSYSTEM_PATH));
+        if (!resource.hasChild(PathElement.pathElement(CacheContainerResourceDefinition.CONTAINER_PATH.getKey(), RegistryInstallerService.REGISTRY_CACHE_CONTAINER))) {
+            // Install services that would normally be installed by this container/cache
+            String container = RegistryInstallerService.REGISTRY_CACHE_CONTAINER;
+            String cache = RegistryInstallerService.REGISTRY_CACHE;
+            for (ChannelServiceProvider provider: ServiceLoader.load(ChannelServiceProvider.class, ChannelServiceProvider.class.getClassLoader())) {
+                services.addAll(provider.install(target, container, false, Module.forClass(provider.getClass()).getIdentifier()));
+            }
+            for (CacheServiceProvider provider: ServiceLoader.load(CacheServiceProvider.class, CacheServiceProvider.class.getClassLoader())) {
+                services.addAll(provider.install(target, container, cache, CacheMode.LOCAL, false, Module.forClass(provider.getClass()).getIdentifier()));
+            }
+        }
 
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
