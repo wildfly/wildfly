@@ -21,7 +21,7 @@ public class RegistryInstallerService implements Service<Void> {
     public ServiceBuilder<Void> build(ServiceTarget target) {
         return target.addService(SERVICE_NAME, this)
                 .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, this.collector)
-                .addDependency(ServiceName.JBOSS.append("clustering", "registry", "ejb", "default"), Registry.class, this.registry)
+                .addDependency(ServiceBuilder.DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "registry", "ejb", "default"), Registry.class, this.registry)
         ;
     }
 
@@ -32,16 +32,16 @@ public class RegistryInstallerService implements Service<Void> {
 
     @Override
     public void start(StartContext context) {
-        Registry<?, ?> registry = this.registry.getValue();
-        if (registry.getGroup().getLocalNode().getSocketAddress() != null) {
+        Registry<?, ?> registry = this.registry.getOptionalValue();
+        if (registry != null) {
             this.collector.getValue().add(registry);
         }
     }
 
     @Override
     public void stop(StopContext context) {
-        Registry<?, ?> registry = this.registry.getValue();
-        if (registry.getGroup().getLocalNode().getSocketAddress() != null) {
+        Registry<?, ?> registry = this.registry.getOptionalValue();
+        if (registry != null) {
             this.collector.getValue().remove(registry);
         }
     }

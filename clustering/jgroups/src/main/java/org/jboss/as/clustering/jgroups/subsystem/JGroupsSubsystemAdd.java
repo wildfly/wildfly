@@ -27,15 +27,20 @@ import java.util.List;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
+import org.jboss.as.clustering.jgroups.deployment.ClusteringDependencyProcessor;
 import org.jboss.as.clustering.msc.AsynchronousService;
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.server.AbstractDeploymentChainStep;
+import org.jboss.as.server.DeploymentProcessorTarget;
+import org.jboss.as.server.deployment.Phase;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceTarget;
@@ -48,7 +53,7 @@ import org.jboss.msc.value.InjectedValue;
  * @author Paul Ferraro
  * @author Richard Achmatowicz (c) 2011 Red Hat, Inc
  */
-public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
+public class JGroupsSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
     public static final JGroupsSubsystemAdd INSTANCE = new JGroupsSubsystemAdd();
 
@@ -84,10 +89,18 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         ROOT_LOGGER.activatingSubsystem();
         ServiceTarget target = context.getServiceTarget();
+
+        OperationStepHandler step = new AbstractDeploymentChainStep() {
+            @Override
+            protected void execute(DeploymentProcessorTarget processorTarget) {
+                processorTarget.addDeploymentProcessor(JGroupsExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_CLUSTERING, new ClusteringDependencyProcessor());
+            }
+        };
+        context.addStep(step, OperationContext.Stage.RUNTIME);
 
         // install the protocol defaults service
         ServiceController<ProtocolDefaults> pdsController = installProtocolDefaultsService(target, verificationHandler);
@@ -112,8 +125,8 @@ public class JGroupsSubsystemAdd extends AbstractAddStepHandler {
     }
 
     protected ServiceController<ChannelFactory> installDefaultChannelFactoryService(ServiceTarget target, String stack, ServiceVerificationHandler verificationHandler) {
-        final InjectedValue<ChannelFactory> factory = new InjectedValue<>();
-        return target.addService(ChannelFactoryService.getServiceName(null), new ValueService<>(factory))
+        final InjectedValue<ChannelFactory> factory = new InjectedValue<ChannelFactory>();
+        return target.addService(ChannelFactoryService.getServiceName(null), new ValueService<ChannelFactory>(factory))
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, factory)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()

@@ -23,11 +23,12 @@ package org.wildfly.clustering.server.singleton;
 
 import java.io.Serializable;
 
-import org.jboss.msc.service.AbstractService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StopContext;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
 import org.wildfly.clustering.singleton.SingletonServiceBuilder;
 import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
@@ -36,7 +37,7 @@ import org.wildfly.clustering.singleton.SingletonServiceBuilderFactory;
  * Service for building {@link SingletonService} instances.
  * @author Paul Ferraro
  */
-public class SingletonServiceBuilderFactoryService extends AbstractService<SingletonServiceBuilderFactory> implements SingletonServiceBuilderFactory {
+public class SingletonServiceBuilderFactoryService implements Service<SingletonServiceBuilderFactory>, SingletonServiceBuilderFactory {
 
     final String containerName;
     final String cacheName;
@@ -49,6 +50,16 @@ public class SingletonServiceBuilderFactoryService extends AbstractService<Singl
     @Override
     public SingletonServiceBuilderFactory getValue() {
         return this;
+    }
+
+    @Override
+    public void start(StartContext context) {
+        // Do nothing
+    }
+
+    @Override
+    public void stop(StopContext context) {
+        // Do nothing
     }
 
     @Override
