@@ -29,7 +29,6 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 /**
@@ -38,7 +37,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({SAMLMetadataTestCase.BasicSecurityDomainServerSetupTask.class})
 @RunAsClient
-@Ignore("https://bugzilla.redhat.com/show_bug.cgi?id=1075971")
 public class SAMLMetadataTestCase extends AbstractBasicFederationTestCase {
 
     @Deployment(name = "identity-provider")

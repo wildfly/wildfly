@@ -38,7 +38,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({SAMLRedirectBindingWithSignaturesTestCase.BasicSecurityDomainServerSetupTask.class})
 @RunAsClient
-@Ignore("https://bugzilla.redhat.com/show_bug.cgi?id=1075971")
 public class SAMLRedirectBindingWithSignaturesTestCase extends AbstractBasicFederationTestCase {
 
     @Deployment(name = "identity-provider")
