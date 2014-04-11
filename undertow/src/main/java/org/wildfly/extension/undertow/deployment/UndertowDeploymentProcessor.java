@@ -24,7 +24,6 @@ package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import io.undertow.servlet.api.SessionManagerFactory;
-
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
@@ -72,12 +71,14 @@ import org.wildfly.extension.undertow.UndertowExtension;
 import org.wildfly.extension.undertow.UndertowLogger;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.jacc.WarJACCDeployer;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
-import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
-import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecService;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilder;
 import org.wildfly.extension.undertow.session.DistributableSessionIdentifierCodecBuilderValue;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
+import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
+import org.wildfly.extension.undertow.session.SimpleSessionIdentifierCodecService;
 
+import javax.security.jacc.PolicyConfiguration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -86,8 +87,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
-
-import javax.security.jacc.PolicyConfiguration;
 
 public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
 
@@ -183,7 +182,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
         }
 
         String deploymentName;
-        if(deploymentUnit.getParent() == null) {
+        if (deploymentUnit.getParent() == null) {
             deploymentName = deploymentUnit.getName();
         } else {
             deploymentName = deploymentUnit.getParent().getName() + "." + deploymentUnit.getName();
@@ -204,15 +203,17 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .unprefixSecurityDomain(metaDataSecurityDomain);
 
         String serverInstanceName = metaData.getServerInstanceName() == null ? defaultServer : metaData.getServerInstanceName();
-        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName,pathName);
+        final ServiceName deploymentServiceName = UndertowService.deploymentServiceName(serverInstanceName, hostName, pathName);
 
         final Set<ServiceName> additionalDependencies = new HashSet<>();
-        for(final SetupAction setupAction : setupActions) {
+        for (final SetupAction setupAction : setupActions) {
             Set<ServiceName> dependencies = setupAction.dependencies();
-            if(dependencies != null) {
+            if (dependencies != null) {
                 additionalDependencies.addAll(dependencies);
             }
         }
+        SharedSessionManagerConfig sharedSessionManagerConfig = deploymentUnit.getParent() != null ? deploymentUnit.getParent().getAttachment(UndertowAttachments.SHARED_SESSION_MANAGER_CONFIG) : null;
+
 
         additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
 
@@ -231,6 +232,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
                 .setSharedTlds(tldsMetaData == null ? Collections.<TldMetaData>emptyList() : tldsMetaData.getSharedTlds(deploymentUnit))
                 .setTldsMetaData(tldsMetaData)
                 .setSetupActions(setupActions)
+                .setSharedSessionManagerConfig(sharedSessionManagerConfig)
                 .setOverlays(warMetaData.getOverlays())
                 .setExpressionFactoryWrappers(deploymentUnit.getAttachmentList(ExpressionFactoryWrapper.ATTACHMENT_KEY))
                 .setPredicatedHandlers(deploymentUnit.getAttachment(UndertowHandlersDeploymentProcessor.PREDICATED_HANDLERS))
@@ -270,15 +272,19 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
-        if(componentRegistryExists) {
+        if (componentRegistryExists) {
             infoBuilder.addDependency(ComponentRegistry.serviceName(deploymentUnit), ComponentRegistry.class, undertowDeploymentInfoService.getComponentRegistryInjectedValue());
         } else {
             undertowDeploymentInfoService.getComponentRegistryInjectedValue().setValue(new ImmediateValue<>(componentRegistry));
         }
 
-        ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(serviceTarget, deploymentServiceName, module, metaData);
-        if (sessionManagerFactoryServiceName != null) {
-            infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
+        if (sharedSessionManagerConfig != null) {
+            infoBuilder.addDependency(deploymentUnit.getParent().getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME), SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
+        } else {
+            ServiceName sessionManagerFactoryServiceName = installSessionManagerFactory(serviceTarget, deploymentServiceName, module, metaData);
+            if (sessionManagerFactoryServiceName != null) {
+                infoBuilder.addDependency(sessionManagerFactoryServiceName, SessionManagerFactory.class, undertowDeploymentInfoService.getSessionManagerFactoryInjector());
+            }
         }
 
         ServiceName sessionIdentifierCodecServiceName = installSessionIdentifierCodec(serviceTarget, deploymentServiceName, metaData);

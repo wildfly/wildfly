@@ -174,4 +174,8 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 17539, value = "Error obtaining authorization helper")
     void noAuthorizationHelper(@Cause Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 17540, value = "Ignoring shared-session-config in jboss-all.xml in deployment %s. This entry is only valid in top level deployments.")
+    void sharedSessionConfigNotInRootDeployment(String deployment);
 }
