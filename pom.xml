@@ -253,7 +253,7 @@
         <version.org.opensaml.xmltooling>1.3.4.redhat-3</version.org.opensaml.xmltooling>
         <version.org.picketbox>4.0.19.SP5-redhat-1</version.org.picketbox>
         <version.org.picketbox.picketbox-commons>1.0.0.final-redhat-2</version.org.picketbox.picketbox-commons>
-        <version.org.picketlink>2.5.3.SP3</version.org.picketlink>
+        <version.org.picketlink>2.5.3.SP4</version.org.picketlink>
         <version.org.powermock>1.5</version.org.powermock>
         <version.org.projectodd.stilts>0.1.26.redhat-4</version.org.projectodd.stilts>
         <version.org.scannotation>1.0.3.redhat-4</version.org.scannotation>
