@@ -103,7 +103,7 @@ public class POARegistry implements Service<POARegistry> {
         // Policies for per-servant transient POAs
         transientPoaPolicies = new Policy[]{rootPOA.create_lifespan_policy(
                 LifespanPolicyValue.TRANSIENT),
-                rootPOA.create_id_assignment_policy(IdAssignmentPolicyValue.USER_ID),
+                rootPOA.create_id_assignment_policy(IdAssignmentPolicyValue.SYSTEM_ID),
                 rootPOA.create_servant_retention_policy(ServantRetentionPolicyValue.NON_RETAIN),
                 rootPOA.create_request_processing_policy(RequestProcessingPolicyValue.USE_DEFAULT_SERVANT),
                 rootPOA.create_id_uniqueness_policy( IdUniquenessPolicyValue.MULTIPLE_ID),

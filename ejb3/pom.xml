@@ -70,9 +70,15 @@ vi:ts=4:sw=4:expandtab
             <artifactId>wildfly-ee</artifactId>
         </dependency>
 
+<!--         <dependency> -->
+<!--             <groupId>${project.groupId}</groupId> -->
+<!--             <artifactId>wildfly-jacorb</artifactId> -->
+<!--         </dependency> -->
+        
         <dependency>
             <groupId>org.wildfly</groupId>
-            <artifactId>wildfly-jacorb</artifactId>
+            <artifactId>wildfly-jdkorb</artifactId>
+            <version>8.0.1.Final-SNAPSHOT</version>
         </dependency>
 
         <dependency>
