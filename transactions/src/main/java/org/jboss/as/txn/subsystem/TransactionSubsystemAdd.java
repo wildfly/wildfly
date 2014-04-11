@@ -49,7 +49,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.ee.concurrent.service.ConcurrentServiceNames;
-import org.jboss.as.jacorb.service.CorbaNamingService;
+import org.jboss.as.jdkorb.service.CorbaNamingService;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;

@@ -275,7 +275,8 @@
         <module>embedded</module>
         <module>feature-pack</module>
         <module>jacorb</module>
-        <module>jaxrs</module>
+        <module>jdkorb</module>
+	<module>jaxrs</module>
         <module>jdr</module>
         <module>jpa</module>
         <module>jsf</module>

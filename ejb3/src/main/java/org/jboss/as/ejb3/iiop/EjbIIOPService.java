@@ -22,6 +22,8 @@
 package org.jboss.as.ejb3.iiop;
 
 
+import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,9 +43,9 @@ import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateless.StatelessSessionComponent;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
-import org.jboss.as.jacorb.csiv2.CSIv2Policy;
-import org.jboss.as.jacorb.rmi.ir.InterfaceRepository;
-import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
+import org.jboss.as.jdkorb.csiv2.CSIv2Policy;
+import org.jboss.as.jdkorb.rmi.ir.InterfaceRepository;
+import org.jboss.as.jdkorb.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.ejb.client.EJBHomeLocator;
 import org.jboss.ejb.client.EJBLocator;
@@ -227,6 +229,8 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
         this.useQualifiedName = useQualifiedName;
         this.module = module;
         this.beanMethodMap = Collections.unmodifiableMap(beanMethodMap);
+        for(String s: beanRepositoryIds){
+        }
         this.beanRepositoryIds = beanRepositoryIds;
         this.homeMethodMap = Collections.unmodifiableMap(homeMethodMap);
         this.homeRepositoryIds = homeRepositoryIds;
@@ -235,6 +239,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
 
 
     public synchronized void start(final StartContext startContext) throws StartException {
+
 
         try {
             final RiverMarshallerFactory factory = new RiverMarshallerFactory();
@@ -264,6 +269,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
                 name = component.getComponentName();
             }
             name = name.replace(".", "_");
+
 
             final ORB orb = this.orb.getValue();
             if (interfaceRepositorySupported) {
@@ -312,6 +318,9 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
             }
 
             Policy[] policies = policyList.toArray(new Policy[policyList.size()]);
+
+            for(Policy policy: policyList){
+            }
 
             // If there is an interface repository, then get the homeInterfaceDef from the IR
             InterfaceDef homeInterfaceDef = null;
@@ -507,6 +516,7 @@ public class EjbIIOPService implements Service<EjbIIOPService> {
     public static synchronized void rebind(final NamingContextExt ctx, final String strName, final org.omg.CORBA.Object obj) throws Exception {
         final NameComponent[] name = ctx.to_name(strName);
         NamingContext intermediateCtx = ctx;
+
 
         for (int i = 0; i < name.length - 1; i++) {
             final NameComponent[] relativeName = new NameComponent[]{name[i]};

@@ -42,9 +42,9 @@ import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
-import org.jboss.as.jacorb.csiv2.idl.SASCurrent;
-import org.jboss.as.jacorb.rmi.RmiIdlUtil;
-import org.jboss.as.jacorb.rmi.marshal.strategy.SkeletonStrategy;
+import org.jboss.as.jdkorb.csiv2.idl.SASCurrent;
+import org.jboss.as.jdkorb.rmi.RmiIdlUtil;
+import org.jboss.as.jdkorb.rmi.marshal.strategy.SkeletonStrategy;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.ejb.iiop.HandleImplIIOP;
@@ -61,15 +61,14 @@ import org.jboss.security.SimplePrincipal;
 import org.omg.CORBA.BAD_OPERATION;
 import org.omg.CORBA.InterfaceDef;
 import org.omg.CORBA.ORB;
-import org.omg.CORBA.ORBPackage.InvalidName;
 import org.omg.CORBA.portable.InputStream;
 import org.omg.CORBA.portable.InvokeHandler;
 import org.omg.CORBA.portable.OutputStream;
 import org.omg.CORBA.portable.ResponseHandler;
 import org.omg.PortableServer.Current;
-import org.omg.PortableServer.CurrentPackage.NoContext;
 import org.omg.PortableServer.POA;
 import org.omg.PortableServer.Servant;
+import org.omg.PortableServer.CurrentPackage.NoContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
@@ -171,6 +170,8 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
      */
     public EjbCorbaServant(final Current poaCurrent, final Map<String, SkeletonStrategy> methodInvokerMap, final String[] repositoryIds,
                            final InterfaceDef interfaceDef, final ORB orb, final ComponentView componentView, final MarshallerFactory factory, final MarshallingConfiguration configuration, final TransactionManager transactionManager, final ClassLoader classLoader, final boolean home, final String securityDomain) {
+
+
         this.poaCurrent = poaCurrent;
         this.methodInvokerMap = methodInvokerMap;
         this.repositoryIds = repositoryIds;
@@ -184,19 +185,19 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
         this.home = home;
         this.securityDomain = securityDomain;
 
-        SASCurrent sasCurrent;
-        try {
-            sasCurrent = (SASCurrent) this.orb.resolve_initial_references("SASCurrent");
-        } catch (InvalidName invalidName) {
-            sasCurrent = null;
-        }
-        this.sasCurrent = sasCurrent;
-        org.jboss.iiop.tm.InboundTransactionCurrent inboundTxCurrent;
-        try {
-            inboundTxCurrent = (org.jboss.iiop.tm.InboundTransactionCurrent) this.orb.resolve_initial_references(org.jboss.iiop.tm.InboundTransactionCurrent.NAME);
-        } catch (InvalidName invalidName) {
-            inboundTxCurrent = null;
-        }
+        SASCurrent sasCurrent = null;
+//        try {
+//            sasCurrent = (SASCurrent) this.orb.resolve_initial_references("SASCurrent");
+//        } catch (InvalidName invalidName) {
+//            sasCurrent = null;
+//        }
+       this.sasCurrent = sasCurrent;
+        org.jboss.iiop.tm.InboundTransactionCurrent inboundTxCurrent = null;
+//        try {
+//            inboundTxCurrent = (org.jboss.iiop.tm.InboundTransactionCurrent) this.orb.resolve_initial_references(org.jboss.iiop.tm.InboundTransactionCurrent.NAME);
+//        } catch (InvalidName invalidName) {
+//            inboundTxCurrent = null;
+//        }
         this.inboundTxCurrent = inboundTxCurrent;
     }
 
@@ -226,9 +227,11 @@ public class EjbCorbaServant extends Servant implements InvokeHandler, LocalIIOP
      */
     public OutputStream _invoke(final String opName, final InputStream in, final ResponseHandler handler) {
 
+
         if (logger.isTraceEnabled()) {
             logger.trace("EJBObject invocation: " + opName);
         }
+
 
         SkeletonStrategy op = methodInvokerMap.get(opName);
         if (op == null) {

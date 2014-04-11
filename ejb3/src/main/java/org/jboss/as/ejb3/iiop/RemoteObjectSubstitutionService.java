@@ -54,6 +54,8 @@ public class RemoteObjectSubstitutionService implements RemoteObjectSubstitution
 
     @Override
     public Object writeReplaceRemote(final Object object) {
+
+
         final DeploymentRepository deploymentRepository = deploymentRepositoryInjectedValue.getOptionalValue();
         //if we are not started yet just return
         if (deploymentRepository == null) {
