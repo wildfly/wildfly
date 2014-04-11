@@ -170,4 +170,9 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 17538, value = "Failed to register policy context handler for key %s")
     void failedToRegisterPolicyContextHandler(String key, @Cause Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 17539, value = "Ignoring shared-session-config in jboss-all.xml in deployment %s. This entry is only valid in top level deployments.")
+    void sharedSessionConfigNotInRootDeployment(String deployment);
+
 }
