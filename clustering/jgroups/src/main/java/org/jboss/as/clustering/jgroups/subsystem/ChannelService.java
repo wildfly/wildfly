@@ -27,7 +27,6 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
-import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.jmx.MBeanServerService;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -58,7 +57,7 @@ public class ChannelService implements Service<Channel>, ChannelListener {
 
     public static ServiceBuilder<Channel> build(ServiceTarget target, String id, String stack) {
         ChannelService service = new ChannelService(id);
-        return AsynchronousService.addService(target, getServiceName(id), service)
+        return target.addService(getServiceName(id), service)
                 .addDependency(ChannelFactoryService.getServiceName(stack), ChannelFactory.class, service.factory)
                 .addDependency(MBeanServerService.SERVICE_NAME, MBeanServer.class, service.server)
         ;
