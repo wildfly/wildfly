@@ -43,7 +43,7 @@ import org.wildfly.clustering.registry.RegistryEntryProvider;
  */
 public class EJBRemotingConnectorClientMappingsEntryProviderService extends AbstractService<RegistryEntryProvider<String, List<ClientMapping>>> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("clustering", "registry", "ejb", "default", "entry");
+    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("clustering", "registry", RegistryInstallerService.REGISTRY_CACHE_CONTAINER, RegistryInstallerService.REGISTRY_CACHE, "entry");
 
     private final RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider = new ClientMappingEntryProvider();
     private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<>();

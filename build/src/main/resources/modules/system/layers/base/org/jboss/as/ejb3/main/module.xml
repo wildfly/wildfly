@@ -42,9 +42,13 @@
         <module name="javax.resource.api"/>
         <module name="javax.rmi.api"/>
         <module name="org.hibernate"/>
+        <module name="org.infinispan"/>
         <module name="org.jacorb"/>
         <module name="org.jboss.as.clustering.common"/>
+        <module name="org.jboss.as.clustering.infinispan"/>
+        <module name="org.jboss.as.clustering.jgroups"/>
         <module name="org.wildfly.clustering.api"/>
+        <module name="org.wildfly.clustering.server" optional="true" services="import"/>
         <module name="org.wildfly.clustering.ejb.spi"/>
         <module name="org.jboss.as.controller"/>
         <module name="org.jboss.as.weld"/>

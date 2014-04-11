@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.remote;
 
+import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
@@ -32,6 +33,8 @@ import org.wildfly.clustering.registry.Registry;
 
 public class RegistryInstallerService implements Service<Void> {
 
+    public static final String REGISTRY_CACHE_CONTAINER = "ejb";
+    public static final String REGISTRY_CACHE = CacheContainer.DEFAULT_CACHE_ALIAS;
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb", "remoting", "connector", "client-mappings", "installer");
 
     @SuppressWarnings("rawtypes")
@@ -42,7 +45,7 @@ public class RegistryInstallerService implements Service<Void> {
     public ServiceBuilder<Void> build(ServiceTarget target) {
         return target.addService(SERVICE_NAME, this)
                 .addDependency(RegistryCollectorService.SERVICE_NAME, RegistryCollector.class, this.collector)
-                .addDependency(ServiceName.JBOSS.append("clustering", "registry", "ejb", "default"), Registry.class, this.registry)
+                .addDependency(ServiceName.JBOSS.append("clustering", "registry", REGISTRY_CACHE_CONTAINER, REGISTRY_CACHE), Registry.class, this.registry)
         ;
     }
 
