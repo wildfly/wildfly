@@ -5,6 +5,7 @@
              http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd"
              version="7">
     <permission>
-        <class-name>java.security.AllPermission</class-name>
+        <class-name>java.lang.RuntimePermission</class-name>
+        <name>modifyThread</name>
     </permission>
 </permissions>

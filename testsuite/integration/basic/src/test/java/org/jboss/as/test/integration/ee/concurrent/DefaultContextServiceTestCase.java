@@ -44,7 +44,8 @@ public class DefaultContextServiceTestCase {
     @Deployment
     public static WebArchive getDeployment() {
         return ShrinkWrap.create(WebArchive.class, DefaultContextServiceTestCase.class.getSimpleName() + ".war")
-                .addClasses(DefaultContextServiceTestCase.class, DefaultContextServiceTestEJB.class, TestEJBRunnable.class);
+                .addClasses(DefaultContextServiceTestCase.class, DefaultContextServiceTestEJB.class, TestEJBRunnable.class)
+                .addAsManifestResource(DefaultContextServiceTestCase.class.getPackage(), "permissions.xml", "permissions.xml");
     }
 
     @Test

@@ -17,6 +17,8 @@
 package org.jboss.arquillian.testenricher.msc;
 
 import java.lang.annotation.Annotation;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.arquillian.core.api.Instance;
@@ -29,7 +31,7 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 
 /**
- * {@link OperatesOnDeploymentAwareProvider} implementation to
+ * {@link ResourceProvider} implementation to
  * provide {@link ServiceContainer} injection to {@link ArquillianResource}-
  * annotated fields.
  *
@@ -54,10 +56,15 @@ public class ServiceContainerProvider implements ResourceProvider {
 
     @Override
     public Object lookup(ArquillianResource resource, Annotation... qualifiers) {
-        if (initialized.compareAndSet(false, true)) {
-            ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
-            serviceContainerProducer.set(serviceContainer);
-        }
-        return serviceContainer.get();
+        return AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+                if (initialized.compareAndSet(false, true)) {
+                    ServiceContainer serviceContainer = CurrentServiceContainer.getServiceContainer();
+                    serviceContainerProducer.set(serviceContainer);
+                }
+                return serviceContainer.get();
+            }
+        });
     }
 }

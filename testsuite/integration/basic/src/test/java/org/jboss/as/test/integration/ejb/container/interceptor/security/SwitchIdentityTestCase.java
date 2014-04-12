@@ -153,6 +153,7 @@ public class SwitchIdentityTestCase {
         jar.addAsManifestResource(new StringAsset(ClientSecurityInterceptor.class.getName()),
                 "services/org.jboss.ejb.client.EJBClientInterceptor");
         jar.addAsManifestResource(SwitchIdentityTestCase.class.getPackage(), "jboss-ejb-client.xml", "jboss-ejb-client.xml");
+        jar.addAsManifestResource(org.jboss.as.test.integration.ejb.container.interceptor.security.api.ClientSecurityInterceptor.class.getPackage(), "permissions.xml", "permissions.xml");
         jar.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.remoting3", "org.jboss.as.domain-management",
                 "org.jboss.as.controller", "org.jboss.as.core-security"), "jboss-deployment-structure.xml");
         final Properties props = EJBUtil.createEjbClientConfiguration(StringUtils.strip(

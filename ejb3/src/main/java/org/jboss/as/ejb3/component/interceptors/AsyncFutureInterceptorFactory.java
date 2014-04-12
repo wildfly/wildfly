@@ -69,7 +69,17 @@ public final class AsyncFutureInterceptorFactory implements InterceptorFactory {
                 final InterceptorContext asyncInterceptorContext = context.clone();
                 asyncInterceptorContext.putPrivateData(InvocationType.class, InvocationType.ASYNC);
                 final CancellationFlag flag = new CancellationFlag();
-                final SecurityContext securityContext = SecurityContextAssociation.getSecurityContext();
+                final SecurityContext securityContext;
+                if(WildFlySecurityManager.isChecking()) {
+                    securityContext = AccessController.doPrivileged(new PrivilegedAction<SecurityContext>() {
+                        @Override
+                        public SecurityContext run() {
+                            return SecurityContextAssociation.getSecurityContext();
+                        }
+                    });
+                } else {
+                    securityContext = SecurityContextAssociation.getSecurityContext();
+                }
                 // clone the original security context so that changes to the original security context in a separate (caller/unrelated) thread doesn't affect
                 // the security context associated with the async invocation thread
                 final SecurityContext clonedSecurityContext;
