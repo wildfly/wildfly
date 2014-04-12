@@ -1,6 +1,6 @@
-/*
+/**
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,11 +19,26 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.integration.weld.deployment.scopes;
 
-import java.io.Serializable;
+package org.jboss.as.jsf.deployment;
+
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.Extension;
 import javax.faces.view.ViewScoped;
 
-@ViewScoped
-public class ViewScopedBean implements Serializable {
+/**
+ * Workaround for WFLY-3044 / JAVASERVERFACES-3191 making {@link ViewScoped} annotation passivating. Proper fix
+ * requires a spec maintenance release.
+ *
+ * @author <a href="http://www.radoslavhusar.com/">Radoslav Husar</a>
+ * @version Apr 10, 2014
+ * @since 8.0.1
+ */
+public class JSFPassivatingViewScopedCdiExtension implements Extension {
+
+    public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery event, BeanManager manager) {
+        event.addScope(ViewScoped.class, true, true);
+    }
 }

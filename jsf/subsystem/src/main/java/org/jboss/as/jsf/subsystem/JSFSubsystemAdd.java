@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.jsf.deployment.JSFAnnotationProcessor;
 import org.jboss.as.jsf.deployment.JSFBeanValidationFactoryProcessor;
+import org.jboss.as.jsf.deployment.JSFCdiExtensionDeploymentProcessor;
 import org.jboss.as.jsf.deployment.JSFDependencyProcessor;
 import org.jboss.as.jsf.deployment.JSFManagedBeanProcessor;
 import org.jboss.as.jsf.deployment.JSFMetadataProcessor;
@@ -65,6 +66,7 @@ class JSFSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_JSF_METADATA, new JSFMetadataProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.DEPENDENCIES, Phase.DEPENDENCIES_JSF, new JSFDependencyProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JSF_MANAGED_BEANS, new JSFManagedBeanProcessor());
+                processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_JSF_CDI_EXTENSIONS, new JSFCdiExtensionDeploymentProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JSF_ANNOTATIONS, new JSFAnnotationProcessor());
                 processorTarget.addDeploymentProcessor(JSFExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_JSF_VALIDATOR_FACTORY, new JSFBeanValidationFactoryProcessor());
             }

@@ -398,6 +398,7 @@ public enum Phase {
     public static final int POST_MODULE_WAB_FRAGMENTS                   = 0x0250;
     public static final int POST_MODULE_JSF_MANAGED_BEANS               = 0x0300;
     public static final int POST_MODULE_INTERCEPTOR_ANNOTATIONS         = 0x0301;
+    public static final int POST_MODULE_JSF_CDI_EXTENSIONS              = 0x0302;
     public static final int POST_MODULE_EJB_BUSINESS_VIEW_ANNOTATION    = 0x0400;
     public static final int POST_MODULE_EJB_HOME_MERGE                  = 0x0401;
     public static final int POST_MODULE_EJB_DD_METHOD_RESOLUTION        = 0x0402;
