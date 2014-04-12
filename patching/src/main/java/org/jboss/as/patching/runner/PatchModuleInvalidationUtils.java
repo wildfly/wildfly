@@ -32,6 +32,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 
 import org.jboss.as.patching.PatchLogger;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Cripple a JAR or other zip file by flipping a bit in the end of central directory record
@@ -43,6 +44,8 @@ import org.jboss.as.patching.PatchLogger;
  * @author Emanuel Muckenhuber
  */
 class PatchModuleInvalidationUtils {
+
+    private static final boolean ENABLE_INVALIDATION = Boolean.parseBoolean(WildFlySecurityManager.getPropertyPrivileged("org.wildfly.patching.jar.invalidation", "false"));
 
     /**
      * Local file header marker
@@ -142,6 +145,9 @@ class PatchModuleInvalidationUtils {
      * @throws IOException
      */
     static void processFile(final File file, final PatchingTaskContext.Mode mode) throws IOException {
+        if (!ENABLE_INVALIDATION) {
+            return;
+        }
         if (mode == PatchingTaskContext.Mode.APPLY) {
             updateJar(file, GOOD_ENDSIG_PATTERN, GOOD_END_BAD_BYTE_SKIP, CRIPPLED_ENDSIG, GOOD_ENDSIG);
         } else if (mode == PatchingTaskContext.Mode.ROLLBACK) {
