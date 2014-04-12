@@ -86,24 +86,19 @@ public class DeploymentAddHandler implements OperationStepHandler {
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         ModelNode newModel = resource.getModel();
 
+        //Persistent is hidden from CLI users so let's set this to true here if it is not defined
         if (!operation.hasDefined(PERSISTENT.getName())) {
             operation.get(PERSISTENT.getName()).set(true);
         }
-
-        //Persistent is hidden from CLI users so let's set this to true here if it is not defined
         PERSISTENT.validateAndSet(operation, newModel);
 
+        // Store the rest of the attributes.
         for (AttributeDefinition def : SERVER_ADD_ATTRIBUTES) {
-            if (!def.getName().equals(CONTENT_ALL.getName())) {
-                def.validateAndSet(operation, newModel);
-            } else {
-                //Handle content a bit differently to avoid two copies of the deployment content if bytes was used
-                def.validateOperation(operation);
-            }
+            def.validateAndSet(operation, newModel);
         }
 
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
-        ModelNode content = operation.require(CONTENT_ALL.getName());
+        ModelNode content = newModel.require(CONTENT_ALL.getName());
         ModelNode contentItemNode = content.require(0);
 
         final ModelNode opAddr = operation.get(OP_ADDR);
@@ -117,16 +112,16 @@ public class DeploymentAddHandler implements OperationStepHandler {
             byte[] hash = contentItemNode.require(CONTENT_HASH.getName()).asBytes();
             contentItem = addFromHash(hash, name, context);
         } else if (hasValidContentAdditionParameterDefined(contentItemNode)) {
-            contentItem = addFromContentAdditionParameter(context, name, contentItemNode);
+            contentItem = addFromContentAdditionParameter(context, contentItemNode);
+            // Store a hash-based contentItemNode back to the model
             contentItemNode = new ModelNode();
             contentItemNode.get(CONTENT_HASH.getName()).set(contentItem.getHash());
             content = new ModelNode();
             content.add(contentItemNode);
+            newModel.get(CONTENT_ALL.getName()).set(content);
         } else {
             contentItem = addUnmanaged(contentItemNode);
         }
-
-        newModel.get(CONTENT_ALL.getName()).set(content);
 
         if (context.getProcessType() == ProcessType.STANDALONE_SERVER) {
             // Add a step to validate uniqueness of runtime names
@@ -142,7 +137,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
             DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contentItem);
         }
 
-        if (contentRepository != null && contentItem.getHash() != null) {
+        if (contentItem.getHash() != null) {
             final byte[] contentHash = contentItem.getHash();
             context.completeStep(new OperationContext.ResultHandler() {
                 public void handleResult(ResultAction resultAction, OperationContext context, ModelNode operation) {
@@ -202,7 +197,7 @@ public class DeploymentAddHandler implements OperationStepHandler {
         return new DeploymentHandlerUtil.ContentItem(hash);
     }
 
-    DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, String name, ModelNode contentItemNode) throws OperationFailedException {
+    DeploymentHandlerUtil.ContentItem addFromContentAdditionParameter(OperationContext context, ModelNode contentItemNode) throws OperationFailedException {
         byte[] hash;
         InputStream in = getInputStream(context, contentItemNode);
         try {

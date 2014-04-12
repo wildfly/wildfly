@@ -49,7 +49,7 @@ public class WebVirtualHostDefinition extends ModelOnlyResourceDefinition {
             new StringListAttributeDefinition.Builder(Constants.ALIAS)
                     .setXmlName(Constants.ALIAS)
                     .setAllowNull(true)
-                    .setValidator(new StringLengthValidator(1, false))
+                    .setElementValidator(new StringLengthValidator(1, false))
                     .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
                     .build();
     protected static final SimpleAttributeDefinition DEFAULT_WEB_MODULE =

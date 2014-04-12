@@ -92,7 +92,7 @@ public abstract class AbstractEJBComponentResourceDefinition extends SimpleResou
 
     public static final ListAttributeDefinition DECLARED_ROLES = new PrimitiveListAttributeDefinition.Builder("declared-roles", ModelType.STRING)
             .setAllowNull(true)
-            .setValidator(new StringLengthValidator(1))
+            .setElementValidator(new StringLengthValidator(1))
             .setStorageRuntime()
             .build();
 

@@ -29,17 +29,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
-import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.AttributeParser;
-import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
-import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.xnio.Option;
@@ -52,13 +44,8 @@ public class OptionAttributeDefinition extends SimpleAttributeDefinition {
     private final Option option;
     private final Class<?> optionType;
 
-    private OptionAttributeDefinition(String name, String xmlName, ModelNode defaultValue, ModelType type, boolean allowNull, boolean allowExpression,
-                                      MeasurementUnit measurementUnit, ParameterCorrector corrector, ParameterValidator validator, boolean validateNull,
-                                      String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller, boolean resourceOnly,
-                                      DeprecationData deprecated, Option<?> option, Class<?> optionType, AccessConstraintDefinition[] accessConstraints,
-                                      Boolean nullSignificant, final AttributeParser parser, AttributeAccess.Flag... flags) {
-        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, corrector, validator, validateNull, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser, flags);
+    private OptionAttributeDefinition(Builder builder, Option<?> option, Class<?> optionType) {
+        super(builder);
         this.option = option;
         this.optionType = optionType;
 
@@ -111,9 +98,7 @@ public class OptionAttributeDefinition extends SimpleAttributeDefinition {
 
         @Override
         public OptionAttributeDefinition build() {
-            return new OptionAttributeDefinition(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                    corrector, validator, validateNull, alternatives, requires, attributeMarshaller, resourceOnly,
-                    deprecated, option, optionType, accessConstraints, nullSignficant, parser, flags);
+            return new OptionAttributeDefinition(this, option, optionType);
         }
 
         private void setType() {

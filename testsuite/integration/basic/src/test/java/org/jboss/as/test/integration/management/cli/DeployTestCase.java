@@ -93,6 +93,12 @@ public class DeployTestCase extends AbstractCliTestBase {
         testUndeploy();
     }
 
+    @Test
+    public void testContentObjectDeploy() throws Exception {
+        testWFLY3184();
+        testUndeploy();
+    }
+
     public void testDeploy() throws Exception {
 
         // deploy to server
@@ -147,5 +153,16 @@ public class DeployTestCase extends AbstractCliTestBase {
 
         // check undeployment
         assertTrue(checkUndeployed(getBaseURL(url) + "SimpleServlet/SimpleServlet"));
+    }
+
+    private void testWFLY3184() throws Exception {
+
+        // deploy to server
+        cli.sendLine("/deployment="+warFile.getName() +":add(enabled=true,content={url=" + warFile.toURI().toURL().toExternalForm() + "})");
+
+        // check deployment
+        String response = HttpRequest.get(getBaseURL(url) + "SimpleServlet/SimpleServlet", 1000, 10, TimeUnit.SECONDS);
+        assertTrue("Invalid response: " + response, response.contains("SimpleServlet"));
+
     }
 }

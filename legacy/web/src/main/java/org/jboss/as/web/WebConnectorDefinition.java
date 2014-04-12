@@ -147,7 +147,7 @@ public class WebConnectorDefinition extends ModelOnlyResourceDefinition {
     protected static final StringListAttributeDefinition VIRTUAL_SERVER = new StringListAttributeDefinition.Builder(Constants.VIRTUAL_SERVER)
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
-            .setValidator(new StringLengthValidator(1, false))
+            .setElementValidator(new StringLengthValidator(1, false))
             .build();
     protected static final AttributeDefinition[] CONNECTOR_ATTRIBUTES = {
             //NAME, // name is read-only

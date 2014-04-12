@@ -33,6 +33,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.MapValidator;
+import org.jboss.as.controller.operations.validation.NillableOrExpressionParameterValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -52,19 +53,24 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
 
     private final ParameterValidator elementValidator;
 
+    @SuppressWarnings("deprecation")
     public MapAttributeDefinition(final String name, final boolean allowNull, final ParameterValidator elementValidator) {
         this(name, name, allowNull, false, 0, Integer.MAX_VALUE, null, elementValidator,
                 null, null, null, false, null, null, (Boolean) null, null);
     }
 
+    /** @deprecated use a {@link org.jboss.as.controller.AbstractAttributeDefinitionBuilder builder}*/
     @Deprecated
+    @SuppressWarnings("deprecation")
     public MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                   final int minSize, final int maxSize, final ParameterValidator elementValidator) {
         this(name, xmlName, allowNull, false, minSize, maxSize, null, elementValidator, null, null, null,
                 false, null, null, (Boolean) null, null);
     }
 
+    /** @deprecated use a {@link org.jboss.as.controller.AbstractAttributeDefinitionBuilder builder}*/
     @Deprecated
+    @SuppressWarnings("deprecation")
     public MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull,
                                   final int minSize, final int maxSize, final ParameterValidator elementValidator,
                                   final String[] alternatives, final String[] requires, final AttributeAccess.Flag... flags) {
@@ -72,7 +78,9 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
                 false, null, null, null, null, flags);
     }
 
+    /** @deprecated use a {@link org.jboss.as.controller.AbstractAttributeDefinitionBuilder builder}*/
     @Deprecated
+    @SuppressWarnings("deprecation")
     protected MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
             final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,
             final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated,
@@ -81,6 +89,7 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
                 alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, null, flags);
     }
 
+    @Deprecated
     protected MapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
                                      final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,
                                      final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,
@@ -92,6 +101,11 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
         super(name, xmlName, null, ModelType.OBJECT, allowNull, allowExpression, null, corrector, new MapValidator(elementValidator, allowNull, minSize, maxSize), false,
                 alternatives, requires, attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser, flags);
         this.elementValidator = elementValidator;
+    }
+
+    protected MapAttributeDefinition(Builder<? extends Builder, ? extends MapAttributeDefinition> builder) {
+        super(builder);
+        this.elementValidator = builder.getElementValidator();
     }
 
     /**
@@ -178,6 +192,14 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
         final ModelNode result = super.addOperationParameterDescription(bundle, prefix, operationDescription);
         addValueTypeDescription(result, bundle);
         return result;
+    }
+
+    /**
+     * The validator used to validate values in the map.
+     * @return  the element validator
+     */
+    public ParameterValidator getElementValidator() {
+        return elementValidator;
     }
 
     protected abstract void addValueTypeDescription(final ModelNode node, final ResourceBundle bundle);
@@ -276,4 +298,146 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
             return newValue;
         }
     };
+
+
+
+    public abstract static class Builder<BUILDER extends Builder, ATTRIBUTE extends MapAttributeDefinition>
+            extends AbstractAttributeDefinitionBuilder<BUILDER, ATTRIBUTE> {
+
+        protected ParameterValidator elementValidator;
+        private Boolean allowNullElement;
+
+        protected Builder(String attributeName) {
+            super(attributeName, ModelType.OBJECT);
+        }
+
+        protected Builder(String attributeName, boolean allowNull) {
+            super(attributeName, ModelType.OBJECT, allowNull);
+        }
+
+        public Builder(MapAttributeDefinition basis) {
+            super(basis);
+            this.elementValidator = basis.getElementValidator();
+            if (elementValidator instanceof NillableOrExpressionParameterValidator) {
+                this.allowNullElement = ((NillableOrExpressionParameterValidator) elementValidator).getAllowNull();
+            }
+        }
+
+        /**
+         * Gets the validator to use for validating list elements. En
+         * @return the validator, or {@code null} if no validator has been set
+         */
+        public ParameterValidator getElementValidator() {
+            if (elementValidator == null) {
+                return null;
+            }
+
+            ParameterValidator toWrap = elementValidator;
+            ParameterValidator wrappedElementValidator = null;
+            if (elementValidator instanceof NillableOrExpressionParameterValidator) {
+                // See if it's configured correctly already; if so don't re-wrap
+                NillableOrExpressionParameterValidator wrapped = (NillableOrExpressionParameterValidator) elementValidator;
+                Boolean allow = wrapped.getAllowNull();
+                if ((allow == null || allow) == getAllowNullElement()
+                        && wrapped.isAllowExpression() == isAllowExpression()) {
+                    wrappedElementValidator = wrapped;
+                } else {
+                    // re-wrap
+                    toWrap = wrapped.getDelegate();
+                }
+            }
+            if (wrappedElementValidator == null) {
+                elementValidator = new NillableOrExpressionParameterValidator(toWrap, getAllowNullElement(), isAllowExpression());
+            }
+            return elementValidator;
+        }
+
+        /**
+         * Sets the validator to use for validating list elements.
+         *
+         * @param elementValidator the validator
+         * @return a builder that can be used to continue building the attribute definition
+         *
+         * @throws java.lang.IllegalArgumentException if {@code elementValidator} is {@code null}
+         */
+        public final BUILDER setElementValidator(ParameterValidator elementValidator) {
+            if (elementValidator == null) {
+                throw ControllerMessages.MESSAGES.nullVar("elementValidator");
+            }
+            this.elementValidator = elementValidator;
+            // Setting an element validator invalidates any existing overall attribute validator
+            this.validator = null;
+            return (BUILDER) this;
+        }
+
+        /**
+         * Overrides the superclass to simply delegate to
+         * {@link #setElementValidator(org.jboss.as.controller.operations.validation.ParameterValidator)}.
+         * Use {@link #setMapValidator(org.jboss.as.controller.operations.validation.ParameterValidator)} to
+         * set an overall validator for the map.
+         *
+         * @param validator the validator. Cannot be {@code null}
+         * @return a builder that can be used to continue building the attribute definition
+         *
+         * @throws java.lang.IllegalArgumentException if {@code elementValidator} is {@code null}
+         */
+        @Override
+        public BUILDER setValidator(ParameterValidator validator) {
+            return setElementValidator(validator);
+        }
+
+        /**
+         * Sets an overall validator for the map.
+         *
+         * @param validator the validator. {@code null} is allowed
+         * @return a builder that can be used to continue building the attribute definition
+         */
+        public BUILDER setMapValidator(ParameterValidator validator) {
+            return super.setValidator(validator);
+        }
+
+        @Override
+        public int getMinSize() {
+            if (minSize < 0) { minSize = 0;}
+            return minSize;
+        }
+
+        @Override
+        public int getMaxSize() {
+            if (maxSize < 1) { maxSize = Integer.MAX_VALUE; }
+            return maxSize;
+        }
+
+        /**
+         * Gets whether undefined list elements are valid. In the unlikely case {@link #setAllowNullElement(boolean)}
+         * has been called, that value is returned; otherwise the value of {@link #isAllowNull()} is used.
+         *
+         * @return {@code true} if undefined list elements are valid
+         */
+        public boolean getAllowNullElement() {
+            return allowNullElement == null ? isAllowNull() : allowNullElement;
+        }
+
+        /**
+         * Sets whether undefined list elements are valid.
+         * @param allowNullElement whether undefined elements are valid
+         * @return a builder that can be used to continue building the attribute definition
+         */
+        public BUILDER setAllowNullElement(boolean allowNullElement) {
+            this.allowNullElement = allowNullElement;
+            return (BUILDER) this;
+        }
+
+        @Override
+        public ParameterValidator getValidator() {
+            ParameterValidator result = super.getValidator();
+            if (result == null) {
+                ParameterValidator mapElementValidator = getElementValidator();
+                // Subclasses must call setElementValidator before calling this
+                assert mapElementValidator != null;
+                result = new MapValidator(getElementValidator(), isAllowNull(), getMinSize(), getMaxSize());
+            }
+            return result;
+        }
+    }
 }

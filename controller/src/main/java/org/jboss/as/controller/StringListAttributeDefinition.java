@@ -28,10 +28,7 @@ import java.util.List;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -40,13 +37,8 @@ import org.jboss.dmr.ModelType;
  */
 public final class StringListAttributeDefinition extends PrimitiveListAttributeDefinition {
 
-    private StringListAttributeDefinition(final String name, final String xmlName, final boolean allowNull, final boolean allowExpressions,
-                                          final int minSize, final int maxSize, ParameterValidator elementValidator, final String[] alternatives,
-                                          final String[] requires, final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,
-                                          final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints,
-                                          final Boolean nullSignificant, final AttributeParser parser, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpressions, ModelType.STRING, minSize, maxSize, elementValidator, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser, flags);
+    private StringListAttributeDefinition(Builder builder) {
+        super(builder, ModelType.STRING);
     }
 
     public List<String> unwrap(final OperationContext context, final ModelNode model) throws OperationFailedException {
@@ -69,25 +61,22 @@ public final class StringListAttributeDefinition extends PrimitiveListAttributeD
         }
     }
 
-    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, StringListAttributeDefinition> {
+    public static class Builder extends ListAttributeDefinition.Builder<Builder, StringListAttributeDefinition> {
+
         public Builder(final String name) {
-            super(name, ModelType.STRING);
+            super(name);
             parser = AttributeParser.STRING_LIST;
-            validator = new ModelTypeValidator(ModelType.STRING);
+            setElementValidator(new ModelTypeValidator(ModelType.STRING));
         }
 
         public Builder(final StringListAttributeDefinition basic) {
             super(basic);
-            if (validator == null) {
-                validator = new ModelTypeValidator(ModelType.STRING);
-            }
+            parser = AttributeParser.STRING_LIST;
         }
 
         @Override
         public StringListAttributeDefinition build() {
-            return new StringListAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize,
-                    validator, alternatives, requires,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, parser, flags);
+            return new StringListAttributeDefinition(this);
         }
     }
 }

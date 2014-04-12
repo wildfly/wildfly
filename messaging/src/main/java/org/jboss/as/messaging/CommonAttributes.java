@@ -209,7 +209,7 @@ public interface CommonAttributes {
 
     PrimitiveListAttributeDefinition DESTINATION_ENTRIES = PrimitiveListAttributeDefinition.Builder.of(ENTRIES, ModelType.STRING)
             .setAllowNull(false)
-            .setValidator(new StringLengthValidator(1, false, true))
+            .setElementValidator(new StringLengthValidator(1, false, true))
             .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshallers.JndiEntriesAttributeMarshaller(true))
             .setRestartAllServices()
@@ -596,7 +596,7 @@ public interface CommonAttributes {
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
-            .setValidator(new StringLengthValidator(1, false, true))
+            .setElementValidator(new StringLengthValidator(1, false, true))
             .setAttributeMarshaller(AttributeMarshallers.INTERCEPTOR_MARSHALLER)
             .build();
 
@@ -606,7 +606,7 @@ public interface CommonAttributes {
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
-            .setValidator(new StringLengthValidator(1, false, true))
+            .setElementValidator(new StringLengthValidator(1, false, true))
             .setAttributeMarshaller(AttributeMarshallers.INTERCEPTOR_MARSHALLER)
             .build();
 
@@ -616,7 +616,7 @@ public interface CommonAttributes {
             .setMinSize(1)
             .setMaxSize(Integer.MAX_VALUE)
             .setRestartAllServices()
-            .setValidator(new StringLengthValidator(1, false, true))
+            .setElementValidator(new StringLengthValidator(1, false, true))
             .setAttributeMarshaller(AttributeMarshallers.INTERCEPTOR_MARSHALLER)
             .build();
 

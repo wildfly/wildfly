@@ -272,7 +272,7 @@ public class Constants {
             .setXmlName(WorkManagerSecurity.Tag.DEFAULT_GROUPS.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setValidator(new StringLengthValidator(1, false, true))
+            .setElementValidator(new StringLengthValidator(1, false, true))
             .build();
     static final SimpleAttributeDefinition WM_SECURITY_DEFAULT_GROUP = new SimpleAttributeDefinition(WM_SECURITY_DEFAULT_GROUP_NAME, WorkManagerSecurity.Tag.GROUP.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);
 
@@ -303,7 +303,7 @@ public class Constants {
             .setXmlName(ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName())
             .setAllowNull(true)
             .setAllowExpression(true)
-            .setValidator(new StringLengthValidator(1, false, true))
+            .setElementValidator(new StringLengthValidator(1, false, true))
             .build();
 
     static final SimpleAttributeDefinition BEANVALIDATIONGROUP = new SimpleAttributeDefinition(BEANVALIDATIONGROUPS_NAME, ResourceAdapter.Tag.BEAN_VALIDATION_GROUP.getLocalName(), new ModelNode(), ModelType.STRING, true, true, MeasurementUnit.NONE);

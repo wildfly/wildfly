@@ -36,7 +36,6 @@ import java.util.concurrent.TimeUnit;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.PropagatingCorrector;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -51,7 +50,7 @@ import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
 /**
- * {@link AttributeDefinition} for a thread pool resource's keepalive-time attribute.
+ * {@link org.jboss.as.controller.AttributeDefinition} for a thread pool resource's keepalive-time attribute.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -77,8 +76,8 @@ class KeepAliveTimeAttributeDefinition extends ObjectTypeAttributeDefinition {
     }
 
     KeepAliveTimeAttributeDefinition() {
-        super(CommonAttributes.KEEPALIVE_TIME, new AttributeDefinition[]{KEEPALIVE_TIME_TIME, KEEPALIVE_TIME_UNIT}, true,
-                PropagatingCorrector.INSTANCE);
+        super(Builder.of(CommonAttributes.KEEPALIVE_TIME, KEEPALIVE_TIME_TIME, KEEPALIVE_TIME_UNIT)
+                .setCorrector(PropagatingCorrector.INSTANCE));
     }
 
     @Override

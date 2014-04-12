@@ -76,17 +76,18 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        // Validate op
+        // Validate op. Store any corrected values back to the op before manipulating further
+        ModelNode correctedOperation = operation.clone();
         for (AttributeDefinition def : DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.values()) {
-            def.validateOperation(operation);
+            def.validateAndSet(operation, correctedOperation);
         }
 
         // Pull data from the op
-        final String name = DeploymentAttributes.NAME.resolveModelAttribute(context, operation).asString();
+        final String name = DeploymentAttributes.NAME.resolveModelAttribute(context, correctedOperation).asString();
         final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
-        final String runtimeName = operation.hasDefined(RUNTIME_NAME.getName()) ? operation.get(RUNTIME_NAME.getName()).asString() : name;
+        final String runtimeName = correctedOperation.hasDefined(RUNTIME_NAME.getName()) ? correctedOperation.get(RUNTIME_NAME.getName()).asString() : name;
         // clone the content param, so we can modify it to our own content
-        ModelNode content = operation.require(CONTENT).clone();
+        ModelNode content = correctedOperation.require(CONTENT).clone();
 
         // Throw a specific exception if the replaced deployment doesn't already exist
         // BES 2013/10/30 -- this is pointless; the readResourceForUpdate call will throw

@@ -23,6 +23,7 @@
 package org.jboss.as.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
@@ -107,19 +108,26 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
      */
     public AbstractAttributeDefinitionBuilder(final String attributeName, final AttributeDefinition basis) {
         this.name = attributeName != null ? attributeName : basis.getName();
-        this.type = basis.getType();
         this.xmlName = basis.getXmlName();
+        this.defaultValue = basis.getDefaultValue();
+        this.type = basis.getType();
         this.allowNull = basis.isAllowNull();
         this.allowExpression = basis.isAllowExpression();
-        this.defaultValue = basis.getDefaultValue();
         this.measurementUnit = basis.getMeasurementUnit();
+        this.corrector = basis.getCorrector();
+        this.validator = basis.getValidator();
+        this.validateNull = basis.isValidatingNull();
         this.alternatives = basis.getAlternatives();
         this.requires = basis.getRequires();
-        this.validator = basis.getValidator();
+        this.attributeMarshaller = basis.getAttributeMarshaller();
+        this.resourceOnly = basis.isResourceOnly();
+        this.deprecated = basis.getDeprecationData();
+        this.nullSignficant = basis.getNilSignificant();
+        List<AccessConstraintDefinition> acl = basis.getAccessConstraints();
+        this.accessConstraints = acl.toArray(new AccessConstraintDefinition[acl.size()]);
+        this.parser = basis.getParser();
         Set<AttributeAccess.Flag> basisFlags = basis.getFlags();
         this.flags = basisFlags.toArray(new AttributeAccess.Flag[basisFlags.size()]);
-        this.attributeMarshaller = basis.getAttributeMarshaller();
-        this.parser = basis.getParser();
     }
 
     /**
@@ -139,6 +147,16 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
      */
     public BUILDER setXmlName(String xmlName) {
         this.xmlName = xmlName == null ? this.name : xmlName;
+        return (BUILDER) this;
+    }
+
+    /**
+     * Sets the {@link AttributeDefinition#getType() type} for the attribute.
+     * @param type the type. {@code null} is not allow
+     * @return a builder that can be used to continue building the attribute definition
+     */
+    public BUILDER setType(ModelType type) {
+        this.type = type;
         return (BUILDER) this;
     }
 
@@ -474,5 +492,116 @@ public abstract class AbstractAttributeDefinitionBuilder<BUILDER extends Abstrac
     public BUILDER setNullSignficant(boolean nullSignficant) {
         this.nullSignficant = nullSignficant;
         return (BUILDER) this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public ModelType getType() {
+        return type;
+    }
+
+    public String getXmlName() {
+        return xmlName;
+    }
+
+    public boolean isAllowNull() {
+        return allowNull;
+    }
+
+    public boolean isAllowExpression() {
+        return allowExpression;
+    }
+
+    public ModelNode getDefaultValue() {
+        return defaultValue;
+    }
+
+    public MeasurementUnit getMeasurementUnit() {
+        return measurementUnit;
+    }
+
+    public String[] getAlternatives() {
+        return copyStrings(alternatives);
+    }
+
+    public String[] getRequires() {
+        return copyStrings(requires);
+    }
+
+    public ParameterCorrector getCorrector() {
+        return corrector;
+    }
+
+    public ParameterValidator getValidator() {
+        return validator;
+    }
+
+    public boolean isValidateNull() {
+        return validateNull;
+    }
+
+    public int getMinSize() {
+        return minSize;
+    }
+
+    public int getMaxSize() {
+        return maxSize;
+    }
+
+    public AttributeAccess.Flag[] getFlags() {
+        return copyFlags(flags);
+    }
+
+    public AttributeMarshaller getAttributeMarshaller() {
+        return attributeMarshaller;
+    }
+
+    public boolean isResourceOnly() {
+        return resourceOnly;
+    }
+
+    public DeprecationData getDeprecated() {
+        return deprecated;
+    }
+
+    public AccessConstraintDefinition[] getAccessConstraints() {
+        return copyConstraints(accessConstraints);
+    }
+
+    public Boolean getNullSignficant() {
+        return nullSignficant;
+    }
+
+    public AttributeParser getParser() {
+        return parser;
+    }
+
+    private String[] copyStrings(String[] toCopy) {
+        if (toCopy == null) {
+            return null;
+        }
+        String[] result = new String[toCopy.length];
+        System.arraycopy(toCopy, 0, result, 0, toCopy.length);
+        return result;
+    }
+
+    private AttributeAccess.Flag[] copyFlags(AttributeAccess.Flag[] toCopy) {
+        if (toCopy == null) {
+            return null;
+        }
+        AttributeAccess.Flag[] result = new AttributeAccess.Flag[toCopy.length];
+        System.arraycopy(toCopy, 0, result, 0, toCopy.length);
+        return result;
+    }
+
+    private AccessConstraintDefinition[] copyConstraints(AccessConstraintDefinition[] toCopy) {
+        if (toCopy == null) {
+            return null;
+        }
+        AccessConstraintDefinition[] result = new AccessConstraintDefinition[toCopy.length];
+        System.arraycopy(toCopy, 0, result, 0, toCopy.length);
+        return result;
     }
 }

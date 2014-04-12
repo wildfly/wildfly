@@ -38,7 +38,7 @@ public class StringListAttributeDefinitionUnitTestCase {
     public void testExpressions() throws OperationFailedException {
         ListAttributeDefinition ld = new StringListAttributeDefinition.Builder("test")
                 .setAllowExpression(true)
-                .setValidator(new StringLengthValidator(1, false, true))
+                .setElementValidator(new StringLengthValidator(1, false, true))
                 .build();
 
         ModelNode op = new ModelNode();

@@ -76,18 +76,19 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
 
-        // Validate op
+        // Validate op. Store any corrected values back to the op before manipulating further
+        ModelNode correctedOperation = operation.clone();
         for (AttributeDefinition def : DeploymentAttributes.FULL_REPLACE_DEPLOYMENT_ATTRIBUTES.values()) {
-            def.validateOperation(operation);
+            def.validateAndSet(operation, correctedOperation);
         }
 
         // Pull data from the op
-        final String name = DeploymentAttributes.NAME.resolveModelAttribute(context, operation).asString();
+        final String name = DeploymentAttributes.NAME.resolveModelAttribute(context, correctedOperation).asString();
         final PathElement deploymentPath = PathElement.pathElement(DEPLOYMENT, name);
-        String runtimeName = operation.hasDefined(RUNTIME_NAME)
-                ? DeploymentAttributes.RUNTIME_NAME.resolveModelAttribute(context, operation).asString() : name;
+        String runtimeName = correctedOperation.hasDefined(RUNTIME_NAME)
+                ? DeploymentAttributes.RUNTIME_NAME.resolveModelAttribute(context, correctedOperation).asString() : name;
         // clone the content param, so we can modify it to our own content
-        ModelNode content = operation.require(CONTENT).clone();
+        ModelNode content = correctedOperation.require(CONTENT).clone();
 
         // Throw a specific exception if the replaced deployment doesn't already exist
         // BES 2013/10/30 -- this is pointless; the readResourceForUpdate call will throw
@@ -127,7 +128,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
             }
             try {
                 // Store and transform operation
-                newHash = DeploymentUploadUtil.storeContentAndTransformOperation(context, operation, contentRepository);
+                newHash = DeploymentUploadUtil.storeContentAndTransformOperation(context, correctedOperation, contentRepository);
             } catch (IOException e) {
                 throw createFailureException(e.toString());
             }
@@ -144,7 +145,6 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
         }
 
         // Store state to the model
-        //deploymentModel.get(NAME).set(name);  Already there
         deploymentModel.get(RUNTIME_NAME).set(runtimeName);
         deploymentModel.get(CONTENT).set(content);
 

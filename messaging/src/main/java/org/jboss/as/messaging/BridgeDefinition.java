@@ -56,7 +56,7 @@ public class BridgeDefinition extends SimpleResourceDefinition {
     public static final PrimitiveListAttributeDefinition CONNECTOR_REFS = PrimitiveListAttributeDefinition.Builder.of(STATIC_CONNECTORS, STRING)
             .setAllowNull(true)
             .setAlternatives(CommonAttributes.DISCOVERY_GROUP_NAME)
-            .setValidator(new StringLengthValidator(1))
+            .setElementValidator(new StringLengthValidator(1))
             .setXmlName(CONNECTOR_REF_STRING)
             .setAttributeMarshaller(new AttributeMarshallers.WrappedListAttributeMarshaller(STATIC_CONNECTORS))
             .setRestartAllServices()

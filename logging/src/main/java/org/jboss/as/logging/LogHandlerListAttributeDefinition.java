@@ -25,20 +25,13 @@ package org.jboss.as.logging;
 import java.util.Collections;
 import java.util.Set;
 
-import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
-import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.AttributeParser;
-import org.jboss.as.controller.DeprecationData;
+import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.logging.resolvers.HandlerResolver;
 import org.jboss.as.logging.resolvers.ModelNodeResolver;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 import org.jboss.logmanager.config.PropertyConfigurable;
 
 /**
@@ -50,16 +43,9 @@ public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefini
     private final String propertyName;
     private final HandlerResolver resolver = HandlerResolver.INSTANCE;
 
-    LogHandlerListAttributeDefinition(final String name, final String xmlName, final String propertyName, final AttributeDefinition valueType,
-                                      final boolean allowNull, final int minSize, final int maxSize, final String[] alternatives, final String[] requires,
-                                      final AttributeMarshaller attributeMarshaller, final boolean resourceOnly,final DeprecationData deprecationData,
-                                      final AccessConstraintDefinition[] accessConstraints,
-                                      final Boolean nilSignificant,
-                                      final AttributeParser parser,
-                                      final AttributeAccess.Flag... flags) {
-        super(name, xmlName, valueType,allowNull, minSize, maxSize,  alternatives, requires, attributeMarshaller,
-                resourceOnly, deprecationData, accessConstraints, nilSignificant, parser, flags);
-        this.propertyName = propertyName;
+    private LogHandlerListAttributeDefinition(Builder builder) {
+        super(builder, CommonAttributes.HANDLER);
+        this.propertyName = builder.propertyName;
     }
 
     @Override
@@ -87,13 +73,14 @@ public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefini
         throw LoggingMessages.MESSAGES.unsupportedMethod("setPropertyValue", getClass().getName());
     }
 
-    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, LogHandlerListAttributeDefinition> {
+    public static class Builder extends ListAttributeDefinition.Builder<Builder, LogHandlerListAttributeDefinition> {
 
         private String propertyName;
 
 
         Builder(final String name) {
-            super(name, ModelType.LIST);
+            super(name);
+            setElementValidator(CommonAttributes.HANDLER.getValidator());
         }
 
         /**
@@ -108,12 +95,9 @@ public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefini
         }
 
         public LogHandlerListAttributeDefinition build() {
-            if (xmlName == null) xmlName = name;
-            if (maxSize < 1) maxSize = Integer.MAX_VALUE;
             if (propertyName == null) propertyName = name;
             if (attributeMarshaller == null) attributeMarshaller = HandlersAttributeMarshaller.INSTANCE;
-            return new LogHandlerListAttributeDefinition(name, xmlName, propertyName, CommonAttributes.HANDLER, allowNull, minSize, maxSize, alternatives, requires,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, parser, flags);
+            return new LogHandlerListAttributeDefinition(this);
         }
 
         public Builder setPropertyName(final String propertyName) {

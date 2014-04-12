@@ -195,7 +195,7 @@ public interface ConnectionFactoryAttributes {
                 .setAllowNull(false)
                 .setAllowExpression(true)
                 .setRestartAllServices()
-                .setValidator(new StringLengthValidator(1, false, true))
+                .setElementValidator(new StringLengthValidator(1, false, true))
                 .setAttributeMarshaller(new AttributeMarshallers.JndiEntriesAttributeMarshaller(false))
                 .build();
 

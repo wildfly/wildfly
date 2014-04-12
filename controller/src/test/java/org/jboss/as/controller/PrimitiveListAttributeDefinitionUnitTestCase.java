@@ -50,7 +50,7 @@ public class PrimitiveListAttributeDefinitionUnitTestCase {
 
         PrimitiveListAttributeDefinition ld = PrimitiveListAttributeDefinition.Builder.of("test", ModelType.INT)
                 .setAllowExpression(true)
-                .setValidator(new IntRangeValidator(1, false, true))
+                .setElementValidator(new IntRangeValidator(1, false, true))
                 .build();
 
         ModelNode op = new ModelNode();
@@ -67,7 +67,7 @@ public class PrimitiveListAttributeDefinitionUnitTestCase {
 
         ld = PrimitiveListAttributeDefinition.Builder.of("test", ModelType.PROPERTY)
                 .setAllowExpression(true)
-                .setValidator(new ModelTypeValidator(ModelType.PROPERTY, false, true))
+                .setElementValidator(new ModelTypeValidator(ModelType.PROPERTY, false, true))
                 .build();
 
         op = new ModelNode();
@@ -92,7 +92,7 @@ public class PrimitiveListAttributeDefinitionUnitTestCase {
     @Test
     public void testBuilderCopyPreservesElementValidator() throws OperationFailedException {
         PrimitiveListAttributeDefinition original = PrimitiveListAttributeDefinition.Builder.of("test", ModelType.STRING)
-                .setValidator(new StringLengthValidator(1))
+                .setElementValidator(new StringLengthValidator(1))
                 .build();
 
         // will use the same validator than original
@@ -105,7 +105,7 @@ public class PrimitiveListAttributeDefinitionUnitTestCase {
         PrimitiveListAttributeDefinition copyWithOtherValidator = new PrimitiveListAttributeDefinition.Builder(original)
                 // add a flag to distinguish the copy from the original
                 .setFlags(RESTART_ALL_SERVICES)
-                .setValidator(new StringLengthValidator(Integer.MAX_VALUE))
+                .setElementValidator(new StringLengthValidator(Integer.MAX_VALUE))
                 .build();
 
         assertFalse(original.getFlags().contains(RESTART_ALL_SERVICES));

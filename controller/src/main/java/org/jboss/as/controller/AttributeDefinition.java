@@ -40,8 +40,10 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.AllowedValuesValidator;
 import org.jboss.as.controller.operations.validation.MinMaxValidator;
+import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.NillableOrExpressionParameterValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
+import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -50,7 +52,7 @@ import org.jboss.dmr.ModelType;
 /**
  * Defining characteristics of an attribute in a {@link org.jboss.as.controller.registry.Resource} or a
  * parameter or reply value type field in an {@link org.jboss.as.controller.OperationDefinition}, with utility
- * methods for conversion to and from xml and for validation.
+ * methods for validation.
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
@@ -70,6 +72,7 @@ public abstract class AttributeDefinition {
     private final String[] requires;
     private final ParameterCorrector valueCorrector;
     private final ParameterValidator validator;
+    private final boolean validateNull;
     private final EnumSet<AttributeAccess.Flag> flags;
     protected final AttributeMarshaller attributeMarshaller;
     private final boolean resourceOnly;
@@ -78,7 +81,14 @@ public abstract class AttributeDefinition {
     private final Boolean nilSignificant;
     private final AttributeParser parser;
 
+    // NOTE: Standards for creating a constructor variant are:
+    // 1) Expected to be a common use case; no one-offs.
+    // 2) Max 4 parameters, or 5 only if the fifth is "AttributeAccess.Flag... flags"
+    // 3) No single type appears twice in the param list. Hence no allowNull, allowExpressions variants
+    //
+    // All other use cases should use the constructor that takes a builder
 
+    @Deprecated
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                final ParameterValidator validator, final String[] alternatives, final String[] requires,
@@ -98,6 +108,7 @@ public abstract class AttributeDefinition {
                 null, null, AttributeParser.SIMPLE, flags);
     }
 
+    @Deprecated
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                   final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                   final ParameterCorrector valueCorrector, final ParameterValidator validator,
@@ -109,6 +120,16 @@ public abstract class AttributeDefinition {
                 accessConstraints, null, AttributeParser.SIMPLE, flags);
     }
 
+    protected AttributeDefinition(AbstractAttributeDefinitionBuilder<?, ?> toCopy) {
+        this(toCopy.getName(), toCopy.getXmlName(), toCopy.getDefaultValue(), toCopy.getType(),
+                toCopy.isAllowNull(), toCopy.isAllowExpression(), toCopy.getMeasurementUnit(), toCopy.getCorrector(),
+                wrapValidator(toCopy.getValidator(), toCopy.isAllowNull(), toCopy.isValidateNull(), toCopy.isAllowExpression(), toCopy.getType()),
+                toCopy.isValidateNull(), toCopy.getAlternatives(), toCopy.getRequires(), toCopy.getAttributeMarshaller(),
+                toCopy.isResourceOnly(), toCopy.getDeprecated(),
+                wrapConstraints(toCopy.getAccessConstraints()), toCopy.getNullSignficant(), toCopy.getParser(),
+                wrapFlags(toCopy.getFlags()));
+    }
+
     protected AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                   final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                   final ParameterCorrector valueCorrector, final ParameterValidator validator,
@@ -116,8 +137,67 @@ public abstract class AttributeDefinition {
                                   boolean resourceOnly, DeprecationData deprecationData, final AccessConstraintDefinition[] accessConstraints,
                                   Boolean nilSignificant, AttributeParser parser, final AttributeAccess.Flag... flags) {
 
+        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, valueCorrector,
+                wrapValidator(validator, allowNull, validateNull, allowExpression, type), validateNull, alternatives, requires,
+                attributeMarshaller, resourceOnly, deprecationData, wrapConstraints(accessConstraints),
+                nilSignificant, parser, wrapFlags(flags));
+    }
+
+    private static ParameterValidator wrapValidator(ParameterValidator toWrap, boolean allowNull,
+                                                    boolean validateNull, boolean allowExpression, ModelType type) {
+        NillableOrExpressionParameterValidator result = null;
+        if (toWrap == null) {
+            if (type == ModelType.STRING) {
+                toWrap = new StringLengthValidator(1, Integer.MAX_VALUE, allowNull, allowExpression);
+            } else {
+                toWrap = new ModelTypeValidator(type);
+            }
+        } else if (toWrap instanceof NillableOrExpressionParameterValidator) {
+            // Avoid re-wrapping
+            NillableOrExpressionParameterValidator current = (NillableOrExpressionParameterValidator) toWrap;
+            if (allowExpression == current.isAllowExpression() &&
+                    (!validateNull && current.getAllowNull() == null
+                        || allowNull == current.getAllowNull())) {
+                result = current;
+            } else {
+                toWrap = current.getDelegate();
+            }
+        }
+        if (result == null) {
+            Boolean nullCheck = validateNull ? allowNull : null;
+            result = new NillableOrExpressionParameterValidator(toWrap, nullCheck, allowExpression);
+        }
+
+        return result;
+    }
+
+    private static List<AccessConstraintDefinition> wrapConstraints(AccessConstraintDefinition[] accessConstraints) {
+        if (accessConstraints == null) {
+            return Collections.<AccessConstraintDefinition>emptyList();
+        } else {
+            return Collections.unmodifiableList(Arrays.asList(accessConstraints));
+        }
+    }
+
+    private static EnumSet<AttributeAccess.Flag> wrapFlags(AttributeAccess.Flag[] flags) {
+        if (flags == null || flags.length == 0) {
+            return EnumSet.noneOf(AttributeAccess.Flag.class);
+        } else if (flags.length == 1) {
+            return EnumSet.of(flags[0]);
+        } else {
+            return EnumSet.of(flags[0], flags);
+        }
+    }
+
+    private AttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
+                                final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
+                                final ParameterCorrector valueCorrector, final ParameterValidator validator, final boolean validateNull,
+                                final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
+                                boolean resourceOnly, DeprecationData deprecationData, final List<AccessConstraintDefinition> accessConstraints,
+                                Boolean nilSignificant, AttributeParser parser, final EnumSet<AttributeAccess.Flag> flags) {
+
         this.name = name;
-        this.xmlName = xmlName;
+        this.xmlName = xmlName == null ? name : xmlName;
         this.type = type;
         this.allowNull = allowNull;
         this.allowExpression = allowExpression;
@@ -131,30 +211,16 @@ public abstract class AttributeDefinition {
         this.alternatives = alternatives;
         this.requires = requires;
         this.valueCorrector = valueCorrector;
-        if (validator == null) {
-            this.validator = null;
-        } else {
-            Boolean nullCheck = validateNull ? allowNull : null;
-            this.validator = new NillableOrExpressionParameterValidator(validator, nullCheck, allowExpression);
-        }
-        if (flags == null || flags.length == 0) {
-            this.flags = EnumSet.noneOf(AttributeAccess.Flag.class);
-        } else if (flags.length == 1) {
-            this.flags = EnumSet.of(flags[0]);
-        } else {
-            this.flags = EnumSet.of(flags[0], flags);
-        }
+        this.validator = validator;
+        this.validateNull = validateNull;
+        this.flags = flags;
         if (attributeMarshaller != null) {
             this.attributeMarshaller = attributeMarshaller;
         } else {
             this.attributeMarshaller = new DefaultAttributeMarshaller();
         }
         this.resourceOnly = resourceOnly;
-        if (accessConstraints == null) {
-            this.accessConstraints = Collections.<AccessConstraintDefinition>emptyList();
-        } else {
-            this.accessConstraints = Collections.unmodifiableList(Arrays.asList(accessConstraints));
-        }
+        this.accessConstraints = accessConstraints;
         this.deprecationData = deprecationData;
         this.nilSignificant = nilSignificant;
     }
@@ -216,6 +282,16 @@ public abstract class AttributeDefinition {
     }
 
     /**
+     * Expose the raw value to {@link org.jboss.as.controller.AbstractAttributeDefinitionBuilder}
+     * @return  the raw value
+     *
+     * @see #isNullSignificant()
+     */
+    Boolean getNilSignificant() {
+        return nilSignificant;
+    }
+
+    /**
      * Whether a {@link org.jboss.dmr.ModelNode} holding the value of this attribute can be
      * {@link org.jboss.dmr.ModelType#EXPRESSION}.
      *
@@ -244,12 +320,35 @@ public abstract class AttributeDefinition {
     }
 
     /**
+     * Gets the corrector used to correct values before checking that they comply with the attribute's definition.
+     *
+     * @return the corrector. May be {@code null}
+     */
+    public ParameterCorrector getCorrector() {
+        return valueCorrector;
+    }
+
+    /**
      * Gets the validator used to validate that values comply with the attribute's definition.
      *
      * @return the validator. Will not be {@code null}
      */
     public ParameterValidator getValidator() {
         return validator;
+    }
+
+    /**
+     * Gets whether the attribute definition should check for {@link org.jboss.dmr.ModelNode#isDefined() undefined} values if
+     * {@link #isAllowNull() null is not allowed} in addition to any validation provided by any
+     * {@link #getValidator() configured validator}. The use
+     * case for setting this to {@code false} would be to ignore undefined values in the basic validation performed
+     * by the {@code AttributeDefinition} and instead let operation handlers validate using more complex logic
+     * (e.g. checking for {@link #getAlternatives() alternatives}.
+     *
+     * @return {@code true} if validation will ignore undefined values.
+     */
+    public boolean isValidatingNull() {
+        return validateNull;
     }
 
     /**
@@ -657,7 +756,9 @@ public abstract class AttributeDefinition {
         }
         result.get(ModelDescriptionConstants.NILLABLE).set(isAllowNull());
         if (!forOperation && nilSignificant != null) {
-            result.get(ModelDescriptionConstants.NIL_SIGNIFICANT).set(nilSignificant);
+            if (nilSignificant) {
+                result.get(ModelDescriptionConstants.NIL_SIGNIFICANT).set(true);
+            }
         }
         if (defaultValue != null && defaultValue.isDefined()) {
             result.get(ModelDescriptionConstants.DEFAULT).set(defaultValue);
@@ -797,13 +898,12 @@ public abstract class AttributeDefinition {
 
         if (!immutableValue) {
             node = convertParameterExpressions(node);
+            node = correctValue(node, node);
         }
 
         if (!node.isDefined() && defaultValue.isDefined()) {
-            if (!immutableValue) correctValue(node, node);
             validator.validateParameter(name, defaultValue);
         } else {
-            if (!immutableValue) correctValue(node, node);
             validator.validateParameter(name, node);
         }
 

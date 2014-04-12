@@ -24,17 +24,10 @@ package org.jboss.as.logging;
 
 import org.jboss.as.controller.AbstractAttributeDefinitionBuilder;
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.AttributeMarshaller;
-import org.jboss.as.controller.AttributeParser;
-import org.jboss.as.controller.DeprecationData;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller.ParameterCorrector;
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.ObjectTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.logging.resolvers.ModelNodeResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -49,16 +42,10 @@ public class PropertyObjectTypeAttributeDefinition extends ObjectTypeAttributeDe
     private final ModelNodeResolver<String> resolver;
     private final String propertyName;
 
-    private PropertyObjectTypeAttributeDefinition(final String name, final String xmlName, final String propertyName, final String suffix,
-                                                  final AttributeDefinition[] valueTypes, final boolean allowNull, final ModelNodeResolver<String> resolver,
-                                                  final ParameterValidator validator, final ParameterCorrector corrector, final String[] alternatives, final String[] requires,
-                                                  final AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecationData,
-                                                  final AccessConstraintDefinition[] accessConstraints,
-                                                  final Boolean nullSignificant, final AttributeParser parser, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, suffix, valueTypes, allowNull, validator, corrector, alternatives, requires, attributeMarshaller,
-                resourceOnly, deprecationData, accessConstraints, nullSignificant, parser, flags);
-        this.propertyName = propertyName;
-        this.resolver = resolver;
+    private PropertyObjectTypeAttributeDefinition(final Builder builder) {
+        super(builder, builder.suffix, builder.valueTypes);
+        this.propertyName = builder.propertyName;
+        this.resolver = builder.resolver;
     }
 
     @Override
@@ -111,13 +98,10 @@ public class PropertyObjectTypeAttributeDefinition extends ObjectTypeAttributeDe
         }
 
         public PropertyObjectTypeAttributeDefinition build() {
-            if (xmlName == null) xmlName = name;
-            ParameterValidator validator = this.validator;
             if (validator == null) {
                 validator = new ObjectTypeValidator(allowNull, valueTypes);
             }
-            return new PropertyObjectTypeAttributeDefinition(name, xmlName, propertyName, suffix, valueTypes, allowNull, resolver, validator, corrector, alternatives, requires,
-                        attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, parser, flags);
+            return new PropertyObjectTypeAttributeDefinition(this);
         }
 
         public Builder setSuffix(final String suffix) {

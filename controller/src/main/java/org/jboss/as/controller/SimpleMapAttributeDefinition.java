@@ -33,12 +33,9 @@ import java.util.ResourceBundle;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
-import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -51,13 +48,8 @@ import org.jboss.dmr.Property;
  */
 public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
 
-    private SimpleMapAttributeDefinition(final String name, final String xmlName, final boolean allowNull, boolean allowExpression,
-                                         final int minSize, final int maxSize, final ParameterCorrector corrector, final ParameterValidator elementValidator,
-                                         final String[] alternatives, final String[] requires, final AttributeMarshaller attributeMarshaller,final boolean resourceOnly,
-                                         final DeprecationData deprecated, final AccessConstraintDefinition[] accessConstraints,
-                                         final Boolean nullSignificant, final AttributeParser parser, final AttributeAccess.Flag... flags) {
-        super(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, elementValidator, alternatives,
-                requires, attributeMarshaller, resourceOnly,deprecated, accessConstraints, nullSignificant, parser, flags);
+    private SimpleMapAttributeDefinition(final Builder builder) {
+        super(builder);
     }
 
     @Override
@@ -103,9 +95,9 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
         }
     }
 
-    public static final class Builder extends AbstractAttributeDefinitionBuilder<Builder, SimpleMapAttributeDefinition> {
+    public static final class Builder extends MapAttributeDefinition.Builder<Builder, SimpleMapAttributeDefinition> {
         public Builder(final String name, boolean allowNull) {
-            super(name, ModelType.OBJECT, allowNull);
+            super(name, allowNull);
         }
 
         public Builder(final SimpleMapAttributeDefinition basis) {
@@ -118,14 +110,13 @@ public class SimpleMapAttributeDefinition extends MapAttributeDefinition {
 
         @Override
         public SimpleMapAttributeDefinition build() {
-            if (validator == null) {
-                validator = new ModelTypeValidator(ModelType.STRING, allowNull, allowExpression);
+            if (elementValidator == null) {
+                elementValidator = new ModelTypeValidator(ModelType.STRING, allowNull, allowExpression);
             }
             if (attributeMarshaller == null) {
                 attributeMarshaller = new MapAttributeMarshaller();
             }
-            return new SimpleMapAttributeDefinition(name, xmlName, allowNull, allowExpression, minSize, maxSize, corrector, validator, alternatives, requires,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, parser, flags);
+            return new SimpleMapAttributeDefinition(this);
         }
     }
 }

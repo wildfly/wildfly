@@ -36,7 +36,6 @@ import org.jboss.as.controller.operations.validation.MinMaxValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
 
 /**
  * Date: 13.10.2011
@@ -48,7 +47,11 @@ import org.jboss.dmr.ModelType;
 public class SimpleListAttributeDefinition extends ListAttributeDefinition {
     private final AttributeDefinition valueType;
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleListAttributeDefinition.Builder builder}
+     */
     @Deprecated
+    @SuppressWarnings("deprecation")
     protected SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType,
                                             final boolean allowNull, final int minSize, final int maxSize,
                                             final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
@@ -58,6 +61,11 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
                 attributeMarshaller, resourceOnly, deprecated, accessConstraints, null, null, flags);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleListAttributeDefinition.Builder builder}
+     */
+    @Deprecated
+    @SuppressWarnings("deprecation")
     protected SimpleListAttributeDefinition(final String name, final String xmlName, final AttributeDefinition valueType,
                                             final boolean allowNull, final int minSize, final int maxSize,
                                             final String[] alternatives, final String[] requires, AttributeMarshaller attributeMarshaller,
@@ -69,6 +77,12 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
                 attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser, flags);
         this.valueType = valueType;
     }
+
+    protected SimpleListAttributeDefinition(final ListAttributeDefinition.Builder builder, AttributeDefinition valueType) {
+        super(builder);
+        this.valueType = valueType;
+    }
+
 
     public AttributeDefinition getValueType() {
         return valueType;
@@ -198,18 +212,20 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         return result;
     }
 
-    public static class Builder extends AbstractAttributeDefinitionBuilder<Builder,SimpleListAttributeDefinition>{
+    public static class Builder extends ListAttributeDefinition.Builder<Builder,SimpleListAttributeDefinition>{
         private final AttributeDefinition valueType;
         private boolean wrapXmlList = true;
 
         public Builder(final String name, final AttributeDefinition valueType) {
-            super(name, ModelType.LIST);
+            super(name);
             this.valueType = valueType;
+            setElementValidator(valueType.getValidator());
         }
 
         public Builder(final SimpleListAttributeDefinition basis) {
             super(basis);
             valueType = basis.getValueType();
+            setElementValidator(valueType.getValidator());
         }
 
         public static Builder of(final String name, final AttributeDefinition valueType) {
@@ -222,8 +238,6 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
         }
 
         public SimpleListAttributeDefinition build() {
-            if (xmlName == null) xmlName = name;
-            if (maxSize < 1) maxSize = Integer.MAX_VALUE;
             if (attributeMarshaller == null) {
                 final boolean wrap = wrapXmlList;
                 attributeMarshaller = new AttributeMarshaller() {
@@ -243,8 +257,7 @@ public class SimpleListAttributeDefinition extends ListAttributeDefinition {
                     }
                 };
             }
-            return new SimpleListAttributeDefinition(name, xmlName, valueType, allowNull, minSize, maxSize, alternatives, requires,
-                    attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignficant, parser, flags);
+            return new SimpleListAttributeDefinition(this, valueType);
         }
 
         /*

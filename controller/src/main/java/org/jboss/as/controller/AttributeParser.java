@@ -27,6 +27,7 @@ package org.jboss.as.controller;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -123,7 +124,16 @@ public abstract class AttributeParser {
             node = new ModelNode();
         }
 
-        attribute.getValidator().validateParameter(attribute.getXmlName(), node);
+        final ParameterValidator validator;
+        // A bit yuck, but I didn't want to introduce a new type just for this
+        if (attribute instanceof ListAttributeDefinition) {
+            validator = ((ListAttributeDefinition) attribute).getElementValidator();
+        } else if (attribute instanceof MapAttributeDefinition) {
+            validator = ((MapAttributeDefinition) attribute).getElementValidator();
+        } else {
+            validator = attribute.getValidator();
+        }
+        validator.validateParameter(attribute.getXmlName(), node);
 
         return node;
     }
@@ -136,7 +146,6 @@ public abstract class AttributeParser {
         public void parseAndSetParameter(AttributeDefinition attribute, String value, ModelNode operation, XMLStreamReader reader) throws XMLStreamException {
             ModelNode paramVal = parse(attribute, value, reader);
             operation.get(attribute.getName()).add(paramVal);
-            super.parseAndSetParameter(attribute, value, operation, reader);
         }
     };
 

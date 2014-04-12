@@ -38,9 +38,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.ParameterCorrector;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
@@ -238,7 +240,12 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
 
     @Deprecated
     private static AttributeDefinition createNestedComplexType(final String name) {
-        return new AttributeDefinition(name, name, null, ModelType.OBJECT, true, false, MeasurementUnit.NONE, createNestedParamValidator(), ALTERNATIVES_ANY, null, AttributeAccess.Flag.RESTART_ALL_SERVICES) {
+        return new AttributeDefinition(name, name, null, ModelType.OBJECT,
+                true, false, MeasurementUnit.NONE,
+                (ParameterCorrector) null, createNestedParamValidator(), true,
+                ALTERNATIVES_ANY, (String[]) null, (AttributeMarshaller) null,
+                false, null, null, (Boolean) null,  null,
+                AttributeAccess.Flag.RESTART_ALL_SERVICES) {
 
             @Override
             public ModelNode addResourceAttributeDescription(final ResourceBundle bundle, final String prefix, final ModelNode resourceDescription) {

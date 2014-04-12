@@ -28,9 +28,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
-import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.dmr.ModelNode;
@@ -46,81 +44,212 @@ import org.jboss.dmr.ModelType;
  */
 public class SimpleAttributeDefinition extends AttributeDefinition {
 
+    // NOTE: Standards for creating a constructor variant are:
+    // 1) Expected to be a common use case; no one-offs.
+    // 2) Max 4 parameters, or 5 only if the fifth is "AttributeAccess.Flag... flags"
+    // 3) No single type appears twice in the param list. Hence no allowNull, allowExpressions variants
+    //
+    // All other use cases should use the constructor that takes a builder
+
+
+    /**
+     * Creates a new attribute definition.
+     *
+     * @param name the name of the attribute. Cannot be {@code null}
+     * @param type the type of the attribute value. Cannot be {@code null}
+     * @param allowNull {@code true} if {@link org.jboss.dmr.ModelType#UNDEFINED} is a valid type for the value
+     */
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull) {
-        this(name, name, null, type, allowNull, false, null);
+        super(name, name, null, type, allowNull, false, (MeasurementUnit) null,
+                (ParameterCorrector) null, (ParameterValidator) null, true, (String[]) null, (String[]) null,
+                (AttributeMarshaller) null, false, (DeprecationData) null, (AccessConstraintDefinition[]) null,
+                (Boolean) null, (AttributeParser) null);
     }
 
+    /**
+     * Creates a new attribute definition.
+     *
+     * @param name the name of the attribute. Cannot be {@code null}
+     * @param type the type of the attribute value. Cannot be {@code null}
+     * @param allowNull {@code true} if {@link org.jboss.dmr.ModelType#UNDEFINED} is a valid type for the value
+     * @param flags any flags to indicate special characteristics of the attribute
+     */
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull, final AttributeAccess.Flag... flags) {
-        this(name, name, null, type, allowNull, false, null, flags);
+        super(name, name, null, type, allowNull, false, (MeasurementUnit) null,
+                (ParameterCorrector) null, (ParameterValidator) null, true, (String[]) null, (String[]) null,
+                (AttributeMarshaller) null, false, (DeprecationData) null, (AccessConstraintDefinition[]) null,
+                (Boolean) null, (AttributeParser) null, flags);
     }
 
+    /**
+     * Creates a new attribute definition.
+     *
+     * @param name the name of the attribute. Cannot be {@code null}
+     * @param type the type of the attribute value. Cannot be {@code null}
+     * @param allowNull {@code true} if {@link org.jboss.dmr.ModelType#UNDEFINED} is a valid type for the value
+     * @param measurementUnit a measurement unit for the attribute's value. Can be {@code null}
+     */
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull, final MeasurementUnit measurementUnit) {
-        this(name, name, null, type, allowNull, false, measurementUnit);
+        super(name, name, null, type, allowNull, false, measurementUnit,
+                (ParameterCorrector) null, (ParameterValidator) null, true, (String[]) null, (String[]) null,
+                (AttributeMarshaller) null, false, (DeprecationData) null, (AccessConstraintDefinition[]) null,
+                (Boolean) null, (AttributeParser) null);
     }
 
+    /**
+     * Creates a new attribute definition.
+     *
+     * @param name the name of the attribute. Cannot be {@code null}
+     * @param type the type of the attribute value. Cannot be {@code null}
+     * @param allowNull {@code true} if {@link org.jboss.dmr.ModelType#UNDEFINED} is a valid type for the value
+     * @param measurementUnit a measurement unit for the attribute's value. Can be {@code null}
+     * @param flags any flags to indicate special characteristics of the attribute
+     */
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull,
                                      final MeasurementUnit measurementUnit, final AttributeAccess.Flag... flags) {
-        this(name, name, null, type, allowNull, false, measurementUnit, flags);
+        super(name, name, null, type, allowNull, false, measurementUnit,
+                (ParameterCorrector) null, (ParameterValidator) null, true, (String[]) null, (String[]) null,
+                (AttributeMarshaller) null, false, (DeprecationData) null, (AccessConstraintDefinition[]) null,
+                (Boolean) null, (AttributeParser) null, flags);
     }
 
+    /**
+     * Creates a new attribute definition.
+     *
+     * @param name the name of the attribute. Cannot be {@code null}
+     * @param defaultValue a default value to use for the attribute if none is specified by the user. Can be {@code null}
+     * @param type the type of the attribute value. Cannot be {@code null}
+     * @param allowNull {@code true} if {@link org.jboss.dmr.ModelType#UNDEFINED} is a valid type for the value
+     */
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull) {
-        this(name, name, defaultValue, type, allowNull, false, null);
+        super(name, name, defaultValue, type, allowNull, false, (MeasurementUnit) null,
+                (ParameterCorrector) null, (ParameterValidator) null, true, (String[]) null, (String[]) null,
+                (AttributeMarshaller) null, false, (DeprecationData) null, (AccessConstraintDefinition[]) null,
+                (Boolean) null, (AttributeParser) null);
     }
 
+    /**
+     * Creates a new attribute definition.
+     *
+     * @param name the name of the attribute. Cannot be {@code null}
+     * @param defaultValue a default value to use for the attribute if none is specified by the user. Can be {@code null}
+     * @param type the type of the attribute value. Cannot be {@code null}
+     * @param allowNull {@code true} if {@link org.jboss.dmr.ModelType#UNDEFINED} is a valid type for the value
+     * @param flags any flags to indicate special characteristics of the attribute
+     */
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final AttributeAccess.Flag... flags) {
-        this(name, name, defaultValue, type, allowNull, false, null, flags);
+        super(name, name, defaultValue, type, allowNull, false, (MeasurementUnit) null,
+                (ParameterCorrector) null, (ParameterValidator) null, true, (String[]) null, (String[]) null,
+                (AttributeMarshaller) null, false, (DeprecationData) null, (AccessConstraintDefinition[]) null,
+                (Boolean) null, (AttributeParser) null, flags);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
+    @Deprecated
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull, final MeasurementUnit measurementUnit) {
-        this(name, name, defaultValue, type, allowNull, false, measurementUnit);
+        super(name, name, defaultValue, type, allowNull, false, measurementUnit,
+                (ParameterCorrector) null, (ParameterValidator) null, true, (String[]) null, (String[]) null,
+                (AttributeMarshaller) null, false, (DeprecationData) null, (AccessConstraintDefinition[]) null,
+                (Boolean) null, (AttributeParser) null);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
+    @Deprecated
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type, final boolean allowNull,
                                      final MeasurementUnit measurementUnit, final AttributeAccess.Flag... flags) {
-        this(name, name, defaultValue, type, allowNull, false, measurementUnit, flags);
+        super(name, name, defaultValue, type, allowNull, false, measurementUnit,
+                (ParameterCorrector) null, (ParameterValidator) null, true, (String[]) null, (String[]) null,
+                (AttributeMarshaller) null, false, (DeprecationData) null, (AccessConstraintDefinition[]) null,
+                (Boolean) null, (AttributeParser) null, flags);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
+    @Deprecated
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, (ParameterValidator) null, null, null);
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                (ParameterCorrector) null, (ParameterValidator) null, true, (String[]) null, (String[]) null, (AttributeMarshaller) null,
+                false, (DeprecationData) null, (AccessConstraintDefinition[]) null, (Boolean) null,
+                (AttributeParser) null);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
+    @Deprecated
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final AttributeAccess.Flag... flags) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                null, null, null, flags);
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                (ParameterCorrector) null, (ParameterValidator) null, true,
+                (String[]) null, (String[]) null, (AttributeMarshaller) null,
+                false, (DeprecationData) null, (AccessConstraintDefinition[]) null, (Boolean) null,
+                (AttributeParser) null, flags);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
+    @Deprecated
     public SimpleAttributeDefinition(final String name, final String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterValidator validator) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, validator, null, null);
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                (ParameterCorrector) null, validator, true,
+                (String[]) null, (String[]) null, (AttributeMarshaller) null,
+                false, (DeprecationData) null, (AccessConstraintDefinition[]) null, (Boolean) null,
+                (AttributeParser) null);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
+    @Deprecated
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterValidator validator, String[] alternatives, String[] requires, AttributeAccess.Flag... flags) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit, null,
-                createParameterValidator(validator, type, allowNull, allowExpression), true, alternatives, requires, flags);
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                (ParameterCorrector) null, validator, true, alternatives, requires,
+                (AttributeMarshaller) null, false, (DeprecationData) null, (AccessConstraintDefinition[]) null,
+                (Boolean) null, (AttributeParser) null, flags);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
+    @Deprecated
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterCorrector corrector, final ParameterValidator validator,
                                      boolean validateNull, String[] alternatives, String[] requires, AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, null, false, null, null, flags);
+                corrector, validator, validateNull,
+                alternatives, requires, null, false, null, null, null, null, flags);
     }
+
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
     @Deprecated
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterCorrector corrector, final ParameterValidator validator,
                                      boolean validateNull, String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller, final boolean resourceOnly, final DeprecationData deprecated, AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires, attributeMarshaller, resourceOnly, deprecated, null, flags);
+                corrector, validator, validateNull,
+                alternatives, requires, attributeMarshaller, resourceOnly, deprecated, null, null, null, flags);
     }
+
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
     @Deprecated
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
             final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
@@ -128,22 +257,37 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
             boolean validateNull, String[] alternatives, String[] requires, AttributeMarshaller attributeMarshaller,
             final boolean resourceOnly, final DeprecationData deprecated,
             final AccessConstraintDefinition[] accessConstraints, final AttributeAccess.Flag... flags) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires,
-                attributeMarshaller, resourceOnly, deprecated, accessConstraints,null,AttributeParser.SIMPLE, flags);
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                corrector, validator, validateNull, alternatives, requires,
+                attributeMarshaller, resourceOnly, deprecated, accessConstraints, (Boolean) null, (AttributeParser) null, flags);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
     @Deprecated
     public SimpleAttributeDefinition(final String name, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final String[] alternatives) {
-        this(name, name, defaultValue, type, allowNull, false, MeasurementUnit.NONE, null, alternatives, null);
+        super(name, name, defaultValue, type, allowNull, false, (MeasurementUnit) null,
+                (ParameterCorrector) null, (ParameterValidator) null, true,
+                alternatives, (String[]) null, (AttributeMarshaller) null,
+                false, (DeprecationData) null, (AccessConstraintDefinition[]) null, (Boolean) null,
+                (AttributeParser) null);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
     @Deprecated
     public SimpleAttributeDefinition(final String name, final ModelType type, final boolean allowNull, ParameterCorrector corrector, ParameterValidator validator) {
-        this(name, name, null, type, allowNull, false, MeasurementUnit.NONE, corrector, validator, true, null, null);
+        super(name, name, null, type, allowNull, false, MeasurementUnit.NONE, corrector, validator, true, null, null,
+                null, false, null, null, null, (AttributeParser) null);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
+    @Deprecated
     public SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterCorrector corrector, final ParameterValidator validator,
@@ -151,11 +295,15 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
                                      final boolean resourceOnly, final DeprecationData deprecated,
                                      final AccessConstraintDefinition[] accessConstraints, final Boolean nullSignificant,
                                      final AttributeAccess.Flag... flags) {
-        this(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires,
+        super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
+                corrector, validator, validateNull, alternatives, requires,
                 attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, null, flags);
     }
 
+    /**
+     * @deprecated use a {@link org.jboss.as.controller.SimpleAttributeDefinitionBuilder SimpleAttributeDefinitionBuilder}
+     */
+    @Deprecated
     protected SimpleAttributeDefinition(String name, String xmlName, final ModelNode defaultValue, final ModelType type,
                                      final boolean allowNull, final boolean allowExpression, final MeasurementUnit measurementUnit,
                                      final ParameterCorrector corrector, final ParameterValidator validator,
@@ -166,18 +314,12 @@ public class SimpleAttributeDefinition extends AttributeDefinition {
                                      final AttributeParser parser,
                                      final AttributeAccess.Flag... flags) {
         super(name, xmlName, defaultValue, type, allowNull, allowExpression, measurementUnit,
-                corrector, createParameterValidator(validator, type, allowNull, allowExpression), validateNull, alternatives, requires,
+                corrector, validator, validateNull, alternatives, requires,
                 attributeMarshaller, resourceOnly, deprecated, accessConstraints, nullSignificant, parser, flags);
     }
 
-    private static ParameterValidator createParameterValidator(final ParameterValidator existing, final ModelType type,final boolean allowNull, final boolean allowExpression) {
-        if (existing != null) {
-            return existing;
-        } else if (type == ModelType.STRING) {
-            return new StringLengthValidator(1, Integer.MAX_VALUE, allowNull, allowExpression);
-        } else {
-            return new ModelTypeValidator(type, allowNull, allowExpression);
-        }
+    protected SimpleAttributeDefinition(AbstractAttributeDefinitionBuilder<?, ? extends SimpleAttributeDefinition> builder) {
+        super(builder);
     }
 
     /**

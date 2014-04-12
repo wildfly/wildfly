@@ -74,24 +74,24 @@ public class DeploymentAddHandler implements OperationStepHandler {
         final Resource resource = context.createResource(PathAddress.EMPTY_ADDRESS);
         ModelNode newModel = resource.getModel();
 
+        // Store the rest of the attributes.
+        // If we correct any of them (e.g. WFLY-3184) then pass the correction on to any slaves
+        ModelNode correctedOperation = operation.clone();
         for (AttributeDefinition def : DOMAIN_ADD_ATTRIBUTES) {
-            if (!def.getName().equals(CONTENT_ALL.getName())) {
-                def.validateAndSet(operation, newModel);
-            } else {
-                //Handle content a bit differently to avoid two copies of the deployment content if bytes was used
-                def.validateOperation(operation);
-            }
+            def.validateAndSet(correctedOperation, newModel);
+            correctedOperation.get(def.getName()).set(newModel.get(def.getName()));
         }
 
         // TODO: JBAS-9020: for the moment overlays are not supported, so there is a single content item
-        ModelNode content = operation.require(CONTENT_ALL.getName());
+        ModelNode content = newModel.require(CONTENT_ALL.getName());
         ModelNode contentItemNode = content.require(0);
 
-        final ModelNode opAddr = operation.get(OP_ADDR);
+        final ModelNode opAddr = correctedOperation.get(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
-        final String runtimeName = operation.hasDefined(RUNTIME_NAME.getName()) ? operation.get(RUNTIME_NAME.getName()).asString() : name;
-        newModel.get(RUNTIME_NAME.getName()).set(runtimeName);
+        if (!newModel.hasDefined(RUNTIME_NAME.getName())) {
+            newModel.get(RUNTIME_NAME.getName()).set(name);
+        }
 
         byte[] hash = null;
 
@@ -120,18 +120,19 @@ public class DeploymentAddHandler implements OperationStepHandler {
             }
             try {
                 // Store and transform operation
-                hash = DeploymentUploadUtil.storeContentAndTransformOperation(context, operation, contentRepository);
+                hash = DeploymentUploadUtil.storeContentAndTransformOperation(context, correctedOperation, contentRepository);
             } catch (IOException e) {
                 throw createFailureException(e.toString());
             }
             contentItemNode = new ModelNode();
             contentItemNode.get(CONTENT_HASH.getName()).set(hash);
+
+            // We have altered contentItemNode from what's in the newModel, so store it back to model
             content = new ModelNode();
             content.add(contentItemNode);
-        } else {
-        }
+            newModel.get(CONTENT_ALL.getName()).set(content);
 
-        newModel.get(CONTENT_ALL.getName()).set(content);
+        } // else would have failed validation
 
         if (contentRepository != null && hash != null) {
             final byte[] contentHash = hash;

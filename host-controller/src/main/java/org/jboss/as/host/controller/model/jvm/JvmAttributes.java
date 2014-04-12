@@ -110,7 +110,7 @@ public class JvmAttributes {
      * JVM options are resolved in ManagedServerBootCmdFactory before the JVM is launched.
      */
     public static final AttributeDefinition OPTIONS = new StringListAttributeDefinition.Builder(JvmAttributes.JVM_OPTIONS)
-            .setValidator(new StringLengthValidator(1, true, true))
+            .setElementValidator(new StringLengthValidator(1, true, true))
             .setAllowNull(true)
             .setAllowExpression(true)
             .setAttributeMarshaller(new AttributeMarshaller() {
