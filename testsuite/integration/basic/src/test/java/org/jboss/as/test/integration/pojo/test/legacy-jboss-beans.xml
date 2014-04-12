@@ -27,4 +27,10 @@
 
     <bean name="C" class="org.jboss.as.test.integration.pojo.support.C"/>
 
+    <bean name="D_factory">
+        <constructor factoryClass="org.jboss.as.test.integration.pojo.support.TFactory" factoryMethod="createBean">
+            <parameter><value>test</value></parameter>
+        </constructor>
+    </bean>
+
 </deployment>
