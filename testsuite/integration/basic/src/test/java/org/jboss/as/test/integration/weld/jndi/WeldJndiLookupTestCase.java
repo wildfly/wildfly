@@ -48,11 +48,15 @@ public class WeldJndiLookupTestCase {
         JavaArchive jar = ShrinkWrap.create(JavaArchive.class, "WeldJndiLookupTestCase.jar");
         jar.addPackage(WeldJndiLookupTestCase.class.getPackage());
         jar.add(EmptyAsset.INSTANCE, "META-INF/beans.xml");
+        jar.addAsManifestResource(WeldJndiLookupTestCase.class.getPackage(), "ejb-jar.xml", "ejb-jar.xml");
         return jar;
     }
 
     @Inject
     private StartupSingletonEjb ejb;
+
+    @Inject
+    private AppNameInjector appNameInjector;
 
     @Test
     public void testBeanManagerCanBeLookedUp() throws NamingException {
@@ -68,5 +72,9 @@ public class WeldJndiLookupTestCase {
     @Test
     public void testBeanManagerResourceLookup() {
         Assert.assertTrue( ejb.getBeanManager() instanceof BeanManager);
+    }
+    @Test
+    public void testCdiBeanWithResourceName() {
+        Assert.assertEquals("foo-value", appNameInjector.getFoo());
     }
 }

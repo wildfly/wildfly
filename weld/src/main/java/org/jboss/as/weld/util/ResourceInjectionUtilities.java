@@ -54,6 +54,16 @@ public class ResourceInjectionUtilities {
         }
         String name = resource.name();
         if (!name.equals("")) {
+            //see if this is a prefixed name
+            //and if so just return it
+            int firstSlash = name.indexOf("/");
+            int colon = name.indexOf(":");
+            if(colon != -1) {
+                if(firstSlash == -1 || colon < firstSlash) {
+                    return name;
+                }
+            }
+
             return RESOURCE_LOOKUP_PREFIX + "/" + name;
         }
         String propertyName;
