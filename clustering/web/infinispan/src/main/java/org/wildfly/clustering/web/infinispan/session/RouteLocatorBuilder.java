@@ -19,36 +19,27 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.dispatcher;
+package org.wildfly.clustering.web.infinispan.session;
 
-import java.util.concurrent.ExecutionException;
-
-import org.wildfly.clustering.dispatcher.CommandResponse;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.Value;
+import org.wildfly.clustering.web.session.RouteLocator;
 
 /**
- * Simple {@link CommandResponse} implementation
+ * Builds a {@link RouteLocator} service.
  * @author Paul Ferraro
- * @param <T> a response type
  */
-public class SimpleCommandResponse<T> implements CommandResponse<T> {
-    private final T value;
-    private final ExecutionException exception;
+public class RouteLocatorBuilder implements org.wildfly.clustering.web.session.RouteLocatorBuilder {
 
-    public SimpleCommandResponse(T value) {
-        this.value = value;
-        this.exception = null;
-    }
-
-    public SimpleCommandResponse(Throwable exception) {
-        this.value = null;
-        this.exception = new ExecutionException(exception);
+    @Override
+    public ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName) {
+        return RouteLocatorService.build(target, name, deploymentServiceName);
     }
 
     @Override
-    public T get() throws ExecutionException {
-        if (this.exception != null) {
-            throw this.exception;
-        }
-        return this.value;
+    public ServiceBuilder<?> buildServerDependency(ServiceTarget target, final Value<? extends Value<String>> route) {
+        return target.addService(RouteRegistryEntryProviderService.SERVICE_NAME, new RouteRegistryEntryProviderService(route));
     }
 }

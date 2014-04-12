@@ -24,7 +24,6 @@ package org.wildfly.clustering.server.group;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.as.clustering.infinispan.CacheContainer;
 import org.jboss.as.clustering.infinispan.subsystem.CacheServiceProvider;
 import org.jboss.modules.ModuleIdentifier;
@@ -32,7 +31,7 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.group.NodeFactory;
+import org.jboss.msc.value.InjectedValue;
 
 /**
  * Installs a {@link CacheNodeFactory} service per cache.
@@ -50,17 +49,15 @@ public class CacheNodeFactoryProvider implements CacheServiceProvider {
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, CacheMode mode, boolean defaultCache, ModuleIdentifier moduleId) {
-        ServiceName name = getServiceName(containerName, cacheName);
-
-        ServiceBuilder<? extends NodeFactory<?>> builder = CacheNodeFactoryService.build(target, name, containerName, cacheName);
-
+    public Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, boolean defaultCache, ModuleIdentifier moduleId) {
+        InjectedValue<ChannelNodeFactory> factory = new InjectedValue<>();
+        ServiceBuilder<?> builder = target.addService(getServiceName(containerName, cacheName), new CacheNodeFactoryService(factory))
+                .addDependency(ChannelNodeFactoryProvider.getServiceName(containerName), ChannelNodeFactory.class, factory)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+        ;
         if (defaultCache) {
             builder.addAliases(getServiceName(containerName, CacheContainer.DEFAULT_CACHE_ALIAS));
         }
-
-        ServiceController<? extends NodeFactory<?>> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-
-        return Collections.<ServiceController<?>>singleton(controller);
+        return Collections.<ServiceController<?>>singleton(builder.install());
     }
 }

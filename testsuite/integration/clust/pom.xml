@@ -110,11 +110,10 @@
                                 <configuration>
                                     <!-- Tests to execute. -->
                                     <includes>
-                                        <include>org/jboss/as/test/clustering/single/**/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/single/web/*TestCase.java</include>
+                                        <include>org/jboss/as/test/clustering/single/ejb/**/*TestCase.java</include>
                                     </includes>
-                                    <excludes>
-                                        <exclude>org/jboss/as/test/clustering/single/jdbcstore/**/*TestCase.java</exclude>
-                                    </excludes>
+
                                     <!-- Parameters to test cases. -->
                                     <systemPropertyVariables combine.children="append">
                                         <arquillian.launch>clustering-udp-single</arquillian.launch>

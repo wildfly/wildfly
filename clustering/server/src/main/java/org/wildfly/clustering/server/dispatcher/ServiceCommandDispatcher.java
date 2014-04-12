@@ -53,7 +53,7 @@ import org.wildfly.clustering.group.NodeFactory;
  *
  * @param <C> command execution context
  */
-public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C> {
+public abstract class ServiceCommandDispatcher<C> implements CommandDispatcher<C> {
 
     private static final RspFilter FILTER = new RspFilter() {
         @Override
@@ -72,7 +72,7 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
     private final NodeFactory<Address> factory;
     private final long timeout;
 
-    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout) {
+    public ServiceCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout) {
         this.dispatcher = dispatcher;
         this.marshaller = marshaller;
         this.factory = factory;
@@ -212,5 +212,59 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
 
     private Address getLocalAddress() {
         return this.dispatcher.getChannel().getAddress();
+    }
+
+    private static class SimpleCommandResponse<T> implements CommandResponse<T> {
+        private final T value;
+        private final ExecutionException exception;
+
+        SimpleCommandResponse(T value) {
+            this.value = value;
+            this.exception = null;
+        }
+
+        SimpleCommandResponse(Throwable exception) {
+            this.value = null;
+            this.exception = new ExecutionException(exception);
+        }
+
+        @Override
+        public T get() throws ExecutionException {
+            if (this.exception != null) {
+                throw this.exception;
+            }
+            return this.value;
+        }
+    }
+
+    private static class SimpleFuture<T> extends SimpleCommandResponse<T> implements Future<T> {
+
+        SimpleFuture(T value) {
+            super(value);
+        }
+
+        SimpleFuture(Throwable exception) {
+            super(exception);
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            return false;
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
+        }
+
+        @Override
+        public boolean isDone() {
+            return true;
+        }
+
+        @Override
+        public T get(long timeout, TimeUnit unit) throws ExecutionException {
+            return this.get();
+        }
     }
 }

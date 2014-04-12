@@ -40,17 +40,18 @@ import org.jgroups.util.Buffer;
  */
 public class CommandResponseMarshaller implements RpcDispatcher.Marshaller {
     private final MarshallingContext context;
+    private final int currentVersion;
 
-    CommandResponseMarshaller(MarshallingContext context) {
+    CommandResponseMarshaller(MarshallingContext context, int currentVersion) {
         this.context = context;
+        this.currentVersion = currentVersion;
     }
 
     @Override
     public Buffer objectToBuffer(Object object) throws Exception {
-        int version = this.context.getCurrentVersion();
         try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-            output.write(version);
-            try (Marshaller marshaller = this.context.createMarshaller(version)) {
+            output.write(this.currentVersion);
+            try (Marshaller marshaller = this.context.createMarshaller(this.currentVersion)) {
                 marshaller.start(Marshalling.createByteOutput(output));
                 marshaller.writeObject(object);
                 marshaller.flush();

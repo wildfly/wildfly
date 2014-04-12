@@ -24,13 +24,15 @@ package org.wildfly.clustering.server.group;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
 import org.jboss.modules.ModuleIdentifier;
-import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
-import org.wildfly.clustering.group.NodeFactory;
+import org.jboss.msc.value.InjectedValue;
+import org.jgroups.Channel;
 
 /**
  * Installs a {@link ChannelNodeFactory} service per channel.
@@ -48,12 +50,14 @@ public class ChannelNodeFactoryProvider implements ChannelServiceProvider {
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String cluster, boolean clustered, ModuleIdentifier moduleId) {
-        ServiceName name = getServiceName(cluster);
-
-        ServiceBuilder<? extends NodeFactory<?>> builder = clustered ? ChannelNodeFactoryService.build(target, name, cluster) : LocalNodeFactoryService.build(target, name, cluster);
-        ServiceController<? extends NodeFactory<?>> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
-
+    public Collection<ServiceController<?>> install(ServiceTarget target, String cluster, ModuleIdentifier moduleId) {
+        InjectedValue<Channel> channel = new InjectedValue<>();
+        ServiceController<?> controller = target.addService(getServiceName(cluster), new ChannelNodeFactoryService(channel))
+                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
+                .addDependency(ChannelService.getServiceName(cluster), Channel.class, channel)
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+                .install()
+        ;
         return Collections.<ServiceController<?>>singleton(controller);
     }
 }

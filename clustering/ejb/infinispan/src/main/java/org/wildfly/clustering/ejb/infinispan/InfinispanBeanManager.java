@@ -47,7 +47,6 @@ import org.jboss.as.clustering.infinispan.affinity.KeyAffinityServiceFactory;
 import org.jboss.ejb.client.Affinity;
 import org.jboss.ejb.client.ClusterAffinity;
 import org.jboss.ejb.client.NodeAffinity;
-import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.ejb.Batch;
 import org.wildfly.clustering.ejb.Batcher;
 import org.wildfly.clustering.ejb.Bean;
@@ -80,13 +79,12 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
     private final List<KeyAffinityService<?>> affinityServices = new ArrayList<>(2);
     private final Registry<String, ?> registry;
     private final NodeFactory<Address> nodeFactory;
-    private final CommandDispatcherFactory dispatcherFactory;
     private final ExpirationConfiguration<T> expiration;
     private final PassivationConfiguration<T> passivation;
     private final List<Scheduler<Bean<G, I, T>>> schedulers = new ArrayList<>(2);
     private final AtomicInteger passiveCount = new AtomicInteger();
 
-    public InfinispanBeanManager(String beanName, final Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration, final Configuration<G, G, BeanGroupEntry<I, T>, BeanGroupFactory<G, I, T>> groupConfiguration, KeyAffinityServiceFactory affinityFactory, Registry<String, ?> registry, NodeFactory<Address> nodeFactory, CommandDispatcherFactory dispatcherFactory, ExpirationConfiguration<T> expiration, PassivationConfiguration<T> passivation) {
+    public InfinispanBeanManager(String beanName, final Configuration<I, BeanKey<I>, BeanEntry<G>, BeanFactory<G, I, T>> beanConfiguration, final Configuration<G, G, BeanGroupEntry<I, T>, BeanGroupFactory<G, I, T>> groupConfiguration, KeyAffinityServiceFactory affinityFactory, Registry<String, ?> registry, NodeFactory<Address> nodeFactory, ExpirationConfiguration<T> expiration, PassivationConfiguration<T> passivation) {
         this.beanName = beanName;
         this.groupFactory = groupConfiguration.getFactory();
         this.beanFactory = beanConfiguration.getFactory();
@@ -123,7 +121,6 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
         this.affinityServices.add(beanAffinityService);
         this.registry = registry;
         this.nodeFactory = nodeFactory;
-        this.dispatcherFactory = dispatcherFactory;
         this.expiration = expiration;
         this.passivation = passivation;
     }
@@ -138,7 +135,7 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
             this.schedulers.add(new BeanExpirationScheduler<G, I, T>(this, new ExpiredBeanRemover<>(this.beanFactory), this.expiration));
         }
         if (this.passivation.isEvictionAllowed()) {
-            this.schedulers.add(new BeanEvictionScheduler<G, I, T>(this.beanName, this, this.beanFactory, this.dispatcherFactory, this.passivation));
+            this.schedulers.add(new BeanEvictionScheduler<G, I, T>(this, this.beanFactory, this.passivation));
         }
         this.beanCache.addListener(this, this);
     }
@@ -165,12 +162,12 @@ public class InfinispanBeanManager<G, I, T> implements BeanManager<G, I, T>, Bat
 
     @Override
     public Affinity getStrictAffinity() {
-        return this.beanCache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new ClusterAffinity(this.registry.getGroup().getName()) : new NodeAffinity(this.registry.getLocalEntry().getKey());
+        return (this.registry != null) ? new ClusterAffinity(this.registry.getGroup().getName()) : null;
     }
 
     @Override
     public Affinity getWeakAffinity(I id) {
-        return this.beanCache.getCacheConfiguration().clustering().cacheMode().isClustered() ? new NodeAffinity(this.registry.getEntry(this.nodeFactory.createNode(this.locate(id))).getKey()) : Affinity.NONE;
+        return (this.registry != null) ? new NodeAffinity(this.registry.getEntry(this.nodeFactory.createNode(this.locate(id))).getKey()) : Affinity.NONE;
     }
 
     private Address locate(I id) {

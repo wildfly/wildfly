@@ -23,7 +23,6 @@ package org.jboss.as.clustering.infinispan.subsystem;
 
 import java.util.Collection;
 
-import org.infinispan.configuration.cache.CacheMode;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -40,12 +39,9 @@ public interface CacheServiceProvider {
     /**
      * Installs services for the specified channel
      * @param target the service target in which to install services
-     * @param containerName the cache container name
-     * @param cacheName the cache name
-     * @param mode the cache mode
-     * @param defaultCache true, if this is the default cache of the container, false otherwise
+     * @param cluster a cluster name
      * @param moduleId the unique identifier of the module upon which these services should operate
      * @return a collection of installed services
      */
-    Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, CacheMode mode, boolean defaultCache, ModuleIdentifier moduleId);
+    Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, boolean defaultCache, ModuleIdentifier moduleId);
 }

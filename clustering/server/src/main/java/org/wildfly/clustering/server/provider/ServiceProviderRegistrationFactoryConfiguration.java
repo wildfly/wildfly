@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,31 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.dispatcher;
+package org.wildfly.clustering.server.provider;
 
-import org.wildfly.clustering.dispatcher.CommandDispatcher;
+import java.util.Set;
+
+import org.infinispan.Cache;
+import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.Node;
 
 /**
- * Non-clustered {@link CommandDispatcherFactory} implementation
+ * Configuration for a {@link ServiceProviderRegistrationFactoryService}.
  * @author Paul Ferraro
  */
-public class LocalCommandDispatcherFactory implements CommandDispatcherFactory {
-
-    private final Group group;
-
-    public LocalCommandDispatcherFactory(Group group) {
-        this.group = group;
-    }
-
-    @Override
-    public Group getGroup() {
-        return this.group;
-    }
-
-    @Override
-    public <C> CommandDispatcher<C> createCommandDispatcher(Object id, C context) {
-        return new LocalCommandDispatcher<>(this.group.getLocalNode(), context);
-    }
+public interface ServiceProviderRegistrationFactoryConfiguration {
+    Object getId();
+    Group getGroup();
+    Cache<Object, Set<Node>> getCache();
+    CommandDispatcherFactory getCommandDispatcherFactory();
+    CacheInvoker getCacheInvoker();
 }

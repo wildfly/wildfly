@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,44 +19,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.server.dispatcher;
+package org.wildfly.clustering.server.registry;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+
+import org.infinispan.Cache;
+import org.infinispan.remoting.transport.Address;
+import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.group.NodeFactory;
 
 /**
- * Simple {@link Future} implementation for synchronous responses.
+ * Configuration for a {@link RegistryFactoryService}.
  * @author Paul Ferraro
- * @param <T> command response type
  */
-public class SimpleFuture<T> extends SimpleCommandResponse<T> implements Future<T> {
-
-    public SimpleFuture(T value) {
-        super(value);
-    }
-
-    public SimpleFuture(Throwable exception) {
-        super(exception);
-    }
-
-    @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        return false;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return false;
-    }
-
-    @Override
-    public boolean isDone() {
-        return true;
-    }
-
-    @Override
-    public T get(long timeout, TimeUnit unit) throws ExecutionException {
-        return this.get();
-    }
+public interface RegistryFactoryConfiguration<K, V> {
+    CacheInvoker getCacheInvoker();
+    Group getGroup();
+    Cache<Node, Map.Entry<K, V>> getCache();
+    NodeFactory<Address> getNodeFactory();
 }

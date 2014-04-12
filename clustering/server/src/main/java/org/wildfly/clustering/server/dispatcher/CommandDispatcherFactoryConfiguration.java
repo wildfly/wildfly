@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2014, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,23 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.server.dispatcher;
 
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.web.session.RouteLocator;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoader;
+import org.jgroups.Address;
+import org.jgroups.Channel;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.NodeFactory;
 
 /**
- * Builds a {@link RouteLocator} service.
+ * Configuration for a {@link CommandDispatcherFactoryService}.
  * @author Paul Ferraro
  */
-public class InfinispanRouteLocatorBuilder implements org.wildfly.clustering.web.session.RouteLocatorBuilder {
-
-    @Override
-    public ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName) {
-        return InfinispanRouteLocatorService.build(target, name, deploymentServiceName);
-    }
-
-    @Override
-    public ServiceBuilder<?> buildServerDependency(ServiceTarget target, final Value<? extends Value<String>> route) {
-        return target.addService(RouteRegistryEntryProviderService.SERVICE_NAME, new RouteRegistryEntryProviderService(route));
-    }
+public interface CommandDispatcherFactoryConfiguration {
+    Channel getChannel();
+    Group getGroup();
+    NodeFactory<Address> getNodeFactory();
+    ModuleLoader getModuleLoader();
+    ModuleIdentifier getModuleIdentifier();
 }

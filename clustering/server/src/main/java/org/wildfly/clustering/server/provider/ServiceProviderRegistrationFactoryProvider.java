@@ -23,11 +23,16 @@ package org.wildfly.clustering.server.provider;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Set;
 
-import org.infinispan.configuration.cache.CacheMode;
+import org.infinispan.Cache;
 import org.jboss.as.clustering.infinispan.CacheContainer;
+import org.jboss.as.clustering.infinispan.invoker.BatchCacheInvoker;
+import org.jboss.as.clustering.infinispan.invoker.CacheInvoker;
+import org.jboss.as.clustering.infinispan.subsystem.CacheService;
 import org.jboss.as.clustering.infinispan.subsystem.CacheServiceProvider;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
+import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.naming.ManagedReferenceInjector;
 import org.jboss.as.naming.ServiceBasedNamingStore;
@@ -35,11 +40,19 @@ import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.logging.Logger;
 import org.jboss.modules.ModuleIdentifier;
+import org.jboss.msc.inject.Injector;
+import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.group.Node;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
+import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactoryProvider;
+import org.wildfly.clustering.server.group.CacheGroupProvider;
 
 /**
  * Installs a ServiceProviderRegistry service per cache.
@@ -62,13 +75,20 @@ public class ServiceProviderRegistrationFactoryProvider implements CacheServiceP
     }
 
     @Override
-    public Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, CacheMode mode, boolean defaultCache, ModuleIdentifier moduleId) {
+    public Collection<ServiceController<?>> install(ServiceTarget target, String containerName, String cacheName, boolean defaultCache, ModuleIdentifier moduleId) {
         ServiceName name = getServiceName(containerName, cacheName);
         ContextNames.BindInfo bindInfo = createBinding(containerName, cacheName);
 
         logger.debugf("Installing %s service, bound to ", name.getCanonicalName(), bindInfo.getAbsoluteJndiName());
 
-        ServiceBuilder<ServiceProviderRegistrationFactory> builder = mode.isClustered() ? CacheServiceProviderRegistrationFactoryService.build(target, name, containerName, cacheName) : LocalServiceProviderRegistrationFactoryService.build(target, name, containerName, cacheName);
+        ServiceProviderRegistrationFactoryConfig config = new ServiceProviderRegistrationFactoryConfig(name);
+        Service<ServiceProviderRegistrationFactory> service = new ServiceProviderRegistrationFactoryService(config);
+        ServiceBuilder<?> builder = AsynchronousService.addService(target, name, service)
+                .addDependency(CacheService.getServiceName(containerName, cacheName), Cache.class, config.getCacheInjector())
+                .addDependency(CacheGroupProvider.getServiceName(containerName, cacheName), Group.class, config.getGroupInjector())
+                .addDependency(CommandDispatcherFactoryProvider.getServiceName(containerName), CommandDispatcherFactory.class, config.getCommandDispatcherFactoryInjector())
+                .setInitialMode(ServiceController.Mode.ON_DEMAND)
+        ;
 
         BinderService binder = new BinderService(bindInfo.getBindName());
         ServiceBuilder<?> binderBuilder = target.addService(bindInfo.getBinderServiceName(), binder)
@@ -84,8 +104,56 @@ public class ServiceProviderRegistrationFactoryProvider implements CacheServiceP
             builder.addAliases(getServiceName(containerName, CacheContainer.DEFAULT_CACHE_ALIAS));
         }
 
-        ServiceController<ServiceProviderRegistrationFactory> controller = builder.setInitialMode(ServiceController.Mode.ON_DEMAND).install();
+        return Arrays.asList(builder.install(), binderBuilder.install());
+    }
 
-        return Arrays.asList(controller, binderBuilder.install());
+    private static class ServiceProviderRegistrationFactoryConfig implements ServiceProviderRegistrationFactoryConfiguration {
+        private final InjectedValue<Group> group = new InjectedValue<>();
+        private final InjectedValue<Cache<Object, Set<Node>>> cache = new InjectedValue<>();
+        private final InjectedValue<CommandDispatcherFactory> factory = new InjectedValue<>();
+        private final Object id;
+        private final CacheInvoker invoker = new BatchCacheInvoker();
+
+        ServiceProviderRegistrationFactoryConfig(Object id) {
+            this.id = id;
+        }
+
+        @Override
+        public Object getId() {
+            return this.id;
+        }
+
+        @Override
+        public Group getGroup() {
+            return this.group.getValue();
+        }
+
+        @Override
+        public Cache<Object, Set<Node>> getCache() {
+            return this.cache.getValue();
+        }
+
+        @Override
+        public CommandDispatcherFactory getCommandDispatcherFactory() {
+            return this.factory.getValue();
+        }
+
+        @Override
+        public CacheInvoker getCacheInvoker() {
+            return this.invoker;
+        }
+
+        Injector<Group> getGroupInjector() {
+            return this.group;
+        }
+
+        @SuppressWarnings({ "rawtypes", "unchecked" })
+        Injector<Cache> getCacheInjector() {
+            return (Injector) this.cache;
+        }
+
+        Injector<CommandDispatcherFactory> getCommandDispatcherFactoryInjector() {
+            return this.factory;
+        }
     }
 }
