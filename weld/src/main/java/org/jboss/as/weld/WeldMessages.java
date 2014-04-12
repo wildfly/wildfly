@@ -147,4 +147,7 @@ public interface WeldMessages {
     @Message(id = 16080, value = "These attributes must be 'true' for use with CDI 1.0 '%s'")
     String rejectAttributesMustBeTrue(Set<String> keySet);
 
+    @Message(id = 16081, value = "Error injecting resource into CDI managed bean. Can't find a resource named %s defined on %s")
+    IllegalArgumentException coundNotFindResource(String resourceName, String member, @Cause Throwable cause);
+
 }
