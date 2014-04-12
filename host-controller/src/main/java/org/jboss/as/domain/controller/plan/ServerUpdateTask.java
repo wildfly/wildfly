@@ -31,41 +31,20 @@ import org.jboss.dmr.ModelNode;
  */
 abstract class ServerUpdateTask {
 
-    /**
-     * Callback interface to allow the creator of this task to
-     * handle the results of the updates.
-     */
-    interface ServerUpdateResultHandler {
-
-        /**
-         * Handle the result of an individual update on an individual server.
-         *
-         * @param serverId the server that was updated
-         * @param response the result of the update
-         */
-        void handleServerUpdateResult(ServerIdentity serverId, ModelNode response);
-    }
-
     protected final ServerUpdatePolicy updatePolicy;
     protected final ServerIdentity serverId;
-    protected final ServerUpdateResultHandler resultHandler;
 
     /**
      * Create a new update task.
-     *
-     * @param serverId the id of the server being updated. Cannot be <code>null</code>
+     *  @param serverId the id of the server being updated. Cannot be <code>null</code>
      * @param updatePolicy the policy that controls whether the updates should be applied. Cannot be <code>null</code>
-     * @param resultHandler handler for the result of the update. Cannot be <code>null</code>
      */
     ServerUpdateTask(final ServerIdentity serverId,
-                     final ServerUpdatePolicy updatePolicy,
-                     final ServerUpdateResultHandler resultHandler) {
+                     final ServerUpdatePolicy updatePolicy) {
         assert serverId != null : "serverId is null";
         assert updatePolicy != null : "updatePolicy is null";
-        assert resultHandler != null : "resultHandler is null";
         this.serverId = serverId;
         this.updatePolicy = updatePolicy;
-        this.resultHandler = resultHandler;
     }
 
     public abstract ModelNode getOperation();
@@ -76,10 +55,6 @@ abstract class ServerUpdateTask {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(getClass().getSimpleName());
-        sb.append("{server=");
-        sb.append(serverId.getServerName());
-        sb.append("}");
-        return sb.toString();
+        return getClass().getSimpleName() + "{server=" + serverId.getServerName() + "}";
     }
 }

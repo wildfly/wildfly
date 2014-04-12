@@ -39,17 +39,14 @@ class RunningServerUpdateTask extends ServerUpdateTask {
 
     /**
      * Constructor.
-     *
-     * @param serverId the id of the server being updated. Cannot be <code>null</code>
+     *  @param serverId the id of the server being updated. Cannot be <code>null</code>
      * @param serverUpdate the actual rollback updates to apply to this server. Cannot be <code>null</code>
      * @param updatePolicy the policy that controls whether the updates should be applied. Cannot be <code>null</code>
-     * @param resultHandler handler for the result of the update. Cannot be <code>null</code>
      */
     RunningServerUpdateTask(final ServerIdentity serverId,
                             final ModelNode serverUpdate,
-                            final ServerUpdatePolicy updatePolicy,
-                            final ServerUpdateResultHandler resultHandler) {
-        super(serverId, updatePolicy, resultHandler);
+                            final ServerUpdatePolicy updatePolicy) {
+        super(serverId, updatePolicy);
         this.serverUpdate = serverUpdate;
     }
 

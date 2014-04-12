@@ -34,7 +34,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLING_TO_SERVERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SHUTDOWN;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,15 +41,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 
 import javax.security.auth.Subject;
 
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.domain.controller.operations.coordination.DomainOperationContext;
-import org.jboss.as.domain.controller.plan.ServerUpdateTask.ServerUpdateResultHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -59,7 +55,7 @@ import org.jboss.dmr.Property;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class RolloutPlanController implements ServerUpdateResultHandler {
+public class RolloutPlanController {
 
     public static enum Result {
         SUCCESS,
@@ -68,13 +64,11 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
     }
 
     private final boolean rollbackAcrossGroups;
-    private final Runnable rootTask;
+    private final RollingUpdateTask rootTask;
     private final Map<String, ServerUpdatePolicy> updatePolicies = new HashMap<String, ServerUpdatePolicy>();
     private final boolean shutdown;
     private final long gracefulShutdownPeriod;
-    private final ServerTaskExecutor taskExecutor;
     private final DomainOperationContext domainOperationContext;
-    private final ConcurrentMap<String, Map<ServerIdentity, ModelNode>> serverResults = new ConcurrentHashMap<String, Map<ServerIdentity, ModelNode>>();
 
     public RolloutPlanController(final Map<String, Map<ServerIdentity, ModelNode>> opsByGroup,
                                  final ModelNode rolloutPlan,
@@ -82,7 +76,6 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                                  final ServerTaskExecutor taskExecutor,
                                  final ExecutorService executor) {
         this.domainOperationContext = domainOperationContext;
-        this.taskExecutor = taskExecutor;
 
         this.rollbackAcrossGroups = !rolloutPlan.hasDefined(ROLLBACK_ACROSS_GROUPS) || rolloutPlan.get(ROLLBACK_ACROSS_GROUPS).asBoolean();
         this.shutdown = rolloutPlan.hasDefined(SHUTDOWN) && rolloutPlan.get(SHUTDOWN).asBoolean();
@@ -92,6 +85,7 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
         this.rootTask = new RollingUpdateTask(rollingTasks);
 
         if (rolloutPlan.hasDefined(IN_SERIES)) {
+
             ConcurrentGroupServerUpdatePolicy predecessor = null;
             Subject subject = SecurityActions.getCurrentSubject();
             for (ModelNode series : rolloutPlan.get(IN_SERIES).asList()) {
@@ -137,8 +131,8 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
                     }
                     ServerUpdatePolicy policy = new ServerUpdatePolicy(parent, serverGroupName, servers, maxFailures);
 
-                    seriesTasks.add(rollingGroup ? new RollingServerGroupUpdateTask(groupTasks, policy, taskExecutor, this, subject)
-                        : new ConcurrentServerGroupUpdateTask(groupTasks, policy, taskExecutor, this, subject));
+                    seriesTasks.add(rollingGroup ? new RollingServerGroupUpdateTask(groupTasks, policy, taskExecutor, subject)
+                        : new ConcurrentServerGroupUpdateTask(groupTasks, policy, taskExecutor, subject));
 
                     updatePolicies.put(serverGroupName, policy);
 
@@ -171,29 +165,14 @@ public class RolloutPlanController implements ServerUpdateResultHandler {
         return result;
     }
 
-    @Override
-    public void handleServerUpdateResult(ServerIdentity serverId, ModelNode response) {
-        if (HOST_CONTROLLER_LOGGER.isTraceEnabled()) {
-            HOST_CONTROLLER_LOGGER.tracef("From %s received %s", serverId, response);
-        }
-        Map<ServerIdentity, ModelNode> groupResults = serverResults.get(serverId.getServerGroupName());
-        if (groupResults == null) {
-            groupResults = new ConcurrentHashMap<ServerIdentity, ModelNode>();
-        }
-        Map<ServerIdentity, ModelNode> existing = serverResults.putIfAbsent(serverId.getServerGroupName(), groupResults);
-        if (existing != null) {
-            groupResults = existing;
-        }
-        groupResults.put(serverId, response);
-    }
-
-    private ServerUpdateTask createServerTask(final ServerIdentity serverIdentity, final ModelNode serverOp, final ServerUpdatePolicy policy) {
+    private ServerUpdateTask createServerTask(final ServerIdentity serverIdentity, final ModelNode serverOp,
+                                              final ServerUpdatePolicy policy) {
         ServerUpdateTask result;
         if (shutdown) {
-            result = new ServerRestartTask(serverIdentity, policy, this, gracefulShutdownPeriod);
+            result = new ServerRestartTask(serverIdentity, policy, gracefulShutdownPeriod);
         }
         else {
-            result = new RunningServerUpdateTask(serverIdentity, serverOp, policy, this);
+            result = new RunningServerUpdateTask(serverIdentity, serverOp, policy);
         }
         return result;
     }

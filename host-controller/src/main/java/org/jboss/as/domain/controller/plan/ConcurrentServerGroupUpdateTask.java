@@ -38,8 +38,8 @@ import org.jboss.as.domain.controller.ServerIdentity;
 class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask implements Runnable {
 
     public ConcurrentServerGroupUpdateTask(List<ServerUpdateTask> tasks, ServerUpdatePolicy updatePolicy,
-                                           ServerTaskExecutor executor, ServerUpdateTask.ServerUpdateResultHandler resultHandler, Subject subject) {
-        super(tasks, updatePolicy, executor, resultHandler, subject);
+                                           ServerTaskExecutor executor, Subject subject) {
+        super(tasks, updatePolicy, executor, subject);
     }
 
     @Override
@@ -55,7 +55,6 @@ class ConcurrentServerGroupUpdateTask extends AbstractServerGroupRolloutTask imp
                 }
             } else {
                 DomainControllerLogger.DOMAIN_DEPLOYMENT_LOGGER.tracef("Skipping server update task for %s", identity);
-                sendCancelledResponse(identity);
             }
         }
         boolean interrupted = false;
