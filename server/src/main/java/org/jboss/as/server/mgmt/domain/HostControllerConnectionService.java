@@ -22,29 +22,6 @@
 
 package org.jboss.as.server.mgmt.domain;
 
-import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ControlledProcessStateService;
-import org.jboss.as.network.NetworkUtils;
-import org.jboss.as.protocol.ProtocolConnectionConfiguration;
-import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.ServerMessages;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
-import org.jboss.msc.service.Service;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.StartContext;
-import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.remoting3.Endpoint;
-import org.jboss.threads.JBossThreadFactory;
-import org.xnio.IoUtils;
-import org.xnio.OptionMap;
-import org.xnio.Options;
-import org.xnio.Sequence;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -53,10 +30,28 @@ import java.security.GeneralSecurityException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
-import static java.security.AccessController.doPrivileged;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
+import org.jboss.as.controller.ControlledProcessState;
+import org.jboss.as.controller.ControlledProcessStateService;
+import org.jboss.as.network.NetworkUtils;
+import org.jboss.as.protocol.ProtocolConnectionConfiguration;
+import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.server.ServerMessages;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.StartContext;
+import org.jboss.msc.service.StartException;
+import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
+import org.jboss.remoting3.Endpoint;
+import org.xnio.IoUtils;
+import org.xnio.OptionMap;
+import org.xnio.Options;
+import org.xnio.Sequence;
 
 /**
  * Service setting up the connection to the local host controller.
@@ -70,6 +65,7 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     private static final String JBOSS_LOCAL_USER = "JBOSS-LOCAL-USER";
     private static final long SERVER_CONNECTION_TIMEOUT = 60000;
 
+    private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<ExecutorService>();
     private final InjectedValue<Endpoint> endpointInjector = new InjectedValue<Endpoint>();
     private final InjectedValue<ControlledProcessStateService> processStateServiceInjectedValue = new InjectedValue<ControlledProcessStateService>();
 
@@ -79,8 +75,6 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     private final String userName;
     private final String serverProcessName;
     private final byte[] initialAuthKey;
-    private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("host-controller-connection-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
-    private final ExecutorService executor = Executors.newCachedThreadPool(threadFactory);
     private final int connectOperationID;
     private final boolean managementSubsystemEndpoint;
 
@@ -112,7 +106,8 @@ public class HostControllerConnectionService implements Service<HostControllerCl
             configuration.setConnectionTimeout(SERVER_CONNECTION_TIMEOUT);
             configuration.setSslContext(getAcceptingSSLContext());
             // Create the connection
-            final HostControllerConnection connection = new HostControllerConnection(serverProcessName, userName, connectOperationID, configuration, executor);
+            final HostControllerConnection connection = new HostControllerConnection(serverProcessName, userName, connectOperationID,
+                    configuration, executorInjector.getValue());
             // Trigger the started notification based on the process state listener
             final ControlledProcessStateService processService = processStateServiceInjectedValue.getValue();
             processService.addPropertyChangeListener(new PropertyChangeListener() {
@@ -159,6 +154,8 @@ public class HostControllerConnectionService implements Service<HostControllerCl
     public InjectedValue<Endpoint> getEndpointInjector() {
         return endpointInjector;
     }
+
+    public InjectedValue<ExecutorService> getExecutorInjector() { return executorInjector;}
 
     private static SSLContext getAcceptingSSLContext() throws IOException {
         /*

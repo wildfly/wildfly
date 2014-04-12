@@ -69,7 +69,7 @@ import org.jboss.threads.JBossThreadFactory;
 public class HostControllerService implements Service<AsyncFuture<ServiceContainer>> {
 
     public static final ServiceName HC_SERVICE_NAME = ServiceName.JBOSS.append("host", "controller");
-    static final ServiceName HC_EXECUTOR_SERVICE_NAME = HC_SERVICE_NAME.append("executor");
+    public static final ServiceName HC_EXECUTOR_SERVICE_NAME = HC_SERVICE_NAME.append("executor");
     static final int DEFAULT_POOL_SIZE = 20;
 
     private final HostControllerEnvironment environment;

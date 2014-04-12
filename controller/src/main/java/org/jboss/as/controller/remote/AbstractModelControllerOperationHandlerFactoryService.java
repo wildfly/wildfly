@@ -21,26 +21,18 @@
 */
 package org.jboss.as.controller.remote;
 
-import java.util.concurrent.BlockingQueue;
+import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
+
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.protocol.mgmt.support.ManagementChannelInitialization;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
-
-import static java.security.AccessController.doPrivileged;
-import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
-import org.jboss.threads.JBossThreadFactory;
 
 /**
  * Service used to create operation handlers per incoming channel
@@ -53,11 +45,6 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
 
     private final InjectedValue<ModelController> modelControllerValue = new InjectedValue<ModelController>();
     private final InjectedValue<ExecutorService> executor = new InjectedValue<ExecutorService>();
-
-    // The defaults if no executor was defined
-    private static final int WORK_QUEUE_SIZE = 4096;
-    private static final int POOL_CORE_SIZE = 4;
-    private static final int POOL_MAX_SIZE = 16;
 
     /**
      * Use to inject the model controller that will be the target of the operations
@@ -72,25 +59,10 @@ public abstract class AbstractModelControllerOperationHandlerFactoryService impl
         return executor;
     }
 
-    protected String getThreadGroupName() {
-        return "management-handler-thread";
-    }
-
     /** {@inheritDoc} */
     @Override
     public synchronized void start(StartContext context) throws StartException {
         SERVER_MANAGEMENT_LOGGER.debugf("Starting operation handler service %s", context.getController().getName());
-        if(executor.getOptionalValue() == null) {
-            // Create the default executor
-            final BlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>(WORK_QUEUE_SIZE);
-            final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup(getThreadGroupName()), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
-            final ThreadPoolExecutor executorService = new ThreadPoolExecutor(POOL_CORE_SIZE, POOL_MAX_SIZE,
-                                                            60L, TimeUnit.SECONDS, workQueue,
-                                                            threadFactory);
-            // Allow the core threads to time out as well
-            executorService.allowCoreThreadTimeOut(true);
-            getExecutorInjector().inject(executorService);
-        }
     }
 
     /** {@inheritDoc} */

@@ -22,9 +22,13 @@
 
 package org.jboss.as.server;
 
+import java.io.Serializable;
+import java.net.InetSocketAddress;
+
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.remoting.EndpointConfigFactory;
 import org.jboss.as.remoting.EndpointService;
@@ -42,10 +46,6 @@ import org.jboss.remoting3.Endpoint;
 import org.jboss.remoting3.RemotingOptions;
 import org.wildfly.security.manager.WildFlySecurityManager;
 import org.xnio.OptionMap;
-
-import java.io.Serializable;
-import java.net.InetSocketAddress;
-import org.jboss.as.network.NetworkUtils;
 
 /**
  * Service activator for the communication services of a managed server in a domain.
@@ -97,11 +97,10 @@ public class DomainServerCommunicationServices  implements ServiceActivator, Ser
             final int port = managementSocket.getPort();
             final String host = NetworkUtils.canonize(managementSocket.getAddress().getHostAddress());
             HostControllerConnectionService service = new HostControllerConnectionService(host, port, serverName, serverProcessName, authKey, initialOperationID, managementSubsystemEndpoint);
-            serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, service)
+            Services.addServerExecutorDependency(serviceTarget.addService(HostControllerConnectionService.SERVICE_NAME, service), service.getExecutorInjector(), false)
                     .addDependency(endpointName, Endpoint.class, service.getEndpointInjector())
                     .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getProcessStateServiceInjectedValue())
-                    .setInitialMode(ServiceController.Mode.ACTIVE)
-                    .install();
+                    .setInitialMode(ServiceController.Mode.ACTIVE).install();
 
         } catch (OperationFailedException e) {
             throw new ServiceRegistryException(e);

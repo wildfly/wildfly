@@ -51,7 +51,7 @@ public final class Services {
     /**
      * The service corresponding to the {@link java.util.concurrent.ExecutorService} for this instance.
      */
-    static final ServiceName JBOSS_SERVER_EXECUTOR = JBOSS_AS.append("server-executor");
+    public static final ServiceName JBOSS_SERVER_EXECUTOR = JBOSS_AS.append("server-executor");
 
     /**
      * The service corresponding to the {@link org.jboss.as.server.moduleservice.ServiceModuleLoader} for this instance.

@@ -42,6 +42,7 @@ class NativeManagementServices {
                     new ModelControllerClientOperationHandlerFactoryService(),
                     Services.JBOSS_SERVER_CONTROLLER,
                     ManagementRemotingServices.MANAGEMENT_CHANNEL,
+                    Services.JBOSS_SERVER_EXECUTOR,
                     verificationHandler,
                     newControllers);
 

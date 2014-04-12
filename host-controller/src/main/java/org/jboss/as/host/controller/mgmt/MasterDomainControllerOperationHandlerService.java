@@ -21,16 +21,11 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
+import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 
-import static java.security.AccessController.doPrivileged;
-
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.CurrentOperationIdHolder;
@@ -54,14 +49,13 @@ import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementClientChannelStrategy;
 import org.jboss.as.protocol.mgmt.ManagementPongRequestHandler;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
-import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
-import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.JBossThreadFactory;
+import org.wildfly.security.manager.action.GetAccessControlContextAction;
 
 /**
  * Installs {@link MasterDomainControllerOperationHandlerImpl} which handles requests from slave DC to master DC.
@@ -77,7 +71,6 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     private final TransactionalOperationExecutor txOperationExecutor;
     private final ManagementPongRequestHandler pongRequestHandler = new ManagementPongRequestHandler();
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("slave-request-threads"), Boolean.FALSE, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
-    private volatile ExecutorService slaveRequestExecutor;
     private final DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry;
 
     public MasterDomainControllerOperationHandlerService(final DomainController domainController, final HostControllerRegistrationHandler.OperationExecutor operationExecutor, TransactionalOperationExecutor txOperationExecutor, DomainControllerRuntimeIgnoreTransformationRegistry runtimeIgnoreTransformationRegistry) {
@@ -87,33 +80,20 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
         this.runtimeIgnoreTransformationRegistry = runtimeIgnoreTransformationRegistry;
     }
 
-    protected String getThreadGroupName() {
-        return "domain-mgmt-handler-thread";
-    }
-
     @Override
     public synchronized void start(StartContext context) throws StartException {
         pongRequestHandler.resetConnectionId();
-        slaveRequestExecutor = new ThreadPoolExecutor(1, Integer.MAX_VALUE,
-                5L, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>(),
-                threadFactory);
         super.start(context);
-    }
-
-    @Override
-    public synchronized void stop(StopContext context) {
-        slaveRequestExecutor.shutdown();
-        super.stop(context);
     }
 
     @Override
     public ManagementChannelHandler startReceiving(final Channel channel) {
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
         // Assemble the request handlers for the domain channel
-        handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, domainController, operationExecutor, slaveRequestExecutor, runtimeIgnoreTransformationRegistry));
+        handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, domainController, operationExecutor,
+                getExecutor(), runtimeIgnoreTransformationRegistry));
         handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
-        handler.addHandlerFactory(new MasterDomainControllerOperationHandlerImpl(domainController, slaveRequestExecutor));
+        handler.addHandlerFactory(new MasterDomainControllerOperationHandlerImpl(domainController, getExecutor()));
         handler.addHandlerFactory(pongRequestHandler);
         handler.addHandlerFactory(new DomainTransactionalProtocolOperationHandler(txOperationExecutor, handler));
         channel.receiveMessage(handler.getReceiver());
