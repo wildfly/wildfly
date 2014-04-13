@@ -49,7 +49,7 @@
                 <exclude>**/target/**</exclude>
 
                 <!-- Ignore git repo -->
-                <exclude>**/.git</exclude>
+                <exclude>**/.git/**</exclude>
 
                 <!-- Ignore IDE configuration and other hidden files-->
                 <exclude>**/.project</exclude>
