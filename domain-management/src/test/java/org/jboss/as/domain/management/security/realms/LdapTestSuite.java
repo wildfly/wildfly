@@ -59,7 +59,8 @@ import org.junit.runners.Suite;
     GroupToPrincipalLdapSuiteTest.class,
     PrincipalToGroupLdapSuiteTest.class,
     LdapAuthenticationFollowSuiteTest.class,
-    LdapAuthenticationThrowSuiteTest.class
+    LdapAuthenticationThrowSuiteTest.class,
+    GroupLoadingReferralsSuiteTest.class
 })
 public class LdapTestSuite {
 
@@ -141,14 +142,14 @@ public class LdapTestSuite {
         SchemaManager schemaManager = slaveDirectoryService.getSchemaManager();
 
         createPartition(dsf, schemaManager, "simple", "dc=simple,dc=wildfly,dc=org", slaveDirectoryService, slaveWorkingDir);
-        //createPartition(dsf, schemaManager, "group-to-principal", "dc=group-to-principal,dc=wildfly,dc=org", masterWorkingDir);
-        //createPartition(dsf, schemaManager, "principal-to-group", "dc=principal-to-group,dc=wildfly,dc=org", masterWorkingDir);
+        createPartition(dsf, schemaManager, "group-to-principal", "dc=group-to-principal,dc=wildfly,dc=org", slaveDirectoryService, slaveWorkingDir);
+        createPartition(dsf, schemaManager, "principal-to-group", "dc=principal-to-group,dc=wildfly,dc=org", slaveDirectoryService, slaveWorkingDir);
 
         CoreSession adminSession = slaveDirectoryService.getAdminSession();
         processLdif(schemaManager, adminSession, "memberOf-schema.ldif");
         processLdif(schemaManager, adminSession, "simple-partition-slave.ldif");
-        //processLdif(schemaManager, adminSession, "group-to-principal.ldif");
-        //processLdif(schemaManager, adminSession, "principal-to-group.ldif");
+        processLdif(schemaManager, adminSession, "group-to-principal-slave.ldif");
+        processLdif(schemaManager, adminSession, "principal-to-group-slave.ldif");
 
         slaveLdapServer = new LdapServer();
         slaveLdapServer.setServiceName("DefaultLDAP");

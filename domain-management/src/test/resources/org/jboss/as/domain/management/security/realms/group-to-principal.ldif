@@ -184,3 +184,29 @@ uid: GroupFive
 uniqueMember: uid=TestUserFive,ou=users,dc=group-to-principal,dc=wildfly,dc=org
 uniqueMember: uid=GroupOne,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
 
+dn: uid=ReferralUserSeven,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+objectClass: top
+objectClass: referral
+objectClass: uidObject
+uid: ReferralUserSeven
+ref: ldap://localhost:11391/uid=TestUserSeven,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+
+# This group uses the DN of the referral on this server.
+dn: uid=GroupSeven,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+objectClass: uidObject
+cn: Group Seven
+uid: GroupSeven
+uniqueMember: uid=ReferralUserSeven,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+
+# This group uses the DN of the entry on the slave server.
+dn: uid=GroupEight,ou=groups,dc=group-to-principal,dc=wildfly,dc=org
+objectClass: top
+objectClass: groupOfUniqueNames
+objectClass: uidObject
+cn: Group Eight
+uid: GroupEight
+uniqueMember: uid=TestUserSeven,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+
+
