@@ -260,11 +260,12 @@ public interface JpaMessages {
      * Creates an exception indicating the class level annotation must provide the parameter specified.
      *
      * @param annotation the annotation.
+     * @param className  the class name
      * @param parameter  the parameter.
      * @return an {@link IllegalArgumentException} for the error.
      */
-    @Message(id = 11439, value = "Class level %s annotations must provide a %s")
-    IllegalArgumentException classLevelAnnotationParameterRequired(String annotation, String parameter);
+    @Message(id = 11439, value = "Class level %s annotation on class %s must provide a %s")
+    String classLevelAnnotationParameterRequired(String annotation, String className, String parameter);
 
     /**
      * A message indicating that the persistence unit, represented by the {@code path} parameter, could not be found at

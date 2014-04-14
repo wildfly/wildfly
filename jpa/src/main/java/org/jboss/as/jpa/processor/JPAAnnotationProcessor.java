@@ -236,7 +236,8 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
             if (injectionSource != null) {
                 final AnnotationValue nameValue = annotation.value("name");
                 if (nameValue == null || nameValue.asString().isEmpty()) {
-                    throw MESSAGES.classLevelAnnotationParameterRequired(annotation.name().toString(), "name");
+                    classDescription.setInvalid(MESSAGES.classLevelAnnotationParameterRequired(annotation.name().toString(), classDescription.getClassName(), "name"));
+                    return;
                 }
                 final String name = nameValue.asString();
 
@@ -255,7 +256,8 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
                     if (injectionSource != null) {
                         final AnnotationValue nameValue = arrayPersistenceUnits[source].value("name");
                         if (nameValue == null || nameValue.asString().isEmpty()) {
-                            throw MESSAGES.classLevelAnnotationParameterRequired(arrayPersistenceUnits[source].name().toString(), "name");
+                            classDescription.setInvalid(MESSAGES.classLevelAnnotationParameterRequired(arrayPersistenceUnits[source].name().toString(), classDescription.getClassName(), "name"));
+                            return;
                         }
                         final String name = nameValue.asString();
 
@@ -276,7 +278,8 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
                     if (injectionSource != null) {
                         final AnnotationValue nameValue = arrayPersistenceContexts[source].value("name");
                         if (nameValue == null || nameValue.asString().isEmpty()) {
-                            throw MESSAGES.classLevelAnnotationParameterRequired(arrayPersistenceContexts[source].name().toString(), "name");
+                            classDescription.setInvalid(MESSAGES.classLevelAnnotationParameterRequired(arrayPersistenceContexts[source].name().toString(), classDescription.getClassName(), "name"));
+                            return;
                         }
                         final String name = nameValue.asString();
 
