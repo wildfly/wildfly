@@ -26,6 +26,9 @@ import java.util.Date;
 import java.util.List;
 
 import org.jboss.as.controller.OperationContext.ResultAction;
+import org.jboss.as.controller.audit.spi.AuditLogEventType;
+import org.jboss.as.controller.audit.spi.JmxAccessAuditLogEvent;
+import org.jboss.as.controller.audit.spi.ModelControllerAuditLogEvent;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -34,7 +37,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-abstract class AuditLogItem {
+abstract class AuditLogItemImpl {
 
     private final Date date = new Date();
     private final String asVersion;
@@ -45,7 +48,7 @@ abstract class AuditLogItem {
     protected final AccessMechanism accessMechanism;
     protected final InetAddress remoteAddress;
 
-    AuditLogItem(String asVersion, boolean readOnly, boolean booting, String userId, String domainUUID, AccessMechanism accessMechanism,
+    AuditLogItemImpl(String asVersion, boolean readOnly, boolean booting, String userId, String domainUUID, AccessMechanism accessMechanism,
             InetAddress remoteAddress) {
         this.asVersion = asVersion;
         this.readOnly = readOnly;
@@ -56,20 +59,20 @@ abstract class AuditLogItem {
         this.remoteAddress = remoteAddress;
     }
 
-    static AuditLogItem createModelControllerItem(String asVersion, boolean readOnly, boolean booting, ResultAction resultAction, String userId,
+    static AuditLogItemImpl createModelControllerItem(String asVersion, boolean readOnly, boolean booting, ResultAction resultAction, String userId,
                 String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, Resource resultantModel,
                 List<ModelNode> operations) {
-        return new ModelControllerAuditLogItem(asVersion, readOnly, booting, resultAction, userId, domainUUID, accessMechanism, remoteAddress, resultantModel, operations);
+        return new ModelControllerAuditLogItemImpl(asVersion, readOnly, booting, resultAction, userId, domainUUID, accessMechanism, remoteAddress, resultantModel, operations);
     }
 
-    static AuditLogItem createMethodAccessItem(String asVersion, boolean readOnly, boolean booting, String userId, String domainUUID,
+    static AuditLogItemImpl createMethodAccessItem(String asVersion, boolean readOnly, boolean booting, String userId, String domainUUID,
                 AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature,
                 Object[] methodParams, Throwable error) {
-        return new JmxAccessAuditLogItem(asVersion, readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress, methodName, methodSignature, methodParams, error);
+        return new JmxAccessAuditLogItemImpl(asVersion, readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress, methodName, methodSignature, methodParams, error);
     }
 
 
-    abstract String format(AuditLogItemFormatter formatter);
+    abstract String format(AbstractAuditLogItemFormatter formatter);
 
     /**
      * Get the asVersion
@@ -83,7 +86,7 @@ abstract class AuditLogItem {
      * Get the readOnly
      * @return the readOnly
      */
-    boolean isReadOnly() {
+    public boolean isReadOnly() {
         return readOnly;
     }
 
@@ -91,7 +94,7 @@ abstract class AuditLogItem {
      * Get the booting
      * @return the booting
      */
-    boolean isBooting() {
+    public boolean isBooting() {
         return booting;
     }
 
@@ -99,7 +102,7 @@ abstract class AuditLogItem {
      * Get the userId
      * @return the userId
      */
-    String getUserId() {
+    public String getUserId() {
         return userId;
     }
 
@@ -107,7 +110,7 @@ abstract class AuditLogItem {
      * Get the domainUUID
      * @return the domainUUID
      */
-    String getDomainUUID() {
+    public String getDomainUUID() {
         return domainUUID;
     }
 
@@ -115,7 +118,7 @@ abstract class AuditLogItem {
      * Get the accessMechanism
      * @return the accessMechanism
      */
-    AccessMechanism getAccessMechanism() {
+    public AccessMechanism getAccessMechanism() {
         return accessMechanism;
     }
 
@@ -123,7 +126,7 @@ abstract class AuditLogItem {
      * Get the remoteAddress
      * @return the remoteAddress
      */
-    InetAddress getRemoteAddress() {
+    public InetAddress getRemoteAddress() {
         return remoteAddress;
     }
 
@@ -136,12 +139,12 @@ abstract class AuditLogItem {
     }
 
 
-    static class ModelControllerAuditLogItem extends AuditLogItem {
+    static class ModelControllerAuditLogItemImpl extends AuditLogItemImpl implements ModelControllerAuditLogEvent {
         private final ResultAction resultAction;
         private final Resource resultantModel;
         private final List<ModelNode> operations;
 
-        ModelControllerAuditLogItem(String asVersion, boolean readOnly, boolean booting, ResultAction resultAction, String userId,
+        ModelControllerAuditLogItemImpl(String asVersion, boolean readOnly, boolean booting, ResultAction resultAction, String userId,
                 String domainUUID, AccessMechanism accessMechanism, InetAddress remoteAddress, Resource resultantModel,
                 List<ModelNode> operations) {
             super(asVersion, readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress);
@@ -151,15 +154,19 @@ abstract class AuditLogItem {
         }
 
         @Override
-        String format(AuditLogItemFormatter formatter) {
+        String format(AbstractAuditLogItemFormatter formatter) {
             return formatter.formatAuditLogItem(this);
+        }
+
+        public AuditLogEventType getType() {
+            return AuditLogEventType.CORE;
         }
 
         /**
          * Get the resultAction
          * @return the resultAction
          */
-        ResultAction getResultAction() {
+        public ResultAction getResultAction() {
             return resultAction;
         }
 
@@ -167,7 +174,7 @@ abstract class AuditLogItem {
          * Get the resultantModel
          * @return the resultantModel
          */
-        Resource getResultantModel() {
+        public Resource getResultantModel() {
             return resultantModel;
         }
 
@@ -175,18 +182,18 @@ abstract class AuditLogItem {
          * Get the operations
          * @return the operations
          */
-        List<ModelNode> getOperations() {
+        public List<ModelNode> getOperations() {
             return operations;
         }
     }
 
-    static class JmxAccessAuditLogItem extends AuditLogItem {
+    static class JmxAccessAuditLogItemImpl extends AuditLogItemImpl implements JmxAccessAuditLogEvent {
         private final String methodName;
         private final String[] methodSignature;
         private final Object[] methodParams;
         private final Throwable error;
 
-        JmxAccessAuditLogItem(String asVersion, boolean readOnly, boolean booting, String userId, String domainUUID,
+        JmxAccessAuditLogItemImpl(String asVersion, boolean readOnly, boolean booting, String userId, String domainUUID,
                 AccessMechanism accessMechanism, InetAddress remoteAddress, String methodName, String[] methodSignature,
                 Object[] methodParams, Throwable error) {
             super(asVersion, readOnly, booting, userId, domainUUID, accessMechanism, remoteAddress);
@@ -196,16 +203,19 @@ abstract class AuditLogItem {
             this.error = error;
         }
 
-        @Override
-        String format(AuditLogItemFormatter formatter) {
+        String format(AbstractAuditLogItemFormatter formatter) {
             return formatter.formatAuditLogItem(this);
+        }
+
+        public AuditLogEventType getType() {
+            return AuditLogEventType.JMX;
         }
 
         /**
          * Get the methodName
          * @return the methodName
          */
-        String getMethodName() {
+        public String getMethodName() {
             return methodName;
         }
 
@@ -213,7 +223,7 @@ abstract class AuditLogItem {
          * Get the methodSignature
          * @return the methodSignature
          */
-        String[] getMethodSignature() {
+        public String[] getMethodSignature() {
             return methodSignature;
         }
 
@@ -221,7 +231,7 @@ abstract class AuditLogItem {
          * Get the methodParams
          * @return the methodParams
          */
-        Object[] getMethodParams() {
+        public Object[] getMethodParams() {
             return methodParams;
         }
 
@@ -229,7 +239,7 @@ abstract class AuditLogItem {
          * Get the error
          * @return the error
          */
-        Throwable getError() {
+        public Throwable getError() {
             return error;
         }
     }

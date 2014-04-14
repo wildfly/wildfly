@@ -102,7 +102,7 @@ public interface AuditLogger {
         }
 
         @Override
-        public void addFormatter(AuditLogItemFormatter formatter) {
+        public void addFormatter(AbstractAuditLogItemFormatter formatter) {
         }
 
         @Override

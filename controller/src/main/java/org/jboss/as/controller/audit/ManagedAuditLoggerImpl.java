@@ -63,7 +63,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     private HandlerUpdateTask handlerUpdateTask;
 
     /** Guarded by config's auditLock - the messages logged while in the QUEUEING state */
-    private final List<AuditLogItem> queuedItems = new ArrayList<AuditLogItem>();
+    private final List<AuditLogItemImpl> queuedItems = new ArrayList<AuditLogItemImpl>();
 
     /** Guarded by config's auditLock - the number of failures writing to the log */
     private short failureCount;
@@ -91,7 +91,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
                 return;
             }
             storeLogItem(
-                    AuditLogItem.createModelControllerItem(config.getAsVersion(), readOnly, config.isBooting(), resultAction, userId, domainUUID,
+                    AuditLogItemImpl.createModelControllerItem(config.getAsVersion(), readOnly, config.isBooting(), resultAction, userId, domainUUID,
                             accessMechanism, remoteAddress, resultantModel, operations));
         } catch (Exception e) {
             handleLoggingException(e);
@@ -114,7 +114,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
                 return;
             }
             storeLogItem(
-                    AuditLogItem.createMethodAccessItem(config.getAsVersion(), readOnly, config.isBooting(), userId, domainUUID, accessMechanism,
+                    AuditLogItemImpl.createMethodAccessItem(config.getAsVersion(), readOnly, config.isBooting(), userId, domainUUID, accessMechanism,
                             remoteAddress, methodName, methodSignature, methodParams, error));
         } catch (Exception e) {
             handleLoggingException(e);
@@ -203,7 +203,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             }
             config.setLoggerStatus(newStatus);
             if (newStatus == Status.LOGGING){
-                for (AuditLogItem record : queuedItems) {
+                for (AuditLogItemImpl record : queuedItems) {
                     try {
                         writeLogItem(record);
                     } catch (Exception e) {
@@ -220,7 +220,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
 
     /** protected by config's audit lock */
-    private void storeLogItem(AuditLogItem item) throws IOException {
+    private void storeLogItem(AuditLogItemImpl item) throws IOException {
         switch (getLoggerStatus()) {
             case QUEUEING:
                 queuedItems.add(item);
@@ -238,7 +238,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     }
 
     /** protected by config's audit lock */
-    private void writeLogItem(AuditLogItem item) throws IOException{
+    private void writeLogItem(AuditLogItemImpl item) throws IOException{
         Set<String> formatterNames = new HashSet<String>();
         try {
             for (AuditLogHandler handler : config.getHandlersForLogging()) {
@@ -381,7 +381,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     }
 
     @Override
-    public void addFormatter(AuditLogItemFormatter formatter) {
+    public void addFormatter(AbstractAuditLogItemFormatter formatter) {
         config.lock();
         try {
             config.addFormatter(formatter);
@@ -540,7 +540,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         }
 
         /** Call with lock taken */
-        AuditLogItemFormatter getFormatter(String name) {
+        AbstractAuditLogItemFormatter getFormatter(String name) {
             return sharedConfiguration.getFormatter(name);
         }
 
@@ -597,7 +597,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
         abstract AuditLogHandler removeConfiguredHandler(String name);
 
-        abstract void addFormatter(AuditLogItemFormatter formatter);
+        abstract void addFormatter(AbstractAuditLogItemFormatter formatter);
 
         abstract void removeFormatter(String name);
 
@@ -623,7 +623,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             return sharedConfiguration.removeConfiguredHandler(name);
         }
 
-        void addFormatter(AuditLogItemFormatter formatter) {
+        void addFormatter(AbstractAuditLogItemFormatter formatter) {
             sharedConfiguration.addFormatter(formatter);
         }
 
@@ -658,7 +658,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         }
 
         @Override
-        void addFormatter(AuditLogItemFormatter formatter) {
+        void addFormatter(AbstractAuditLogItemFormatter formatter) {
             //i18n not needed, this will not be called by user code
             throw new IllegalStateException("Only available in core configuration");
         }
@@ -686,7 +686,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         private final boolean server;
 
         /** Guarded by auditLock - the formatters configured in the global json-formatters section */
-        private final Map<String, AuditLogItemFormatter> formatters = new HashMap<String, AuditLogItemFormatter>();
+        private final Map<String, AbstractAuditLogItemFormatter> formatters = new HashMap<String, AbstractAuditLogItemFormatter>();
 
         /** Guarded by auditLock - the handlers configured in the global file-handlers and syslog-handlers section */
         private final Map<String, AuditLogHandler> configuredHandlers = new HashMap<String, AuditLogHandler>();
@@ -725,11 +725,11 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             return configuredHandlers;
         }
 
-        AuditLogItemFormatter getFormatter(String name) {
+        AbstractAuditLogItemFormatter getFormatter(String name) {
             return formatters.get(name);
         }
 
-        void addFormatter(AuditLogItemFormatter formatter) {
+        void addFormatter(AbstractAuditLogItemFormatter formatter) {
             formatters.put(formatter.getName(), formatter);
         }
 

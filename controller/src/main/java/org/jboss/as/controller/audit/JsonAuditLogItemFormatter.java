@@ -22,8 +22,10 @@
 package org.jboss.as.controller.audit;
 
 import org.jboss.as.controller.OperationContext.ResultAction;
-import org.jboss.as.controller.audit.AuditLogItem.JmxAccessAuditLogItem;
-import org.jboss.as.controller.audit.AuditLogItem.ModelControllerAuditLogItem;
+import org.jboss.as.controller.audit.AuditLogItemImpl.JmxAccessAuditLogItemImpl;
+import org.jboss.as.controller.audit.AuditLogItemImpl.ModelControllerAuditLogItemImpl;
+import org.jboss.as.controller.audit.spi.JmxAccessAuditLogEvent;
+import org.jboss.as.controller.audit.spi.ModelControllerAuditLogEvent;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -31,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-public class JsonAuditLogItemFormatter extends AuditLogItemFormatter {
+public class JsonAuditLogItemFormatter extends AbstractAuditLogItemFormatter {
 
     private static final ModelNode UNDEFINED = new ModelNode();
     static {
@@ -81,30 +83,32 @@ public class JsonAuditLogItemFormatter extends AuditLogItemFormatter {
     }
 
     @Override
-    public String formatAuditLogItem(ModelControllerAuditLogItem item) {
+    public String formatAuditLogItem(ModelControllerAuditLogEvent item) {
+        assert item instanceof ModelControllerAuditLogItemImpl;
         String formattedString = getCachedString();
         if (formattedString != null) {
             return formattedString;
         }
 
         ModelNode formatted = new ModelNode();
-        formatted.get(TYPE).set(TYPE_CORE);
-        addCommonFields(item, formatted);
+        formatted.get(TYPE).set(item.getType().getName());
+        addCommonFields((AuditLogItemImpl)item, formatted);
         formatted.get(SUCCESS).set(item.getResultAction() == ResultAction.KEEP);
         formatted.get(OPERATIONS).set(item.getOperations());
 
-        return cacheString(createRecordText(item, formatted));
+        return cacheString(createRecordText((AuditLogItemImpl)item, formatted));
     }
 
     @Override
-    public String formatAuditLogItem(JmxAccessAuditLogItem item) {
+    public String formatAuditLogItem(JmxAccessAuditLogEvent item) {
+        assert item instanceof JmxAccessAuditLogItemImpl;
         String formattedString = getCachedString();
         if (formattedString != null) {
             return formattedString;
         }
         ModelNode formatted = new ModelNode();
-        formatted.get(TYPE).set(TYPE_JMX);
-        addCommonFields(item, formatted);
+        formatted.get(TYPE).set(item.getType().getName());
+        addCommonFields((JmxAccessAuditLogItemImpl)item, formatted);
 
         formatted.get(METHOD_NAME).set(item.getMethodName());
 
@@ -125,10 +129,10 @@ public class JsonAuditLogItemFormatter extends AuditLogItemFormatter {
             formatted.get(ERROR).set(throwable.getMessage());
         }
 
-        return cacheString(createRecordText(item, formatted));
+        return cacheString(createRecordText((JmxAccessAuditLogItemImpl)item, formatted));
     }
 
-    private String createRecordText(AuditLogItem item, ModelNode formatted) {
+    private String createRecordText(AuditLogItemImpl item, ModelNode formatted) {
         StringBuilder sb = new StringBuilder();
 
         appendDate(sb, item);
@@ -162,7 +166,7 @@ public class JsonAuditLogItemFormatter extends AuditLogItemFormatter {
         return formattedString;
     }
 
-    private void addCommonFields(AuditLogItem item, ModelNode formatted) {
+    private void addCommonFields(AuditLogItemImpl item, ModelNode formatted) {
         formatted.get(READ_ONLY).set(item.isReadOnly());
         formatted.get(BOOTING).set(item.isBooting());
         formatted.get(AS_VERSION).set(item.getAsVersion());

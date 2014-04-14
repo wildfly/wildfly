@@ -45,7 +45,7 @@ abstract class AuditLogHandler {
     protected final String name;
     private volatile String formatterName;
     private final Set<PathAddress> references = new HashSet<PathAddress>();
-    private AuditLogItemFormatter formatter;
+    private AbstractAuditLogItemFormatter formatter;
 
     AuditLogHandler(String name, String formatterName, int maxFailureCount){
         this.name = name;
@@ -57,7 +57,7 @@ abstract class AuditLogHandler {
         return name;
     }
 
-    void setFormatter(AuditLogItemFormatter formatter) {
+    void setFormatter(AbstractAuditLogItemFormatter formatter) {
         this.formatter = formatter;
     }
 
@@ -73,7 +73,7 @@ abstract class AuditLogHandler {
         this.formatterName = formatterName;
     }
 
-    void writeLogItem(AuditLogItem item) {
+    void writeLogItem(AuditLogItemImpl item) {
         try {
             initialize();
             String formattedItem = item.format(formatter);

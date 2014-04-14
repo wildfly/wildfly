@@ -105,7 +105,7 @@ public interface ManagedAuditLogger extends AuditLogger {
      *
      * @param formatter the formatter
      */
-    void addFormatter(AuditLogItemFormatter formatter);
+    void addFormatter(AbstractAuditLogItemFormatter formatter);
 
     // Immediate updates - TODO find some better way to do these if we end up adding more handler types!
     /**
