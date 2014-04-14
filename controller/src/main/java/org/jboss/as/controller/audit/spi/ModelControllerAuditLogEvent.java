@@ -42,7 +42,7 @@ public interface ModelControllerAuditLogEvent {
      * Return the type. This will always return {@link AuditLogEventType#CORE}
      * @return the type
      */
-    public AuditLogEventType getType();
+    AuditLogEventType getType();
 
     /**
      * Get the asVersion

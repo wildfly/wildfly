@@ -36,10 +36,11 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
+import org.jboss.as.controller.audit.spi.AuditLogEventFormatter;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -381,7 +382,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
     }
 
     @Override
-    public void addFormatter(AbstractAuditLogItemFormatter formatter) {
+    public void addFormatter(AuditLogEventFormatter formatter) {
         config.lock();
         try {
             config.addFormatter(formatter);
@@ -390,6 +391,18 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         }
     }
 
+
+    @Override
+    public AuditLogEventFormatter updateFormatter(AuditLogEventFormatter formatter) {
+        config.lock();
+        try {
+            AuditLogEventFormatter existing = config.removeFormatter(formatter.getName());
+            config.addFormatter(formatter);
+            return existing;
+        } finally {
+            config.unlock();
+        }
+    }
 
     @Override
     public void updateHandlerFormatter(String name, String formatterName) {
@@ -463,10 +476,10 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
 
     @Override
-    public JsonAuditLogItemFormatter getJsonFormatter(String name) {
+    public <T extends AuditLogEventFormatter> T getFormatter(Class<T> type, String name) {
         config.lock();
         try {
-            return (JsonAuditLogItemFormatter)config.getFormatter(name);
+            return type.cast(config.getFormatter(name));
         } finally {
             config.unlock();
         }
@@ -540,7 +553,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         }
 
         /** Call with lock taken */
-        AbstractAuditLogItemFormatter getFormatter(String name) {
+        AuditLogEventFormatter getFormatter(String name) {
             return sharedConfiguration.getFormatter(name);
         }
 
@@ -597,9 +610,9 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
         abstract AuditLogHandler removeConfiguredHandler(String name);
 
-        abstract void addFormatter(AbstractAuditLogItemFormatter formatter);
+        abstract void addFormatter(AuditLogEventFormatter formatter);
 
-        abstract void removeFormatter(String name);
+        abstract AuditLogEventFormatter removeFormatter(String name);
 
         abstract void recycleHandler(String name);
     }
@@ -623,12 +636,12 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             return sharedConfiguration.removeConfiguredHandler(name);
         }
 
-        void addFormatter(AbstractAuditLogItemFormatter formatter) {
+        void addFormatter(AuditLogEventFormatter formatter) {
             sharedConfiguration.addFormatter(formatter);
         }
 
-        void removeFormatter(String name) {
-            sharedConfiguration.removeFormatter(name);
+        AuditLogEventFormatter removeFormatter(String name) {
+            return sharedConfiguration.removeFormatter(name);
         }
 
         void recycleHandler(String name) {
@@ -658,13 +671,13 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         }
 
         @Override
-        void addFormatter(AbstractAuditLogItemFormatter formatter) {
+        void addFormatter(AuditLogEventFormatter formatter) {
             //i18n not needed, this will not be called by user code
             throw new IllegalStateException("Only available in core configuration");
         }
 
         @Override
-        void removeFormatter(String name) {
+        AuditLogEventFormatter removeFormatter(String name) {
             //i18n not needed, this will not be called by user code
             throw new IllegalStateException("Only available in core configuration");
         }
@@ -686,7 +699,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         private final boolean server;
 
         /** Guarded by auditLock - the formatters configured in the global json-formatters section */
-        private final Map<String, AbstractAuditLogItemFormatter> formatters = new HashMap<String, AbstractAuditLogItemFormatter>();
+        private final Map<String, AuditLogEventFormatter> formatters = new HashMap<String, AuditLogEventFormatter>();
 
         /** Guarded by auditLock - the handlers configured in the global file-handlers and syslog-handlers section */
         private final Map<String, AuditLogHandler> configuredHandlers = new HashMap<String, AuditLogHandler>();
@@ -725,16 +738,16 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             return configuredHandlers;
         }
 
-        AbstractAuditLogItemFormatter getFormatter(String name) {
+        AuditLogEventFormatter getFormatter(String name) {
             return formatters.get(name);
         }
 
-        void addFormatter(AbstractAuditLogItemFormatter formatter) {
+        void addFormatter(AuditLogEventFormatter formatter) {
             formatters.put(formatter.getName(), formatter);
         }
 
-        void removeFormatter(String name) {
-            formatters.remove(name);
+        AuditLogEventFormatter removeFormatter(String name) {
+            return formatters.remove(name);
         }
 
         AuditLogHandler getConfiguredHandler(String name) {

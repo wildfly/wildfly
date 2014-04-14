@@ -49,8 +49,8 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
-import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -150,7 +150,7 @@ public class JsonAuditLogFormatterResourceDefinition extends SimpleResourceDefin
         @Override
         protected void populateModel(OperationContext context, ModelNode operation, Resource resource)
                 throws OperationFailedException {
-            //TODO once we support more types of formatters, check that there are no other ones with the same name
+            HandlerUtil.checkNoOtherFormatterWithTheSameName(context, operation);
             super.populateModel(context, operation, resource);
         }
 
@@ -248,7 +248,7 @@ public class JsonAuditLogFormatterResourceDefinition extends SimpleResourceDefin
         }
 
         private void updateFormatter(ModelNode operation, String attributeName, ModelNode value) {
-            JsonAuditLogItemFormatter formatter = auditLogger.getJsonFormatter(Util.getNameFromAddress(operation.require(OP_ADDR)));
+            JsonAuditLogItemFormatter formatter = auditLogger.getFormatter(JsonAuditLogItemFormatter.class, Util.getNameFromAddress(operation.require(OP_ADDR)));
             if (attributeName.equals(INCLUDE_DATE.getName())){
                 formatter.setIncludeDate(value.asBoolean());
             } else if (attributeName.equals(DATE_FORMAT.getName())){

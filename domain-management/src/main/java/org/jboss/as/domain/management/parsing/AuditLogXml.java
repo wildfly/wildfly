@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CLIENT_CERT_STORE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 import static org.jboss.as.controller.parsing.ParseUtils.duplicateNamedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.isNoNamespaceAttribute;
@@ -38,7 +39,9 @@ import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -49,13 +52,16 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.domain.management.logging.DomainManagementLogger;
+import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
 import org.jboss.as.domain.management.audit.AuditLogLoggerResourceDefinition;
+import org.jboss.as.domain.management.audit.CustomAuditLogFormatterPropertyResourceDefinition;
+import org.jboss.as.domain.management.audit.CustomAuditLogFormatterResourceDefinition;
 import org.jboss.as.domain.management.audit.FileAuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.JsonAuditLogFormatterResourceDefinition;
 import org.jboss.as.domain.management.audit.SyslogAuditLogHandlerResourceDefinition;
 import org.jboss.as.domain.management.audit.SyslogAuditLogProtocolResourceDefinition;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -79,9 +85,12 @@ public class AuditLogXml {
             case DOMAIN_1_2:
             case DOMAIN_1_3:
             case DOMAIN_1_4:
-                throw unexpectedElement(reader);
-            default:
+            case DOMAIN_2_0:
+            case DOMAIN_2_1:
                 parseAuditLog2_0(reader, address, expectedNs, list, host);
+                break;
+            default:
+                parseAuditLog3_0(reader, address, expectedNs, list, host);
         }
     }
 
@@ -127,6 +136,48 @@ public class AuditLogXml {
         }
     }
 
+    private void parseAuditLog3_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list, boolean host) throws XMLStreamException {
+
+        requireNamespace(reader, expectedNs);
+
+        final ModelNode auditLogAddress = address.clone().add(AccessAuditResourceDefinition.PATH_ELEMENT.getKey(), AccessAuditResourceDefinition.PATH_ELEMENT.getValue());
+
+        final ModelNode add = new ModelNode();
+        add.get(OP).set(ADD);
+        add.get(OP_ADDR).set(auditLogAddress);
+        list.add(add);
+
+        requireNoAttributes(reader);
+
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+            case FORMATTERS:
+                parseAuditLogFormatters3_0(reader, auditLogAddress, expectedNs, list);
+                break;
+            case HANDLERS:{
+                parseAuditLogHandlers2_0(reader, auditLogAddress, expectedNs, list);
+                break;
+            }
+            case LOGGER:{
+                parseAuditLogConfig2_0(reader, auditLogAddress, expectedNs, AuditLogLoggerResourceDefinition.PATH_ELEMENT, list);
+                break;
+            }
+            case SERVER_LOGGER:{
+                if (host){
+                    parseAuditLogConfig2_0(reader, auditLogAddress, expectedNs, AuditLogLoggerResourceDefinition.HOST_SERVER_PATH_ELEMENT, list);
+                    break;
+                }
+                //Otherwise fallback to server-logger not recognised in standalone.xml
+            }
+            default:
+                throw unexpectedElement(reader);
+            }
+        }
+    }
+
     private void parseAuditLogFormatters2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
 
         requireNamespace(reader, expectedNs);
@@ -136,7 +187,7 @@ public class AuditLogXml {
             final Element element = Element.forName(reader.getLocalName());
             switch (element) {
             case JSON_FORMATTER:{
-                parseFileAuditLogFormatter2_0(reader, address, expectedNs, list);
+                parseJsonAuditLogFormatter2_0(reader, address, expectedNs, list);
                 break;
             }
             default:
@@ -145,7 +196,7 @@ public class AuditLogXml {
         }
     }
 
-    private void parseFileAuditLogFormatter2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+    private void parseJsonAuditLogFormatter2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
         final ModelNode add = Util.createAddOperation();
         list.add(add);
         final int count = reader.getAttributeCount();
@@ -191,6 +242,128 @@ public class AuditLogXml {
         }
 
         requireNoContent(reader);
+    }
+
+    private void parseAuditLogFormatters3_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+
+        requireNamespace(reader, expectedNs);
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+            case JSON_FORMATTER:{
+                parseJsonAuditLogFormatter2_0(reader, address, expectedNs, list);
+                break;
+            }
+            case CUSTOM_FORMATTER: {
+                parseCustomAuditLogFormatter3_0(reader, address, expectedNs, list);
+                break;
+            }
+            default:
+                throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseCustomAuditLogFormatter3_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        final ModelNode add = Util.createAddOperation();
+        list.add(add);
+        final int count = reader.getAttributeCount();
+
+        Set<Attribute> missing = attributeSet(Attribute.NAME, Attribute.CODE, Attribute.MODULE);
+
+        for (int i = 0; i < count; i++) {
+            final String value = reader.getAttributeValue(i);
+            if (!isNoNamespaceAttribute(reader, i)) {
+                throw unexpectedAttribute(reader, i);
+            }
+            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+            switch (attribute) {
+                case NAME: {
+                    add.get(OP_ADDR).set(address).add(ModelDescriptionConstants.CUSTOM_FORMATTER, value);
+                    missing.remove(Attribute.NAME);
+                    break;
+                }
+                case CODE:{
+                    CustomAuditLogFormatterResourceDefinition.CODE.parseAndSetParameter(value, add, reader);
+                    missing.remove(Attribute.CODE);
+                    break;
+                }
+                case MODULE:{
+                    CustomAuditLogFormatterResourceDefinition.MODULE.parseAndSetParameter(value, add, reader);
+                    missing.remove(Attribute.MODULE);
+                    break;
+                }
+
+                default: {
+                    throw unexpectedAttribute(reader, i);
+                }
+            }
+        }
+        if (missing.size() > 0) {
+            throw missingRequired(reader, missing);
+        }
+
+        while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            switch (element) {
+            case PROPERTIES:{
+                parseCustomAuditLogFormatterProperties_3_0(reader, add.get(OP_ADDR), expectedNs, list);
+                break;
+            }
+            default:
+                throw unexpectedElement(reader);
+            }
+        }
+    }
+
+    private void parseCustomAuditLogFormatterProperties_3_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
+        while (reader.nextTag() != END_ELEMENT) {
+            requireNamespace(reader, expectedNs);
+            final Element element = Element.forName(reader.getLocalName());
+            if (element != Element.PROPERTY) {
+                throw unexpectedElement(reader);
+            }
+
+            Set<Attribute> missing = attributeSet(Attribute.NAME, Attribute.VALUE);
+
+            //Will set OP_ADDR after parsing the NAME attribute
+            ModelNode op = Util.getEmptyOperation(ADD, new ModelNode());
+            final int count = reader.getAttributeCount();
+            for (int i = 0; i < count; i++) {
+                final String val = reader.getAttributeValue(i);
+                if (!isNoNamespaceAttribute(reader, i)) {
+                    throw unexpectedAttribute(reader, i);
+                } else {
+                    final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
+
+                    switch (attribute) {
+                        case NAME: {
+                            ModelNode addr = new ModelNode().set(address).add(PROPERTY, val);
+                            op.get(OP_ADDR).set(addr);
+                            missing.remove(Attribute.NAME);
+                            break;
+                        }
+                        case VALUE: {
+                            CustomAuditLogFormatterPropertyResourceDefinition.VALUE.parseAndSetParameter(val, op, reader);
+                            missing.remove(Attribute.VALUE);
+                            break;
+                        }
+                        default: {
+                            throw unexpectedAttribute(reader, i);
+                        }
+                    }
+                }
+            }
+            requireNoContent(reader);
+            if (missing.size() > 0) {
+                throw ParseUtils.missingRequired(reader, missing);
+            }
+
+            list.add(op);
+        }
     }
 
     private void parseAuditLogHandlers2_0(final XMLExtendedStreamReader reader, final ModelNode address, final Namespace expectedNs, final List<ModelNode> list) throws XMLStreamException {
@@ -528,25 +701,46 @@ public class AuditLogXml {
     public void writeAuditLog(XMLExtendedStreamWriter writer, ModelNode auditLog) throws XMLStreamException {
         writer.writeStartElement(Element.AUDIT_LOG.getLocalName());
 
-        if (auditLog.hasDefined(ModelDescriptionConstants.JSON_FORMATTER) && auditLog.get(ModelDescriptionConstants.JSON_FORMATTER).keys().size() > 0) {
+        if (hasChildren(auditLog, ModelDescriptionConstants.JSON_FORMATTER, ModelDescriptionConstants.CUSTOM_FORMATTER)) {
             writer.writeStartElement(Element.FORMATTERS.getLocalName());
-            for (Property prop : auditLog.get(ModelDescriptionConstants.JSON_FORMATTER).asPropertyList()) {
-                writer.writeStartElement(Element.JSON_FORMATTER.getLocalName());
-                writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
-                JsonAuditLogFormatterResourceDefinition.COMPACT.marshallAsAttribute(prop.getValue(), writer);
-                JsonAuditLogFormatterResourceDefinition.DATE_FORMAT.marshallAsAttribute(prop.getValue(), writer);
-                JsonAuditLogFormatterResourceDefinition.DATE_SEPARATOR.marshallAsAttribute(prop.getValue(), writer);
-                JsonAuditLogFormatterResourceDefinition.ESCAPE_CONTROL_CHARACTERS.marshallAsAttribute(prop.getValue(), writer);
-                JsonAuditLogFormatterResourceDefinition.ESCAPE_NEW_LINE.marshallAsAttribute(prop.getValue(), writer);
-                JsonAuditLogFormatterResourceDefinition.INCLUDE_DATE.marshallAsAttribute(prop.getValue(), writer);
-                writer.writeEndElement();
+            if (hasChildren(auditLog, ModelDescriptionConstants.JSON_FORMATTER)) {
+                for (Property prop : auditLog.get(ModelDescriptionConstants.JSON_FORMATTER).asPropertyList()) {
+                    writer.writeStartElement(Element.JSON_FORMATTER.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
+                    JsonAuditLogFormatterResourceDefinition.COMPACT.marshallAsAttribute(prop.getValue(), writer);
+                    JsonAuditLogFormatterResourceDefinition.DATE_FORMAT.marshallAsAttribute(prop.getValue(), writer);
+                    JsonAuditLogFormatterResourceDefinition.DATE_SEPARATOR.marshallAsAttribute(prop.getValue(), writer);
+                    JsonAuditLogFormatterResourceDefinition.ESCAPE_CONTROL_CHARACTERS.marshallAsAttribute(prop.getValue(), writer);
+                    JsonAuditLogFormatterResourceDefinition.ESCAPE_NEW_LINE.marshallAsAttribute(prop.getValue(), writer);
+                    JsonAuditLogFormatterResourceDefinition.INCLUDE_DATE.marshallAsAttribute(prop.getValue(), writer);
+                    writer.writeEndElement();
+                }
+            }
+            if (hasChildren(auditLog, ModelDescriptionConstants.CUSTOM_FORMATTER)) {
+                for (Property prop : auditLog.get(ModelDescriptionConstants.CUSTOM_FORMATTER).asPropertyList()) {
+                    writer.writeStartElement(Element.JSON_FORMATTER.getLocalName());
+                    writer.writeStartElement(Element.CUSTOM_FORMATTER.getLocalName());
+                    writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
+                    CustomAuditLogFormatterResourceDefinition.CODE.marshallAsAttribute(prop.getValue(), writer);
+                    CustomAuditLogFormatterResourceDefinition.MODULE.marshallAsAttribute(prop.getValue(), writer);
+                    if (hasChildren(prop.getValue(), ModelDescriptionConstants.PROPERTY)) {
+                        writer.writeStartElement(Element.PROPERTIES.getLocalName());
+                        for (Property p : prop.getValue().asPropertyList()) {
+                            writer.writeStartElement(Element.PROPERTY.getLocalName());
+                            writer.writeAttribute(Attribute.NAME.getLocalName(), p.getName());
+                            CustomAuditLogFormatterPropertyResourceDefinition.VALUE.marshallAsAttribute(p.getValue(), writer);
+                            writer.writeEndElement();
+                        }
+                        writer.writeEndElement();
+                    }
+                    writer.writeEndElement();
+                }
             }
             writer.writeEndElement();
         }
 
 
-        if ((auditLog.hasDefined(ModelDescriptionConstants.FILE_HANDLER) && auditLog.get(ModelDescriptionConstants.FILE_HANDLER).keys().size() > 0) ||
-                (auditLog.hasDefined(ModelDescriptionConstants.SYSLOG_HANDLER) && auditLog.get(ModelDescriptionConstants.SYSLOG_HANDLER).keys().size() > 0)) {
+        if ((hasChildren(auditLog, ModelDescriptionConstants.FILE_HANDLER, ModelDescriptionConstants.SYSLOG_HANDLER))) {
             writer.writeStartElement(Element.HANDLERS.getLocalName());
             if (auditLog.hasDefined(ModelDescriptionConstants.FILE_HANDLER)) {
                 for (String name : auditLog.get(ModelDescriptionConstants.FILE_HANDLER).keys()) {
@@ -647,4 +841,24 @@ public class AuditLogXml {
             writer.writeEndElement();
         }
     }
+
+    private Set<Attribute> attributeSet(Attribute...attributes){
+        final Set<Attribute> attributeSet = new HashSet<Attribute>();
+        for (Attribute attr: attributes) {
+            attributeSet.add(attr);
+        }
+        return attributeSet;
+    }
+
+    private boolean hasChildren(ModelNode auditLog, String...types) {
+        for (String type : types) {
+            if (auditLog.hasDefined(type)) {
+                if (auditLog.get(type).keys().size() > 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }

@@ -96,6 +96,7 @@ public class ModelDescriptionConstants {
     public static final String CORE_SERVICE = "core-service";
     public static final String CPU_AFFINITY = "cpu-affinity";
     public static final String CRITERIA = "criteria";
+    public static final String CUSTOM_FORMATTER = "custom-formatter";
     public static final String DATE_FORMAT = "date-format";
     public static final String DATE_SEPARATOR = "date-separator";
     public static final String DEFAULT = "default";

@@ -27,6 +27,7 @@ package org.jboss.as.controller.audit;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
+import org.jboss.as.controller.audit.spi.AuditLogEventFormatter;
 
 /**
  * Abstract base class for {@link AuditLogger} implementations.
@@ -45,7 +46,7 @@ public interface ManagedAuditLogger extends AuditLogger {
     /**
      * Set whether to log read-only operations
      *
-     * @param logReadOnly wheter to log read-only operations
+     * @param logReadOnly whether to log read-only operations
      */
     void setLogReadOnly(boolean logReadOnly);
 
@@ -105,7 +106,7 @@ public interface ManagedAuditLogger extends AuditLogger {
      *
      * @param formatter the formatter
      */
-    void addFormatter(AbstractAuditLogItemFormatter formatter);
+    void addFormatter(AuditLogEventFormatter formatter);
 
     // Immediate updates - TODO find some better way to do these if we end up adding more handler types!
     /**
@@ -139,7 +140,7 @@ public interface ManagedAuditLogger extends AuditLogger {
      * @param appName the app name
      */
     void updateSyslogHandlerAppName(String name, String appName);
-    //ImmeduateUpdates - end
+    //ImmediateUpdates - end
 
 
     /**
@@ -148,6 +149,14 @@ public interface ManagedAuditLogger extends AuditLogger {
      * @param name the formatter name
      */
     void removeFormatter(String name);
+
+    /**
+     * Update a formatter
+     *
+     * @param formatter the new formatter
+     * @return the existing formatter with the same name as {@code formatter}
+     */
+    AuditLogEventFormatter updateFormatter(AuditLogEventFormatter formatter);
 
     /**
      * Get the current failure count of a handler
@@ -168,10 +177,11 @@ public interface ManagedAuditLogger extends AuditLogger {
     /**
      * Gets a formatter by its name
      *
+     * @param type the type of formatter
      * @param name the name of the formatter
      * @return the formatter
      */
-    JsonAuditLogItemFormatter getJsonFormatter(String name);
+    <T extends AuditLogEventFormatter> T getFormatter(Class<T> type, String name);
 
     /**
      * Callback for the controller to call before the controller is booted

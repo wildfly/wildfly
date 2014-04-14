@@ -22,21 +22,20 @@
 
 package org.jboss.as.controller.audit.spi;
 
+
 /**
+ * Interface to implement and use in the custom formatter. Users need to implement this interface and
+ * create a module.
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public enum AuditLogEventType {
+public interface CustomAuditLogEventFormatterFactory {
 
-    JMX("jmx"),
-    CORE("core");
+    /**
+     * Create the custom formatter
+     *
+     * @param name the name of the formatter
+     */
+    CustomAuditLogEventFormatter createFormatter(String name);
 
-    private final String name;
-    private AuditLogEventType(String name){
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
 }

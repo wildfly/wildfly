@@ -21,6 +21,7 @@
  */
 package org.jboss.as.domain.management.audit;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CUSTOM_FORMATTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FILE_HANDLER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JSON_FORMATTER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -40,23 +41,53 @@ import org.jboss.dmr.ModelNode;
  */
 public class HandlerUtil {
 
-    static void checkNoOtherHandlerWithTheSameName(OperationContext context, ModelNode operation) throws OperationFailedException {
-        PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+    private static final String[] HANDLER_TYPES = new String[] {SYSLOG_HANDLER, FILE_HANDLER};
+    private static final String[] FORMATTER_TYPES = new String[]{JSON_FORMATTER, CUSTOM_FORMATTER};
+
+    static void checkNoOtherHandlerWithTheSameName(OperationContext context, ModelNode addHandlerOp) throws OperationFailedException {
+        PathAddress addr = findExistingSiblingWithSameName(context, addHandlerOp, HANDLER_TYPES);
+        if (addr != null) {
+            throw DomainManagementLogger.ROOT_LOGGER.handlerAlreadyExists(addr.getLastElement().getValue(), addr);
+        }
+    }
+
+
+    static void checkNoOtherFormatterWithTheSameName(OperationContext context, ModelNode addFormatterOp) throws OperationFailedException {
+        PathAddress addr = findExistingSiblingWithSameName(context, addFormatterOp, FORMATTER_TYPES);
+        if (addr != null) {
+            throw DomainManagementLogger.ROOT_LOGGER.formatterAlreadyExists(addr.getLastElement().getValue(), addr);
+        }
+    }
+
+    private static PathAddress findExistingSiblingWithSameName(OperationContext context, ModelNode addOp, String[] types) {
+        PathAddress address = PathAddress.pathAddress(addOp.require(OP_ADDR));
         PathAddress parentAddress = address.subAddress(0, address.size() - 1);
         Resource resource = context.readResourceFromRoot(parentAddress);
 
         PathElement element = address.getLastElement();
-        PathElement check = element.getKey().equals(SYSLOG_HANDLER) ? PathElement.pathElement(FILE_HANDLER, element.getValue()) : PathElement.pathElement(SYSLOG_HANDLER, element.getValue());
 
-        if (resource.hasChild(check)) {
-            throw DomainManagementLogger.ROOT_LOGGER.handlerAlreadyExists(check.getValue(), parentAddress.append(check));
+        for (String type : types) {
+            if (!type.equals(element.getKey())) {
+                PathElement check = PathElement.pathElement(type, element.getValue());
+                if (resource.hasChild(check)){
+                    return parentAddress.append(check);
+                }
+            }
         }
+        return null;
     }
 
+
     static boolean lookForFormatter(OperationContext context, PathAddress addr, String name) {
-        PathAddress referenceAddress = addr.subAddress(0, addr.size() - 1).append(JSON_FORMATTER, name);
         final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
-        return lookForResource(root, referenceAddress);
+        PathAddress baseAddr = addr.subAddress(0, addr.size() - 1);
+        for (String type : FORMATTER_TYPES) {
+            PathAddress referenceAddress = baseAddr.append(type, name);
+            if (lookForResource(root, referenceAddress)){
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean lookForResource(final Resource root, final PathAddress pathAddress) {

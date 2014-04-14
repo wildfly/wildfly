@@ -38,7 +38,7 @@ public interface JmxAccessAuditLogEvent {
      * Return the type. This will always return {@link AuditLogEventType#JMX}
      * @return the type
      */
-    public AuditLogEventType getType();
+    AuditLogEventType getType();
 
     /**
      * Get the asVersion

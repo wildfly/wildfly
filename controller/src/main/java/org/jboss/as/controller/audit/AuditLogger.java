@@ -28,6 +28,7 @@ import java.util.List;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
+import org.jboss.as.controller.audit.spi.AuditLogEventFormatter;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.security.AccessMechanism;
 import org.jboss.dmr.ModelNode;
@@ -102,11 +103,11 @@ public interface AuditLogger {
         }
 
         @Override
-        public void addFormatter(AbstractAuditLogItemFormatter formatter) {
+        public void addFormatter(AuditLogEventFormatter formatter) {
         }
 
         @Override
-        public JsonAuditLogItemFormatter getJsonFormatter(String name) {
+        public <T extends AuditLogEventFormatter> T getFormatter(Class<T> type, String name) {
             return null;
         }
 
@@ -186,5 +187,11 @@ public interface AuditLogger {
         @Override
         public void updateSyslogHandlerAppName(String name, String appName) {
         }
+
+        @Override
+        public AuditLogEventFormatter updateFormatter(AuditLogEventFormatter formatter) {
+            return formatter;
+        }
     };
+
 }

@@ -54,6 +54,8 @@ public enum Element {
     CLIENT_MAPPING("client-mapping"),
     CONSTRAINTS("constraints"),
     CONTENT("content"),
+    CUSTOM_FORMATTER("custom-formatter"),
+
 
     DISCOVERY_OPTION("discovery-option"),
     DISCOVERY_OPTIONS("discovery-options"),

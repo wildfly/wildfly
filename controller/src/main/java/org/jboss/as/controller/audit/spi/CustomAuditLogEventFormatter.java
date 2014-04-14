@@ -22,22 +22,34 @@
 
 package org.jboss.as.controller.audit.spi;
 
-import java.util.Map;
 
 /**
- * Interface to implement and use in the custom formatter. Users need to implement this interface and
- * create a module.
  *
  * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
  */
-public interface AuditLogEventFormatterFactory {
+public interface CustomAuditLogEventFormatter extends AuditLogEventFormatter {
 
     /**
-     * Create the custom formatter
+     * Add a property for configuring the formatter
      *
-     * @param name the name of the formatter
-     * @param properties properties to initialise the formatter
+     * @param name the name of the property
+     * @param value the value of the property
      */
-    AuditLogEventFormatter createFormatter(String name, Map<String, String> properties);
+    void addProperty(String name, String value);
 
+    /**
+     * Update a property used for configuring the formatter
+     *
+     * @param name the name of the property
+     * @param value the value of the property
+     * @return the old value of the property
+     */
+    String updateProperty(String name, String value);
+
+    /**
+     * Delete a property for configuring the formatter
+     *
+     * @param name the name of the property
+     */
+    void deleteProperty(String property);
 }

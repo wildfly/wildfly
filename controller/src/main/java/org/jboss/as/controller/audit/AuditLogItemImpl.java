@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.jboss.as.controller.OperationContext.ResultAction;
+import org.jboss.as.controller.audit.spi.AuditLogEventFormatter;
 import org.jboss.as.controller.audit.spi.AuditLogEventType;
 import org.jboss.as.controller.audit.spi.JmxAccessAuditLogEvent;
 import org.jboss.as.controller.audit.spi.ModelControllerAuditLogEvent;
@@ -72,7 +73,7 @@ abstract class AuditLogItemImpl {
     }
 
 
-    abstract String format(AbstractAuditLogItemFormatter formatter);
+    abstract String format(AuditLogEventFormatter formatter);
 
     /**
      * Get the asVersion
@@ -154,7 +155,7 @@ abstract class AuditLogItemImpl {
         }
 
         @Override
-        String format(AbstractAuditLogItemFormatter formatter) {
+        String format(AuditLogEventFormatter formatter) {
             return formatter.formatAuditLogItem(this);
         }
 
@@ -203,7 +204,7 @@ abstract class AuditLogItemImpl {
             this.error = error;
         }
 
-        String format(AbstractAuditLogItemFormatter formatter) {
+        String format(AuditLogEventFormatter formatter) {
             return formatter.formatAuditLogItem(this);
         }
 
