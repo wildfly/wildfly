@@ -170,4 +170,8 @@ public interface UndertowLogger extends BasicLogger {
     @LogMessage(level = ERROR)
     @Message(id = 17538, value = "Failed to register policy context handler for key %s")
     void failedToRegisterPolicyContextHandler(String key, @Cause Exception e);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 17539, value = "Error obtaining authorization helper")
+    void noAuthorizationHelper(@Cause Exception e);
 }
