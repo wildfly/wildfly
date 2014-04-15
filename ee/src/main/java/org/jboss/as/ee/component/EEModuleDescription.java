@@ -76,6 +76,11 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
     private final EEDefaultResourceJndiNames defaultResourceJndiNames;
 
     /**
+     * The default security domain for the module.
+     */
+    private String defaultSecurityDomain;
+
+    /**
      * Construct a new instance.
      *
      * @param applicationName    the application name (which is same as the module name if the .ear is absent)
@@ -314,5 +319,13 @@ public final class EEModuleDescription implements ResourceInjectionTarget {
 
     public EEDefaultResourceJndiNames getDefaultResourceJndiNames() {
         return defaultResourceJndiNames;
+    }
+
+    public String getDefaultSecurityDomain() {
+        return defaultSecurityDomain;
+    }
+
+    public void setDefaultSecurityDomain(String defaultSecurityDomain) {
+        this.defaultSecurityDomain = defaultSecurityDomain;
     }
 }
