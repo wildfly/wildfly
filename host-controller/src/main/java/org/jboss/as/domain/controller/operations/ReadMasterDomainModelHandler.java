@@ -64,7 +64,6 @@ public class ReadMasterDomainModelHandler implements OperationStepHandler {
         final Resource untransformedRoot = context.readResource(PathAddress.EMPTY_ADDRESS,true);
         final Resource root = transformResource(context, untransformedRoot);
         // Get the list of all resources registered in this model
-        System.out.println("==========>" + describeAsNodeList(root));
         context.getResult().set(describeAsNodeList(root));
         // The HC registration process will hijack the operationPrepared call and push
         // the model to a registering host-controller
