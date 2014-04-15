@@ -54,10 +54,8 @@ public class SimpleServlet extends HttpServlet {
         log.info("Received request");
 
         Writer writer = resp.getWriter();
-        writer.write("Servlet Response\n");
-        SimpleStatelessSessionLocal bean = session;
-        String msg = bean.echo("Hello from Servlet");
-        writer.write(msg);
+        boolean ok = session.isInjectionOK();
+        writer.write("" + ok);
         writer.close();
     }
 
