@@ -125,7 +125,7 @@ public class WSTestCase {
             checkCountMetric(endpointResult, managementClient.getControllerClient(), "response-count");
         }
     }
-    
+
     private void checkCountMetric(final ModelNode endpointResult, final ModelControllerClient client, final String metricName) throws IOException {
     	final ModelNode readAttribute = new ModelNode();
         readAttribute.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
@@ -146,7 +146,6 @@ public class WSTestCase {
         Endpoint port = (Endpoint) service.getPort(Endpoint.class);
         Assert.assertEquals("Foo", port.echo("Foo"));
     }
-
 
     private String performCall(String params) throws Exception {
         URL url = new URL(this.url.toExternalForm() + "ws-example/" + params);
