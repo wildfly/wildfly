@@ -104,7 +104,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         HttpHandler headerHandler = headersService.createHttpHandler(Predicates.truePredicate(), new PathHandler());
         Assert.assertNotNull("handler should have been created", headerHandler);
 
-        final ServiceName hostServiceName = UndertowService.virtualHostName("default-server", "other-host");
+        final ServiceName hostServiceName = UndertowService.virtualHostName("some-server", "other-host");
         ServiceController<Host> hostSC = (ServiceController<Host>) mainServices.getContainer().getService(hostServiceName);
         Assert.assertNotNull(hostSC);
         hostSC.setMode(ServiceController.Mode.ACTIVE);
@@ -112,7 +112,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertEquals(1, host.getFilters().size());
 
 
-        final ServiceName locationServiceName = UndertowService.locationServiceName("default-server", "default-host", "/");
+        final ServiceName locationServiceName = UndertowService.locationServiceName("some-server", "default-host", "/");
         ServiceController<LocationService> locationSC = (ServiceController<LocationService>) mainServices.getContainer().getService(locationServiceName);
         Assert.assertNotNull(locationSC);
         locationSC.setMode(ServiceController.Mode.ACTIVE);
@@ -126,7 +126,7 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         Assert.assertNotNull(jspConfig);
         Assert.assertNotNull(jspConfig.createJSPServletInfo());
 
-        final ServiceName filterRefName = UndertowService.filterRefName("default-server", "other-host", "/", "static-gzip");
+        final ServiceName filterRefName = UndertowService.filterRefName("some-server", "other-host", "/", "static-gzip");
 
         ServiceController<FilterRef> gzipFilterController = (ServiceController<FilterRef>) mainServices.getContainer().getService(filterRefName);
         gzipFilterController.setMode(ServiceController.Mode.ACTIVE);
@@ -134,7 +134,15 @@ public class UndertowSubsystemTestCase extends AbstractSubsystemBaseTest {
         HttpHandler gzipHandler = gzipFilterRef.createHttpHandler(new PathHandler());
         Assert.assertNotNull("handler should have been created", gzipHandler);
 
+        ServiceController<Host> defaultHostSC = (ServiceController<Host>) mainServices.getContainer().getService(UndertowService.DEFAULT_HOST);
+        defaultHostSC.setMode(ServiceController.Mode.ACTIVE);
+        Host defaultHost = defaultHostSC.getValue();
+        Assert.assertNotNull("Default host should exist", defaultHost);
 
+        ServiceController<Server> defaultServerSC = (ServiceController<Server>) mainServices.getContainer().getService(UndertowService.DEFAULT_SERVER);
+        defaultServerSC.setMode(ServiceController.Mode.ACTIVE);
+        Server defaultServer = defaultServerSC.getValue();
+        Assert.assertNotNull("Default host should exist", defaultServer);
     }
 
     @Override

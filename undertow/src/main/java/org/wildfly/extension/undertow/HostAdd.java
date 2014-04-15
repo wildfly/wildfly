@@ -63,8 +63,9 @@ class HostAdd extends AbstractAddStepHandler {
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final PathAddress address = PathAddress.pathAddress(operation.get(OP_ADDR));
         final PathAddress serverAddress = address.subAddress(0, address.size() - 1);
-        final PathAddress subsystemAddress = serverAddress.subAddress(0, address.size() - 1);
-        final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(subsystemAddress));
+        final PathAddress subsystemAddress = serverAddress.subAddress(0, address.size() - 2);
+        final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(subsystemAddress, false), 1);
+        final ModelNode serverModel = Resource.Tools.readModel(context.readResourceFromRoot(serverAddress, false), 1);
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
 
 
@@ -74,10 +75,10 @@ class HostAdd extends AbstractAddStepHandler {
         final Resource resource = context.readResource(PathAddress.EMPTY_ADDRESS);
         final Resource accessLog = resource.getChild(UndertowExtension.PATH_ACCESS_LOG);
         final String defaultServerName = UndertowRootDefinition.DEFAULT_SERVER.resolveModelAttribute(context, subsystemModel).asString();
+        final String defaultHostName = ServerDefinition.DEFAULT_HOST.resolveModelAttribute(context, serverModel).asString();
         final String serverName = serverAddress.getLastElement().getValue();
 
-        boolean installCommonHost = defaultServerName.equals(serverName);
-
+        boolean isDefaultHost = defaultServerName.equals(serverName) && name.equals(defaultHostName);
 
         final ServiceName virtualHostServiceName = UndertowService.virtualHostName(serverName, name);
         final ServiceName accessLogServiceName = UndertowService.accessLogServiceName(serverName, name);
@@ -93,8 +94,9 @@ class HostAdd extends AbstractAddStepHandler {
         configureFilterRef(fullModel, builder, service,address);
 
         ServiceController<WebHost> commonController = null;
-        if (installCommonHost) {
+        if (isDefaultHost) {
             commonController = addCommonHost(context, verificationHandler, name, aliases, serverName, virtualHostServiceName);
+            builder.addAliases(UndertowService.DEFAULT_HOST);//add alias for default host of default server service
         }
 
         final ServiceController<Host> serviceController = builder.install();
@@ -123,7 +125,7 @@ class HostAdd extends AbstractAddStepHandler {
         if (newControllers != null) {
             newControllers.add(serviceController);
             newControllers.add(consoleServiceServiceController);
-            if (installCommonHost) {
+            if (isDefaultHost) {
                 newControllers.add(commonController);
             }
         }
