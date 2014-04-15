@@ -459,6 +459,15 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="tracking" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+          <![CDATA[[
+            Defines if IronJacamar should track connection handles across transaction boundaries
+          ]]>
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attributeGroup ref="common-attribute"></xs:attributeGroup>
   </xs:complexType>
 

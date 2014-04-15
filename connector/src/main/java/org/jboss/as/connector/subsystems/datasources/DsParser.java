@@ -90,6 +90,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONN
 import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONNECTION_CHECKER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACK_STATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLATION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_PROPERTY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
@@ -567,6 +568,13 @@ public class DsParser extends AbstractParser {
                     }
                     break;
                 }
+                case TRACKING: {
+                    final String value = rawAttributeText(reader, TRACKING.getXmlName());
+                    if (value != null) {
+                        TRACKING.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
                 default:
                     if (Constants.STATISTICS_ENABLED.getName().equals(reader.getAttributeLocalName(i))) {
                         final String value = rawAttributeText(reader, Constants.STATISTICS_ENABLED.getXmlName());
@@ -984,6 +992,13 @@ public class DsParser extends AbstractParser {
                     final String value = rawAttributeText(reader, CONNECTABLE.getXmlName());
                     if (value != null) {
                         CONNECTABLE.parseAndSetParameter(value, operation, reader);
+                    }
+                    break;
+                }
+                case TRACKING: {
+                    final String value = rawAttributeText(reader, TRACKING.getXmlName());
+                    if (value != null) {
+                        TRACKING.parseAndSetParameter(value, operation, reader);
                     }
                     break;
                 }

@@ -125,6 +125,31 @@ public abstract class PoolOperations implements OperationStepHandler {
 
     }
 
+    public static class DumpQueuedThreadInPool extends PoolOperations {
+            public static final DumpQueuedThreadInPool DS_INSTANCE = new DumpQueuedThreadInPool(new DsPoolMatcher());
+            public static final DumpQueuedThreadInPool RA_INSTANCE = new DumpQueuedThreadInPool(new RaPoolMatcher());
+
+            protected DumpQueuedThreadInPool(PoolMatcher matcher) {
+                super(matcher);
+            }
+
+            @Override
+            protected ModelNode invokeCommandOn(Pool pool, Object... parameters) {
+                ModelNode result = new ModelNode();
+                for (String line : pool.dumpQueuedThreads()) {
+                    result.add(line);
+                }
+                return result;
+            }
+
+            @Override
+            protected Object[] getParameters(OperationContext context, ModelNode operation) {
+                return null;
+            }
+
+        }
+
+
     public static class FlushAllConnectionInPool extends PoolOperations {
         public static final FlushAllConnectionInPool DS_INSTANCE = new FlushAllConnectionInPool(new DsPoolMatcher());
         public static final FlushAllConnectionInPool RA_INSTANCE = new FlushAllConnectionInPool(new RaPoolMatcher());

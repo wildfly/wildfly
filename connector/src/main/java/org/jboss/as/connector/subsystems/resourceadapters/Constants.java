@@ -85,6 +85,8 @@ public class Constants {
 
     private static final String CONNECTABLE_NAME = "connectable";
 
+    private static final String TRACKING_NAME = "tracking";
+
     private static final String JNDINAME_NAME = "jndi-name";
 
     private static final String ALLOCATION_RETRY_NAME = "allocation-retry";
@@ -320,7 +322,11 @@ public class Constants {
                     .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
                     .setAllowNull(true)
                     .build();
-
+    static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
+                        .setXmlName(org.jboss.jca.common.api.metadata.ds.v13.DataSource.Attribute.TRACKING.getLocalName())
+                        .setAllowExpression(true)
+                        .setAllowNull(true)
+                        .build();
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING)
             .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)

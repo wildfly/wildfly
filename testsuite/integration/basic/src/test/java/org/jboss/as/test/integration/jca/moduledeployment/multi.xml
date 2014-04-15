@@ -1,4 +1,4 @@
-<subsystem xmlns="urn:jboss:domain:resource-adapters:2.0">
+<subsystem xmlns="urn:jboss:domain:resource-adapters:3.0">
 	<resource-adapters>
 		<resource-adapter id="multi" >
 			<module slot="main" id="org.jboss.ironjacamar.ra16out" />

@@ -487,6 +487,13 @@ public class XMLXaDataSourceRuntimeHandler extends AbstractXMLDataSourceRuntimeH
         } else if (attributeName.equals(Constants.CONNECTABLE.getName())) {
             //Just set to false
             context.getResult().set(false);
+        } else if (attributeName.equals(Constants.STATISTICS_ENABLED.getName())) {
+            //Just set to false
+            context.getResult().set(false);
+
+        } else if (attributeName.equals(Constants.TRACKING.getName())) {
+            //Just return w/o setting a result
+            return;
         } else {
             throw ConnectorMessages.MESSAGES.unknownAttribute(attributeName);
         }
