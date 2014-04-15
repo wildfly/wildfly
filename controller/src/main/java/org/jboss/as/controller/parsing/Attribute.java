@@ -122,6 +122,7 @@ public enum Attribute {
     PLAIN_TEXT("plain-text"),
     PORT("port"),
     PORT_OFFSET("port-offset"),
+    PREFER_ORIGINAL_CONNECTION("prefer-original-connection"),
     PREFIX("prefix"),
     PRINCIPAL_ATTRIBUTE("principal-attribute"),
     PROFILE("profile"),

@@ -44,38 +44,81 @@ import org.junit.Test;
  */
 public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
 
-    private static final String BASE_DN = "ou=users,dc=group-to-principal,dc=wildfly,dc=org";
-    private static final String GROUPS_DN = "ou=groups,dc=group-to-principal,dc=wildfly,dc=org";
+    /*
+     * Generic attributes.
+     */
+
     private static final String USERNAME_FILTER = "uid";
+
+    /*
+     * Group To Principal Attributes
+     */
+
+    // Distinguished Names
+    private static final String GROUPS_BASE_DN = "ou=users,dc=group-to-principal,dc=wildfly,dc=org";
+    private static final String GROUPS_GROUPS_DN = "ou=groups,dc=group-to-principal,dc=wildfly,dc=org";
+    // Realm Names
+    static final String GROUP_TO_PRINCIPAL_FOLLOW = "GroupToPrincipalFollow";
+    static final String GROUP_TO_PRINCIPAL_THROW = "GroupToPrincipalThrow";
+
+    /*
+     * Principal To Group Attributes
+     */
+
+    static final String PRINCIPAL_TO_GROUP_FOLLOW_ORIGINAL = "PrincipalToGroupFollowOriginal";
+    static final String PRINCIPAL_TO_GROUP_THROW_ORIGINAL = "PrincipalToGroupThrowOriginal";
+    static final String PRINCIPAL_TO_GROUP_THROW_REFERRAL = "PrincipalToGroupThrowReferral";
+
+    private static final String PRINCIPAL_BASE_DN = "ou=users,dc=principal-to-group,dc=wildfly,dc=org";
+
 
     static final String MASTER_FOLLOW_CONNECTION = "MasterFollow";
     static final String MASTER_THROW_CONNECTION = "MasterThrow";
     static final String SLAVE_CONNECTION = "Slave";
 
-    static final String GROUP_TO_PRINCIPAL_FOLLOW = "GroupToPrincipalFollow";
-    static final String GROUP_TO_PRINCIPAL_THROW = "GroupToPrincipalThrow";
+
+
+    private SecurityRealmAddBuilder securityRealmBuilder(final String realmName, final String connectionName, final String baseDn) {
+        return SecurityRealmAddBuilder.builder(realmName)
+                .authentication()
+                .ldap()
+                .setConnection(connectionName)
+                .setBaseDn(baseDn)
+                .setUsernameFilter(USERNAME_FILTER)
+                .build().build();
+    }
 
     private ModelNode createGroupToPrincipal(final String realmName, final String connectionName) {
-        return SecurityRealmAddBuilder.builder(realmName)
-            .authentication()
-            .ldap()
-            .setConnection(connectionName)
-            .setBaseDn(BASE_DN)
-            .setUsernameFilter(USERNAME_FILTER)
-            .build().build()
+        return securityRealmBuilder(realmName, connectionName, GROUPS_BASE_DN)
             .authorization().ldap()
             .setConnection(connectionName)
             .usernameFilter()
-            .setBaseDn(BASE_DN)
+            .setBaseDn(GROUPS_BASE_DN)
             .setRecursive(false)
             .setAttribute(USERNAME_FILTER)
             .build()
             .groupToPrincipal()
-            .setBaseDn(GROUPS_DN)
+            .setBaseDn(GROUPS_GROUPS_DN)
             .setPrincipalAttribute("uniqueMember")
             .setIterative(true)
             .setRecursive(true)
             .build().build().build().build();
+    }
+
+    private ModelNode createPrincipalToGroup(final String realmName, final String connectionName, final boolean preferOriginalConnection) {
+        return securityRealmBuilder(realmName, connectionName, PRINCIPAL_BASE_DN)
+            .authorization().ldap()
+            .setConnection(connectionName)
+            .usernameFilter()
+            .setBaseDn(GROUPS_BASE_DN)
+            .setRecursive(false)
+            .setAttribute(USERNAME_FILTER)
+            .build()
+            .principalToGroup()
+            .setIterative(true)
+            .setPreferOriginalConnection(preferOriginalConnection)
+            .build()
+            .build().build().build();
     }
 
     @Override
@@ -88,6 +131,13 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
 
         bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_FOLLOW, MASTER_FOLLOW_CONNECTION));
         bootOperations.add(createGroupToPrincipal(GROUP_TO_PRINCIPAL_THROW, MASTER_THROW_CONNECTION));
+
+        bootOperations.add(createPrincipalToGroup(PRINCIPAL_TO_GROUP_FOLLOW_ORIGINAL, MASTER_FOLLOW_CONNECTION, true));
+        // It is not possible to use FOLLOW and also desire to use the referral connection as without the exception
+        // we don't know it was a referral!!
+        bootOperations.add(createPrincipalToGroup(PRINCIPAL_TO_GROUP_THROW_ORIGINAL, MASTER_THROW_CONNECTION, true));
+        bootOperations.add(createPrincipalToGroup(PRINCIPAL_TO_GROUP_THROW_REFERRAL, MASTER_THROW_CONNECTION, false));
+
     }
 
     @Override
@@ -145,6 +195,24 @@ public class GroupLoadingReferralsSuiteTest extends BaseLdapSuiteTest {
     @Test
     public void groupToPrincipalThrow_User() throws Exception {
         verifyGroupMembership(GROUP_TO_PRINCIPAL_THROW, "ReferralUserSeven", "passwordSeven", "GroupEight");
+    }
+
+    // Principal To Group Tests
+
+    @Test
+    public void principalToGroupUserGroupReferralGroup() throws Exception {
+        verifyGroupMembership(PRINCIPAL_TO_GROUP_THROW_REFERRAL, "TestUserSeven", "passwordSeven", "GroupSeven", "GroupEight");
+    }
+
+    @Test
+    public void principalToGroupUserReferralGroupGroup() throws Exception {
+        verifyGroupMembership(PRINCIPAL_TO_GROUP_THROW_REFERRAL, "ReferralUserEight", "passwordEight", "GroupSeven", "GroupEight");
+    }
+
+    @Test
+    public void principalToGroupUserReferralGroupOriginal() throws Exception {
+        verifyGroupMembership(PRINCIPAL_TO_GROUP_FOLLOW_ORIGINAL, "ReferralUserTen", "passwordTen", "GroupNine");
+        verifyGroupMembership(PRINCIPAL_TO_GROUP_THROW_ORIGINAL, "ReferralUserTen", "passwordTen", "GroupNine");
     }
 
 }

@@ -210,13 +210,6 @@ objectClass: uidObject
 uid: ReferralUserEight
 ref: ldap://localhost:11391/uid=TestUserEight,ou=users,dc=principal-to-group,dc=wildfly,dc=org
 
-dn: uid=ReferralUserNine,ou=users,dc=principal-to-group,dc=wildfly,dc=org
-objectClass: top
-objectClass: referral
-objectClass: uidObject
-uid: ReferralUserNine
-ref: ldap://localhost:11391/uid=TestUserNine,ou=users,dc=principal-to-group,dc=wildfly,dc=org
-
 dn: uid=ReferralUserTen,ou=users,dc=principal-to-group,dc=wildfly,dc=org
 objectClass: top
 objectClass: referral
@@ -224,10 +217,10 @@ objectClass: uidObject
 uid: ReferralUserTen
 ref: ldap://localhost:11391/uid=TestUserTen,ou=users,dc=principal-to-group,dc=wildfly,dc=org
 
-dn: uid=GroupNone,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
+dn: uid=GroupNine,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
 objectClass: top
 objectClass: groupMember
 objectClass: group
 objectClass: uidObject
-uid: GroupNone
+uid: GroupNine
 

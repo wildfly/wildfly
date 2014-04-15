@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ITERATIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRINCIPAL_TO_GROUP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PREFER_ORIGINAL_CONNECTION;
 
 import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource.GroupName;
 import org.jboss.dmr.ModelNode;
@@ -50,6 +51,7 @@ public class PrincipalToGroupBuilder implements LdapAuthorizationBuilderChild {
     private GroupName groupName;
     private String groupNameAttribute;
     private boolean iterative;
+    private boolean preferOriginalConnection;
 
     PrincipalToGroupBuilder(LdapAuthorizationBuilder parent) {
         this.parent = parent;
@@ -90,6 +92,13 @@ public class PrincipalToGroupBuilder implements LdapAuthorizationBuilderChild {
         return this;
     }
 
+    public PrincipalToGroupBuilder setPreferOriginalConnection(final boolean preferOriginalConnection) {
+        assertNotBuilt();
+        this.preferOriginalConnection = preferOriginalConnection;
+
+        return this;
+    }
+
     @Override
     public boolean isBuilt() {
         return built;
@@ -118,6 +127,9 @@ public class PrincipalToGroupBuilder implements LdapAuthorizationBuilderChild {
         }
         if (groupAttribute != null) {
             add.get(GROUP_ATTRIBUTE).set(groupAttribute);
+        }
+        if (preferOriginalConnection == false) {
+            add.get(PREFER_ORIGINAL_CONNECTION).set(preferOriginalConnection);
         }
 
         return parent.addStep(add);

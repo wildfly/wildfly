@@ -43,19 +43,6 @@ uid: TestUserEight
 memberOf: uid=GroupSeven,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
 userPassword: passwordEight
 
-dn: uid=TestUserNine,ou=users,dc=principal-to-group,dc=wildfly,dc=org
-objectClass: top
-objectClass: groupMember
-objectClass: inetOrgPerson
-objectClass: uidObject
-objectClass: person
-objectClass: organizationalPerson
-cn: Test User Nine
-sn: Test User Nine
-uid: TestUserNine
-memberOf: uid=ReferralGroupSeven,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
-userPassword: passwordNine
-
 dn: uid=TestUserTen,ou=users,dc=principal-to-group,dc=wildfly,dc=org
 objectClass: top
 objectClass: groupMember
@@ -66,7 +53,7 @@ objectClass: organizationalPerson
 cn: Test User Ten
 sn: Test User Ten
 uid: TestUserTen
-memberOf: uid=GroupNone,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
-userPassword: passwordNine
+memberOf: uid=GroupNine,ou=groups,dc=principal-to-group,dc=wildfly,dc=org
+userPassword: passwordTen
 
 

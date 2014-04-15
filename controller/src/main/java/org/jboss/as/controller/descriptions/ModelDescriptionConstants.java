@@ -258,6 +258,7 @@ public class ModelDescriptionConstants {
     public static final String PLATFORM_MBEAN = "platform-mbean";
     public static final String PORT = "port";
     public static final String PORT_OFFSET = "port-offset";
+    public static final String PREFER_ORIGINAL_CONNECTION = "prefer-original-connection";
     public static final String PRINCIPAL_ATTRIBUTE = "principal-attribute";
     public static final String PRINCIPAL_TO_GROUP = "principal-to-group";
     public static final String PRIORITY = "priority";

@@ -35,30 +35,23 @@ final class LdapEntry {
     private final String simpleName;
     private final String distinguishedName;
 
-    private final LdapEntry previousEntry;
     private final URI referralURI;
 
     private final int hashCode;
 
     LdapEntry(final String simpleName, final String distinguishedName) {
-        this(simpleName, distinguishedName, null, null);
+        this(simpleName, distinguishedName, null);
     }
 
     LdapEntry(final String simpleName, final String distinguishedName, final URI referralURI) {
-        this(simpleName, distinguishedName, null, referralURI);
-    }
-
-    LdapEntry(final String simpleName, final String distinguishedName, final LdapEntry previousEntry, final URI referralURI) {
         this.simpleName = simpleName;
         this.distinguishedName = distinguishedName;
 
-        this.previousEntry = previousEntry;
         this.referralURI = referralURI;
 
         hashCode = (simpleName == null ? 7 : simpleName.hashCode())
                 * (distinguishedName == null ? 31 : distinguishedName.hashCode()
-                * (previousEntry == null ? 37 : previousEntry.hashCode)
-                * (referralURI == null ? 41 : referralURI.hashCode()));
+                * (referralURI == null ? 37 : referralURI.hashCode()));
     }
 
     public String getSimpleName() {
@@ -67,10 +60,6 @@ final class LdapEntry {
 
     public String getDistinguishedName() {
         return distinguishedName;
-    }
-
-    public LdapEntry getPreviousEntry() {
-        return previousEntry;
     }
 
     public URI getReferralUri() {
@@ -94,13 +83,12 @@ final class LdapEntry {
         return (obj.hashCode == hashCode)
                 && (simpleName == null ? obj.simpleName == null : simpleName.equals(obj.simpleName))
                 && (distinguishedName == null ? obj.distinguishedName == null : distinguishedName.equals(obj.distinguishedName)
-                && (previousEntry == null ? obj.previousEntry == null : previousEntry.equals(obj.previousEntry))
                 && (referralURI == null ? obj.referralURI == null : referralURI.equals(obj.referralURI)));
     }
 
     @Override
     public String toString() {
-        return String.format("LdapEntry simpleName='%s', distinguishedName='%s', previousEntry='%s', referralConnection='%s'", simpleName, distinguishedName, previousEntry, referralURI);
+        return String.format("LdapEntry simpleName='%s', distinguishedName='%s', referralConnection='%s'", simpleName, distinguishedName, referralURI);
     }
 
 }
