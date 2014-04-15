@@ -74,6 +74,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNE
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_FROM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.JNDINAME;
@@ -268,6 +269,7 @@ public final class ResourceAdapterSubsystemParser implements XMLStreamConstants,
         JNDINAME.marshallAsAttribute(conDef, streamWriter);
         ENABLED.marshallAsAttribute(conDef, streamWriter);
         CONNECTABLE.marshallAsAttribute(conDef, streamWriter);
+        TRACKING.marshallAsAttribute(conDef, streamWriter);
         USE_JAVA_CONTEXT.marshallAsAttribute(conDef, streamWriter);
         streamWriter.writeAttribute("pool-name", poolName);
         USE_CCM.marshallAsAttribute(conDef, streamWriter);

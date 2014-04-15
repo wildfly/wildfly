@@ -118,6 +118,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.STALE_CONN
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRACK_STATEMENTS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TRANSACTION_ISOLATION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_DELIMITER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_PROPERTY;
 import static org.jboss.as.connector.subsystems.datasources.Constants.URL_SELECTOR_STRATEGY_CLASS_NAME;
@@ -255,6 +256,7 @@ public class DataSourcesExtension implements Extension {
                 SPY.marshallAsAttribute(dataSourceNode, writer);
                 USE_CCM.marshallAsAttribute(dataSourceNode, writer);
                 CONNECTABLE.marshallAsAttribute(dataSourceNode, writer);
+                TRACKING.marshallAsAttribute(dataSourceNode, writer);
                 STATISTICS_ENABLED.marshallAsAttribute(dataSourceNode, writer);
 
                 if (!isXADataSource) {

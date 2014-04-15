@@ -61,6 +61,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WRAP_XA_RESOURCE;
@@ -158,6 +159,11 @@ public abstract class CommonIronJacamarParser extends AbstractParser {
                 }
                 case CONNECTABLE: {
                     CONNECTABLE.parseAndSetParameter(value, connectionDefinitionNode, reader);
+
+                    break;
+                }
+                case TRACKING: {
+                    TRACKING.parseAndSetParameter(value, connectionDefinitionNode, reader);
 
                     break;
                 }

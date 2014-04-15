@@ -79,6 +79,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_GROUP;
@@ -147,6 +148,9 @@ public class IronJacamarResourceCreator {
         setAttribute(model, ENABLED, connDef.isEnabled());
         if (connDef instanceof CommonConnDef) {
             setAttribute(model, CONNECTABLE, ((CommonConnDef) connDef).isConnectable());
+            if (((CommonConnDef) connDef).isTracking() != null) {
+                setAttribute(model, TRACKING, ((CommonConnDef) connDef).isTracking());
+            }
         }
         setAttribute(model, USE_CCM, connDef.isUseCcm());
         if (connDef instanceof org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) {

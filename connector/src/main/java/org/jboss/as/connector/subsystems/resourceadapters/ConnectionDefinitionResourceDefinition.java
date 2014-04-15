@@ -29,6 +29,7 @@ import static org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_PO
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTIONDEFINITIONS_NAME;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 
 import org.jboss.as.connector.subsystems.common.pool.PoolOperations;
 import org.jboss.as.controller.AttributeDefinition;
@@ -36,6 +37,7 @@ import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
+import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
@@ -59,6 +61,9 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     private static final OperationDefinition FLUSH_ALL_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_ALL_CONNECTION_IN_POOL, RESOLVER)
             .withFlag(Flag.RUNTIME_ONLY)
             .build();
+    static final SimpleOperationDefinition DUMP_QUEUED_THREADS = new SimpleOperationDefinitionBuilder("dump-queued-threads-in-pool", RESOLVER)
+            .setRuntimeOnly().build();
+
     private static final OperationDefinition FLUSH_INVALID_DEFINITION = new SimpleOperationDefinitionBuilder(Constants.FLUSH_INVALID_CONNECTION_IN_POOL, RESOLVER)
                 .withFlag(Flag.RUNTIME_ONLY)
                 .build();
@@ -96,6 +101,7 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
         if (runtimeOnlyRegistrationValid) {
             resourceRegistration.registerOperationHandler(FLUSH__IDLE_DEFINITION, PoolOperations.FlushIdleConnectionInPool.RA_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_ALL_DEFINITION, PoolOperations.FlushAllConnectionInPool.RA_INSTANCE);
+            resourceRegistration.registerOperationHandler(DUMP_QUEUED_THREADS, PoolOperations.DumpQueuedThreadInPool.RA_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_INVALID_DEFINITION, PoolOperations.FlushInvalidConnectionInPool.RA_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_GRACEFULY_DEFINITION, PoolOperations.FlushGracefullyConnectionInPool.RA_INSTANCE);
             resourceRegistration.registerOperationHandler(TEST_DEFINITION, PoolOperations.TestConnectionInPool.RA_INSTANCE);
@@ -110,7 +116,8 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
     static void registerTransformer200(ResourceTransformationDescriptionBuilder parentBuilder) {
         parentBuilder.addChildResource(PATH).getAttributeBuilder()
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE);
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING);
 
     }
 
@@ -120,7 +127,8 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS,
                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES, org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
-                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE);
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING);
     }
 
     static void registerTransformer110(ResourceTransformationDescriptionBuilder parentBuilder) {
@@ -138,7 +146,8 @@ public class ConnectionDefinitionResourceDefinition extends SimpleResourceDefini
                         .addRejectCheck(RejectAttributeChecker.UNDEFINED, Constants.RECOVERLUGIN_PROPERTIES)
                         .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Constants.RECOVERLUGIN_PROPERTIES)
                         .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), Constants.CONNECTABLE)
-                        .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE);
+                        .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
+                        .addRejectCheck(RejectAttributeChecker.DEFINED, Constants.CONNECTABLE, Constants.TRACKING);
 
     }
 }

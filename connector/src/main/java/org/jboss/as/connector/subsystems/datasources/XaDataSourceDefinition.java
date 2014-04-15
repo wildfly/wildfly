@@ -30,6 +30,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DUMP_QUEUED_THREADS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_ADD_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.ENABLE_TRANSFORMER;
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_ALL_CONNECTION;
@@ -38,6 +39,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_IDLE
 import static org.jboss.as.connector.subsystems.datasources.Constants.FLUSH_INVALID_CONNECTION;
 import static org.jboss.as.connector.subsystems.datasources.Constants.STATISTICS_ENABLED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.TEST_CONNECTION;
+import static org.jboss.as.connector.subsystems.datasources.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_ATTRIBUTE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.XA_DATASOURCE_PROPERTIES_ATTRIBUTES;
@@ -103,6 +105,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
         if (registerRuntimeOnly) {
             resourceRegistration.registerOperationHandler(FLUSH_IDLE_CONNECTION, PoolOperations.FlushIdleConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_ALL_CONNECTION, PoolOperations.FlushAllConnectionInPool.DS_INSTANCE);
+            resourceRegistration.registerOperationHandler(DUMP_QUEUED_THREADS, PoolOperations.DumpQueuedThreadInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_INVALID_CONNECTION, PoolOperations.FlushInvalidConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(FLUSH_GRACEFULLY_CONNECTION, PoolOperations.FlushGracefullyConnectionInPool.DS_INSTANCE);
             resourceRegistration.registerOperationHandler(TEST_CONNECTION, PoolOperations.TestConnectionInPool.DS_INSTANCE);
@@ -175,6 +178,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 )
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
 
                     @Override
@@ -196,7 +200,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS,
                         org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
                         org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                        Constants.URL_PROPERTY, CONNECTABLE
+                        Constants.URL_PROPERTY, CONNECTABLE, TRACKING
                 )
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, DATASOURCE_PROPERTIES_ATTRIBUTES)
                  /*These are nillable in the old model, but appear as not nillable in CompareModelUtils due to problems in the resource description
@@ -240,6 +244,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 )
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(false)), CONNECTABLE)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(false, false, new ModelNode(true)), STATISTICS_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
                 .addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
 
                     @Override
@@ -261,7 +266,7 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                 Constants.CONNECTION_PROPERTIES,
                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES,
                 org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE,
-                Constants.URL_PROPERTY, CONNECTABLE
+                Constants.URL_PROPERTY, CONNECTABLE, TRACKING
         )
                 //Reject expressions for enabled, since if they are used we don't know their value for the operation transformer override
                 //Although 'enabled' appears in the legacy model and the 'add' handler, the add does not actually set its value in the model
@@ -306,7 +311,9 @@ public class XaDataSourceDefinition extends SimpleResourceDefinition {
                         //This will not get called if it was discarded, so reject if it is undefined (default==false) or if defined and != 'true'
                         return !attributeValue.isDefined() || !attributeValue.asString().equals("true");
                     }
-                }, STATISTICS_ENABLED).end()
+                }, STATISTICS_ENABLED)
+                .setDiscard(DiscardAttributeChecker.UNDEFINED, TRACKING)
+                .addRejectCheck(RejectAttributeChecker.DEFINED, TRACKING).end()
                 //We're rejecting operations when statistics-enabled=false, so let it through in the enable/disable ops which do not use that attribute
                 .addOperationTransformationOverride(DATASOURCE_ENABLE.getName())
                 .end()

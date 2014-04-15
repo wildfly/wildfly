@@ -416,6 +416,15 @@
         </xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="tracking" type="xs:boolean" use="optional">
+      <xs:annotation>
+        <xs:documentation>
+          <![CDATA[[
+            Defines if IronJacamar should track connection handles across transaction boundaries
+          ]]>
+        </xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute default="false" name="statistics-enabled" type="xs:boolean">
       <xs:annotation>
         <xs:documentation>

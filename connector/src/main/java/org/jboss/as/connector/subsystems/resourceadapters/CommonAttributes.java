@@ -64,6 +64,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECUR
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRANSACTION_SUPPORT;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USETRYLOCK;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
@@ -103,7 +104,7 @@ public class CommonAttributes {
             CLASS_NAME,
             JNDINAME,
             USE_JAVA_CONTEXT,
-            ENABLED, CONNECTABLE,
+            ENABLED, CONNECTABLE, TRACKING,
             MAX_POOL_SIZE,
             INITIAL_POOL_SIZE,
             MIN_POOL_SIZE,
