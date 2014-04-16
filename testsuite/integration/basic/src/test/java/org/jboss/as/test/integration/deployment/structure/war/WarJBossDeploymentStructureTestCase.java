@@ -1,18 +1,21 @@
 package org.jboss.as.test.integration.deployment.structure.war;
 
-import javax.ejb.EJB;
-
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.logging.Logger;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.ejb.EJB;
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -46,9 +49,10 @@ public class WarJBossDeploymentStructureTestCase {
 
         war.addClasses(ClassLoadingEJB.class, WarJBossDeploymentStructureTestCase.class);
 
-        war.add(jarOne,"a", ZipExporter.class);
-        war.add(ignoredJar,"i", ZipExporter.class);
+        war.add(jarOne, "a", ZipExporter.class);
+        war.add(ignoredJar, "i", ZipExporter.class);
 
+        war.addAsWebResource(new StringAsset("Root file"), "root-file.txt");
 
         logger.info(war.toString(true));
         return war;
@@ -75,7 +79,7 @@ public class WarJBossDeploymentStructureTestCase {
     @Test
     public void testUsePhysicalCodeSource() throws ClassNotFoundException {
         Class<?> clazz = this.ejb.loadClass(TO_BE_FOUND_CLASS_NAME);
-        Assert.assertTrue( clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
+        Assert.assertTrue(clazz.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("jar"));
         Assert.assertTrue(ClassLoadingEJB.class.getProtectionDomain().getCodeSource().getLocation().getProtocol().equals("file"));
     }
 
@@ -83,20 +87,35 @@ public class WarJBossDeploymentStructureTestCase {
      * EE.5.15, part of testsuite migration AS6->AS7 (jbas7556)
      */
     @Test
-    public void testModuleName() throws Exception
-    {
-       String result = ejb.query("java:module/ModuleName");
-       assertEquals("deployment-structure", result);
-       result = ejb.getResourceModuleName();
-       assertEquals("deployment-structure", result);
+    public void testModuleName() throws Exception {
+        String result = ejb.query("java:module/ModuleName");
+        assertEquals("deployment-structure", result);
+        result = ejb.getResourceModuleName();
+        assertEquals("deployment-structure", result);
     }
 
     @Test
-    public void testAppName() throws Exception
-    {
-       String result = ejb.query("java:app/AppName");
-       assertEquals("deployment-structure", result);
-       result = ejb.getResourceAppName();
-       assertEquals("deployment-structure", result);
+    public void testAppName() throws Exception {
+        String result = ejb.query("java:app/AppName");
+        assertEquals("deployment-structure", result);
+        result = ejb.getResourceAppName();
+        assertEquals("deployment-structure", result);
+    }
+
+
+    @Test
+    public void testAddingRootResource() throws ClassNotFoundException, IOException {
+        InputStream clazz = getClass().getClassLoader().getResourceAsStream("root-file.txt");
+        try {
+            byte[] data = new byte[100];
+            int res;
+            StringBuilder sb = new StringBuilder();
+            while ((res = clazz.read(data)) > 0) {
+                sb.append(new String(data, 0, res));
+            }
+            Assert.assertEquals("Root file", sb.toString());
+        } finally {
+            clazz.close();
+        }
     }
 }
