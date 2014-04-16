@@ -107,7 +107,7 @@
         <version.io.undertow>1.1.0.Beta1</version.io.undertow>
         <version.io.undertow.jastow>1.0.0.Final</version.io.undertow.jastow>
         <version.javax.activation>1.1.1</version.javax.activation>
-        <version.javax.enterprise>1.1</version.javax.enterprise>
+        <version.javax.enterprise>1.2</version.javax.enterprise>
         <version.javax.inject.javax.inject>1</version.javax.inject.javax.inject>
         <version.javax.jws.jsr181-api>1.0-MR1</version.javax.jws.jsr181-api>
         <version.javax.mail>1.5.1</version.javax.mail>
@@ -230,8 +230,8 @@
         <version.org.jboss.staxmapper>1.1.0.Final</version.org.jboss.staxmapper>
         <version.org.jboss.stdio>1.0.2.GA</version.org.jboss.stdio>
         <version.org.jboss.threads>2.1.1.Final</version.org.jboss.threads>
-        <version.org.jboss.weld.weld>2.2.0.CR2</version.org.jboss.weld.weld>
-        <version.org.jboss.weld.weld-api>2.2.CR1</version.org.jboss.weld.weld-api>
+        <version.org.jboss.weld.weld>2.2.0.SP1</version.org.jboss.weld.weld>
+        <version.org.jboss.weld.weld-api>2.2.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.2.Final</version.org.jboss.ws.api>
         <version.org.jboss.ws.spi>2.3.0.Final</version.org.jboss.ws.spi>
         <version.org.jboss.ws.common>2.3.0.Final</version.org.jboss.ws.common>
@@ -1807,20 +1807,12 @@
                 <version>${version.javax.enterprise}</version>
                 <exclusions>
                     <exclusion>
-                        <groupId>org.jboss.spec.javax.interceptor</groupId>
-                        <artifactId>jboss-interceptors-api_1.1_spec</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>javax.annotation</groupId>
-                        <artifactId>jsr250-api</artifactId>
+                        <groupId>javax.interceptor</groupId>
+                        <artifactId>javax.interceptor-api</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>javax.el</groupId>
-                        <artifactId>el-api</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>org.jboss.spec.javax.ejb</groupId>
-                        <artifactId>jboss-ejb-api_3.1_spec</artifactId>
+                        <artifactId>javax.el-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
