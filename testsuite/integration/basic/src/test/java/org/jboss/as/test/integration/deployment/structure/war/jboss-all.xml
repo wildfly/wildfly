@@ -24,6 +24,7 @@
         <deployment>
             <resources>
                 <resource-root path="WEB-INF/classes" use-physical-code-source="true"/>
+                <resource-root path="/" />
             </resources>
             <dependencies>
                 <module name="deployment.module.ignored"/>
