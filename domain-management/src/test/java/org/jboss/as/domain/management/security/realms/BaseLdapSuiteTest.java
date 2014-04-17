@@ -42,7 +42,7 @@ import javax.security.sasl.RealmCallback;
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.SimplePrincipal;
 import org.jboss.as.core.security.SubjectUserInfo;
-import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
@@ -89,7 +89,7 @@ public abstract class BaseLdapSuiteTest extends SecurityRealmTestBase {
             realm = (SecurityRealm) service.getValue();
         }
 
-        return realm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        return realm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
     }
 
     private Set<RealmGroup> getUsersGroups(final String realmName, final String userName, final String password) throws Exception {

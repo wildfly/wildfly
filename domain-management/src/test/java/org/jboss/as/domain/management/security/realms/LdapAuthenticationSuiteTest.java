@@ -37,7 +37,7 @@ import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.NameCallback;
 import javax.security.sasl.RealmCallback;
 
-import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
@@ -105,15 +105,15 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
 
     @Test
     public void testSupportedMechanism() {
-        Set<AuthMechanism> supportedMechs = securityRealm.getSupportedAuthenticationMechanisms();
+        Set<AuthenticationMechanism> supportedMechs = securityRealm.getSupportedAuthenticationMechanisms();
         assertEquals("Number of mechanims", 1, supportedMechs.size());
-        assertTrue("Supports Digest", supportedMechs.contains(AuthMechanism.PLAIN));
+        assertTrue("Supports Digest", supportedMechs.contains(AuthenticationMechanism.PLAIN));
     }
 
 
     @Test
     public void testVerifyGoodPassword() throws Exception {
-        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
 
         NameCallback ncb = new NameCallback("Username", USER_ONE);
         RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
@@ -130,7 +130,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
          * Essentially a duplicate of the previous test but we want to be sure this works as we later
          * test that this user can be excluded using an advanced filter.
          */
-        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
 
         NameCallback ncb = new NameCallback("Username", USER_TWO);
         RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
@@ -143,7 +143,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
 
     @Test
     public void testVerifyBadPassword() throws Exception {
-        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
 
         NameCallback ncb = new NameCallback("Username", USER_ONE);
         RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
@@ -157,7 +157,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
 
     @Test
     public void testVerifyNonExistentUser() throws Exception {
-        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
 
         NameCallback ncb = new NameCallback("Username", "UserThree");
         RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
@@ -172,7 +172,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
 
     @Test
     public void testVerifyEmptyPassword() throws Exception {
-        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
 
         NameCallback ncb = new NameCallback("Username", USER_ONE);
         RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
@@ -187,7 +187,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
 
     @Test
     public void testVerifyIgnoredReferral() throws Exception {
-        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
 
         NameCallback ncb = new NameCallback("Username", USER_THREE);
         RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
@@ -203,7 +203,7 @@ public class LdapAuthenticationSuiteTest extends BaseLdapSuiteTest {
 
     private AuthorizingCallbackHandler getAdvancedCallbackHandler() {
         return ((SecurityRealm) getContainer().getService(SecurityRealm.ServiceUtil.createServiceName(ADVANCED_REALM))
-                .getValue()).getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+                .getValue()).getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
     }
 
     @Test

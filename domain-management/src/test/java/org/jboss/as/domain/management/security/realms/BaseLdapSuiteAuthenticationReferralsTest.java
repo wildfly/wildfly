@@ -37,7 +37,7 @@ import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.core.security.SubjectUserInfo;
-import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.AuthenticationMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.security.operations.SecurityRealmAddBuilder;
@@ -67,7 +67,7 @@ public abstract class BaseLdapSuiteAuthenticationReferralsTest extends BaseLdapS
 
     protected AuthorizingCallbackHandler getSlaveCallbackHandler() {
         return ((SecurityRealm) getContainer().getService(SecurityRealm.ServiceUtil.createServiceName(SLAVE_REALM))
-                .getValue()).getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+                .getValue()).getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
     }
 
     @Test
@@ -102,7 +102,7 @@ public abstract class BaseLdapSuiteAuthenticationReferralsTest extends BaseLdapS
 
     @Test
     public void testVerifyGoodPasswordReferral() throws Exception {
-        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
 
         NameCallback ncb = new NameCallback("Username", USER_THREE_REFERRAL);
         RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
@@ -111,18 +111,11 @@ public abstract class BaseLdapSuiteAuthenticationReferralsTest extends BaseLdapS
         cbh.handle(new Callback[] { ncb, rcb, vpc });
 
         assertTrue("Password Verified", vpc.isVerified());
-
-        Collection<Principal> principals = Collections.emptyList();
-        SubjectUserInfo userInfo = cbh.createSubjectUserInfo(principals);
-        principals = userInfo.getPrincipals();
-        assertEquals("Principal Count", 1, principals.size());
-        RealmUser user = (RealmUser) principals.iterator().next();
-        assertEquals("Expected Username", "user_three", user.getName());
     }
 
     @Test
     public void testVerifyBadPasswordReferral() throws Exception {
-        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthMechanism.PLAIN);
+        AuthorizingCallbackHandler cbh = securityRealm.getAuthorizingCallbackHandler(AuthenticationMechanism.PLAIN);
 
         NameCallback ncb = new NameCallback("Username", USER_THREE_REFERRAL);
         RealmCallback rcb = new RealmCallback("Realm", TEST_REALM);
@@ -153,7 +146,6 @@ public abstract class BaseLdapSuiteAuthenticationReferralsTest extends BaseLdapS
                 .setConnection(MASTER_CONNECTION_NAME)
                 .setBaseDn(BASE_DN)
                 .setUsernameFilter(USERNAME_FILTER)
-                .setUsernameLoad(USERNAME_FILTER)
                 .build().build();
     }
 

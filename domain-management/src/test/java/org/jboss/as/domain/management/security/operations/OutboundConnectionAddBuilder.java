@@ -38,6 +38,7 @@ import static org.jboss.as.domain.management.ModelDescriptionConstants.URL;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.ReferralHandling;
 import org.jboss.dmr.ModelNode;
 
 /**
