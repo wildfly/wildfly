@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2013, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,20 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.management.security.util;
 
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.InitializationError;
+package org.jboss.as.domain.management.security.realms;
 
 /**
- * A JUnit {@link Runner} for running tests built around MSC services.
+ * Test case to test authentication when the referral mode is FOLLOW.
+ *
+ * Tests both following referrals from the master to the slave and also directly authenticating against the slave.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class MSCTestRunner extends BlockJUnit4ClassRunner {
-
-    public MSCTestRunner(Class<?> clazz) throws InitializationError {
-        super(clazz);
-    }
+public class LdapAuthenticationFollowSuiteTest extends BaseLdapSuiteAuthenticationReferralsTest {
 
 }

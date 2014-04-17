@@ -22,6 +22,8 @@
 
 package org.jboss.as.domain.management.security.realms;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -34,12 +36,26 @@ import org.junit.Test;
  */
 public abstract class LdapGroupAssignmentBaseSuiteTest extends BaseLdapSuiteTest {
 
+    private static boolean initialised;
+
+    @BeforeClass
+    public static void startLdapServer() throws Exception {
+        initialised = LdapTestSuite.startLdapServers(false);
+    }
+
+    @AfterClass
+    public static void stopLdapServer() throws Exception {
+        if (initialised) {
+            LdapTestSuite.stopLdapServers();
+        }
+    }
+
     /**
      * Expected membership (CycleGroupA, CycleGroupB, CycleGroupC)
      */
     @Test
     public void testCycleUser() throws Exception {
-        verifyGroupMembership("cycleUser", "passwordCycle", "CycleGroupA", "CycleGroupB", "CycleGroupC");
+        verifyGroupMembership(TEST_REALM, "cycleUser", "passwordCycle", "CycleGroupA", "CycleGroupB", "CycleGroupC");
     }
 
     /**
@@ -47,7 +63,7 @@ public abstract class LdapGroupAssignmentBaseSuiteTest extends BaseLdapSuiteTest
      */
     @Test
     public void testTestUserOne() throws Exception {
-        verifyGroupMembership("TestUserOne", "passwordOne", "GroupOne", "GroupFive");
+        verifyGroupMembership(TEST_REALM, "TestUserOne", "passwordOne", "GroupOne", "GroupFive");
     }
 
     /**
@@ -55,7 +71,7 @@ public abstract class LdapGroupAssignmentBaseSuiteTest extends BaseLdapSuiteTest
      */
     @Test
     public void testTestUserTwo() throws Exception {
-        verifyGroupMembership("TestUserTwo", "passwordTwo", "GroupTwo");
+        verifyGroupMembership(TEST_REALM, "TestUserTwo", "passwordTwo", "GroupTwo");
     }
 
     /**
@@ -63,7 +79,7 @@ public abstract class LdapGroupAssignmentBaseSuiteTest extends BaseLdapSuiteTest
      */
     @Test
     public void testTestUserThree() throws Exception {
-        verifyGroupMembership("TestUserThree", "passwordThree", "GroupThree", "GroupFour");
+        verifyGroupMembership(TEST_REALM, "TestUserThree", "passwordThree", "GroupThree", "GroupFour");
     }
 
     /**
@@ -71,7 +87,7 @@ public abstract class LdapGroupAssignmentBaseSuiteTest extends BaseLdapSuiteTest
      */
     @Test
     public void testTestUserFour() throws Exception {
-        verifyGroupMembership("TestUserFour", "passwordFour", "GroupFour");
+        verifyGroupMembership(TEST_REALM, "TestUserFour", "passwordFour", "GroupFour");
     }
 
     /**
@@ -79,7 +95,7 @@ public abstract class LdapGroupAssignmentBaseSuiteTest extends BaseLdapSuiteTest
      */
     @Test
     public void testTestUserFive() throws Exception {
-        verifyGroupMembership("TestUserFive", "passwordFive", "GroupFive");
+        verifyGroupMembership(TEST_REALM, "TestUserFive", "passwordFive", "GroupFive");
     }
 
     /**
@@ -87,7 +103,7 @@ public abstract class LdapGroupAssignmentBaseSuiteTest extends BaseLdapSuiteTest
      */
     @Test
     public void testTestUserSix() throws Exception {
-        verifyGroupMembership("TestUserSix", "passwordSix", "GroupSix", "GroupTwo");
+        verifyGroupMembership(TEST_REALM, "TestUserSix", "passwordSix", "GroupSix", "GroupTwo");
     }
 
 }

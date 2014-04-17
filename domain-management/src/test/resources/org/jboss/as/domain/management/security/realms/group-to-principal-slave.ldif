@@ -1,0 +1,28 @@
+version: 1
+
+dn: dc=group-to-principal,dc=wildfly,dc=org
+objectclass: top
+objectclass: domain
+dc: group-to-principal
+
+dn: ou=groups,dc=group-to-principal,dc=wildfly,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: groups
+
+dn: ou=users,dc=group-to-principal,dc=wildfly,dc=org
+objectclass: top
+objectclass: organizationalUnit
+ou: users
+
+dn: uid=TestUserSeven,ou=users,dc=group-to-principal,dc=wildfly,dc=org
+objectClass: top
+objectClass: inetOrgPerson
+objectClass: uidObject
+objectClass: person
+objectClass: organizationalPerson
+cn: Test User Seven
+sn: Test User Seven
+uid: TestUserSeven
+userPassword: passwordSeven
+
