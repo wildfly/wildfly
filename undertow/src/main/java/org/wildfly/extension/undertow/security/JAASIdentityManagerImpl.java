@@ -75,11 +75,13 @@ public class JAASIdentityManagerImpl implements IdentityManager {
         Account account = getAccount(id);
         if (credential instanceof DigestCredential) {
             return verifyCredential(account, new DigestCredentialImpl((DigestCredential) credential));
-        } else {
+        } else if(credential instanceof PasswordCredential) {
             final char[] password = ((PasswordCredential) credential).getPassword();
             // The original array may be cleared, this integration relies on it being cached for use later.
             final char[] duplicate = Arrays.copyOf(password, password.length);
             return verifyCredential(account, duplicate);
+        } else {
+            return verifyCredential(account, credential);
         }
     }
 
