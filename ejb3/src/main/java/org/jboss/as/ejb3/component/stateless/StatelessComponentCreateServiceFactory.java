@@ -30,9 +30,10 @@ import org.jboss.as.ejb3.component.EJBComponentCreateServiceFactory;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.RegistryInstallerService;
 import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceBuilder.DependencyType;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.group.Group;
+import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**
  * User: jpai
@@ -48,7 +49,7 @@ public class StatelessComponentCreateServiceFactory extends EJBComponentCreateSe
             @Override
             public void configureDependency(ServiceBuilder<?> builder, StatelessSessionComponentCreateService service) {
                 builder.addDependency(DependencyType.OPTIONAL, RegistryInstallerService.SERVICE_NAME);
-                builder.addDependency(DependencyType.OPTIONAL, ServiceName.JBOSS.append("clustering", "group", "ejb", "default"), Group.class, service.getGroupInjector());
+                builder.addDependency(DependencyType.OPTIONAL, CacheServiceNames.GROUP.getServiceName(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME), Group.class, service.getGroupInjector());
                 builder.addDependency(DependencyType.OPTIONAL, EJBRemoteConnectorService.SERVICE_NAME);
             }
         });

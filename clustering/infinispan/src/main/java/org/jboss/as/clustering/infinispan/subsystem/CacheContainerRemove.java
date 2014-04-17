@@ -171,7 +171,7 @@ public class CacheContainerRemove extends AbstractRemoveStepHandler {
         // create the address of the cache
         PathAddress cacheAddr = PathAddress.pathAddress(
                 PathElement.pathElement(SUBSYSTEM, InfinispanExtension.SUBSYSTEM_NAME),
-                PathElement.pathElement("cache-container", containerName),
+                PathElement.pathElement(ModelKeys.CACHE_CONTAINER, containerName),
                 PathElement.pathElement(cacheType, cacheName));
         return cacheAddr;
     }

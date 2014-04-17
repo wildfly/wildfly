@@ -35,6 +35,7 @@ import java.util.concurrent.ThreadFactory;
 import org.jboss.as.clustering.concurrent.ManagedExecutorService;
 import org.jboss.as.clustering.concurrent.ManagedScheduledExecutorService;
 import org.jboss.as.network.SocketBinding;
+import org.jboss.as.server.ServerEnvironment;
 import org.jgroups.Channel;
 import org.jgroups.Global;
 import org.jgroups.JChannel;
@@ -51,6 +52,10 @@ import org.jgroups.util.SocketFactory;
  *
  */
 public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurator {
+
+    public static String createNodeName(String cluster, ServerEnvironment environment) {
+        return environment.getNodeName() + "/" + cluster;
+    }
 
     private final ProtocolStackConfiguration configuration;
 
@@ -83,10 +88,10 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
         if (relayConfig != null) {
             final String localSite = relayConfig.getSiteName();
             final List<RemoteSiteConfiguration> remoteSites = this.configuration.getRelay().getRemoteSites();
-            final List<String> sites = new ArrayList<String>(remoteSites.size() + 1);
+            final List<String> sites = new ArrayList<>(remoteSites.size() + 1);
             sites.add(localSite);
             // Collect bridges, eliminating duplicates
-            final Map<String, RelayConfig.BridgeConfig> bridges = new HashMap<String, RelayConfig.BridgeConfig>();
+            final Map<String, RelayConfig.BridgeConfig> bridges = new HashMap<>();
             for (final RemoteSiteConfiguration remoteSite: remoteSites) {
                 final String siteName = remoteSite.getName();
                 sites.add(siteName);
@@ -116,7 +121,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
             relay.init();
         }
 
-        channel.setName(this.configuration.getEnvironment().getNodeName() + "/" + id);
+        channel.setName(createNodeName(id, this.configuration.getEnvironment()));
 
         TransportConfiguration.Topology topology = this.configuration.getTransport().getTopology();
         if (topology != null) {
@@ -176,7 +181,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
      */
     @Override
     public List<org.jgroups.conf.ProtocolConfiguration> getProtocolStack() {
-        List<org.jgroups.conf.ProtocolConfiguration> configs = new ArrayList<org.jgroups.conf.ProtocolConfiguration>(this.configuration.getProtocols().size() + 1);
+        List<org.jgroups.conf.ProtocolConfiguration> configs = new ArrayList<>(this.configuration.getProtocols().size() + 1);
         TransportConfiguration transport = this.configuration.getTransport();
         org.jgroups.conf.ProtocolConfiguration config = this.createProtocol(transport);
         Map<String, String> properties = config.getProperties();
@@ -269,7 +274,7 @@ public class JChannelFactory implements ChannelFactory, ProtocolStackConfigurato
 
     private org.jgroups.conf.ProtocolConfiguration createProtocol(final ProtocolConfiguration protocolConfig) {
         String protocol = protocolConfig.getName();
-        final Map<String, String> properties = new HashMap<String, String>(this.configuration.getDefaults().getProperties(protocol));
+        final Map<String, String> properties = new HashMap<>(this.configuration.getDefaults().getProperties(protocol));
         properties.putAll(protocolConfig.getProperties());
         return new org.jgroups.conf.ProtocolConfiguration(protocol, properties) {
             @Override

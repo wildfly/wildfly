@@ -27,6 +27,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -42,23 +43,22 @@ import org.jboss.as.clustering.jgroups.ChannelFactory;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelFactoryService;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelInstanceResourceDefinition;
 import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
-import org.jboss.as.clustering.jgroups.subsystem.ChannelServiceProvider;
 import org.jboss.as.clustering.jgroups.subsystem.JGroupsExtension;
 import org.jboss.as.clustering.msc.AsynchronousService;
+import org.jboss.as.clustering.naming.BinderServiceBuilder;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jmx.MBeanServerService;
-import org.jboss.as.naming.ManagedReferenceInjector;
-import org.jboss.as.naming.ServiceBasedNamingStore;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.naming.deployment.JndiName;
-import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.server.Services;
 import org.jboss.as.threads.ThreadsServices;
 import org.jboss.dmr.ModelNode;
@@ -73,6 +73,9 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
+import org.wildfly.clustering.spi.ClusterServiceInstaller;
+import org.wildfly.clustering.spi.LocalServiceInstaller;
+import org.wildfly.clustering.spi.ServiceInstaller;
 
 /**
  * @author Paul Ferraro
@@ -125,6 +128,19 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         final PathAddress address = getCacheContainerAddressFromOperation(operation);
         final String name = address.getLastElement().getValue();
+
+        // Handle case where ejb subsystem has already installed services for this cache-container
+        // This can happen if the ejb cache-container is added to a running server
+        if (!context.isBooting() && name.equals("ejb")) {
+            Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
+            PathElement ejbPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "ejb3");
+            if (rootResource.hasChild(ejbPath) && rootResource.getChild(ejbPath).hasChild(PathElement.pathElement("service", "remote"))) {
+                // Following restart, these services will be installed by this handler, rather than the ejb remote handler
+                context.restartRequired();
+                return Collections.emptyList();
+            }
+        }
+
         final ServiceTarget target = context.getServiceTarget();
 
         // pick up the attribute values from the model
@@ -156,29 +172,36 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         String transportExecutor = null ;
 
         Collection<ServiceController<?>> controllers = new LinkedList<>();
+        boolean clustered = (transportConfig != null);
 
-        if (transportConfig != null) {
+        if (clustered) {
             ModelNode transport = containerModel.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
 
-            stack = (resolvedValue = TransportResourceDefinition.STACK.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null ;
+            if ((resolvedValue = TransportResourceDefinition.STACK.resolveModelAttribute(context, transport)).isDefined()) {
+                stack = resolvedValue.asString();
+            }
             // if cluster is not defined, use the cache container name as the default
-            final String cluster = (resolvedValue = TransportResourceDefinition.CLUSTER.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : name ;
+            String clusterName = name;
+            if ((resolvedValue = TransportResourceDefinition.CLUSTER.resolveModelAttribute(context, transport)).isDefined()) {
+                clusterName = resolvedValue.asString();
+            }
             long lockTimeout = TransportResourceDefinition.LOCK_TIMEOUT.resolveModelAttribute(context, transport).asLong();
-            transportExecutor = (resolvedValue = TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport)).isDefined() ? resolvedValue.asString() : null ;
+            if ((resolvedValue = TransportResourceDefinition.EXECUTOR.resolveModelAttribute(context, transport)).isDefined()) {
+                transportExecutor = resolvedValue.asString();
+            }
 
             // initialise the Transport
-            transportConfig.setClusterName(cluster);
+            transportConfig.setClusterName(clusterName);
             transportConfig.setLockTimeout(lockTimeout);
 
-            controllers.addAll(this.installChannelServices(target, name, cluster, stack, verificationHandler));
+            controllers.addAll(this.installChannelServices(target, name, stack, verificationHandler));
 
             // register the protocol metrics by adding a step
-            ChannelInstanceResourceDefinition.addChannelProtocolMetricsRegistrationStep(context, cluster, stack);
+            ChannelInstanceResourceDefinition.addChannelProtocolMetricsRegistrationStep(context, clusterName, stack);
 
-            for (ChannelServiceProvider provider: ServiceLoader.load(ChannelServiceProvider.class, ChannelServiceProvider.class.getClassLoader())) {
-                log.debugf("Installing %s for channel %s", provider.getClass().getSimpleName(), cluster);
-                controllers.addAll(provider.install(target, name, moduleId));
-            }
+            install(target, ClusterServiceInstaller.class, name, moduleId);
+        } else {
+            install(target, LocalServiceInstaller.class, name, moduleId);
         }
 
         // install the cache container configuration service
@@ -197,9 +220,16 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         log.debugf("%s cache container installed", name);
         return controllers;
-     }
+    }
 
-     void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    private static <I extends ServiceInstaller> void install(ServiceTarget target, Class<I> installerClass, String group, ModuleIdentifier moduleId) {
+        for (I installer: ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
+            log.debugf("Installing %s for channel %s", installer.getClass().getSimpleName(), group);
+            installer.install(target, group, moduleId);
+        }
+    }
+
+    void removeRuntimeServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
 
         final PathAddress address = getCacheContainerAddressFromOperation(operation);
         final String containerName = address.getLastElement().getValue();
@@ -217,20 +247,24 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         context.removeService(EmbeddedCacheManagerConfigurationService.getServiceName(containerName));
         context.removeService(GlobalComponentRegistryService.getServiceName(containerName));
 
-        // check if a channel was installed
-        final ServiceName channelServiceName = ChannelService.getServiceName(containerName) ;
-        final ServiceController<?> channelServiceController = context.getServiceRegistry(false).getService(channelServiceName);
-        if (channelServiceController != null) {
-            for (ChannelServiceProvider provider: ServiceLoader.load(ChannelServiceProvider.class, ChannelServiceProvider.class.getClassLoader())) {
-                for (ServiceName name: provider.getServiceNames(containerName)) {
-                    context.removeService(name);
-                }
-            }
+        if (model.hasDefined(ModelKeys.TRANSPORT)) {
+            removeServices(context, ClusterServiceInstaller.class, containerName);
+
             // unregister the protocol metrics by adding a step
             ChannelInstanceResourceDefinition.addChannelProtocolMetricsDeregistrationStep(context, containerName);
 
             context.removeService(createChannelBinding(containerName).getBinderServiceName());
-            context.removeService(channelServiceName);
+            context.removeService(ChannelService.getServiceName(containerName));
+        } else {
+            removeServices(context, LocalServiceInstaller.class, containerName);
+        }
+    }
+
+    private static <I extends ServiceInstaller> void removeServices(OperationContext context, Class<I> installerClass, String group) {
+        for (I installer: ServiceLoader.load(installerClass, installerClass.getClassLoader())) {
+            for (ServiceName name: installer.getServiceNames(group)) {
+                context.removeService(name);
+            }
         }
     }
 
@@ -253,17 +287,11 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
         ;
     }
 
-    Collection<ServiceController<?>> installChannelServices(ServiceTarget target, String containerName, String cluster, String stack, ServiceVerificationHandler verificationHandler) {
+    Collection<ServiceController<?>> installChannelServices(ServiceTarget target, String containerName, String stack, ServiceVerificationHandler verificationHandler) {
 
         ContextNames.BindInfo bindInfo = createChannelBinding(containerName);
-        BinderService binder = new BinderService(bindInfo.getBindName());
-        ServiceController<?> binderService = target.addService(bindInfo.getBinderServiceName(), binder)
-                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(bindInfo.getBindName()))
-                .addDependency(ChannelService.getServiceName(containerName), Channel.class, new ManagedReferenceInjector<Channel>(binder.getManagedObjectInjector()))
-                .addDependency(bindInfo.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-                .install()
-        ;
+        ServiceName name = ChannelService.getServiceName(containerName);
+        ServiceController<?> binderService = new BinderServiceBuilder(target).build(bindInfo, name, Channel.class).install();
 
         ServiceController<?> channelService = ChannelService.build(target, containerName, stack)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
@@ -325,17 +353,9 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
     ServiceController<?> installJndiService(ServiceTarget target, String containerName, String jndiName, ServiceVerificationHandler verificationHandler) {
 
-        final ServiceName containerServiceName = EmbeddedCacheManagerService.getServiceName(containerName);
+        final ServiceName name = EmbeddedCacheManagerService.getServiceName(containerName);
         final ContextNames.BindInfo binding = createCacheContainerBinding(jndiName, containerName);
-
-        final BinderService binder = new BinderService(binding.getBindName());
-        return target.addService(binding.getBinderServiceName(), binder)
-                .addAliases(ContextNames.JAVA_CONTEXT_SERVICE_NAME.append(binding.getBindName()))
-                .addDependency(containerServiceName, CacheContainer.class, new ManagedReferenceInjector<CacheContainer>(binder.getManagedObjectInjector()))
-                .addDependency(binding.getParentContextServiceName(), ServiceBasedNamingStore.class, binder.getNamingStoreInjector())
-                .setInitialMode(ServiceController.Mode.PASSIVE)
-                .install()
-        ;
+        return new BinderServiceBuilder(target).build(binding, name, CacheContainer.class).install();
     }
 
     private static void addExecutorDependency(ServiceBuilder<EmbeddedCacheManagerConfiguration> builder, String executor, Injector<Executor> injector) {

@@ -21,134 +21,66 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
-import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
-import org.infinispan.remoting.transport.Address;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
+import org.jboss.as.clustering.infinispan.subsystem.EmbeddedCacheManagerService;
+import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
 import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
+import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.group.Group;
-import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.spi.ChannelServiceNames;
 
 /**
  * {@link Group} implementation based on a channel view.
  * @author Paul Ferraro
  */
-@org.infinispan.notifications.Listener(sync = false)
-public class ChannelGroupService implements Group, Service<Group> {
+public class ChannelGroupService implements Service<Group>, ChannelGroupConfiguration {
 
-    private final ChannelGroupConfiguration config;
-    private final List<Listener> listeners = new CopyOnWriteArrayList<>();
+    public static ServiceBuilder<Group> build(ServiceTarget target, ServiceName name, String cluster) {
+        ChannelGroupService service = new ChannelGroupService();
+        return target.addService(name, service)
+                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
+                .addDependency(EmbeddedCacheManagerService.getServiceName(cluster), EmbeddedCacheManager.class, service.manager)
+                .addDependency(ChannelServiceNames.NODE_FACTORY.getServiceName(cluster), ChannelNodeFactory.class, service.factory)
+        ;
+    }
 
-    private volatile EmbeddedCacheManager manager = null;
-    private volatile ChannelNodeFactory factory = null;
+    private final InjectedValue<EmbeddedCacheManager> manager = new InjectedValue<>();
+    private final InjectedValue<ChannelNodeFactory> factory = new InjectedValue<>();
 
-    public ChannelGroupService(ChannelGroupConfiguration config) {
-        this.config = config;
+    private volatile ChannelGroup group;
+
+    public ChannelGroupService() {
+        // Hide
     }
 
     @Override
     public Group getValue() {
-        return this;
+        return this.group;
     }
 
     @Override
     public void start(StartContext context) {
-        this.factory = this.config.getNodeFactory();
-        this.manager = this.config.getCacheContainer();
-        this.manager.addListener(this);
+        this.group = new ChannelGroup(this);
     }
 
     @Override
     public void stop(StopContext context) {
-        this.manager.removeListener(this);
-        this.manager = null;
-        this.factory = null;
+        this.group.close();
+        this.group = null;
     }
 
     @Override
-    public String getName() {
-        return this.manager.getClusterName();
+    public EmbeddedCacheManager getCacheContainer() {
+        return this.manager.getValue();
     }
 
     @Override
-    public boolean isCoordinator() {
-        return this.manager.isCoordinator();
-    }
-
-    @Override
-    public Node getLocalNode() {
-        return this.factory.createNode(toJGroupsAddress(this.manager.getAddress()));
-    }
-
-    @Override
-    public Node getCoordinatorNode() {
-        return this.factory.createNode(toJGroupsAddress(this.manager.getCoordinator()));
-    }
-
-    @Override
-    public List<Node> getNodes() {
-        List<Address> addresses = this.manager.getMembers();
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.factory.createNode(toJGroupsAddress(address)));
-        }
-        return nodes;
-    }
-
-    @ViewChanged
-    public void viewChanged(ViewChangedEvent event) {
-
-        List<Address> oldAddresses = event.getOldMembers();
-        List<Node> oldNodes = this.getNodes(oldAddresses);
-        List<Address> newAddresses = event.getNewMembers();
-        List<Node> newNodes = this.getNodes(newAddresses);
-
-        Set<Address> members = new HashSet<>(newAddresses);
-        List<org.jgroups.Address> obsolete = new ArrayList<>(oldAddresses.size());
-        for (Address address: oldAddresses) {
-            if (!members.contains(address)) {
-                obsolete.add(toJGroupsAddress(address));
-            }
-        }
-        this.factory.invalidate(obsolete);
-
-        for (Listener listener: this.listeners) {
-            listener.membershipChanged(oldNodes, newNodes, false);
-        }
-    }
-
-    @Override
-    public void addListener(Listener listener) {
-        this.listeners.add(listener);
-    }
-
-    @Override
-    public void removeListener(Listener listener) {
-        this.listeners.remove(listener);
-    }
-
-    private List<Node> getNodes(List<Address> addresses) {
-        List<Node> nodes = new ArrayList<>(addresses.size());
-        for (Address address: addresses) {
-            nodes.add(this.factory.createNode(toJGroupsAddress(address)));
-        }
-        return nodes;
-    }
-
-    private static org.jgroups.Address toJGroupsAddress(Address address) {
-        if (address instanceof JGroupsAddress) {
-            JGroupsAddress jgroupsAddress = (JGroupsAddress) address;
-            return jgroupsAddress.getJGroupsAddress();
-        }
-        throw new IllegalArgumentException(address.toString());
+    public ChannelNodeFactory getNodeFactory() {
+        return this.factory.getValue();
     }
 }

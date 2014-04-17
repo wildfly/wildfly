@@ -32,9 +32,10 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.clustering.registry.Registry;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
 import org.wildfly.clustering.registry.RegistryFactory;
+import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**
- * {@link Registry} service that creates a {@link Registry} from a factory and entry provider.
+ * Service that create a {@link Registry} from a factory and entry provider.
  * @author Paul Ferraro
  */
 public class RegistryService<K, V> implements Service<Registry<K, V>> {
@@ -42,9 +43,9 @@ public class RegistryService<K, V> implements Service<Registry<K, V>> {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static <K, V> ServiceBuilder<Registry<K, V>> build(ServiceTarget target, String containerName, String cacheName) {
         RegistryService<K, V> service = new RegistryService<>();
-        return AsynchronousService.addService(target, RegistryFactoryProvider.getServiceName(containerName, cacheName), service)
-                .addDependency(RegistryFactoryProvider.getFactoryServiceName(containerName, cacheName), RegistryFactory.class, (Injector) service.factory)
-                .addDependency(RegistryFactoryProvider.getEntryProviderServiceName(containerName, cacheName), RegistryEntryProvider.class, service.provider)
+        return AsynchronousService.addService(target, CacheServiceNames.REGISTRY.getServiceName(containerName, cacheName), service)
+                .addDependency(CacheServiceNames.REGISTRY_FACTORY.getServiceName(containerName, cacheName), RegistryFactory.class, (Injector) service.factory)
+                .addDependency(CacheServiceNames.REGISTRY_ENTRY.getServiceName(containerName, cacheName), RegistryEntryProvider.class, service.provider)
         ;
     }
 

@@ -21,64 +21,52 @@
  */
 package org.wildfly.clustering.server.group;
 
-import java.net.InetSocketAddress;
-import java.util.Collection;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
-import org.jboss.msc.service.AbstractService;
+import org.jboss.as.clustering.infinispan.subsystem.GlobalComponentRegistryService;
+import org.jboss.as.clustering.jgroups.subsystem.ChannelService;
+import org.jboss.msc.service.Service;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
+import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.Value;
-import org.jgroups.Address;
+import org.jboss.msc.value.InjectedValue;
 import org.jgroups.Channel;
-import org.jgroups.Event;
-import org.jgroups.stack.IpAddress;
-import org.wildfly.clustering.group.Node;
 
 /**
- * Node factory implementation.  Node instances are cached and invalidated by the {@link Group} when appropriate.
+ * Service providing a channel-based {@link NodeFactory}.
  * @author Paul Ferraro
  */
-public class ChannelNodeFactoryService extends AbstractService<ChannelNodeFactory> implements ChannelNodeFactory {
+public class ChannelNodeFactoryService implements Service<ChannelNodeFactory> {
 
-    private final ConcurrentMap<Address, Node> nodes = new ConcurrentHashMap<>();
-    private final Value<Channel> channel;
-
-    public ChannelNodeFactoryService(Value<Channel> channel) {
-        this.channel = channel;
+    public static ServiceBuilder<ChannelNodeFactory> build(ServiceTarget target, ServiceName name, String cluster) {
+        ChannelNodeFactoryService service = new ChannelNodeFactoryService();
+        return target.addService(name, service)
+                .addDependency(GlobalComponentRegistryService.getServiceName(cluster))
+                .addDependency(ChannelService.getServiceName(cluster), Channel.class, service.channel)
+        ;
     }
 
-    @Override
-    public Node createNode(Address address) {
-        Node node = this.nodes.get(address);
-        if (node != null) return node;
+    private final InjectedValue<Channel> channel = new InjectedValue<>();
 
-        Channel channel = this.channel.getValue();
-        IpAddress ipAddress = (IpAddress) channel.down(new Event(Event.GET_PHYSICAL_ADDRESS, address));
-        InetSocketAddress socketAddress = new InetSocketAddress(ipAddress.getIpAddress(), ipAddress.getPort());
-        String name = channel.getName(address);
-        if (name == null) {
-            name = String.format("%s:%s", socketAddress.getHostString(), socketAddress.getPort());
-        }
-        node = new AddressableNode(address, name, socketAddress);
-        Node existing = this.nodes.putIfAbsent(address, node);
-        return (existing != null) ? existing : node;
+    private volatile ChannelNodeFactoryImpl factory;
+
+    private ChannelNodeFactoryService() {
+        // Hide
     }
 
     @Override
     public ChannelNodeFactory getValue() {
-        return this;
+        return this.factory;
+    }
+
+    @Override
+    public void start(StartContext context) {
+        this.factory = new ChannelNodeFactoryImpl(this.channel.getValue());
     }
 
     @Override
     public void stop(StopContext context) {
-        this.nodes.clear();
-    }
-
-    @Override
-    public void invalidate(Collection<Address> addresses) {
-        if (!addresses.isEmpty()) {
-            this.nodes.keySet().removeAll(addresses);
-        }
+        this.factory.close();
+        this.factory = null;
     }
 }

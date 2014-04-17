@@ -36,21 +36,21 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.clustering.ejb.BeanManagerFactoryBuilderConfiguration;
 import org.wildfly.clustering.registry.RegistryEntryProvider;
+import org.wildfly.clustering.spi.CacheServiceNames;
 
 /**
  * @author Jaikiran Pai
  */
 public class EJBRemotingConnectorClientMappingsEntryProviderService extends AbstractService<RegistryEntryProvider<String, List<ClientMapping>>> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("clustering", "registry", "ejb", "default", "entry");
-
     private final RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider = new ClientMappingEntryProvider();
     private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<>();
     private final InjectedValue<RemotingConnectorBindingInfoService.RemotingConnectorInfo> remotingConnectorInfo = new InjectedValue<>();
 
     public ServiceBuilder<RegistryEntryProvider<String, List<ClientMapping>>> build(ServiceTarget target, ServiceName remotingServerInfoServiceName) {
-        return target.addService(SERVICE_NAME, this)
+        return target.addService(CacheServiceNames.REGISTRY_ENTRY.getServiceName(BeanManagerFactoryBuilderConfiguration.DEFAULT_CONTAINER_NAME), this)
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, this.serverEnvironment)
                 .addDependency(remotingServerInfoServiceName, RemotingConnectorBindingInfoService.RemotingConnectorInfo.class, this.remotingConnectorInfo)
         ;
@@ -92,7 +92,7 @@ public class EJBRemotingConnectorClientMappingsEntryProviderService extends Abst
 
         @Override
         public String getKey() {
-            return getNodeName();
+            return EJBRemotingConnectorClientMappingsEntryProviderService.this.getNodeName();
         }
 
         @Override
