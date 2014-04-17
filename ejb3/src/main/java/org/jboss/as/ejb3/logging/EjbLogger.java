@@ -63,6 +63,8 @@ import javax.transaction.RollbackException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.Xid;
 import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamException;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.ee.component.Component;
@@ -2969,4 +2971,11 @@ public interface EjbLogger extends BasicLogger {
 
     @Message(id = 451, value = "Attribute '%s' is not supported on current version servers; it is only allowed if its value matches '%s'")
     OperationFailedException inconsistentAttributeNotSupported(String attributeName, String mustMatch);
+
+    @Message(id = 452, value = "Unexpected end of document")
+    XMLStreamException unexpectedEndOfDocument(@Param Location location);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 453, value = "Failed to persist timer %s for object %s")
+    void failedToPersistTimer(String id, String timedObjectId, @Cause Exception e);
 }
