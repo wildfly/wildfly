@@ -19,27 +19,40 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.infinispan.session;
+package org.wildfly.clustering.ejb.infinispan;
 
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.web.session.RouteLocator;
+import org.wildfly.clustering.dispatcher.Command;
+import org.wildfly.clustering.ejb.Batch;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
- * Builds a {@link RouteLocator} service.
+ * Command that evicts a bean.
  * @author Paul Ferraro
  */
-public class RouteLocatorBuilder implements org.wildfly.clustering.web.session.RouteLocatorBuilder {
+public class BeanEvictionCommand<I> implements Command<Void, BeanEvictionContext<I>> {
+    private static final long serialVersionUID = -6593293772761100784L;
 
-    @Override
-    public ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, String deploymentName) {
-        return RouteLocatorService.build(target, name, deploymentName);
+    private final I id;
+
+    public BeanEvictionCommand(I id) {
+        this.id = id;
     }
 
     @Override
-    public ServiceBuilder<?> buildServerDependency(ServiceTarget target, final Value<? extends Value<String>> route) {
-        return target.addService(RouteRegistryEntryProviderService.SERVICE_NAME, new RouteRegistryEntryProviderService(route));
+    public Void execute(BeanEvictionContext<I> context) throws Exception {
+        Batch batch = context.getBatcher().startBatch();
+        boolean success = false;
+        try {
+            InfinispanEjbLogger.ROOT_LOGGER.tracef("Evicting stateful session bean %s", this.id);
+            context.getEvictor().evict(this.id);
+            success = true;
+        } finally {
+            if (success) {
+                batch.close();
+            } else {
+                batch.discard();
+            }
+        }
+        return null;
     }
 }

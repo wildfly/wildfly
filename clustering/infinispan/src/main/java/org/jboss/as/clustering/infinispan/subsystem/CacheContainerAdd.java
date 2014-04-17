@@ -50,6 +50,7 @@ import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
@@ -131,12 +132,18 @@ public class CacheContainerAdd extends AbstractAddStepHandler {
 
         // Handle case where ejb subsystem has already installed services for this cache-container
         // This can happen if the ejb cache-container is added to a running server
-        if (!context.isBooting() && name.equals("ejb")) {
+        if (context.getProcessType().isServer() && !context.isBooting() && name.equals("ejb")) {
             Resource rootResource = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS);
             PathElement ejbPath = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, "ejb3");
             if (rootResource.hasChild(ejbPath) && rootResource.getChild(ejbPath).hasChild(PathElement.pathElement("service", "remote"))) {
                 // Following restart, these services will be installed by this handler, rather than the ejb remote handler
-                context.restartRequired();
+                context.addStep(new OperationStepHandler() {
+                    @Override
+                    public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
+                        context.reloadRequired();
+                        context.completeStep(OperationContext.RollbackHandler.REVERT_RELOAD_REQUIRED_ROLLBACK_HANDLER);
+                    }
+                }, OperationContext.Stage.RUNTIME);
                 return Collections.emptyList();
             }
         }

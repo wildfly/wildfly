@@ -19,27 +19,28 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.jboss.msc.service.AbstractService;
+import org.jboss.msc.service.ServiceBuilder;
+import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.value.Value;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
+import org.wildfly.clustering.spi.CacheServiceNames;
+import org.wildfly.clustering.web.session.RouteLocator;
 
 /**
- * Service that provides the {@link RegistryEntryProvider} for the routing {@link Registry}.
+ * Builds a {@link RouteLocator} service.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderService extends AbstractService<RegistryEntryProvider<String, Void>> {
+public class InfinispanRouteLocatorBuilder implements org.wildfly.clustering.web.session.RouteLocatorBuilder {
 
-    private final Value<? extends Value<String>> route;
-
-    public RouteRegistryEntryProviderService(Value<? extends Value<String>> route) {
-        this.route = route;
+    @Override
+    public ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, String deploymentName) {
+        return InfinispanRouteLocatorService.build(target, name, deploymentName);
     }
 
     @Override
-    public RegistryEntryProvider<String, Void> getValue() {
-        return new RouteRegistryEntryProvider(this.route.getValue());
+    public ServiceBuilder<?> buildServerDependency(ServiceTarget target, final Value<? extends Value<String>> route) {
+        return target.addService(CacheServiceNames.REGISTRY_ENTRY.getServiceName(InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER), new RouteRegistryEntryProviderService(route));
     }
 }

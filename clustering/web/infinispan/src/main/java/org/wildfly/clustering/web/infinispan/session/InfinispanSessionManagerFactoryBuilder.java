@@ -72,7 +72,7 @@ public class InfinispanSessionManagerFactoryBuilder implements SessionManagerFac
             }
         };
         AsynchronousService.addService(target, cacheServiceName, new CacheService<>(cacheName, dependencies))
-                .addAliases(RouteLocatorService.getCacheServiceAlias(cacheName))
+                .addAliases(InfinispanRouteLocatorService.getCacheServiceAlias(cacheName))
                 .addDependency(cacheConfigurationServiceName)
                 .addDependency(containerServiceName, EmbeddedCacheManager.class, cacheContainer)
                 .addDependency(GlobalComponentRegistryService.getServiceName(containerName))

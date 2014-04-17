@@ -19,27 +19,22 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.wildfly.clustering.web.infinispan.session;
 
-import org.jboss.msc.service.AbstractService;
-import org.jboss.msc.value.Value;
-import org.wildfly.clustering.registry.RegistryEntryProvider;
+import org.infinispan.Cache;
+import org.infinispan.remoting.transport.Address;
+import org.wildfly.clustering.group.NodeFactory;
+import org.wildfly.clustering.registry.Registry;
 
 /**
- * Service that provides the {@link RegistryEntryProvider} for the routing {@link Registry}.
+ * Configuration for a {@link RouteLocator}.
  * @author Paul Ferraro
  */
-public class RouteRegistryEntryProviderService extends AbstractService<RegistryEntryProvider<String, Void>> {
+public interface InfinispanRouteLocatorConfiguration {
 
-    private final Value<? extends Value<String>> route;
+    Cache<String, ?> getCache();
 
-    public RouteRegistryEntryProviderService(Value<? extends Value<String>> route) {
-        this.route = route;
-    }
+    Registry<String, Void> getRegistry();
 
-    @Override
-    public RegistryEntryProvider<String, Void> getValue() {
-        return new RouteRegistryEntryProvider(this.route.getValue());
-    }
+    NodeFactory<Address> getNodeFactory();
 }
