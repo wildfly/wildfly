@@ -23,6 +23,7 @@ package org.jboss.as.connector.subsystems.resourceadapters;
 
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.MODULE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.RESOURCEADAPTER_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_REQUIRED;
@@ -232,8 +233,9 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
 
 
                         })
-                        .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME), ConnectionDefinitionResourceDefinition.PATH),
-                                new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.CONNECTABLE) {
+                .addFailedAttribute(subsystemAddress.append(PathElement.pathElement(RESOURCEADAPTER_NAME), ConnectionDefinitionResourceDefinition.PATH),
+                        FailedOperationTransformationConfig.ChainedConfig.createBuilder(Constants.CONNECTABLE, Constants.TRACKING)
+                                .addConfig(new FailedOperationTransformationConfig.RejectExpressionsConfig(Constants.CONNECTABLE) {
 
                                     @Override
                                     protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
@@ -248,8 +250,29 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                                         return new ModelNode(false);
                                     }
 
-                        }));
- }
+                                })
+                                .addConfig(new FailedOperationTransformationConfig.AttributesPathAddressConfig(TRACKING.getName()) {
+
+                                    @Override
+                                    protected boolean isAttributeWritable(String attributeName) {
+                                        return false;
+                                    }
+
+                                    @Override
+                                    protected boolean checkValue(String attrName, ModelNode attribute, boolean isWriteAttribute) {
+                                        if (attribute.isDefined()) {
+                                            return true;
+                                        } else {
+                                            return false;
+                                        }
+                                    }
+
+                                    @Override
+                                    protected ModelNode correctValue(ModelNode toResolve, boolean isWriteAttribute) {
+                                        return new ModelNode();
+                                    }
+                                }).build()));
+    }
 
     protected AdditionalInitialization createAdditionalInitialization() {
         return AdditionalInitialization.MANAGEMENT;
