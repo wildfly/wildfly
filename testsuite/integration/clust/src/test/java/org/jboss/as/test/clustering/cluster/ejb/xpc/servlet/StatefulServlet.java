@@ -126,8 +126,8 @@ public class StatefulServlet extends HttpServlet {
         HttpSession session = req.getSession(true);
         Stateful bean = (Stateful) session.getAttribute(BEAN);
         if (bean == null) {
-            try {
-                bean = new LocalEJBDirectory(StatefulBean.MODULE).lookupStateful(StatefulBean.class, Stateful.class);
+            try (LocalEJBDirectory directory = new LocalEJBDirectory(StatefulBean.MODULE)) {
+                bean = directory.lookupStateful(StatefulBean.class, Stateful.class);
             } catch (NamingException e) {
                 throw new ServletException(e);
             }
