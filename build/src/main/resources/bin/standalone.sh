@@ -281,6 +281,7 @@ while true; do
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/server.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
+         -Djboss.modules.policy-permissions \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          -jaxpmodule "javax.xml.jaxp-provider" \
@@ -294,6 +295,7 @@ while true; do
       eval \"$JAVA\" -D\"[Standalone]\" $JAVA_OPTS \
          \"-Dorg.jboss.boot.log.file=$JBOSS_LOG_DIR/server.log\" \
          \"-Dlogging.configuration=file:$JBOSS_CONFIG_DIR/logging.properties\" \
+         -Djboss.modules.policy-permissions \
          -jar \"$JBOSS_HOME/jboss-modules.jar\" \
          -mp \"${JBOSS_MODULEPATH}\" \
          -jaxpmodule "javax.xml.jaxp-provider" \

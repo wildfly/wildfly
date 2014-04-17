@@ -116,6 +116,7 @@ eval \"$JAVA\" $JAVA_OPTS \
  -cp "$CLASSPATH" \
  \"-Dorg.jboss.boot.log.file=$JBOSS_HOME/appclient/log/appclient.log\" \
  \"-Dlogging.configuration=file:$JBOSS_HOME/appclient/configuration/logging.properties\" \
+ -Djboss.modules.policy-permissions \
  org.jboss.modules.Main \
  -mp \"${JBOSS_MODULEPATH}\" \
  -jaxpmodule javax.xml.jaxp-provider \

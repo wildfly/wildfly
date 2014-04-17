@@ -151,6 +151,7 @@ echo.
 "%JAVA%" %PROCESS_CONTROLLER_JAVA_OPTS% ^
  "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\process-controller.log" ^
  "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
+    -Djboss.modules.policy-permissions ^
     -jar "%JBOSS_HOME%\jboss-modules.jar" ^
     -mp "%JBOSS_MODULEPATH%" ^
      org.jboss.as.process-controller ^
@@ -160,6 +161,7 @@ echo.
     -- ^
     "-Dorg.jboss.boot.log.file=%JBOSS_LOG_DIR%\host-controller.log" ^
     "-Dlogging.configuration=file:%JBOSS_CONFIG_DIR%/logging.properties" ^
+    -Djboss.modules.policy-permissions ^
     %HOST_CONTROLLER_JAVA_OPTS% ^
     -- ^
     -default-jvm "%JAVA%" ^
