@@ -73,7 +73,6 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
 import org.jboss.msc.inject.Injector;
-import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceController.Mode;
@@ -273,7 +272,19 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         final boolean recursive = LdapAuthenticationResourceDefinition.RECURSIVE.resolveModelAttribute(context, ldap).asBoolean();
         final boolean allowEmptyPasswords = LdapAuthenticationResourceDefinition.ALLOW_EMPTY_PASSWORDS.resolveModelAttribute(context, ldap).asBoolean();
         final String userDn = LdapAuthenticationResourceDefinition.USER_DN.resolveModelAttribute(context, ldap).asString();
-        UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(baseDn, usernameAttribute, advancedFilter, recursive, userDn, allowEmptyPasswords, shareConnection);
+        UserLdapCallbackHandler ldapCallbackHandler = new UserLdapCallbackHandler(allowEmptyPasswords, shareConnection);
+
+        final LdapSearcher<LdapEntry, String> userSearcher;
+        if (usernameAttribute != null) {
+            userSearcher = LdapUserSearcherFactory.createForUsernameFilter(baseDn, recursive, userDn, usernameAttribute, usernameLoad);
+        } else {
+            userSearcher = LdapUserSearcherFactory.createForAdvancedFilter(baseDn, recursive, userDn, advancedFilter, usernameLoad);
+        }
+        final LdapCacheService<LdapEntry, String> cacheService = createCacheService(context, userSearcher, ldap.get(CACHE));
+
+        ServiceName userSearcherCacheName = LdapSearcherCache.ServiceUtil.createServiceName(true, true, realmName);
+        ServiceController<LdapSearcherCache<LdapEntry, String>> cacheServiceController = serviceTarget.addService(userSearcherCacheName, cacheService).setInitialMode(ON_DEMAND).install();
+        newControllers.add(cacheServiceController);
 
         ServiceBuilder<?> ldapBuilder = serviceTarget.addService(ldapServiceName, ldapCallbackHandler);
         String connectionManager = LdapAuthenticationResourceDefinition.CONNECTION.resolveModelAttribute(context, ldap).asString();
@@ -409,8 +420,9 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
 
         ServiceName ldapName = LdapSubjectSupplementalService.ServiceUtil.createServiceName(realmName);
 
-        Service<LdapUserSearcher> userSearcherService = null;
+        LdapSearcher<LdapEntry, String> userSearcher = null;
         boolean forceUserDnSearch = false;
+        ModelNode userCache = null;
 
         if (ldap.hasDefined(USERNAME_TO_DN)) {
             ModelNode usernameToDn = ldap.require(USERNAME_TO_DN);
@@ -418,7 +430,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 ModelNode usernameIsDn = usernameToDn.require(USERNAME_IS_DN);
                 forceUserDnSearch = UserIsDnResourceDefintion.FORCE.resolveModelAttribute(context, usernameIsDn).asBoolean();
 
-                userSearcherService = LdapUserSearcherService.createForUsernameIsDn();
+                userSearcher = LdapUserSearcherFactory.createForUsernameIsDn();
             } else if (usernameToDn.hasDefined(USERNAME_FILTER)) {
                 ModelNode usernameFilter = usernameToDn.require(USERNAME_FILTER);
                 forceUserDnSearch = UserSearchResourceDefintion.FORCE.resolveModelAttribute(context, usernameFilter).asBoolean();
@@ -427,7 +439,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 String userDnAttribute = UserSearchResourceDefintion.USER_DN_ATTRIBUTE.resolveModelAttribute(context, usernameFilter).asString();
                 String usernameAttribute = UserSearchResourceDefintion.ATTRIBUTE.resolveModelAttribute(context, usernameFilter).asString();
 
-                userSearcherService = LdapUserSearcherService.createForUsernameFilter(baseDn, recursive, userDnAttribute, usernameAttribute);
+                userSearcher = LdapUserSearcherFactory.createForUsernameFilter(baseDn, recursive, userDnAttribute, usernameAttribute, null);
             } else if (usernameToDn.hasDefined(ADVANCED_FILTER)) {
                 ModelNode advancedFilter = usernameToDn.require(ADVANCED_FILTER);
                 forceUserDnSearch = AdvancedUserSearchResourceDefintion.FORCE.resolveModelAttribute(context, advancedFilter).asBoolean();
@@ -436,7 +448,7 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
                 String userDnAttribute = AdvancedUserSearchResourceDefintion.USER_DN_ATTRIBUTE.resolveModelAttribute(context, advancedFilter).asString();
                 String filter = AdvancedUserSearchResourceDefintion.FILTER.resolveModelAttribute(context, advancedFilter).asString();
 
-                userSearcherService = LdapUserSearcherService.createForAdvancedFilter(baseDn, recursive, userDnAttribute, filter);
+                userSearcher = LdapUserSearcherFactory.createForAdvancedFilter(baseDn, recursive, userDnAttribute, filter, null);
             }
         }
 
@@ -448,9 +460,10 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
         }
 
         ModelNode groupSearch = ldap.require(GROUP_SEARCH);
-        Service<LdapGroupSearcher> groupSearcherService = null;
+        LdapSearcher<LdapEntry[], LdapEntry> groupSearcher;
         boolean iterative = false;
         GroupName groupName = GroupName.DISTINGUISHED_NAME;
+        ModelNode groupCache = null;
         if (groupSearch.hasDefined(GROUP_TO_PRINCIPAL)) {
             ModelNode groupToPrincipal = groupSearch.require(GROUP_TO_PRINCIPAL);
             String baseDn = GroupToPrincipalResourceDefinition.BASE_DN.resolveModelAttribute(context, groupToPrincipal).asString();
@@ -462,16 +475,18 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             boolean recursive = GroupToPrincipalResourceDefinition.RECURSIVE.resolveModelAttribute(context, groupToPrincipal).asBoolean();
             GroupName searchBy = GroupName.valueOf(GroupToPrincipalResourceDefinition.SEARCH_BY.resolveModelAttribute(context, groupToPrincipal).asString());
 
-            groupSearcherService = LdapGroupSearcherService.createForGroupToPrincipal(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy);
+            groupSearcher = LdapGroupSearcherFactory.createForGroupToPrincipal(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy);
         } else {
             ModelNode principalToGroup = groupSearch.require(PRINCIPAL_TO_GROUP);
             String groupAttribute = PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
+            boolean preferOriginalConnection = PrincipalToGroupResourceDefinition.PREFER_ORIGINAL_CONNECTION.resolveModelAttribute(context, principalToGroup).asBoolean();
+            // TODO - Why was this never used?
             String groupDnAttribute = PrincipalToGroupResourceDefinition.GROUP_DN_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
             groupName = GroupName.valueOf(PrincipalToGroupResourceDefinition.GROUP_NAME.resolveModelAttribute(context, principalToGroup).asString());
             String groupNameAttribute = PrincipalToGroupResourceDefinition.GROUP_NAME_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
             iterative = PrincipalToGroupResourceDefinition.ITERATIVE.resolveModelAttribute(context, principalToGroup).asBoolean();
 
-            groupSearcherService = LdapGroupSearcherService.createForPrincipalToGroup(groupAttribute, groupNameAttribute);
+            groupSearcher = LdapGroupSearcherFactory.createForPrincipalToGroup(groupAttribute, groupNameAttribute, preferOriginalConnection);
         }
 
 

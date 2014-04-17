@@ -22,24 +22,18 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
 import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -47,10 +41,12 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
-import org.jboss.as.domain.management.AuthenticationMechanism;
+import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.SecurityRealm;
-
-import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
+import org.jboss.as.domain.management.security.LdapSearcherCache.AttachmentKey;
+import org.jboss.as.domain.management.security.LdapSearcherCache.SearchResult;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -70,27 +66,14 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
 
     public static final String DEFAULT_USER_DN = "dn";
 
-    private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
+    private final InjectedValue<LdapConnectionManager> connectionManager = new InjectedValue<LdapConnectionManager>();
+    private final InjectedValue<LdapSearcherCache<LdapEntry, String>> userSearcherInjector = new InjectedValue<LdapSearcherCache<LdapEntry, String>>();
 
-    private final String baseDn;
-    private final String usernameAttribute;
-    private final String advancedFilter;
-    private final boolean recursive;
-    private final String userDn;
     private final boolean allowEmptyPassword;
     private final boolean shareConnection;
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
-    public UserLdapCallbackHandler(String baseDn, String userNameAttribute, String advancedFilter, boolean recursive,
-                                   String userDn, boolean allowEmptyPassword, boolean shareConnection) {
-        this.baseDn = baseDn;
-        if (userNameAttribute == null && advancedFilter == null) {
-            throw MESSAGES.oneOfRequired(USERNAME_ATTRIBUTE, ADVANCED_FILTER);
-        }
-        this.usernameAttribute = userNameAttribute;
-        this.advancedFilter = advancedFilter;
-        this.recursive = recursive;
-        this.userDn = userDn;
+    public UserLdapCallbackHandler(boolean allowEmptyPassword, boolean shareConnection) {
         this.allowEmptyPassword = allowEmptyPassword;
         this.shareConnection = shareConnection;
     }
@@ -99,11 +82,11 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
      * CallbackHandlerService Methods
      */
 
-    public AuthenticationMechanism getPreferredMechanism() {
-        return AuthenticationMechanism.PLAIN;
+    public AuthMechanism getPreferredMechanism() {
+        return AuthMechanism.PLAIN;
     }
 
-    public Set<AuthenticationMechanism> getSupplementaryMechanisms() {
+    public Set<AuthMechanism> getSupplementaryMechanisms() {
         return Collections.emptySet();
     }
 
@@ -137,10 +120,19 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
      *  Access to Injectors
      */
 
-    public InjectedValue<ConnectionManager> getConnectionManagerInjector() {
+    public InjectedValue<LdapConnectionManager> getConnectionManagerInjector() {
         return connectionManager;
     }
 
+    public Injector<LdapSearcherCache<LdapEntry, String>> getLdapUserSearcherInjector() {
+        return userSearcherInjector;
+    }
+
+    private LdapConnectionHandler createLdapConnectionHandler() {
+        LdapConnectionManager connectionManager = this.connectionManager.getValue();
+
+        return LdapConnectionHandler.newInstance(connectionManager);
+    }
 
     /*
      *  CallbackHandler Method
@@ -170,7 +162,6 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                 return;
             }
 
-            ConnectionManager connectionManager = UserLdapCallbackHandler.this.connectionManager.getValue();
             VerifyPasswordCallback verifyPasswordCallback = null;
             String username = null;
 
@@ -200,83 +191,68 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                 throw MESSAGES.noPassword();
             }
 
-            DirContext searchContext = null;
-            DirContext userContext = null;
-            NamingEnumeration<SearchResult> searchEnumeration = null;
+            final VerifyPasswordCallback theVpc = verifyPasswordCallback;
+
+            LdapConnectionHandler lch = createLdapConnectionHandler();
             try {
                 // 1 - Obtain Connection to LDAP
                 searchContext = (DirContext) connectionManager.getConnection();
                 // 2 - Search to identify the DN of the user connecting
-                SearchControls searchControls = new SearchControls();
-                if (recursive) {
-                    SECURITY_LOGGER.trace("Performing recursive search");
-                    searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-                } else {
-                    SECURITY_LOGGER.trace("Performing single level search");
-                    searchControls.setSearchScope(SearchControls.ONELEVEL_SCOPE);
-                }
-                searchControls.setReturningAttributes(new String[] { userDn });
-                searchControls.setTimeLimit(searchTimeLimit);
-
-                Object[] filterArguments = new Object[] { username };
-                String filter = usernameAttribute != null ? "(" + usernameAttribute + "={0})" : advancedFilter;
-                SECURITY_LOGGER.tracef("Searching for user '%s' using filter '%s'.", username, filter);
-
-                searchEnumeration = searchContext.search(baseDn, filter, filterArguments, searchControls);
-                if (searchEnumeration.hasMore() == false) {
-                    SECURITY_LOGGER.tracef("User '%s' not found in directory.", username);
-                    throw MESSAGES.userNotFoundInDirectory(username);
-                }
-
-                String distinguishedUserDN = null;
-
-                SearchResult result = searchEnumeration.next();
-                Attributes attributes = result.getAttributes();
-                if (attributes != null) {
-                    Attribute dn = attributes.get(userDn);
-                    if (dn != null) {
-                        distinguishedUserDN = (String) dn.get();
-                    }
-                }
-                if (distinguishedUserDN == null) {
-                    if (result.isRelative() == true) {
-                        distinguishedUserDN = result.getName() + ("".equals(baseDn) ? "" : "," + baseDn);
-                    } else {
-                        String name = result.getName();
-                        SECURITY_LOGGER.tracef("Can't follow referral for authentication: %s", name);
-                        throw MESSAGES.nameNotFound(name);
-                    }
-                }
-                SECURITY_LOGGER.tracef("DN '%s' found for user '%s'", distinguishedUserDN, username);
+                SearchResult<LdapEntry> searchResult = userSearcherInjector.getValue().search(lch, username);
+                LdapEntry ldapEntry = searchResult.getResult();
 
                 // 3 - Connect as user once their DN is identified
-                try {
-                    userContext = (DirContext) connectionManager.getConnection(distinguishedUserDN, password);
-                    if (userContext != null) {
-                        SECURITY_LOGGER.tracef("Password verified for user '%s'", username);
+                final PasswordCredential cachedCredential = searchResult.getAttachment(PASSWORD_KEY);
+                if (cachedCredential != null) {
+                    if (cachedCredential.verify(password)) {
+                        SECURITY_LOGGER.tracef("Password verified for user '%s' (using cached password)", username);
                         verifyPasswordCallback.setVerified(true);
-                        sharedState.put(LdapEntry.class.getName(), new LdapEntry(username, distinguishedUserDN));
+                        sharedState.put(LdapEntry.class.getName(), ldapEntry);
+                        if (username.equals(ldapEntry.getSimpleName()) == false) {
+                            sharedState.put(SecurityRealmService.LOADED_USERNAME_KEY, ldapEntry.getSimpleName());
+                        }
+                    } else {
+                        SECURITY_LOGGER.tracef("Password verification failed for user (using cached password) '%s'", username);
+                        verifyPasswordCallback.setVerified(false);
                     }
-                } catch (Exception e) {
-                    SECURITY_LOGGER.tracef("Password verification failed for user '%s'", username);
-                    verifyPasswordCallback.setVerified(false);
-                }
+                } else {
+                    try {
+                        LdapConnectionHandler verificationHandler = lch;
+                        URI referralUri = ldapEntry.getReferralUri();
+                        if (referralUri != null) {
+                            verificationHandler = verificationHandler.findForReferral(referralUri);
+                        }
 
+                        if (verificationHandler != null) {
+                            verificationHandler.verifyIdentity(ldapEntry.getDistinguishedName(), password);
+                            SECURITY_LOGGER.tracef("Password verified for user '%s' (using connection attempt)", username);
+                            verifyPasswordCallback.setVerified(true);
+                            searchResult.attach(PASSWORD_KEY, new PasswordCredential(password));
+                            sharedState.put(LdapEntry.class.getName(), ldapEntry);
+                            if (username.equals(ldapEntry.getSimpleName()) == false) {
+                                sharedState.put(SecurityRealmService.LOADED_USERNAME_KEY, ldapEntry.getSimpleName());
+                            }
+                        } else {
+                            SECURITY_LOGGER.tracef(
+                                    "Password verification failed for user '%s', no connection for referral '%s'", username,
+                                    referralUri.toString());
+                            verifyPasswordCallback.setVerified(false);
+                        }
+                    } catch (Exception e) {
+                        SECURITY_LOGGER.tracef("Password verification failed for user (using connection attempt) '%s'",
+                                username);
+                        verifyPasswordCallback.setVerified(false);
+                    }
+                }
             } catch (Exception e) {
                 SECURITY_LOGGER.trace("Unable to verify identity.", e);
                 throw MESSAGES.cannotPerformVerification(e);
             } finally {
-                UserLdapCallbackHandler.this.safeClose(searchEnumeration);
-                safeClose(verifyPasswordCallback, searchContext);
-                UserLdapCallbackHandler.this.safeClose(userContext);
-            }
-        }
-
-        private void safeClose(final VerifyPasswordCallback vpc, final DirContext context) {
-            if (shareConnection && context != null && vpc != null && vpc.isVerified()) {
-                sharedState.put(DirContext.class.getName(), context);
-            } else {
-                UserLdapCallbackHandler.this.safeClose(context);
+                if (shareConnection && lch != null && theVpc != null && theVpc.isVerified()) {
+                    sharedState.put(LdapConnectionHandler.class.getName(), lch);
+                } else {
+                    lch.close();
+                }
             }
         }
 

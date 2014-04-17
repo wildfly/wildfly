@@ -31,15 +31,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import javax.naming.Context;
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 import javax.security.auth.Subject;
 
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmUser;
 import org.jboss.as.domain.management.SecurityRealm;
-import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
 import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource.GroupName;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -57,12 +55,12 @@ import org.jboss.msc.value.InjectedValue;
  */
 public class LdapSubjectSupplementalService implements Service<SubjectSupplementalService>, SubjectSupplementalService {
 
-    private final InjectedValue<ConnectionManager> connectionManager = new InjectedValue<ConnectionManager>();
-    private final InjectedValue<LdapUserSearcher> userSearcherInjector = new InjectedValue<LdapUserSearcher>();
-    private final InjectedValue<LdapGroupSearcher> groupSearcherInjector = new InjectedValue<LdapGroupSearcher>();
+    private final InjectedValue<LdapConnectionManager> connectionManager = new InjectedValue<LdapConnectionManager>();
+    private final InjectedValue<LdapSearcherCache<LdapEntry, String>> userSearcherInjector = new InjectedValue<LdapSearcherCache<LdapEntry, String>>();
+    private final InjectedValue<LdapSearcherCache<LdapEntry[], LdapEntry>> groupSearcherInjector = new InjectedValue<LdapSearcherCache<LdapEntry[], LdapEntry>>();
 
-    private LdapUserSearcher userSearcher;
-    private LdapGroupSearcher groupSearcher;
+    private LdapSearcherCache<LdapEntry, String> userSearcher;
+    private LdapSearcherCache<LdapEntry[], LdapEntry> groupSearcher;
 
     protected final int searchTimeLimit = 10000; // TODO - Maybe make configurable.
 
@@ -109,15 +107,15 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
     /*
      *  Access to Injectors
      */
-    public Injector<ConnectionManager> getConnectionManagerInjector() {
+    public Injector<LdapConnectionManager> getConnectionManagerInjector() {
         return connectionManager;
     }
 
-    public Injector<LdapUserSearcher> getLdapUserSearcherInjector() {
+    public Injector<LdapSearcherCache<LdapEntry, String>> getLdapUserSearcherInjector() {
         return userSearcherInjector;
     }
 
-    public Injector<LdapGroupSearcher> getLdapGroupSearcherInjector() {
+    public Injector<LdapSearcherCache<LdapEntry[], LdapEntry>> getLdapGroupSearcherInjector() {
         return groupSearcherInjector;
     }
 
@@ -138,8 +136,6 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
         private final Set<LdapEntry> searchedPerformed = new HashSet<LdapEntry>();
         private final Map<String, Object> sharedState;
 
-        private DirContext dirContext = null;
-
         protected LdapSubjectSupplemental(final Map<String, Object> sharedState) {
             this.sharedState = sharedState;
         }
@@ -151,14 +147,20 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
             Set<RealmUser> users = subject.getPrincipals(RealmUser.class);
             Set<Principal> principals = subject.getPrincipals();
 
+            final LdapConnectionHandler connectionHandler;
+            if (sharedState.containsKey(LdapConnectionHandler.class.getName())) {
+                SECURITY_LOGGER.trace("Using existing LdapConnectionHandler from shared state.");
+                connectionHandler = (LdapConnectionHandler) sharedState.remove(LdapConnectionHandler.class.getName());
+            } else {
+                SECURITY_LOGGER.trace("Creating new LdapConnectionHandler.");
+                connectionHandler = LdapConnectionHandler.newInstance(connectionManager.getValue());
+            }
             try {
-                dirContext = getSearchContext();
-
                 // In general we expect exactly one RealmUser, however we could cope with multiple
                 // identities so load the groups for them all.
                 for (RealmUser current : users) {
                     SECURITY_LOGGER.tracef("Loading groups for '%s'", current);
-                    principals.addAll(loadGroups(current));
+                    principals.addAll(loadGroups(current, connectionHandler));
                 }
 
             } catch (Exception e) {
@@ -168,30 +170,29 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
                 }
                 throw new IOException(e);
             } finally {
-                safeClose(dirContext);
-                dirContext = null;
+                connectionHandler.close();
             }
         }
 
-        private Set<RealmGroup> loadGroups(RealmUser user) throws IOException, NamingException {
+        private Set<RealmGroup> loadGroups(RealmUser user, LdapConnectionHandler connectionHandler) throws IOException, NamingException {
             LdapEntry entry = null;
             if (forceUserDnSearch == false && sharedState.containsKey(LdapEntry.class.getName())) {
                 entry = (LdapEntry) sharedState.get(LdapEntry.class.getName());
                 SECURITY_LOGGER.tracef("Loaded from sharedState '%s'", entry);
             }
             if (entry == null || user.getName().equals(entry.getSimpleName())==false) {
-                entry = userSearcher.userSearch(dirContext, user.getName());
+                entry = userSearcher.search(connectionHandler, user.getName()).getResult();
                 SECURITY_LOGGER.tracef("Performed userSearch '%s'", entry);
             }
 
-            return loadGroups(entry);
+            return loadGroups(entry, connectionHandler);
         }
 
-        private Set<RealmGroup> loadGroups(LdapEntry entry) throws IOException, NamingException {
+        private Set<RealmGroup> loadGroups(LdapEntry entry, LdapConnectionHandler connectionHandler) throws IOException, NamingException {
             Set<RealmGroup> realmGroups = new HashSet<RealmGroup>();
 
             Stack<LdapEntry[]> entries = new Stack<LdapEntry[]>();
-            entries.push(loadGroupEntries(entry));
+            entries.push(loadGroupEntries(entry, connectionHandler));
             while (entries.isEmpty() == false) {
                 LdapEntry[] found = entries.pop();
                 for (LdapEntry current : found) {
@@ -200,7 +201,7 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
                     realmGroups.add(group);
                     if (iterative) {
                         SECURITY_LOGGER.tracef("Performing iterative load for %s", current);
-                        entries.push(loadGroupEntries(current));
+                        entries.push(loadGroupEntries(current, connectionHandler));
                     }
                 }
             }
@@ -208,37 +209,15 @@ public class LdapSubjectSupplementalService implements Service<SubjectSupplement
             return realmGroups;
         }
 
-        private LdapEntry[] loadGroupEntries(LdapEntry entry) throws IOException, NamingException {
+        private LdapEntry[] loadGroupEntries(LdapEntry entry, LdapConnectionHandler connectionHandler) throws IOException, NamingException {
             if (searchedPerformed.add(entry) == false) {
                 SECURITY_LOGGER.tracef("A search has already been performed for %s", entry);
                 return new LdapEntry[0];
             }
 
-            return groupSearcher.groupSearch(dirContext, entry);
+            return groupSearcher.search(connectionHandler, entry).getResult();
         }
 
-        private DirContext getSearchContext() throws Exception {
-            DirContext searchContext;
-            if (shareConnection && sharedState.containsKey(DirContext.class.getName())) {
-                SECURITY_LOGGER.trace("Using existing DirContext from shared state.");
-                searchContext = (DirContext) sharedState.remove(DirContext.class.getName());
-            } else {
-                SECURITY_LOGGER.trace("Obtaining new DirContext from the ConnectionManager.");
-                ConnectionManager connectionManager = LdapSubjectSupplementalService.this.connectionManager.getValue();
-                searchContext = (DirContext) connectionManager.getConnection();
-            }
-            return searchContext;
-        }
-
-    }
-
-    private void safeClose(Context context) {
-        if (context != null) {
-            try {
-                context.close();
-            } catch (Exception ignored) {
-            }
-        }
     }
 
     public static final class ServiceUtil {
