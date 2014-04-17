@@ -135,6 +135,12 @@ class ORBSubsystemDefinitions {
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF)
             .build();
 
+    public static final SimpleAttributeDefinition ORB_PERSISTENT_SERVER_ID = new SimpleAttributeDefinitionBuilder(
+            ORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID, ModelType.STRING, true)
+            .setDefaultValue(new ModelNode().set("1"))
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .build();
+
     // connection attribute definitions.
     public static final SimpleAttributeDefinition ORB_CONN_RETRIES = new SimpleAttributeDefinitionBuilder(
             ORBSubsystemConstants.ORB_CONN_RETRIES, ModelType.INT, true)
@@ -413,7 +419,7 @@ class ORBSubsystemDefinitions {
     // list that contains the orb attribute definitions.
     static final List<SimpleAttributeDefinition> ORB_ATTRIBUTES = Arrays.asList(ORB_NAME, ORB_PRINT_VERSION,
             ORB_USE_IMR, ORB_USE_BOM, ORB_CACHE_TYPECODES, ORB_CACHE_POA_NAMES, ORB_GIOP_MINOR_VERSION,
-            ORB_SOCKET_BINDING, ORB_SSL_SOCKET_BINDING);
+            ORB_SOCKET_BINDING, ORB_SSL_SOCKET_BINDING, ORB_PERSISTENT_SERVER_ID);
 
     // list that contains the orb connection attribute definitions.
     static final List<SimpleAttributeDefinition> ORB_CONN_ATTRIBUTES = Arrays.asList(ORB_CONN_RETRIES,
