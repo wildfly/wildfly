@@ -269,6 +269,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
         // version 1.2 of the schema allows for the configuration of the ORB socket bindings.
         expectedAttributes.add(Attribute.ORB_SOCKET_BINDING);
         expectedAttributes.add(Attribute.ORB_SSL_SOCKET_BINDING);
+        expectedAttributes.add(Attribute.PERSISTENT_SERVER_ID);
 
         this.parseAttributes(reader, node, expectedAttributes, null);
 
@@ -337,8 +338,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
             String[] initializers = initializersList.split(",");
             // read each configured initializer and set the appropriate values in the model node.
             for (String initializer : initializers) {
-                SimpleAttributeDefinition definition = (SimpleAttributeDefinition) ORBSubsystemDefinitions
-                        .valueOf(initializer);
+                SimpleAttributeDefinition definition = (SimpleAttributeDefinition) ORBSubsystemDefinitions.valueOf(initializer);
                 if (definition != null && ORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES.contains(definition))
                     node.get(definition.getName()).set("on");
                 else
@@ -981,8 +981,7 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
         POA(ORBSubsystemConstants.POA), POA_REQUEST_PROC(ORBSubsystemConstants.POA_RP),
 
         // elements used to configure the naming service, ORB interoperability and ORB security.
-        NAMING(ORBSubsystemConstants.NAMING), INTEROP(ORBSubsystemConstants.INTEROP), SECURITY(
-                ORBSubsystemConstants.SECURITY),
+        NAMING(ORBSubsystemConstants.NAMING), INTEROP(ORBSubsystemConstants.INTEROP), SECURITY(ORBSubsystemConstants.SECURITY),
 
         // elements used to configure generic properties.
         PROPERTIES(ORBSubsystemConstants.PROPERTIES), PROPERTY(ORBSubsystemConstants.PROPERTY);
@@ -1055,9 +1054,9 @@ public class ORBSubsystemParser implements XMLStreamConstants, XMLElementReader<
         NAME(ORBSubsystemConstants.NAME), ORB_PRINT_VERSION(ORBSubsystemConstants.ORB_PRINT_VERSION), ORB_USE_IMR(
                 ORBSubsystemConstants.ORB_USE_IMR), ORB_USE_BOM(ORBSubsystemConstants.ORB_USE_BOM), ORB_CACHE_TYPECODES(
                 ORBSubsystemConstants.ORB_CACHE_TYPECODES), ORB_CACHE_POA_NAMES(ORBSubsystemConstants.ORB_CACHE_POA_NAMES), ORB_GIOP_MINOR_VERSION(
-                ORBSubsystemConstants.ORB_GIOP_MINOR_VERSION), ORB_SOCKET_BINDING(
-                ORBSubsystemConstants.ORB_SOCKET_BINDING), ORB_SSL_SOCKET_BINDING(
-                ORBSubsystemConstants.ORB_SSL_SOCKET_BINDING),
+                ORBSubsystemConstants.ORB_GIOP_MINOR_VERSION), ORB_SOCKET_BINDING(ORBSubsystemConstants.ORB_SOCKET_BINDING), ORB_SSL_SOCKET_BINDING(
+                ORBSubsystemConstants.ORB_SSL_SOCKET_BINDING), PERSISTENT_SERVER_ID(
+                ORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID),
 
         // attributes of the connection element.
         ORB_CONN_RETRIES(ORBSubsystemConstants.ORB_CONN_RETRIES), ORB_CONN_RETRY_INTERVAL(

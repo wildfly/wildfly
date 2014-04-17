@@ -94,7 +94,9 @@ public class CorbaORBService implements Service<ORB> {
             properties.setProperty(ORBSubsystemConstants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
             SecurityActions.setSystemProperty(ORBSubsystemConstants.ORB_CLASS, ORBImpl.class.getName());
             SecurityActions.setSystemProperty(ORBSubsystemConstants.ORB_SINGLETON_CLASS, ORBSingleton.class.getName());
-            
+
+            final String persistentServerId = properties.getProperty(ORBSubsystemConstants.ORB_PERSISTENT_SERVER_ID);
+
             // set the JacORB IIOP and IIOP/SSL ports from the respective socket bindings.
             if (this.jacORBSocketBindingInjector.getValue()!= null) {
                 InetSocketAddress address = this.jacORBSocketBindingInjector.getValue().getSocketAddress();
@@ -106,7 +108,7 @@ public class CorbaORBService implements Service<ORB> {
                 properties.setProperty(ORBConstants.INITIAL_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.PERSISTENT_NAME_SERVICE_NAME, address.getAddress().getHostAddress());
                 properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
-                properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, "1"); //FIXME
+                properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, persistentServerId);
             }
 //            if (this.jacORBSSLSocketBindingInjector.getValue() != null) {
 //                InetSocketAddress address = this.jacORBSSLSocketBindingInjector.getValue().getSocketAddress();
