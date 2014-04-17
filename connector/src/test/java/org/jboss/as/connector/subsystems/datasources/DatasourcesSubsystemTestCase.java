@@ -104,7 +104,7 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     @Test
     public void testTransformerAS720() throws Exception {
-        testTransformer("datasources-full.xml", ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 1, 1));
+        testTransformer("datasources-full-no-tracking.xml", ModelTestControllerVersion.V7_2_0_FINAL, ModelVersion.create(1, 1, 1));
     }
 
     @Test
@@ -229,7 +229,8 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
             builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                     .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                     .setExtensionClassName("org.jboss.as.connector.subsystems.datasources.DataSourcesExtension")
-                    .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
+                    .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
+            .skipReverseControllerCheck();
 
             KernelServices mainServices = builder.build();
             assertTrue(mainServices.isSuccessfulBoot());
@@ -313,12 +314,12 @@ public class DatasourcesSubsystemTestCase extends AbstractSubsystemBaseTest {
                                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS.getName(),
                                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS.getName(),
                                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES.getName(),
-                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName(), Constants.CONNECTABLE.getName())
+                        org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName(), Constants.CONNECTABLE.getName()  )
                         .addConfig(new FailedOperationTransformationConfig.AttributesPathAddressConfig(org.jboss.as.connector.subsystems.common.pool.Constants.INITIAL_POOL_SIZE.getName(),
                                 URL_DELIMITER.getName(), CONNECTION_LISTENER_CLASS.getName(), CONNECTION_LISTENER_PROPERTIES.getName(),
                                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_CLASS.getName(), org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_CLASS.getName(),
                                 org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_INCREMENTER_PROPERTIES.getName(),
-                                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName()
+                                org.jboss.as.connector.subsystems.common.pool.Constants.CAPACITY_DECREMENTER_PROPERTIES.getName(), Constants.TRACKING.getName()
                         ) {
 
                             @Override
