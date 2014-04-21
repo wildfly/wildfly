@@ -99,15 +99,15 @@ public class EmbeddedStandAloneServerFactory {
 
     public static StandaloneServer create(final File jbossHomeDir, final ModuleLoader moduleLoader, final Properties systemProps, final Map<String, String> systemEnv, final String[] cmdargs) {
         if (jbossHomeDir == null)
-            MESSAGES.nullVar("jbossHomeDir");
+            throw MESSAGES.nullVar("jbossHomeDir");
         if (moduleLoader == null)
-            MESSAGES.nullVar("moduleLoader");
+            throw MESSAGES.nullVar("moduleLoader");
         if (systemProps == null)
-            MESSAGES.nullVar("systemProps");
+            throw MESSAGES.nullVar("systemProps");
         if (systemEnv == null)
-            MESSAGES.nullVar("systemEnv");
+            throw MESSAGES.nullVar("systemEnv");
         if (cmdargs == null)
-            MESSAGES.nullVar("cmdargs");
+            throw MESSAGES.nullVar("cmdargs");
 
         setupCleanDirectories(jbossHomeDir, systemProps);
 

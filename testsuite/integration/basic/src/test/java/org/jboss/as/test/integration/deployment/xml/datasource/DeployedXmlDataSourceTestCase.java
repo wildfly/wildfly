@@ -68,8 +68,9 @@ public class DeployedXmlDataSourceTestCase {
             final ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
             final ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
             if (actionResult != null) {
-                if (actionResult.getDeploymentException() != null) {
-                    throw new  RuntimeException(actionResult.getDeploymentException());
+                final Throwable deploymentException = actionResult.getDeploymentException();
+                if (deploymentException != null) {
+                    throw new  RuntimeException(deploymentException);
                 }
             }
         }

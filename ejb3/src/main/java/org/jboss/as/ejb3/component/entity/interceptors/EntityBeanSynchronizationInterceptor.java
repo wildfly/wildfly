@@ -229,9 +229,8 @@ public class EntityBeanSynchronizationInterceptor extends AbstractEJBInterceptor
          *
          * @param instance The Entity component instance involved in the transaction
          * @param t        The {@link Throwable throwable}
-         * @return
          */
-        private Error handleThrowableInTxSync(final EntityBeanComponentInstance instance, final Throwable t) {
+        private void handleThrowableInTxSync(final EntityBeanComponentInstance instance, final Throwable t) {
             ROOT_LOGGER.discardingEntityComponent(instance, t);
             try {
                 // discard the Entity instance

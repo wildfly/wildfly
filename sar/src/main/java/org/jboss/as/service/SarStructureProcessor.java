@@ -79,7 +79,7 @@ public class SarStructureProcessor implements DeploymentUnitProcessor {
                 resourceRoot.addToAttachmentList(Attachments.INDEX_IGNORE_PATHS, child.getPathNameRelativeTo(deploymentRoot));
             }
         } catch (IOException e) {
-            SarMessages.MESSAGES.failedToProcessSarChild(e, deploymentRoot);
+            throw SarMessages.MESSAGES.failedToProcessSarChild(e, deploymentRoot);
         }
 
     }

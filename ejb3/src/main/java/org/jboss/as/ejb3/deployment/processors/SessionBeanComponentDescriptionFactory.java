@@ -118,7 +118,7 @@ public class SessionBeanComponentDescriptionFactory extends EJBComponentDescript
             final AnnotationTarget target = sessionBeanAnnotation.target();
             if (!(target instanceof ClassInfo)) {
                 // Let's just WARN and move on. No need to throw an error
-                EjbMessages.MESSAGES.annotationOnlyAllowedOnClass(sessionBeanAnnotation.name().toString(), target);
+                EjbLogger.EJB3_LOGGER.warn(EjbMessages.MESSAGES.annotationOnlyAllowedOnClass(sessionBeanAnnotation.name().toString(), target).getMessage());
                 continue;
             }
             final ClassInfo sessionBeanClassInfo = (ClassInfo) target;

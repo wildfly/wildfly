@@ -124,7 +124,7 @@ public class ModuleResolvePhaseService implements Service<ModuleResolvePhaseServ
 
     public static ServiceName moduleSpecServiceName(ModuleIdentifier identifier, int phase) {
         if (!ServiceModuleLoader.isDynamicModule(identifier)) {
-            ServerMessages.MESSAGES.missingModulePrefix(identifier, ServiceModuleLoader.MODULE_PREFIX);
+            throw ServerMessages.MESSAGES.missingModulePrefix(identifier, ServiceModuleLoader.MODULE_PREFIX);
         }
         return SERVICE_NAME.append(identifier.getName()).append(identifier.getSlot()).append("" + phase);
     }
