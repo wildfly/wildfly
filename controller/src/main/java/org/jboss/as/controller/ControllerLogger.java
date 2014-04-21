@@ -275,7 +275,7 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 14613, value = "Operation (%s) failed - address: (%s) -- due to insufficient stack space for the thread used to " +
             "execute operations. If this error is occurring during server boot, setting " +
             "system property %s to a value higher than [%d] may resolve this problem.")
-    void operationFailed(@Cause Throwable cause, ModelNode op, ModelNode opAddress, String propertyName, int defaultSize);
+    void operationFailedInsufficientStackSpace(@Cause Throwable cause, ModelNode op, ModelNode opAddress, String propertyName, int defaultSize);
 
     /**
      * Logs a warning message indicating a wildcard address was detected and will ignore other interface criteria.
@@ -486,6 +486,22 @@ public interface ControllerLogger extends BasicLogger {
     @LogMessage(level = Level.ERROR)
     @Message(id = 13409, value = "[%d] consecutive management operation audit logging failures have occurred in handler '%s'; disabling this handler for audit logging")
     void disablingLogHandlerDueToFailures(int failureCount, String name);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 13410, value = "Invalid value %s for property %s; must be a numeric value greater than zero. Default value of %d will be used.")
+    void invalidDefaultBlockingTimeout(String sysPropValue, String sysPropName, long defaultUsed);
+
+    @LogMessage(level = Level.DEBUG)
+    @Message(id = 13411, value = "Timeout after [%d] seconds waiting for initial service container stability before allowing runtime changes for operation '%s' at address '%s'. Operation will roll back; process restart is required.")
+    void timeoutAwaitingInitialStability(long blockingTimeout, String name, PathAddress address);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 13412, value = "Timeout after [%d] seconds waiting for service container stability. Operation will roll back. Step that first updated the service container was '%s' at address '%s'")
+    void timeoutExecutingOperation(long blockingTimeout, String name, PathAddress address);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 13413, value = "Timeout after [%d] seconds waiting for service container stability while finalizing an operation. Process must be restarted. Step that first updated the service container was '%s' at address '%s'")
+    void timeoutCompletingOperation(long blockingTimeout, String name, PathAddress address);
 
     // 13449 IS END OF 134xx SERIES USABLE FOR LOGGER MESSAGES
 

@@ -22,6 +22,7 @@
 
 package org.jboss.as.controller;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 
@@ -41,11 +42,28 @@ class ModelControllerLock {
         sync.acquire(permit);
     }
 
+    boolean lock(Integer permit, long timeout, TimeUnit unit) throws InterruptedException {
+        boolean result = false;
+        try {
+            result = lockInterruptibly(permit, timeout, unit);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        return result;
+    }
+
     void lockInterruptibly(Integer permit) throws InterruptedException {
         if (permit == null) {
             throw new IllegalArgumentException();
         }
         sync.acquireInterruptibly(permit);
+    }
+
+    boolean lockInterruptibly(Integer permit, long timeout, TimeUnit unit) throws InterruptedException {
+        if (permit == null) {
+            throw new IllegalArgumentException();
+        }
+        return sync.tryAcquireNanos(permit, unit.toNanos(timeout));
     }
 
     void unlock(Integer permit) {

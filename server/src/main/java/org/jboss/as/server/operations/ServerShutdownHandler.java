@@ -23,6 +23,8 @@
 package org.jboss.as.server.operations;
 
 
+import java.util.EnumSet;
+
 import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -31,6 +33,7 @@ import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
+import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.process.ExitCodes;
 import org.jboss.as.server.controller.descriptions.ServerDescriptions;
@@ -43,6 +46,7 @@ import org.jboss.dmr.ModelType;
  * @author Jason T. Greene
  */
 public class ServerShutdownHandler implements OperationStepHandler {
+
     private static final SimpleAttributeDefinition RESTART = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.RESTART, ModelType.BOOLEAN)
             .setDefaultValue(new ModelNode(false))
             .setAllowNull(true)
@@ -70,9 +74,15 @@ public class ServerShutdownHandler implements OperationStepHandler {
         context.addStep(new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-                // Even though we don't read from the service registry, we have a reference to a
-                // service-fronted 'processState' so tell the controller we are modifying a service
-                context.getServiceRegistry(true);
+                // WFLY-2741 -- DO NOT call context.getServiceRegistry(true) as that will trigger blocking for
+                // service container stability and one use case for this op is to recover from a
+                // messed up service container from a previous op. Instead just ask for authorization.
+                // Note that we already have the exclusive lock, so we are just skipping waiting for stability.
+                // If another op that is a step in a composite step with this op needs to modify the container
+                // it will have to wait for container stability, so skipping this only matters for the case
+                // where this step is the only runtime change.
+//                context.getServiceRegistry(true);
+                context.authorize(operation, EnumSet.of(Action.ActionEffect.WRITE_RUNTIME));
                 context.completeStep(new OperationContext.ResultHandler() {
                     @Override
                     public void handleResult(OperationContext.ResultAction resultAction, OperationContext context, ModelNode operation) {
