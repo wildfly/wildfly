@@ -29,6 +29,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.msc.service.AbstractServiceListener;
@@ -57,11 +59,12 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         serviceRegistry = registry;
     }
 
-    void acquire() {
-        // does nothing
-    }
-
-    void release() {
+    /**
+     * Log a report of any problematic container state changes and reset container state change history
+     * so another run of this method or of {@link #awaitContainerStateChangeReport(long, java.util.concurrent.TimeUnit)}
+     * will produce a report not including any changes included in a report returned by this run.
+     */
+    void logContainerStateChangesAndReset() {
         ContainerStateChangeReport changeReport = createContainerStateChangeReport(true);
 
         if (changeReport != null) {
@@ -76,31 +79,72 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
         controller.removeListener(this);
     }
 
-    void awaitUninterruptibly() {
-        boolean interruped = false;
+    /**
+     * Await service container stability ignoring thread interruption.
+     *
+     * @param timeout maximum period to wait for service container stability
+     * @param timeUnit unit in which {@code timeout} is expressed
+     *
+     * @throws java.util.concurrent.TimeoutException if service container stability is not reached before the specified timeout
+     */
+    void awaitStabilityUninterruptibly(long timeout, TimeUnit timeUnit) throws TimeoutException {
+        boolean interrupted = false;
         try {
+            long toWait = timeUnit.toMillis(timeout);
+            long msTimeout = System.currentTimeMillis() + toWait;
             while (true) {
+                if (interrupted) {
+                    toWait = msTimeout - System.currentTimeMillis();
+                }
                 try {
-                    monitor.awaitStability(failed, problems);
+                    if (toWait <= 0 || !monitor.awaitStability(toWait, TimeUnit.MILLISECONDS, failed, problems)) {
+                        throw new TimeoutException();
+                    }
                     break;
                 } catch (InterruptedException e) {
-                    interruped = true;
+                    interrupted = true;
                 }
             }
         } finally {
-            if (interruped) {
+            if (interrupted) {
                 Thread.currentThread().interrupt();
             }
         }
     }
 
-    void await() throws InterruptedException {
-        monitor.awaitStability(failed, problems);
+    /**
+     * Await service container stability.
+     *
+     * @param timeout maximum period to wait for service container stability
+     * @param timeUnit unit in which {@code timeout} is expressed
+     *
+     * @throws java.lang.InterruptedException if the thread is interrupted while awaiting service container stability
+     * @throws java.util.concurrent.TimeoutException if service container stability is not reached before the specified timeout
+     */
+    void awaitStability(long timeout, TimeUnit timeUnit) throws InterruptedException, TimeoutException {
+        if (!monitor.awaitStability(timeout, timeUnit, failed, problems)) {
+            throw new TimeoutException();
+        }
     }
 
-    ContainerStateChangeReport awaitContainerStateChangeReport() throws InterruptedException {
-        monitor.awaitStability(failed, problems);
-        return createContainerStateChangeReport(false);
+    /**
+     * Await service container stability and then report on container state changes. Does not reset change history,
+     * so another run of this method with no intervening call to {@link #logContainerStateChangesAndReset()}
+     * will produce a report including any changes included in a report returned by the first run.
+     *
+     * @param timeout maximum period to wait for service container stability
+     * @param timeUnit unit in which {@code timeout} is expressed
+     *
+     * @return a change report, or {@code null} if there is nothing to report
+     *
+     * @throws java.lang.InterruptedException if the thread is interrupted while awaiting service container stability
+     * @throws java.util.concurrent.TimeoutException if service container stability is not reached before the specified timeout
+     */
+    ContainerStateChangeReport awaitContainerStateChangeReport(long timeout, TimeUnit timeUnit) throws InterruptedException, TimeoutException {
+        if (monitor.awaitStability(timeout, timeUnit, failed, problems)) {
+            return createContainerStateChangeReport(false);
+        }
+        throw new TimeoutException();
     }
 
     /**
@@ -190,6 +234,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
             msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportFailed());
             for (ServiceController<?> controller : changeReport.getFailedControllers()) {
                 msg.append("      ").append(controller.getName());
+                //noinspection ThrowableResultOfMethodCallIgnored
                 final StartException startException = controller.getStartException();
                 if (startException != null) {
                     msg.append(": ").append(startException.toString());

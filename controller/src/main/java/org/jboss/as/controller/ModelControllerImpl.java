@@ -27,6 +27,7 @@ import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_MECHANISM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BLOCKING_TIMEOUT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DOMAIN_UUID;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
@@ -52,6 +53,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -223,6 +226,8 @@ class ModelControllerImpl implements ModelController {
         if (restartResourceServices) {
             contextFlags.add(OperationContextImpl.ContextFlag.ALLOW_RESOURCE_SERVICE_RESTART);
         }
+        final ModelNode blockingTimeoutConfig = headers != null && headers.hasDefined(BLOCKING_TIMEOUT) ? headers.get(BLOCKING_TIMEOUT) : null;
+
         final ModelNode response = new ModelNode();
         // Report the correct operation response, otherwise the preparedResult would only contain
         // the result of the last active step in a composite operation
@@ -252,7 +257,7 @@ class ModelControllerImpl implements ModelController {
             final Integer operationID = new Random(new SecureRandom().nextLong()).nextInt();
             final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
                     contextFlags, handler, attachments, model, originalResultTxControl, processState, auditLogger,
-                    bootingFlag.get(), operationID, hostServerGroupTracker);
+                    bootingFlag.get(), operationID, hostServerGroupTracker, blockingTimeoutConfig);
             // Try again if the operation-id is already taken
             if(activeOperations.putIfAbsent(operationID, context) == null) {
                 CurrentOperationIdHolder.setCurrentOperationID(operationID);
@@ -303,7 +308,7 @@ class ModelControllerImpl implements ModelController {
                 ? EnumSet.of(OperationContextImpl.ContextFlag.ROLLBACK_ON_FAIL)
                 : EnumSet.noneOf(OperationContextImpl.ContextFlag.class);
         final OperationContextImpl context = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
-                contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID, hostServerGroupTracker);
+                contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID, hostServerGroupTracker, null);
 
         // Add to the context all ops prior to the first ExtensionAddHandler as well as all ExtensionAddHandlers; save the rest.
         // This gets extensions registered before proceeding to other ops that count on these registrations
@@ -321,7 +326,7 @@ class ModelControllerImpl implements ModelController {
 
             // Success. Now any extension handlers are registered. Continue with remaining ops
             final OperationContextImpl postExtContext = new OperationContextImpl(this, processType, runningModeControl.getRunningMode(),
-                    contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID, hostServerGroupTracker);
+                    contextFlags, handler, null, model, control, processState, auditLogger, bootingFlag.get(), operationID, hostServerGroupTracker, null);
 
             for (ParsedBootOp parsedOp : bootOperations.postExtensionOps) {
                 if (parsedOp.handler == null) {
@@ -594,7 +599,7 @@ class ModelControllerImpl implements ModelController {
         };
     }
 
-    void acquireLock(Integer permit, final boolean interruptibly, OperationContext context) throws InterruptedException {
+    void acquireLock(Integer permit, final boolean interruptibly) throws InterruptedException {
         if (interruptibly) {
             //noinspection LockAcquiredButNotSafelyReleased
             controllerLock.lockInterruptibly(permit);
@@ -604,28 +609,64 @@ class ModelControllerImpl implements ModelController {
         }
     }
 
+    boolean acquireLock(Integer permit, final boolean interruptibly, long timeout) throws InterruptedException {
+        if (interruptibly) {
+            //noinspection LockAcquiredButNotSafelyReleased
+            return controllerLock.lockInterruptibly(permit, timeout, TimeUnit.SECONDS);
+        } else {
+            //noinspection LockAcquiredButNotSafelyReleased
+            return controllerLock.lock(permit, timeout, TimeUnit.SECONDS);
+        }
+    }
+
     void releaseLock(Integer permit) {
         controllerLock.unlock(permit);
     }
 
-    void acquireContainerMonitor() {
-        stateMonitor.acquire();
+    /**
+     * Log a report of any problematic container state changes and reset container state change history
+     * so another run of this method or of {@link #awaitContainerStateChangeReport(long, java.util.concurrent.TimeUnit)}
+     * will produce a report not including any changes included in a report returned by this run.
+     */
+    void logContainerStateChangesAndReset() {
+        stateMonitor.logContainerStateChangesAndReset();
     }
 
-    void releaseContainerMonitor() {
-        stateMonitor.release();
-    }
-
-    void awaitContainerMonitor(final boolean interruptibly) throws InterruptedException {
+    /**
+     * Await service container stability.
+     *
+     * @param timeout maximum period to wait for service container stability
+     * @param timeUnit unit in which {@code timeout} is expressed
+     * @param interruptibly {@code true} if thread interruption should be ignored
+     *
+     * @throws java.lang.InterruptedException if {@code interruptibly} is {@code false} and the thread is interrupted while awaiting service container stability
+     * @throws java.util.concurrent.TimeoutException if service container stability is not reached before the specified timeout
+     */
+    void awaitContainerStability(long timeout, TimeUnit timeUnit, final boolean interruptibly)
+            throws InterruptedException, TimeoutException {
         if (interruptibly) {
-            stateMonitor.await();
+            stateMonitor.awaitStability(timeout, timeUnit);
         } else {
-            stateMonitor.awaitUninterruptibly();
+            stateMonitor.awaitStabilityUninterruptibly(timeout, timeUnit);
         }
     }
 
-    ContainerStateMonitor.ContainerStateChangeReport awaitContainerStateChangeReport() throws InterruptedException {
-        return stateMonitor.awaitContainerStateChangeReport();
+    /**
+     * Await service container stability and then report on container state changes. Does not reset change history,
+     * so another run of this method with no intervening call to {@link #logContainerStateChangesAndReset()} will produce a report including
+     * any changes included in a report returned by the first run.
+     *
+     * @param timeout maximum period to wait for service container stability
+     * @param timeUnit unit in which {@code timeout} is expressed
+     *
+     * @return a change report, or {@code null} if there is nothing to report
+     *
+     * @throws java.lang.InterruptedException if the thread is interrupted while awaiting service container stability
+     * @throws java.util.concurrent.TimeoutException if service container stability is not reached before the specified timeout
+     */
+    ContainerStateMonitor.ContainerStateChangeReport awaitContainerStateChangeReport(long timeout, TimeUnit timeUnit)
+            throws InterruptedException, TimeoutException {
+        return stateMonitor.awaitContainerStateChangeReport(timeout, timeUnit);
     }
 
     ServiceRegistry getServiceRegistry() {

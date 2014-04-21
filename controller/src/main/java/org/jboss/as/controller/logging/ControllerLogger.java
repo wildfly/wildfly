@@ -299,7 +299,7 @@ public interface ControllerLogger extends BasicLogger {
     @Message(id = 14, value = "Operation (%s) failed - address: (%s) -- due to insufficient stack space for the thread used to " +
             "execute operations. If this error is occurring during server boot, setting " +
             "system property %s to a value higher than [%d] may resolve this problem.")
-    void operationFailed(@Cause Throwable cause, ModelNode op, ModelNode opAddress, String propertyName, int defaultSize);
+    void operationFailedInsufficientStackSpace(@Cause Throwable cause, ModelNode op, ModelNode opAddress, String propertyName, int defaultSize);
 
     /**
      * Logs a warning message indicating a wildcard address was detected and will ignore other interface criteria.
@@ -3147,4 +3147,32 @@ public interface ControllerLogger extends BasicLogger {
 
     @Message(id = 341, value="A uri with bad syntax '%s' was passed for validation.")
     OperationFailedException badUriSyntax(String uri);
+
+    @Message(id = 342, value = "Illegal value %d for operation header %s; value must be greater than zero")
+    IllegalStateException invalidBlockingTimeout(long timeout, String headerName);
+
+    @Message(id = 343, value = "The service container has been destabilized by a previous operation and further runtime updates cannot be processed. Restart is required.")
+    String timeoutAwaitingInitialStability();
+
+    @Message(id = 344, value = "Operation timed out awaiting service container stability")
+    String timeoutExecutingOperation();
+
+    @Message(id = 345, value = "Timeout after %d seconds waiting for existing service %s to be removed so a new instance can be installed.")
+    IllegalStateException serviceInstallTimedOut(long timeout, ServiceName name);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 346, value = "Invalid value %s for property %s; must be a numeric value greater than zero. Default value of %d will be used.")
+    void invalidDefaultBlockingTimeout(String sysPropValue, String sysPropName, long defaultUsed);
+
+    @LogMessage(level = Level.DEBUG)
+    @Message(id = 347, value = "Timeout after [%d] seconds waiting for initial service container stability before allowing runtime changes for operation '%s' at address '%s'. Operation will roll back; process restart is required.")
+    void timeoutAwaitingInitialStability(long blockingTimeout, String name, PathAddress address);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 348, value = "Timeout after [%d] seconds waiting for service container stability. Operation will roll back. Step that first updated the service container was '%s' at address '%s'")
+    void timeoutExecutingOperation(long blockingTimeout, String name, PathAddress address);
+
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 349, value = "Timeout after [%d] seconds waiting for service container stability while finalizing an operation. Process must be restarted. Step that first updated the service container was '%s' at address '%s'")
+    void timeoutCompletingOperation(long blockingTimeout, String name, PathAddress address);
 }
