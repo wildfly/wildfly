@@ -113,8 +113,8 @@ class EJBRemoteTransactionPropagatingInterceptor implements Interceptor {
             transactionManager.resume(alreadyCreatedTx);
         } else {
             // begin a new tx and add it to the tx repository
-            // TODO: Fix the tx timeout (which currently is passed as 300 seconds)
-            final Transaction newSubOrdinateTx = this.ejbRemoteTransactionsRepository.importTransaction(xidTransactionID, 300);
+            // TODO: Fix the tx timeout to accept a value from the client (WFLY-2789)
+            final Transaction newSubOrdinateTx = this.ejbRemoteTransactionsRepository.importTransaction(xidTransactionID, Integer.MAX_VALUE);
             // associate this tx with the thread
             transactionManager.resume(newSubOrdinateTx);
         }
