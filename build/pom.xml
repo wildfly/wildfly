@@ -112,11 +112,6 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-        </dependency>
-
         <!-- TODO: why do we need jandex in minimal? -->
         <dependency>
             <groupId>org.jboss</groupId>
@@ -243,7 +238,7 @@
                     <groupId>com.h2database</groupId>
                     <artifactId>h2</artifactId>
                 </dependency>
-                
+
                 <dependency>
                     <groupId>com.sun.codemodel</groupId>
                     <artifactId>codemodel</artifactId>
@@ -263,7 +258,7 @@
                     <groupId>com.sun.istack</groupId>
                     <artifactId>istack-commons-tools</artifactId>
                 </dependency>
-                
+
 
                 <dependency>
                     <groupId>com.sun.xml.bind</groupId>
@@ -324,7 +319,7 @@
                     <groupId>commons-lang</groupId>
                     <artifactId>commons-lang</artifactId>
                 </dependency>
-                
+
                 <dependency>
                     <groupId>commons-pool</groupId>
                     <artifactId>commons-pool</artifactId>
@@ -349,7 +344,7 @@
                     <groupId>org.jacorb</groupId>
                     <artifactId>jacorb</artifactId>
                 </dependency>
-                
+
                 <dependency>
                     <groupId>javax.activation</groupId>
                     <artifactId>activation</artifactId>
