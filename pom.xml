@@ -1927,6 +1927,7 @@
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${version.log4j}</version>
+                <scope>test</scope>
                 <exclusions>
                     <exclusion>
                         <groupId>ant</groupId>
@@ -4808,6 +4809,10 @@
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.narayana.rts</groupId>
                         <artifactId>restat-util</artifactId>
                     </exclusion>
@@ -4818,6 +4823,12 @@
                 <groupId>org.jboss.narayana.rts</groupId>
                 <artifactId>restat-util</artifactId>
                 <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
              </dependency>
 
             <dependency>
@@ -5867,6 +5878,10 @@
                         <artifactId>stax-api</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-bindings-soap</artifactId>
                     </exclusion>
@@ -6346,6 +6361,7 @@
                 <groupId>org.syslog4j</groupId>
                 <artifactId>syslog4j</artifactId>
                 <version>${version.org.syslog4j}</version>
+                <scope>test</scope>
             </dependency>
 
             <dependency>
