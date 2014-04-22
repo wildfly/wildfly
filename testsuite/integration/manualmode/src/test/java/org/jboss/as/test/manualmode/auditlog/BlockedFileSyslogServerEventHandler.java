@@ -1,4 +1,4 @@
-package org.jboss.as.test.integration.security.common;
+package org.jboss.as.test.manualmode.auditlog;
 
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
