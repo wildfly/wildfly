@@ -86,11 +86,6 @@
             <artifactId>apacheds-server-annotations</artifactId>
             <scope>compile</scope>
         </dependency>
-
-        <dependency>
-            <groupId>org.syslog4j</groupId>
-            <artifactId>syslog4j</artifactId>
-        </dependency>
     </dependencies>
 
 </project>
