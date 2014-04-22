@@ -68,11 +68,15 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
         return this;
     }
 
-    public synchronized void add(DeploymentModuleIdentifier identifier, ModuleDeployment deployment) {
-        final Map<DeploymentModuleIdentifier, DeploymentHolder> modules = new HashMap<DeploymentModuleIdentifier, DeploymentHolder>(this.modules);
-        modules.put(identifier, new DeploymentHolder(deployment));
-        this.modules = Collections.unmodifiableMap(modules);
-        for(final DeploymentRepositoryListener listener : listeners) {
+    public void add(DeploymentModuleIdentifier identifier, ModuleDeployment deployment) {
+        final List<DeploymentRepositoryListener> listeners;
+        synchronized (this) {
+            final Map<DeploymentModuleIdentifier, DeploymentHolder> modules = new HashMap<DeploymentModuleIdentifier, DeploymentHolder>(this.modules);
+            modules.put(identifier, new DeploymentHolder(deployment));
+            this.modules = Collections.unmodifiableMap(modules);
+            listeners = new ArrayList<DeploymentRepositoryListener>(this.listeners);
+        }
+        for (final DeploymentRepositoryListener listener : listeners) {
             try {
                 listener.deploymentAvailable(identifier, deployment);
             } catch (Throwable t) {
@@ -81,10 +85,15 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
         }
     }
 
-    public synchronized void startDeployment(DeploymentModuleIdentifier identifier) {
-        DeploymentHolder deployment = modules.get(identifier);
-        deployment.started = true;
-        for(final DeploymentRepositoryListener listener : listeners) {
+    public void startDeployment(DeploymentModuleIdentifier identifier) {
+        DeploymentHolder deployment;
+        final List<DeploymentRepositoryListener> listeners;
+        synchronized (this) {
+            deployment = modules.get(identifier);
+            deployment.started = true;
+            listeners = new ArrayList<DeploymentRepositoryListener>(this.listeners);
+        }
+        for (final DeploymentRepositoryListener listener : listeners) {
             try {
                 listener.deploymentStarted(identifier, deployment.deployment);
             } catch (Throwable t) {
@@ -94,20 +103,26 @@ public class DeploymentRepository implements Service<DeploymentRepository> {
     }
 
 
-    public synchronized void addListener(final DeploymentRepositoryListener listener) {
+    public void addListener(final DeploymentRepositoryListener listener) {
+        synchronized (this) {
+            listeners.add(listener);
+        }
         listener.listenerAdded(this);
-        listeners.add(listener);
     }
 
     public synchronized void removeListener(final DeploymentRepositoryListener listener) {
         listeners.remove(listener);
     }
 
-    public synchronized void remove(DeploymentModuleIdentifier identifier) {
-        final Map<DeploymentModuleIdentifier, DeploymentHolder> modules = new HashMap<DeploymentModuleIdentifier, DeploymentHolder>(this.modules);
-        modules.remove(identifier);
-        this.modules = Collections.unmodifiableMap(modules);
-        for(final DeploymentRepositoryListener listener : listeners) {
+    public void remove(DeploymentModuleIdentifier identifier) {
+        final List<DeploymentRepositoryListener> listeners;
+        synchronized (this) {
+            final Map<DeploymentModuleIdentifier, DeploymentHolder> modules = new HashMap<DeploymentModuleIdentifier, DeploymentHolder>(this.modules);
+            modules.remove(identifier);
+            this.modules = Collections.unmodifiableMap(modules);
+            listeners = new ArrayList<DeploymentRepositoryListener>(this.listeners);
+        }
+        for (final DeploymentRepositoryListener listener : listeners) {
             try {
                 listener.deploymentRemoved(identifier);
             } catch (Throwable t) {
