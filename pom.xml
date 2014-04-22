@@ -1926,6 +1926,7 @@
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${version.log4j}</version>
+                <scope>test</scope>
                 <exclusions>
                     <exclusion>
                         <groupId>ant</groupId>
@@ -4783,6 +4784,10 @@
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.narayana.rts</groupId>
                         <artifactId>restat-util</artifactId>
                     </exclusion>
@@ -4807,6 +4812,10 @@
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.narayana.rts</groupId>
                         <artifactId>restat-util</artifactId>
                     </exclusion>
@@ -4817,6 +4826,12 @@
                 <groupId>org.jboss.narayana.rts</groupId>
                 <artifactId>restat-util</artifactId>
                 <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
              </dependency>
 
             <dependency>
@@ -5864,6 +5879,10 @@
                     <exclusion>
                         <groupId>javax.xml.stream</groupId>
                         <artifactId>stax-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
                     </exclusion>
                     <exclusion>
                         <groupId>org.apache.cxf</groupId>
