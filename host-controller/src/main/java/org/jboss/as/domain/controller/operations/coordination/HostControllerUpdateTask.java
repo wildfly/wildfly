@@ -101,8 +101,8 @@ class HostControllerUpdateTask {
                 // Make sure we preserve the operation headers like PrepareStepHandler.EXECUTE_FOR_COORDINATOR
                 if(transformedOperation != null) {
                     transformedOperation.get(OPERATION_HEADERS).set(operation.get(OPERATION_HEADERS));
-                    // If the operation was transformed in any way
-                    if(operation != transformedOperation) {
+                    // If the operation was transformed
+                    if (!operation.equals(transformedOperation)) {
                         // push all operations (incl. read-only) to the servers
                         transformedOperation.get(OPERATION_HEADERS, ServerOperationsResolverHandler.DOMAIN_PUSH_TO_SERVERS).set(true);
                     }
