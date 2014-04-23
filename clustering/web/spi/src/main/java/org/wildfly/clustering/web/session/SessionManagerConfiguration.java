@@ -21,30 +21,22 @@
  */
 package org.wildfly.clustering.web.session;
 
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
+import org.jboss.modules.Module;
 
 /**
- * Builds a {@link RouteLocator} service.
+ * Encapsulates the configuration of a session manager.
  * @author Paul Ferraro
  */
-public interface RouteLocatorBuilder {
-    /**
-     * Builds a {@link RouteLocator} service.
-     * @param target the service target
-     * @param name the service name of the route locator service
-     * @param deploymentName the name of the web deployment
-     * @return a service builder
-     */
-    ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, String deploymentName);
+public interface SessionManagerConfiguration {
+    enum SessionAttributePersistenceStrategy { COARSE, FINE }
 
-    /**
-     * Builds the server dependencies to be made available to every deployment.
-     * @param target the service target
-     * @param route the injected route source
-     * @return a service builder
-     */
-    ServiceBuilder<?> buildServerDependency(ServiceTarget target, Value<? extends Value<String>> route);
+    int getMaxActiveSessions();
+
+    SessionAttributePersistenceStrategy getAttributePersistenceStrategy();
+
+    String getDeploymentName();
+
+    Module getModule();
+
+    String getCacheName();
 }

@@ -5,6 +5,7 @@ import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.as.test.clustering.cluster.web.ClusteredWebFailoverAbstractCase;
+import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -31,7 +32,7 @@ public class SessionClusterDbPersistenceTestCase extends ClusteredWebFailoverAbs
 
     private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "session-db-cluster.war");
-        war.addClass(SimpleServlet.class);
+        war.addClasses(SimpleServlet.class, Mutable.class);
         war.setWebXML(SessionClusterDbPersistenceTestCase.class.getPackage(), "web.xml");
         war.setManifest(new StringAsset(
                 "Manifest-Version: 1.0\nDependencies: org.jboss.msc, org.jboss.as.clustering.common, org.infinispan\n"));

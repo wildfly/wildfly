@@ -24,14 +24,22 @@ package org.wildfly.extension.undertow.deployment;
 
 import io.undertow.server.session.InMemorySessionManager;
 import io.undertow.servlet.api.SessionManagerFactory;
+
+import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
+import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
+import org.jboss.msc.service.ServiceTarget;
 import org.jboss.msc.service.ValueService;
+import org.jboss.msc.service.ServiceController.Mode;
 import org.jboss.msc.value.ImmediateValue;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilderValue;
 import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
+import org.wildfly.extension.undertow.session.SimpleDistributableSessionManagerConfiguration;
 
 /**
  * @author Stuart Douglas
@@ -39,26 +47,34 @@ import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 public class SharedSessionManagerDeploymentProcessor implements DeploymentUnitProcessor {
     @Override
     public void deploy(DeploymentPhaseContext phaseContext) throws DeploymentUnitProcessingException {
-        final DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
+        DeploymentUnit deploymentUnit = phaseContext.getDeploymentUnit();
         SharedSessionManagerConfig sharedConfig = deploymentUnit.getAttachment(UndertowAttachments.SHARED_SESSION_MANAGER_CONFIG);
-        if(sharedConfig == null) {
+        if (sharedConfig == null) {
             return;
         }
-        ServiceName serviceName = deploymentUnit.getServiceName().append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME);
-        if(sharedConfig.getReplicationConfig() == null) {
+        ServiceTarget target = phaseContext.getServiceTarget();
+        ServiceName deploymentServiceName = deploymentUnit.getServiceName();
+        ServiceName serviceName = deploymentServiceName.append(SharedSessionManagerConfig.SHARED_SESSION_MANAGER_SERVICE_NAME);
+        DistributableSessionManagerFactoryBuilder builder = new DistributableSessionManagerFactoryBuilderValue().getValue();
+        if (builder != null) {
+            Module module = deploymentUnit.getAttachment(Attachments.MODULE);
+            builder.build(target, serviceName, new SimpleDistributableSessionManagerConfiguration(sharedConfig, deploymentUnit.getName(), module))
+                    .setInitialMode(Mode.ON_DEMAND)
+                    .install()
+            ;
+        } else {
             InMemorySessionManager manager = new InMemorySessionManager(deploymentUnit.getName(), sharedConfig.getMaxActiveSessions());
-            if(sharedConfig.getSessionConfig() != null) {
-                if(sharedConfig.getSessionConfig().getSessionTimeoutSet()) {
+            if (sharedConfig.getSessionConfig() != null) {
+                if (sharedConfig.getSessionConfig().getSessionTimeoutSet()) {
                     manager.setDefaultSessionTimeout(sharedConfig.getSessionConfig().getSessionTimeout());
                 }
             }
-            phaseContext.getServiceTarget().addService(serviceName, new ValueService<SessionManagerFactory>(new ImmediateValue<SessionManagerFactory>(new ImmediateSessionManagerFactory(manager))))
-                    .install();
-        } else {
-            throw new DeploymentUnitProcessingException("Clustering not supported yet in shared session managers");
+            SessionManagerFactory factory = new ImmediateSessionManagerFactory(manager);
+            target.addService(serviceName, new ValueService<>(new ImmediateValue<>(factory)))
+                    .setInitialMode(Mode.ON_DEMAND)
+                    .install()
+            ;
         }
-
-
     }
 
     @Override

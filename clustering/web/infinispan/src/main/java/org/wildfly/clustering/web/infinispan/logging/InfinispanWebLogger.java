@@ -29,7 +29,6 @@ import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-import org.jboss.metadata.web.jboss.ReplicationGranularity;
 
 /**
  * InfinispanWebLogger
@@ -52,16 +51,6 @@ public interface InfinispanWebLogger extends BasicLogger {
     @Message(id = 2, value = "Failed to passivate attribute %2$s of session %1$s")
     void failedToPassivateSessionAttribute(@Cause Throwable cause, String sessionId, String attribute);
 
-    /**
-     * Creates an exception indicating the replication granularity is unknown.
-     *
-     * @param value the invalid replication granularity.
-     *
-     * @return an {@link IllegalArgumentException} for the error.
-     */
-    @Message(id = 3, value = "Unknown replication granularity: %s")
-    IllegalArgumentException unknownReplicationGranularity(ReplicationGranularity value);
-
-    @Message(id = 4, value = "Session %s is not valid")
+    @Message(id = 3, value = "Session %s is not valid")
     IllegalStateException invalidSession(String sessionId);
 }

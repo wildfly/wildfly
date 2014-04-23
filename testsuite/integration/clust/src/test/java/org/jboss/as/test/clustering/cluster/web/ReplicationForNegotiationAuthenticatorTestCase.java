@@ -34,6 +34,7 @@ import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
 import org.jboss.arquillian.test.api.ArquillianResource;
+import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.shrinkwrap.api.Archive;
@@ -58,7 +59,7 @@ public class ReplicationForNegotiationAuthenticatorTestCase extends ClusteredWeb
        
     private static Archive<?> getDeployment() {
         WebArchive war = ShrinkWrap.create(WebArchive.class, "negotiationAuthenticator.war");
-        war.addClass(SimpleServlet.class);
+        war.addClasses(SimpleServlet.class, Mutable.class);
         // Take web.xml from the managed test.
         war.setWebXML(ClusteredWebSimpleTestCase.class.getPackage(), "web.xml");    
         war.addAsManifestResource(Utils.getJBossDeploymentStructure("org.jboss.security.negotiation"),"jboss-deployment-structure.xml");

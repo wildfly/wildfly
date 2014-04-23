@@ -19,13 +19,13 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.test.clustering.cluster.web;
+package org.jboss.as.test.clustering.cluster.web.shared;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -44,90 +44,93 @@ import org.jboss.as.test.clustering.single.web.Mutable;
 import org.jboss.as.test.clustering.single.web.SimpleServlet;
 import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Validate that non-distributable web applications play nicely with a load balancer using sticky sessions.
- *
+ * Validates that web applications within an ear can share sessions if configured appropriately.
  * @author Paul Ferraro
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class NonDistributableTestCase extends ClusterAbstractTestCase {
+public class SharedSessionFailoverTestCase extends ClusterAbstractTestCase {
 
-    @Deployment(name = DEPLOYMENT_1, managed = false)
+    private static final String MODULE = "shared";
+    private static final String MODULE_1 = "war1";
+    private static final String MODULE_2 = "war2";
+
+    @Deployment(name = DEPLOYMENT_1, managed = false, testable = false)
     @TargetsContainer(CONTAINER_1)
     public static Archive<?> deployment0() {
         return getDeployment();
     }
 
-    @Deployment(name = DEPLOYMENT_2, managed = false)
+    @Deployment(name = DEPLOYMENT_2, managed = false, testable = false)
     @TargetsContainer(CONTAINER_2)
     public static Archive<?> deployment1() {
         return getDeployment();
     }
 
     private static Archive<?> getDeployment() {
-        WebArchive war = ShrinkWrap.create(WebArchive.class, "non-distributable.war");
-        war.addClasses(SimpleServlet.class, Mutable.class);
-        log.info(war.toString(true));
-        return war;
+        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, MODULE + ".jar");
+        jar.addClass(Mutable.class);
+        WebArchive war1 = ShrinkWrap.create(WebArchive.class, MODULE_1 + ".war");
+        war1.addClass(SimpleServlet.class);
+        WebArchive war2 = ShrinkWrap.create(WebArchive.class, MODULE_2 + ".war");
+        war2.addClass(SimpleServlet.class);
+        EnterpriseArchive ear = ShrinkWrap.create(EnterpriseArchive.class, MODULE + ".ear");
+        ear.addAsLibraries(jar);
+        ear.addAsModule(war1);
+        ear.addAsModule(war2);
+        ear.addAsManifestResource(SharedSessionFailoverTestCase.class.getPackage(), "jboss-all.xml", "jboss-all.xml");
+        return ear;
     }
 
     @Test
-    public void test(@ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
-                     @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2) throws IOException, URISyntaxException {
-        URI uri1 = SimpleServlet.createURI(baseURL1);
-        URI uri2 = SimpleServlet.createURI(baseURL2);
+    public void test(
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_1) URL baseURL1,
+            @ArquillianResource(SimpleServlet.class) @OperateOnDeployment(DEPLOYMENT_2) URL baseURL2
+            ) throws MalformedURLException, URISyntaxException, IOException {
+
+        URI uri11 = SimpleServlet.createURI(baseURL1.toURI().resolve(MODULE_1).toURL());
+        URI uri12 = SimpleServlet.createURI(baseURL1.toURI().resolve(MODULE_2).toURL());
+        URI uri21 = SimpleServlet.createURI(baseURL2.toURI().resolve(MODULE_1).toURL());
+        URI uri22 = SimpleServlet.createURI(baseURL2.toURI().resolve(MODULE_2).toURL());
 
         DefaultHttpClient client = org.jboss.as.test.http.util.HttpClientUtils.relaxedCookieHttpClient();
         try {
-            HttpResponse response = client.execute(new HttpGet(uri1));
+            HttpResponse response = client.execute(new HttpGet(uri11));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                Map.Entry<String, String> entry = parseSessionRoute(response);
-                // Session identifier should contain the route for this node
-                Assert.assertEquals(NODE_1, entry.getValue());
-                // Session identifier seen by servlet should *not* contain the route
-                Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri1));
+            response = client.execute(new HttpGet(uri12));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
                 Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri2));
+            response = client.execute(new HttpGet(uri21));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                // Session should not be replicated
-                Assert.assertEquals(1, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                Map.Entry<String, String> entry = parseSessionRoute(response);
-                // Session identifier should contain the route for this node
-                Assert.assertEquals(NODE_2, entry.getValue());
-                // Session identifier seen by servlet should *not* contain the route
-                Assert.assertEquals(entry.getKey(), response.getFirstHeader(SimpleServlet.SESSION_ID_HEADER).getValue());
+                Assert.assertEquals(3, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
 
-            response = client.execute(new HttpGet(uri2));
+            response = client.execute(new HttpGet(uri22));
             try {
                 Assert.assertEquals(HttpServletResponse.SC_OK, response.getStatusLine().getStatusCode());
-                Assert.assertEquals(2, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
-                Map.Entry<String, String> entry = parseSessionRoute(response);
-                Assert.assertNull(entry);
+                Assert.assertEquals(4, Integer.parseInt(response.getFirstHeader(SimpleServlet.VALUE_HEADER).getValue()));
             } finally {
                 HttpClientUtils.closeQuietly(response);
             }
