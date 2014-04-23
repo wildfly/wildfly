@@ -22,26 +22,10 @@
 
 package org.jboss.as.messaging.deployment;
 
-import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
-import static org.jboss.as.messaging.CommonAttributes.DURABLE;
-import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
-import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
-import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
-import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
-import static org.jboss.as.messaging.CommonAttributes.NAME;
-import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
-import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.jms.Destination;
-import javax.jms.Queue;
-import javax.jms.Topic;
-
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.messaging.MessagingExtension;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.JMSQueueConfigurationRuntimeHandler;
@@ -62,6 +46,20 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
+import javax.jms.Destination;
+import javax.jms.Queue;
+import javax.jms.Topic;
+
+import static org.jboss.as.messaging.CommonAttributes.DEFAULT;
+import static org.jboss.as.messaging.CommonAttributes.DURABLE;
+import static org.jboss.as.messaging.CommonAttributes.ENTRIES;
+import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
+import static org.jboss.as.messaging.CommonAttributes.JMS_QUEUE;
+import static org.jboss.as.messaging.CommonAttributes.JMS_TOPIC;
+import static org.jboss.as.messaging.CommonAttributes.NAME;
+import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
+
 /**
  * A binding description for JMS Destination definitions.
  * <p/>
@@ -69,13 +67,10 @@ import org.jboss.msc.service.ServiceTarget;
  * component declaring the annotation.
 
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2013 Red Hat inc.
+ * @author Eduardo Martins
  */
-public class DirectJMSDestinationInjectionSource extends InjectionSource {
+public class JMSDestinationDefinitionInjectionSource extends ResourceDefinitionInjectionSource {
 
-    /**
-     * The JNDI name
-     */
-    private final String name;
     private final String interfaceName;
 
     // optional attributes
@@ -84,10 +79,8 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
     private String resourceAdapter;
     private String destinationName;
 
-    private Map<String, String> properties = new HashMap<String, String>();
-
-    public DirectJMSDestinationInjectionSource(final String name, String interfaceName) {
-        this.name = name;
+    public JMSDestinationDefinitionInjectionSource(final String jndiName, String interfaceName) {
+        super(jndiName);
         this.interfaceName = interfaceName;
     }
 
@@ -101,10 +94,6 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
 
     void setResourceAdapter(String resourceAdapter) {
         this.resourceAdapter = resourceAdapter;
-    }
-
-    void addProperty(String key, String value) {
-        properties.put(key, value);
     }
 
     void setDestinationName(String destinationName) {
@@ -122,7 +111,7 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
         if (context.getComponentName() != null) {
             uniqueName.append(context.getComponentName() + "_");
         }
-        uniqueName.append(name);
+        uniqueName.append(jndiName);
         return uniqueName.toString();
     }
 
@@ -163,7 +152,7 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
         if (selector != null) {
             destination.get(SELECTOR.getName()).set(selector);
         }
-        destination.get(ENTRIES).add(name);
+        destination.get(ENTRIES).add(jndiName);
 
         Service<Queue> queueService = JMSQueueService.installService(null, null, queueName, serviceTarget, hqServiceName, selector, durable, new String[0]);
         inject(serviceBuilder, injector, queueService);
@@ -185,7 +174,7 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
                             Injector<ManagedReferenceFactory> injector) {
         ModelNode destination = new ModelNode();
         destination.get(NAME).set(topicName);
-        destination.get(ENTRIES).add(name);
+        destination.get(ENTRIES).add(jndiName);
 
         Service<Topic> topicService = JMSTopicService.installService(null, null, topicName, hqServiceName, serviceTarget, new String[0]);
         inject(serviceBuilder, injector, topicService);
@@ -206,15 +195,15 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
                     public void transition(final ServiceController<? extends Object> controller, final ServiceController.Transition transition) {
                         switch (transition) {
                             case STARTING_to_UP: {
-                                ROOT_LOGGER.boundJndiName(name);
+                                ROOT_LOGGER.boundJndiName(jndiName);
                                 break;
                             }
                             case START_REQUESTED_to_DOWN: {
-                                ROOT_LOGGER.unboundJndiName(name);
+                                ROOT_LOGGER.unboundJndiName(jndiName);
                                 break;
                             }
                             case REMOVING_to_REMOVED: {
-                                ROOT_LOGGER.debugf("Removed messaging object [%s]", name);
+                                ROOT_LOGGER.debugf("Removed messaging object [%s]", jndiName);
                                 break;
                             }
                         }
@@ -228,5 +217,36 @@ public class DirectJMSDestinationInjectionSource extends InjectionSource {
      */
     private String getHornetQServerName() {
         return properties.containsKey(HORNETQ_SERVER) ? properties.get(HORNETQ_SERVER) : DEFAULT;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+
+        JMSDestinationDefinitionInjectionSource that = (JMSDestinationDefinitionInjectionSource) o;
+
+        if (className != null ? !className.equals(that.className) : that.className != null) return false;
+        if (description != null ? !description.equals(that.description) : that.description != null) return false;
+        if (destinationName != null ? !destinationName.equals(that.destinationName) : that.destinationName != null)
+            return false;
+        if (interfaceName != null ? !interfaceName.equals(that.interfaceName) : that.interfaceName != null)
+            return false;
+        if (resourceAdapter != null ? !resourceAdapter.equals(that.resourceAdapter) : that.resourceAdapter != null)
+            return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (interfaceName != null ? interfaceName.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (className != null ? className.hashCode() : 0);
+        result = 31 * result + (resourceAdapter != null ? resourceAdapter.hashCode() : 0);
+        result = 31 * result + (destinationName != null ? destinationName.hashCode() : 0);
+        return result;
     }
 }

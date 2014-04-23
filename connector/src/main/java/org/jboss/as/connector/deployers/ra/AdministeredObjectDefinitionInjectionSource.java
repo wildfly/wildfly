@@ -22,16 +22,11 @@
 
 package org.jboss.as.connector.deployers.ra;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
-
-import java.util.Arrays;
-
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.AdminObjectReferenceFactoryService;
 import org.jboss.as.connector.services.resourceadapters.DirectAdminObjectActivatorService;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -44,6 +39,9 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
+
 /**
  * A binding description for AdministeredObjectDefinition annotations.
  * <p/>
@@ -52,22 +50,20 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Jesper Pedersen
  */
-public class DirectAdministeredObjectInjectionSource extends InjectionSource {
+public class AdministeredObjectDefinitionInjectionSource extends ResourceDefinitionInjectionSource {
 
     public static final String DESCRIPTION = "description";
     public static final String INTERFACE = "interfaceName";
     public static final String PROPERTIES = "properties";
 
-    private final String jndiName;
     private final String className;
     private final String resourceAdapter;
 
     private String description;
     private String interfaceName;
-    private String[] properties;
 
-    public DirectAdministeredObjectInjectionSource(final String jndiName, final String className, final String resourceAdapter) {
-        this.jndiName = jndiName;
+    public AdministeredObjectDefinitionInjectionSource(final String jndiName, final String className, final String resourceAdapter) {
+        super(jndiName);
         this.className = className;
         this.resourceAdapter = resourceAdapter;
     }
@@ -85,7 +81,6 @@ public class DirectAdministeredObjectInjectionSource extends InjectionSource {
             deployerServiceName = deployerServiceName + ".rar";
             raId = deployerServiceName;
         }
-
         SUBSYSTEM_RA_LOGGER.debugf("@AdministeredObjectDefinition: %s for %s binding to %s ", className, resourceAdapter, jndiName);
 
         ContextNames.BindInfo bindInfo = ContextNames.bindInfoForEnvEntry(context.getApplicationName(), context.getModuleName(), context.getComponentName(), !context.isCompUsesModule(), jndiName);
@@ -136,27 +131,18 @@ public class DirectAdministeredObjectInjectionSource extends InjectionSource {
         this.interfaceName = interfaceName;
     }
 
-    public String[] getProperties() {
-        return properties;
-    }
-
-    public void setProperties(String[] properties) {
-        this.properties = properties;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DirectAdministeredObjectInjectionSource)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
-        DirectAdministeredObjectInjectionSource that = (DirectAdministeredObjectInjectionSource) o;
+        AdministeredObjectDefinitionInjectionSource that = (AdministeredObjectDefinitionInjectionSource) o;
 
         if (className != null ? !className.equals(that.className) : that.className != null) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (interfaceName != null ? !interfaceName.equals(that.interfaceName) : that.interfaceName != null)
             return false;
-        if (jndiName != null ? !jndiName.equals(that.jndiName) : that.jndiName != null) return false;
-        if (!Arrays.equals(properties, that.properties)) return false;
         if (resourceAdapter != null ? !resourceAdapter.equals(that.resourceAdapter) : that.resourceAdapter != null)
             return false;
 
@@ -165,12 +151,11 @@ public class DirectAdministeredObjectInjectionSource extends InjectionSource {
 
     @Override
     public int hashCode() {
-        int result = jndiName != null ? jndiName.hashCode() : 0;
+        int result = super.hashCode();
         result = 31 * result + (className != null ? className.hashCode() : 0);
         result = 31 * result + (resourceAdapter != null ? resourceAdapter.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + (interfaceName != null ? interfaceName.hashCode() : 0);
-        result = 31 * result + (properties != null ? Arrays.hashCode(properties) : 0);
         return result;
     }
 }

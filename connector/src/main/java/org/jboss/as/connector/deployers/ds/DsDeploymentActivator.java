@@ -25,8 +25,8 @@ package org.jboss.as.connector.deployers.ds;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.jboss.as.connector.deployers.datasource.DataSourceDefinitionAnnotationParser;
-import org.jboss.as.connector.deployers.datasource.DataSourceDefinitionDeploymentDescriptorParser;
+import org.jboss.as.connector.deployers.datasource.DataSourceDefinitionAnnotationProcessor;
+import org.jboss.as.connector.deployers.datasource.DataSourceDefinitionDescriptorProcessor;
 import org.jboss.as.connector.deployers.ds.processors.DsXmlDeploymentInstallProcessor;
 import org.jboss.as.connector.deployers.ds.processors.DsXmlDeploymentParsingProcessor;
 import org.jboss.as.connector.subsystems.datasources.DataSourcesExtension;
@@ -54,8 +54,8 @@ public class DsDeploymentActivator {
 
     public void activateProcessors(final DeploymentProcessorTarget updateContext) {
         updateContext.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DSXML_DEPLOYMENT, new DsXmlDeploymentParsingProcessor());
-        updateContext.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_DATA_SOURCE_DEFINITION_ANNOTATION, new DataSourceDefinitionAnnotationParser());
-        updateContext.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_DATASOURCE_REF, new DataSourceDefinitionDeploymentDescriptorParser());
+        updateContext.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.PARSE, Phase.PARSE_RESOURCE_DEF_ANNOTATION_DATA_SOURCE, new DataSourceDefinitionAnnotationProcessor());
+        updateContext.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.POST_MODULE, Phase.POST_MODULE_RESOURCE_DEF_XML_DATA_SOURCE, new DataSourceDefinitionDescriptorProcessor());
         updateContext.addDeploymentProcessor(DataSourcesExtension.SUBSYSTEM_NAME, Phase.FIRST_MODULE_USE, Phase.FIRST_MODULE_USE_DSXML_DEPLOYMENT, new DsXmlDeploymentInstallProcessor());
     }
 }

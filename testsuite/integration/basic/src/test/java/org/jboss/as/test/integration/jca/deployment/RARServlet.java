@@ -25,6 +25,7 @@ package org.jboss.as.test.integration.jca.deployment;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import javax.annotation.Resource;
 import javax.naming.InitialContext;
 import javax.resource.AdministeredObjectDefinition;
 import javax.resource.AdministeredObjectDefinitions;
@@ -35,6 +36,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jboss.as.test.integration.jca.rar.MultipleAdminObject1;
+import org.jboss.as.test.integration.jca.rar.MultipleConnectionFactory1;
 import org.jboss.logging.Logger;
 //import org.jboss.security.client.SecurityClient;
 //import org.jboss.security.client.SecurityClientFactory;
@@ -81,6 +84,12 @@ public class RARServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RARServlet.class);
 
+    @Resource(lookup = "java:app/rardeployment/xml/ao")
+    private MultipleAdminObject1 xmlAO;
+
+    @Resource(name = "xml/cf")
+    private MultipleConnectionFactory1 xmlCF;
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         //SecurityClient client = null;
         try {
@@ -121,6 +130,12 @@ public class RARServlet extends HttpServlet {
             Object globalCF = ctx.lookup("java:global/rardeployment/GlobalCF");
             if (globalCF == null)
                throw new ServletException("Failed to access GlobalCF");
+
+            if (xmlAO == null)
+                throw new ServletException("Failed to retrieve AO defined in xml descriptor");
+
+            if (xmlCF == null)
+                throw new ServletException("Failed to retrieve CF defined in xml descriptor");
 
         } catch (ServletException se) {
             log.error(se);

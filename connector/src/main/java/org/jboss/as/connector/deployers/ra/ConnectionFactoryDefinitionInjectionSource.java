@@ -22,18 +22,11 @@
 
 package org.jboss.as.connector.deployers.ra;
 
-import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
-
-import java.util.Arrays;
-
-import javax.resource.spi.TransactionSupport;
-
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.ConnectionFactoryReferenceFactoryService;
 import org.jboss.as.connector.services.resourceadapters.DirectConnectionFactoryActivatorService;
 import org.jboss.as.connector.util.ConnectorServices;
-import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.ee.resource.definition.ResourceDefinitionInjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -46,6 +39,11 @@ import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
+import javax.resource.spi.TransactionSupport;
+
+import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
+
 /**
  * A binding description for ConnectionFactoryDefinition annotations.
  * <p/>
@@ -54,15 +52,13 @@ import org.jboss.msc.service.ServiceName;
  *
  * @author Jesper Pedersen
  */
-public class DirectConnectionFactoryInjectionSource extends InjectionSource {
+public class ConnectionFactoryDefinitionInjectionSource extends ResourceDefinitionInjectionSource {
 
     public static final String DESCRIPTION = "description";
     public static final String MAX_POOL_SIZE = "maxPoolSize";
     public static final String MIN_POOL_SIZE = "minPoolSize";
-    public static final String PROPERTIES = "properties";
     public static final String TRANSACTION_SUPPORT = "transactionSupport";
 
-    private final String jndiName;
     private final String interfaceName;
     private final String resourceAdapter;
 
@@ -70,12 +66,10 @@ public class DirectConnectionFactoryInjectionSource extends InjectionSource {
     private int maxPoolSize = -1;
     private int minPoolSize = -1;
 
-    private String[] properties;
-
     private TransactionSupport.TransactionSupportLevel transactionSupport;
 
-    public DirectConnectionFactoryInjectionSource(final String jndiName, final String interfaceName, final String resourceAdapter) {
-        this.jndiName = jndiName;
+    public ConnectionFactoryDefinitionInjectionSource(final String jndiName, final String interfaceName, final String resourceAdapter) {
+        super(jndiName);
         this.interfaceName = interfaceName;
         this.resourceAdapter = resourceAdapter;
     }
@@ -154,14 +148,6 @@ public class DirectConnectionFactoryInjectionSource extends InjectionSource {
         this.minPoolSize = minPoolSize;
     }
 
-    public String[] getProperties() {
-        return properties;
-    }
-
-    public void setProperties(String[] properties) {
-        this.properties = properties;
-    }
-
     public TransactionSupport.TransactionSupportLevel getTransactionSupportLevel() {
         return transactionSupport;
     }
@@ -173,17 +159,16 @@ public class DirectConnectionFactoryInjectionSource extends InjectionSource {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DirectConnectionFactoryInjectionSource)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
 
-        DirectConnectionFactoryInjectionSource that = (DirectConnectionFactoryInjectionSource) o;
+        ConnectionFactoryDefinitionInjectionSource that = (ConnectionFactoryDefinitionInjectionSource) o;
 
         if (maxPoolSize != that.maxPoolSize) return false;
         if (minPoolSize != that.minPoolSize) return false;
         if (description != null ? !description.equals(that.description) : that.description != null) return false;
         if (interfaceName != null ? !interfaceName.equals(that.interfaceName) : that.interfaceName != null)
             return false;
-        if (jndiName != null ? !jndiName.equals(that.jndiName) : that.jndiName != null) return false;
-        if (!Arrays.equals(properties, that.properties)) return false;
         if (resourceAdapter != null ? !resourceAdapter.equals(that.resourceAdapter) : that.resourceAdapter != null)
             return false;
         if (transactionSupport != that.transactionSupport) return false;
@@ -193,13 +178,12 @@ public class DirectConnectionFactoryInjectionSource extends InjectionSource {
 
     @Override
     public int hashCode() {
-        int result = jndiName != null ? jndiName.hashCode() : 0;
+        int result = super.hashCode();
         result = 31 * result + (interfaceName != null ? interfaceName.hashCode() : 0);
         result = 31 * result + (resourceAdapter != null ? resourceAdapter.hashCode() : 0);
         result = 31 * result + (description != null ? description.hashCode() : 0);
         result = 31 * result + maxPoolSize;
         result = 31 * result + minPoolSize;
-        result = 31 * result + (properties != null ? Arrays.hashCode(properties) : 0);
         result = 31 * result + (transactionSupport != null ? transactionSupport.hashCode() : 0);
         return result;
     }

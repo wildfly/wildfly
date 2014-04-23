@@ -74,7 +74,7 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
     private final String resourceAdapter;
     private final String raId;
 
-    private final String[] properties;
+    private final Map<String, String> properties;
 
 
     private final Module module;
@@ -85,7 +85,7 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
      * create an instance *
      */
     public DirectAdminObjectActivatorService(String jndiName, String className, String resourceAdapter,
-                                             String raId, String[] properties,Module module, ContextNames.BindInfo bindInfo) {
+                                             String raId, Map<String, String> properties, Module module, ContextNames.BindInfo bindInfo) {
         this.jndiName = jndiName;
         this.className = className;
         this.resourceAdapter = resourceAdapter;
@@ -129,10 +129,9 @@ public class DirectAdminObjectActivatorService implements Service<ContextNames.B
             Map<String, String> aoConfigProperties = new HashMap<String, String>();
 
             if (properties != null) {
-                for (String prop : properties) {
-                    String key = prop.substring(0, prop.indexOf("="));
-                    String value = prop.substring(prop.indexOf("=") + 1);
-
+                for (Map.Entry<String,String> prop : properties.entrySet()) {
+                    String key = prop.getKey();
+                    String value = prop.getValue();
                     if (key.startsWith("ra.")) {
                         raConfigProperties.put(key.substring(3), value);
                     } else if (key.startsWith("ao.")) {

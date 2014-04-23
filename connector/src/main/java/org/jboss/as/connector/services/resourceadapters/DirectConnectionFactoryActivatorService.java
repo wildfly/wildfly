@@ -85,7 +85,8 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
     private final int maxPoolSize;
     private final int minPoolSize;
 
-    private final String[] properties;
+    private final Map<String, String> properties;
+
 
     private final TransactionSupport.TransactionSupportLevel transactionSupport;
 
@@ -98,7 +99,7 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
      */
     public DirectConnectionFactoryActivatorService(String jndiName, String interfaceName, String resourceAdapter,
                                                    String raId, int maxPoolSize, int minPoolSize,
-                                                   String[] properties, TransactionSupport.TransactionSupportLevel transactionSupport,
+                                                   Map<String, String> properties, TransactionSupport.TransactionSupportLevel transactionSupport,
                                                    Module module, ContextNames.BindInfo bindInfo) {
         this.jndiName = jndiName;
         this.interfaceName = interfaceName;
@@ -148,15 +149,14 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
             String securitySettingDomain = null;
 
             if (properties != null) {
-                for (String prop : properties) {
-                    if (prop.startsWith("ironjacamar.security")) {
-                        securitySetting = prop.substring(prop.indexOf("=") + 1);
-                    } else if (prop.startsWith("ironjacamar.security.domain")) {
-                        securitySettingDomain = prop.substring(prop.indexOf("=") + 1);
+                for (Map.Entry<String,String> prop : properties.entrySet()) {
+                    String key = prop.getKey();
+                    String value = prop.getValue();
+                    if (key.startsWith("ironjacamar.security")) {
+                        securitySetting = value;
+                    } else if (key.startsWith("ironjacamar.security.domain")) {
+                        securitySettingDomain = value;
                     } else {
-                        String key = prop.substring(0, prop.indexOf("="));
-                        String value = prop.substring(prop.indexOf("=") + 1);
-
                         if (key.startsWith("ra.")) {
                             raConfigProperties.put(key.substring(3), value);
                         } else if (key.startsWith("mcf.")) {
