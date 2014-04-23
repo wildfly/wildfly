@@ -254,7 +254,6 @@
         <version.org.powermock>1.5</version.org.powermock>
         <version.org.scannotation>1.0.3</version.org.scannotation>
         <version.org.slf4j>1.7.2.jbossorg-1</version.org.slf4j>
-        <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.eclipse.aether>0.9.0.M3</version.org.eclipse.aether>
         <version.org.eclipse.sisu.plexus>0.0.0.M5</version.org.eclipse.sisu.plexus>
         <version.org.testng>6.1.1</version.org.testng>
@@ -1927,6 +1926,7 @@
                 <groupId>log4j</groupId>
                 <artifactId>log4j</artifactId>
                 <version>${version.log4j}</version>
+                <scope>test</scope>
                 <exclusions>
                     <exclusion>
                         <groupId>ant</groupId>
@@ -4784,6 +4784,10 @@
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.narayana.rts</groupId>
                         <artifactId>restat-util</artifactId>
                     </exclusion>
@@ -4808,6 +4812,10 @@
                 <version>${version.org.jboss.narayana}</version>
                 <exclusions>
                     <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.jboss.narayana.rts</groupId>
                         <artifactId>restat-util</artifactId>
                     </exclusion>
@@ -4818,6 +4826,12 @@
                 <groupId>org.jboss.narayana.rts</groupId>
                 <artifactId>restat-util</artifactId>
                 <version>${version.org.jboss.narayana}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                </exclusions>
              </dependency>
 
             <dependency>
@@ -5867,6 +5881,10 @@
                         <artifactId>stax-api</artifactId>
                     </exclusion>
                     <exclusion>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                    </exclusion>
+                    <exclusion>
                         <groupId>org.apache.cxf</groupId>
                         <artifactId>cxf-rt-bindings-soap</artifactId>
                     </exclusion>
@@ -6340,12 +6358,6 @@
                         <artifactId>javassist</artifactId>
                     </exclusion>
                 </exclusions>
-            </dependency>
-
-            <dependency>
-                <groupId>org.syslog4j</groupId>
-                <artifactId>syslog4j</artifactId>
-                <version>${version.org.syslog4j}</version>
             </dependency>
 
             <dependency>
