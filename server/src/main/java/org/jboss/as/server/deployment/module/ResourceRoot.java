@@ -96,6 +96,12 @@ public final class ResourceRoot extends SimpleAttachable {
             throw ServerMessages.MESSAGES.cannotMergeResourceRoot(root, additionalResourceRoot.getRoot());
         }
         usePhysicalCodeSource = additionalResourceRoot.usePhysicalCodeSource;
-        this.exportFilters.addAll(additionalResourceRoot.getExportFilters());
+        if(additionalResourceRoot.getExportFilters().isEmpty()) {
+            //new root has no filters, so we don't want our existing filters to break anything
+            //see WFLY-1527
+            this.exportFilters.clear();
+        } else {
+            this.exportFilters.addAll(additionalResourceRoot.getExportFilters());
+        }
     }
 }
