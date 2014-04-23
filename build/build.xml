@@ -744,8 +744,9 @@
         </module-def>
 
         <module-def name="org.bouncycastle">
-            <maven-resource group="org.bouncycastle" artifact="bcprov-jdk16"/>
-            <maven-resource group="org.bouncycastle" artifact="bcmail-jdk16"/>
+            <maven-resource group="org.bouncycastle" artifact="bcprov-jdk15on"/>
+            <maven-resource group="org.bouncycastle" artifact="bcmail-jdk15on"/>
+            <maven-resource group="org.bouncycastle" artifact="bcpkix-jdk15on"/>
         </module-def>
 
         <module-def name="org.codehaus.woodstox">
