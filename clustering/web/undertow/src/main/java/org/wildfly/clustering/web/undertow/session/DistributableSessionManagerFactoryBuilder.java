@@ -21,22 +21,33 @@
  */
 package org.wildfly.clustering.web.undertow.session;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 import io.undertow.servlet.api.SessionManagerFactory;
 
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
+import org.jboss.metadata.web.jboss.ReplicationGranularity;
 import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
+import org.wildfly.clustering.web.session.SessionManagerConfiguration;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilder;
 import org.wildfly.clustering.web.session.SessionManagerFactoryBuilderValue;
+import org.wildfly.extension.undertow.session.DistributableSessionManagerConfiguration;
 
 /**
  * Distributable {@link SessionManagerFactory} builder for Undertow.
  * @author Paul Ferraro
  */
 public class DistributableSessionManagerFactoryBuilder implements org.wildfly.extension.undertow.session.DistributableSessionManagerFactoryBuilder {
+
+    static final Map<ReplicationGranularity, SessionManagerConfiguration.SessionAttributePersistenceStrategy> strategies = new EnumMap<>(ReplicationGranularity.class);
+    static {
+        strategies.put(ReplicationGranularity.SESSION, SessionManagerConfiguration.SessionAttributePersistenceStrategy.COARSE);
+        strategies.put(ReplicationGranularity.ATTRIBUTE, SessionManagerConfiguration.SessionAttributePersistenceStrategy.FINE);
+    }
 
     private final SessionManagerFactoryBuilder builder;
 
@@ -49,9 +60,35 @@ public class DistributableSessionManagerFactoryBuilder implements org.wildfly.ex
     }
 
     @Override
-    public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName, Module module, JBossWebMetaData metaData) {
-        ServiceName clusteringServiceName = name.append("distributable");
-        this.builder.buildDeploymentDependency(target, clusteringServiceName, deploymentServiceName, module, metaData)
+    public ServiceBuilder<SessionManagerFactory> build(ServiceTarget target, ServiceName name, final DistributableSessionManagerConfiguration config) {
+        final ServiceName clusteringServiceName = name.append("distributable");
+        SessionManagerConfiguration configuration = new SessionManagerConfiguration() {
+            @Override
+            public int getMaxActiveSessions() {
+                return config.getMaxActiveSessions();
+            }
+
+            @Override
+            public SessionAttributePersistenceStrategy getAttributePersistenceStrategy() {
+                return strategies.get(config.getGranularity());
+            }
+
+            @Override
+            public String getDeploymentName() {
+                return config.getDeploymentName();
+            }
+
+            @Override
+            public Module getModule() {
+                return config.getModule();
+            }
+
+            @Override
+            public String getCacheName() {
+                return config.getCacheName();
+            }
+        };
+        this.builder.buildDeploymentDependency(target, clusteringServiceName, configuration)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;

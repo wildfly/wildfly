@@ -24,7 +24,6 @@ package org.wildfly.clustering.web.infinispan;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageBundle;
 import org.jboss.logging.Messages;
-import org.jboss.metadata.web.jboss.ReplicationGranularity;
 
 /**
  * InfinispanWebMessages
@@ -47,8 +46,9 @@ public interface InfinispanWebMessages {
      *
      * @return an {@link IllegalArgumentException} for the error.
      */
+    @Deprecated
     @Message(id = 10336, value = "Unknown replication granularity: %s")
-    IllegalArgumentException unknownReplicationGranularity(ReplicationGranularity value);
+    IllegalArgumentException unknownReplicationGranularity(Object value);
 
     @Message(id = 10337, value = "Session %s is not valid")
     IllegalStateException invalidSession(String sessionId);

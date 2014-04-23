@@ -19,32 +19,44 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.wildfly.clustering.web.session;
+package org.jboss.as.test.clustering.single.web;
 
-import org.jboss.msc.service.ServiceBuilder;
-import org.jboss.msc.service.ServiceName;
-import org.jboss.msc.service.ServiceTarget;
-import org.jboss.msc.value.Value;
+import java.io.IOException;
+import java.io.Serializable;
 
-/**
- * Builds a {@link RouteLocator} service.
- * @author Paul Ferraro
- */
-public interface RouteLocatorBuilder {
-    /**
-     * Builds a {@link RouteLocator} service.
-     * @param target the service target
-     * @param name the service name of the route locator service
-     * @param deploymentName the name of the web deployment
-     * @return a service builder
-     */
-    ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, String deploymentName);
+public class Mutable implements Serializable {
+    private static final long serialVersionUID = -5129400250276547619L;
+    private transient boolean serialized = false;
+    private int value;
 
-    /**
-     * Builds the server dependencies to be made available to every deployment.
-     * @param target the service target
-     * @param route the injected route source
-     * @return a service builder
-     */
-    ServiceBuilder<?> buildServerDependency(ServiceTarget target, Value<? extends Value<String>> route);
+    public Mutable(int value) {
+        this.value = value;
+    }
+
+    public int getValue() {
+        return this.value;
+    }
+
+    public void increment() {
+        this.value += 1;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(this.value);
+    }
+
+    public boolean wasSerialized() {
+        return this.serialized;
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        this.serialized = true;
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        this.serialized = true;
+    }
 }

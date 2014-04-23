@@ -54,7 +54,11 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTestCase {
 
-    protected abstract String getModuleName();
+    private final String deploymentName;
+
+    protected ClusteredWebFailoverAbstractCase(String deploymentName) {
+        this.deploymentName = deploymentName;
+    }
 
     /**
      * Test simple graceful shutdown failover:
@@ -250,6 +254,6 @@ public abstract class ClusteredWebFailoverAbstractCase extends ClusterAbstractTe
     }
 
     private void establishTopology(URL baseURL, String... nodes) throws URISyntaxException, IOException {
-        ClusterHttpClientUtil.establishTopology(baseURL, "web", "default-host/" + this.getModuleName(), nodes);
+        ClusterHttpClientUtil.establishTopology(baseURL, "web", this.deploymentName, nodes);
     }
 }

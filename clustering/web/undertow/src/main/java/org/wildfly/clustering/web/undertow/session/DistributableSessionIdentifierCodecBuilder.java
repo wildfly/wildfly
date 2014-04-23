@@ -49,9 +49,9 @@ public class DistributableSessionIdentifierCodecBuilder implements org.wildfly.e
     }
 
     @Override
-    public ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName) {
-        ServiceName locatorServiceName = deploymentServiceName.append("locator");
-        this.builder.build(target, locatorServiceName, deploymentServiceName)
+    public ServiceBuilder<SessionIdentifierCodec> build(ServiceTarget target, ServiceName name, String deploymentName) {
+        ServiceName locatorServiceName = name.append("locator");
+        this.builder.build(target, locatorServiceName, deploymentName)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()
         ;

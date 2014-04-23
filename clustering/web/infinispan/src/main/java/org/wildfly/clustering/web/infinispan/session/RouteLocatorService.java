@@ -50,19 +50,19 @@ public class RouteLocatorService extends AbstractService<RouteLocator> implement
     public static final ServiceName NODE_FACTORY_SERVICE_NAME = ServiceName.JBOSS.append("clustering", "nodes", InfinispanSessionManagerFactoryBuilder.DEFAULT_CACHE_CONTAINER, CacheContainer.DEFAULT_CACHE_ALIAS, "entry");
 
     @SuppressWarnings({ "unchecked", "rawtypes", "deprecation" })
-    public static ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, ServiceName deploymentServiceName) {
+    public static ServiceBuilder<RouteLocator> build(ServiceTarget target, ServiceName name, String deploymentName) {
         RouteLocatorService service = new RouteLocatorService();
         return target.addService(name, service)
                 // These services are only available if the cache is non-local.
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, NODE_FACTORY_SERVICE_NAME, NodeFactory.class, (Injector) service.nodeFactory)
                 .addDependency(ServiceBuilder.DependencyType.OPTIONAL, REGISTRY_SERVICE_NAME, Registry.class, service.registry)
                 .addDependency(RouteRegistryEntryProviderService.SERVICE_NAME, RouteRegistryEntryProvider.class, service.provider)
-                .addDependency(getCacheServiceName(deploymentServiceName), Cache.class, service.cache)
+                .addDependency(getCacheServiceAlias(deploymentName), Cache.class, service.cache)
         ;
     }
 
-    public static ServiceName getCacheServiceName(ServiceName deploymentServiceName) {
-        return deploymentServiceName.append("web", "cache");
+    public static ServiceName getCacheServiceAlias(String deploymentName) {
+        return ServiceName.JBOSS.append("clustering", "web", "locator", deploymentName);
     }
 
     private final InjectedValue<NodeFactory<Address>> nodeFactory = new InjectedValue<>();

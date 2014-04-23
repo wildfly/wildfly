@@ -51,7 +51,6 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.concurrent.Scheduler;
-import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
@@ -80,13 +79,13 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
     private final boolean persistent;
 
-    public InfinispanSessionManager(SessionContext context, IdentifierFactory<String> identifierFactory, Cache<String, V> cache, SessionFactory<V, L> factory, Batcher batcher, JBossWebMetaData metaData) {
+    public InfinispanSessionManager(SessionContext context, IdentifierFactory<String> identifierFactory, Cache<String, V> cache, SessionFactory<V, L> factory, Batcher batcher, int maxActiveSessions) {
         this.context = context;
         this.factory = factory;
         this.identifierFactory = identifierFactory;
         this.cache = cache;
         this.batcher = batcher;
-        this.maxActiveSessions = metaData.getMaxActiveSessions().intValue();
+        this.maxActiveSessions = maxActiveSessions;
         Configuration config = cache.getCacheConfiguration();
         // If cache is clustered or configured with a write-through cache store
         // then we need to trigger any HttpSessionActivationListeners per request
