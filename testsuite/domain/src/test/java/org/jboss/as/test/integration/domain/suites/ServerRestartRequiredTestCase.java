@@ -36,6 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
@@ -50,7 +51,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUC
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.executeForResult;
-import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.getServerConfigAddress;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.startServer;
 import static org.jboss.as.test.integration.domain.management.util.DomainTestUtils.waitUntilState;
 
@@ -58,7 +58,6 @@ import java.io.IOException;
 
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.helpers.domain.DomainClient;
-import org.jboss.as.test.integration.domain.AdminOnlyModeTestCase;
 import org.jboss.as.test.integration.domain.management.util.DomainLifecycleUtil;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.management.util.MgmtOperationException;
@@ -68,7 +67,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -213,6 +211,44 @@ public class ServerRestartRequiredTestCase {
         executeOperation(operation, client);
 
         checkReloadOneAndTwo(client);
+    }
+
+    @Test
+    public void testCompositeNavigation() throws Exception {
+
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+
+        final ModelNode steps = composite.get(STEPS).setEmptyList();
+
+        final ModelNode rr = steps.add();
+        rr.get(OP).set(READ_RESOURCE_OPERATION);
+        rr.get(OP_ADDR).set(reloadOneAddress).add(JVM, "default");
+
+        final ModelNode rs = steps.add();
+        rs.get(OP).set(READ_RESOURCE_OPERATION);
+        rs.get(OP_ADDR).set(reloadTwoAddress).add(JVM, "default");
+
+        domainMasterLifecycleUtil.executeForResult(composite);
+
+        // check the process state for reload-one
+        final ModelNode serverOne = new ModelNode();
+        serverOne.add(HOST, "master");
+        serverOne.add(RUNNING_SERVER, "reload-one");
+
+        final ModelNode resultOne = getServerState(serverOne, client);
+        Assert.assertEquals("running", resultOne.asString());
+
+        // check the process state for reload-two
+        final ModelNode serverTwo = new ModelNode();
+        serverTwo.add(HOST, "slave");
+        serverTwo.add(SERVER, "reload-two");
+
+        final ModelNode resultTwo = getServerState(serverTwo, client);
+        Assert.assertEquals("running", resultTwo.asString());
     }
 
     @Test

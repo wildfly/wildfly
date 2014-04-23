@@ -490,10 +490,12 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         final ModelNode hostModel = endRoot.require(HOST).asPropertyList().iterator().next().getValue();
         final ModelNode existingHostModel = startRoot.require(HOST).asPropertyList().iterator().next().getValue();
 
+        if (!hostModel.hasDefined(SERVER_CONFIG)) {
+            return;
+        }
         final Map<String, ProxyController> serverProxies = DomainServerUtils.getServerProxies(localHostInfo.getLocalHostName(), domainRootResource, context.getResourceRegistration());
 
         // Extensions are handled in ApplyExtensionsHandler
-
         final ModelNode startPaths = startRoot.get(PATH);
         final ModelNode endPaths = endRoot.get(PATH);
         final Map<String, ModelNode> existingPaths = new HashMap<String, ModelNode>();
