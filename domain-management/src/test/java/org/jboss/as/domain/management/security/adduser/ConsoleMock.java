@@ -42,8 +42,8 @@ public class ConsoleMock implements ConsoleWrapper {
     }
 
     @Override
-    public Object format(String fmt, Object... args) throws IllegalFormatException {
-        return responses.assertDisplayText(String.format(fmt,args));
+    public void format(String fmt, Object... args) throws IllegalFormatException {
+        responses.assertDisplayText(String.format(fmt,args));
     }
 
     @Override
@@ -64,7 +64,8 @@ public class ConsoleMock implements ConsoleWrapper {
     }
 
     @Override
-    public Object getConsole() {
-        return this;
+    public boolean hasConsole() {
+        return true;
     }
+
 }

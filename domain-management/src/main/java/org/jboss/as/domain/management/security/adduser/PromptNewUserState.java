@@ -35,9 +35,6 @@ public class PromptNewUserState implements State {
     public PromptNewUserState(ConsoleWrapper theConsole, final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
-        if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
-            throw MESSAGES.noConsoleAvailable();
-        }
     }
 
     @Override

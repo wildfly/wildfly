@@ -48,9 +48,6 @@ public class PromptPasswordState implements State {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
         this.rePrompt = rePrompt;
-        if ((stateValues != null && stateValues.isSilent() == false) && theConsole.getConsole() == null) {
-            throw MESSAGES.noConsoleAvailable();
-        }
     }
 
     @Override
