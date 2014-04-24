@@ -24,6 +24,8 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 import java.io.Console;
 import java.io.IOError;
 import java.util.IllegalFormatException;
@@ -33,34 +35,50 @@ import java.util.IllegalFormatException;
  *
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */
-public class JavaConsole implements ConsoleWrapper<Console> {
+public class JavaConsole implements ConsoleWrapper {
 
     private Console theConsole = System.console();
 
-    public void JavaConsole() {}
-
     @Override
-    public Console format(String fmt, Object... args) throws IllegalFormatException {
-        return theConsole.format(fmt,args);
+    public void format(String fmt, Object... args) throws IllegalFormatException {
+        if (hasConsole()) {
+            theConsole.format(fmt, args);
+        } else {
+            System.out.format(fmt, args);
+        }
     }
 
     @Override
     public void printf(String format, Object... args) throws IllegalFormatException {
-        theConsole.printf(format,args);
+        if (hasConsole()) {
+            theConsole.printf(format, args);
+        } else {
+            System.out.format(format, args);
+        }
     }
 
     @Override
     public String readLine(String fmt, Object... args) throws IOError {
-        return theConsole.readLine(fmt,args);
+        if (hasConsole()) {
+            return theConsole.readLine(fmt, args);
+        } else {
+            throw MESSAGES.noConsoleAvailable();
+        }
     }
 
     @Override
     public char[] readPassword(String fmt, Object... args) throws IllegalFormatException, IOError {
-        return theConsole.readPassword(fmt,args);
+        if (hasConsole()) {
+            return theConsole.readPassword(fmt, args);
+        } else {
+            throw MESSAGES.noConsoleAvailable();
+        }
     }
 
     @Override
-    public Console getConsole() {
-        return theConsole;
+    public boolean hasConsole() {
+        return theConsole != null;
     }
+
+
 }
