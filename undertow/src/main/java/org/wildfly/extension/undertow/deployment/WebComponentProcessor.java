@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.undertow.deployment;
 
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -197,7 +198,9 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
         if (index != null) {
             Set<ClassInfo> classInfos = index.getAllKnownImplementors(ASYNC_LISTENER_INTERFACE);
             for (ClassInfo classInfo : classInfos) {
-                classes.add(classInfo.name().toString());
+                if(!Modifier.isAbstract(classInfo.flags()) && !Modifier.isInterface(classInfo.flags())) {
+                    classes.add(classInfo.name().toString());
+                }
             }
         }
     }
