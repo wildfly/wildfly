@@ -28,15 +28,17 @@ import java.util.List;
 import org.jboss.as.domain.management.security.password.PasswordStrengthCheckResult;
 import org.jboss.as.domain.management.security.password.PasswordRestriction;
 import org.jboss.as.domain.management.security.password.PasswordStrength;
+import org.jboss.as.domain.management.security.password.PasswordValidationException;
 
 /**
- * @author baranowb
  *
+ * @author baranowb
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class SimplePasswordStrengthCheckResult implements PasswordStrengthCheckResult {
 
     private PasswordStrength strength;
-    private List<PasswordRestriction> failedRestrictions = new ArrayList<PasswordRestriction>();
+    private List<PasswordValidationException> restrictionFailures = new ArrayList<PasswordValidationException>();
     private List<PasswordRestriction> passedRestrictions = new ArrayList<PasswordRestriction>();
     private int positive = 0;
     private int negative = 0;
@@ -48,11 +50,8 @@ public class SimplePasswordStrengthCheckResult implements PasswordStrengthCheckR
         return strength;
     }
 
-    /**
-     * @return the failedRestrictions
-     */
-    public List<PasswordRestriction> getFailedRestrictions() {
-        return failedRestrictions;
+    public List<PasswordValidationException> getRestrictionFailures() {
+        return restrictionFailures;
     }
 
     /**
@@ -86,31 +85,31 @@ public class SimplePasswordStrengthCheckResult implements PasswordStrengthCheckR
     /**
      * @param pr
      */
-    void addFailedRestriction(PasswordRestriction pr) {
-        this.failedRestrictions.add(pr);
+    void addRestrictionFailure(PasswordValidationException pve) {
+        restrictionFailures.add(pve);
     }
 
-    private static final float BOUNDRY_EXCEPTIONAL = 0.03f;
-    private static final float BOUNDRY_VERY_STRONG = 0.1f;
-    private static final float BOUNDRY_STRONG = 0.15f;
-    private static final float BOUNDRY_MEDIUM = 0.5f;
-    private static final float BOUNDRY_MODERATE = 0.7f;
-    private static final float BOUNDRY_WEAK = 0.9f;
+    private static final float BOUNDARY_EXCEPTIONAL = 0.03f;
+    private static final float BOUNDARY_VERY_STRONG = 0.1f;
+    private static final float BOUNDARY_STRONG = 0.15f;
+    private static final float BOUNDARY_MEDIUM = 0.5f;
+    private static final float BOUNDARY_MODERATE = 0.7f;
+    private static final float BOUNDARY_WEAK = 0.9f;
 
     void calculateStrength() {
         float f = (float) negative / positive;
 
-        if (f <= BOUNDRY_EXCEPTIONAL) {
+        if (f <= BOUNDARY_EXCEPTIONAL) {
             this.strength = PasswordStrength.EXCEPTIONAL;
-        } else if (f <= BOUNDRY_VERY_STRONG) {
+        } else if (f <= BOUNDARY_VERY_STRONG) {
             this.strength = PasswordStrength.VERY_STRONG;
-        } else if (f <= BOUNDRY_STRONG) {
+        } else if (f <= BOUNDARY_STRONG) {
             this.strength = PasswordStrength.STRONG;
-        } else if (f <= BOUNDRY_MEDIUM) {
+        } else if (f <= BOUNDARY_MEDIUM) {
             this.strength = PasswordStrength.MEDIUM;
-        } else if (f <= BOUNDRY_MODERATE) {
+        } else if (f <= BOUNDARY_MODERATE) {
             this.strength = PasswordStrength.MODERATE;
-        } else if (f <= BOUNDRY_WEAK) {
+        } else if (f <= BOUNDARY_WEAK) {
             this.strength = PasswordStrength.WEAK;
         } else {
             this.strength = PasswordStrength.VERY_WEAK;

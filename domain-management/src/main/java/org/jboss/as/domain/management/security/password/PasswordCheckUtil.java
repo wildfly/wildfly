@@ -22,37 +22,73 @@
 
 package org.jboss.as.domain.management.security.password;
 
-import java.io.InputStream;
+import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
 import org.jboss.as.domain.management.security.password.PasswordCheckResult.Result;
 import org.jboss.as.domain.management.security.password.simple.SimplePasswordStrengthChecker;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+
 /**
  * Simple util which narrows down password checks so there is no hassle in performing those checks in CLI.
- * @author baranowb
  *
+ * @author baranowb
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public class PasswordCheckUtil {
 
-    public static final String _PROPERTY_CHECKER = "checker";
-    public static final String _PROPERTY_STRENGTH = "strength";
-    public static final String _PROPERTY_FORBIDDEN = "forbidden";
+    public static final String _PROPERTY_CHECKER = "password.restriction.checker";
+    public static final String _PROPERTY_STRENGTH = "password.restriction.strength";
+    public static final String _PROPERTY_FORBIDDEN = "password.restriction.forbiddenValue";
 
-    public static final PasswordCheckUtil INSTANCE = new PasswordCheckUtil();
+    public static final String _PROPERTY_RESTRICTION = "password.restriction";
+    public static final String _PROPERTY_MIN_LENGTH = "password.restriction.minLength";
+    public static final String _PROPERTY_MIN_ALPHA = "password.restriction.minAlpha";
+    public static final String _PROPERTY_MIN_DIGIT = "password.restriction.minDigit";
+    public static final String _PROPERTY_MIN_SYMBOL = "password.restriction.minSymbol";
+    public static final String _PROPERTY_MATCH_USERNAME = "password.restriction.mustNotMatchUsername";
 
     private PasswordStrengthChecker passwordStrengthChecker;
     private PasswordStrength acceptable = PasswordStrength.MODERATE;
-    private List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<PasswordRestriction>();
+    private RestrictionLevel level = RestrictionLevel.WARN;
+    // Something ordered is good so the ordering of messages and validation is consistent across invocations.
+    public List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<PasswordRestriction>();
+    private CompoundRestriction compountRestriction = null;
 
-    private PasswordCheckUtil() {
-        InputStream is = Keyboard.class.getResourceAsStream("utility.properties");
-        if (is != null) {
-            this.init(is);
+    private PasswordCheckUtil(final File configFile) {
+        if (configFile != null && configFile.exists()) {
+            try {
+                Properties configProperties = new Properties();
+                configProperties.load(new FileInputStream(configFile));
+                // level
+                initRestrictionLevel(configProperties);
+                // strength
+                initDefaultStrength(configProperties);
+                // checker
+                initStrengthChecker(configProperties);
+                // name restrictions
+                initPasswordRestrictions(configProperties);
+                // length
+                initMinLength(configProperties);
+                // alpha
+                initMinAlpha(configProperties);
+                // digit
+                initMinDigit(configProperties);
+                // symbol
+                initMinSymbol(configProperties);
+                // match username
+                initMustNotMatchUsername(configProperties);
+            } catch (IOException e) {
+                simple();
+            }
         } else {
-            this.simple();
+            simple();
         }
     }
 
@@ -61,20 +97,8 @@ public class PasswordCheckUtil {
         this.passwordStrengthChecker = new SimplePasswordStrengthChecker();
     }
 
-    private void init(InputStream is) {
-        try {
-            Properties props = new Properties();
-            props.load(is);
-            // strength
-            this.initDefaultStrength(props);
-            // checker
-            this.initStrengthChecker(props);
-            // name restrictions
-            this.initPasswordRestrictions(props);
-        } catch (Exception e) {
-            // print?
-            this.simple();
-        }
+    public static PasswordCheckUtil create(final File configFile) {
+        return new PasswordCheckUtil(configFile);
     }
 
     /**
@@ -88,11 +112,7 @@ public class PasswordCheckUtil {
             }
 
             String[] values = forbiddens.split(",");
-            for (String v : values) {
-                if (v != null && v.length() > 0) {
-                    this.passwordValuesRestrictions.add(new ValueRestriction(v));
-                }
-            }
+            this.passwordValuesRestrictions.add(new ValueRestriction(values, level == RestrictionLevel.REJECT));
         } catch (Exception e) {
             // log?
         }
@@ -103,7 +123,7 @@ public class PasswordCheckUtil {
      */
     private void initStrengthChecker(Properties props) {
         try {
-            String stringClassName = (String) props.get(_PROPERTY_CHECKER);
+            String stringClassName = props.getProperty(_PROPERTY_CHECKER);
             if (stringClassName == null) {
                 this.simple();
                 return;
@@ -117,9 +137,84 @@ public class PasswordCheckUtil {
         }
     }
 
+    /**
+     * @param props
+     */
     private void initDefaultStrength(Properties props) {
         try {
             this.acceptable = PasswordStrength.valueOf(props.getProperty(_PROPERTY_STRENGTH).toUpperCase());
+        } catch (Exception e) {
+            // log
+        }
+    }
+
+    /**
+     * @param props
+     */
+    private void initMinAlpha(Properties props) {
+        try {
+            int minAlpha = Integer.parseInt(props.getProperty(_PROPERTY_MIN_ALPHA));
+            createAlphaRestriction(minAlpha);
+        } catch (Exception e) {
+            // log
+        }
+    }
+
+    /**
+     * @param props
+     */
+    private void initMinSymbol(Properties props) {
+        try {
+            int minAlpha = Integer.parseInt(props.getProperty(_PROPERTY_MIN_SYMBOL));
+            createSymbolRestriction(minAlpha);
+        } catch (Exception e) {
+            // log
+        }
+    }
+
+    /**
+     * @param props
+     */
+    private void initMinDigit(Properties props) {
+        try {
+            int minDigit = Integer.parseInt(props.getProperty(_PROPERTY_MIN_DIGIT));
+            createDigitRestriction(minDigit);
+        } catch (Exception e) {
+            // log
+        }
+    }
+
+    /**
+     * @param props
+     */
+    private void initMinLength(Properties props) {
+        try {
+            int minLength = Integer.parseInt(props.getProperty(_PROPERTY_MIN_LENGTH));
+            createLengthRestriction(minLength);
+        } catch (Exception e) {
+            // log
+        }
+    }
+
+    /**
+     * @param props
+     */
+    private void initMustNotMatchUsername(Properties props) {
+        try {
+            if (Boolean.parseBoolean(props.getProperty(_PROPERTY_MATCH_USERNAME))) {
+                passwordValuesRestrictions.add(new UsernamePasswordMatch(level == RestrictionLevel.REJECT));
+            }
+        } catch (Exception e) {
+            // log
+        }
+    }
+
+    /**
+     * @param props
+     */
+    private void initRestrictionLevel(Properties props) {
+        try {
+            level = RestrictionLevel.valueOf(props.getProperty(_PROPERTY_RESTRICTION));
         } catch (Exception e) {
             // log
         }
@@ -131,6 +226,7 @@ public class PasswordCheckUtil {
 
     /**
      * Method which performs strength checks on password. It returns outcome which can be used by CLI.
+     *
      * @param isAdminitrative - administrative checks are less restrictive. This means that weak password or one which violates restrictions is not indicated as failure.
      * Administrative checks are usually performed by admin changing/setting default password for user.
      * @param userName - the name of user for which password is set.
@@ -139,22 +235,20 @@ public class PasswordCheckUtil {
      */
     public PasswordCheckResult check(boolean isAdminitrative, String userName, String password) {
         // TODO: allow custom restrictions?
+        List<PasswordRestriction> passwordValuesRestrictions = getPasswordRestrictions();
+        final PasswordStrengthCheckResult strengthResult = this.passwordStrengthChecker.check(userName, password, passwordValuesRestrictions);
 
-        List<PasswordRestriction> passwordValuesRestrictions = new ArrayList<PasswordRestriction>(this.passwordValuesRestrictions);
-        passwordValuesRestrictions.add(new ValueRestriction(userName));
-        final PasswordStrengthCheckResult strengthResult = this.passwordStrengthChecker.check(password, passwordValuesRestrictions);
-
-        final int failedRestrictions = strengthResult.getFailedRestrictions().size();
+        final int failedRestrictions = strengthResult.getRestrictionFailures().size();
         final PasswordStrength strength = strengthResult.getStrength();
         final boolean strongEnough = assertStrength(strength);
 
-        PasswordCheckResult.Result resultAction = null;
+        PasswordCheckResult.Result resultAction;
         String resultMessage = null;
         if (isAdminitrative) {
             if (strongEnough) {
                 if (failedRestrictions > 0) {
                     resultAction = Result.WARN;
-                    resultMessage = strengthResult.getFailedRestrictions().get(0).getMessage();
+                    resultMessage = strengthResult.getRestrictionFailures().get(0).getMessage();
                 } else {
                     resultAction = Result.ACCEPT;
                 }
@@ -166,14 +260,14 @@ public class PasswordCheckUtil {
             if (strongEnough) {
                 if (failedRestrictions > 0) {
                     resultAction = Result.REJECT;
-                    resultMessage = strengthResult.getFailedRestrictions().get(0).getMessage();
+                    resultMessage = strengthResult.getRestrictionFailures().get(0).getMessage();
                 } else {
                     resultAction = Result.ACCEPT;
                 }
             } else {
                 if (failedRestrictions > 0) {
                     resultAction = Result.REJECT;
-                    resultMessage = strengthResult.getFailedRestrictions().get(0).getMessage();
+                    resultMessage = strengthResult.getRestrictionFailures().get(0).getMessage();
                 } else {
                     resultAction = Result.REJECT;
                     resultMessage = MESSAGES.passwordNotStrongEnough(strength.toString(), this.acceptable.toString());
@@ -183,5 +277,53 @@ public class PasswordCheckUtil {
 
         return new PasswordCheckResult(resultAction, resultMessage);
 
+    }
+
+    public RestrictionLevel getRestrictionLevel() {
+        return level;
+    }
+
+    public List<PasswordRestriction> getPasswordRestrictions() {
+        return Collections.unmodifiableList(passwordValuesRestrictions);
+    }
+
+    private void addToCompointRestriction(final PasswordRestriction toWrap) {
+        if (compountRestriction == null) {
+            compountRestriction = new CompoundRestriction(level == RestrictionLevel.REJECT);
+            passwordValuesRestrictions.add(compountRestriction);
+        }
+        compountRestriction.add(toWrap);
+    }
+
+    public void createLengthRestriction(int minLength) {
+        if (minLength > 0) {
+            addToCompointRestriction(new LengthRestriction(minLength));
+        }
+    }
+
+    public PasswordRestriction createAlphaRestriction(int minAlpha) {
+        return createRegExRestriction(minAlpha, SimplePasswordStrengthChecker.REGEX_ALPHA,
+                MESSAGES.passwordMustHaveAlphaInfo(minAlpha), MESSAGES.passwordMustHaveAlpha(minAlpha));
+    }
+
+    public PasswordRestriction createDigitRestriction(int minDigit) {
+        return createRegExRestriction(minDigit, SimplePasswordStrengthChecker.REGEX_DIGITS,
+                MESSAGES.passwordMustHaveDigitInfo(minDigit), MESSAGES.passwordMustHaveDigit(minDigit));
+    }
+
+    public PasswordRestriction createSymbolRestriction(int minSymbol) {
+        return createRegExRestriction(minSymbol, SimplePasswordStrengthChecker.REGEX_SYMBOLS,
+                MESSAGES.passwordMustHaveSymbolInfo(minSymbol), MESSAGES.passwordMustHaveSymbol(minSymbol));
+    }
+
+    private PasswordRestriction createRegExRestriction(int minChar, String regex, String requirementsMessage,
+            String failureMessage) {
+        if (minChar > 0) {
+            PasswordRestriction pr = new RegexRestriction(String.format("(.*%s.*){%d}", regex, minChar), requirementsMessage,
+                    failureMessage);
+            addToCompointRestriction(pr);
+            return pr;
+        }
+        return null;
     }
 }

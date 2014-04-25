@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,37 +19,55 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.domain.management.security.password;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
- * A {@link PasswordRestriction} to check the length of the password.
+ * A {@link PasswordValidation} which wraps multiple other restrictions.
  *
- * @author baranowb
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LengthRestriction implements PasswordRestriction {
+public class CompoundRestriction implements PasswordRestriction {
 
-    private final int desiredLength;
+    private final List<PasswordRestriction> wrapped = new ArrayList<PasswordRestriction>();
+    private final boolean must;
 
-    /**
-     * @param desiredLength
-     */
-    public LengthRestriction(int desiredLength) {
-        this.desiredLength = desiredLength;
+    public CompoundRestriction(final boolean must) {
+        this.must = must;
+    }
+
+    synchronized void add(final PasswordRestriction restriction) {
+        wrapped.add(restriction);
+    }
+
+    public List<PasswordRestriction> getRestrictions() {
+        return Collections.unmodifiableList(wrapped);
     }
 
     @Override
-    public String getRequirementMessage() {
-        return MESSAGES.passwordLengthInfo(desiredLength);
+    public synchronized String getRequirementMessage() {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < wrapped.size(); i++) {
+            sb.append(wrapped.get(i).getRequirementMessage());
+            if (i + 1 < wrapped.size()) {
+                sb.append(", ");
+            }
+        }
+
+        return must ? MESSAGES.passwordMustContainInfo(sb.toString()) : MESSAGES.passwordShouldContainInfo(sb.toString());
     }
 
     @Override
     public void validate(String userName, String password) throws PasswordValidationException {
-        if (password == null || password.length() < this.desiredLength) {
-            throw MESSAGES.passwordNotLongEnough(desiredLength);
+        for (PasswordRestriction current : wrapped) {
+            current.validate(userName, password);
         }
+
     }
+
 }

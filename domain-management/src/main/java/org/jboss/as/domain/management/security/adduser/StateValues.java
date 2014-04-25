@@ -42,7 +42,7 @@ public class StateValues {
     private AddUser.RealmMode realmMode = RealmMode.DEFAULT;
     private String realm;
     private String userName;
-    private char[] password;
+    private String password;
     private AddUser.FileMode fileMode = FileMode.UNDEFINED;
     private String groups;
     private boolean existingUser = false;
@@ -108,11 +108,11 @@ public class StateValues {
         this.userName = userName;
     }
 
-    public char[] getPassword() {
+    public String getPassword() {
         return password;
     }
 
-    public void setPassword(char[] password) {
+    public void setPassword(String password) {
         this.password = password;
     }
 

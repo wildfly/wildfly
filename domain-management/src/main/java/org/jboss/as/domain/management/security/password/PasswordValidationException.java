@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2012, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,41 +19,19 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.domain.management.security.password;
 
-import java.util.regex.Pattern;
-
 /**
+ * An {@link Exception} thrown by the password validators if password validation fails.
  *
- * @author baranowb
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class RegexRestriction implements PasswordRestriction {
+public class PasswordValidationException extends Exception {
 
-    private final String regex;
-    private final String requirementsMessage;
-    private final String failureMessage;
+    private static final long serialVersionUID = -7334606274496438504L;
 
-    /**
-     * @param regex
-     * @param message
-     */
-    public RegexRestriction(String regex, String requirementsMessage, String failureMessage) {
-        this.regex = regex;
-        this.requirementsMessage = requirementsMessage;
-        this.failureMessage = failureMessage;
+    public PasswordValidationException(final String message) {
+        super(message);
     }
 
-    @Override
-    public String getRequirementMessage() {
-        return requirementsMessage;
-    }
-
-    @Override
-    public void validate(String userName, String password) throws PasswordValidationException {
-        if (Pattern.matches(this.regex, password) == false) {
-            throw new PasswordValidationException(failureMessage);
-        }
-    }
 }

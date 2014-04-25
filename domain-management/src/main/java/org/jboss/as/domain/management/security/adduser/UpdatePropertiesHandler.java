@@ -75,7 +75,7 @@ public abstract class UpdatePropertiesHandler {
 
         try {
             String hash = new UsernamePasswordHashUtil().generateHashedHexURP(stateValues.getUserName(), stateValues.getRealm(),
-                    stateValues.getPassword());
+                    stateValues.getPassword().toCharArray());
             entry[0] = stateValues.getUserName();
             entry[1] = hash;
         } catch (NoSuchAlgorithmException e) {

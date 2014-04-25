@@ -30,12 +30,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jboss.as.domain.management.security.password.CompoundRestriction;
 import org.jboss.as.domain.management.security.password.Dictionary;
 import org.jboss.as.domain.management.security.password.Keyboard;
-import org.jboss.as.domain.management.security.password.LengthRestriction;
 import org.jboss.as.domain.management.security.password.PasswordRestriction;
 import org.jboss.as.domain.management.security.password.PasswordStrengthCheckResult;
 import org.jboss.as.domain.management.security.password.PasswordStrengthChecker;
+import org.jboss.as.domain.management.security.password.PasswordValidationException;
 import org.jboss.as.domain.management.security.password.RegexRestriction;
 
 /**
@@ -49,24 +50,6 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
     public static final String REGEX_ALPHA_UC = "[A-Z]";
     public static final String REGEX_ALPHA_LC = "[a-z]";
     public static final String REGEX_ALPHA = "[a-zA-Z]";
-
-    public static final PasswordRestriction RESTRICTION_ALPHA = new RegexRestriction(".*" + REGEX_ALPHA + ".*", MESSAGES.passwordMustHaveAlpha());
-    public static final PasswordRestriction RESTRICTION_DIGITS = new RegexRestriction(".*" + REGEX_DIGITS + ".*", MESSAGES.passwordMustHaveDigit());
-    public static final PasswordRestriction RESTRICTION_SYMBOLS = new RegexRestriction(".*" + REGEX_SYMBOLS + ".*", MESSAGES.passwordMustHaveSymbol());
-    public static final PasswordRestriction RESTRICTION_LENGTH = new LengthRestriction(8);
-
-    public static final List<PasswordRestriction> DEFAULT_RESTRICTIONS;
-    static {
-        List<PasswordRestriction> list = new ArrayList<PasswordRestriction>();
-
-        list.add(RESTRICTION_LENGTH);
-        list.add(RESTRICTION_ALPHA);
-        list.add(RESTRICTION_DIGITS);
-        list.add(RESTRICTION_SYMBOLS);
-
-        DEFAULT_RESTRICTIONS = Collections.unmodifiableList(list);
-
-    }
 
     protected static final int PWD_LEN_WEIGHT = 2;
     protected static final int REQUIREMENTS_WEIGHT = 10;
@@ -84,6 +67,7 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
     protected static final int SEQUENTIAL_WEIGHT = 3;
 
     // this is not thread safe.
+    private String userName;
     private String password;
     private int passwordLength;
     private final List<PasswordRestriction> restrictionsInPlace;
@@ -93,7 +77,7 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
     private SimplePasswordStrengthCheckResult result;
 
     public SimplePasswordStrengthChecker() {
-        this.restrictionsInPlace = DEFAULT_RESTRICTIONS;
+        this.restrictionsInPlace = new ArrayList<PasswordRestriction>();
         this.dictionary = new SimpleDictionary();
         this.keyboard = new SimpleKeyboard();
     }
@@ -114,8 +98,9 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
      * @see org.jboss.as.domain.management.security.password.PasswordStrengthChecker#check(java.lang.String, java.util.List)
      */
     @Override
-    public PasswordStrengthCheckResult check(String password, List<PasswordRestriction> restictions) {
+    public PasswordStrengthCheckResult check(String userName, String password, List<PasswordRestriction> restictions) {
         try {
+            this.userName = userName;
             this.password = password;
             this.passwordLength = this.password.length();
             this.adHocRestrictions = restictions;
@@ -152,21 +137,47 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
         // check addhoc first, those may be more important
         if (this.adHocRestrictions != null) {
             for (PasswordRestriction pr : this.adHocRestrictions) {
-                if (pr.pass(this.password)) {
-                    result.addPassedRestriction(pr);
-                    met++;
+                if (pr instanceof CompoundRestriction) {
+                    for (PasswordRestriction wrapped : ((CompoundRestriction) pr).getRestrictions()) {
+                        try {
+                            wrapped.validate(userName, password);
+                            result.addPassedRestriction(wrapped);
+                            met++;
+                        } catch (PasswordValidationException pve) {
+                            result.addRestrictionFailure(pve);
+                        }
+                    }
                 } else {
-                    result.addFailedRestriction(pr);
+                    try {
+                        pr.validate(userName, password);
+                        result.addPassedRestriction(pr);
+                        met++;
+                    } catch (PasswordValidationException pve) {
+                        result.addRestrictionFailure(pve);
+                    }
                 }
             }
         }
 
         for (PasswordRestriction pr : this.restrictionsInPlace) {
-            if (pr.pass(this.password)) {
-                result.addPassedRestriction(pr);
-                met++;
+            if (pr instanceof CompoundRestriction) {
+                for (PasswordRestriction wrapped : ((CompoundRestriction) pr).getRestrictions()) {
+                    try {
+                        wrapped.validate(userName, password);
+                        result.addPassedRestriction(wrapped);
+                        met++;
+                    } catch (PasswordValidationException pve) {
+                        result.addRestrictionFailure(pve);
+                    }
+                }
             } else {
-                result.addFailedRestriction(pr);
+                try {
+                    pr.validate(userName, password);
+                    result.addPassedRestriction(pr);
+                    met++;
+                } catch (PasswordValidationException pve) {
+                    result.addRestrictionFailure(pve);
+                }
             }
         }
         this.result.positive(met * REQUIREMENTS_WEIGHT);
@@ -379,6 +390,41 @@ public class SimplePasswordStrengthChecker implements PasswordStrengthChecker {
             if (score > 0) {
                 this.result.negative(score * DICTIONARY_WORD_WEIGHT);
             }
+        }
+    }
+
+    public static PasswordRestriction getRestrictionAlpha(int minAlpha) {
+        return createRegExRestriction(minAlpha, REGEX_ALPHA, MESSAGES.passwordMustHaveAlphaInfo(minAlpha),
+                MESSAGES.passwordMustHaveAlpha(minAlpha));
+    }
+
+    public static PasswordRestriction getRestrictionDigit(int minDigit) {
+        return createRegExRestriction(minDigit, REGEX_DIGITS, MESSAGES.passwordMustHaveDigitInfo(minDigit),
+                MESSAGES.passwordMustHaveDigit(minDigit));
+    }
+
+    public static PasswordRestriction getRestrictionSymbol(int minSymbol) {
+        return createRegExRestriction(minSymbol, REGEX_SYMBOLS, MESSAGES.passwordMustHaveSymbolInfo(minSymbol),
+                MESSAGES.passwordMustHaveSymbol(minSymbol));
+    }
+
+    private static PasswordRestriction createRegExRestriction(int minChar, String regex, String requirementsMessage,
+            String failureMessage) {
+        if (minChar > 0) {
+            return new RegexRestriction(String.format("(.*%s.*){%d}", REGEX_ALPHA, minChar), requirementsMessage,
+                    failureMessage);
+        } else {
+            return new PasswordRestriction() {
+
+                @Override
+                public void validate(String userName, String password) throws PasswordValidationException {
+                }
+
+                @Override
+                public String getRequirementMessage() {
+                    return "";
+                }
+            };
         }
     }
 }

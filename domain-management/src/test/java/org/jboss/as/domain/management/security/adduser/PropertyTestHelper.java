@@ -65,7 +65,7 @@ public class PropertyTestHelper {
         values.setUserFiles(usersPropertyFileList);
         values.setGroupFiles(rolesPropertyFileList);
         values.setUserName(USER_NAME);
-        values.setPassword("1sT%l<[pzD".toCharArray());
+        values.setPassword("1sT%l<[pzD");
         values.setRealm("Management");
         consoleMock = new ConsoleMock();
     }

@@ -23,37 +23,15 @@
 package org.jboss.as.domain.management.security.password;
 
 /**
- * Super class for password restrictions. Instances are queried if password pass restriction during strength check.
+ * Interface to be implemented by a password restriction.
  *
  * @author baranowb
- *
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public abstract class PasswordRestriction {
+public interface PasswordRestriction {
 
-    private final String message;
+    String getRequirementMessage();
 
-    /**
-     * @param message
-     */
-    public PasswordRestriction(String message) {
-        super();
-        this.message = message;
-    }
-
-    /**
-     * Message which indicates failure reason.
-     * @return
-     */
-    public String getMessage() {
-        return this.message;
-    }
-
-    /**
-     * Check if password passes restriction.
-     *
-     * @param password
-     * @return <b>true</b> - if password passed restriction test.
-     */
-    public abstract boolean pass(String password);
+    void validate(final String userName, final String password) throws PasswordValidationException;
 
 }

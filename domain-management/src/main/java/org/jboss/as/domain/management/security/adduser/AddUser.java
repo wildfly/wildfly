@@ -24,11 +24,14 @@ package org.jboss.as.domain.management.security.adduser;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+
+import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
 
 /**
  * A command line utility to add new users to the mgmt-users.properties files.
@@ -46,6 +49,8 @@ public class AddUser {
     public static final String DOMAIN_BASE_DIR = "jboss.domain.base.dir";
     public static final String DOMAIN_CONFIG_DIR = "jboss.domain.config.dir";
     public static final String DOMAIN_CONFIG_USER_DIR = "jboss.domain.config.user.dir";
+
+    public static final String CONFIG_FILE = "add-user.properties";
 
     public static final String DEFAULT_MANAGEMENT_REALM = "ManagementRealm";
     public static final String DEFAULT_APPLICATION_REALM = "ApplicationRealm";
@@ -105,7 +110,7 @@ public class AddUser {
             nextState = new ErrorState(theConsole, MESSAGES.noPasswordExiting(), null, stateValues);
             return;
         }
-        stateValues.setPassword(password.toCharArray());
+        stateValues.setPassword(password);
         stateValues.setRealm(realm);
         stateValues.setRealmMode(realmMode);
         stateValues.setFileMode(fileMode);
@@ -136,6 +141,9 @@ public class AddUser {
         RuntimeOptions options = new RuntimeOptions();
         options.setConsoleWrapper(new JavaConsole());
         options.setJBossHome(System.getenv(JBOSS_HOME_ENV));
+        File binFile = new File(options.getJBossHome(), "bin");
+        File configFile = new File(binFile, CONFIG_FILE);
+        options.setCheckUtil(PasswordCheckUtil.create(configFile));
 
         if (args.length >= 1) {
 

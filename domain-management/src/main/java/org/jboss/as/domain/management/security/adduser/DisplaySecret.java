@@ -43,7 +43,7 @@ public class DisplaySecret implements State {
     }
 
     public State execute() {
-        String pwdBase64 = Base64.encodeBytes(new String(stateValues.getPassword()).getBytes());
+        String pwdBase64 = Base64.encodeBytes(stateValues.getPassword().getBytes());
         theConsole.printf(MESSAGES.secretElement(pwdBase64));
         theConsole.printf(NEW_LINE);
 

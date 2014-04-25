@@ -23,8 +23,14 @@
 package org.jboss.as.domain.management.security.adduser;
 
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
 
 import java.util.Arrays;
+import java.util.List;
+
+import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.security.password.PasswordRestriction;
+import org.jboss.as.domain.management.security.password.RestrictionLevel;
 
 /**
  * State to prompt the user for a password
@@ -48,15 +54,34 @@ public class PromptPasswordState implements State {
     public State execute() {
         if (stateValues.isSilentOrNonInteractive() == false) {
             if (rePrompt == false) {
-                /*
-                 * Prompt for password.
-                 */
+                // Password requirements.
+                RestrictionLevel level = stateValues.getOptions().getCheckUtil().getRestrictionLevel();
+                if (!RestrictionLevel.RELAX.equals(level)) {
+                    final List<PasswordRestriction> passwordRestrictions = stateValues.getOptions().getCheckUtil().getPasswordRestrictions();
+                    if (passwordRestrictions.size() > 0) {
+                        if (level == RestrictionLevel.REJECT) {
+                            theConsole.printf(DomainManagementMessages.MESSAGES.passwordRequirements());
+                        } else {
+                            theConsole.printf(DomainManagementMessages.MESSAGES.passwordRecommendations());
+                        }
+                        theConsole.printf(NEW_LINE);
+                        for (PasswordRestriction passwordRestriction : passwordRestrictions) {
+                            final String message = passwordRestriction.getRequirementMessage();
+                            if (message != null && !message.isEmpty()) {
+                                theConsole.printf(" - ");
+                                theConsole.printf(message);
+                                theConsole.printf(NEW_LINE);
+                            }
+                        }
+                    }
+                }
+                // Prompt for password.
                 theConsole.printf(MESSAGES.passwordPrompt());
                 char[] tempChar = theConsole.readPassword(" : ");
                 if (tempChar == null || tempChar.length == 0) {
                     return new ErrorState(theConsole, MESSAGES.noPasswordExiting());
                 }
-                stateValues.setPassword(tempChar);
+                stateValues.setPassword(new String(tempChar));
 
                 return new ValidatePasswordState(theConsole, stateValues);
             } else {
@@ -67,7 +92,7 @@ public class PromptPasswordState implements State {
                     secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
                 }
 
-                if (Arrays.equals(stateValues.getPassword(), secondTempChar) == false) {
+                if (Arrays.equals(stateValues.getPassword().toCharArray(), secondTempChar) == false) {
                     // Start again at the first password.
                     return new ErrorState(theConsole, MESSAGES.passwordMisMatch(), new PromptPasswordState(theConsole, stateValues, false));
                 }

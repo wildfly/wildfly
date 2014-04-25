@@ -26,15 +26,16 @@ import java.util.List;
 
 /**
  * Represents strength check result.
- * @author baranowb
  *
+ * @author baranowb
+ * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
 public interface PasswordStrengthCheckResult {
     /**
      * List of restrictions that password did not met.
      * @return
      */
-    List<PasswordRestriction> getFailedRestrictions();
+    List<PasswordValidationException> getRestrictionFailures();
     /**
      * Password strength.
      * @return

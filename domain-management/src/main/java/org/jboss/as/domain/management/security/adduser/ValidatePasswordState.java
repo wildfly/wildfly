@@ -24,12 +24,11 @@ package org.jboss.as.domain.management.security.adduser;
 import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.domain.management.security.password.PasswordCheckResult;
-import org.jboss.as.domain.management.security.password.PasswordCheckUtil;
+import org.jboss.as.domain.management.security.password.RestrictionLevel;
 
 /**
  * State to perform validation of the supplied password.
@@ -48,10 +47,14 @@ public class ValidatePasswordState extends AbstractValidationState {
 
     @Override
     protected Collection<State> getValidationStates() {
-        List<State> validationStates = new ArrayList<State>(2);
-        validationStates.add(getUsernameMatchState());
-        validationStates.add(getDetailedCheckState());
-
+        final List<State> validationStates;
+        final boolean relaxRestriction = RestrictionLevel.RELAX.equals(stateValues.getOptions().getCheckUtil().getRestrictionLevel());
+        if (!relaxRestriction) {
+            validationStates = new ArrayList<State>(1);
+            validationStates.add(getDetailedCheckState());
+        } else {
+            validationStates = new ArrayList<State>(0);
+        }
         return validationStates;
     }
 
@@ -59,43 +62,41 @@ public class ValidatePasswordState extends AbstractValidationState {
         return stateValues.isSilentOrNonInteractive() ? null : new PromptNewUserState(theConsole, stateValues);
     }
 
-    private State getUsernameMatchState() {
-        return new State() {
-
-            @Override
-            public State execute() {
-                if (Arrays.equals(stateValues.getUserName().toCharArray(), stateValues.getPassword())) {
-                    return new ErrorState(theConsole, MESSAGES.usernamePasswordMatch(), getRetryState(), stateValues);
-                }
-
-                return ValidatePasswordState.this;
-            }
-
-        };
-    }
-
     private State getDetailedCheckState() {
         return new State() {
 
             @Override
             public State execute() {
-                PasswordCheckResult result = PasswordCheckUtil.INSTANCE.check(false, stateValues.getUserName(), new String(
-                        stateValues.getPassword()));
-                if (result.getResult() == PasswordCheckResult.Result.WARN && stateValues.isSilentOrNonInteractive() == false) {
-                    String message = result.getMessage();
-                    String prompt = MESSAGES.sureToSetPassword(new String(stateValues.getPassword()));
-                    State noState = new PromptNewUserState(theConsole, stateValues);
-                    return new ConfirmationChoice(theConsole, message, prompt, ValidatePasswordState.this, noState);
+                PasswordCheckResult result = stateValues.getOptions().getCheckUtil().check(false, stateValues.getUserName(), stateValues.getPassword());
+                final boolean warnResult = PasswordCheckResult.Result.WARN.equals(result.getResult());
+                final boolean rejectResult = PasswordCheckResult.Result.REJECT.equals(result.getResult());
+                switch (stateValues.getOptions().getCheckUtil().getRestrictionLevel()) {
+                    case WARN:
+                        if ((warnResult || rejectResult) && !stateValues.isSilentOrNonInteractive()) {
+                            return confirmWeakPassword(result);
+                        }
+                        break;
+                    case REJECT:
+                        if (warnResult && !stateValues.isSilentOrNonInteractive()) {
+                            return confirmWeakPassword(result);
+                        }
+                        if (rejectResult) {
+                            return new ErrorState(theConsole, result.getMessage(), getRetryState());
+                        }
+                        break;
+                    default:
+                        break;
                 }
-
-                if (result.getResult() == PasswordCheckResult.Result.REJECT) {
-                    return new ErrorState(theConsole, result.getMessage(), getRetryState());
-                }
-
                 return ValidatePasswordState.this;
             }
-
         };
+    }
+
+    private State confirmWeakPassword(PasswordCheckResult result) {
+        String message = result.getMessage();
+        String prompt = MESSAGES.sureToSetPassword();
+        State noState = new PromptNewUserState(theConsole, stateValues);
+        return new ConfirmationChoice(theConsole, message, prompt, this, noState);
     }
 
     @Override
