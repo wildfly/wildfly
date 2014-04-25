@@ -21,6 +21,8 @@
  */
 package org.jboss.as.web.common;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +31,7 @@ import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.metadata.web.spec.WebFragmentMetaData;
 import org.jboss.metadata.web.spec.WebMetaData;
+import org.jboss.msc.service.ServiceName;
 import org.jboss.vfs.VirtualFile;
 
 /**
@@ -91,6 +94,9 @@ public class WarMetaData {
      * Final merged metadata.
      */
     private volatile JBossWebMetaData mergedJBossWebMetaData;
+
+
+    private final Set<ServiceName> additionalDependencies = new HashSet<ServiceName>();
 
     public JBossWebMetaData getJBossWebMetaData() {
         return jbossWebMetaData;
@@ -178,5 +184,13 @@ public class WarMetaData {
 
     public void setAdditionalModuleAnnotationsMetadata(List<WebMetaData> additionalModuleAnnotationsMetadata) {
         this.additionalModuleAnnotationsMetadata = additionalModuleAnnotationsMetadata;
+    }
+
+    public void addAdditionalDependency(final ServiceName serviceName) {
+        this.additionalDependencies.add(serviceName);
+    }
+
+    public Set<ServiceName> getAdditionalDependencies() {
+        return Collections.unmodifiableSet(additionalDependencies);
     }
 }

@@ -214,6 +214,8 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         }
 
+        additionalDependencies.addAll(warMetaData.getAdditionalDependencies());
+
         final ServiceName hostServiceName = UndertowService.virtualHostName(serverInstanceName, hostName);
         TldsMetaData tldsMetaData = deploymentUnit.getAttachment(TldsMetaData.ATTACHMENT_KEY);
         UndertowDeploymentInfoService undertowDeploymentInfoService = UndertowDeploymentInfoService.builder()
