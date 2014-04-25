@@ -31,14 +31,18 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 public class FederationArchiveUtil {
 
     public static WebArchive identityProvider(String deploymentName) {
+        return identityProvider(deploymentName, null, null);
+    }
+
+    public static WebArchive identityProvider(String deploymentName, String indexContent, String hostedIndexContent) {
         WebArchive war = ShrinkWrap.create(WebArchive.class, deploymentName);
 
         war.addAsManifestResource(new StringAsset("Dependencies: org.picketlink meta-inf,org.jboss.dmr meta-inf,org.jboss.as.controller\n"), "MANIFEST.MF");
         war.addAsWebInfResource(FederationArchiveUtil.class.getPackage(), "web.xml", "web.xml");
         war.addAsWebResource(FederationArchiveUtil.class.getPackage(), "login.jsp", "login.jsp");
         war.addAsWebResource(FederationArchiveUtil.class.getPackage(), "login-error.jsp", "login-error.jsp");
-        war.add(new StringAsset("Welcome to IdP"), "index.jsp");
-        war.add(new StringAsset("Welcome to IdP hosted"), "hosted/index.jsp");
+        war.add(new StringAsset(indexContent != null ? indexContent : "Welcome to IdP"), "index.jsp");
+        war.add(new StringAsset(hostedIndexContent != null ? hostedIndexContent : "Welcome to IdP hosted"), "hosted/index.jsp");
 
         return war;
     }
