@@ -54,8 +54,16 @@ public class EjbConstructorInjectionTestCase {
     @Inject
     private Kennel bean;
 
+    @Inject
+    private NoDefaultCtorView noDefaultCtorView;
+
     @Test
     public void testSessionBeanConstructorInjection() {
         Assert.assertNotNull(bean.getDog());
+    }
+
+    @Test
+    public void testSessionBeanConstructorInjectionWithDoDefaultCtor() {
+        Assert.assertNotNull(noDefaultCtorView.getDog());
     }
 }

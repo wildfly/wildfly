@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
+import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -54,11 +55,14 @@ public class EJBValidationConfigurator implements ComponentConfigurator {
         final DeploymentReflectionIndex deploymentReflectionIndex = context.getDeploymentUnit().getAttachment(Attachments.REFLECTION_INDEX);
         final ClassReflectionIndex<?> classIndex = deploymentReflectionIndex.getClassIndex(configuration.getComponentClass());
         final Constructor<?> ctor = classIndex.getConstructor(new String[0]);
-
-        if(ctor == null) {
-            throw EjbMessages.MESSAGES.ejbMustHavePublicDefaultConstructor(description.getComponentName(), description.getComponentClassName());
+        boolean noInterface = false;
+        for(ViewDescription view : description.getViews()) {
+            if(view.getViewClassName().equals(description.getComponentClassName())) {
+                noInterface = true;
+            }
         }
-        if(!Modifier.isPublic(ctor.getModifiers())) {
+        if(ctor == null && noInterface) {
+            //we only validate this for no interface views
             throw EjbMessages.MESSAGES.ejbMustHavePublicDefaultConstructor(description.getComponentName(), description.getComponentClassName());
         }
         if(configuration.getComponentClass().getEnclosingClass() != null) {
