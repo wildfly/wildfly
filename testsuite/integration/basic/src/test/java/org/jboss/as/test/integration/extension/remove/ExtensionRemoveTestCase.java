@@ -21,33 +21,6 @@
 */
 package org.jboss.as.test.integration.extension.remove;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-
-import org.junit.Assert;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.Extension;
-import org.jboss.as.controller.PathAddress;
-import org.jboss.as.controller.PathElement;
-import org.jboss.as.controller.client.ModelControllerClient;
-import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ArchivePath;
-import org.jboss.shrinkwrap.api.ArchivePaths;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.exporter.ZipExporter;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.xnio.IoUtils;
-
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
@@ -62,6 +35,23 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
+import java.io.IOException;
+
+import org.jboss.arquillian.container.test.api.RunAsClient;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.as.arquillian.api.ContainerResource;
+import org.jboss.as.arquillian.container.ManagementClient;
+import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.test.integration.management.extension.ExtensionUtils;
+import org.jboss.dmr.ModelNode;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 /**
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
@@ -70,28 +60,24 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUB
 public class ExtensionRemoveTestCase {
 
     private static final String MODULE_NAME = "extensionremovemodule";
-    private static final String JAR_NAME = "extension-remove-module.jar";
 
     @ContainerResource
     private ManagementClient managementClient;
 
-    private Archive<?> createArchive() {
-        ArchivePath path = ArchivePaths.create("/");
-        path = ArchivePaths.create(path, "services");
-        path = ArchivePaths.create(path, Extension.class.getName());
-        JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JAR_NAME);
-        jar.addClass(TestExtension.class);
-        jar.addAsManifestResource(ExtensionRemoveTestCase.class.getPackage(), Extension.class.getName(), path);
-        return jar;
+    @Before
+    public void installExtensionModule() throws IOException {
+        ExtensionUtils.createExtensionModule(MODULE_NAME, TestExtension.class);
+    }
+
+    @After
+    public void  removeExtensionModule() {
+        ExtensionUtils.deleteExtensionModule(MODULE_NAME);
     }
 
     @Test
     public void testAddAndRemoveExtension() throws Exception {
-        File testModuleRoot = new File(getModulePath(), MODULE_NAME);
-        deleteRecursively(testModuleRoot);
-        createTestModule(testModuleRoot);
         ModelControllerClient client = managementClient.getControllerClient();
-        try {
+
             //Check extension and subsystem is not there
             Assert.assertFalse(readResource(client).get(EXTENSION, MODULE_NAME).isDefined());
             Assert.assertFalse(readResourceDescription(client).get(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME).isDefined());
@@ -129,9 +115,6 @@ public class ExtensionRemoveTestCase {
             Assert.assertFalse(readResourceDescription(client).get(CHILDREN, SUBSYSTEM, MODEL_DESCRIPTION, TestExtension.SUBSYSTEM_NAME).isDefined());
             Assert.assertFalse(readResource(client).get(SUBSYSTEM, TestExtension.SUBSYSTEM_NAME).isDefined());
 
-        } finally {
-            deleteRecursively(testModuleRoot);
-        }
     }
 
     private ModelNode executeOperation(ModelControllerClient client, String name, PathAddress address, boolean fail) throws IOException {
@@ -167,73 +150,6 @@ public class ExtensionRemoveTestCase {
         ModelNode result = client.execute(op);
         Assert.assertFalse(result.hasDefined(FAILURE_DESCRIPTION));
         return result.get(RESULT);
-    }
-
-    private void deleteRecursively(File file) {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                for (String name : file.list()) {
-                    deleteRecursively(new File(file, name));
-                }
-            }
-            file.delete();
-        }
-    }
-
-    private void createTestModule(File testModuleRoot) throws IOException {
-        if (testModuleRoot.exists()) {
-            throw new IllegalArgumentException(testModuleRoot + " already exists");
-        }
-        File file = new File(testModuleRoot, "main");
-        if (!file.mkdirs()) {
-            throw new IllegalArgumentException("Could not create " + file);
-        }
-        final InputStream is = createArchive().as(ZipExporter.class).exportAsInputStream();
-        try {
-            copyFile(new File(file, JAR_NAME), is);
-        } finally {
-            IoUtils.safeClose(is);
-        }
-
-        URL url = this.getClass().getResource("module.xml");
-        if (url == null) {
-            throw new IllegalStateException("Could not find module.xml");
-        }
-        copyFile(new File(file, "module.xml"), url.openStream());
-    }
-
-    private void copyFile(File target, InputStream src) throws IOException {
-        final BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(target));
-        try {
-            int i = src.read();
-            while (i != -1) {
-                out.write(i);
-                i = src.read();
-            }
-        } finally {
-            IoUtils.safeClose(out);
-        }
-    }
-
-    private File getModulePath() {
-        String modulePath = System.getProperty("module.path", null);
-        if (modulePath == null) {
-            String jbossHome = System.getProperty("jboss.home", null);
-            if (jbossHome == null) {
-                throw new IllegalStateException("Neither -Dmodule.path nor -Djboss.home were set");
-            }
-            modulePath = jbossHome + File.separatorChar + "modules";
-        }else{
-           modulePath = modulePath.split(File.pathSeparator)[0];
-        }
-        File moduleDir = new File(modulePath);
-        if (!moduleDir.exists()) {
-            throw new IllegalStateException("Determined module path does not exist");
-        }
-        if (!moduleDir.isDirectory()) {
-            throw new IllegalStateException("Determined module path is not a dir");
-        }
-        return moduleDir;
     }
 }
 
