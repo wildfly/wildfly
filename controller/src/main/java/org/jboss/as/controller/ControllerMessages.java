@@ -2746,5 +2746,17 @@ public interface ControllerMessages {
     @Message(id = 13483, value = "The following attributes must NOT be defined as %s in the current model: %s")
     String attributesMustNotBeDefinedAs(ModelNode value, Set<String> names);
 
+    @Message(id = 13484, value = "Illegal value %d for operation header %s; value must be greater than zero")
+    IllegalStateException invalidBlockingTimeout(long timeout, String headerName);
+
+    @Message(id = 13485, value = "The service container has been destabilized by a previous operation and further runtime updates cannot be processed. Restart is required.")
+    String timeoutAwaitingInitialStability();
+
+    @Message(id = 13486, value = "Operation timed out awaiting service container stability")
+    String timeoutExecutingOperation();
+
+    @Message(id = 13487, value = "Timeout after %d seconds waiting for existing service %s to be removed so a new instance can be installed.")
+    IllegalStateException serviceInstallTimedOut(long timeout, ServiceName name);
+
     // 13499 IS END OF 134xx SERIES USABLE FOR NON-LOGGER MESSAGES
 }
