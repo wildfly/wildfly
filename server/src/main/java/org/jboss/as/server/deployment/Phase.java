@@ -232,8 +232,7 @@ public enum Phase {
     public static final int STRUCTURE_SAR                               = 0x1580;
     public static final int STRUCTURE_ADDITIONAL_MANIFEST               = 0x1600;
     public static final int STRUCTURE_SUB_DEPLOYMENT                    = 0x1700;
-    public static final int STRUCTURE_EAR_SUB_DEPLYOMENTS_ISOLATED      = 0x1800;
-    public static final int STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE        = 0x1880;
+    public static final int STRUCTURE_JBOSS_DEPLOYMENT_STRUCTURE        = 0x1800;
     public static final int STRUCTURE_CLASS_PATH                        = 0x1900;
     public static final int STRUCTURE_MODULE_IDENTIFIERS                = 0x1A00;
     public static final int STRUCTURE_EE_MODULE_INIT                    = 0x1B00;

@@ -67,22 +67,26 @@ public class SubDeploymentDependencyProcessor implements DeploymentUnitProcessor
             module.addSystemDependency(new ModuleDependency(moduleLoader, moduleIdentifier, false, false, true, false));
         }
 
-        final List<DeploymentUnit> subDeployments = parent.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
-        final List<ModuleDependency> accessibleModules = new ArrayList<ModuleDependency>();
-        for (DeploymentUnit subDeployment : subDeployments) {
-            final ModuleSpecification subModule = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
-            if (!subModule.isPrivateModule() && (!parentModuleSpec.isSubDeploymentModulesIsolated() || subModule.isPublicModule())) {
-                ModuleIdentifier identifier = subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER);
-                ModuleDependency dependency = new ModuleDependency(moduleLoader, identifier, false, false, true, false);
-                dependency.addImportFilter(PathFilters.acceptAll(), true);
-                accessibleModules.add(dependency);
+        //If the sub deployments aren't isolated, then we need to set up dependencies between the sub deployments
+        if (!parentModuleSpec.isSubDeploymentModulesIsolated()) {
+            final List<DeploymentUnit> subDeployments = parent.getAttachmentList(Attachments.SUB_DEPLOYMENTS);
+            final List<ModuleDependency> accessibleModules = new ArrayList<ModuleDependency>();
+            for (DeploymentUnit subDeployment : subDeployments) {
+                final ModuleSpecification subModule = subDeployment.getAttachment(Attachments.MODULE_SPECIFICATION);
+                if (!subModule.isPrivateModule()) {
+                    ModuleIdentifier identifier = subDeployment.getAttachment(Attachments.MODULE_IDENTIFIER);
+                    ModuleDependency dependency = new ModuleDependency(moduleLoader, identifier, false, false, true, false);
+                    dependency.addImportFilter(PathFilters.acceptAll(), true);
+                    accessibleModules.add(dependency);
+                }
+            }
+            for (ModuleDependency dependency : accessibleModules) {
+                if (!dependency.getIdentifier().equals(moduleIdentifier)) {
+                    moduleSpec.addLocalDependency(dependency);
+                }
             }
         }
-        for (ModuleDependency dependency : accessibleModules) {
-            if (!dependency.getIdentifier().equals(moduleIdentifier)) {
-                moduleSpec.addLocalDependency(dependency);
-            }
-        }
+
     }
 
     @Override

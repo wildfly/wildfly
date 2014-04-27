@@ -92,15 +92,6 @@ public class ModuleSpecification extends SimpleAttachable {
     private boolean privateModule;
 
     /**
-     * Flag that indicates that this module should always be visible to other sub deployments, even if sub deployments
-     * are isolated and there is no specify dependency on this module.
-     *
-     * If sub deployments are not isolated then this flag has no effect.
-     *
-     */
-    private boolean publicModule;
-
-    /**
      * Flag that indicates that local resources should come last in the dependencies list
      */
     private boolean localLast;
@@ -237,14 +228,6 @@ public class ModuleSpecification extends SimpleAttachable {
 
     public void setPrivateModule(final boolean privateModule) {
         this.privateModule = privateModule;
-    }
-
-    public boolean isPublicModule() {
-        return publicModule;
-    }
-
-    public void setPublicModule(boolean publicModule) {
-        this.publicModule = publicModule;
     }
 
     /**
