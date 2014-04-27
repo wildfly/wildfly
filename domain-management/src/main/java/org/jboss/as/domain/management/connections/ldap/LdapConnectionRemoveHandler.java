@@ -42,9 +42,14 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class LdapConnectionRemoveHandler extends AbstractRemoveStepHandler {
 
-    public static final LdapConnectionRemoveHandler INSTANCE = new LdapConnectionRemoveHandler();
+    private final LdapConnectionAddHandler addHandler;
 
-    private LdapConnectionRemoveHandler() {
+    private LdapConnectionRemoveHandler(final LdapConnectionAddHandler addHandler) {
+        this.addHandler = addHandler;
+    }
+
+    static LdapConnectionRemoveHandler newInstance(final LdapConnectionAddHandler addHandler) {
+        return new LdapConnectionRemoveHandler(addHandler);
     }
 
     @Override
@@ -85,7 +90,7 @@ public class LdapConnectionRemoveHandler extends AbstractRemoveStepHandler {
             // We didn't remove it, we just set reloadRequired
             context.revertReloadRequired();
         } else {
-            LdapConnectionAddHandler.INSTANCE.performRuntime(context, operation, model, null, null);
+            addHandler.performRuntime(context, operation, model, null, null);
         }
     }
 }

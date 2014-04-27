@@ -32,6 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_LOAD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER_DN;
 
 import org.jboss.dmr.ModelNode;
@@ -53,6 +54,7 @@ public class LdapAuthenticationBuilder implements AuthenticationBuilderChild {
     private boolean allowEmptyPasswords = false;
     private String usernameFilter;
     private String advancedFilter;
+    private String usernameLoad;
 
     LdapAuthenticationBuilder(final AuthenticationBuilder parent) {
         this.parent = parent;
@@ -113,6 +115,13 @@ public class LdapAuthenticationBuilder implements AuthenticationBuilderChild {
         return this;
     }
 
+    public LdapAuthenticationBuilder setUsernameLoad(final String usernameLoad) {
+        assertNotBuilt();
+        this.usernameLoad = usernameLoad;
+
+        return this;
+    }
+
     public AuthenticationBuilder build() {
         assertNotBuilt();
         built = true;
@@ -141,6 +150,9 @@ public class LdapAuthenticationBuilder implements AuthenticationBuilderChild {
         }
         if (advancedFilter != null) {
             add.get(ADVANCED_FILTER).set(advancedFilter);
+        }
+        if (usernameLoad != null) {
+            add.get(USERNAME_LOAD).set(usernameLoad);
         }
 
         parent.addStep(add);

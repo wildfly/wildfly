@@ -24,6 +24,8 @@ package org.jboss.as.domain.management.security;
 import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,6 +38,7 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.naming.ldap.LdapReferralException;
 
 import org.jboss.as.domain.management.security.BaseLdapGroupSearchResource.GroupName;
 
@@ -54,8 +57,8 @@ public class LdapGroupSearcherFactory {
         return new GroupToPrincipalSearcher(baseDn, groupDnAttribute, groupNameAttribute, principalAttribute, recursive, searchBy);
     }
 
-    static LdapSearcher<LdapEntry[], LdapEntry> createForPrincipalToGroup(final String groupAttribute, final String groupNameAttribute) {
-        return new PrincipalToGroupSearcher(groupAttribute, groupNameAttribute);
+    static LdapSearcher<LdapEntry[], LdapEntry> createForPrincipalToGroup(final String groupAttribute, final String groupNameAttribute, final boolean preferOriginalConnection) {
+        return new PrincipalToGroupSearcher(groupAttribute, groupNameAttribute, preferOriginalConnection);
     }
 
     private static SearchControls createSearchControl(final boolean recursive, final String[] attributes) {
@@ -117,7 +120,7 @@ public class LdapGroupSearcherFactory {
         }
 
         @Override
-        public LdapEntry[] search(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
+        public LdapEntry[] search(LdapConnectionHandler connectionHandler, LdapEntry entry) throws IOException, NamingException {
             SearchControls searchControls = createSearchControl(recursive, attributeArray); // TODO - Can we create this in
                                                                                             // advance?
             Set<LdapEntry> foundEntries = new HashSet<LdapEntry>();
@@ -127,7 +130,7 @@ public class LdapGroupSearcherFactory {
                 SECURITY_LOGGER.tracef("Performing search baseDn=%s, filterString=%s, searchParameter=%s", baseDn,
                         filterString, Arrays.toString(searchParameter));
             }
-            NamingEnumeration<SearchResult> searchResults = dirContext.search(baseDn, filterString, searchParameter, searchControls);
+            NamingEnumeration<SearchResult> searchResults = connectionHandler.getConnection().search(baseDn, filterString, searchParameter, searchControls);
             if (trace && searchResults.hasMore() == false) {
                 SECURITY_LOGGER.trace("No search results found.");
             }
@@ -189,40 +192,99 @@ public class LdapGroupSearcherFactory {
 
         private final String groupAttribute; // The attribute on the principal that references the group it is a member of.
         private final String groupNameAttribute; // The attribute on the group that is it's simple name.
+        private final boolean preferOriginalConnection; // After a referral should we still prefer the original connection?
 
-        private PrincipalToGroupSearcher(final String groupAttribute, final String groupNameAttribute) {
+        private PrincipalToGroupSearcher(final String groupAttribute, final String groupNameAttribute, final boolean preferOriginalConnection) {
             this.groupAttribute = groupAttribute;
             this.groupNameAttribute = groupNameAttribute;
+            this.preferOriginalConnection = preferOriginalConnection;
 
             if (SECURITY_LOGGER.isTraceEnabled()) {
                 SECURITY_LOGGER.tracef("PrincipalToGroupSearcher groupAttribute=%s", groupAttribute);
                 SECURITY_LOGGER.tracef("PrincipalToGroupSearcher groupNameAttribute=%s", groupNameAttribute);
+                SECURITY_LOGGER.tracef("PrincipalToGroupSearcher preferOriginalConnection=%b", preferOriginalConnection);
             }
         }
 
         @Override
-        public LdapEntry[] search(DirContext dirContext, LdapEntry entry) throws IOException, NamingException {
+        public LdapEntry[] search(LdapConnectionHandler originalConnectionHandler, LdapEntry entry) throws IOException, NamingException {
             Set<LdapEntry> foundEntries = new HashSet<LdapEntry>();
-            // Load the list of group.
+
+            LdapConnectionHandler connectionHandler = originalConnectionHandler;
+            URI originalReferralAddress = null;
+            if ((originalReferralAddress = entry.getReferralUri()) != null) {
+                // To load the list of groups references we will always need to have followed the referral.
+                connectionHandler = connectionHandler.findForReferral(originalReferralAddress);
+                if (connectionHandler == null) {
+                    SECURITY_LOGGER.tracef("Unable to obtain connection handler for referral URI %s", originalReferralAddress);
+                    return foundEntries.toArray(new LdapEntry[foundEntries.size()]);
+                }
+            }
+
+            DirContext dirContext = connectionHandler.getConnection();
+            // Load the list of group - before reaching this point any referrals should have already been followed so we
+            // do not prepare to follow a referral here.
             Attributes groups = dirContext.getAttributes(entry.getDistinguishedName(), new String[] { groupAttribute });
             Attribute groupRef = groups.get(groupAttribute);
+
+            if (preferOriginalConnection) {
+                // If needed reset the connection handler back to the original in
+                // preparation for loading the actual groups.
+                connectionHandler = originalConnectionHandler;
+                originalReferralAddress = null;
+            }
+
             if (groupRef != null && groupRef.size() > 0) {
                 NamingEnumeration<String> groupRefValues = (NamingEnumeration<String>) groupRef.getAll();
                 while (groupRefValues.hasMore()) {
                     String distingushedName = groupRefValues.next().replace("\\", "\\\\").replace("/", "\\/");
                     SECURITY_LOGGER.tracef("Group found with distinguishedName=%s", distingushedName);
+
+                    LdapConnectionHandler groupLoadHandler = connectionHandler;
+                    URI groupReferralAddress = originalReferralAddress;
+
+                    boolean retry = false;
+
                     String simpleName = null;
-                    if (groupNameAttribute != null) {
-                        // Load the Name
-                        Attributes groupNameAttrs = dirContext.getAttributes(distingushedName, new String[] { groupNameAttribute });
-                        Attribute groupNameAttr = groupNameAttrs.get(groupNameAttribute);
-                        simpleName = (String) groupNameAttr.get();
-                        SECURITY_LOGGER.tracef("simpleName %s loaded for group with distinguishedName=%s", simpleName,
-                                distingushedName);
-                    } else {
-                        SECURITY_LOGGER.trace("No groupNameAttribute to load simpleName");
-                    }
-                    foundEntries.add(new LdapEntry(simpleName, distingushedName));
+
+                    do {
+                        retry = false;
+
+                        try {
+                            dirContext = groupLoadHandler.getConnection();
+                            // Load the Name
+                            Attributes groupNameAttrs = dirContext.getAttributes(distingushedName,
+                                    groupNameAttribute != null ? new String[] { groupNameAttribute } : new String[] {});
+
+                            if (groupNameAttribute != null) {
+                                Attribute groupNameAttr = groupNameAttrs.get(groupNameAttribute);
+                                simpleName = (String) groupNameAttr.get();
+                                SECURITY_LOGGER.tracef("simpleName %s loaded for group with distinguishedName=%s", simpleName,
+                                        distingushedName);
+                            } else {
+                                SECURITY_LOGGER.trace("No groupNameAttribute to load simpleName");
+                            }
+                            foundEntries.add(new LdapEntry(simpleName, distingushedName, groupReferralAddress));
+                        } catch (LdapReferralException e) {
+                            Object info = e.getReferralInfo();
+                            try {
+                                URI fullUri = new URI(info.toString());
+                                groupReferralAddress = new URI(fullUri.getScheme(), null, fullUri.getHost(), fullUri.getPort(),
+                                        null, null, null);
+                                distingushedName = fullUri.getPath().substring(1);
+                                SECURITY_LOGGER.tracef("Received referral with address '%s' for dn '%s'",
+                                        groupReferralAddress.toString(), distingushedName);
+
+                                groupLoadHandler = groupLoadHandler.findForReferral(groupReferralAddress);
+                                if (groupLoadHandler == null) {
+                                    SECURITY_LOGGER.tracef("Unable to follow referral to '%s'", fullUri);
+                                }
+                                retry = true;
+                            } catch (URISyntaxException ue) {
+                                SECURITY_LOGGER.tracef("Unable to construct URI from referral: %s", info);
+                            }
+                        }
+                    } while (retry);
                 }
             } else {
                 SECURITY_LOGGER.tracef("No groups found for %s", entry);

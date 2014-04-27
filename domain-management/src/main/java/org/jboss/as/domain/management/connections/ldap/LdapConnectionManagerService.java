@@ -23,13 +23,17 @@ package org.jboss.as.domain.management.connections.ldap;
 
 import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
 
+import java.net.URI;
 import java.util.Hashtable;
+import java.util.Set;
 
 import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 import javax.net.ssl.SSLContext;
 
-import org.jboss.as.domain.management.connections.ConnectionManager;
+import org.jboss.as.domain.management.connections.ldap.LdapConnectionResourceDefinition.ReferralHandling;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -45,9 +49,12 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-public class LdapConnectionManagerService implements Service<LdapConnectionManagerService>, ConnectionManager {
+public class LdapConnectionManagerService implements Service<LdapConnectionManager>, LdapConnectionManager {
 
     private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("server", "controller", "management", "connection_manager");
+
+    private final LdapConnectionManagerRegistry connectionManagerRegistry;
+    private final String name;
 
     private final InjectedValue<SSLContext> fullSSLContext = new InjectedValue<SSLContext>();
     private final InjectedValue<SSLContext> trustSSLContext = new InjectedValue<SSLContext>();
@@ -55,15 +62,13 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     private volatile Config configuration;
     private volatile Hashtable<String, String> properties = new Hashtable<String, String>();
 
-    public LdapConnectionManagerService() {
+    public LdapConnectionManagerService(final String name, final LdapConnectionManagerRegistry connectionManagerRegistry) {
+        this.name = name;
+        this.connectionManagerRegistry = connectionManagerRegistry;
     }
 
-    Config setConfiguration(final String initialContextFactory, final String url, final String searchDn, final String searchCredential) {
-        Config configuration = new Config();
-        configuration.initialContextFactory = initialContextFactory;
-        configuration.url = url;
-        configuration.searchDn = searchDn;
-        configuration.searchCredential = searchCredential;
+    Config setConfiguration(final String initialContextFactory, final String url, final String searchDn, final String searchCredential, final ReferralHandling referralHandling, final Set<URI> referralURIs) {
+        Config configuration = new Config(initialContextFactory, url, searchDn, searchCredential, referralHandling, referralURIs);
 
         try {
             return this.configuration;
@@ -80,10 +85,35 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
     *  Service Lifecycle Methods
     */
 
-    public synchronized void start(StartContext context) throws StartException {
+    public synchronized void start(final StartContext context) throws StartException {
+        try {
+            context.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    connectionManagerRegistry.addLdapConnectionManagerService(name, LdapConnectionManagerService.this);
+                    context.complete();
+                }
+            });
+        } finally {
+            context.asynchronous();
+        }
     }
 
-    public synchronized void stop(StopContext context) {
+    public synchronized void stop(final StopContext context) {
+        try {
+            context.execute(new Runnable() {
+
+                @Override
+                public void run() {
+                    connectionManagerRegistry.removeLdapConnectionManagerService(name);
+                    context.complete();
+                }
+            });
+
+        } finally {
+            context.asynchronous();
+        }
     }
 
     public synchronized LdapConnectionManagerService getValue() throws IllegalStateException, IllegalArgumentException {
@@ -120,24 +150,98 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         properties.put(name, value);
     }
 
+
+    String getName() {
+        return name;
+    }
+
+    /**
+     * Utility method to identify if this {@code LdapConnectionManagerService} can handle referrals to the {@link URI}
+     * specified.
+     *
+     * @param uri - The referral {@link URI}
+     * @return true if this {@code LdapConnectionManagerService} can handle the referral, false otherwise.
+     */
+    boolean handlesReferralFor(final URI uri) {
+        // NOTE - This connection may not actually support referrals but it can support being used for referrals regardless of that.
+        return (configuration.getReferralURIs().contains(uri));
+    }
+
     /*
      *  Connection Manager Methods
      */
 
-    public Object getConnection() throws Exception {
+    @Override
+    public DirContext getConnection() throws NamingException {
+        return getConnection(configuration);
+    }
+
+    private DirContext getConnection(final Config configuration) throws NamingException {
         return getConnection(getFullProperties(configuration), getSSLContext(false));
     }
 
-    public Object getConnection(String principal, String credential) throws Exception {
-        Hashtable<String, String> connectionProperties = getConnectionOnlyProperties(configuration);
-        connectionProperties.put(Context.SECURITY_PRINCIPAL, principal);
-        connectionProperties.put(Context.SECURITY_CREDENTIALS, credential);
-
-        // Use a trust only SSLContext as we do not want to authenticate using a pre-defined key in a KeyStore.
-        return getConnection(connectionProperties, getSSLContext(true));
+    @Override
+    public void verifyIdentity(String bindDn, String bindCredential) throws NamingException {
+        verifyIdentity(configuration, bindDn, bindCredential);
     }
 
-    private Object getConnection(final Hashtable<String, String> properties, final SSLContext sslContext) throws Exception {
+    private void verifyIdentity(final Config configuration, String bindDn, String bindCredential) throws NamingException {
+        Hashtable<String, String> connectionProperties = getConnectionOnlyProperties(configuration);
+        connectionProperties.put(Context.SECURITY_PRINCIPAL, bindDn);
+        connectionProperties.put(Context.SECURITY_CREDENTIALS, bindCredential);
+
+        // Use a trust only SSLContext as we do not want to authenticate using a pre-defined key in a KeyStore.
+        DirContext context = getConnection(connectionProperties, getSSLContext(true));
+        context.close();
+    }
+
+    @Override
+    public LdapConnectionManager findForReferral(final URI referralUri) {
+        Config config = this.configuration;
+        switch (config.referralHandling) {
+            case FOLLOW:
+                /*
+                 * For FOLLOW we are using the same existing configuration with the exception of changing the URL.
+                 */
+                return new LdapConnectionManager() {
+
+                    @Override
+                    public void verifyIdentity(String bindDn, String bindCredential) throws NamingException {
+                        LdapConnectionManagerService.this.verifyIdentity(new Config(referralUri.toString(), configuration),
+                                bindDn, bindCredential);
+
+                    }
+
+                    @Override
+                    public DirContext getConnection() throws NamingException {
+                        return LdapConnectionManagerService.this
+                                .getConnection(new Config(referralUri.toString(), configuration));
+                    }
+
+                    @Override
+                    public LdapConnectionManager findForReferral(URI referralUri) {
+                        return LdapConnectionManagerService.this.findForReferral(referralUri);
+                    }
+                };
+            case THROW:
+                if (this.handlesReferralFor(referralUri)) {
+                    return this;
+                }
+                for (LdapConnectionManagerService current : connectionManagerRegistry.availableServices()) {
+                    if (current != null && current.handlesReferralFor(referralUri)) {
+                        return current;
+                    }
+                }
+
+                break;
+            default:
+                return null;
+        }
+
+        return null;
+    }
+
+    private DirContext getConnection(final Hashtable<String, String> properties, final SSLContext sslContext) throws NamingException {
         ClassLoader old = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
         try {
             if (sslContext != null) {
@@ -181,6 +285,7 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
         final Hashtable<String, String> result = new Hashtable<String, String>(properties);
         result.put(Context.INITIAL_CONTEXT_FACTORY, configuration.initialContextFactory);
         result.put(Context.PROVIDER_URL, configuration.url);
+        result.put(Context.REFERRAL, configuration.referralHandling.getValue());
         return result;
     }
 
@@ -207,20 +312,60 @@ public class LdapConnectionManagerService implements Service<LdapConnectionManag
             return BASE_SERVICE_NAME.append(connectionName);
         }
 
-        public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, Injector<ConnectionManager> injector,
+        public static ServiceBuilder<?> addDependency(ServiceBuilder<?> sb, Injector<LdapConnectionManager> injector,
                 String connectionName, boolean optional) {
             ServiceBuilder.DependencyType type = optional ? ServiceBuilder.DependencyType.OPTIONAL : ServiceBuilder.DependencyType.REQUIRED;
-            sb.addDependency(type, createServiceName(connectionName), ConnectionManager.class, injector);
+            sb.addDependency(type, createServiceName(connectionName), LdapConnectionManager.class, injector);
 
             return sb;
         }
+
     }
 
     static class Config {
-        private String initialContextFactory;
-        private String url;
-        private String searchDn;
-        private String searchCredential;
+
+        private Config(final String initialContextFactory, final String url, final String searchDn, final String searchCredential, final ReferralHandling referralHandling, final Set<URI> referralURIs) {
+            this.initialContextFactory = initialContextFactory;
+            this.url = url;
+            this.searchDn = searchDn;
+            this.searchCredential = searchCredential;
+            this.referralHandling = referralHandling;
+            this.referralURIs = referralURIs;
+        }
+
+        private Config(final String url, final Config config) {
+            this.url = url;
+            this.initialContextFactory = config.initialContextFactory;
+            this.searchDn = config.searchDn;
+            this.searchCredential = config.searchCredential;
+            this.referralHandling = config.referralHandling;
+            this.referralURIs = config.referralURIs;
+        }
+
+        private final String initialContextFactory;
+        private final String url;
+        private final String searchDn;
+        private final String searchCredential;
+        private final ReferralHandling referralHandling;
+        private final Set<URI> referralURIs;
+        public String getInitialContextFactory() {
+            return initialContextFactory;
+        }
+        public String getUrl() {
+            return url;
+        }
+        public String getSearchDn() {
+            return searchDn;
+        }
+        public String getSearchCredential() {
+            return searchCredential;
+        }
+        public ReferralHandling getReferralHandling() {
+            return referralHandling;
+        }
+        public Set<URI> getReferralURIs() {
+            return referralURIs;
+        }
     }
 
 }

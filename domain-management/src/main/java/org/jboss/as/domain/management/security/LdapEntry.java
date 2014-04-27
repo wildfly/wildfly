@@ -22,6 +22,9 @@
 
 package org.jboss.as.domain.management.security;
 
+import java.net.URI;
+
+
 /**
  * Representation of an entry in LDAP by both it's simple name and distinguished name.
  *
@@ -32,14 +35,23 @@ final class LdapEntry {
     private final String simpleName;
     private final String distinguishedName;
 
+    private final URI referralURI;
+
     private final int hashCode;
 
     LdapEntry(final String simpleName, final String distinguishedName) {
+        this(simpleName, distinguishedName, null);
+    }
+
+    LdapEntry(final String simpleName, final String distinguishedName, final URI referralURI) {
         this.simpleName = simpleName;
         this.distinguishedName = distinguishedName;
 
+        this.referralURI = referralURI;
+
         hashCode = (simpleName == null ? 7 : simpleName.hashCode())
-                * (distinguishedName == null ? 31 : distinguishedName.hashCode());
+                * (distinguishedName == null ? 31 : distinguishedName.hashCode()
+                * (referralURI == null ? 37 : referralURI.hashCode()));
     }
 
     public String getSimpleName() {
@@ -48,6 +60,10 @@ final class LdapEntry {
 
     public String getDistinguishedName() {
         return distinguishedName;
+    }
+
+    public URI getReferralUri() {
+        return referralURI;
     }
 
     @Override
@@ -66,12 +82,13 @@ final class LdapEntry {
         }
         return (obj.hashCode == hashCode)
                 && (simpleName == null ? obj.simpleName == null : simpleName.equals(obj.simpleName))
-                && (distinguishedName == null ? obj.distinguishedName == null : distinguishedName.equals(obj.distinguishedName));
+                && (distinguishedName == null ? obj.distinguishedName == null : distinguishedName.equals(obj.distinguishedName)
+                && (referralURI == null ? obj.referralURI == null : referralURI.equals(obj.referralURI)));
     }
 
     @Override
     public String toString() {
-        return String.format("LdapEntry simpleName='%s', distinguishedName='%s'", simpleName, distinguishedName);
+        return String.format("LdapEntry simpleName='%s', distinguishedName='%s', referralConnection='%s'", simpleName, distinguishedName, referralURI);
     }
 
 }

@@ -19,28 +19,16 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.management.security;
 
-import java.io.IOException;
-
-import javax.naming.NamingException;
+package org.jboss.as.domain.management.security.realms;
 
 /**
- * Interface for a LDAP searcher, this could be a search for users or a search for groups.
+ * Test case to test authentication when the referral mode is FOLLOW.
+ *
+ * Tests both following referrals from the master to the slave and also directly authenticating against the slave.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface LdapSearcher<R, K> {
-
-    /**
-     * Perform a search against LDAP.
-     *
-     * @param connectionHandler - The {@link LdapConnectionHandler} to use to access LDAP.
-     * @param key - The base key to use as the search.
-     * @return The search result.
-     * @throws IOException - If an error occurs communicating with LDAP.
-     * @throws NamingException - If an error is encountered searching LDAP.
-     */
-    R search(final LdapConnectionHandler connectionHandler, final K key) throws IOException, NamingException;
+public class LdapAuthenticationFollowSuiteTest extends BaseLdapSuiteAuthenticationReferralsTest {
 
 }

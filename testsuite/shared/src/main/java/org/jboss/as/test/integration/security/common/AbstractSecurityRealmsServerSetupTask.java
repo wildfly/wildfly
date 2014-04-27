@@ -21,7 +21,38 @@
  */
 package org.jboss.as.test.integration.security.common;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADVANCED_FILTER;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_EMPTY_PASSWORDS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BASE_DN;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONNECTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP_CONNECTION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROPERTIES;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLBACK_ON_RUNTIME_FAILURE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECRET;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.URL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_ATTRIBUTE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER_DN;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.INITIAL_CONTEXT_FACTORY;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SEARCH_CREDENTIAL;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SEARCH_DN;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -243,3 +274,4 @@ public abstract class AbstractSecurityRealmsServerSetupTask implements ServerSet
         }
     }
 }
+

@@ -14,15 +14,6 @@ sn: wildfly
 uid: wildfly
 userPassword: wildfly_password
 
-dn: uid=master_only,dc=simple,dc=wildfly,dc=org
-objectClass: top
-objectClass: uidObject
-objectClass: person
-cn: master_only
-sn: master_only
-uid: master_only
-userPassword: master_password
-
 dn: uid=UserOne,dc=simple,dc=wildfly,dc=org
 objectClass: top
 objectClass: inetOrgPerson
@@ -47,14 +38,17 @@ uid: user_two
 departmentNumber: 2
 userPassword: two_password
 
-dn: uid=ReferralUserThree,dc=simple,dc=wildfly,dc=org
+dn: uid=UserThree,dc=simple,dc=wildfly,dc=org
 objectClass: top
-objectClass: referral
+objectClass: inetOrgPerson
 objectClass: uidObject
-uid: referral_user_three
-ref: ldap://localhost:11391/uid=UserThree,dc=simple,dc=wildfly,dc=org
-
-
+objectClass: person
+objectClass: organizationalPerson
+cn: User Three
+sn: User Three
+uid: user_three
+departmentNumber: 2
+userPassword: three_password
 
 
 

@@ -24,7 +24,6 @@ package org.jboss.as.domain.management.security;
 import java.io.IOException;
 
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.inject.Injector;
@@ -43,13 +42,13 @@ interface LdapSearcherCache<R, K> {
     /**
      * Perform a search against LDAP.
      *
-     * @param context - The {@link DirContext} to use to access LDAP.
+     * @param connectionHandler - The {@link LdapConnectionHandler} to use to access LDAP.
      * @param key - The base key to use as the search.
      * @return The search result.
      * @throws IOException - If an error occurs communicating with LDAP.
      * @throws NamingException - If an error is encountered searching LDAP.
      */
-    SearchResult<R> search(final DirContextFactory contextFactory, final K key) throws IOException, NamingException;
+    SearchResult<R> search(final LdapConnectionHandler connectionHandler, final K key) throws IOException, NamingException;
 
     int getCurrentSize();
 
@@ -66,14 +65,6 @@ interface LdapSearcherCache<R, K> {
     interface Predicate<K> {
 
         boolean matches(final K key);
-
-    }
-
-    interface DirContextFactory {
-
-        DirContext getDirContext() throws IOException;
-
-        void close();
 
     }
 

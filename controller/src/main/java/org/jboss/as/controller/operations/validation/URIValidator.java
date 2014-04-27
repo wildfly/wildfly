@@ -19,28 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.as.domain.management.security;
+package org.jboss.as.controller.operations.validation;
 
-import java.io.IOException;
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
-import javax.naming.NamingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.jboss.as.controller.OperationFailedException;
+import org.jboss.dmr.ModelNode;
 
 /**
- * Interface for a LDAP searcher, this could be a search for users or a search for groups.
+ * A {@link ParameterValidator} to verify that a parameter is a correctly formed URI.
  *
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  */
-interface LdapSearcher<R, K> {
+public class URIValidator extends StringLengthValidator {
 
-    /**
-     * Perform a search against LDAP.
-     *
-     * @param connectionHandler - The {@link LdapConnectionHandler} to use to access LDAP.
-     * @param key - The base key to use as the search.
-     * @return The search result.
-     * @throws IOException - If an error occurs communicating with LDAP.
-     * @throws NamingException - If an error is encountered searching LDAP.
-     */
-    R search(final LdapConnectionHandler connectionHandler, final K key) throws IOException, NamingException;
+    public URIValidator(final boolean nullable, final boolean allowExpressions) {
+        super(1, Integer.MAX_VALUE, nullable, allowExpressions);
+    }
+
+    @Override
+    public void validateParameter(String parameterName, ModelNode value) throws OperationFailedException {
+        super.validateParameter(parameterName, value);
+
+        String str = value.asString();
+
+        try {
+            new URI(str);
+        } catch (URISyntaxException e) {
+            throw MESSAGES.badUriSyntax(str);
+        }
+    }
 
 }

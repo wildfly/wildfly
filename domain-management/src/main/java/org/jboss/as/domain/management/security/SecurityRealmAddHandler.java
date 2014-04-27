@@ -517,13 +517,14 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             ModelNode principalToGroup = groupSearch.require(PRINCIPAL_TO_GROUP);
             groupCache = principalToGroup.get(CACHE);
             String groupAttribute = PrincipalToGroupResourceDefinition.GROUP_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
+            boolean preferOriginalConnection = PrincipalToGroupResourceDefinition.PREFER_ORIGINAL_CONNECTION.resolveModelAttribute(context, principalToGroup).asBoolean();
             // TODO - Why was this never used?
             String groupDnAttribute = PrincipalToGroupResourceDefinition.GROUP_DN_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
             groupName = GroupName.valueOf(PrincipalToGroupResourceDefinition.GROUP_NAME.resolveModelAttribute(context, principalToGroup).asString());
             String groupNameAttribute = PrincipalToGroupResourceDefinition.GROUP_NAME_ATTRIBUTE.resolveModelAttribute(context, principalToGroup).asString();
             iterative = PrincipalToGroupResourceDefinition.ITERATIVE.resolveModelAttribute(context, principalToGroup).asBoolean();
 
-            groupSearcher = LdapGroupSearcherFactory.createForPrincipalToGroup(groupAttribute, groupNameAttribute);
+            groupSearcher = LdapGroupSearcherFactory.createForPrincipalToGroup(groupAttribute, groupNameAttribute, preferOriginalConnection);
         }
 
         LdapCacheService<LdapEntry[], LdapEntry> groupCacheService = createCacheService(context, groupSearcher, groupCache);

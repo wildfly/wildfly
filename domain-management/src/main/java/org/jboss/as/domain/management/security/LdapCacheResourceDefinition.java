@@ -27,10 +27,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GRO
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_TO_DN;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.CONTAINS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.FLUSH_CACHE;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.SECURITY_REALM;
 
 import java.util.Collections;
 import java.util.HashSet;

@@ -38,7 +38,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.naming.NamingException;
-import javax.naming.directory.DirContext;
 
 import org.jboss.as.domain.management.security.LdapSearcherCache.AttachmentKey;
 import org.jboss.as.domain.management.security.LdapSearcherCache.SearchResult;
@@ -140,7 +139,6 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
                 @Override
                 public void run() {
                     try {
-
                         cacheImplementation.clearAll();
                         cacheImplementation = null;
                         if (executorService != null) {
@@ -197,8 +195,8 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
         OFF, BY_SEARCH, BY_ACCESS
     }
 
-    private R internalSearch(DirContext context, K key) throws IOException, NamingException {
-        return searcher.search(context, key);
+    private R internalSearch(LdapConnectionHandler connectionHandler, K key) throws IOException, NamingException {
+        return searcher.search(connectionHandler, key);
     }
 
     private interface ExtendedLdapSearcherCache<R, K> extends LdapSearcherCache<R, K> {
@@ -220,9 +218,9 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
     private class NoCacheCache implements ExtendedLdapSearcherCache<R, K> {
 
         @Override
-        public SearchResult<R> search(DirContextFactory contextFactory, K key) throws IOException, NamingException {
+        public SearchResult<R> search(LdapConnectionHandler connectionHandler, K key) throws IOException, NamingException {
             SECURITY_LOGGER.tracef("Non caching search for '%s'", key);
-            R result = searcher.search(contextFactory.getDirContext(), key);
+            R result = searcher.search(connectionHandler, key);
 
             return new SearchResultImpl<R>(result);
         }
@@ -355,7 +353,7 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
             private volatile SearchResult<R> result;
             private ScheduledFuture<?> future;
 
-            public SearchResult<R> getSearchResult(DirContextFactory contextFactory, K key) throws IOException, NamingException {
+            public SearchResult<R> getSearchResult(LdapConnectionHandler connectionHandler, K key) throws IOException, NamingException {
                 if (failure != null) {
                     SECURITY_LOGGER.tracef("Using cached failure for search with key '%s'", key);
                     throw failure;
@@ -374,7 +372,7 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
                     }
 
                     try {
-                        R result = internalSearch(contextFactory.getDirContext(), key);
+                        R result = internalSearch(connectionHandler, key);
                         SECURITY_LOGGER.tracef("New search for entry with key '%s'", key);
                         SearchResult<R> searchResult = new SearchResultImpl<R>(result);
                         return this.result = searchResult;
@@ -422,7 +420,7 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
         }
 
         @Override
-        public SearchResult<R> search(DirContextFactory contextFactory, final K key) throws IOException, NamingException {
+        public SearchResult<R> search(LdapConnectionHandler connectionHandler, final K key) throws IOException, NamingException {
             CacheEntry entry = null;
             synchronized (theCache) {
                 entry = theCache.get(key);
@@ -467,7 +465,7 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
 
             }
             // The individual entry will handle it's own synchronization now.
-            return entry.getSearchResult(contextFactory, key);
+            return entry.getSearchResult(connectionHandler, key);
         }
 
     }
@@ -479,7 +477,7 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
         }
 
         @Override
-        public SearchResult<R> search(DirContextFactory contextFactory, final K key) throws IOException, NamingException {
+        public SearchResult<R> search(LdapConnectionHandler connectionHandler, final K key) throws IOException, NamingException {
             CacheEntry entry = null;
             synchronized (theCache) {
                 // Always remove the cached entry so it can be re-added and moved to the end of the list.
@@ -525,7 +523,7 @@ class LdapCacheService<R, K> implements Service<LdapSearcherCache<R, K>> {
                 }
             }
             // The individual entry will handle it's own synchronization now.
-            return entry.getSearchResult(contextFactory, key);
+            return entry.getSearchResult(connectionHandler, key);
         }
 
     }
