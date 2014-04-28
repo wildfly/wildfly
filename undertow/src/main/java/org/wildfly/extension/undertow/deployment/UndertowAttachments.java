@@ -26,6 +26,7 @@ import io.undertow.servlet.ServletExtension;
 import io.undertow.servlet.api.ThreadSetupAction;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
+import org.wildfly.extension.undertow.session.SharedSessionManagerConfig;
 
 /**
  * Class defining {@link AttachmentKey}s for Undertow-specific attachments.
@@ -45,6 +46,8 @@ public final class UndertowAttachments {
     public static final AttachmentKey<AttachmentList<ThreadSetupAction>> UNDERTOW_THREAD_SETUP_ACTIONS = AttachmentKey.createList(ThreadSetupAction.class);
 
     public static final AttachmentKey<AttachmentList<ServletExtension>> UNDERTOW_SERVLET_EXTENSIONS = AttachmentKey.createList(ServletExtension.class);
+
+    public static final AttachmentKey<SharedSessionManagerConfig> SHARED_SESSION_MANAGER_CONFIG = AttachmentKey.create(SharedSessionManagerConfig.class);
 
     private UndertowAttachments() {
     }
