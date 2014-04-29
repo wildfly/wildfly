@@ -39,7 +39,7 @@ public class SessionEvictionSchedulerTestCase {
     @SuppressWarnings("rawtypes")
     @Test
     public void test() throws Exception {
-        String cacheName = "cache";
+        String name = "cache";
         String evictedSessionId = "evicted";
         String activeSessionId = "active";
         ImmutableSession evictedSession = mock(ImmutableSession.class);
@@ -52,9 +52,9 @@ public class SessionEvictionSchedulerTestCase {
         ArgumentCaptor<Command> capturedCommand = ArgumentCaptor.forClass(Command.class);
         ArgumentCaptor<SessionEvictionContext> capturedContext = ArgumentCaptor.forClass(SessionEvictionContext.class);
 
-        when(dispatcherFactory.createCommandDispatcher(same(cacheName), capturedContext.capture())).thenReturn(dispatcher);
+        when(dispatcherFactory.createCommandDispatcher(same(name), capturedContext.capture())).thenReturn(dispatcher);
 
-        try (Scheduler<ImmutableSession> scheduler = new SessionEvictionScheduler(cacheName, batcher, evictor, dispatcherFactory, 1)) {
+        try (Scheduler<ImmutableSession> scheduler = new SessionEvictionScheduler(name, batcher, evictor, dispatcherFactory, 1)) {
             SessionEvictionContext context = capturedContext.getValue();
             
             assertSame(scheduler, context);

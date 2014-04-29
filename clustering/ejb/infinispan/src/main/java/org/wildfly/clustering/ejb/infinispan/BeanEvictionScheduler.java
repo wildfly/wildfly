@@ -49,11 +49,12 @@ public class BeanEvictionScheduler<G, I, T> implements Scheduler<Bean<G, I, T>>,
     private final CommandDispatcher<BeanEvictionContext<I>> dispatcher;
     private final PassivationConfiguration<?> config;
 
-    public BeanEvictionScheduler(String beanName, Batcher batcher, Evictor<I> evictor, CommandDispatcherFactory dispatcherFactory, PassivationConfiguration<?> config) {
+    public BeanEvictionScheduler(String name, Batcher batcher, Evictor<I> evictor, CommandDispatcherFactory dispatcherFactory, PassivationConfiguration<?> config) {
         this.batcher = batcher;
         this.evictor = evictor;
         this.config = config;
-        this.dispatcher = dispatcherFactory.<BeanEvictionContext<I>>createCommandDispatcher(beanName, this);
+        BeanEvictionContext<I> context = this;
+        this.dispatcher = dispatcherFactory.createCommandDispatcher(name, context);
     }
 
     @Override

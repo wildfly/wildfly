@@ -40,7 +40,7 @@ public class BeanEvictionSchedulerTestCase {
     @SuppressWarnings("rawtypes")
     @Test
     public void test() throws Exception {
-        String beanName = "bean";
+        String name = "bean";
         String evictedBeanId = "evicted";
         String activeBeanId = "active";
         Bean<Object, String, Object> evictedBean = mock(Bean.class);
@@ -55,11 +55,11 @@ public class BeanEvictionSchedulerTestCase {
         ArgumentCaptor<Command> capturedCommand = ArgumentCaptor.forClass(Command.class);
         ArgumentCaptor<BeanEvictionContext> capturedContext = ArgumentCaptor.forClass(BeanEvictionContext.class);
 
-        when(dispatcherFactory.createCommandDispatcher(same(beanName), (BeanEvictionContext<String>) capturedContext.capture())).thenReturn(dispatcher);
+        when(dispatcherFactory.createCommandDispatcher(same(name), (BeanEvictionContext<String>) capturedContext.capture())).thenReturn(dispatcher);
         when(config.getConfiguration()).thenReturn(passivationConfig);
         when(passivationConfig.getMaxSize()).thenReturn(1);
 
-        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanEvictionScheduler<>(beanName, batcher, evictor, dispatcherFactory, config)) {
+        try (Scheduler<Bean<Object, String, Object>> scheduler = new BeanEvictionScheduler<>(name, batcher, evictor, dispatcherFactory, config)) {
             BeanEvictionContext<String> context = capturedContext.getValue();
 
             assertSame(scheduler, context);
@@ -74,11 +74,11 @@ public class BeanEvictionSchedulerTestCase {
             scheduler.schedule(activeBean);
 
             verify(dispatcher).submitOnCluster(capturedCommand.capture());
-            
+
             when(batcher.startBatch()).thenReturn(batch);
-            
+
             capturedCommand.getValue().execute(context);
-            
+
             verify(evictor).evict(evictedBeanId);
             verify(evictor, never()).evict(activeBeanId);
             verify(batch).close();

@@ -71,12 +71,14 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
     private final CommandMarshaller<C> marshaller;
     private final NodeFactory<Address> factory;
     private final long timeout;
+    private final CommandDispatcher<C> localDispatcher;
 
-    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout) {
+    public ChannelCommandDispatcher(MessageDispatcher dispatcher, CommandMarshaller<C> marshaller, NodeFactory<Address> factory, long timeout, CommandDispatcher<C> localDispatcher) {
         this.dispatcher = dispatcher;
         this.marshaller = marshaller;
         this.factory = factory;
         this.timeout = timeout;
+        this.localDispatcher = localDispatcher;
     }
 
     @Override
@@ -149,6 +151,10 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
 
     @Override
     public <R> CommandResponse<R> executeOnNode(Command<R, C> command, Node node) {
+        // Bypass MessageDispatcher if target node is local
+        if (this.isLocal(node)) {
+            return this.localDispatcher.executeOnNode(command, node);
+        }
         try {
             R result = this.dispatcher.sendMessage(this.createMessage(command, node), this.createRequestOptions());
             return new SimpleCommandResponse<>(result);
@@ -159,6 +165,10 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
 
     @Override
     public <R> Future<R> submitOnNode(Command<R, C> command, Node node) {
+        // Bypass MessageDispatcher if target node is local
+        if (this.isLocal(node)) {
+            return this.localDispatcher.submitOnNode(command, node);
+        }
         try {
             return this.dispatcher.sendMessageWithFuture(this.createMessage(command, node), this.createRequestOptions());
         } catch (Throwable e) {
@@ -167,11 +177,7 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
     }
 
     private <R> Message createMessage(Command<R, C> command) {
-        try {
-            return new Message(null, this.getLocalAddress(), this.marshaller.marshal(command));
-        } catch (IOException e) {
-            throw new IllegalArgumentException(e);
-        }
+        return this.createMessage(command, null);
     }
 
     private <R> Message createMessage(Command<R, C> command, Node node) {
@@ -182,11 +188,12 @@ public abstract class ChannelCommandDispatcher<C> implements CommandDispatcher<C
         }
     }
 
+    private boolean isLocal(Node node) {
+        return this.getLocalAddress().equals(getAddress(node));
+    }
+
     private static Address getAddress(Node node) {
-        if (node instanceof Addressable) {
-            return ((Addressable) node).getAddress();
-        }
-        throw new IllegalArgumentException(node.getName());
+        return (node instanceof Addressable) ? ((Addressable) node).getAddress() : null;
     }
 
     private RequestOptions createRequestOptions(Node... excludedNodes) {

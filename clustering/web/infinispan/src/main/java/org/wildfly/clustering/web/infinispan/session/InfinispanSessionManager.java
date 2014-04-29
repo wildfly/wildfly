@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpSession;
@@ -38,6 +37,7 @@ import javax.servlet.http.HttpSessionListener;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.context.Flag;
+import org.infinispan.distribution.DistributionManager;
 import org.infinispan.distribution.ch.ConsistentHash;
 import org.infinispan.notifications.KeyFilter;
 import org.infinispan.notifications.Listener;
@@ -51,7 +51,10 @@ import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 import org.infinispan.notifications.cachelistener.event.TopologyChangedEvent;
 import org.infinispan.remoting.transport.Address;
 import org.jboss.as.clustering.concurrent.Scheduler;
+import org.wildfly.clustering.dispatcher.CommandDispatcher;
 import org.wildfly.clustering.dispatcher.CommandDispatcherFactory;
+import org.wildfly.clustering.group.Node;
+import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
 import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
@@ -72,24 +75,27 @@ import org.wildfly.clustering.web.session.SessionMetaData;
 public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFilter {
     private final SessionContext context;
     private final Batcher batcher;
-    private final Cache<String, V> cache;
+    private final Cache<String, ?> cache;
     private final SessionFactory<V, L> factory;
     private final IdentifierFactory<String> identifierFactory;
     private final CommandDispatcherFactory dispatcherFactory;
-    private final List<Scheduler<ImmutableSession>> schedulers = new CopyOnWriteArrayList<>();
+    private final NodeFactory<Address> nodeFactory;
     private final int maxActiveSessions;
     private volatile Time defaultMaxInactiveInterval = new Time(30, TimeUnit.MINUTES);
     private final boolean persistent;
+    private volatile SchedulerContext schedulerContext;
+    private volatile CommandDispatcher<SchedulerContext> dispatcher;
 
-    public InfinispanSessionManager(SessionContext context, IdentifierFactory<String> identifierFactory, Cache<String, V> cache, SessionFactory<V, L> factory, Batcher batcher, CommandDispatcherFactory dispatcherFactory, int maxActiveSessions) {
-        this.context = context;
+    public InfinispanSessionManager(SessionFactory<V, L> factory, InfinispanSessionManagerConfiguration configuration) {
         this.factory = factory;
-        this.identifierFactory = identifierFactory;
-        this.cache = cache;
-        this.batcher = batcher;
-        this.maxActiveSessions = maxActiveSessions;
-        this.dispatcherFactory = dispatcherFactory;
-        Configuration config = cache.getCacheConfiguration();
+        this.cache = configuration.getCache();
+        this.context = configuration.getSessionContext();
+        this.identifierFactory = configuration.getIdentifierFactory();
+        this.batcher = configuration.getBatcher();
+        this.dispatcherFactory = configuration.getCommandDispatcherFactory();
+        this.nodeFactory = configuration.getNodeFactory();
+        this.maxActiveSessions = configuration.getMaxActiveSessions();
+        Configuration config = this.cache.getCacheConfiguration();
         // If cache is clustered or configured with a write-through cache store
         // then we need to trigger any HttpSessionActivationListeners per request
         // See SRV.7.7.2 Distributed Environments
@@ -98,22 +104,64 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
 
     @Override
     public void start() {
-        this.cache.addListener(this, this);
         this.identifierFactory.start();
-        this.schedulers.add(new SessionExpirationScheduler(this.batcher, new ExpiredSessionRemover<>(this.factory)));
+        final List<Scheduler<ImmutableSession>> schedulers = new ArrayList<>(2);
+        schedulers.add(new SessionExpirationScheduler(this.batcher, new ExpiredSessionRemover<>(this.factory)));
         if (this.maxActiveSessions >= 0) {
-            this.schedulers.add(new SessionEvictionScheduler(this.cache.getName(), this.batcher, this.factory, this.dispatcherFactory, this.maxActiveSessions));
+            schedulers.add(new SessionEvictionScheduler(this.cache.getName() + ".eviction", this.batcher, this.factory, this.dispatcherFactory, this.maxActiveSessions));
         }
+        this.schedulerContext = new SchedulerContext() {
+            @Override
+            public void schedule(ImmutableSession session) {
+                for (Scheduler<ImmutableSession> scheduler: schedulers) {
+                    scheduler.schedule(session);
+                }
+            }
+
+            @Override
+            public void cancel(ImmutableSession session) {
+                for (Scheduler<ImmutableSession> scheduler: schedulers) {
+                    scheduler.cancel(session);
+                }
+            }
+
+            @Override
+            public void close() {
+                for (Scheduler<?> scheduler: schedulers) {
+                    scheduler.close();
+                }
+            }
+        };
+        this.dispatcher = this.dispatcherFactory.createCommandDispatcher(this.cache.getName() + ".schedulers", this.schedulerContext);
+        this.cache.addListener(this, this);
     }
 
     @Override
     public void stop() {
-        for (Scheduler<?> scheduler: this.schedulers) {
-            scheduler.close();
-        }
-        this.schedulers.clear();
-        this.identifierFactory.stop();
         this.cache.removeListener(this);
+        this.dispatcher.close();
+        this.schedulerContext.close();
+        this.identifierFactory.stop();
+    }
+
+    boolean isPersistent() {
+        return this.persistent;
+    }
+
+    private void cancel(ImmutableSession session) {
+        // This should only go remote following a failover
+        this.dispatcher.executeOnNode(new CancelSchedulerCommand(session), this.locatePrimaryOwner(session));
+    }
+
+    void schedule(ImmutableSession session) {
+        // This should only go remote following a failover
+        this.dispatcher.executeOnNode(new ScheduleSchedulerCommand(session), this.locatePrimaryOwner(session));
+    }
+
+    private Node locatePrimaryOwner(ImmutableSession session) {
+        DistributionManager dist = this.cache.getAdvancedCache().getDistributionManager();
+        Address address = (dist != null) ? dist.getPrimaryLocation(session.getId()) : null;
+        return (address != null) ? this.nodeFactory.createNode(address) : this.dispatcherFactory.getGroup().getLocalNode();
     }
 
     @Override
@@ -159,13 +207,11 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
             session.invalidate();
             return null;
         }
-        for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
-            scheduler.cancel(session);
-        }
+        this.cancel(session);
         if (this.persistent) {
             triggerPostActivationEvents(session);
         }
-        return new SchedulableSession<>(session, this.schedulers, this.persistent);
+        return new SchedulableSession(session);
     }
 
     @Override
@@ -173,7 +219,7 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
         Session<L> session = this.factory.createSession(id, this.factory.createValue(id));
         final Time time = this.defaultMaxInactiveInterval;
         session.getMetaData().setMaxInactiveInterval(time.getValue(), time.getUnit());
-        return new SchedulableSession<>(session, this.schedulers, this.persistent);
+        return new SchedulableSession(session);
     }
 
     @Override
@@ -278,10 +324,8 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
                                 if (value != null) {
                                     InfinispanWebLogger.ROOT_LOGGER.debugf("Scheduling expiration of session %s on behalf of previous owner: %s", sessionId, oldOwner);
                                     ImmutableSession session = this.factory.createImmutableSession(sessionId, value);
-                                    for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
-                                        scheduler.cancel(session);
-                                        scheduler.schedule(session);
-                                    }
+                                    this.schedulerContext.cancel(session);
+                                    this.schedulerContext.schedule(session);
                                 }
                             } finally {
                                 if (started) {
@@ -331,15 +375,11 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
     }
 
     // Session decorator that performs scheduling on close().
-    private static class SchedulableSession<L> implements Session<L> {
+    private class SchedulableSession implements Session<L> {
         private final Session<L> session;
-        private final List<Scheduler<ImmutableSession>> schedulers;
-        private final boolean persistent;
 
-        SchedulableSession(Session<L> session, List<Scheduler<ImmutableSession>> schedulers, boolean persistent) {
+        SchedulableSession(Session<L> session) {
             this.session = session;
-            this.schedulers = schedulers;
-            this.persistent = persistent;
         }
 
         @Override
@@ -374,13 +414,11 @@ public class InfinispanSessionManager<V, L> implements SessionManager<L>, KeyFil
 
         @Override
         public void close() {
-            if (this.persistent) {
+            if (isPersistent()) {
                 triggerPrePassivationEvents(this.session);
             }
             this.session.close();
-            for (Scheduler<ImmutableSession> scheduler: this.schedulers) {
-                scheduler.schedule(this.session);
-            }
+            InfinispanSessionManager.this.schedule(this.session);
         }
 
         @Override

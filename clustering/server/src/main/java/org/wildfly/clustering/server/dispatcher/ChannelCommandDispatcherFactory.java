@@ -128,9 +128,11 @@ public class ChannelCommandDispatcherFactory implements CommandDispatcherFactory
             }
         };
         this.contexts.put(id, new AtomicReference<Object>(context));
-        return new ChannelCommandDispatcher<C>(this.dispatcher, marshaller, this.nodeFactory, this.timeout) {
+        final CommandDispatcher<C> localDispatcher = new LocalCommandDispatcher<>(this.group.getLocalNode(), context);
+        return new ChannelCommandDispatcher<C>(this.dispatcher, marshaller, this.nodeFactory, this.timeout, localDispatcher) {
             @Override
             public void close() {
+                localDispatcher.close();
                 ChannelCommandDispatcherFactory.this.contexts.remove(id);
             }
         };

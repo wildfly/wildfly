@@ -45,10 +45,11 @@ public class SessionEvictionScheduler implements Scheduler<ImmutableSession>, Se
     private final CommandDispatcher<SessionEvictionContext> dispatcher;
     private final int maxSize;
 
-    public SessionEvictionScheduler(String cacheName, Batcher batcher, Evictor<String> evictor, CommandDispatcherFactory dispatcherFactory, int maxSize) {
+    public SessionEvictionScheduler(String name, Batcher batcher, Evictor<String> evictor, CommandDispatcherFactory dispatcherFactory, int maxSize) {
         this.batcher = batcher;
         this.evictor = evictor;
-        this.dispatcher = dispatcherFactory.<SessionEvictionContext>createCommandDispatcher(cacheName, this);
+        SessionEvictionContext context = this;
+        this.dispatcher = dispatcherFactory.createCommandDispatcher(name, context);
         this.maxSize = maxSize;
     }
 
