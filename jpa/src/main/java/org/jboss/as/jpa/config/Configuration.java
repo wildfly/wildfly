@@ -171,6 +171,7 @@ public class Configuration {
      */
     public static final String ADAPTER_CLASS = "jboss.as.jpa.adapterClass";
 
+    private static final String EE_DEFAULT_DATASOURCE = "java:comp/DefaultDataSource";
     // key = provider class name, value = module name
     private static final Map<String, String> providerClassToModuleName = new HashMap<String, String>();
 
@@ -249,6 +250,10 @@ public class Configuration {
      */
     public static boolean allowTwoPhaseBootstrap(PersistenceUnitMetadata pu) {
         boolean result = true;
+
+        if (EE_DEFAULT_DATASOURCE.equals(pu.getJtaDataSourceName())) {
+            result = false;
+        }
         if (pu.getProperties().containsKey(Configuration.JPA_ALLOW_TWO_PHASE_BOOTSTRAP)) {
             result = Boolean.parseBoolean(pu.getProperties().getProperty(Configuration.JPA_ALLOW_TWO_PHASE_BOOTSTRAP));
         }
