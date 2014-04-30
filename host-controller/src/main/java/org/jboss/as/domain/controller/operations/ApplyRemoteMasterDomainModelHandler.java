@@ -380,6 +380,10 @@ public class ApplyRemoteMasterDomainModelHandler implements OperationStepHandler
         final ModelNode hostModel = endRoot.require(HOST).asPropertyList().iterator().next().getValue();
         final ModelNode existingHostModel = startRoot.require(HOST).asPropertyList().iterator().next().getValue();
 
+        if (!hostModel.hasDefined(SERVER_CONFIG)) {
+            return;
+        }
+
         final Set<ServerIdentity> restartServers = new HashSet<ServerIdentity>();
         final Set<ServerIdentity> reloadServers = new HashSet<ServerIdentity>();
         for (String serverName : hostModel.get(SERVER_CONFIG).keys()) {

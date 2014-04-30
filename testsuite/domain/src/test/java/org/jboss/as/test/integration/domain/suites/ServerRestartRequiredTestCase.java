@@ -37,6 +37,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PORT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_DESCRIPTION_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELOAD_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESTART_REQUIRED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
@@ -237,6 +239,32 @@ public class ServerRestartRequiredTestCase {
         executeOperation(operation, client);
 
         checkRestartOneAndTwo(client);
+    }
+
+    @Test
+    public void testCompositeNavigation() throws Exception {
+
+        final DomainClient client = domainMasterLifecycleUtil.getDomainClient();
+
+        checkProcessStateOneAndTwo(client, "running");
+
+        final ModelNode composite = new ModelNode();
+        composite.get(OP).set(COMPOSITE);
+        composite.get(OP_ADDR).setEmptyList();
+
+        final ModelNode steps = composite.get(STEPS).setEmptyList();
+
+        final ModelNode rr = steps.add();
+        rr.get(OP).set(READ_RESOURCE_OPERATION);
+        rr.get(OP_ADDR).set(reloadOneConfigAddress).add(JVM, "default");
+
+        final ModelNode rs = steps.add();
+        rs.get(OP).set(READ_RESOURCE_OPERATION);
+        rs.get(OP_ADDR).set(reloadTwoConfigAddress).add(JVM, "default");
+
+        domainMasterLifecycleUtil.executeForResult(composite);
+
+        checkProcessStateOneAndTwo(client, "running");
     }
 
     @Test
