@@ -821,12 +821,12 @@ final class SubsystemTestDelegate {
             KernelServices reverseServices = createKernelServicesBuilder(reverseCheckConfig)
                 .setBootOperations(clonedBootOperations)
                 .build();
-            if (reverseServices.getBootError() != null) {
-                Throwable t = reverseServices.getBootError();
-                if (t instanceof Exception) {
-                    throw (Exception)t;
+            final Throwable bootError = reverseServices.getBootError();
+            if (bootError != null) {
+                if (bootError instanceof Exception) {
+                    throw (Exception) bootError;
                 }
-                throw new Exception(t);
+                throw new Exception(bootError);
             }
             Assert.assertTrue(reverseServices.isSuccessfulBoot());
 

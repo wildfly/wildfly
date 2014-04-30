@@ -41,7 +41,7 @@ public class ProtocolConnectionManager {
 
     protected ProtocolConnectionManager(final ConnectTask initial) {
         if(initial == null) {
-            ProtocolMessages.MESSAGES.nullVar("connectTask");
+            throw ProtocolMessages.MESSAGES.nullVar("connectTask");
         }
         this.connectTask = initial;
     }

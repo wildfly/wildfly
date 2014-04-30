@@ -813,12 +813,12 @@ public class JBossDeploymentStructureParser10 implements XMLElementReader<ParseR
             throw missingAttributes(reader.getLocation(), required);
         }
         specBuilder.getExclusions().add(ModuleIdentifier.create(name, slot));
-        while (reader.hasNext()) {
+        if (reader.hasNext()) {
             switch (reader.nextTag()) {
                 case XMLStreamConstants.END_ELEMENT:
                     return;
                 default:
-                    unexpectedContent(reader);
+                    throw unexpectedContent(reader);
             }
         }
     }

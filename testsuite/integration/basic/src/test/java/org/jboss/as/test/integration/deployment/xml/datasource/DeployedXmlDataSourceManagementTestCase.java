@@ -81,8 +81,9 @@ public class DeployedXmlDataSourceManagementTestCase {
             ServerDeploymentPlanResult result = future.get(20, TimeUnit.SECONDS);
             ServerDeploymentActionResult actionResult = result.getDeploymentActionResult(plan.getId());
             if (actionResult != null) {
-                if (actionResult.getDeploymentException() != null) {
-                    throw new RuntimeException(actionResult.getDeploymentException());
+                final Throwable deploymentException = actionResult.getDeploymentException();
+                if (deploymentException != null) {
+                    throw new RuntimeException(deploymentException);
                 }
             }
             plan = manager.newDeploymentPlan()
@@ -92,8 +93,9 @@ public class DeployedXmlDataSourceManagementTestCase {
             future.get(20, TimeUnit.SECONDS);
             actionResult = result.getDeploymentActionResult(plan.getId());
             if (actionResult != null) {
-                if (actionResult.getDeploymentException() != null) {
-                    throw new RuntimeException(actionResult.getDeploymentException());
+                final Throwable deploymentException = actionResult.getDeploymentException();
+                if (deploymentException != null) {
+                    throw new RuntimeException(deploymentException);
                 }
             }
         }

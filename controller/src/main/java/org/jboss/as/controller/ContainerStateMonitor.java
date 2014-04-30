@@ -35,6 +35,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StabilityMonitor;
+import org.jboss.msc.service.StartException;
 
 import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
@@ -189,8 +190,9 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
             msg.append(MESSAGES.serviceStatusReportFailed());
             for (ServiceController<?> controller : changeReport.getFailedControllers()) {
                 msg.append("      ").append(controller.getName());
-                if (controller.getStartException() != null) {
-                    msg.append(": ").append(controller.getStartException().toString());
+                final StartException startException = controller.getStartException();
+                if (startException != null) {
+                    msg.append(": ").append(startException.toString());
                 }
                 msg.append('\n');
             }

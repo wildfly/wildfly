@@ -208,7 +208,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleSpecServiceName(ModuleIdentifier identifier) {
         if (!isDynamicModule(identifier)) {
-            ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
+            throw ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
         }
         return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
@@ -232,7 +232,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleResolvedServiceName(ModuleIdentifier identifier) {
         if (!isDynamicModule(identifier)) {
-            ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
+            throw ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
         }
         return MODULE_RESOLVED_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
@@ -252,7 +252,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleServiceName(ModuleIdentifier identifier) {
         if (!identifier.getName().startsWith(MODULE_PREFIX)) {
-            ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
+            throw ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
         }
         return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }

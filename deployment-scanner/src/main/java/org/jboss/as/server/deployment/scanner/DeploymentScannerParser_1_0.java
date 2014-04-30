@@ -187,10 +187,10 @@ class DeploymentScannerParser_1_0 implements XMLStreamConstants, XMLElementReade
             }
         }
         if (name == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(CommonAttributes.NAME));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(CommonAttributes.NAME));
         }
         if (path == null) {
-            ParseUtils.missingRequired(reader, Collections.singleton(CommonAttributes.PATH));
+            throw ParseUtils.missingRequired(reader, Collections.singleton(CommonAttributes.PATH));
         }
         requireNoContent(reader);
 
