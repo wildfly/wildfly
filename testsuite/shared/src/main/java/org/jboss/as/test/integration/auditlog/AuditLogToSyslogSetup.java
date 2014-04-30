@@ -73,15 +73,12 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
 
     private static final PathAddress AUDIT_LOG_ADDRESS = PathAddress.pathAddress().append(CORE_SERVICE, MANAGEMENT)
             .append(ACCESS, AUDIT);
-    protected static final PathAddress AUDIT_LOG_LOGGER_ADDR = AUDIT_LOG_ADDRESS.append(LOGGER, AUDIT_LOG);
-    private static final PathAddress AUDIT_SYSLOG_HANDLER_ADDR = AUDIT_LOG_ADDRESS
-            .append(SYSLOG_HANDLER, SYSLOG_HANDLER_NAME);
-    static final PathAddress AUDIT_SYSLOG_HANDLER_ADDR2 = AUDIT_LOG_ADDRESS
-            .append(SYSLOG_HANDLER, SYSLOG_HANDLER_NAME2);
-    static final PathAddress AUDIT_LOG_LOGGER_SYSLOG_HANDLER_ADDR = AUDIT_LOG_LOGGER_ADDR.append(HANDLER,
-            SYSLOG_HANDLER_NAME);
-    static final PathAddress AUDIT_LOG_LOGGER_SYSLOG_HANDLER_ADDR2 = AUDIT_LOG_LOGGER_ADDR.append(HANDLER,
-            SYSLOG_HANDLER_NAME2);
+    public static final PathAddress AUDIT_LOG_LOGGER_ADDR = AUDIT_LOG_ADDRESS.append(LOGGER, AUDIT_LOG);
+    private static final PathAddress AUDIT_SYSLOG_HANDLER_ADDR = AUDIT_LOG_ADDRESS.append(SYSLOG_HANDLER, SYSLOG_HANDLER_NAME);
+    static final PathAddress AUDIT_SYSLOG_HANDLER_ADDR2 = AUDIT_LOG_ADDRESS.append(SYSLOG_HANDLER, SYSLOG_HANDLER_NAME2);
+    static final PathAddress AUDIT_LOG_LOGGER_SYSLOG_HANDLER_ADDR = AUDIT_LOG_LOGGER_ADDR.append(HANDLER, SYSLOG_HANDLER_NAME);
+    static final PathAddress AUDIT_LOG_LOGGER_SYSLOG_HANDLER_ADDR2 = AUDIT_LOG_LOGGER_ADDR
+            .append(HANDLER, SYSLOG_HANDLER_NAME2);
 
     private SyslogServerIF server;
 
@@ -91,7 +88,7 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
     //Will need some tweaking in EAP
     static final String DEFAULT_APPNAME = "WildFly";
 
-        /**
+    /**
      * Returns name of syslog protocol used. It should be one of "tcp", "udp", "tls"
      *
      * @return
@@ -149,13 +146,13 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
         // start syslog server
         SyslogServer.getThreadedInstance(syslogProtocol);
 
-        //Add the normal syslog handler
+        // Add the normal syslog handler
         addSyslogHandler(managementClient, AUDIT_SYSLOG_HANDLER_ADDR, host, null, null);
 
-        //Add the syslog handler we will switch to
+        // Add the syslog handler we will switch to
         addSyslogHandler(managementClient, AUDIT_SYSLOG_HANDLER_ADDR2, host, "TestApp", Facility.LINE_PRINTER);
 
-        //Reference the first audit logger for now
+        // Reference the first audit logger for now
         ModelNode op = Util.createAddOperation(AUDIT_LOG_LOGGER_SYSLOG_HANDLER_ADDR);
         Utils.applyUpdate(op, managementClient.getControllerClient());
 
@@ -164,7 +161,8 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
 
     }
 
-    private void addSyslogHandler(ManagementClient managementClient, PathAddress syslogHandlerAddress, String host, String appName, Facility facility) throws Exception {
+    private void addSyslogHandler(ManagementClient managementClient, PathAddress syslogHandlerAddress, String host,
+            String appName, Facility facility) throws Exception {
         ModelNode op = createSyslogHandlerAddComposite(syslogHandlerAddress, host, appName, facility);
         Utils.applyUpdate(op, managementClient.getControllerClient());
         List<ModelNode> protocolSettings = addProtocolSettings(syslogHandlerAddress);
@@ -174,7 +172,8 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
 
     }
 
-    private ModelNode createSyslogHandlerAddComposite(PathAddress syslogHandlerAddress, String host, String appName, Facility facility) {
+    private ModelNode createSyslogHandlerAddComposite(PathAddress syslogHandlerAddress, String host, String appName,
+            Facility facility) {
         final ModelNode compositeOp = new ModelNode();
         compositeOp.get(OP).set(COMPOSITE);
         compositeOp.get(OP_ADDR).setEmptyList();
@@ -218,14 +217,14 @@ public abstract class AuditLogToSyslogSetup implements ServerSetupTask {
                 managementClient.getControllerClient());
     }
 
-    private void removeResource(ManagementClient managementClient, PathAddress address) throws Exception{
+    private void removeResource(ManagementClient managementClient, PathAddress address) throws Exception {
         PathElement element = address.getLastElement();
         PathAddress parentAddress = address.subAddress(0, address.size() - 1);
         ModelNode op = Util.createOperation(READ_CHILDREN_NAMES_OPERATION, parentAddress);
         op.get(CHILD_TYPE).set(element.getKey());
         ModelNode result = managementClient.getControllerClient().execute(op);
         if (result.hasDefined("result") && result.get("result").asList().contains(new ModelNode(element.getValue()))) {
-            //It exists so remove it
+            // It exists so remove it
             op = Util.createRemoveOperation(address);
             op.get(OPERATION_HEADERS, ROLLBACK_ON_RUNTIME_FAILURE).set(false);
             op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
