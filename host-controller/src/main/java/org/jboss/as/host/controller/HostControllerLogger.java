@@ -41,7 +41,7 @@ import org.jboss.remoting3.Channel;
 import java.net.URI;
 
 /**
- * This module is using message IDs in the range 10800-10999. This file is using the subset 10900-10939 for host
+ * This module is using message IDs in the range 10800-10999. This file is using the subsets 10900-10939 and and 16550-16599 for host
  * controller logger messages. See http://community.jboss.org/docs/DOC-16810 for the full list of currently reserved
  * JBAS message id blocks.
  * <p/>
@@ -506,4 +506,14 @@ public interface HostControllerLogger extends BasicLogger {
     void reconnectingToMaster();
 
     // END WITH 16599
+    /**
+     * Logs an informational stating the server launch command prefix.
+     *
+     * @param serverName the name of the server that will be started with launch command prefix.
+     * @param launchCommandPrefix the prefixed launch command.
+     */
+    @LogMessage(level = Level.INFO)
+    @Message(id = 16550, value = "Server %s will be started with JVM launch command prefix '%s'")
+    void serverLaunchCommandPrefix(String serverName, String launchCommandPrefix);
+
 }

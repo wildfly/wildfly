@@ -106,6 +106,7 @@ public enum Element {
 
     KEYSTORE("keystore"),
 
+    LAUNCH_COMMAND("launch-command"),
     LDAP("ldap"),
     LINK_LOCAL_ADDRESS("link-local-address"),
     LOCAL("local"),
