@@ -88,14 +88,17 @@ public class StandaloneDeploymentTableModel extends AbstractTableModel {
         }
     }
 
+    @Override
     public int getColumnCount() {
         return 3;
     }
 
+    @Override
     public int getRowCount() {
         return data.size();
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         return data.get(rowIndex)[columnIndex];
     }
