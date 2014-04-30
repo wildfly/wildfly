@@ -37,6 +37,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.MountedDeploymentOverlay;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
+import org.jboss.as.server.deployment.module.ModuleSpecification;
 import org.jboss.as.server.deployment.module.MountHandle;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.module.TempFileProviderService;
@@ -78,6 +79,11 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
         if (!deploymentRootName.endsWith(RAR_EXTENSION)) {
             return;
         }
+
+
+        final ModuleSpecification moduleSpecification = deploymentUnit.getAttachment(Attachments.MODULE_SPECIFICATION);
+        moduleSpecification.setPublicModule(true);
+
         //this violates the spec, but everyone expects it to work
         ModuleRootMarker.mark(resourceRoot, true);
         Map<String, MountedDeploymentOverlay> overlays = deploymentUnit.getAttachment(Attachments.DEPLOYMENT_OVERLAY_LOCATIONS);
