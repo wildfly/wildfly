@@ -27,5 +27,5 @@ package org.jboss.as.test.smoke.webservices;
  *
  */
 public interface SimpleStatelessSessionLocal {
-   String echo(String msg);
+    boolean isInjectionOK();
 }

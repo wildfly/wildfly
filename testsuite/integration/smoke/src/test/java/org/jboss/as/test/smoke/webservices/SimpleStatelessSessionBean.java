@@ -48,7 +48,8 @@ public class SimpleStatelessSessionBean implements SimpleStatelessSessionLocal {
         endpoint4 = endpoint;
     }
 
-    public String echo(String msg) {
-        return "Echo " + msg + " -- Endpoint:" + endpoint1 + " " + endpoint2 + " " + endpoint3 + " " + endpoint4 + ")";
+    @Override
+    public boolean isInjectionOK() {
+        return (endpoint1 != null && endpoint2 != null && endpoint3 != null && endpoint4 != null);
     }
 }

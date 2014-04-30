@@ -70,7 +70,7 @@ public class WSTestCase {
 
     @Test
     public void testWSDL() throws Exception {
-        String s = performCall("?wsdl");
+        String s = performCall("ws-example/?wsdl");
         Assert.assertNotNull(s);
         Assert.assertTrue(s.contains("wsdl:definitions"));
     }
@@ -125,7 +125,7 @@ public class WSTestCase {
             checkCountMetric(endpointResult, managementClient.getControllerClient(), "response-count");
         }
     }
-    
+
     private void checkCountMetric(final ModelNode endpointResult, final ModelControllerClient client, final String metricName) throws IOException {
     	final ModelNode readAttribute = new ModelNode();
         readAttribute.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION);
@@ -147,9 +147,13 @@ public class WSTestCase {
         Assert.assertEquals("Foo", port.echo("Foo"));
     }
 
+    @Test
+    public void testWSInjection() throws Exception {
+        Assert.assertEquals("true", performCall("servlet"));
+    }
 
-    private String performCall(String params) throws Exception {
-        URL url = new URL(this.url.toExternalForm() + "ws-example/" + params);
+    private String performCall(String urlPattern) throws Exception {
+        URL url = new URL(this.url.toExternalForm() + urlPattern);
         return HttpRequest.get(url.toExternalForm(), 30, TimeUnit.SECONDS);
     }
 }
