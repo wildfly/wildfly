@@ -376,4 +376,13 @@ public interface DeploymentScannerLogger extends BasicLogger {
 
     @Message(id = 32, value = "Failed to list files in directory %s. Check that the contents of the directory are readable.")
     RuntimeException cannotListDirectoryFiles(File directory);
+
+    @LogMessage(level = INFO)
+    @Message(id = 33, value = "Deployment %s was previously undeployed by this scanner but has been redeployed by another "
+            + "management tool. Marker file %s is being removed to record this fact.")
+    void scannerDeploymentRedeployedButNotByScanner(String deploymentName, File marker);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 34, value = "Failed synchronizing status of deployment %s.")
+    void failedStatusSynchronization(@Cause Throwable cause, String deploymentName);
 }

@@ -437,7 +437,11 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         op = Util.createOperation(DeploymentFullReplaceHandler.OPERATION_NAME, PathAddress.EMPTY_ADDRESS);
         op.get(NAME).set("Test1");
         op.get(CONTENT).add(getByteContent(6, 7, 8, 9, 10));
+        boolean persistent = op.get(PERSISTENT).asBoolean(true);
+        //we need to remove the persistent atrtribute as it is masked from the user
+        op.remove(PERSISTENT);
         kernelServices.validateOperation(op);
+        op.get(PERSISTENT).set(persistent);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         ModelNode newHash = checkSingleDeployment(kernelServices, "Test1", false);
         Assert.assertFalse(originalHash.equals(newHash));
@@ -447,14 +451,20 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         ModelNode hashContent = new ModelNode();
         hashContent.get(HASH).set(newHash);
         op.get(CONTENT).add(hashContent);
+         //we need to remove the persistent atrtribute as it is masked from the user
+        op.remove(PERSISTENT);
         kernelServices.validateOperation(op);
+        op.get(PERSISTENT).set(persistent);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         Assert.assertEquals(newHash, checkSingleDeployment(kernelServices, "Test1", false));
 
         op = op.clone();
         op.get(CONTENT).clear();
         op.get(CONTENT).add(getFileUrl("Test1", 1, 2, 3, 4, 5));
+         //we need to remove the persistent atrtribute as it is masked from the user
+        op.remove(PERSISTENT);
         kernelServices.validateOperation(op);
+        op.get(PERSISTENT).set(persistent);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         Assert.assertEquals(originalHash, checkSingleDeployment(kernelServices, "Test1", false));
 
@@ -467,7 +477,10 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         op.get(CONTENT).clear();
         op.get(CONTENT).add(getInputStreamIndexContent());
         op.get(RUNTIME_NAME).set("number1");
+        //we need to remove the persistent atrtribute as it is masked from the user
+        op.remove(PERSISTENT);
         kernelServices.validateOperation(op);
+        op.get(PERSISTENT).set(persistent);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op, new ByteArrayInputStream(new byte[] {6, 7, 8, 9, 10})));
         ModelNode deployments = getDeploymentParentResource(kernelServices);
         Assert.assertEquals(1, deployments.keys().size());
@@ -522,7 +535,11 @@ public class StandaloneDeploymentTestCase extends AbstractCoreModelTest {
         contentNode.get(PATH).set(file1.getName());
         op.get(CONTENT).clear();
         op.get(CONTENT).add(contentNode);
+        boolean persistent = op.get(PERSISTENT).asBoolean(false);
+        //we need to remove the persistent atrtribute as it is masked from the user
+        op.remove(PERSISTENT);
         kernelServices.validateOperation(op);
+        op.get(PERSISTENT).set(persistent);
         ModelTestUtils.checkOutcome(kernelServices.executeOperation(op));
         currentContent = checkSingleUnmanagedDeployment(kernelServices, "Test1", false);
         checkUnmanagedContents(file1, currentContent, true, false);

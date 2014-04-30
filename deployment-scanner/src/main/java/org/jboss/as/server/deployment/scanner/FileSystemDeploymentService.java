@@ -61,6 +61,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -357,9 +358,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 ROOT_LOGGER.tracef("Scanning directory %s for deployment content changes", deploymentDir.getAbsolutePath());
 
                 ScanContext scanContext = new ScanContext(deploymentOperations);
-                if (!forcedUndeployScan)
-                    // skip directory scan since only undeployment required
+                if (!forcedUndeployScan) { // skip directory scan since only undeployment required
                     scanDirectory(deploymentDir, relativePath, scanContext);
+                }
 
                 // WARN about markers with no associated content. Do this first in case any auto-deploy issue
                 // is due to a file that wasn't meant to be auto-deployed, but has a misspelled marker
@@ -409,12 +410,13 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 // Add remove actions to the plan for anything we count as
                 // deployed that we didn't find on the scan
                 for (Map.Entry<String, DeploymentMarker> missing : scanContext.toRemove.entrySet()) {
-                    if (!forcedUndeployScan)
+                    if (!forcedUndeployScan) {
                         scannerTasks.add(new UndeployTask(missing.getKey(), missing.getValue().parentFolder, scanContext.scanStartTime, false));
-                    else {
+                    } else {
                         // remove successful deployment and left will be removed
-                        if (scanContext.registeredDeployments.containsKey(missing.getKey()))
+                        if (scanContext.registeredDeployments.containsKey(missing.getKey())) {
                             scanContext.registeredDeployments.remove(missing.getKey());
+                        }
                     }
                 }
 
@@ -552,8 +554,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
             }
         } else {
             success = false;
-            if (resultNode.get(FAILURE_DESCRIPTION).isDefined())
+            if (resultNode.get(FAILURE_DESCRIPTION).isDefined()) {
                 failureDesc.append(resultNode.get(FAILURE_DESCRIPTION).toString());
+            }
         }
 
         return success;
@@ -648,7 +651,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (autoDeployable) {
                     if (!isAutoDeployDisabled(child)) {
                         long timestamp = getDeploymentTimestamp(child);
-                        if (isFailedOrUndeployed(scanContext, directory, fileName, timestamp)) continue;
+                        synchronizeScannerStatus(scanContext, directory, fileName, timestamp);
+                        if (isFailedOrUndeployed(scanContext, directory, fileName, timestamp)) {
+                            continue;
+                        }
 
                         DeploymentMarker marker = deployed.get(fileName);
                         if (marker == null || marker.lastModified != timestamp) {
@@ -679,7 +685,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (autoDeployXml) {
                     if (!isAutoDeployDisabled(child)) {
                         long timestamp = getDeploymentTimestamp(child);
-                        if (isFailedOrUndeployed(scanContext, directory, fileName, timestamp)) continue;
+                        if (isFailedOrUndeployed(scanContext, directory, fileName, timestamp)) {
+                            continue;
+                        }
 
                         DeploymentMarker marker = deployed.get(fileName);
                         if (marker == null || marker.lastModified != timestamp) {
@@ -738,11 +746,39 @@ class FileSystemDeploymentService implements DeploymentScanner {
             return true;
         }
         final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
-        boolean isRegistredDeployment = scanContext.registeredDeployments.get(fileName) == null ? false : scanContext.registeredDeployments.get(fileName);
-        if (undeployedMarker.exists() && timestamp <= undeployedMarker.lastModified() && !isRegistredDeployment) {
+        if (isMarkedUndeployed(undeployedMarker, timestamp) && !isRegisteredDeployment(scanContext, fileName)) {
             return true;
         }
         return false;
+    }
+
+    private void synchronizeScannerStatus(ScanContext scanContext, File directory, String fileName, long timestamp) {
+        if (isRegisteredDeployment(scanContext, fileName)) {
+            final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
+            if (isMarkedUndeployed(undeployedMarker, timestamp) && !scanContext.persistentDeployments.contains(fileName)) {
+                try {
+                    ROOT_LOGGER.scannerDeploymentRedeployedButNotByScanner(fileName, undeployedMarker);
+                    //We have a deployed app with an undeployed marker
+                    undeployedMarker.delete();
+                    final File deployedMarker = new File(directory, fileName + DEPLOYED);
+                    deployedMarker.createNewFile();
+                    boolean isArchive = false;
+                    if (deployed.containsKey(fileName)) {
+                        isArchive = deployed.get(fileName).archive;
+                        deployedMarker.setLastModified(deployed.get(fileName).lastModified);
+                    } else {
+                        final File deploymentFile = new File(directory, fileName);
+                        isArchive = deploymentFile.exists() && deploymentFile.isFile();
+                        if(deploymentFile.exists()) {
+                            deployedMarker.setLastModified(deploymentFile.lastModified());
+                        }
+                    }
+                    deployed.put(fileName, new DeploymentMarker(deployedMarker.lastModified(), isArchive, directory));
+                } catch (IOException ex) {
+                    ROOT_LOGGER.failedStatusSynchronization(ex, fileName);
+                }
+            }
+        }
     }
 
     private long addContentAddingTask(final String path, final boolean archive, final String deploymentName,
@@ -754,6 +790,17 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
         scanContext.toRemove.remove(deploymentName);
         return timestamp;
+    }
+
+    private boolean isRegisteredDeployment(final ScanContext scanContext, final String fileName) {
+        if(!scanContext.persistentDeployments.contains(fileName)) {//check that we are talking about the deployment in the scanned folder
+            return scanContext.registeredDeployments.get(fileName) == null ? false : scanContext.registeredDeployments.get(fileName);
+        }
+        return false;
+    }
+
+    private boolean isMarkedUndeployed(final File undeployedMarker, final long timestamp) {
+        return undeployedMarker.exists() && timestamp <= undeployedMarker.lastModified();
     }
 
     private boolean isZipComplete(File file) throws NonScannableZipException {
@@ -1100,8 +1147,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
             final ModelNode content = new ModelNode();
             final ModelNode contentItem = content.get(0);
             contentItem.get(PATH).set(path);
-            if (relativeTo != null)
+            if (relativeTo != null) {
                 contentItem.get(RELATIVE_TO).set(relativeTo);
+            }
             contentItem.get(ARCHIVE).set(archive);
             return content;
         }
@@ -1170,6 +1218,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
             final ModelNode replaceOp = Util.getEmptyOperation(DeploymentFullReplaceHandler.OPERATION_NAME, new ModelNode());
             replaceOp.get(NAME).set(deploymentName);
             replaceOp.get(CONTENT).set(createContent());
+            replaceOp.get(PERSISTENT).set(false);
+            replaceOp.get(ENABLED).set(true);
             return replaceOp;
         }
 
@@ -1262,8 +1312,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
             // Remove the in-progress marker
             removeInProgressMarker();
 
-            if (!forcedUndeploy)
+            if (!forcedUndeploy) {
                 writeFailedMarker(new File(parent, deploymentName), result.get(FAILURE_DESCRIPTION).toString(), scanStartTime);
+            }
         }
     }
 
@@ -1284,6 +1335,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
          * Existing deployments
          */
         private final Map<String, Boolean> registeredDeployments;
+        /**
+         * Existing persistent deployments
+         */
+        private final Set<String> persistentDeployments;
         /**
          * Tasks generated by the scan
          */
@@ -1323,6 +1378,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         private ScanContext(final DeploymentOperations deploymentOperations) {
             registeredDeployments = deploymentOperations.getDeploymentsStatus();
+            persistentDeployments = deploymentOperations.getPersistentDeployments();
         }
     }
 
