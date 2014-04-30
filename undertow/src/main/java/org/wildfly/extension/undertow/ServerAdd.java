@@ -71,11 +71,11 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
 
         builder.setInitialMode(ServiceController.Mode.ACTIVE);
         builder.addListener(verificationHandler);
-        final ServiceController<Server> serviceController = builder.install();
-        if (newControllers != null) {
-            newControllers.add(serviceController);
-        }
-        if (name.equals(defaultServerName)) { //only install for default server
+        boolean isDefaultServer = name.equals(defaultServerName);
+
+        if (isDefaultServer) { //only install for default server
+            builder.addAliases(UndertowService.DEFAULT_SERVER);//register default server service name
+
             WebServerService commonWebServer = new WebServerService();
             final ServiceBuilder<WebServerService> commonServerBuilder = context.getServiceTarget().addService(CommonWebServer.SERVICE_NAME, commonWebServer)
                     .addDependency(serverName, Server.class, commonWebServer.getServerInjectedValue())
@@ -93,6 +93,10 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
             if (newControllers != null) {
                 newControllers.add(commonServerController);
             }
+        }
+        final ServiceController<Server> serviceController = builder.install();
+        if (newControllers != null) {
+            newControllers.add(serviceController);
         }
     }
 
