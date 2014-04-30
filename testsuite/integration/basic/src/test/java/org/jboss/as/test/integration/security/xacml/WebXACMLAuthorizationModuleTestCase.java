@@ -56,7 +56,6 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 @ServerSetup({ WebXACMLAuthorizationModuleTestCase.SecurityDomainsSetup.class })
 @RunAsClient
-@Ignore("AS7-6811 - Undertow ignored XACML tests")
 public class WebXACMLAuthorizationModuleTestCase {
 
     private static final Logger LOGGER = Logger.getLogger(WebXACMLAuthorizationModuleTestCase.class);

@@ -134,6 +134,7 @@ import org.wildfly.extension.undertow.UndertowMessages;
 import org.wildfly.extension.undertow.UndertowService;
 import org.wildfly.extension.undertow.security.AuditNotificationReceiver;
 import org.wildfly.extension.undertow.security.JAASIdentityManagerImpl;
+import org.wildfly.extension.undertow.security.JbossAuthorizationManager;
 import org.wildfly.extension.undertow.security.SecurityContextAssociationHandler;
 import org.wildfly.extension.undertow.security.SecurityContextThreadSetupAction;
 import org.wildfly.extension.undertow.security.jacc.JACCAuthorizationManager;
@@ -248,6 +249,10 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
             handleJASPIMechanism(deploymentInfo);
             handleJACCAuthorization(deploymentInfo);
             handleAdditionalAuthenticationMechanisms(deploymentInfo);
+
+            if(mergedMetaData.isUseJBossAuthorization()) {
+                deploymentInfo.setAuthorizationManager(new JbossAuthorizationManager(deploymentInfo.getAuthorizationManager()));
+            }
 
             SessionConfigMetaData sessionConfig = mergedMetaData.getSessionConfig();
             ServletSessionConfig config = null;
