@@ -153,8 +153,12 @@ public class JbossAuthorizationManager implements AuthorizationManager {
                 return false;
             }
 
+            ArrayList<String> roles = new ArrayList<String>();
+            if(account != null) {
+                roles.addAll(account.getRoles());
+            }
             authzDecision = helper.checkResourcePermission(contextMap, request, src.getServletResponse(), caller, PolicyContext.getContextID(),
-                    requestURI(src.getExchange()), new ArrayList<String>(account.getRoles()));
+                    requestURI(src.getExchange()), roles);
         }
         boolean finalDecision = baseDecision && authzDecision && hasUserDataPermission(request, src.getOriginalResponse(), account, mappedConstraints);
 
@@ -177,6 +181,7 @@ public class JbossAuthorizationManager implements AuthorizationManager {
             helper = SecurityHelperFactory.getWebAuthorizationHelper(sc);
         } catch (Exception e) {
             UndertowLogger.ROOT_LOGGER.noAuthorizationHelper(e);
+            return false;
         }
 
         Subject callerSubject = sc.getUtil().getSubject();
@@ -185,8 +190,12 @@ public class JbossAuthorizationManager implements AuthorizationManager {
             callerSubject = new Subject();
         }
 
+        ArrayList<String> roles = new ArrayList<String>();
+        if(account != null) {
+            roles.addAll(account.getRoles());
+        }
         boolean ok = helper.hasUserDataPermission(map, request, response, PolicyContext.getContextID(), callerSubject,
-                new ArrayList<String>(account.getRoles()));
+                roles);
 
         //If the status of the response has already been changed (it is different from the default Response.SC_OK) we should not attempt to change it.
         if (!ok && response.getStatus() == HttpServletResponse.SC_OK) {
