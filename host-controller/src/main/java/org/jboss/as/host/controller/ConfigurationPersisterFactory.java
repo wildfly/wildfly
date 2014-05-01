@@ -31,18 +31,18 @@ import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.extension.ExtensionRegistry;
-import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
-import org.jboss.as.controller.persistence.ConfigurationPersister;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.host.controller.logging.HostControllerLogger;
-import org.jboss.as.host.controller.parsing.DomainXml;
-import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.controller.parsing.Namespace;
 import org.jboss.as.controller.persistence.BackupXmlConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationFile;
+import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
+import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
+import org.jboss.as.host.controller.parsing.DomainXml;
+import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.dmr.ModelNode;
 import org.jboss.modules.Module;
 import org.jboss.staxmapper.XMLElementReader;
@@ -58,8 +58,9 @@ public class ConfigurationPersisterFactory {
     static final String CACHED_DOMAIN_XML = "domain.cached-remote.xml";
 
     // host.xml
-    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final ConfigurationFile file, String defaultHostControllerName) {
-        HostXml hostXml = new HostXml(defaultHostControllerName);
+    public static ExtensibleConfigurationPersister createHostXmlConfigurationPersister(final ConfigurationFile file, final HostControllerEnvironment environment) {
+        HostXml hostXml = new HostXml(environment.getHostControllerName(), environment.getRunningModeControl().getRunningMode(),
+                environment.isUseCachedDc());
         BackupXmlConfigurationPersister persister =  new BackupXmlConfigurationPersister(file, new QName(Namespace.CURRENT.getUriString(), "host"), hostXml, hostXml);
         for (Namespace namespace : Namespace.domainValues()) {
             if (!namespace.equals(Namespace.CURRENT)) {

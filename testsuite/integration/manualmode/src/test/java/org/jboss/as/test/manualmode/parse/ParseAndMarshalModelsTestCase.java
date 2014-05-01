@@ -680,7 +680,7 @@ public class ParseAndMarshalModelsTestCase {
     //TODO use HostInitializer & TestModelControllerService
     private ModelNode loadHostModel(final File file) throws Exception {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "host");
-        final HostXml parser = new HostXml("host-controller");
+        final HostXml parser = new HostXml("host-controller", RunningMode.NORMAL, false);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         for (Namespace namespace : Namespace.domainValues()) {
             if (namespace != Namespace.CURRENT) {

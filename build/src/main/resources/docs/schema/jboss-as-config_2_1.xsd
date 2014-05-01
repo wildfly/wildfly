@@ -1964,14 +1964,18 @@
         <xs:attribute name="host" type="xs:string" use="optional" >
             <xs:annotation>
                 <xs:documentation>
-                    The remote domain controller's host name. If not set, a discovery option must be provided.
+                    The remote domain controller's host name. If not set, a discovery option must be provided,
+                    or the --cached-dc startup option must be used, or the --admin-only startup option must be used
+                    with the 'admin-only-policy' attribute set to a value other than 'fetch-from-master'.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
         <xs:attribute name="port" type="xs:integer" use="optional" >
             <xs:annotation>
                 <xs:documentation>
-                    The remote domain controller's port. If not set, a discovery option must be provided.
+                    The remote domain controller's port. If not set, a discovery option must be provided,
+                    or the --cached-dc startup option must be used, or the --admin-only startup option must be used
+                    with the 'admin-only-policy' attribute set to a value other than 'fetch-from-master'.
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
@@ -2023,9 +2027,9 @@
                 <xs:annotation>
                     <xs:documentation>
                         <![CDATA[
-                        Contact the master host controller to pull down the current domain wide configuration,
-                        but do not actually register with the master as a member of the domain. If the master
-                        cannot be reached, the start of the host controller will fail.
+                        Unless the --cached-dc startup option was used, contact the master host controller to pull down
+                        the current domain wide configuration, but do not actually register with the master as a member
+                        of the domain. If the master cannot be reached, the start of the host controller will fail.
                         ]]>
                     </xs:documentation>
                 </xs:annotation>

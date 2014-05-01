@@ -43,15 +43,15 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.NoSuchResourceException;
-import org.jboss.as.controller._private.OperationCancellationException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
-import org.jboss.as.controller._private.OperationFailedRuntimeException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.UnauthorizedException;
+import org.jboss.as.controller._private.OperationCancellationException;
+import org.jboss.as.controller._private.OperationFailedRuntimeException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.interfaces.InterfaceCriteria;
 import org.jboss.as.controller.parsing.Element;
@@ -3031,8 +3031,11 @@ public interface ControllerLogger extends BasicLogger {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 305, value = "%s must be declared or the %s and the %s need to be provided.")
-    XMLStreamException discoveryOptionsMustBeDeclared(String discoveryOptionsName, String hostName, String portName, @Param Location location);
+    @Message(id = 305, value = "Unless the Host Controller is started with command line option %s and the %s " +
+            "attribute is not set to %s, %s must be declared or the %s and the %s need to be provided.")
+    XMLStreamException discoveryOptionsMustBeDeclared(String adminOnlyCmd, String policyAttribute, String fetchValue,
+                                                      String discoveryOptionsName, String hostName, String portName,
+                                                      @Param Location location);
 
     @Message(id = 306, value = "read only context")
     IllegalStateException readOnlyContext();

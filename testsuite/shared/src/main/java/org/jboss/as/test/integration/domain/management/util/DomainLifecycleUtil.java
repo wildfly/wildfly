@@ -229,6 +229,9 @@ public class DomainLifecycleUtil {
             if (configuration.isBackupDC()) {
                 cmd.add("--backup");
             }
+            if (configuration.isCachedDC()) {
+                cmd.add("--cached-dc");
+            }
 
             String domainDirectory = configuration.getDomainDirectory();
             if (domainDirectory != null) {
@@ -237,10 +240,12 @@ public class DomainLifecycleUtil {
                 domainDirectory = domainPath;
             }
             if (configuration.getDomainConfigFile() != null) {
-                String name = copyConfigFile(new File(configuration.getDomainConfigFile()), new File(domainDirectory, "configuration"));
+                String prefix = configuration.isCachedDC() ? null : "testing-";
+                String name = copyConfigFile(new File(configuration.getDomainConfigFile()),
+                        new File(domainDirectory, "configuration"), prefix);
                 if (configuration.isReadOnlyDomain()) {
                     cmd.add("--read-only-domain-config=" + name);
-                } else {
+                } else if (!configuration.isCachedDC()) {
                     cmd.add("--domain-config=" + name);
                 }
             }
@@ -464,7 +469,7 @@ public class DomainLifecycleUtil {
 
         boolean serversAvailable = false;
         long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
-        while (!serversAvailable) {
+        while (!serversAvailable && getProcessExitCode() < 0) {
             long remaining = deadline - System.currentTimeMillis();
             if(remaining <= 0) {
                 break;
@@ -483,14 +488,12 @@ public class DomainLifecycleUtil {
 
         boolean hcAvailable = false;
         long deadline = start + configuration.getStartupTimeoutInSeconds() * 1000;
-        while (!hcAvailable) {
+        while (!hcAvailable && getProcessExitCode() < 0) {
             long remaining = deadline - System.currentTimeMillis();
             if(remaining <= 0) {
                 break;
             }
-            if (!hcAvailable) {
-                TimeUnit.MILLISECONDS.sleep(250);
-            }
+            TimeUnit.MILLISECONDS.sleep(250);
             hcAvailable = isHostControllerStarted();
         }
         if (!hcAvailable) {
