@@ -41,6 +41,7 @@ import org.jboss.msc.value.InjectedValue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Date;
 import java.util.HashMap;
@@ -160,7 +161,7 @@ public abstract class AbstractPersistentSessionManager implements SessionPersist
         return moduleLoaderInjectedValue;
     }
 
-    protected static final class SessionEntry {
+    protected static final class SessionEntry implements Serializable {
         private final Date expiry;
         private final Map<String, byte[]> data;
 
