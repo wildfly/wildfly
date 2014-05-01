@@ -2,7 +2,7 @@
 #
 # /etc/init.d/wildfly -- startup script for WildFly
 #
-# Written by Jorge Solorzano <jorsol@gmail.com>
+# Written by Jorge Solorzano
 #
 ### BEGIN INIT INFO
 # Provides:             wildfly
@@ -18,7 +18,7 @@
 
 NAME=wildfly
 DESC="WildFly Application Server"
-DEFAULT=/etc/default/$NAME
+DEFAULT="/etc/default/$NAME"
 
 # Check privileges
 if [ `id -u` -ne 0 ]; then
@@ -43,14 +43,14 @@ if [ -f "$DEFAULT" ]; then
 	. "$DEFAULT"
 fi
 
-# Location of jdk
+# Location of JDK
 if [ -n "$JAVA_HOME" ]; then
 	export JAVA_HOME
 fi
 
 # Setup the JVM
-if [ "x$JAVA" = "x" ]; then
-	if [ "x$JAVA_HOME" != "x" ]; then
+if [ -z "$JAVA" ]; then
+	if [ -n "$JAVA_HOME" ]; then
 		JAVA="$JAVA_HOME/bin/java"
 	else
 		JAVA="java"
@@ -59,17 +59,19 @@ fi
 
 # Location of wildfly
 if [ -z "$JBOSS_HOME" ]; then
-	JBOSS_HOME=/opt/wildfly
+	JBOSS_HOME="/opt/wildfly"
 fi
 export JBOSS_HOME
 
 # Check if wildfly is installed
 if [ ! -f "$JBOSS_HOME/jboss-modules.jar" ]; then
-	log_failure_msg "$NAME is not installed in $JBOSS_HOME"
+	log_failure_msg "$NAME is not installed in \"$JBOSS_HOME\""
 	exit 1
 fi
 
 # Run as wildfly user
+# Example of user creation for Debian based:
+# adduser --system --group --no-create-home --home $JBOSS_HOME --disabled-login wildfly
 if [ -z "$JBOSS_USER" ]; then
 	JBOSS_USER=wildfly
 fi
@@ -77,7 +79,13 @@ fi
 # Check wildfly user
 id $JBOSS_USER > /dev/null 2>&1
 if [ $? -ne 0 -o -z "$JBOSS_USER" ]; then
-	log_failure_msg "User $JBOSS_USER does not exist..."
+	log_failure_msg "User \"$JBOSS_USER\" does not exist..."
+	exit 1
+fi
+
+# Check owner of JBOSS_HOME
+if [ ! $(stat -L -c "%U" "$JBOSS_HOME") = $JBOSS_USER ]; then
+	log_failure_msg "The user \"$JBOSS_USER\" is not owner of \"$JBOSS_HOME\""
 	exit 1
 fi
 
@@ -88,12 +96,12 @@ fi
 
 # Startup mode script
 if [ "$JBOSS_MODE" = "standalone" ]; then
-	JBOSS_SCRIPT=$JBOSS_HOME/bin/standalone.sh
+	JBOSS_SCRIPT="$JBOSS_HOME/bin/standalone.sh"
 	if [ -z "$JBOSS_CONFIG" ]; then
 		JBOSS_CONFIG=standalone.xml
 	fi
 else
-	JBOSS_SCRIPT=$JBOSS_HOME/bin/domain.sh
+	JBOSS_SCRIPT="$JBOSS_HOME/bin/domain.sh"
 	if [ -z "$JBOSS_DOMAIN_CONFIG" ]; then
 		JBOSS_DOMAIN_CONFIG=domain.xml
 	fi
@@ -103,14 +111,14 @@ else
 fi
 
 # Check startup file
-if [ ! -x $JBOSS_SCRIPT ]; then
+if [ ! -x "$JBOSS_SCRIPT" ]; then
 	log_failure_msg "$JBOSS_SCRIPT is not an executable!"
 	exit 1
 fi
 
 # Check cli file
-JBOSS_CLI=$JBOSS_HOME/bin/jboss-cli.sh
-if [ ! -x $JBOSS_CLI ]; then
+JBOSS_CLI="$JBOSS_HOME/bin/jboss-cli.sh"
+if [ ! -x "$JBOSS_CLI" ]; then
 	log_failure_msg "$JBOSS_CLI is not an executable!"
 	exit 1
 fi
@@ -127,12 +135,12 @@ fi
 
 # Location to keep the console log
 if [ -z "$JBOSS_CONSOLE_LOG" ]; then
-	JBOSS_CONSOLE_LOG=/var/log/$NAME/console.log
+	JBOSS_CONSOLE_LOG="/var/log/$NAME/console.log"
 fi
 export JBOSS_CONSOLE_LOG
 
 # Location to set the pid file
-JBOSS_PIDFILE=/var/run/$NAME/$NAME.pid
+JBOSS_PIDFILE="/var/run/$NAME/$NAME.pid"
 export JBOSS_PIDFILE
 
 # Launch wildfly in background
@@ -141,7 +149,7 @@ export LAUNCH_JBOSS_IN_BACKGROUND
 
 # Helper function to check status of wildfly service
 check_status() {
-	pidofproc -p $JBOSS_PIDFILE $JAVA >/dev/null 2>&1
+	pidofproc -p "$JBOSS_PIDFILE" "$JAVA" >/dev/null 2>&1
 }
 
 case "$1" in
@@ -150,27 +158,27 @@ case "$1" in
 	check_status
 	status_start=$?
 	if [ $status_start -eq 3 ]; then
-		mkdir -p $(dirname $JBOSS_PIDFILE)
-		mkdir -p $(dirname $JBOSS_CONSOLE_LOG)
-		chown $JBOSS_USER $(dirname $JBOSS_PIDFILE) || true
-		cat /dev/null > $JBOSS_CONSOLE_LOG
+		mkdir -p $(dirname "$JBOSS_PIDFILE")
+		mkdir -p $(dirname "$JBOSS_CONSOLE_LOG")
+		chown $JBOSS_USER $(dirname "$JBOSS_PIDFILE") || true
+		cat /dev/null > "$JBOSS_CONSOLE_LOG"
 
 		if [ "$JBOSS_MODE" = "standalone" ]; then
 			start-stop-daemon --start --user "$JBOSS_USER" \
 			--chuid "$JBOSS_USER" --chdir "$JBOSS_HOME" --pidfile "$JBOSS_PIDFILE" \
-			--exec "$JBOSS_SCRIPT" -- -c $JBOSS_CONFIG >> $JBOSS_CONSOLE_LOG 2>&1 &
+			--exec "$JBOSS_SCRIPT" -- -c $JBOSS_CONFIG >> "$JBOSS_CONSOLE_LOG" 2>&1 &
 		else
 			start-stop-daemon --start --user "$JBOSS_USER" \
 			--chuid "$JBOSS_USER" --chdir "$JBOSS_HOME" --pidfile "$JBOSS_PIDFILE" \
 			--exec "$JBOSS_SCRIPT" -- --domain-config=$JBOSS_DOMAIN_CONFIG \
-			--host-config=$JBOSS_HOST_CONFIG >> $JBOSS_CONSOLE_LOG 2>&1 &
+			--host-config=$JBOSS_HOST_CONFIG >> "$JBOSS_CONSOLE_LOG" 2>&1 &
 		fi
 
 		count=0
 		launched=0
 		until [ $count -gt $STARTUP_WAIT ]
 		do
-			grep 'JBAS015874:' $JBOSS_CONSOLE_LOG > /dev/null
+			grep 'JBAS015874:' "$JBOSS_CONSOLE_LOG" > /dev/null
 			if [ $? -eq 0 ] ; then
 				launched=1
 				break
@@ -187,7 +195,7 @@ case "$1" in
 
 		if [ $launched -eq 0 ]; then
 			log_warning_msg "$DESC hasn't started within the timeout allowed"
-			log_warning_msg "please review file $JBOSS_CONSOLE_LOG to see the status of the service"
+			log_warning_msg "please review file \"$JBOSS_CONSOLE_LOG\" to see the status of the service"
 		fi
 	elif [ $status_start -eq 1 ]; then
 		log_failure_msg "$DESC is not running but the pid file exists"
@@ -200,7 +208,7 @@ case "$1" in
 	check_status
 	status_stop=$?
 	if [ $status_stop -eq 0 ]; then
-		read kpid < $JBOSS_PIDFILE
+		read kpid < "$JBOSS_PIDFILE"
 		log_daemon_msg "Stopping $DESC" "$NAME"
 
 		start-stop-daemon --start --chuid "$JBOSS_USER" \
