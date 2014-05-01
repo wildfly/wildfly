@@ -2148,6 +2148,7 @@ public class ManagementXml {
             }
         }
 
+        boolean filterFound = false;
         ModelNode address = ldapAddress.clone().add(GROUP_SEARCH);
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
             requireNamespace(reader, expectedNs);
@@ -2158,34 +2159,35 @@ public class ManagementXml {
             }
             switch (element) {
                 case GROUP_TO_PRINCIPAL:
-                    parseGroupToPrincipal(reader, expectedNs, address, childAdd, list);
+                    filterFound = true;
+                    parseGroupToPrincipal(reader, expectedNs, address, childAdd);
                     break;
                 case PRINCIPAL_TO_GROUP:
                     switch (expectedNs) {
                         case DOMAIN_1_5:
+                            filterFound = true;
                             parsePrincipalToGroup_1_5(reader, expectedNs, address, childAdd);
                             break;
                         default:
+                            filterFound = true;
                             parsePrincipalToGroup_1_6(reader, expectedNs, address, childAdd);
                             break;
-
                     }
                     break;
                 default: {
                     throw unexpectedElement(reader);
                 }
             }
-            childAdd = null; // Must have been used in the switch or an Exception would have been thrown.
         }
 
-        if (childAdd != null) {
+        if (filterFound == false) {
             throw missingOneOf(reader, EnumSet.of(Element.GROUP_TO_PRINCIPAL, Element.PRINCIPAL_TO_GROUP));
         }
         list.add(childAdd);
     }
 
     private static void parseGroupToPrincipal(final XMLExtendedStreamReader reader, final Namespace expectedNs, final ModelNode parentAddress,
-            final ModelNode addOp, final List<ModelNode> list) throws XMLStreamException {
+            final ModelNode addOp) throws XMLStreamException {
         boolean baseDnFound = false;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -2238,7 +2240,6 @@ public class ManagementXml {
         }
 
         addOp.get(OP_ADDR).set(parentAddress.clone().add(GROUP_TO_PRINCIPAL));
-        list.add(addOp);
     }
 
     private static void parseMembershipFilter(final XMLExtendedStreamReader reader,
