@@ -2635,8 +2635,11 @@ public interface ControllerMessages {
      *
      * @return a {@link XMLStreamException} for the error.
      */
-    @Message(id = 14898, value = "%s must be declared or the %s and the %s need to be provided.")
-    XMLStreamException discoveryOptionsMustBeDeclared(String discoveryOptionsName, String hostName, String portName, @Param Location location);
+    @Message(id = 14898, value = "Unless the Host Controller is started with command line option %s and the %s " +
+            "attribute is not set to %s, %s must be declared or the %s and the %s need to be provided.")
+    XMLStreamException discoveryOptionsMustBeDeclared(String adminOnlyCmd, String policyAttribute, String fetchValue,
+                                                      String discoveryOptionsName, String hostName, String portName,
+                                                      @Param Location location);
 
     @Message(id = 14899, value = "read only context")
     IllegalStateException readOnlyContext();

@@ -349,8 +349,6 @@ class RemoteDomainConnection extends FutureManagementChannel {
       */
      private abstract class HostControllerConnectRequest extends AbstractManagementRequest<Void, Void> {
 
-         abstract boolean isRegisterOnComplete();
-
          @Override
          protected void sendRequest(final ActiveOperation.ResultHandler<Void> resultHandler, final ManagementRequestContext<Void> context, final FlushableDataOutput output) throws IOException {
              output.write(DomainControllerProtocol.PARAM_HOST_ID);
@@ -382,7 +380,7 @@ class RemoteDomainConnection extends FutureManagementChannel {
                      //
                      final ModelNode subsystems = resolveSubsystemVersions(extensions);
                      channelHandler.executeRequest(context.getOperationId(),
-                             new RegisterSubsystemsRequest(subsystems, isRegisterOnComplete()));
+                             new RegisterSubsystemsRequest(subsystems));
                  }
              });
          }
@@ -397,11 +395,6 @@ class RemoteDomainConnection extends FutureManagementChannel {
         public byte getOperationType() {
             return DomainControllerProtocol.REGISTER_HOST_CONTROLLER_REQUEST;
         }
-
-        @Override
-        boolean isRegisterOnComplete() {
-            return true;
-        }
     }
 
     /**
@@ -413,21 +406,14 @@ class RemoteDomainConnection extends FutureManagementChannel {
         public byte getOperationType() {
             return DomainControllerProtocol.FETCH_DOMAIN_CONFIGURATION_REQUEST;
         }
-
-        @Override
-        boolean isRegisterOnComplete() {
-            return false;
-        }
     }
 
      private class RegisterSubsystemsRequest extends AbstractManagementRequest<Void, Void> {
 
          private final ModelNode subsystems;
-         private final boolean registerOnCompletion;
 
-         private RegisterSubsystemsRequest(ModelNode subsystems, boolean registerOnCompletion) {
+         private RegisterSubsystemsRequest(ModelNode subsystems) {
              this.subsystems = subsystems;
-             this.registerOnCompletion = registerOnCompletion;
          }
 
          @Override
@@ -457,22 +443,12 @@ class RemoteDomainConnection extends FutureManagementChannel {
                  @Override
                  public void execute(ManagementRequestContext<Void> voidManagementRequestContext) throws Exception {
                      // Apply the domain model
-                     final boolean success = applyDomainModel(domainModel);
-                     if (registerOnCompletion) {
-                         if(success) {
-                             channelHandler.executeRequest(context.getOperationId(), new CompleteRegistrationRequest(DomainControllerProtocol.PARAM_OK));
-                         } else {
-                             channelHandler.executeRequest(context.getOperationId(), new CompleteRegistrationRequest(DomainControllerProtocol.PARAM_ERROR));
-                             resultHandler.failed(new SlaveRegistrationException(SlaveRegistrationException.ErrorCode.UNKNOWN, ""));
-                         }
+                     if (applyDomainModel(domainModel)) {
+                         channelHandler.executeRequest(context.getOperationId(), new CompleteRegistrationRequest(DomainControllerProtocol.PARAM_OK));
                      } else {
-                         if (success) {
-                             throw new UnsupportedOperationException("TODO");
-                         } else {
-                             resultHandler.failed(new SlaveRegistrationException(SlaveRegistrationException.ErrorCode.UNKNOWN, ""));
-                         }
+                         channelHandler.executeRequest(context.getOperationId(), new CompleteRegistrationRequest(DomainControllerProtocol.PARAM_ERROR));
+                         resultHandler.failed(new SlaveRegistrationException(SlaveRegistrationException.ErrorCode.UNKNOWN, ""));
                      }
-
                  }
              });
          }

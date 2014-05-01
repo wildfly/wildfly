@@ -115,13 +115,24 @@ public class DomainTestSupport {
 
     public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName,
                                                                     boolean readOnlyHost) {
-        return getSlaveConfiguration(hostConfigPath, testName, new JBossAsManagedConfiguration(), readOnlyHost);
+        return getSlaveConfiguration("slave", hostConfigPath, testName, new JBossAsManagedConfiguration(), readOnlyHost);
+    }
+
+    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostName, String hostConfigPath, String testName,
+                                                                    boolean readOnlyHost) {
+        return getSlaveConfiguration(hostName, hostConfigPath, testName, new JBossAsManagedConfiguration(), readOnlyHost);
     }
 
     public static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName,
                                                                     JBossAsManagedConfiguration baseConfig,
                                                                     boolean readOnlyHost) {
-        return Configuration.getSlaveConfiguration(hostConfigPath, testName, baseConfig, readOnlyHost);
+        return getSlaveConfiguration("slave", hostConfigPath, testName, baseConfig, readOnlyHost);
+    }
+
+    public static JBossAsManagedConfiguration getSlaveConfiguration(String hostName, String hostConfigPath, String testName,
+                                                                    JBossAsManagedConfiguration baseConfig,
+                                                                    boolean readOnlyHost) {
+        return Configuration.getSlaveConfiguration(hostConfigPath, testName, hostName, baseConfig, readOnlyHost);
     }
 
     private static URI toURI(URL url) {
@@ -335,6 +346,8 @@ public class DomainTestSupport {
         return domainSlaveLifecycleUtil;
     }
 
+    public DomainControllerClientConfig getSharedClientConfiguration() { return sharedClientConfig; }
+
     public void start() {
         domainMasterLifecycleUtil.start();
         if (domainSlaveLifecycleUtil != null) {
@@ -412,7 +425,7 @@ public class DomainTestSupport {
                                            boolean readOnlySlaveHost) {
 
             JBossAsManagedConfiguration masterConfiguration = getMasterConfiguration(domainConfig, masterConfig, testName, null, readOnlyMasterDomain, readOnlyMasterHost);
-            JBossAsManagedConfiguration slaveConfiguration = slaveConfig == null ? null : getSlaveConfiguration(slaveConfig, testName, null, readOnlySlaveHost);
+            JBossAsManagedConfiguration slaveConfiguration = slaveConfig == null ? null : getSlaveConfiguration(slaveConfig, testName, "slave", null, readOnlySlaveHost);
             return new Configuration(testName, masterConfiguration, slaveConfiguration);
         }
 
@@ -446,9 +459,8 @@ public class DomainTestSupport {
         }
 
         private static JBossAsManagedConfiguration getSlaveConfiguration(String hostConfigPath, String testName,
-                                                                        JBossAsManagedConfiguration baseConfig,
-                                                                        boolean readOnlyHost) {
-            final String hostName = "slave";
+                                                                         String hostName, JBossAsManagedConfiguration baseConfig,
+                                                                         boolean readOnlyHost) {
             File domains = getBaseDir(testName);
             File extraModules = getAddedModulesDir(testName);
             File overrideModules = getHostOverrideModulesDir(testName, hostName);

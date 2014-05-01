@@ -506,5 +506,12 @@ public interface HostControllerLogger extends BasicLogger {
     @Message(id=16584, value = "Trying to reconnect to master host controller.")
     void reconnectingToMaster();
 
+    @LogMessage(level = Level.ERROR)
+    @Message(id = 16585, value = "No domain controller discovery configuration was provided and the '%s' attribute was " +
+            "set to '%s'. Startup will be aborted. Use the %s command line argument to start in %s mode if you need to " +
+            "start without a domain controller connection and then use the management tools to configure one.")
+    void noDomainControllerConfigurationProvidedForAdminOnly(String policyAttribute, AdminOnlyDomainConfigPolicy policy,
+                                                             String cachedDcCmdLineArg, RunningMode desiredRunningMode);
+
     // END WITH 16599
 }

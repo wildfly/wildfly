@@ -64,7 +64,6 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.ResourceBuilder;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
@@ -81,7 +80,6 @@ import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.common.XmlMarshallingHandler;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers;
 import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
 import org.jboss.as.controller.persistence.NullConfigurationPersister;
 import org.jboss.as.controller.persistence.XmlConfigurationPersister;
 import org.jboss.as.controller.registry.AttributeAccess;
@@ -90,14 +88,9 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.resource.InterfaceDefinition;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.controller.services.path.PathResourceDefinition;
-import org.jboss.as.controller.transform.Transformers;
-import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.controller.resources.DomainRootDefinition;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.EnvironmentNameReader;
-import org.jboss.as.host.controller.ignored.IgnoredDomainResourceRegistry;
 import org.jboss.as.host.controller.model.jvm.JvmResourceDefinition;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceAddHandler;
 import org.jboss.as.host.controller.operations.HostSpecifiedInterfaceRemoveHandler;
@@ -110,11 +103,9 @@ import org.jboss.as.host.controller.parsing.HostXml;
 import org.jboss.as.host.controller.resources.HttpManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.NativeManagementResourceDefinition;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
-import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.repository.HostFileRepository;
 import org.jboss.as.security.vault.RuntimeVaultReader;
-import org.jboss.as.server.RuntimeExpressionResolver;
 import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
 import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition.Location;
@@ -797,7 +788,7 @@ public class ParseAndMarshalModelsTestCase {
     //TODO use HostInitializer & TestModelControllerService
     private ModelNode loadHostModel(final File file) throws Exception {
         final QName rootElement = new QName(Namespace.CURRENT.getUriString(), "host");
-        final HostXml parser = new HostXml("host-controller");
+        final HostXml parser = new HostXml("host-controller", RunningMode.NORMAL, false);
         final XmlConfigurationPersister persister = new XmlConfigurationPersister(file, rootElement, parser, parser);
         for (Namespace namespace : Namespace.domainValues()) {
             if (namespace != Namespace.CURRENT) {
@@ -1154,82 +1145,6 @@ public class ParseAndMarshalModelsTestCase {
 
         @Override
         public void deleteDeployment(byte[] deploymentHash) {
-        }
-    }
-
-    private static class MockDomainController implements DomainController {
-
-        @Override
-        public RunningMode getCurrentRunningMode() {
-            return RunningMode.ADMIN_ONLY;
-        }
-
-        public LocalHostControllerInfo getLocalHostInfo() {
-            return null;
-        }
-
-        public void registerRemoteHost(final String hostName, final ManagementChannelHandler handler, final Transformers transformers, Long remoteConnectionId) throws SlaveRegistrationException {
-        }
-
-        public boolean isHostRegistered(String id) {
-            return false;
-        }
-
-        public void unregisterRemoteHost(String id, Long remoteConnectionId) {
-        }
-
-        @Override
-        public void pingRemoteHost(String hostName) {
-        }
-
-        public void registerRunningServer(ProxyController serverControllerClient) {
-        }
-
-        public void unregisterRunningServer(String serverName) {
-        }
-
-        public ModelNode getProfileOperations(String profileName) {
-            return null;
-        }
-
-        public HostFileRepository getLocalFileRepository() {
-            return null;
-        }
-
-        public HostFileRepository getRemoteFileRepository() {
-            return null;
-        }
-
-        public void stopLocalHost() {
-        }
-
-        @Override
-        public void stopLocalHost(int exitCode) {
-            //
-        }
-
-        @Override
-        public ExtensionRegistry getExtensionRegistry() {
-            return null;
-        }
-
-        @Override
-        public ExpressionResolver getExpressionResolver() {
-            return new RuntimeExpressionResolver(new MockVaultReader());
-        }
-
-        @Override
-        public void initializeMasterDomainRegistry(ManagementResourceRegistration root,
-                                                   ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
-                                                   HostFileRepository fileRepository, ExtensionRegistry extensionRegistry, PathManagerService pathManager) {
-        }
-
-        @Override
-        public void initializeSlaveDomainRegistry(ManagementResourceRegistration root,
-                                                  ExtensibleConfigurationPersister configurationPersister, ContentRepository contentRepository,
-                                                  HostFileRepository fileRepository, LocalHostControllerInfo hostControllerInfo,
-                                                  ExtensionRegistry extensionRegistry, IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
-                                                  PathManagerService pathManager) {
         }
     }
 

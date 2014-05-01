@@ -107,6 +107,8 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     private boolean backupDC;
 
+    private boolean cachedDC;
+
     public JBossAsManagedConfiguration(String jbossHome) {
         if (jbossHome != null) {
             this.jbossHome = jbossHome;
@@ -290,6 +292,11 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
         this.hostCommandLineProperties = hostCommandLineProperties;
     }
 
+    public void addHostCommandLineProperty(String hostCommandLineProperty) {
+        this.hostCommandLineProperties = this.hostCommandLineProperties == null
+                ? hostCommandLineProperty : this.hostCommandLineProperties + " " + hostCommandLineProperty;
+    }
+
     public String getHostName() {
         return hostName;
     }
@@ -344,5 +351,13 @@ public class JBossAsManagedConfiguration extends CommonContainerConfiguration {
 
     public void setBackupDC(boolean backupDC) {
         this.backupDC = backupDC;
+    }
+
+    public boolean isCachedDC() {
+        return cachedDC;
+    }
+
+    public void setCachedDC(boolean cachedDC) {
+        this.cachedDC = cachedDC;
     }
 }

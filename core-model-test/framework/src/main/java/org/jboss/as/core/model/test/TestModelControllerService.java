@@ -318,7 +318,7 @@ class TestModelControllerService extends ModelTestModelControllerService {
 
             @Override
             public void registerRemoteHost(String hostName, ManagementChannelHandler handler, Transformers transformers,
-                    Long remoteConnectionId) throws SlaveRegistrationException {
+                    Long remoteConnectionId, boolean registerProxyController) throws SlaveRegistrationException {
             }
 
             @Override
@@ -575,8 +575,8 @@ class TestModelControllerService extends ModelTestModelControllerService {
         }
 
         @Override
-        public void registerRemoteHost(final String hostName, final ManagementChannelHandler handler,
-                                            final Transformers transformers, Long remoteConnectionId) throws SlaveRegistrationException{
+        public void registerRemoteHost(String hostName, ManagementChannelHandler handler, Transformers transformers,
+                Long remoteConnectionId, boolean registerProxyController) throws SlaveRegistrationException {
         }
 
         @Override

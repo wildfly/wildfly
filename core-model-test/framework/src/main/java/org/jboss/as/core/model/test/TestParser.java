@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.parsing.Namespace;
@@ -71,7 +72,7 @@ public class TestParser implements ModelTestParser {
             testParser = new TestParser(type, domainXml, domainXml);
             root = "domain";
         } else if (type == TestModelType.HOST) {
-            HostXml hostXml = new HostXml("master");
+            HostXml hostXml = new HostXml("master", RunningMode.NORMAL, false);
             testParser = new TestParser(type, hostXml, hostXml);
             root = "host";
         } else {

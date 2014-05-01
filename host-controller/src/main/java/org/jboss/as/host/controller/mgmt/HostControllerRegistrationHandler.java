@@ -193,6 +193,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             context.executeAsync(new ManagementRequestContext.AsyncTask<RegistrationContext>() {
                 @Override
                 public void execute(ManagementRequestContext<RegistrationContext> context) throws Exception {
+                    if (Thread.currentThread().isInterrupted()) throw new IllegalStateException("interrupted");
                     registration.processRegistration();
                 }
             }, registrations);
@@ -296,7 +297,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
     private class RegistrationContext implements ModelController.OperationTransactionControl, ActiveOperation.CompletedCallback<Void> {
 
         private final TransformerRegistry transformerRegistry;
-        private final boolean registerOnCompletion;
+        private final boolean registerProxyController;
         private volatile String hostName;
         private volatile HostInfo hostInfo;
         private ManagementRequestContext<RegistrationContext> responseChannel;
@@ -308,9 +309,9 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         private final AtomicBoolean completed = new AtomicBoolean();
 
         private RegistrationContext(TransformerRegistry transformerRegistry,
-                                    boolean registerOnCompletion) {
+                                    boolean registerProxyController) {
             this.transformerRegistry = transformerRegistry;
-            this.registerOnCompletion = registerOnCompletion;
+            this.registerProxyController = registerProxyController;
         }
 
         private synchronized void initialize(final String hostName, final ModelNode hostInfo, final ManagementRequestContext<RegistrationContext> responseChannel) {
@@ -340,12 +341,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                 transaction.rollback();
             } else {
                 try {
-                    if (registerOnCompletion) {
-                        registerHost(transaction, result);
-                    } else {
-                        // Host just wanted the model; didn't register
-                        sendResultToHost(transaction, result);
-                    }
+                    registerHost(transaction, result);
                 } catch (SlaveRegistrationException e) {
                     failed(e.getErrorCode(), e.getErrorMessage());
                 } catch (Exception e) {
@@ -457,7 +453,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             synchronized (this) {
                 Long pingPongId = hostInfo.getRemoteConnectionId();
                 // Register the slave
-                domainController.registerRemoteHost(hostName, handler, transformers, pingPongId);
+                domainController.registerRemoteHost(hostName, handler, transformers, pingPongId, registerProxyController);
                 // Complete registration
                 if(! failed) {
                     transaction.commit();
@@ -466,7 +462,9 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     return;
                 }
             }
-            DOMAIN_LOGGER.registeredRemoteSlaveHost(hostName, hostInfo.getPrettyProductName());
+            if (registerProxyController) {
+                DOMAIN_LOGGER.registeredRemoteSlaveHost(hostName, hostInfo.getPrettyProductName());
+            }
         }
 
         private boolean sendResultToHost(ModelController.OperationTransaction transaction, final ModelNode result) {
@@ -565,6 +563,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             try {
                 return task.get();
             } catch (InterruptedException e) {
+                e.printStackTrace(System.out);
                 failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
                 throw new IllegalStateException(e);
             } catch (ExecutionException e) {
