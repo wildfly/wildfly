@@ -29,13 +29,12 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.security.cert.CertificateException;
-
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
-
 import org.apache.commons.io.IOUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jboss.logging.Logger;
 import org.productivity.java.syslog4j.SyslogRuntimeException;
 import org.productivity.java.syslog4j.server.impl.net.tcp.ssl.SSLTCPNetSyslogServerConfigIF;
@@ -51,6 +50,8 @@ public class TLSSyslogServer extends TCPSyslogServer {
 
     private SSLContext sslContext;
 
+    private boolean addBouncyCastleOnShutdown = false;
+
     /**
      * Creates custom sslContext from keystore and truststore configured in
      * 
@@ -60,8 +61,10 @@ public class TLSSyslogServer extends TCPSyslogServer {
     public void initialize() throws SyslogRuntimeException {
         super.initialize();
 
-        // remove BouncyCastle provider if installed
-        Security.removeProvider("BC");
+        if(isBouncyCastleInstalled()) {
+            removeBouncyCastle();
+            addBouncyCastleOnShutdown = true;
+        }
 
         final SSLTCPNetSyslogServerConfigIF config = (SSLTCPNetSyslogServerConfigIF) this.tcpNetSyslogServerConfig;
 
@@ -120,4 +123,48 @@ public class TLSSyslogServer extends TCPSyslogServer {
         return keystore;
     }
 
+    /**
+     * Performs shutdown and adds Bouncy Castle if it was added before starting the server.
+     *
+     * @see org.productivity.java.syslog4j.server.impl.net.tcp.TCPNetSyslogServer#shutdown()
+     */
+    @Override
+    public synchronized void shutdown() {
+        super.shutdown();
+        if(addBouncyCastleOnShutdown) {
+            addBouncyCastle();
+            addBouncyCastleOnShutdown = false;
+        }
+    }
+
+    /**
+     * Removes Bouncy Castle from Security Manager.
+     */
+    public void removeBouncyCastle() {
+        try {
+            Security.removeProvider(BouncyCastleProvider.PROVIDER_NAME);
+        } catch (SecurityException ex) {
+            LOGGER.warn("Cannot deregister BouncyCastleProvider", ex);
+        }
+    }
+
+    /**
+     * Adds Bouncy Castle to Security Manager.
+     */
+    private void addBouncyCastle() {
+        try {
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+                Security.addProvider(new BouncyCastleProvider());
+            }
+        } catch (SecurityException ex) {
+            LOGGER.warn("Cannot register BouncyCastleProvider", ex);
+        }
+    }
+
+    /**
+     * Returns <code>true</code> if Bouncy Castle has been added to the Security Manager.
+     */
+    private boolean isBouncyCastleInstalled() {
+        return Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null;
+    }
 }
