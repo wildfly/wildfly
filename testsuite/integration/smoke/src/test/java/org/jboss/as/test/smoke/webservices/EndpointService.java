@@ -37,7 +37,7 @@ import javax.xml.ws.WebServiceFeature;
  * @author <a href="mailto:flavia.rainone@jboss.com">Flavia Rainone</a>
  */
 @WebServiceClient(name = "EndpointService",
-                  wsdlLocation = "http://localhost:8080/ws-example?wsdl",
+                  wsdlLocation = "META-INF/wsdl/EndpointService.wsdl",//"http://localhost:8080/ws-example?wsdl",
                   targetNamespace = "http://webservices.smoke.test.as.jboss.org/")
 public class EndpointService extends Service {
 
