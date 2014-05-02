@@ -50,12 +50,15 @@ public class WildCardReadsTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void setup() throws Exception {
+
+        CLITestSuite.createSupport(WildCardReadsTestCase.class.getSimpleName());
         AbstractCliTestBase.initCLI(DomainTestSupport.masterAddress);
     }
 
     @AfterClass
     public static void cleanup() throws Exception {
         AbstractCliTestBase.closeCLI();
+        CLITestSuite.stopSupport();
     }
 
     /**
