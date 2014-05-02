@@ -61,7 +61,6 @@ import org.junit.runners.Suite;
 })
 public class CLITestSuite {
 
-    private static DomainTestSupport domainSupport;
     public static final Map<String, String[]> hostServers = new HashMap<String, String[]>();
     public static final Map<String, String> hostAddresses = new HashMap<String, String>();
     public static final Map<String, String[]> serverGroups = new HashMap<String, String[]>();
@@ -69,22 +68,56 @@ public class CLITestSuite {
     public static final Map<String, String[]> serverProfiles = new HashMap<String, String[]>();
     public static final Map<String, Boolean> serverStatus = new HashMap<String, Boolean>();
 
+    private static boolean initializedLocally = false;
+    private static volatile DomainTestSupport support;
+
+    // This can only be called from tests as part of this suite
+    public static synchronized DomainTestSupport createSupport(final String testName) {
+        if(support == null) {
+            start(testName);
+        }
+        return support;
+    }
+
+    // This can only be called from tests as part of this suite
+    public static synchronized void stopSupport() {
+        if(! initializedLocally) {
+            stop();
+        }
+    }
+
+    private synchronized static void start(final String name) {
+        try {
+            DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(CLITestSuite.class.getSimpleName(),
+                    "domain-configs"+ File.separatorChar+"domain-standard.xml", "host-configs"+File.separatorChar+"host-master.xml",
+                    "host-configs"+ File.separatorChar+"host-slave.xml");
+            String mgmtUserProperties = JBossAsManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
+            configuration.getMasterConfiguration().setMgmtUsersFile(mgmtUserProperties);
+            configuration.getSlaveConfiguration().setMgmtUsersFile(mgmtUserProperties);
+            support = DomainTestSupport.create(configuration);
+            support.start();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private synchronized static void stop() {
+        if(support != null) {
+            support.stop();
+            support = null;
+        }
+    }
+
     @BeforeClass
     public static void initSuite() throws Exception {
-        DomainTestSupport.Configuration configuration = DomainTestSupport.Configuration.create(CLITestSuite.class.getSimpleName(),
-                "domain-configs"+ File.separatorChar+"domain-standard.xml", "host-configs"+File.separatorChar+"host-master.xml",
-                "host-configs"+File.separatorChar+"host-slave.xml");
-        String mgmtUserProperties = JBossAsManagedConfiguration.loadConfigFileFromContextClassLoader("mgmt-users/mgmt-users.properties");
-        configuration.getMasterConfiguration().setMgmtUsersFile(mgmtUserProperties);
-        configuration.getSlaveConfiguration().setMgmtUsersFile(mgmtUserProperties);
-        domainSupport = DomainTestSupport.create(configuration);
-        domainSupport.start();
+        initializedLocally = true;
+        start(CLITestSuite.class.getSimpleName());
 
         hostServers.put("master", new String[]{"main-one", "main-two", "other-one"});
         hostServers.put("slave", new String[]{"main-three", "main-four", "other-two"});
 
-        hostAddresses.put("master", domainSupport.masterAddress);
-        hostAddresses.put("slave", domainSupport.slaveAddress);
+        hostAddresses.put("master", DomainTestSupport.masterAddress);
+        hostAddresses.put("slave", DomainTestSupport.slaveAddress);
 
         serverGroups.put("main-server-group", new String[]{"main-one", "main-two", "main-three", "main-four"});
         serverGroups.put("other-server-group", new String[]{"other-one", "other-two"});
@@ -110,7 +143,7 @@ public class CLITestSuite {
 
     @AfterClass
     public static void tearDownSuite() {
-        domainSupport.stop();
+        stop();
     }
 
     public static void addServer(String serverName, String hostName, String groupName, String profileName, int portOffset, boolean status) {
