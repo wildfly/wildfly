@@ -50,11 +50,13 @@
                 <path name="com/sun/jndi/url/iiopname"/>
                 <path name="com/sun/jndi/url/ldap"/>
                 <path name="com/sun/jndi/url/ldaps"/>
+                <path name="com/sun/media/sound"/>
                 <path name="com/sun/crypto/provider"/>
                 <path name="com/sun/org/apache/xml/internal/security/transforms/implementations"/>
                 <path name="com/sun/security/auth"/>
                 <path name="com/sun/security/auth/login"/>
                 <path name="com/sun/security/auth/module"/>
+                <path name="com/sun/tools/internal/xjc"/>                
                 <path name="sun/awt"/>
                 <path name="sun/awt/color"/>
                 <path name="sun/awt/datatransfer"/>
@@ -70,6 +72,7 @@
                 <path name="sun/awt/util"/>
                 <path name="sun/awt/windows"/>
                 <path name="sun/awt/X11"/>
+                <path name="sun/dc"/>
                 <path name="sun/print"/>
                 <path name="sun/print/resources"/>
                 <path name="sun/security/action"/>
