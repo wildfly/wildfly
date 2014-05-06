@@ -491,7 +491,15 @@ public class ClusteredSingleSignOn extends org.apache.catalina.authenticator.Sin
                 reverse.remove(session);
             }
             // Invalidate this session
-            session.expire();
+            ClassLoader oldContextClassLoader = null;
+            try {
+                oldContextClassLoader = bindThread(session);
+                session.expire();
+            } finally {
+                if (oldContextClassLoader != null) {
+                    unbindThread(session, oldContextClassLoader);
+                }
+            }
         }
 
         if (ssoClusterManager != null) {
