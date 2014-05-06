@@ -42,6 +42,7 @@ import static org.jboss.as.messaging.CommonAttributes.HORNETQ_SERVER;
 import static org.jboss.as.messaging.CommonAttributes.ID_CACHE_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.MAX_SAVED_REPLICATED_JOURNAL_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.MESSAGE_COUNTER_ENABLED;
+import static org.jboss.as.messaging.CommonAttributes.OVERRIDE_IN_VM_SECURITY;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_INCOMING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REMOTING_OUTGOING_INTERCEPTORS;
 import static org.jboss.as.messaging.CommonAttributes.REPLICATION_CLUSTERNAME;
@@ -53,6 +54,8 @@ import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_2_1;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_3_0;
 import static org.jboss.as.messaging.MessagingExtension.VERSION_1_4_0;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_2_0_0;
+import static org.jboss.as.messaging.MessagingExtension.VERSION_2_1_0;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common.COMPRESS_LARGE_MESSAGES;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import static org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled.INITIAL_CONNECT_ATTEMPTS;
@@ -94,6 +97,8 @@ public class MessagingTransformers {
         registerTransformers_1_2_1(subsystem);
         registerTransformers_1_3_0(subsystem);
         registerTransformers_1_4_0(subsystem);
+        registerTransformers_2_0_0(subsystem);
+        registerTransformers_2_1_0(subsystem);
     }
 
     private static void registerTransformers_1_1_0(final SubsystemRegistration subsystem) {
@@ -106,7 +111,7 @@ public class MessagingTransformers {
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
         rejectAttributesWithExpression(hornetqServer, HornetQServerResourceDefinition.ATTRIBUTES_WITH_EXPRESSION_ALLOWED_IN_1_2_0);
         rejectDefinedAttribute(hornetqServer, BACKUP_GROUP_NAME, REPLICATION_CLUSTERNAME, REMOTING_INCOMING_INTERCEPTORS, REMOTING_OUTGOING_INTERCEPTORS);
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, CHECK_FOR_LIVE_SERVER, MAX_SAVED_REPLICATED_JOURNAL_SIZE);
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, CHECK_FOR_LIVE_SERVER, MAX_SAVED_REPLICATED_JOURNAL_SIZE, OVERRIDE_IN_VM_SECURITY);
         convertUndefinedAttribute(hornetqServer, ID_CACHE_SIZE);
         renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
 
@@ -243,7 +248,7 @@ public class MessagingTransformers {
 
                 }, CommonAttributes.CLUSTERED)
                 .end();
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE);
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE, OVERRIDE_IN_VM_SECURITY);
         renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
 
         hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
@@ -281,7 +286,7 @@ public class MessagingTransformers {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
-        rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE);
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, MAX_SAVED_REPLICATED_JOURNAL_SIZE, OVERRIDE_IN_VM_SECURITY);
         renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
 
         hornetqServer.rejectChildResource(HTTPAcceptorDefinition.PATH);
@@ -309,6 +314,7 @@ public class MessagingTransformers {
         final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
 
         ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, OVERRIDE_IN_VM_SECURITY);
 
         ResourceTransformationDescriptionBuilder bridge = hornetqServer.addChildResource(BridgeDefinition.PATH);
         rejectDefinedAttributeWithDefaultValue(bridge, RECONNECT_ATTEMPTS_ON_SAME_NODE, BridgeDefinition.INITIAL_CONNECT_ATTEMPTS);
@@ -321,6 +327,22 @@ public class MessagingTransformers {
         rejectDefinedAttributeWithDefaultValue(addressSetting, EXPIRY_DELAY);
     }
 
+    private static void registerTransformers_2_0_0(final SubsystemRegistration subsystem) {
+        TransformationDescription.Tools.register(get2_xDescription(), subsystem, VERSION_2_0_0);
+    }
+
+    private static void registerTransformers_2_1_0(final SubsystemRegistration subsystem) {
+        TransformationDescription.Tools.register(get2_xDescription(), subsystem, VERSION_2_1_0);
+    }
+
+    private static TransformationDescription get2_xDescription() {
+        final ResourceTransformationDescriptionBuilder subsystemRoot = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+
+        ResourceTransformationDescriptionBuilder hornetqServer = subsystemRoot.addChildResource(pathElement(HORNETQ_SERVER));
+        rejectDefinedAttributeWithDefaultValue(hornetqServer, OVERRIDE_IN_VM_SECURITY);
+
+        return subsystemRoot.build();
+    }
 
     /**
      * Reject the attributes if they are defined or discard them if they are undefined.

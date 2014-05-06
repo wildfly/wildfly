@@ -60,7 +60,7 @@ public class Messaging20SubsystemParser extends Messaging14SubsystemParser {
         return INSTANCE;
     }
 
-    private Messaging20SubsystemParser() {
+    protected Messaging20SubsystemParser() {
     }
 
     @Override
