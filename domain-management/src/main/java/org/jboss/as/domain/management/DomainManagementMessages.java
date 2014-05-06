@@ -855,6 +855,67 @@ public interface DomainManagementMessages {
     @Message(id = 15298, value = "The password must be different from the username")
     PasswordValidationException passwordUsernameMatchError();
 
+    // 15299 is reserved for future backport of WFLY-2614 whereby this id was introduced in WF 8. In WF 9 it appears as id=83
+//    /**
+//     * Create an exception indicating that there are no keys in the keystore.
+//     *
+//     * @return a {@link StartException} for the error.
+//     */
+//    @Message(id = 15299, value = "The KeyStore %s does not contain any keys.")
+//    StartException noKey(String path);
+
+    // 21000 is reserved for future backport of WFLY-2614 whereby this id was introduced in WF 8. In WF 9 it appears as id=84
+//    /**
+//     * Create an exception indicating that the alias specified is not a key.
+//     *
+//     * @return a {@link StartException} for the error.
+//     */
+//    @Message(id = 21000, value = "The alias specified '%s' is not a Key, valid aliases are %s")
+//    StartException aliasNotKey(String alias, String validList);
+
+    // 21001 is reserved for future backport of WFLY-2614 whereby this id was introduced in WF 8. In WF 9 it appears as id=85
+//    /**
+//     * Create an exception indicating that the alias specified was not found.
+//     *
+//     * @return a {@link StartException} for the error.
+//     */
+//    @Message(id = 21001, value = "The alias specified '%s' does not exist in the KeyStore, valid aliases are %s")
+//    StartException aliasNotFound(String alias, String validList);
+
+    // 21002 is reserved for future backport of WFLY-2614 whereby this id was introduced in WF 8. In WF 9 it appears as id=86
+//    /**
+//     * Create an exception indicating that the keystore was not found.
+//     *
+//     * @return a {@link StartException} for the error.
+//     */
+//    @Message(id = 21002, value = "The KeyStore can not be found at %s")
+//    StartException keyStoreNotFound(String path);
+
+    // 21003 is reserved for future backport of WFLY-1523 whereby this id was introduced in WF 8. In WF 9 it appears as id=87
+//    /**
+//     * Error message if more than one cache is defined.
+//     *
+//     * @param realmName the name of the security realm
+//     *
+//     * @return an {@link OperationFailedException} for the error.
+//     */
+//    @Message(id = 21003, value = "Configuration for security realm '%s' includes multiple cache definitions at the same position in the hierarchy. Only one is allowed")
+//    OperationFailedException multipleCacheConfigurationsDefined(String realmName);
+
+    // 21004 is reserved for future backport of WFLY-1848 whereby this id was introduced in WF 8. In WF 9 it appears as id=88
+//    /**
+//     * Creates an exception indicating that is was not possible to load a username for the supplied username.
+//     *
+//     * @param name the supplied username.
+//     *
+//     * @return a {@link NamingException} for the error.
+//     */
+//    @Message(id = 88, value = "Unable to load username for supplied username '%s'")
+//    NamingException usernameNotLoaded(String name);
+
+    @Message(id = 21005, value = "No operation was found that has been holding the operation execution write lock for long than [%d] seconds")
+    String noNonProgressingOperationFound(long timeout);
+
     /*
      * Logging IDs 15200-15299 and 21000-21099 are reserved for domain management
      *

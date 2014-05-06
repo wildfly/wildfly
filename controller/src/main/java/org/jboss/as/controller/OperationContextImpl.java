@@ -31,6 +31,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_THREAD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CALLER_TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CANCELLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXCLUSIVE_RUNNING_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTION_STATUS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NILLABLE;
@@ -39,6 +40,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_TIME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_CONFIG;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_GROUP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
@@ -143,6 +145,9 @@ final class OperationContextImpl extends AbstractOperationContext {
             new ConcurrentHashMap<OperationId, AuthorizationResponseImpl>();
     private final ModelNode blockingTimeoutConfig;
     private volatile BlockingTimeout blockingTimeout;
+    private final long startTime = System.nanoTime();
+    private volatile long exclusiveStartTime = -1;
+
     /** Tracks whether any steps have gotten write access to the management resource registration*/
     private volatile boolean affectsResourceRegistration;
 
@@ -485,6 +490,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 //                        throw MESSAGES.operationTimeoutAwaitingControllerLock(timeout);
 //                    }
 //                }
+                exclusiveStartTime = System.nanoTime();
                 lockStep = activeStep;
             } catch (InterruptedException e) {
                 cancelled = true;
@@ -942,6 +948,7 @@ final class OperationContextImpl extends AbstractOperationContext {
 
             if (this.lockStep == step) {
                 modelController.releaseLock(operationId);
+                exclusiveStartTime = -1;
                 lockStep = null;
             }
         } finally {
@@ -2078,6 +2085,12 @@ final class OperationContextImpl extends AbstractOperationContext {
                 accessMechanismNode.set(accessMechanismNode.toString());
             }
             model.get(EXECUTION_STATUS).set(getExecutionStatus());
+            model.get(RUNNING_TIME).set(System.nanoTime() - startTime);
+            long exclusive = exclusiveStartTime;
+            if (exclusive > -1) {
+                exclusive = System.nanoTime() - exclusive;
+            }
+            model.get(EXCLUSIVE_RUNNING_TIME).set(exclusive);
             model.get(CANCELLED).set(cancelled);
             return model;
         }
