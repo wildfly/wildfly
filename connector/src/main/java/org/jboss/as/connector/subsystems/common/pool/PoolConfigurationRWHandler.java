@@ -74,7 +74,7 @@ public class PoolConfigurationRWHandler {
         public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
             final String parameterName = operation.require(NAME).asString();
 
-            final ModelNode submodel = context.readModel(PathAddress.EMPTY_ADDRESS);
+            final ModelNode submodel = context.readResource(PathAddress.EMPTY_ADDRESS, false).getModel();
             final ModelNode currentValue = submodel.hasDefined(parameterName) ? submodel.get(parameterName).clone() : new ModelNode();
 
             context.getResult().set(currentValue);

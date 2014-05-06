@@ -143,17 +143,6 @@ class ReadOnlyContext extends AbstractOperationContext {
     }
 
     @Override
-    public ModelNode readModel(PathAddress address) {
-        PathAddress fullAddress = activeStep.address.append(address);
-        return primaryContext.readModel(fullAddress);
-    }
-
-    @Override
-    public ModelNode readModelForUpdate(PathAddress address) {
-        throw readOnlyContext();
-    }
-
-    @Override
     public void acquireControllerLock() {
         if (lockStep == null) {
             try {
@@ -215,11 +204,6 @@ class ReadOnlyContext extends AbstractOperationContext {
     @Override
     public Resource removeResource(PathAddress relativeAddress) throws UnsupportedOperationException {
         throw readOnlyContext();
-    }
-
-    @Override
-    public Resource getRootResource() {
-        return primaryContext.getRootResource();
     }
 
     @Override

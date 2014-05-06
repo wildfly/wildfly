@@ -383,32 +383,6 @@ public interface OperationContext extends ExpressionResolver {
     ServiceTarget getServiceTarget() throws UnsupportedOperationException;
 
     /**
-     * Read a model location, relative to the executed operation address.  Reads never block.  If a write action was
-     * previously performed, the value read will be from an uncommitted copy of the the management model.  The returned
-     * submodel is read-only.
-     *
-     * @param address the (possibly empty) address to read
-     * @return the model data
-     *
-     * @deprecated Use {@link #readResource(PathAddress)}
-     */
-    @Deprecated
-    ModelNode readModel(PathAddress address);
-
-    /**
-     * Read a model location, relative to the executed operation address, for the purpose of updating the submodel.
-     * This is a write operation, and because only one operation
-     * may write at a time, this operation may block until other writing operations have completed.
-     *
-     * @param address the (possibly empty) address to read
-     * @return the model data
-     *
-     * @deprecated Use {@link #readResourceForUpdate(PathAddress)}
-     */
-    @Deprecated
-    ModelNode readModelForUpdate(PathAddress address);
-
-    /**
      * Acquire the controlling {@link ModelController}'s exclusive lock. Holding this lock prevent other operations
      * from mutating the model, the {@link ManagementResourceRegistration management resource registry} or the runtime
      * service registry until the lock is released. The lock is automatically released when the
@@ -515,16 +489,6 @@ public interface OperationContext extends ExpressionResolver {
     Resource removeResource(PathAddress relativeAddress) throws UnsupportedOperationException;
 
     /**
-     * Get a read-only reference of the entire management model.  The structure of the returned model may depend
-     * on the context type (domain vs. server).
-     *
-     * @return the read-only resource
-     * @deprecated Use {@link OperationContext#readResourceFromRoot(PathAddress, boolean)}
-     */
-    @Deprecated
-    Resource getRootResource();
-
-     /**
      * Get a read-only reference of the entire management model BEFORE any changes were made by this context.
      * The structure of the returned model may depend on the context type (domain vs. server).
      *
