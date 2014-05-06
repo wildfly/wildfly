@@ -28,6 +28,7 @@ import static org.jboss.as.server.controller.descriptions.ServerDescriptionConst
 import java.io.File;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -67,7 +68,10 @@ public class ServerEnvironmentResourceDescription extends SimpleResourceDefiniti
             .setValidator(new EnumValidator<RunningMode>(RunningMode.class, false, false)).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition LAUNCH_TYPE = SimpleAttributeDefinitionBuilder.create("launch-type", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition LOG_DIR = SimpleAttributeDefinitionBuilder.create("log-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
-    public static final AttributeDefinition MODULES_DIR = SimpleAttributeDefinitionBuilder.create("modules-dir", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+    public static final AttributeDefinition MODULES_DIR = SimpleAttributeDefinitionBuilder.create("modules-dir", ModelType.STRING)
+            .setFlags(AttributeAccess.Flag.STORAGE_RUNTIME)
+            .setDeprecated(ModelVersion.create(2, 1))
+            .build();
     public static final AttributeDefinition NODE_NAME = SimpleAttributeDefinitionBuilder.create("node-name", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition QUALIFIED_HOST_NAME = SimpleAttributeDefinitionBuilder.create("qualified-host-name", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
     public static final AttributeDefinition SERVER_NAME = SimpleAttributeDefinitionBuilder.create("server-name", ModelType.STRING).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
