@@ -76,6 +76,7 @@ import org.jboss.as.test.shared.TimeoutUtil;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
+import org.jboss.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -88,6 +89,8 @@ import org.junit.Test;
  * @author Brian Stansberry (c) 2014 Red Hat Inc.
  */
 public class OperationCancellationTestCase {
+
+    private static final Logger log = Logger.getLogger(OperationCancellationTestCase.class);
 
     private static final PathAddress SUBSYSTEM_ADDRESS = PathAddress.pathAddress(
             PathElement.pathElement(PROFILE, "default"),
@@ -677,7 +680,7 @@ public class OperationCancellationTestCase {
     // Tests of cancelling an op blocking on a slave server via an op on the slave
 
     // NOTE: Not the way a user should cancel a server op -- either cancel it on the coordinating HC
-    // (i.e. master for a domain-wide op) on on the server itself. Otherwise it's easy to mistakenly
+    // (i.e. master for a domain-wide op) or on the server itself. Otherwise it's easy to mistakenly
     // cancel the master's call to the slave HC and not its proxied call to the server.
     // But we test this for completeness.
 
@@ -826,6 +829,45 @@ public class OperationCancellationTestCase {
         // Cancelling in rollback doesn't change the server's FAILED outcome, so master sees it and reports it.
         assertEquals(response.asString(), FAILED, response.get(OUTCOME).asString());
         validateNoActiveOperation(masterClient, "slave", "main-three", id, false);
+    }
+
+    // Tests of helper methods
+
+    @Test
+    public void testCancelNonProgressingOperation() throws Exception {
+        long start = System.currentTimeMillis();
+        Future<ModelNode> blockFuture = block("slave", "main-three", BlockerExtension.BlockPoint.RUNTIME);
+        String id = findActiveOperation(masterClient, "master", null, "block", null, start);
+        ModelNode op = Util.createEmptyOperation("cancel-non-progressing-operation",
+                PathAddress.pathAddress(PathElement.pathElement(HOST, "master")).append(MGMT_CONTROLLER));
+        op.get("timeout").set(0);
+        ModelNode result = executeForResult(op, masterClient);
+        assertEquals(result.toString(), id, result.asString());
+        ModelNode response = blockFuture.get(GET_TIMEOUT, TimeUnit.MILLISECONDS);
+        assertEquals(response.asString(), CANCELLED, response.get(OUTCOME).asString());
+        // Bogus as "id" is not the id on slave/main-three
+//        validateNoActiveOperation(masterClient, "slave", "main-three", id, true);
+    }
+
+    @Test
+    public void testFindNonProgressingOperation() throws Exception {
+        long start = System.currentTimeMillis();
+        Future<ModelNode> blockFuture = block("slave", "main-three", BlockerExtension.BlockPoint.RUNTIME);
+        String id = findActiveOperation(masterClient, "master", null, "block", null, start);
+        try {
+            ModelNode op = Util.createEmptyOperation("find-non-progressing-operation",
+                    PathAddress.pathAddress(PathElement.pathElement(HOST, "master")).append(MGMT_CONTROLLER));
+            op.get("timeout").set(0);
+            ModelNode result = executeForResult(op, masterClient);
+            assertEquals(result.toString(), id, result.asString());
+        } finally {
+            try {
+                blockFuture.cancel(true);
+                validateNoActiveOperation(masterClient, "master", null, id, true);
+            } catch (Exception toLog) {
+                log.error("Failed to cancel in testFindNonProgressingOperation" , toLog);
+            }
+        }
     }
 
     private Future<ModelNode> block(String host, String server, BlockerExtension.BlockPoint blockPoint) {

@@ -35,6 +35,7 @@ import org.jboss.as.controller.PrimitiveListAttributeDefinition;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.EnumValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -71,6 +72,14 @@ public class ActiveOperationResourceDefinition extends SimpleResourceDefinition 
                     .build();
     private static final AttributeDefinition CANCELLED =
             SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CANCELLED, ModelType.BOOLEAN).build();
+    private static final AttributeDefinition RUNNING_TIME =
+            SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.RUNNING_TIME, ModelType.LONG)
+                    .setMeasurementUnit(MeasurementUnit.NANOSECONDS)
+                    .build();
+    private static final AttributeDefinition EXCLUSIVE_RUNNING_TIME =
+            SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.EXCLUSIVE_RUNNING_TIME, ModelType.LONG)
+                    .setMeasurementUnit(MeasurementUnit.NANOSECONDS)
+                    .build();
 
     private ActiveOperationResourceDefinition() {
         super(PATH_ELEMENT, DomainManagementResolver.getResolver(CORE, MANAGEMENT_OPERATIONS, ACTIVE_OPERATION));
@@ -91,6 +100,8 @@ public class ActiveOperationResourceDefinition extends SimpleResourceDefinition 
         resourceRegistration.registerReadOnlyAttribute(CALLER_THREAD, null);
         resourceRegistration.registerReadOnlyAttribute(ACCESS_MECHANISM, null);
         resourceRegistration.registerReadOnlyAttribute(EXECUTION_STATUS, null);
+        resourceRegistration.registerReadOnlyAttribute(RUNNING_TIME, null);
+        resourceRegistration.registerReadOnlyAttribute(EXCLUSIVE_RUNNING_TIME, null);
         resourceRegistration.registerReadOnlyAttribute(CANCELLED, null);
 
         // HACK -- workaround WFLY-3057

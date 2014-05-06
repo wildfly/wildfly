@@ -48,6 +48,13 @@ public class ManagementControllerResourceDefinition extends SimpleResourceDefini
     }
 
     @Override
+    public void registerOperations(ManagementResourceRegistration resourceRegistration) {
+        super.registerOperations(resourceRegistration);
+        resourceRegistration.registerOperationHandler(FindNonProgressingOperationHandler.DEFINITION, FindNonProgressingOperationHandler.INSTANCE);
+        resourceRegistration.registerOperationHandler(CancelNonProgressingOperationHandler.DEFINITION, CancelNonProgressingOperationHandler.INSTANCE);
+    }
+
+    @Override
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
         resourceRegistration.registerSubModel(ActiveOperationResourceDefinition.INSTANCE);

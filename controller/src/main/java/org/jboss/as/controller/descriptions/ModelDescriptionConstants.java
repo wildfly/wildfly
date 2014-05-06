@@ -134,6 +134,7 @@ public class ModelDescriptionConstants {
     public static final String EXCLUDE = "exclude";
     public static final String ESCAPE_CONTROL_CHARACTERS = "escape-control-characters";
     public static final String ESCAPE_NEW_LINE = "escape-new-line";
+    public static final String EXCLUSIVE_RUNNING_TIME = "exclusive-running-time";
     public static final String EXECUTE_FOR_COORDINATOR = "execute-for-coordinator";
     public static final String EXECUTION_STATUS = "execution-status";
     public static final String EXPRESSIONS_ALLOWED = "expressions-allowed";
@@ -331,6 +332,7 @@ public class ModelDescriptionConstants {
     public static final String ROLES_FILTER = "roles-filter";
     public static final String RUNNING_MODE = "running-mode";
     public static final String RUNNING_SERVER = "server";
+    public static final String RUNNING_TIME = "running-time";
     public static final String RUNTIME_NAME = "runtime-name";
     public static final String RUNTIME_ONLY = "runtime-only";
     public static final String RUNTIME_UPDATE_SKIPPED = "runtime-update-skipped";
