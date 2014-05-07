@@ -22,32 +22,25 @@
 
 package org.jboss.as.test.integration.security.picketlink;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+
 import javax.naming.Context;
 import javax.security.auth.Subject;
 import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.directory.server.kerberos.shared.crypto.encryption.KerberosKeyFactory;
-import org.apache.directory.server.kerberos.shared.keytab.Keytab;
-import org.apache.directory.server.kerberos.shared.keytab.KeytabEntry;
-import org.apache.directory.shared.kerberos.KerberosTime;
-import org.apache.directory.shared.kerberos.codec.types.EncryptionType;
-import org.apache.directory.shared.kerberos.components.EncryptionKey;
+
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -61,7 +54,9 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
+
 import static org.hamcrest.CoreMatchers.*;
+
 import org.hamcrest.Matcher;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -70,7 +65,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.api.ServerSetupTask;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.security.Constants;
 import org.jboss.as.test.integration.security.common.AbstractSecurityDomainsServerSetupTask;
 import org.jboss.as.test.integration.security.common.Krb5LoginConfiguration;
@@ -86,7 +80,9 @@ import org.jboss.security.auth.callback.UsernamePasswordHandler;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
+
 import static org.junit.Assert.assertThat;
+
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -100,7 +96,7 @@ import org.junit.runner.RunWith;
 @ServerSetup({ 
     KerberosServerSetupTask.SystemPropertiesSetup.class,
     KerberosServerSetupTask.class,
-    SAML2KerberosAuthenticationTestCase.KerberosKeyTabSetup.class,
+    KerberosKeyTabSetup.class,
     SAML2KerberosAuthenticationTestCase.SecurityDomainsSetup.class
 })
 @RunAsClient
@@ -500,59 +496,6 @@ public class SAML2KerberosAuthenticationTestCase {
                 httpClient.getConnectionManager().shutdown();
             }
         }
-    }
-
-    /**
-     * Class which sets up the Kerberos keytab file for HTTP service principal.
-     * It also sets system properties
-     */
-    static class KerberosKeyTabSetup implements ServerSetupTask {
-
-        private static final String KEYTAB_FILENAME = "keytab.krb";
-        private static final File KEYTAB_FILE = new File(KEYTAB_FILENAME);
-
-        public static final String HTTP_SERVICE_PASSWORD = "httppwd";
-
-        /**
-         * Creates a keytab file for given principal.
-         *
-         * @param principalName
-         * @param passPhrase
-         * @param keytabFile
-         * @throws IOException
-         *
-         * @author Josef Cacek
-         */
-        public static void createKeytab(final String principalName, final String passPhrase, final File keytabFile)
-                throws IOException {
-            final KerberosTime timeStamp = new KerberosTime();
-            final long principalType = 1L; //KRB5_NT_PRINCIPAL
-
-            final Keytab keytab = Keytab.getInstance();
-            final List<KeytabEntry> entries = new ArrayList<KeytabEntry>();
-            for (Map.Entry<EncryptionType, EncryptionKey> keyEntry : KerberosKeyFactory.getKerberosKeys(principalName, passPhrase)
-                    .entrySet()) {
-                final EncryptionKey key = keyEntry.getValue();
-                final byte keyVersion = (byte) key.getKeyVersion();
-                entries.add(new KeytabEntry(principalName, principalType, timeStamp, keyVersion, key));
-            }
-            keytab.setEntries(entries);
-            keytab.write(keytabFile);
-        }
-
-
-        public static File getKeyTab() {
-            return KEYTAB_FILE;
-        }
-
-        public void setup(ManagementClient managementClient, String containerId) throws Exception {
-            createKeytab(KerberosServerSetupTask.getHttpServicePrincipal(managementClient), HTTP_SERVICE_PASSWORD, KEYTAB_FILE);
-        }
-
-        public void tearDown(ManagementClient managementClient, String containerId) throws Exception {
-            KEYTAB_FILE.delete();
-        }
-
     }
 
 }
