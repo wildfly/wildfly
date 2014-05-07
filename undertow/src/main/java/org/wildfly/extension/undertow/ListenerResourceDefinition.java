@@ -43,6 +43,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.wildfly.extension.io.OptionAttributeDefinition;
 import org.wildfly.extension.io.OptionList;
+import org.xnio.Options;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
@@ -81,8 +82,15 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(false)
             .build();
 
+    static final List<OptionAttributeDefinition> SOCKET_OPTIONS = OptionList.builder()
+            .addOption(Options.BACKLOG, "tcp-backlog")
+            .addOption(Options.RECEIVE_BUFFER, "receive-buffer")
+            .addOption(Options.SEND_BUFFER, "send-buffer")
+            .addOption(Options.KEEP_ALIVE, "tcp-keep-alive")
+            .build();
 
-    static final List<OptionAttributeDefinition> OPTIONS = OptionList.builder()
+
+    static final List<OptionAttributeDefinition> LISTENER_OPTIONS = OptionList.builder()
             .addOption(UndertowOptions.MAX_HEADER_SIZE, "max-header-size", new ModelNode(UndertowOptions.DEFAULT_MAX_HEADER_SIZE))
             .addOption(UndertowOptions.MAX_ENTITY_SIZE, Constants.MAX_POST_SIZE, new ModelNode(10485760L))
             .addOption(UndertowOptions.BUFFER_PIPELINED_DATA, "buffer-pipelined-data", new ModelNode(true))
@@ -103,7 +111,8 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
     static {
         ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED));
-        ATTRIBUTES.addAll(OPTIONS);
+        ATTRIBUTES.addAll(LISTENER_OPTIONS);
+        ATTRIBUTES.addAll(SOCKET_OPTIONS);
     }
 
     public ListenerResourceDefinition(PathElement pathElement) {

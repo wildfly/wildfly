@@ -71,12 +71,14 @@ public class UndertowSubsystemParser_1_1 implements XMLStreamConstants, XMLEleme
                         .addChild(
                                 builder(AjpListenerResourceDefinition.INSTANCE)
                                         .addAttributes(AjpListenerResourceDefinition.SCHEME, AjpListenerResourceDefinition.BUFFER_POOL, AjpListenerResourceDefinition.ENABLED, AjpListenerResourceDefinition.SOCKET_BINDING, AjpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET)
-                                        .addAttributes(ListenerResourceDefinition.OPTIONS)
+                                        .addAttributes(ListenerResourceDefinition.LISTENER_OPTIONS)
+                                        .addAttributes(ListenerResourceDefinition.SOCKET_OPTIONS)
                         )
                         .addChild(
                                 builder(HttpListenerResourceDefinition.INSTANCE)
                                         .addAttributes(HttpListenerResourceDefinition.BUFFER_POOL, HttpListenerResourceDefinition.CERTIFICATE_FORWARDING, HttpListenerResourceDefinition.ENABLED, HttpListenerResourceDefinition.SOCKET_BINDING, HttpListenerResourceDefinition.WORKER, ListenerResourceDefinition.REDIRECT_SOCKET, HttpListenerResourceDefinition.PROXY_ADDRESS_FORWARDING)
-                                        .addAttributes(ListenerResourceDefinition.OPTIONS)
+                                        .addAttributes(ListenerResourceDefinition.LISTENER_OPTIONS)
+                                        .addAttributes(ListenerResourceDefinition.SOCKET_OPTIONS)
                         ).addChild(
                                 builder(HttpsListenerResourceDefinition.INSTANCE)
                                         .addAttributes(HttpsListenerResourceDefinition.INSTANCE.getAttributes())

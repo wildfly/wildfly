@@ -65,25 +65,36 @@
         <xs:attribute name="servlet-container" use="optional" type="xs:string" default="default"/>
     </xs:complexType>
 
+    <xs:complexType name="socket-options-type">
+        <xs:attribute name="receive-buffer" type="xs:int" />
+        <xs:attribute name="send-buffer" type="xs:int" />
+        <xs:attribute name="tcp-backlog" type="xs:int" />
+        <xs:attribute name="tcp-keep-alive" type="xs:boolean" />
+    </xs:complexType>
+
     <xs:complexType name="listener-type">
-        <xs:attribute name="name" use="required" type="xs:string"/>
-        <xs:attribute name="socket-binding" use="required" type="xs:string"/>
-        <xs:attribute name="worker" type="xs:string" default="default"/>
-        <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
-        <xs:attribute name="enabled" type="xs:boolean" default="true"/>
-        <xs:attribute name="max-post-size" type="xs:long" default="0"/>
-        <xs:attribute name="buffer-pipelined-data" type="xs:boolean" default="true"/>
-        <xs:attribute name="max-header-size" type="xs:long" default="5120"/>
-        <xs:attribute name="max-parameters" type="xs:long" default="1000"/>
-        <xs:attribute name="max-headers" type="xs:long" default="200"/>
-        <xs:attribute name="max-cookies" type="xs:long" default="200"/>
-        <xs:attribute name="allow-encoded-slash" type="xs:boolean" default="false"/>
-        <xs:attribute name="decode-url" type="xs:boolean" default="true"/>
-        <xs:attribute name="url-charset" type="xs:string" default="UTF-8"/>
-        <xs:attribute name="always-set-keep-alive" type="xs:boolean" default="true"/>
-        <xs:attribute name="max-buffered-request-size" type="xs:long" default="16384"/>
-        <xs:attribute name="record-request-start-time" type="xs:boolean" default="false"/>
-        <xs:attribute name="allow-equals-in-cookie-value" type="xs:boolean" default="false"/>
+        <xs:complexContent>
+            <xs:extension base="socket-options-type">
+                <xs:attribute name="name" use="required" type="xs:string"/>
+                <xs:attribute name="socket-binding" use="required" type="xs:string"/>
+                <xs:attribute name="worker" type="xs:string" default="default"/>
+                <xs:attribute name="buffer-pool" type="xs:string" default="default"/>
+                <xs:attribute name="enabled" type="xs:boolean" default="true"/>
+                <xs:attribute name="max-post-size" type="xs:long" default="0"/>
+                <xs:attribute name="buffer-pipelined-data" type="xs:boolean" default="true"/>
+                <xs:attribute name="max-header-size" type="xs:long" default="5120"/>
+                <xs:attribute name="max-parameters" type="xs:long" default="1000"/>
+                <xs:attribute name="max-headers" type="xs:long" default="200"/>
+                <xs:attribute name="max-cookies" type="xs:long" default="200"/>
+                <xs:attribute name="allow-encoded-slash" type="xs:boolean" default="false"/>
+                <xs:attribute name="decode-url" type="xs:boolean" default="true"/>
+                <xs:attribute name="url-charset" type="xs:string" default="UTF-8"/>
+                <xs:attribute name="always-set-keep-alive" type="xs:boolean" default="true"/>
+                <xs:attribute name="max-buffered-request-size" type="xs:long" default="16384"/>
+                <xs:attribute name="record-request-start-time" type="xs:boolean" default="false"/>
+                <xs:attribute name="allow-equals-in-cookie-value" type="xs:boolean" default="false"/>
+            </xs:extension>
+        </xs:complexContent>
     </xs:complexType>
 
     <xs:complexType name="http-listener-type">
@@ -128,6 +139,7 @@
                 <xs:attribute name="security-realm" use="required" type="xs:string"/>
                 <xs:attribute name="verify-client" use="optional" type="xs:string"/>
                 <xs:attribute name="enabled-cipher-suites" use="optional" type="xs:string"/>
+                <xs:attribute name="enabled-protocols" use="optional" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
