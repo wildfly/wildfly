@@ -43,12 +43,13 @@ import org.xnio.OptionMap;
 public class OptionAttributeDefinition extends SimpleAttributeDefinition {
     private final Option option;
     private final Class<?> optionType;
+    private final String delimiter;
 
-    private OptionAttributeDefinition(Builder builder, Option<?> option, Class<?> optionType) {
+    private OptionAttributeDefinition(Builder builder, Option<?> option, Class<?> optionType, String delimiter) {
         super(builder);
         this.option = option;
         this.optionType = optionType;
-
+        this.delimiter = delimiter;
     }
 
     public Option<?> getOption() {
@@ -67,7 +68,7 @@ public class OptionAttributeDefinition extends SimpleAttributeDefinition {
             } else if (optionType.isEnum()) {
                 builder.set(option, option.parseValue(value.asString(), option.getClass().getClassLoader()));
             }else if (option.getClass().getSimpleName().equals("SequenceOption")) {
-                builder.setSequence(option, value.asString().split(","));
+                builder.setSequence(option, value.asString().split(delimiter));
             } else if (getType() == ModelType.STRING) {
                 builder.set(option, value.asString());
             } else {
@@ -84,6 +85,7 @@ public class OptionAttributeDefinition extends SimpleAttributeDefinition {
     public static class Builder extends AbstractAttributeDefinitionBuilder<Builder, OptionAttributeDefinition> {
         private Option<?> option;
         private Class<?> optionType;
+        private String delimiter = ",";
 
         public Builder(String attributeName, Option<?> option) {
             this(attributeName, option, null);
@@ -96,9 +98,14 @@ public class OptionAttributeDefinition extends SimpleAttributeDefinition {
             setType();
         }
 
+        public Builder setDelimiter(String delimiter){
+            this.delimiter = delimiter;
+            return this;
+        }
+
         @Override
         public OptionAttributeDefinition build() {
-            return new OptionAttributeDefinition(this, option, optionType);
+            return new OptionAttributeDefinition(this, option, optionType, delimiter);
         }
 
         private void setType() {
