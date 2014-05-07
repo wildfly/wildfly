@@ -65,6 +65,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setAllowNull(true)
             .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .setAllowExpression(true)
+            .setDelimiter(":")
             .build();
 
 
