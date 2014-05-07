@@ -247,4 +247,13 @@ public interface DeploymentScannerLogger extends BasicLogger {
     @Message(id = 15018, value = "Deployment %s was previously deployed by this scanner but has been removed from the " +
             "server deployment list by another management tool. Marker file %s is being added to record this fact.")
     void scannerDeploymentRemovedButNotByScanner(String deploymentName, File marker);
+
+    @LogMessage(level = INFO)
+    @Message(id = 15019, value = "Deployment %s was previously undeployed by this scanner but has been redeployed by another "
+            + "management tool. Marker file %s is being removed to record this fact.")
+    void scannerDeploymentRedeployedButNotByScanner(String deploymentName, File marker);
+
+    @LogMessage(level = ERROR)
+    @Message(id = 15020, value = "Failed synchronizing status of deployment %s.")
+    void failedStatusSynchronization(@Cause Throwable cause, String deploymentName);
 }

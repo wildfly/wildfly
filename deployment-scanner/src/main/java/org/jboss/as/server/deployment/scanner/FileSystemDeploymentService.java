@@ -63,6 +63,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CAN
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
@@ -582,7 +583,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (autoDeployable) {
                     if (!isAutoDeployDisabled(child)) {
                         long timestamp = getDeploymentTimestamp(child);
-                        if (isFailedOrUndeployed(directory, fileName, timestamp)) continue;
+                        synchronizeScannerStatus(scanContext, directory, fileName, timestamp);
+                        if (isFailedOrUndeployed(scanContext, directory, fileName, timestamp)) {
+                            continue;
+                        }
 
                         DeploymentMarker marker = deployed.get(fileName);
                         if (marker == null || marker.lastModified != timestamp) {
@@ -613,7 +617,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
                 if (autoDeployXml) {
                     if (!isAutoDeployDisabled(child)) {
                         long timestamp = getDeploymentTimestamp(child);
-                        if (isFailedOrUndeployed(directory, fileName, timestamp)) continue;
+                        if (isFailedOrUndeployed(scanContext, directory, fileName, timestamp)) {
+                            continue;
+                        }
 
                         DeploymentMarker marker = deployed.get(fileName);
                         if (marker == null || marker.lastModified != timestamp) {
@@ -666,16 +672,46 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
     }
 
-    private boolean isFailedOrUndeployed(final File directory, final String fileName, final long timestamp) {
+    private boolean isFailedOrUndeployed(final ScanContext scanContext, final File directory, final String fileName, final long timestamp) {
         final File failedMarker = new File(directory, fileName + FAILED_DEPLOY);
         if (failedMarker.exists() && timestamp <= failedMarker.lastModified()) {
             return true;
         }
         final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
-        if (undeployedMarker.exists() && timestamp <= undeployedMarker.lastModified()) {
+        if (isMarkedUndeployed(undeployedMarker, timestamp) && !isRegisteredDeployment(scanContext, fileName)) {
             return true;
         }
         return false;
+    }
+
+    private void synchronizeScannerStatus(ScanContext scanContext, File directory, String fileName, long timestamp) {
+
+        if (isRegisteredDeployment(scanContext, fileName)) {
+            final File undeployedMarker = new File(directory, fileName + UNDEPLOYED);
+            if (isMarkedUndeployed(undeployedMarker, timestamp) && !scanContext.persistentDeployments.contains(fileName)) {
+                try {
+                    ROOT_LOGGER.scannerDeploymentRedeployedButNotByScanner(fileName, undeployedMarker);
+                    //We have a deployed app with an undeployed marker
+                    undeployedMarker.delete();
+                    final File deployedMarker = new File(directory, fileName + DEPLOYED);
+                    deployedMarker.createNewFile();
+                    boolean isArchive = false;
+                    if (deployed.containsKey(fileName)) {
+                        isArchive = deployed.get(fileName).archive;
+                        deployedMarker.setLastModified(deployed.get(fileName).lastModified);
+                    } else {
+                        final File deploymentFile = new File(directory, fileName);
+                        isArchive = deploymentFile.exists() && deploymentFile.isFile();
+                        if(deploymentFile.exists()) {
+                            deployedMarker.setLastModified(deploymentFile.lastModified());
+                        }
+                    }
+                    deployed.put(fileName, new DeploymentMarker(deployedMarker.lastModified(), isArchive, directory));
+                } catch (IOException ex) {
+                    ROOT_LOGGER.failedStatusSynchronization(ex, fileName);
+                }
+            }
+        }
     }
 
     private long addContentAddingTask(final String path, final boolean archive, final String deploymentName,
@@ -687,6 +723,17 @@ class FileSystemDeploymentService implements DeploymentScanner {
         }
         scanContext.toRemove.remove(deploymentName);
         return timestamp;
+    }
+
+    private boolean isRegisteredDeployment(final ScanContext scanContext, final String fileName) {
+        if(!scanContext.persistentDeployments.contains(fileName)) { //check that we are talking about the deployment in the scanned folder
+            return scanContext.registeredDeployments.get(fileName) == null ? false : scanContext.registeredDeployments.get(fileName);
+        }
+        return false;
+    }
+
+    private boolean isMarkedUndeployed(final File undeployedMarker, final long timestamp) {
+        return undeployedMarker.exists() && timestamp <= undeployedMarker.lastModified();
     }
 
     private boolean isZipComplete(File file) throws NonScannableZipException {
@@ -1019,8 +1066,9 @@ class FileSystemDeploymentService implements DeploymentScanner {
             final ModelNode content = new ModelNode();
             final ModelNode contentItem = content.get(0);
             contentItem.get(PATH).set(path);
-            if (relativeTo != null)
+            if (relativeTo != null) {
                 contentItem.get(RELATIVE_TO).set(relativeTo);
+            }
             contentItem.get(ARCHIVE).set(archive);
             return content;
         }
@@ -1089,6 +1137,8 @@ class FileSystemDeploymentService implements DeploymentScanner {
             final ModelNode replaceOp = Util.getEmptyOperation(DeploymentFullReplaceHandler.OPERATION_NAME, new ModelNode());
             replaceOp.get(NAME).set(deploymentName);
             replaceOp.get(CONTENT).set(createContent());
+            replaceOp.get(PERSISTENT).set(false);
+            replaceOp.get(ENABLED).set(true);
             return replaceOp;
         }
 
@@ -1199,6 +1249,10 @@ class FileSystemDeploymentService implements DeploymentScanner {
          */
         private final Map<String, Boolean> registeredDeployments;
         /**
+         * Existing persistent deployments
+         */
+        private final Set<String> persistentDeployments;
+        /**
          * Tasks generated by the scan
          */
         private final List<ScannerTask> scannerTasks = new ArrayList<ScannerTask>();
@@ -1237,6 +1291,7 @@ class FileSystemDeploymentService implements DeploymentScanner {
 
         private ScanContext(final DeploymentOperations deploymentOperations) {
             registeredDeployments = deploymentOperations.getDeploymentsStatus();
+            persistentDeployments = deploymentOperations.getPersistentDeployments();
         }
     }
 

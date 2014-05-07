@@ -27,10 +27,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEP
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_CHILDREN_RESOURCES_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PERSISTENT;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -81,5 +84,27 @@ final class DefaultDeploymentOperations implements DeploymentOperations {
     @Override
     public void close() throws IOException {
         controllerClient.close();
+    }
+
+    @Override
+    public Set<String> getPersistentDeployments() {
+        final ModelNode op = Util.getEmptyOperation(READ_CHILDREN_RESOURCES_OPERATION, new ModelNode());
+        op.get(CHILD_TYPE).set(DEPLOYMENT);
+        ModelNode response;
+        try {
+            response = controllerClient.execute(op);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        final ModelNode result = response.get(RESULT);
+        final Set<String> deployments = new HashSet<String>();
+        if (result.isDefined()) {
+            for (Property property : result.asPropertyList()) {
+                if(property.getValue().get(PERSISTENT).asBoolean(true)) {
+                    deployments.add(property.getName());
+                }
+            }
+        }
+        return deployments;
     }
 }

@@ -42,6 +42,8 @@ public interface DeploymentOperations extends Closeable {
 
     Map<String, Boolean> getDeploymentsStatus();
 
+    Set<String> getPersistentDeployments();
+
     interface Factory {
         DeploymentOperations create();
     }
