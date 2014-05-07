@@ -47,7 +47,7 @@ class SingleSignOnService implements Service<SingleSignOnService> {
     private final InjectedValue<Host> host = new InjectedValue<>();
     private final InjectedValue<SingleSignOnManager> manager = new InjectedValue<>();
 
-    SingleSignOnService(String domain, String path, boolean httpOnly, boolean secure) {
+    SingleSignOnService(String domain, String path, boolean httpOnly, boolean secure, String cookieName) {
         this.domain = domain;
         this.path = path;
         this.httpOnly = httpOnly;

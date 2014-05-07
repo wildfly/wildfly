@@ -62,7 +62,13 @@ class SingleSignOnDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode(false))
             .build();
 
-    static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(DOMAIN, PATH, HTTP_ONLY, SECURE);
+    static final SimpleAttributeDefinition COOKIE_NAME = new SimpleAttributeDefinitionBuilder("cookie-name", ModelType.STRING, true)
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .setDefaultValue(new ModelNode("JSESSIONIDSSO"))
+            .build();
+
+    static final List<AttributeDefinition> ATTRIBUTES = Arrays.<AttributeDefinition>asList(DOMAIN, PATH, HTTP_ONLY, SECURE, COOKIE_NAME);
 
     static final SingleSignOnDefinition INSTANCE = new SingleSignOnDefinition();
 
