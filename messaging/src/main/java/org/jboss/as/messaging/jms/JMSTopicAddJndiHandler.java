@@ -22,12 +22,15 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.ManagementService;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.messaging.ManagementUtil;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -47,8 +50,8 @@ public class JMSTopicAddJndiHandler extends AbstractAddJndiHandler {
         ManagementService mgmt = server.getManagementService();
         TopicControl control = TopicControl.class.cast(mgmt.getResource(ResourceNames.JMS_TOPIC + resourceName));
         if (control == null) {
-            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
         }
 
         try {

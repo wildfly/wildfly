@@ -22,12 +22,15 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.JMSQueueControl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.management.ManagementService;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.messaging.ManagementUtil;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -48,8 +51,8 @@ public class JMSQueueAddJndiHandler extends AbstractAddJndiHandler {
         JMSQueueControl control = JMSQueueControl.class.cast(mgmt.getResource(ResourceNames.JMS_QUEUE + resourceName));
 
         if (control == null) {
-            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
         }
 
         try {

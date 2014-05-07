@@ -279,7 +279,7 @@ public abstract class AbstractHornetQComponentControlHandler<T extends HornetQCo
         PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
          T control = getHornetQComponentControl(server, address);
          if (control == null) {
-             throw new OperationFailedException(MessagingMessages.MESSAGES.hqServerManagementServiceResourceNotFound(PathAddress.pathAddress(operation.require(OP_ADDR))));
+             throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
          }
          return control;
 
