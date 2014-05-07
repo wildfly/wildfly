@@ -46,6 +46,7 @@ import org.hornetq.api.core.management.QueueControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -106,8 +107,7 @@ public class QueueReadAttributeHandler extends AbstractRuntimeOnlyHandler {
         QueueControl control = QueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.CORE_QUEUE + queueName));
 
         if (control == null) {
-            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
         }
 
         if (MESSAGE_COUNT.getName().equals(attributeName)) {

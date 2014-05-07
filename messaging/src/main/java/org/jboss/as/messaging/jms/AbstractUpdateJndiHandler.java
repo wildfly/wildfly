@@ -22,10 +22,12 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.jms.server.JMSServerManager;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -35,7 +37,6 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.ManagementUtil;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -116,8 +117,8 @@ public abstract class AbstractUpdateJndiHandler implements OperationStepHandler 
                         JMSServerManager jmsServerManager = JMSServerManager.class.cast(jmsServerService.getValue());
 
                         if (jmsServerManager == null) {
-                            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
-                            return;
+                            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+                            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
                         }
 
                         try {

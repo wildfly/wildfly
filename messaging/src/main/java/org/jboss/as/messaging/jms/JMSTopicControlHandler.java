@@ -22,17 +22,18 @@
 
 package org.jboss.as.messaging.jms;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.CLIENT_ID;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.CommonAttributes.QUEUE_NAME;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.api.jms.management.TopicControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -88,8 +89,8 @@ public class JMSTopicControlHandler extends AbstractRuntimeOnlyHandler {
         TopicControl control = TopicControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_TOPIC + topicName));
 
         if (control == null) {
-            rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
         }
 
         try {

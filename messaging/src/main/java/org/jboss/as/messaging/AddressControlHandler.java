@@ -41,6 +41,7 @@ import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -89,8 +90,8 @@ class AddressControlHandler extends AbstractRuntimeOnlyHandler {
 
         final AddressControl addressControl = getAddressControl(context, operation);
         if (addressControl == null) {
-            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
         }
 
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();

@@ -133,6 +133,9 @@ public class QueueControlHandler extends AbstractQueueControlHandler<QueueContro
     @Override
     protected DelegatingQueueControl<QueueControl> getQueueControl(HornetQServer hqServer, String queueName) {
         final QueueControl control = QueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.CORE_QUEUE + queueName));
+        if (control == null) {
+            return null;
+        }
         return new DelegatingQueueControl<QueueControl>() {
 
             public QueueControl getDelegate() {

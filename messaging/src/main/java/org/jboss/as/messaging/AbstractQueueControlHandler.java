@@ -22,9 +22,9 @@
 
 package org.jboss.as.messaging;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.ManagementUtil.rollbackOperationWithResourceNotFound;
 import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
@@ -33,6 +33,7 @@ import java.util.Locale;
 
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -293,8 +294,8 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
         final DelegatingQueueControl<T> control = getQueueControl(hqServer, queueName);
 
         if (control == null) {
-            rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
         }
 
         boolean reversible = false;
