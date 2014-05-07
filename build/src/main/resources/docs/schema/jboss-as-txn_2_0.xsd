@@ -82,13 +82,6 @@
 
                 The process-id element specifies the process id implemention.
                 The "node-identifier" attribute is used to set the node identifier on the core environment.
-
-                The "path" attribute denotes a relative or absolute filesystem path denoting where the transaction
-                manager core should store data.
-
-                The "relative-to" attribute references a global path configuration in the domain model, defaulting
-                to the JBoss Application Server data directory (jboss.server.data.dir). If the value of the "path" attribute
-                does not specify an absolute pathname, it will treated as relative to this path.
             ]]>
             </xs:documentation>
         </xs:annotation>
@@ -96,8 +89,24 @@
             <xs:element name="process-id" type="process-id" />
         </xs:all>
         <xs:attribute name="node-identifier" type="xs:string" default="1"/>
-        <xs:attribute name="path" type="xs:string" default="var"/>
-        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir"/>
+        <xs:attribute name="path" type="xs:string" default="var">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    Deprecated. Has no meaningful effect on the behavior of the transaction manager.
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="relative-to" type="xs:string" default="jboss.server.data.dir">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    Deprecated. Has no meaningful effect on the behavior of the transaction manager.
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
     <xs:complexType name="process-id">
         <xs:annotation>
