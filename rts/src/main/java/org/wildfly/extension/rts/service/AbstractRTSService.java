@@ -102,7 +102,7 @@ public class AbstractRTSService {
 
     protected String getBaseUrl() {
         final String address = injectedSocketBinding.getValue().getAddress().getHostAddress();
-        final int port = injectedSocketBinding.getValue().getPort();
+        final int port = injectedSocketBinding.getValue().getAbsolutePort();
 
         if (injectedSocketBinding.getValue().getAddress() instanceof Inet4Address) {
             return "http://" + address + ":" + port;
