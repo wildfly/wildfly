@@ -127,6 +127,7 @@ public class TransactionExtension implements Extension {
             final ResolvePathHandler resolvePathHandler = ResolvePathHandler.Builder.of(context.getPathManager())
                     .setPathAttribute(TransactionSubsystemRootResourceDefinition.PATH)
                     .setRelativeToAttribute(TransactionSubsystemRootResourceDefinition.RELATIVE_TO)
+                    .setDeprecated(ModelVersion.create(1,4))
                     .build();
             registration.registerOperationHandler(resolvePathHandler.getOperationDefinition(), resolvePathHandler);
         }
