@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.as.controller.client.ModelControllerClient;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -161,18 +162,17 @@ public class OperationCancellationUnitTestCase {
         @Override
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
 
-            rootRegistration.registerOperationHandler("setup", new SetupHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("composite", CompositeOperationHandler.INSTANCE, DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("good", new ModelStageGoodHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("block-model", new ModelStageBlocksHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("block-runtime", new RuntimeStageBlocksHandler(getSharedState()), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("good-service", new GoodServiceHandler(), DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("block-verify", new BlockingServiceHandler(), DESC_PROVIDER, false);
+            rootRegistration.registerOperationHandler(getOD("setup"), new SetupHandler());
+            rootRegistration.registerOperationHandler(getOD("composite"), CompositeOperationHandler.INSTANCE);
+            rootRegistration.registerOperationHandler(getOD("good"), new ModelStageGoodHandler());
+            rootRegistration.registerOperationHandler(getOD("block-model"), new ModelStageBlocksHandler());
+            rootRegistration.registerOperationHandler(getOD("block-runtime"), new RuntimeStageBlocksHandler(getSharedState()));
+            rootRegistration.registerOperationHandler(getOD("good-service"), new GoodServiceHandler());
+            rootRegistration.registerOperationHandler(getOD("block-verify"), new BlockingServiceHandler());
 
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
 
-            rootRegistration.registerSubModel(PathElement.pathElement("child"), DESC_PROVIDER);
-
+            rootRegistration.registerSubModel(new SimpleResourceDefinition(PathElement.pathElement("child"), new NonResolvingResourceDescriptionResolver()));
             this.managementControllerResource = modelControllerResource;
         }
     }

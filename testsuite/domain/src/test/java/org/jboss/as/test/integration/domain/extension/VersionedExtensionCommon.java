@@ -32,11 +32,13 @@ import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
@@ -64,12 +66,7 @@ public abstract class VersionedExtensionCommon implements Extension {
     public static final String SUBSYSTEM_NAME = "test-subsystem";
     public static final String IGNORED_SUBSYSTEM_NAME = "ignored-test-subsystem";
 
-    static DescriptionProvider DESCRIPTION_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
+
     static AttributeDefinition TEST_ATTRIBUTE = SimpleAttributeDefinitionBuilder.create("test-attribute", ModelType.STRING).build();
 
     protected static ResourceDefinition createResourceDefinition(final PathElement element) {
@@ -90,5 +87,11 @@ public abstract class VersionedExtensionCommon implements Extension {
             super.performRuntime(context, operation, model);
         }
     };
+
+    static OperationDefinition getOperationDefinition(String name){
+        return new SimpleOperationDefinitionBuilder(name,new NonResolvingResourceDescriptionResolver())
+                .setReadOnly()
+                .build();
+    }
 
 }

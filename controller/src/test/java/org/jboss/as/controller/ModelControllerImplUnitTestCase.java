@@ -25,7 +25,6 @@
  */
 package org.jboss.as.controller;
 
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.global.GlobalOperationHandlers;
@@ -46,7 +45,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -605,23 +603,23 @@ public class ModelControllerImplUnitTestCase {
         @Override
         protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration, Resource modelControllerResource) {
 
-            rootRegistration.registerOperationHandler("setup", new ModelControllerImplUnitTestCase.SetupHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("composite", CompositeOperationHandler.INSTANCE, ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("good", new ModelControllerImplUnitTestCase.ModelStageGoodHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("bad", new ModelControllerImplUnitTestCase.ModelStageFailsHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("evil", new ModelControllerImplUnitTestCase.ModelStageThrowsExceptionHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("handleFailed", new ModelControllerImplUnitTestCase.RuntimeStageFailsHandler(state), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("runtimeException", new ModelControllerImplUnitTestCase.RuntimeStageThrowsExceptionHandler(state), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("operationFailedException", new ModelControllerImplUnitTestCase.RuntimeStageThrowsOFEHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
-            rootRegistration.registerOperationHandler("good-service", new ModelControllerImplUnitTestCase.GoodServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("bad-service", new ModelControllerImplUnitTestCase.BadServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
-            rootRegistration.registerOperationHandler("remove-bad-service", new ModelControllerImplUnitTestCase.RemoveBadServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
-            rootRegistration.registerOperationHandler("missing-service", new ModelControllerImplUnitTestCase.MissingServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("reload-required", new ModelControllerImplUnitTestCase.ReloadRequiredHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("restart-required", new ModelControllerImplUnitTestCase.RestartRequiredHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("dependent-service", new ModelControllerImplUnitTestCase.DependentServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("remove-dependent-service", new ModelControllerImplUnitTestCase.RemoveDependentServiceHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, false);
-            rootRegistration.registerOperationHandler("read-wildcards", new ModelControllerImplUnitTestCase.WildcardReadHandler(), ModelControllerImplUnitTestCase.DESC_PROVIDER, true);
+            rootRegistration.registerOperationHandler(getOD("setup"), new ModelControllerImplUnitTestCase.SetupHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("composite"), CompositeOperationHandler.INSTANCE,true);
+            rootRegistration.registerOperationHandler(getOD("good"), new ModelControllerImplUnitTestCase.ModelStageGoodHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("bad"), new ModelControllerImplUnitTestCase.ModelStageFailsHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("evil"), new ModelControllerImplUnitTestCase.ModelStageThrowsExceptionHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("handleFailed"), new ModelControllerImplUnitTestCase.RuntimeStageFailsHandler(state),true);
+            rootRegistration.registerOperationHandler(getOD("runtimeException"), new ModelControllerImplUnitTestCase.RuntimeStageThrowsExceptionHandler(state),true);
+            rootRegistration.registerOperationHandler(getOD("operationFailedException"), new ModelControllerImplUnitTestCase.RuntimeStageThrowsOFEHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("good-service"), new ModelControllerImplUnitTestCase.GoodServiceHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("bad-service"), new ModelControllerImplUnitTestCase.BadServiceHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("remove-bad-service"), new ModelControllerImplUnitTestCase.RemoveBadServiceHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("missing-service"), new ModelControllerImplUnitTestCase.MissingServiceHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("reload-required"), new ModelControllerImplUnitTestCase.ReloadRequiredHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("restart-required"), new ModelControllerImplUnitTestCase.RestartRequiredHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("dependent-service"), new ModelControllerImplUnitTestCase.DependentServiceHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("remove-dependent-service"), new ModelControllerImplUnitTestCase.RemoveDependentServiceHandler(),true);
+            rootRegistration.registerOperationHandler(getOD("read-wildcards"), new ModelControllerImplUnitTestCase.WildcardReadHandler(),true);
 
             GlobalOperationHandlers.registerGlobalOperations(rootRegistration, processType);
             SimpleResourceDefinition childResource = new SimpleResourceDefinition(
@@ -1085,13 +1083,6 @@ public class ModelControllerImplUnitTestCase {
         }
 
     }
-
-    public static final DescriptionProvider DESC_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
 
     static class RollbackTransactionControl implements ModelController.OperationTransactionControl {
 

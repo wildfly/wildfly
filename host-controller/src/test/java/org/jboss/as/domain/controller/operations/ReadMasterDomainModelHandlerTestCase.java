@@ -36,7 +36,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WILDCARD;
 
 import java.util.Collections;
-import java.util.Locale;
 
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.ModelVersion;
@@ -47,7 +46,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.transform.ResourceTransformationContext;
@@ -68,8 +67,6 @@ import org.junit.Test;
  */
 public class ReadMasterDomainModelHandlerTestCase {
 
-
-    private static PathElement PATH = PathElement.pathElement("toto", "testSubsystem");
 
     @Test
     public void testResourceTransformation() throws Exception {
@@ -146,12 +143,5 @@ public class ReadMasterDomainModelHandlerTestCase {
         return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), ignoredTransformationRegistry, TransformationTargetType.DOMAIN, null);
     }
 
-    private static final DescriptionProvider NOOP_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
-
-    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), NOOP_PROVIDER);
+    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), new NonResolvingResourceDescriptionResolver());
 }

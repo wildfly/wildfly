@@ -23,7 +23,6 @@
 package org.jboss.as.controller.transform.description;
 
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Set;
 
 import org.jboss.as.controller.ExpressionResolver;
@@ -35,7 +34,7 @@ import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.SimpleResourceDefinition;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
@@ -45,7 +44,6 @@ import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
-import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,7 +64,7 @@ public class ChildRedirectTestCase {
     private TransformerRegistry registry = TransformerRegistry.Factory.create(null);
     private ManagementResourceRegistration resourceRegistration = ManagementResourceRegistration.Factory.create(ROOT);
     private TransformersSubRegistration transformersSubRegistration;
-    private ModelNode resourceModel;
+    //private ModelNode resourceModel;
 
     @Before
     public void setUp() {
@@ -77,7 +75,7 @@ public class ChildRedirectTestCase {
         // test
         final Resource toto = Resource.Factory.create();
         resourceRoot.registerChild(PATH, toto);
-        resourceModel = toto.getModel();
+        //resourceModel = toto.getModel();
 
         final Resource childOne = Resource.Factory.create();
         toto.registerChild(CHILD_ONE, childOne);
@@ -172,12 +170,5 @@ public class ChildRedirectTestCase {
         return TransformationTargetImpl.create(registry, version, Collections.<PathAddress, ModelVersion>emptyMap(), null, type, null);
     }
 
-    private static final DescriptionProvider NOOP_PROVIDER = new DescriptionProvider() {
-        @Override
-        public ModelNode getModelDescription(Locale locale) {
-            return new ModelNode();
-        }
-    };
-
-    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), NOOP_PROVIDER);
+    private static final ResourceDefinition ROOT = new SimpleResourceDefinition(PathElement.pathElement("test"), new NonResolvingResourceDescriptionResolver());
 }

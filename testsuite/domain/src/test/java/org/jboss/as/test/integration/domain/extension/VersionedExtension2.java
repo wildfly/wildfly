@@ -79,7 +79,7 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
     void processTestSubsystem(final SubsystemRegistration subsystem, final ManagementResourceRegistration registration) {
 
         // Register an update operation, which requires the transformer to create composite operation
-        registration.registerOperationHandler("update", new OperationStepHandler() {
+        registration.registerOperationHandler(getOperationDefinition("update"), new OperationStepHandler() {
             @Override
             public void execute(final OperationContext context, final ModelNode operation) throws OperationFailedException {
                 final Resource resource = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS);
@@ -88,20 +88,20 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
                 context.getResult().set(model);
                 context.stepCompleted();
             }
-        }, DESCRIPTION_PROVIDER);
+        });
 
         // Add a new model, which does not exist in the old model
         registration.registerSubModel(createResourceDefinition(NEW_ELEMENT));
         registration.registerSubModel(createResourceDefinition(OTHER_NEW_ELEMENT));
         // Add the renamed model
         registration.registerSubModel(createResourceDefinition(RENAMED));
-        registration.registerOperationHandler("test", new OperationStepHandler() {
+        registration.registerOperationHandler(getOperationDefinition("test"), new OperationStepHandler() {
             @Override
             public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                 context.getResult().set(true);
                 context.stepCompleted();
             }
-        }, DESCRIPTION_PROVIDER, false, OperationEntry.EntryType.PUBLIC, EnumSet.of(OperationEntry.Flag.READ_ONLY));
+        });
 
         //
         // Transformation rules
@@ -196,7 +196,6 @@ public class VersionedExtension2 extends VersionedExtensionCommon {
                 }
             });
         }
-
-    };
+    }
 
 }
