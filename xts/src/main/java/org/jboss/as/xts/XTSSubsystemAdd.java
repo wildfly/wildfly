@@ -35,7 +35,6 @@ import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
@@ -153,7 +152,8 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
         final String hostName = HOST_NAME.resolveModelAttribute(context, model).asString();
 
-        final String coordinatorURL = model.get(CommonAttributes.XTS_ENVIRONMENT).hasDefined(ModelDescriptionConstants.URL) ? model.get(CommonAttributes.XTS_ENVIRONMENT, ModelDescriptionConstants.URL).asString() : null;
+        final ModelNode coordinatorURLAttribute = ENVIRONMENT_URL.resolveModelAttribute(context, model);
+        final String coordinatorURL = coordinatorURLAttribute.isDefined() ? coordinatorURLAttribute.asString() : null;
         if (coordinatorURL != null && XtsAsLogger.ROOT_LOGGER.isDebugEnabled()) {
             XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s\n", coordinatorURL);
         }
