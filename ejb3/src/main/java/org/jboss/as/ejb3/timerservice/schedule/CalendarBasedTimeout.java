@@ -716,6 +716,9 @@ public class CalendarBasedTimeout {
                 copy.set(i, cal.get(i));
             }
         }
+        // set that week starts on SUNDAY (as is done in #setFirstTimeout())
+        // to be able to compare dates' day of week correctly
+        copy.setFirstDayOfWeek(Calendar.SUNDAY);
         return copy;
     }
 
