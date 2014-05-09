@@ -190,7 +190,6 @@ public class ModelDescriptionConstants {
     public static final String INPUT_STREAM_INDEX = "input-stream-index";
     public static final String INTERFACE = "interface";
     public static final String ITERATIVE = "iterative";
-    public static final String JAAS = "jaas";
     public static final String JSON_FORMATTER = "json-formatter";
     public static final String JVM = "jvm";
     public static final String LDAP = "ldap";

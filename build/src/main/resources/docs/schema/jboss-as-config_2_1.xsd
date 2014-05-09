@@ -750,6 +750,14 @@
                 </xs:documentation>
             </xs:annotation>
         </xs:attribute>
+        <xs:attribute name="assign-groups" type="xs:boolean" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    When JAAS is delegated to for authentication a user is also assigned a set of roles, 
+                    if this attribute is set to true then those roles will be assigned to the user a groups.
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="baseLdapAuthType" abstract="true">

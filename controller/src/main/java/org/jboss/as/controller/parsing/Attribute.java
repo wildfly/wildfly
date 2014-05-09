@@ -45,6 +45,7 @@ public enum Attribute {
     ALLOWED_USERS("allowed-users"),
     APP_NAME("app-name"),
     APPLICATION("application"),
+    ASSIGN_GROUPS("assign-groups"),
     ATTRIBUTE("attribute"),
     AUTO_START("auto-start"),
     BASE_DN("base-dn"),
