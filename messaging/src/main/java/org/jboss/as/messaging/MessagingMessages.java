@@ -524,15 +524,6 @@ public interface MessagingMessages {
     @Message(id = 11675, value = "Resources of type %s cannot be removed")
     UnsupportedOperationException canNotRemoveResourceOfType(String childType);
 
-    /**
-     * Logs an error message indicating the given {@code address} does not match any known
-     * resource. Meant for use with runtime resources available via {@link org.hornetq.core.server.HornetQServer#getManagementService()}
-     *
-     * @param address    the address.
-     */
-    @Message(id = 11676, value = "No resource exists at address %s")
-    String hqServerManagementServiceResourceNotFound(PathAddress address);
-
     @Message(id = 11677, value = "Can not change the clustered attribute to false: The hornetq-server resource at %s has cluster-connection children resources and will remain clustered.")
     String canNotChangeClusteredAttribute(PathAddress address);
 

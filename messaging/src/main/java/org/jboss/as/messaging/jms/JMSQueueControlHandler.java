@@ -51,6 +51,9 @@ public class JMSQueueControlHandler extends AbstractQueueControlHandler<JMSQueue
 
     protected AbstractQueueControlHandler.DelegatingQueueControl<JMSQueueControl> getQueueControl(HornetQServer hqServer, String queueName){
         final JMSQueueControl control = JMSQueueControl.class.cast(hqServer.getManagementService().getResource(ResourceNames.JMS_QUEUE + queueName));
+        if (control == null) {
+            return null;
+        }
         return new AbstractQueueControlHandler.DelegatingQueueControl<JMSQueueControl>() {
 
             @Override

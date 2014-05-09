@@ -37,13 +37,13 @@ import static org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition.RESUME;
 
 import org.hornetq.jms.bridge.JMSBridge;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
-import org.jboss.as.messaging.MessagingMessages;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
@@ -77,7 +77,8 @@ public class JMSBridgeHandler extends AbstractRuntimeOnlyHandler {
         final ServiceName bridgeServiceName = MessagingServices.getJMSBridgeServiceName(bridgeName);
         final ServiceController<?> bridgeService = context.getServiceRegistry(modify).getService(bridgeServiceName);
         if (bridgeService == null) {
-            throw new OperationFailedException(MessagingMessages.MESSAGES.hqServerManagementServiceResourceNotFound(PathAddress.pathAddress(operation.require(OP_ADDR))));
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
         }
 
         final JMSBridge bridge = JMSBridge.class.cast(bridgeService.getValue());

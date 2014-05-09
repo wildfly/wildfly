@@ -36,6 +36,7 @@ import org.hornetq.api.core.management.HornetQServerControl;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -137,8 +138,8 @@ public class HornetQServerControlWriteHandler extends AbstractWriteAttributeHand
     private void applyOperationToHornetQService(final OperationContext context, ModelNode operation, String attributeName, ServiceController<?> hqService) {
         HornetQServerControl serverControl = HornetQServer.class.cast(hqService.getValue()).getHornetQServerControl();
         if (serverControl == null) {
-            ManagementUtil.rollbackOperationWithResourceNotFound(context, operation);
-            return;
+            PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
+            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
         }
         try {
             if (attributeName.equals(CommonAttributes.FAILOVER_ON_SHUTDOWN.getName()))  {
