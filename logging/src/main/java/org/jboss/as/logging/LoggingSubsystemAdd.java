@@ -22,6 +22,8 @@
 
 package org.jboss.as.logging;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -102,16 +104,24 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
                 logContextConfiguration.removeLoggerConfiguration(name);
             }
         }
+
+        // Create a collection of all subsystem handlers
+        final Collection<String> subsystemHandlers = new ArrayList<String>();
+        subsystemHandlers.addAll(resource.getChildrenNames(AsyncHandlerResourceDefinition.ASYNC_HANDLER));
+        subsystemHandlers.addAll(resource.getChildrenNames(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER));
+        subsystemHandlers.addAll(resource.getChildrenNames(CustomHandlerResourceDefinition.CUSTOM_HANDLER));
+        subsystemHandlers.addAll(resource.getChildrenNames(FileHandlerResourceDefinition.FILE_HANDLER));
+        subsystemHandlers.addAll(resource.getChildrenNames(PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER));
+        subsystemHandlers.addAll(resource.getChildrenNames(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER));
+
         // handlers
         final List<String> configuredHandlerNames = logContextConfiguration.getHandlerNames();
-        configuredHandlerNames.removeAll(resource.getChildrenNames(AsyncHandlerResourceDefinition.ASYNC_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(CustomHandlerResourceDefinition.CUSTOM_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(FileHandlerResourceDefinition.FILE_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER));
-        configuredHandlerNames.removeAll(resource.getChildrenNames(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER));
+        configuredHandlerNames.removeAll(subsystemHandlers);
         for (String name : configuredHandlerNames) {
             LoggingLogger.ROOT_LOGGER.tracef("Removing handler configuration for '%s'", name);
+            // Clean up any possible POJO references
+            logContextConfiguration.removePojoConfiguration(name);
+            // Remove the handler configuration
             logContextConfiguration.removeHandlerConfiguration(name);
         }
 
@@ -120,15 +130,11 @@ class LoggingSubsystemAdd extends AbstractAddStepHandler {
         configuredFormatters.removeAll(resource.getChildrenNames(PatternFormatterResourceDefinition.PATTERN_FORMATTER.getName()));
         configuredFormatters.removeAll(resource.getChildrenNames(CustomFormatterResourceDefinition.CUSTOM_FORMATTER.getName()));
         // Formatter names could also be the name of a handler if the formatter attribute is used rather than a named-formatter
-        configuredFormatters.removeAll(resource.getChildrenNames(AsyncHandlerResourceDefinition.ASYNC_HANDLER));
-        configuredFormatters.removeAll(resource.getChildrenNames(ConsoleHandlerResourceDefinition.CONSOLE_HANDLER));
-        configuredFormatters.removeAll(resource.getChildrenNames(CustomHandlerResourceDefinition.CUSTOM_HANDLER));
-        configuredFormatters.removeAll(resource.getChildrenNames(FileHandlerResourceDefinition.FILE_HANDLER));
-        configuredFormatters.removeAll(resource.getChildrenNames(PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER));
-        configuredFormatters.removeAll(resource.getChildrenNames(SizeRotatingHandlerResourceDefinition.SIZE_ROTATING_FILE_HANDLER));
+        configuredFormatters.removeAll(subsystemHandlers);
 
         for (String name : configuredFormatters) {
             LoggingLogger.ROOT_LOGGER.tracef("Removing formatter configuration for '%s'", name);
+            // Remove the formatter configuration
             logContextConfiguration.removeFormatterConfiguration(name);
         }
 
