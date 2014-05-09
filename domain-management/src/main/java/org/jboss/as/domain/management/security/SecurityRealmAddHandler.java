@@ -26,7 +26,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHORIZATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_SEARCH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.GROUP_TO_PRINCIPAL;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LDAP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.LOCAL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PRINCIPAL_TO_GROUP;
@@ -40,6 +39,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_IS_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERNAME_TO_DN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USERS;
+import static org.jboss.as.domain.management.ModelDescriptionConstants.JAAS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.JKS;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.KEYSTORE_PATH;
 import static org.jboss.as.domain.management.ModelDescriptionConstants.PASSWORD;
@@ -244,7 +244,8 @@ public class SecurityRealmAddHandler implements OperationStepHandler {
             List<ServiceController<?>> newControllers, boolean injectServerManager, ServiceBuilder<?> realmBuilder, Injector<CallbackHandlerService> injector) throws OperationFailedException {
         ServiceName jaasServiceName = JaasCallbackHandler.ServiceUtil.createServiceName(realmName);
         String name = JaasAuthenticationResourceDefinition.NAME.resolveModelAttribute(context, jaas).asString();
-        JaasCallbackHandler jaasCallbackHandler = new JaasCallbackHandler(name);
+        boolean assignGroups = JaasAuthenticationResourceDefinition.ASSIGN_GROUPS.resolveModelAttribute(context, jaas).asBoolean();
+        JaasCallbackHandler jaasCallbackHandler = new JaasCallbackHandler(realmName, name, assignGroups);
 
         ServiceBuilder<?> jaasBuilder = serviceTarget.addService(jaasServiceName, jaasCallbackHandler);
         if (injectServerManager) {
