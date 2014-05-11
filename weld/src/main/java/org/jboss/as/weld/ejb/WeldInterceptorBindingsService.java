@@ -15,6 +15,7 @@ import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.ejb.spi.InterceptorBindings;
 import org.jboss.weld.ejb.spi.helpers.ForwardingEjbServices;
 import org.jboss.weld.injection.producer.InterceptionModelInitializer;
+import org.jboss.weld.interceptor.spi.metadata.ClassMetadata;
 import org.jboss.weld.interceptor.spi.model.InterceptionModel;
 import org.jboss.weld.manager.BeanManagerImpl;
 import org.jboss.weld.resources.ClassTransformer;
@@ -63,7 +64,7 @@ public class WeldInterceptorBindingsService implements Service<InterceptorBindin
                 EnhancedAnnotatedType<?> enhancedType = manager.getServices().get(ClassTransformer.class).getEnhancedAnnotatedType(type);
                 InterceptionModelInitializer.of(manager, enhancedType, null).init();
             }
-            InterceptionModel model = manager.getInterceptorModelRegistry().get(type);
+            InterceptionModel<ClassMetadata<?>> model = manager.getInterceptorModelRegistry().get(type);
             if (model != null) {
                 return new InterceptorBindingsAdapter(manager.getInterceptorModelRegistry().get(type));
             }
