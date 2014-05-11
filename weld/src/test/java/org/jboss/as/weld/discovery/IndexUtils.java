@@ -21,6 +21,7 @@
  */
 package org.jboss.as.weld.discovery;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 
@@ -43,7 +44,7 @@ class IndexUtils {
     private static void addResource(Object resource, Indexer indexer, ClassLoader classLoader) throws IOException {
         final String resourceName;
         if (resource instanceof Class<?>) {
-            resourceName = ((Class<?>) resource).getName().replace(".", "/") + ".class";
+            resourceName = ((Class<?>) resource).getName().replace(".", File.separator) + ".class";
         } else if (resource instanceof String) {
             resourceName = resource.toString();
         } else {
