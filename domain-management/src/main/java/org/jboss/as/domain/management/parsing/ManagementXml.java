@@ -1337,10 +1337,11 @@ public class ManagementXml {
                         case DOMAIN_1_4:
                         case DOMAIN_1_5:
                         case DOMAIN_2_0:
+                        case DOMAIN_2_1:
                             parseJaasAuthentication_1_1(reader, realmAddress, list);
                             break;
                         default:
-                            parseJaasAuthentication_2_1(reader, realmAddress, list);
+                            parseJaasAuthentication_3_0(reader, realmAddress, list);
                             break;
                     }
                     usernamePasswordFound = true;
@@ -1461,7 +1462,7 @@ public class ManagementXml {
         requireNoContent(reader);
     }
 
-    private static void parseJaasAuthentication_2_1(final XMLExtendedStreamReader reader,
+    private static void parseJaasAuthentication_3_0(final XMLExtendedStreamReader reader,
             final ModelNode realmAddress, final List<ModelNode> list) throws XMLStreamException {
         ModelNode addr = realmAddress.clone().add(AUTHENTICATION, JAAS);
         ModelNode jaas = Util.getEmptyOperation(ADD, addr);
