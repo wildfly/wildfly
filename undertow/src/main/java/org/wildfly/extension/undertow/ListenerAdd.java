@@ -70,10 +70,11 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         String workerName = ListenerResourceDefinition.WORKER.resolveModelAttribute(context, model).asString();
         String bufferPoolName = ListenerResourceDefinition.BUFFER_POOL.resolveModelAttribute(context, model).asString();
         boolean enabled = ListenerResourceDefinition.ENABLED.resolveModelAttribute(context, model).asBoolean();
-        OptionMap options = OptionList.resolveOptions(context, model, ListenerResourceDefinition.OPTIONS);
+        OptionMap listenerOptions = OptionList.resolveOptions(context, model, ListenerResourceDefinition.LISTENER_OPTIONS);
+        OptionMap socketOptions = OptionList.resolveOptions(context, model, ListenerResourceDefinition.SOCKET_OPTIONS);
         String serverName = parent.getLastElement().getValue();
         final ServiceName listenerServiceName = UndertowService.listenerName(name);
-        final ListenerService<? extends ListenerService> service = createService(name, serverName, context, model, options);
+        final ListenerService<? extends ListenerService> service = createService(name, serverName, context, model, listenerOptions,socketOptions);
         final ServiceBuilder<? extends ListenerService> serviceBuilder = context.getServiceTarget().addService(listenerServiceName, service);
         serviceBuilder.addDependency(IOServices.WORKER.append(workerName), XnioWorker.class, service.getWorker())
                 .addDependency(SocketBinding.JBOSS_BINDING_NAME.append(bindingRef), SocketBinding.class, service.getBinding())
@@ -90,7 +91,7 @@ abstract class ListenerAdd extends AbstractAddStepHandler {
         }
     }
 
-    abstract ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException;
+    abstract ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException;
 
     abstract void configureAdditionalDependencies(OperationContext context, ServiceBuilder<? extends ListenerService> serviceBuilder, ModelNode model, ListenerService service) throws OperationFailedException;
 

@@ -67,12 +67,14 @@ public abstract class ListenerService<T> implements Service<T> {
 
     private final String name;
     protected final OptionMap listenerOptions;
+    protected final OptionMap socketOptions;
     protected volatile OpenListener openListener;
 
 
-    protected ListenerService(String name, OptionMap listenerOptions) {
+    protected ListenerService(String name, OptionMap listenerOptions, OptionMap socketOptions) {
         this.name = name;
         this.listenerOptions = listenerOptions;
+        this.socketOptions = socketOptions;
     }
 
     public InjectedValue<XnioWorker> getWorker() {

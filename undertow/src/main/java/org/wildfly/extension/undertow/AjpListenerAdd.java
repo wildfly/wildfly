@@ -39,13 +39,13 @@ class AjpListenerAdd extends ListenerAdd {
     }
 
     @Override
-    ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions) throws OperationFailedException {
+    ListenerService<? extends ListenerService> createService(String name, final String serverName, final OperationContext context, ModelNode model, OptionMap listenerOptions, OptionMap socketOptions) throws OperationFailedException {
         ModelNode schemeNode = AjpListenerResourceDefinition.SCHEME.resolveModelAttribute(context, model);
         String scheme = null;
         if (schemeNode.isDefined()) {
             scheme = schemeNode.asString();
         }
-        return new AjpListenerService(name, scheme, listenerOptions);
+        return new AjpListenerService(name, scheme, listenerOptions, socketOptions);
     }
 
     @Override

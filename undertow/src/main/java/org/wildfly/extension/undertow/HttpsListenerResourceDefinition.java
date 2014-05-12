@@ -67,6 +67,12 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
             .setAllowExpression(true)
             .build();
 
+    protected static final OptionAttributeDefinition ENABLED_PROTOCOLS = OptionAttributeDefinition.builder("enabled-protocols", Options.SSL_ENABLED_PROTOCOLS)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setAllowExpression(true)
+            .build();
+
 
     private HttpsListenerResourceDefinition() {
         super(UndertowExtension.HTTPS_LISTENER_PATH);
@@ -78,6 +84,7 @@ public class HttpsListenerResourceDefinition extends ListenerResourceDefinition 
         res.add(SECURITY_REALM);
         res.add(VERIFY_CLIENT);
         res.add(ENABLED_CIPHER_SUITES);
+        res.add(ENABLED_PROTOCOLS);
         return res;
     }
 
