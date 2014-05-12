@@ -370,7 +370,7 @@
                 how the roles are loaded.
             </xs:documentation>
         </xs:annotation>
-        <xs:choice>
+        <xs:choice minOccurs="0">
             <xs:element name="properties" type="propertiesFileType" minOccurs="0" />
             <xs:element name="plug-in" type="plug-inAuthType" minOccurs="0" />
             <xs:element name="ldap" type="ldapAuthorizationType" minOccurs="0" />
