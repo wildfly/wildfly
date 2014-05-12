@@ -83,6 +83,7 @@ public class FileAuditLogHandler extends AuditLogHandler {
         }
         try {
             file.createNewFile();
+            setFileNotWorldReadablePermissions(file);
         } catch (IOException e){
             throw new RuntimeException(e);
         }
@@ -168,5 +169,20 @@ public class FileAuditLogHandler extends AuditLogHandler {
             copyFile(file, to);
             file.delete();
         }
+    }
+
+    /**
+     * This procedure sets permissions to the given file to not allow everybody to read it.
+     *
+     * Only when underlying OS allows the change.
+     *
+     * @param file File to set permissions
+     */
+    private void setFileNotWorldReadablePermissions(File file) {
+       file.setReadable(false, false);
+       file.setWritable(false, false);
+       file.setExecutable(false, false);
+       file.setReadable(true, true);
+       file.setWritable(true, true);
     }
 }
