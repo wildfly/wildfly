@@ -32,12 +32,12 @@
     <parent>
         <groupId>org.wildfly</groupId>
         <artifactId>wildfly-dist-parent</artifactId>
-        <version>8.1.0.Final-SNAPSHOT</version>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>wildfly-dist</artifactId>
-    <version>8.1.0.Final-SNAPSHOT</version>
+    <version>9.0.0.Alpha1-SNAPSHOT</version>
 
     <name>WildFly: Distribution</name>
     <packaging>pom</packaging>
