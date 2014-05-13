@@ -62,11 +62,12 @@ import org.wildfly.extension.picketlink.idm.service.JPAIdentityStoreService;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 
 import javax.transaction.TransactionManager;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
+
 import java.util.List;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.FILE_STORE;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_CONFIGURATION;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_STORE_CREDENTIAL_HANDLER;
@@ -109,7 +110,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
         ModelNode identityConfigurationNode = partitionManager.get(IDENTITY_CONFIGURATION.getName());
 
         if (!identityConfigurationNode.isDefined()) {
-            throw MESSAGES.idmNoIdentityConfigurationProvided();
+            throw PicketLinkLogger.ROOT_LOGGER.idmNoIdentityConfigurationProvided();
         }
 
         for (Property identityConfiguration : identityConfigurationNode.asPropertyList()) {
@@ -119,7 +120,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
             ModelNode value = identityConfiguration.getValue();
 
             if (!value.isDefined()) {
-                throw MESSAGES.idmNoIdentityStoreProvided(configurationName);
+                throw PicketLinkLogger.ROOT_LOGGER.idmNoIdentityStoreProvided(configurationName);
             }
 
             for (ModelNode store : value.asList()) {
@@ -204,7 +205,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     typeName = AttributedTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw MESSAGES.typeNotProvided(LDAP_STORE_MAPPING.getName());
+                    throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(LDAP_STORE_MAPPING.getName());
                 }
 
                 LDAPMappingConfigurationBuilder storeMapping = storeConfig
@@ -385,7 +386,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                     } else if (codeNode.isDefined()) {
                         typeName = AttributedTypeEnum.forType(codeNode.asString());
                     } else {
-                        throw MESSAGES.typeNotProvided(SUPPORTED_TYPE.getName());
+                        throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(SUPPORTED_TYPE.getName());
                     }
 
                     ModelNode moduleNode = SupportedTypeResourceDefinition.MODULE.resolveModelAttribute(context, supportedType);
@@ -417,7 +418,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     typeName = CredentialTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw MESSAGES.typeNotProvided(IDENTITY_STORE_CREDENTIAL_HANDLER.getName());
+                    throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(IDENTITY_STORE_CREDENTIAL_HANDLER.getName());
                 }
 
                 storeConfig.addCredentialHandler(loadClass(moduleNode, typeName));
@@ -443,7 +444,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
             try {
                 module = moduleLoader.loadModule(ModuleIdentifier.create(moduleNode.asString()));
             } catch (ModuleLoadException e) {
-                throw MESSAGES.moduleCouldNotLoad(moduleNode.asString(), e);
+                throw PicketLinkLogger.ROOT_LOGGER.moduleCouldNotLoad(moduleNode.asString(), e);
             }
         } else {
             // fallback to caller module.
@@ -464,7 +465,7 @@ public class PartitionManagerAddHandler extends AbstractAddStepHandler {
                 return (Class<T>) getClass().getClassLoader().loadClass(typeName);
             }
         } catch (ClassNotFoundException cnfe) {
-            throw MESSAGES.couldNotLoadClass(typeName, cnfe);
+            throw PicketLinkLogger.ROOT_LOGGER.couldNotLoadClass(typeName, cnfe);
         }
     }
 }

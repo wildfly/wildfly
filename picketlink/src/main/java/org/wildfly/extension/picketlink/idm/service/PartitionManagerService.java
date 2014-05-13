@@ -44,7 +44,7 @@ import org.picketlink.idm.config.IdentityConfigurationBuilder;
 import org.picketlink.idm.internal.DefaultPartitionManager;
 import org.wildfly.extension.picketlink.idm.IDMExtension;
 
-import static org.wildfly.extension.picketlink.PicketLinkLogger.ROOT_LOGGER;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * <p> This {@link org.jboss.msc.service.Service} starts the {@link org.picketlink.idm.PartitionManager} using the configuration loaded from the domain model and publishes it in JNDI.

@@ -22,7 +22,7 @@
 
 package org.wildfly.extension.picketlink.idm.config;
 
-import org.wildfly.extension.picketlink.PicketLinkMessages;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.modules.ModuleLoadException;
@@ -66,7 +66,7 @@ public class JPAStoreSubsystemConfiguration extends JPAIdentityStoreConfiguratio
             try {
                 this.entityModule = moduleLoader.loadModule(ModuleIdentifier.create(entityModuleName));
             } catch (ModuleLoadException e) {
-                throw PicketLinkMessages.MESSAGES.idmJpaEntityModuleNotFound(entityModuleName);
+                throw PicketLinkLogger.ROOT_LOGGER.idmJpaEntityModuleNotFound(entityModuleName);
             }
         } else {
             this.entityModule = null;
