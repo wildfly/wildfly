@@ -316,7 +316,7 @@
         <xsd:element name="handler-parameter" type="handlerParameterType" minOccurs="0" maxOccurs="unbounded"
                      nillable="true"/>
         </xsd:sequence>
-        <xsd:attribute name="class-name" type="xsd:string" use="required">
+        <xsd:attribute name="class-name" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation>Defines the handler class name.</xsd:documentation>
             </xsd:annotation>
