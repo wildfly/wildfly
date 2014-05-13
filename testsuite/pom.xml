@@ -154,7 +154,6 @@
 
         <!-- Arquillian dependency versions -->
         <version.arquillian_wildfly>${project.parent.version}</version.arquillian_wildfly>
-        <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.saxon>8.7</version.saxon>
 
         <!-- Don't try to deploy the testsuite modules because they don't build jars -->

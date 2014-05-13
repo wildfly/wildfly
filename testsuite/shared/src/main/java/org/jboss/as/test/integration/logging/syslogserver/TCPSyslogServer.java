@@ -31,7 +31,7 @@ import org.productivity.java.syslog4j.server.impl.net.tcp.TCPNetSyslogServer;
 
 /**
  * Syslog4j server for TCP protocol implementation.
- * 
+ *
  * @author Josef Cacek
  */
 public class TCPSyslogServer extends TCPNetSyslogServer {
