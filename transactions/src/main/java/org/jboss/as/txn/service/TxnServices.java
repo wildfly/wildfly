@@ -56,6 +56,8 @@ public final class TxnServices {
 
     public static final ServiceName JBOSS_TXN_JTA_ENVIRONMENT = JBOSS_TXN.append("JTAEnvironment");
 
+    public static final ServiceName JBOSS_TXN_CMR = JBOSS_TXN.append("CMR");
+
     public static <T> T notNull(T value) {
         if (value == null) throw MESSAGES.serviceNotStarted();
         return value;
