@@ -22,6 +22,9 @@
 package org.jboss.as.domain.http.server;
 
 import static org.jboss.logging.Logger.Level.ERROR;
+import static org.jboss.logging.Logger.Level.INFO;
+
+import java.net.InetAddress;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -58,4 +61,7 @@ public interface HttpServerLogger extends BasicLogger {
     @Message(id = 15104, value = "Unable to load error contest for slot %s, disabling error context.")
     void errorContextModuleNotFound(String slot);
 
+    @LogMessage(level = INFO)
+    @Message(id = 15105, value = "Management interface is using different addresses for HTTP (%s) and HTTPS (%s). Redirection of HTTPS requests from HTTP socket to HTTPS socket will not be supported.")
+    void httpsRedirectNotSupported(InetAddress bindAddress, InetAddress secureBindAddress);
 }

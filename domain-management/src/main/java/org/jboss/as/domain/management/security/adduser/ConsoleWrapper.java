@@ -30,7 +30,7 @@ import java.util.IllegalFormatException;
  *
  * @author <a href="mailto:flemming.harms@gmail.com">Flemming Harms</a>
  */
-public interface ConsoleWrapper<T> {
+public interface ConsoleWrapper {
 
     /**
      * Writes a formatted string to this console's output stream using
@@ -39,7 +39,7 @@ public interface ConsoleWrapper<T> {
      * @param fmt
      * @param args
      */
-    T format(String fmt, Object ...args) throws IllegalFormatException;
+    void format(String fmt, Object ...args) throws IllegalFormatException;
 
     /**
      * A convenience method to write a formatted string to this console's
@@ -77,9 +77,9 @@ public interface ConsoleWrapper<T> {
     char[] readPassword(String fmt, Object ... args) throws IllegalFormatException, IOError;
 
     /**
-     *  Return the console object
+     * Check if the wrapper does have a console.
      *
-     * @return Return the console object
+     * @return true if the wrapper does have a console.
      */
-    T getConsole();
+    boolean hasConsole();
 }

@@ -169,7 +169,13 @@ public abstract class AbstractResourceAdapterDeploymentService {
                 if (rr != null) {
                     for (XAResourceRecovery recovery : value.getDeployment().getRecovery()) {
                         if (recovery!= null) {
-                            rr.removeXAResourceRecovery(recovery);
+                            try {
+                                recovery.shutdown();
+                            } catch (Exception e) {
+                                DEPLOYMENT_CONNECTOR_LOGGER.error("Error during recovery shutdown", e);
+                            } finally {
+                                rr.removeXAResourceRecovery(recovery);
+                            }
                         }
                     }
                 }

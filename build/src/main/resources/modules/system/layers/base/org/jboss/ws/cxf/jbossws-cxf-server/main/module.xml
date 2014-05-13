@@ -34,6 +34,7 @@
 
     <dependencies>
         <module name="javax.api" />
+        <module name="javax.security.auth.message.api"/>
         <module name="javax.servlet.api" />
         <module name="javax.jws.api" />
         <module name="javax.wsdl4j.api" />
@@ -52,7 +53,7 @@
             <include path="META-INF"/>
           </imports>
         </module>
-        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-httpserver" services="import">
+        <module name="org.jboss.ws.cxf.jbossws-cxf-transports-undertow" services="import">
           <imports>
             <include path="META-INF/cxf"/> <!-- required to also pull in the bus extensions from META-INF -->
             <include path="META-INF"/>

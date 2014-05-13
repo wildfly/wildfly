@@ -109,6 +109,8 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
         hostControllerInfo.setHttpManagementInterface(HttpManagementResourceDefinition.INTERFACE.resolveModelAttribute(context, model).asString());
         final ModelNode portNode = HttpManagementResourceDefinition.HTTP_PORT.resolveModelAttribute(context, model);
         hostControllerInfo.setHttpManagementPort(portNode.isDefined() ? portNode.asInt() : -1);
+        final ModelNode secureAddress = HttpManagementResourceDefinition.SECURE_INTERFACE.resolveModelAttribute(context, model);
+        hostControllerInfo.setHttpManagementSecureInterface(secureAddress.isDefined() ? secureAddress.asString() : null);
         final ModelNode securePortNode = HttpManagementResourceDefinition.HTTPS_PORT.resolveModelAttribute(context, model);
         hostControllerInfo.setHttpManagementSecurePort(securePortNode.isDefined() ? securePortNode.asInt() : -1);
         final ModelNode realmNode = HttpManagementResourceDefinition.SECURITY_REALM.resolveModelAttribute(context, model);
@@ -121,6 +123,7 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
 
         String interfaceName = hostControllerInfo.getHttpManagementInterface();
         int port = hostControllerInfo.getHttpManagementPort();
+        String secureInterfaceName = hostControllerInfo.getHttpManagementSecureInterface();
         int securePort = hostControllerInfo.getHttpManagementSecurePort();
         String securityRealm = hostControllerInfo.getHttpManagementSecurityRealm();
 
@@ -138,6 +141,9 @@ public class HttpManagementAddHandler extends AbstractAddStepHandler {
                 .addDependency(
                         NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(interfaceName),
                         NetworkInterfaceBinding.class, service.getInterfaceInjector())
+                .addDependency(
+                        NetworkInterfaceService.JBOSS_NETWORK_INTERFACE.append(secureInterfaceName),
+                        NetworkInterfaceBinding.class, service.getSecureInterfaceInjector())
                 .addDependency(DomainModelControllerService.SERVICE_NAME, ModelController.class, service.getModelControllerInjector())
                 .addDependency(ControlledProcessStateService.SERVICE_NAME, ControlledProcessStateService.class, service.getControlledProcessStateServiceInjector())
                 .addDependency(HttpListenerRegistryService.SERVICE_NAME, ListenerRegistry.class, service.getListenerRegistry())

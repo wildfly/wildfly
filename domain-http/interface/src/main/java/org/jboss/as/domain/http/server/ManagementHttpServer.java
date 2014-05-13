@@ -170,15 +170,25 @@ public class ManagementHttpServer {
             throws IOException {
 
         HttpOpenListener openListener = new HttpOpenListener(new ByteBufferSlicePool(BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR, 4096, 10 * 4096), 4096);
-        int securePort = secureBindAddress != null ? secureBindAddress.getPort() : -1;
-        setupOpenListener(openListener, modelController, consoleMode, consoleSlot, controlledProcessStateService, securePort, securityRealm, upgradeHandler);
-        ManagementHttpServer server = new ManagementHttpServer(openListener, bindAddress, secureBindAddress, securityRealm);
 
-        return server;
+        int secureRedirectPort = secureBindAddress != null ? secureBindAddress.getPort() : -1;
+        // WFLY-2870 -- redirect not supported if bindAddress and secureBindAddress are using different InetAddress
+        boolean redirectSupported = (bindAddress == null || secureBindAddress == null || bindAddress.getAddress().equals(secureBindAddress.getAddress()));
+        if (!redirectSupported && secureRedirectPort > 0) {
+            HttpServerLogger.ROOT_LOGGER.httpsRedirectNotSupported(bindAddress.getAddress(), secureBindAddress.getAddress());
+            secureRedirectPort = -1;
+        }
+
+        setupOpenListener(openListener, modelController, consoleMode, consoleSlot, controlledProcessStateService,
+                secureRedirectPort, securityRealm, upgradeHandler);
+        return new ManagementHttpServer(openListener, bindAddress, secureBindAddress, securityRealm);
     }
 
 
-    private static void setupOpenListener(HttpOpenListener listener, ModelController modelController, ConsoleMode consoleMode, String consoleSlot, ControlledProcessStateService controlledProcessStateService, int securePort, SecurityRealm securityRealm, final ChannelUpgradeHandler upgradeHandler) {
+    private static void setupOpenListener(HttpOpenListener listener, ModelController modelController, ConsoleMode consoleMode,
+                                          String consoleSlot, ControlledProcessStateService controlledProcessStateService,
+                                          int secureRedirectPort, SecurityRealm securityRealm,
+                                          final ChannelUpgradeHandler upgradeHandler) {
 
         CanonicalPathHandler canonicalPathHandler = new CanonicalPathHandler();
         listener.setRootHandler(canonicalPathHandler);
@@ -190,8 +200,9 @@ public class ManagementHttpServer {
             current = upgradeHandler;
         }
 
-        if (securePort > 0) {
-            current = new SinglePortConfidentialityHandler(current, securePort);
+        if (secureRedirectPort > 0) {
+            // Add handler for redirect from http to https if needed
+            current = new SinglePortConfidentialityHandler(current, secureRedirectPort);
         }
         //caching handler, used for static resources
         current = new CacheHandler(new DirectBufferCache(1024,1024 * 10, 1024 * 1000, BufferAllocator.BYTE_BUFFER_ALLOCATOR), current);

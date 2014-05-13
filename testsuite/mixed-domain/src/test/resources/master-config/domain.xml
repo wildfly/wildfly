@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 
-<domain xmlns="urn:jboss:domain:2.1">
+<domain xmlns="urn:jboss:domain:3.0">
     <extensions>
         <extension module="org.jboss.as.clustering.infinispan"/>
         <extension module="org.jboss.as.clustering.jgroups"/>
@@ -106,7 +106,7 @@
                     <keepalive-time time="100" unit="milliseconds"/>
                 </thread-pool>
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:datasources:2.0">
+            <subsystem xmlns="urn:jboss:domain:datasources:3.0">
                 <datasources>
                     <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
@@ -586,9 +586,9 @@
                 </formatter>
                  -->
             </subsystem>
-            <subsystem xmlns="urn:jboss:domain:datasources:2.0">
+            <subsystem xmlns="urn:jboss:domain:datasources:3.0">
                 <datasources>
-                    <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
+                    <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true" statistics-enabled="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
                         <driver>h2</driver>
                         <security>
@@ -1093,9 +1093,9 @@
                  -->
             </subsystem>
 
-            <subsystem xmlns="urn:jboss:domain:datasources:2.0">
+            <subsystem xmlns="urn:jboss:domain:datasources:3.0">
                 <datasources>
-                    <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true">
+                    <datasource jndi-name="java:jboss/datasources/ExampleDS" pool-name="ExampleDS" enabled="true" use-java-context="true" statistics-enabled="true">
                         <connection-url>jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE</connection-url>
                         <driver>h2</driver>
                         <security>

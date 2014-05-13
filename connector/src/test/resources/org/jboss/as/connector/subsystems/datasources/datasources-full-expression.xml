@@ -1,7 +1,8 @@
-<subsystem xmlns="urn:jboss:domain:datasources:2.0">
+<subsystem xmlns="urn:jboss:domain:datasources:3.0">
     <datasources>
         <datasource jndi-name="java:jboss/datasources/complexDs" pool-name="complexDs_Pool"
-                    use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}" >
+                    use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}" jta="${test.expr:false}"
+                    connectable="${test.expr:false}" statistics-enabled="${test.expr:true}" tracking="${test.expr:true}">
             <connection-url>
                 ${test.expr:jdbc:h2:mem:test;DB_CLOSE_DELAY=-1}
             </connection-url>
@@ -99,7 +100,8 @@
             </statement>
         </datasource>
         <xa-datasource jndi-name="${test.expr:java:jboss/xa-datasources/complexXaDs}" pool-name="complexXaDs_Pool"
-                       use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}">
+                       use-java-context="${test.expr:true}" spy="${test.expr:false}" use-ccm="${test.expr:true}"
+                       connectable="${test.expr:false}" statistics-enabled="${test.expr:true}" tracking="${test.expr:true}">
             <xa-datasource-property name="URL">
                 ${test.expr:jdbc:h2:mem:test}
             </xa-datasource-property>

@@ -43,6 +43,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.constraint.SensitivityClassification;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.NonResolvingResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -61,9 +62,9 @@ import org.jboss.jca.common.api.metadata.ds.Driver;
 import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
-import org.jboss.jca.common.api.metadata.ds.v12.DataSource;
 import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
-import org.jboss.jca.common.api.metadata.ds.v12.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v13.XaDataSource;
+import org.jboss.jca.common.api.metadata.ds.v13.DataSource;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -116,6 +117,10 @@ public class Constants {
     private static final String URL_SELECTOR_STRATEGY_CLASS_NAME_NAME = "url-selector-strategy-class-name";
 
     private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
+
+    private static final String CONNECTABLE_NAME = "connectable";
+
+    private static final String TRACKING_NAME = "tracking";
 
     static final String POOLNAME_NAME = "pool-name";
 
@@ -289,6 +294,18 @@ public class Constants {
             .setAllowNull(true)
             .build();
 
+    static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
+                .setXmlName(DataSource.Attribute.CONNECTABLE.getLocalName())
+                .setAllowExpression(true)
+                .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
+                .setAllowNull(true)
+                .build();
+
+    static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
+                    .setXmlName(DataSource.Attribute.TRACKING.getLocalName())
+                    .setAllowExpression(true)
+                    .setAllowNull(true)
+                    .build();
 
     static SimpleAttributeDefinition JTA = new SimpleAttributeDefinition(JTA_NAME, DataSource.Attribute.JTA.getLocalName(), new ModelNode().set(Defaults.JTA), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
@@ -413,6 +430,12 @@ public class Constants {
             .setRequires(REAUTHPLUGIN_CLASSNAME_NAME)
             .build();
 
+    static SimpleAttributeDefinition STATISTICS_ENABLED = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.STATISTICS_ENABLED, ModelType.BOOLEAN)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowNull(true)
+            .setAllowExpression(true)
+            .build();
+
 
     static final SimpleAttributeDefinition[] DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[]{CONNECTION_URL,
             DRIVER_CLASS, Constants.DATASOURCE_CLASS, JNDI_NAME,
@@ -445,7 +468,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, SPY,
-            USE_CCM, ENABLED};
+            USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING};
 
     static final PropertiesAttributeDefinition[] DATASOURCE_PROPERTIES_ATTRIBUTES = new PropertiesAttributeDefinition[]{
             REAUTHPLUGIN_PROPERTIES,
@@ -514,7 +537,7 @@ public class Constants {
             org.jboss.as.connector.subsystems.common.pool.Constants.BACKGROUNDVALIDATION,
             org.jboss.as.connector.subsystems.common.pool.Constants.USE_FAST_FAIL,
             VALIDATE_ON_MATCH, XA_RESOURCE_TIMEOUT,
-            SPY, USE_CCM, ENABLED,
+            SPY, USE_CCM, ENABLED, CONNECTABLE, STATISTICS_ENABLED, TRACKING,
             RECOVERY_USERNAME, RECOVERY_PASSWORD,
             RECOVERY_SECURITY_DOMAIN, RECOVER_PLUGIN_CLASSNAME,
             NO_RECOVERY, URL_PROPERTY};
@@ -613,6 +636,8 @@ public class Constants {
             .setRuntimeOnly().build();
     static final SimpleOperationDefinition FLUSH_ALL_CONNECTION = new SimpleOperationDefinitionBuilder("flush-all-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
             .setRuntimeOnly().build();
+    static final SimpleOperationDefinition DUMP_QUEUED_THREADS = new SimpleOperationDefinitionBuilder("dump-queued-threads-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
+                .setRuntimeOnly().build();
     static final SimpleOperationDefinition FLUSH_INVALID_CONNECTION = new SimpleOperationDefinitionBuilder("flush-invalid-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
                 .setRuntimeOnly().build();
     static final SimpleOperationDefinition FLUSH_GRACEFULLY_CONNECTION = new SimpleOperationDefinitionBuilder("flush-gracefully-connection-in-pool", DataSourcesExtension.getResourceDescriptionResolver())
@@ -664,4 +689,5 @@ public class Constants {
             }
         }
     };
+
 }

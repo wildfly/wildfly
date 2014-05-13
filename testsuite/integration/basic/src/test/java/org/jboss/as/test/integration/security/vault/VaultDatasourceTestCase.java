@@ -186,7 +186,7 @@ public class VaultDatasourceTestCase {
             vaultHandler.cleanUp();
 
             // stop DB
-            executeUpdate(connection, "DROP TABLE TestPeople");
+            executeUpdate(connection, "DROP CMR_TABLE TestPeople");
             connection.close();
             server.shutdown();
 

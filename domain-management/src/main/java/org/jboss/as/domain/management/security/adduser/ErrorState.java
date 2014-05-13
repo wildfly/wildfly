@@ -52,7 +52,7 @@ public class ErrorState implements State {
     }
 
     public State execute() {
-        boolean direct = theConsole.getConsole() == null;
+        boolean direct = theConsole.hasConsole();
         // Errors should be output in all modes.
         printf(NEW_LINE, direct);
         printf(" * ", direct);

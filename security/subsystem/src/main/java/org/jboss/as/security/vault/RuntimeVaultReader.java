@@ -21,6 +21,8 @@
 */
 package org.jboss.as.security.vault;
 
+import static java.security.AccessController.doPrivileged;
+
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -32,9 +34,16 @@ import java.util.regex.Pattern;
 import org.jboss.as.security.SecurityMessages;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.as.server.services.security.VaultReaderException;
+import org.jboss.modules.Module;
+import org.jboss.modules.ModuleClassLoader;
+import org.jboss.modules.ModuleIdentifier;
+import org.jboss.modules.ModuleLoadException;
+import org.jboss.modules.ModuleLoader;
 import org.jboss.security.vault.SecurityVault;
 import org.jboss.security.vault.SecurityVaultException;
 import org.jboss.security.vault.SecurityVaultFactory;
+import org.wildfly.security.manager.WildFlySecurityManager;
+import org.wildfly.security.manager.action.GetModuleClassLoaderAction;
 
 /**
  *
@@ -55,6 +64,10 @@ public class RuntimeVaultReader extends AbstractVaultReader {
     }
 
     protected void createVault(final String fqn, final Map<String, Object> options) throws VaultReaderException {
+        createVault(fqn, null, options);
+    }
+
+    protected void createVault(final String fqn, final String module, final Map<String, Object> options) throws VaultReaderException {
         Map<String, Object> vaultOptions = new HashMap<String, Object>(options);
         SecurityVault vault = null;
         try {
@@ -63,8 +76,10 @@ public class RuntimeVaultReader extends AbstractVaultReader {
                 public SecurityVault run() throws Exception {
                     if (fqn == null || fqn.isEmpty()) {
                         return SecurityVaultFactory.get();
-                    } else {
+                    } else if (module == null ){
                         return SecurityVaultFactory.get(fqn);
+                    } else {
+                        return SecurityVaultFactory.get(getModuleClassLoader(module), fqn);
                     }
                 }
             });
@@ -126,6 +141,7 @@ public class RuntimeVaultReader extends AbstractVaultReader {
             // only in case of conversion of old vault implementation
             sharedKey = tokens[3].getBytes(VaultSession.CHARSET);
         }
+
         return vault.retrieve(tokens[1], tokens[2], sharedKey);
     }
 
@@ -139,5 +155,11 @@ public class RuntimeVaultReader extends AbstractVaultReader {
             tokens[index++] = tokenizer.nextToken();
         }
         return tokens;
+    }
+
+    private ModuleClassLoader getModuleClassLoader(final String moduleSpec) throws ModuleLoadException {
+        ModuleLoader loader = Module.getCallerModuleLoader();
+        final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
+        return WildFlySecurityManager.isChecking() ? doPrivileged(new GetModuleClassLoaderAction(module)) : module.getClassLoader();
     }
 }

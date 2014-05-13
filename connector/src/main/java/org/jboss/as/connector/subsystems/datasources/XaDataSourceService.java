@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.jca.common.api.validator.ValidateException;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecovery;
 import org.jboss.jca.core.spi.transaction.recovery.XAResourceRecoveryRegistry;
@@ -56,7 +57,13 @@ public class XaDataSourceService extends AbstractDataSourceService {
 
             for (XAResourceRecovery recovery : deploymentMD.getRecovery()) {
                 if (recovery != null) {
-                    rr.removeXAResourceRecovery(recovery);
+                    try {
+                        recovery.shutdown();
+                    } catch (Exception e) {
+                        ConnectorLogger.SUBSYSTEM_DATASOURCES_LOGGER.error("Error during recovery shutdown", e);
+                    } finally {
+                        rr.removeXAResourceRecovery(recovery);
+                    }
                 }
             }
         }

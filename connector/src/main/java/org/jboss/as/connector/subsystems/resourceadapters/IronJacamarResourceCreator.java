@@ -38,6 +38,7 @@ import org.jboss.jca.common.api.metadata.common.Extension;
 import org.jboss.jca.common.api.metadata.common.Recovery;
 import org.jboss.jca.common.api.metadata.common.v11.ConnDefPool;
 import org.jboss.jca.common.api.metadata.common.v11.WorkManagerSecurity;
+import org.jboss.jca.common.api.metadata.common.v12.CommonConnDef;
 import org.jboss.jca.common.api.metadata.ironjacamar.IronJacamar;
 
 import java.util.Map;
@@ -61,6 +62,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOC
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ALLOCATION_RETRY_WAIT_MILLIS;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CLASS_NAME;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.CONNECTABLE;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENABLED;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.ENLISTMENT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.INTERLEAVING;
@@ -77,6 +79,7 @@ import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SAME_
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SECURITY_DOMAIN_AND_APPLICATION;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.SHARABLE;
+import static org.jboss.as.connector.subsystems.resourceadapters.Constants.TRACKING;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_CCM;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.USE_JAVA_CONTEXT;
 import static org.jboss.as.connector.subsystems.resourceadapters.Constants.WM_SECURITY_MAPPING_GROUP;
@@ -143,6 +146,12 @@ public class IronJacamarResourceCreator {
         setAttribute(model, JNDINAME, connDef.getJndiName());
         setAttribute(model, USE_JAVA_CONTEXT, connDef.isUseJavaContext());
         setAttribute(model, ENABLED, connDef.isEnabled());
+        if (connDef instanceof CommonConnDef) {
+            setAttribute(model, CONNECTABLE, ((CommonConnDef) connDef).isConnectable());
+            if (((CommonConnDef) connDef).isTracking() != null) {
+                setAttribute(model, TRACKING, ((CommonConnDef) connDef).isTracking());
+            }
+        }
         setAttribute(model, USE_CCM, connDef.isUseCcm());
         if (connDef instanceof org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) {
             setAttribute(model, SHARABLE, ((org.jboss.jca.common.api.metadata.common.v11.CommonConnDef) connDef).isSharable());

@@ -43,9 +43,6 @@ public class PropertyFilePrompt implements State {
     public PropertyFilePrompt(ConsoleWrapper theConsole, StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
-        if (theConsole.getConsole() == null) {
-            throw MESSAGES.noConsoleAvailable();
-        }
     }
 
     @Override

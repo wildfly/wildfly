@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.logging;
 
+import java.util.Set;
+
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -40,6 +42,8 @@ import org.jboss.vfs.VirtualFile;
  * Date: 01.09.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ *
+ * id range 10400-10499
  */
 @MessageBundle(projectCode = "JBAS")
 public interface ConnectorMessages {
@@ -593,4 +597,8 @@ public interface ConnectorMessages {
      */
     @Message(id = 10485, value = "Admin object class (%s) is incorrect for resource adapter '%s' while deploying %s")
     DeploymentUnitProcessingException invalidAdminObject(String ao, String ra, String jndiName);
+
+    @Message(id = 10486, value = "Attributes %s rejected. Must be true")
+    String rejectAttributesMustBeTrue(Set<String> key);
+
 }

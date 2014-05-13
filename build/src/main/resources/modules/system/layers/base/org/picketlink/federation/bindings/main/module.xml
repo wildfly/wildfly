@@ -36,16 +36,22 @@
         <module name="javax.servlet.api" />
         <module name="org.jboss.common-core" />
         <module name="org.jboss.logging" />
-        <module name="org.jboss.as.web" />
+        <module name="org.wildfly.extension.undertow" />
         <module name="org.jboss.security.xacml" />
         <module name="org.picketbox" />
         <module name="javax.xml.ws.api" />
         <module name="org.apache.log4j" />
-        <module name="org.apache.santuario.xmlsec"/>
+        <module name="org.apache.santuario.xmlsec">
+            <imports>
+                <exclude path="javax/*"/>
+            </imports>
+        </module>
         <module name="javax.api" />
         <module name="org.jboss.ws.api" />
         <module name="org.jboss.ws.spi" />
         <module name="org.apache.cxf" />
+        <module name="io.undertow.core" />
+        <module name="io.undertow.servlet" />
         <module name="org.picketlink.common" />
         <module name="org.picketlink.config" />
         <module name="org.picketlink.federation" />

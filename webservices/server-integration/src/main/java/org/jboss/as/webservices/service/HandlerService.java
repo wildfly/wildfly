@@ -25,18 +25,15 @@ import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import org.jboss.msc.value.InjectedValue;
-import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 
 /**
- * A service for setting a handler into the handler-chain of an endpoint / client config.
+ * A service for creating handler metadata.
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
 public final class HandlerService implements Service<UnifiedHandlerMetaData> {
 
-    private InjectedValue<UnifiedHandlerChainMetaData> handlerChain = new InjectedValue<UnifiedHandlerChainMetaData>();
     private final String handlerName;
     private final String handlerClass;
     private volatile UnifiedHandlerMetaData handler;
@@ -53,24 +50,11 @@ public final class HandlerService implements Service<UnifiedHandlerMetaData> {
 
     @Override
     public void start(final StartContext context) throws StartException {
-        final UnifiedHandlerMetaData handler = new UnifiedHandlerMetaData();
-        handler.setHandlerName(handlerName);
-        handler.setHandlerClass(handlerClass);
-        final UnifiedHandlerChainMetaData chain = handlerChain.getValue();
-        synchronized (chain) { //JBWS-3707
-            chain.addHandler(handler);
-        }
+        handler = new UnifiedHandlerMetaData(handlerClass, handlerName, null, null, null, null);
     }
 
     @Override
     public void stop(final StopContext context) {
-        final UnifiedHandlerChainMetaData chain = handlerChain.getValue();
-        synchronized (chain) { //JBWS-3707
-            chain.getHandlers().remove(handler);
-        }
-    }
-
-    public InjectedValue<UnifiedHandlerChainMetaData> getHandlerChain() {
-        return handlerChain;
+        handler = null;
     }
 }

@@ -30,9 +30,9 @@ import static org.junit.Assert.*;
 
 /**
  * Base class for JCA statistics tests
- * 
+ *
  * @author <a href="mailto:vrastsel@redhat.com">Vladimir Rastseluev</a>
- * 
+ *
  */
 public abstract class JcaStatisticsBase extends JcaMgmtBase {
 
@@ -41,13 +41,14 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
 
     /**
      * Default test for pool statistics: flush pool, then test connection
-     * 
+     *
      * @param connectionNode - where to test
      * @param statName - name of statistics parameter
      * @throws Exception
      */
     protected void testStatistics(ModelNode connectionNode) throws Exception {
         ModelNode statisticsNode = translateFromConnectionToStatistics(connectionNode);
+        writeAttribute(statisticsNode,"statistics-enabled","true");
 
         executeOnNode(connectionNode, "flush-all-connection-in-pool");
         assertStatisticsShouldBeSet(statisticsNode, false);
@@ -58,36 +59,39 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
 
     /**
      * Test for pool statistics: flush pool, then test connection twice
-     * 
+     *
      * @param connectionNode - where to test
      * @param statName - name of statistics parameter
      * @throws Exception
      */
     protected void testStatisticsDouble(ModelNode connectionNode) throws Exception {
+        ModelNode statisticsNode = translateFromConnectionToStatistics(connectionNode);
         executeOnNode(connectionNode, "flush-all-connection-in-pool");
         executeOnNode(connectionNode, "test-connection-in-pool");
         executeOnNode(connectionNode, "test-connection-in-pool");
-        assertStatisticsShouldBeSet(translateFromConnectionToStatistics(connectionNode), true);
+        assertStatisticsShouldBeSet(statisticsNode, true);
     }
 
 
     /**
      * Tests, if changing statistics in node1 don't change statistics in other node2
-     * 
+     *
      * @param node1
      * @param node2
      * @throws Exception
      */
     protected void testInterference(ModelNode node1, ModelNode node2) throws Exception {
+        ModelNode statisticsNode = translateFromConnectionToStatistics(node2);
         executeOnNode(node1, "flush-all-connection-in-pool");
         executeOnNode(node2, "flush-all-connection-in-pool");
+        writeAttribute(statisticsNode, "statistics-enabled", "true");
         executeOnNode(node1, "test-connection-in-pool");
-        assertStatisticsShouldBeSet(translateFromConnectionToStatistics(node2), false);
+        assertStatisticsShouldBeSet(statisticsNode, false);
     }
 
     /**
      * Checks if statistics properties set correctly
-     * 
+     *
      * @param node,on which to test
      * @param yes - should be properties set or not
      * @throws Exception
@@ -100,8 +104,8 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
                 + maxUsed + "\n");
         assertTrue(avail > 0);
         if (yes) {
-            assertTrue(active > 0);
-            assertTrue(maxUsed > 0);
+            assertTrue("active==" + active, active > 0);
+            assertTrue("maxused==" + maxUsed,maxUsed > 0);
         } else {
             assertEquals(active, 0);
             assertEquals(maxUsed, 0);
@@ -111,7 +115,7 @@ public abstract class JcaStatisticsBase extends JcaMgmtBase {
     /**
      * Subclass should implement this method. It translates address of connection node to the address of statistics node for
      * chosen subsystem
-     * 
+     *
      * @param connection Node
      * @return statistics Node
      */

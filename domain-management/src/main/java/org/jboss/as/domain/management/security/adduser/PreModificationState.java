@@ -35,9 +35,6 @@ public class PreModificationState implements State {
     public PreModificationState(final ConsoleWrapper theConsole, final StateValues stateValues) {
         this.theConsole = theConsole;
         this.stateValues = stateValues;
-        if (stateValues.isSilent() == false && theConsole.getConsole() == null) {
-            throw MESSAGES.noConsoleAvailable();
-        }
     }
 
     @Override

@@ -22,6 +22,8 @@
 
 package org.jboss.as.connector.services.resourceadapters.deployment;
 
+import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
+
 import java.io.File;
 import java.net.URL;
 
@@ -184,6 +186,15 @@ public final class ResourceAdapterXmlDeploymentService extends AbstractResourceA
         @Override
         protected DeployersLogger getLogger() {
             return DEPLOYERS_LOGGER;
+        }
+
+        @Override
+        protected void setRecoveryForResourceAdapterInResourceAdapterRepository(String key, boolean isXA) {
+            try {
+                raRepository.getValue().setRecoveryForResourceAdapter(key, isXA);
+            } catch (Throwable t) {
+                DEPLOYMENT_CONNECTOR_LOGGER.unableToRegisterRecovery(key, isXA);
+            }
         }
 
     }

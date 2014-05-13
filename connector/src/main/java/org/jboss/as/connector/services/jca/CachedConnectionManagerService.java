@@ -65,9 +65,7 @@ public class CachedConnectionManagerService implements Service<CachedConnectionM
 
     @Override
     public void start(StartContext context) throws StartException {
-        value = new CachedConnectionManagerImpl(transactionIntegration.getValue().getTransactionManager(),
-                                                transactionIntegration.getValue().getTransactionSynchronizationRegistry(),
-                                                transactionIntegration.getValue().getUserTransactionRegistry());
+        value = new CachedConnectionManagerImpl(transactionIntegration.getValue());
         value.setDebug(debug);
         value.setError(error);
         value.setIgnoreUnknownConnections(ignoreUnknownConnections);

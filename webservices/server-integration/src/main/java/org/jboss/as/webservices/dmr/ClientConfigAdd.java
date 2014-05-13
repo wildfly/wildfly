@@ -32,14 +32,17 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.webservices.service.ConfigService;
+import org.jboss.as.webservices.service.PropertyService;
 import org.jboss.as.webservices.util.ASHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.dmr.ModelNode;
+import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 import org.jboss.wsf.spi.management.ServerConfig;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 
 /**
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
@@ -77,7 +80,10 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
          final ConfigService clientConfigService = new ConfigService(serverConfig, name, true);
          final ServiceTarget target = context.getServiceTarget();
          final ServiceBuilder<?> clientServiceBuilder = target.addService(serviceName, clientConfigService);
-
+         setDependency(context, clientServiceBuilder, clientConfigService.getPropertiesInjector(), PropertyService.class, serviceName, address, Constants.PROPERTY);
+         setDependency(context, clientServiceBuilder, clientConfigService.getPreHandlerChainsInjector(), UnifiedHandlerChainMetaData.class, serviceName, address, Constants.PRE_HANDLER_CHAIN);
+         final Injector<UnifiedHandlerChainMetaData> postInjector = clientConfigService.getPostHandlerChainsInjector();
+         setDependency(context, clientServiceBuilder, postInjector, UnifiedHandlerChainMetaData.class, serviceName, address, Constants.POST_HANDLER_CHAIN);
          ServiceController<?> controller = clientServiceBuilder.setInitialMode(ServiceController.Mode.ACTIVE).install();
          if (newControllers != null) {
              newControllers.add(controller);
@@ -85,5 +91,12 @@ final class ClientConfigAdd extends AbstractAddStepHandler {
       } else {
          context.reloadRequired();
       }
+    }
+
+    private <T> void setDependency(final OperationContext context, final ServiceBuilder<?> builder, final Injector<T> injector,
+            final Class<T> injectedClass, final ServiceName serviceName, final PathAddress address, final String handlerChainType) {
+        for (ServiceName sn : PackageUtils.getServiceNameDependencies(context, serviceName, address, handlerChainType)) {
+            builder.addDependency(sn, injectedClass, injector);
+        }
     }
 }

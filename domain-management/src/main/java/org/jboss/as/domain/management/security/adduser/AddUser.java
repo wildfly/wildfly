@@ -75,7 +75,7 @@ public class AddUser {
             stateValues.setRealmMode(RealmMode.USER_SUPPLIED);
         }
 
-        if (theConsole.getConsole() == null) {
+        if (theConsole.hasConsole() == false) {
             throw MESSAGES.noConsoleAvailable();
         }
         if (options.getUserProperties() != null || options.getGroupProperties() != null) {
@@ -91,6 +91,7 @@ public class AddUser {
 
         final Interactiveness howInteractive;
         boolean silent = Boolean.valueOf(argsCliProps.getProperty(CommandLineArgument.SILENT.key()));
+        theConsole = options.getConsoleWrapper();
         if (silent) {
             howInteractive = Interactiveness.SILENT;
         } else {
@@ -98,11 +99,6 @@ public class AddUser {
         }
         stateValues.setHowInteractive(howInteractive);
 
-        // Silent modes still need to be able to output an error on failure.
-        theConsole = options.getConsoleWrapper();
-        if (theConsole.getConsole() == null && !howInteractive.equals(Interactiveness.SILENT)) {
-            throw MESSAGES.noConsoleAvailable();
-        }
         // Username should not be null or empty.
         if (user == null || user.isEmpty()) {
             nextState = new ErrorState(theConsole, MESSAGES.noUsernameExiting(), null, stateValues);

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>wildfly-ts-integ</artifactId>
+        <groupId>org.wildfly</groupId>
+        <version>9.0.0.Alpha1-SNAPSHOT</version>
+    </parent>
+
+    <!-- ********************************************************************************** -->
+    <!-- *********************************** PicketLink ******************************** -->
+    <!-- ********************************************************************************** -->
+    <artifactId>wildfly-ts-integ-picketlink</artifactId>
+    <packaging>jar</packaging>
+    <name>WildFly Test Suite: Integration - PicketLink</name>
+
+    <properties>
+        <jbossas.ts.integ.dir>${basedir}/..</jbossas.ts.integ.dir>
+        <jbossas.ts.dir>${jbossas.ts.integ.dir}/..</jbossas.ts.dir>
+        <jbossas.project.dir>${jbossas.ts.dir}/..</jbossas.project.dir>
+    </properties>
+
+    <profiles>
+
+        <profile>
+            <id>picketlink.integration.tests.profile</id>
+            <activation>
+                <property>
+                    <name>!ts.noPicketLink</name>
+                </property>
+            </activation>
+            <!--
+                Server configuration executions.
+            -->
+            <dependencies>
+                <dependency>
+                    <groupId>org.picketlink</groupId>
+                    <artifactId>picketlink-api</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>httpunit</groupId>
+                    <artifactId>httpunit</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>rhino</groupId>
+                    <artifactId>js</artifactId>
+                    <version>${version.rhino.js}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions combine.children="append">
+                            <execution>
+                                <id>build-picketlink.server</id>
+                                <phase>process-test-resources</phase>
+                                <goals><goal>run</goal></goals>
+                                <configuration>
+                                    <target>
+                                        <property name="node0" value="${node0}"/>
+                                        <property name="node1" value="${node1}"/>
+                                        <ant antfile="${jbossas.ts.integ.dir}/src/test/scripts/picketlink-build.xml">
+                                            <target name="build-picketlink"/>
+                                        </ant>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!--
+                       Surefire test executions
+                    -->
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <!-- Tests to execute. -->
+                            <includes>
+                                <include>org/wildfly/test/integration/security/picketlink/**/*TestCase.java</include>
+                            </includes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+</project>

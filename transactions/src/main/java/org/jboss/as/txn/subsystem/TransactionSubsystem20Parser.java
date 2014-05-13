@@ -43,6 +43,10 @@ class TransactionSubsystem20Parser extends TransactionSubsystem14Parser {
         super(Namespace.TRANSACTIONS_2_0);
     }
 
+    TransactionSubsystem20Parser(Namespace validNamespace) {
+        super(validNamespace);
+    }
+
     protected void parseCoordinatorEnvironmentElement(final XMLExtendedStreamReader reader, final ModelNode operation) throws XMLStreamException {
 
         final int count = reader.getAttributeCount();

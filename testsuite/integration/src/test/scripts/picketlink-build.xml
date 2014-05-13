@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<project name="clustering-build scripts">
+
+    <!-- import shared ant targets -->
+    <import file="common-targets.xml" as="common" />
+
+    <target name="build-picketlink" description="Builds server configuration for PicketLink tests">
+        <echo message="Copying and configuring AS instance for PicketLink..." />
+        <condition property="picketlink.bind.address.substitute" value="[${node0}]" else="${node0}">
+            <contains string="${node0}" substring=":" />
+        </condition>
+        <echo message="Substituting localhost -> ${picketlink.bind.address.substitute}" />
+        <replace dir="target/test-classes" includes="**/idp-*.xml,**/sp-*.xml" token="localhost" value="${picketlink.bind.address.substitute}" />
+    </target>
+
+</project>

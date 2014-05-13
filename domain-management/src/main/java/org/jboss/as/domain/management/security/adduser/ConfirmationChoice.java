@@ -53,9 +53,6 @@ public class ConfirmationChoice implements State {
         this.prompt = prompt;
         this.yesState = yesState;
         this.noState = noState;
-        if (theConsole.getConsole() == null) {
-            throw MESSAGES.noConsoleAvailable();
-        }
     }
 
     public ConfirmationChoice(ConsoleWrapper theConsole, final String message, final String prompt, final State yesState,

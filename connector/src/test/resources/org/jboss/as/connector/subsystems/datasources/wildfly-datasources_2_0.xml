@@ -1,7 +1,7 @@
-<urn:subsystem xmlns:urn="urn:jboss:domain:datasources:2.0">
+<urn:subsystem xmlns:urn="urn:jboss:domain:datasources:3.0">
   <urn:datasources>
     <!--You have a CHOICE of the next 2 items at this level-->
-    <urn:datasource jta="true" jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true">
+    <urn:datasource jta="true" jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}" statistics-enabled="true" tracking="true">
       <urn:connection-url>token</urn:connection-url>
       <!--Optional:-->
       <urn:driver-class>token</urn:driver-class>
@@ -123,7 +123,7 @@
         <urn:share-prepared-statements/>
       </urn:statement>
     </urn:datasource>
-    <urn:xa-datasource jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true">
+    <urn:xa-datasource jndi-name="java:/token" pool-name="token" enabled="true" use-java-context="true" spy="false" use-ccm="true" connectable="${test.expr:true}"  statistics-enabled="true" tracking="true">
       <!--1 or more repetitions:-->
       <urn:xa-datasource-property name="token">per turbine</urn:xa-datasource-property>
       <!--Optional:-->

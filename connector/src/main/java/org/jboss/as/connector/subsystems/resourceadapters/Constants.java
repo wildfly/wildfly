@@ -21,6 +21,9 @@
  */
 package org.jboss.as.connector.subsystems.resourceadapters;
 
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
 import org.jboss.as.controller.ModelVersion;
@@ -48,9 +51,6 @@ import org.jboss.jca.common.api.metadata.common.v11.WorkManagerSecurity;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.v11.DataSource;
 import org.jboss.jca.common.api.metadata.resourceadapter.v10.ResourceAdapter;
-
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
 
 
 
@@ -82,6 +82,10 @@ public class Constants {
     private static final String USE_JAVA_CONTEXT_NAME = "use-java-context";
 
     private static final String ENABLED_NAME = "enabled";
+
+    private static final String CONNECTABLE_NAME = "connectable";
+
+    private static final String TRACKING_NAME = "tracking";
 
     private static final String JNDINAME_NAME = "jndi-name";
 
@@ -312,6 +316,17 @@ public class Constants {
 
     static SimpleAttributeDefinition ENABLED = new SimpleAttributeDefinition(ENABLED_NAME, DataSource.Attribute.ENABLED.getLocalName(), new ModelNode().set(Defaults.ENABLED), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
 
+    static SimpleAttributeDefinition CONNECTABLE = new SimpleAttributeDefinitionBuilder(CONNECTABLE_NAME, ModelType.BOOLEAN)
+                    .setXmlName(org.jboss.jca.common.api.metadata.ds.v13.DataSource.Attribute.CONNECTABLE.getLocalName())
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode(Defaults.CONNECTABLE))
+                    .setAllowNull(true)
+                    .build();
+    static SimpleAttributeDefinition TRACKING = new SimpleAttributeDefinitionBuilder(TRACKING_NAME, ModelType.BOOLEAN)
+                        .setXmlName(org.jboss.jca.common.api.metadata.ds.v13.DataSource.Attribute.TRACKING.getLocalName())
+                        .setAllowExpression(true)
+                        .setAllowNull(true)
+                        .build();
     static SimpleAttributeDefinition SECURITY_DOMAIN = new SimpleAttributeDefinitionBuilder(SECURITY_DOMAIN_NAME, ModelType.STRING)
             .setXmlName(CommonSecurity.Tag.SECURITY_DOMAIN.getLocalName())
             .setAllowExpression(true)
