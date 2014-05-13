@@ -314,6 +314,7 @@
         <module>jmx</module>
         <module>network</module>
         <module>patching</module>
+        <module>picketlink</module>
         <module>platform-mbean</module>
         <module>process-controller</module>
         <module>protocol</module>

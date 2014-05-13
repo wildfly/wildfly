@@ -95,6 +95,11 @@
 
         <dependency>
             <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-picketlink</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
             <artifactId>wildfly-security-manager</artifactId>
         </dependency>
 
