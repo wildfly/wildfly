@@ -521,13 +521,14 @@ public class CorbaNamingContext extends NamingContextExtPOA implements Serializa
     }
 
     public String to_url(String addr, String sn) throws InvalidAddress, InvalidName {
-        org.jacorb.orb.util.CorbaLoc corbaLoc;
-        try {
-            corbaLoc = new org.jacorb.orb.util.CorbaLoc((org.jacorb.orb.ORB) orb, addr);
-            return corbaLoc.toCorbaName(sn);
-        } catch (IllegalArgumentException ia) {
-            throw new InvalidAddress();
-        }
+//        org.jacorb.orb.util.CorbaLoc corbaLoc;
+//        try {
+//            corbaLoc = new org.jacorb.orb.util.CorbaLoc((org.jacorb.orb.ORB) orb, addr);
+//            return corbaLoc.toCorbaName(sn);
+//        } catch (IllegalArgumentException ia) {
+//            throw new InvalidAddress();
+//        }
+        return null;
     }
 
     //======================================= Private Helper Methods ==================================//

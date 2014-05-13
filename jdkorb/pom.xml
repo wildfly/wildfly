@@ -78,17 +78,18 @@
 
     <dependencies>
     	<dependency>
-    		<groupId>jdkorb</groupId>
-    		<artifactId>jdkorb</artifactId>
-    		<version>1</version>
+            <groupId>jdkorb</groupId>
+            <artifactId>jdkorb</artifactId>
+            <version>1</version>
     	</dependency>
     
-		<dependency>
-			<groupId>org.jacorb</groupId>
-			<artifactId>jacorb</artifactId>
-		</dependency>
-		
-        <dependency>
+       <dependency>
+           <groupId>jdkorb</groupId>
+           <artifactId>jacorb-bridge</artifactId>
+           <version>1</version>
+       </dependency>
+
+       <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-server</artifactId>
         </dependency>

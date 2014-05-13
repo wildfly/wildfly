@@ -37,7 +37,7 @@ public enum ORBInitializer {
 
     UNKNOWN("", ""),
 
-    SECURITY("security", "org.jboss.as.iiop.csiv2.CSIv2Initializer", "org.jboss.as.iiop.csiv2.SASInitializer"),
+    SECURITY("security", "org.jboss.as.jdkorb.csiv2.CSIv2Initializer", "org.jboss.as.jdkorb.csiv2.SASClientInitializer","org.jboss.as.jdkorb.csiv2.SASInitializer"),
 
     // the security group encompasses both CSIv2 and SAS initializers.
     SECURITY_CLIENT("security", "org.jboss.as.jdkorb.csiv2.CSIv2Initializer", "org.jboss.as.jdkorb.csiv2.SASClientInitializer"),
@@ -45,7 +45,7 @@ public enum ORBInitializer {
 
     // the transaction group encompasses the Interposition and InboundCurrent initializers.
     TRANSACTIONS("transactions",
-            "com.arjuna.ats.jts.orbspecific.jdkorb.interceptors.interposition.InterpositionORBInitializerImpl",
+            "com.arjuna.ats.jts.orbspecific.jacorb.interceptors.interposition.InterpositionORBInitializerImpl",
             "com.arjuna.ats.jbossatx.jts.InboundTransactionCurrentInitializer",
             "org.jboss.as.jdkorb.tm.TxIORInterceptorInitializer",
             "org.jboss.as.jdkorb.tm.TxServerInterceptorInitializer"),

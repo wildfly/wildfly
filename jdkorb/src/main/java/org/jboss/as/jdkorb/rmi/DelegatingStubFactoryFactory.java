@@ -24,10 +24,10 @@ package org.jboss.as.jdkorb.rmi;
 
 import javax.rmi.CORBA.Tie;
 
-import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryBase;
-import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryProxyImpl;
-import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryStaticImpl;
-import org.jboss.com.sun.corba.se.spi.presentation.rmi.PresentationManager;
+import com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryBase;
+import com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryProxyImpl;
+import com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryStaticImpl;
+import com.sun.corba.se.spi.presentation.rmi.PresentationManager;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 import java.security.AccessController;
@@ -50,7 +50,7 @@ public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
         dynamicFactory = new StubFactoryFactoryProxyImpl();
     }
 
-    public PresentationManager.StubFactory createStubFactory(final String className, final boolean isIDLStub, final String remoteCodeBase, final Class<?> expectedClass, final ClassLoader classLoader) {
+    public PresentationManager.StubFactory createStubFactory(final String className, final boolean isIDLStub, final String remoteCodeBase, final Class expectedClass, final ClassLoader classLoader) {
         if(WildFlySecurityManager.isChecking()) {
             return AccessController.doPrivileged(new PrivilegedAction<PresentationManager.StubFactory>() {
                 @Override
@@ -80,7 +80,7 @@ public class DelegatingStubFactoryFactory extends StubFactoryFactoryBase {
         }
     }
 
-    public Tie getTie(final Class<?> cls) {
+    public Tie getTie(final Class cls) {
         if (WildFlySecurityManager.isChecking()) {
             return AccessController.doPrivileged(new PrivilegedAction<Tie>() {
                 @Override

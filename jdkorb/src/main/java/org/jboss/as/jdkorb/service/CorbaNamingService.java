@@ -22,9 +22,6 @@
 
 package org.jboss.as.jdkorb.service;
 
-import java.io.FileOutputStream;
-import java.io.PrintWriter;
-
 import org.jboss.as.jdkorb.ORBLogger;
 import org.jboss.as.jdkorb.ORBMessages;
 import org.jboss.as.jdkorb.naming.CorbaNamingContext;
@@ -83,6 +80,11 @@ public class CorbaNamingService implements Service<NamingContextExt> {
             namingPOA.activate_object_with_id(rootContextId, ns);
             namingService = NamingContextExtHelper.narrow(namingPOA.create_reference_with_id(rootContextId,
                     "IDL:omg.org/CosNaming/NamingContextExt:1.0"));
+
+            ((com.sun.corba.se.impl.orb.ORBImpl) orb).
+            register_initial_reference(
+            "NameService", namingPOA.servant_to_reference(ns) );
+
         } catch (Exception e) {
             throw ORBMessages.MESSAGES.failedToStartJBossCOSNaming(e);
         }
@@ -92,15 +94,6 @@ public class CorbaNamingService implements Service<NamingContextExt> {
 
         ORBLogger.ROOT_LOGGER.corbaNamingServiceStarted();
         ORBLogger.ROOT_LOGGER.debugNamingServiceIOR(orb.object_to_string(namingService));
-
-
-        try {
-        PrintWriter ps = new PrintWriter(new FileOutputStream("/home/tomek/temp/ior.txt"));
-        ps.println( orb.object_to_string(namingService) );
-        ps.close();
-        } catch(Exception e){
-            e.printStackTrace();
-        }
     }
 
     @Override

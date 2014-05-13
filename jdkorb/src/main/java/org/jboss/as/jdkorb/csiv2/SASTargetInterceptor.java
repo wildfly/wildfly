@@ -63,7 +63,8 @@ import org.omg.PortableInterceptor.ServerRequestInterceptor;
  */
 public class SASTargetInterceptor extends LocalObject implements ServerRequestInterceptor {
 
-    private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
+    //private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
+    private static final int sasContextId = 11111;
 
     private static final byte[] empty = new byte[0];
 
@@ -337,9 +338,13 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
         threadLocal.sasReplyIsAccept = false;
 
         try {
+
             ServiceContext sc = ri.get_request_service_context(sasContextId);
+
+
             Any any = codec.decode_value(sc.context_data, SASContextBodyHelper.type());
             SASContextBody contextBody = SASContextBodyHelper.extract(any);
+
 
             if (contextBody != null) {
                 if (contextBody.discriminator() == MTMessageInContext.value) {
@@ -351,6 +356,7 @@ public class SASTargetInterceptor extends LocalObject implements ServerRequestIn
                     EstablishContext message = contextBody.establish_msg();
                     threadLocal.contextId = message.client_context_id;
                     threadLocal.sasContextReceived = true;
+
 
                     if (message.client_authentication_token != null && message.client_authentication_token.length > 0) {
                         ORBLogger.ROOT_LOGGER.authTokenReceived();

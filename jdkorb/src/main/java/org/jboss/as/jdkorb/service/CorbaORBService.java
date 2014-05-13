@@ -110,13 +110,13 @@ public class CorbaORBService implements Service<ORB> {
                 properties.setProperty(ORBConstants.PERSISTENT_SERVER_PORT_PROPERTY, String.valueOf(address.getPort()));
                 properties.setProperty(ORBConstants.ORB_SERVER_ID_PROPERTY, persistentServerId);
             }
-//            if (this.jacORBSSLSocketBindingInjector.getValue() != null) {
-//                InetSocketAddress address = this.jacORBSSLSocketBindingInjector.getValue().getSocketAddress();
-//                properties.setProperty(ORBSubsystemConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
-//                if (!properties.containsKey(ORBSubsystemConstants.ORB_ADDRESS)) {
-//                    properties.setProperty(ORBSubsystemConstants.ORB_ADDRESS, address.getAddress().getHostAddress());
-//                }
-//            }
+            if (this.jacORBSSLSocketBindingInjector.getValue() != null) {
+                InetSocketAddress address = this.jacORBSSLSocketBindingInjector.getValue().getSocketAddress();
+                properties.setProperty(ORBSubsystemConstants.ORB_SSL_PORT, String.valueOf(address.getPort()));
+                if (!properties.containsKey(ORBSubsystemConstants.ORB_ADDRESS)) {
+                    properties.setProperty(ORBSubsystemConstants.ORB_ADDRESS, address.getAddress().getHostAddress());
+                }
+            }
 
             // configure the naming service initial reference.
 //            String rootContext = properties.getProperty(ORBSubsystemConstants.NAMING_ROOT_CONTEXT);

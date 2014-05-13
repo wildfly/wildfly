@@ -60,7 +60,8 @@ import org.omg.PortableInterceptor.ClientRequestInterceptor;
  */
 public class SASClientInterceptor extends LocalObject implements ClientRequestInterceptor {
 
-    private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
+    //private static final int sasContextId = org.omg.IOP.SecurityAttributeService.value;
+    private static final int sasContextId = 11111;
 
     private static final IdentityToken absentIdentityToken;
 
@@ -104,6 +105,7 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
                 return;
             }
 
+
             if ((secMech.as_context_mech.target_supports & EstablishTrustInClient.value) != 0) {
                 Principal p = SecurityActions.getPrincipal();
                 if (p != null) {
@@ -131,6 +133,7 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
                         password = tmp.getBytes(StandardCharsets.UTF_8);
                     }
 
+
                     // create authentication token.
                     InitialContextToken authenticationToken = new InitialContextToken(username, password,
                             encodedTargetName);
@@ -141,6 +144,7 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
                     // create EstablishContext message with the encoded token.
                     EstablishContext message = new EstablishContext(0, // stateless ctx id
                             noAuthorizationToken, absentIdentityToken, encodedAuthenticationToken);
+
 
                     // create SAS context with the EstablishContext message.
                     SASContextBody contextBody = new SASContextBody();
@@ -153,7 +157,9 @@ public class SASClientInterceptor extends LocalObject implements ClientRequestIn
                     ri.add_request_service_context(sc, true /*replace existing context*/);
                 }
             }
-        } catch (org.omg.IOP.CodecPackage.InvalidTypeForEncoding e) {
+        }
+        //} catch (org.omg.IOP.CodecPackage.InvalidTypeForEncoding e) {
+            catch (Exception e) {
             throw ORBMessages.MESSAGES.unexpectedException(e);
         }
     }
