@@ -31,6 +31,9 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
+import java.util.Arrays;
+import java.util.List;
+
 import org.jboss.as.controller.ObjectListAttributeDefinition;
 import org.jboss.as.controller.ObjectTypeAttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -63,8 +66,8 @@ import org.jboss.jca.common.api.metadata.ds.Statement;
 import org.jboss.jca.common.api.metadata.ds.TimeOut;
 import org.jboss.jca.common.api.metadata.ds.Validation;
 import org.jboss.jca.common.api.metadata.ds.v12.DsPool;
-import org.jboss.jca.common.api.metadata.ds.v13.XaDataSource;
 import org.jboss.jca.common.api.metadata.ds.v13.DataSource;
+import org.jboss.jca.common.api.metadata.ds.v13.XaDataSource;
 
 /**
  * @author @author <a href="mailto:stefano.maestri@redhat.com">Stefano
@@ -437,6 +440,7 @@ public class Constants {
             .build();
 
 
+    static final List<SimpleAttributeDefinition> DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED = Arrays.asList(JTA, STATISTICS_ENABLED);
     static final SimpleAttributeDefinition[] DATASOURCE_ATTRIBUTE = new SimpleAttributeDefinition[]{CONNECTION_URL,
             DRIVER_CLASS, Constants.DATASOURCE_CLASS, JNDI_NAME,
             DATASOURCE_DRIVER,

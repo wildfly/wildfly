@@ -28,6 +28,7 @@ import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTABL
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_CLASS;
 import static org.jboss.as.connector.subsystems.datasources.Constants.CONNECTION_LISTENER_PROPERTIES;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ATTRIBUTE;
+import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_DISABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_ENABLE;
 import static org.jboss.as.connector.subsystems.datasources.Constants.DATASOURCE_PROPERTIES_ATTRIBUTES;
@@ -127,12 +128,13 @@ public class DataSourceDefinition extends SimpleResourceDefinition {
 
         } else {
             DisableRequiredWriteAttributeHandler disableRequiredWriteHandler = new DisableRequiredWriteAttributeHandler(DATASOURCE_ATTRIBUTE);
+            ReloadRequiredWriteAttributeHandler reloadRequiredWriteAttributeHandler = new ReloadRequiredWriteAttributeHandler(DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED.toArray(new SimpleAttributeDefinition[DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED.size()]));
             for (final SimpleAttributeDefinition attribute : DATASOURCE_ATTRIBUTE) {
                 if (PoolConfigurationRWHandler.ATTRIBUTES.contains(attribute.getName())) {
                     resourceRegistration.registerReadWriteAttribute(attribute, PoolConfigurationRWHandler.PoolConfigurationReadHandler.INSTANCE, PoolConfigurationRWHandler.LocalAndXaDataSourcePoolConfigurationWriteHandler.INSTANCE);
                 } else {
-                    if (attribute.equals(STATISTICS_ENABLED)) {
-                        resourceRegistration.registerReadWriteAttribute(attribute, null, new ReloadRequiredWriteAttributeHandler());
+                    if (DATASOURCE_ATTRIBUTE_RELOAD_REQUIRED.contains(attribute)) {
+                        resourceRegistration.registerReadWriteAttribute(attribute, null, reloadRequiredWriteAttributeHandler);
                     } else {
                         resourceRegistration.registerReadWriteAttribute(attribute, null, disableRequiredWriteHandler);
                     }
