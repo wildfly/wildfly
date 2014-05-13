@@ -95,6 +95,7 @@
                                         <arquillian.launch>iiop</arquillian.launch>
                                         <jboss.server.config.file.name>standalone-full.xml</jboss.server.config.file.name>
                                     </systemPropertyVariables>
+                                    <argLine>-Djava.endorsed.dirs=${user.home}/.m2/repository/jdkorb/jdkorb/1 -Dcom.sun.CORBA.ORBUseDynamicStub=true</argLine>
                                 </configuration>
                             </execution>
 

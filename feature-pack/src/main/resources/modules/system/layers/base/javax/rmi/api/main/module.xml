@@ -29,6 +29,7 @@
 
     <dependencies>
         <module name="org.omg.api"/>
+        <module name="javax.orb.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.jboss.as.jdkorb"/>
 

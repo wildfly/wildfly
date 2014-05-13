@@ -109,6 +109,7 @@ public class ORBSubsystemAdd extends AbstractAddStepHandler {
             ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
             throws OperationFailedException {
 
+
         ORBLogger.ROOT_LOGGER.activatingSubsystem();
 
         // set the ORBUseDynamicStub system property.
@@ -117,9 +118,9 @@ public class ORBSubsystemAdd extends AbstractAddStepHandler {
         // the userDynamicStubs's property at runtime it is possible for the ORB class's <clinit> method to be
         // called before this property is set.
         // TODO: investigate a better way to handle this
-        org.jboss.com.sun.corba.se.spi.orb.ORB.getPresentationManager().setStubFactoryFactory(true,
+        com.sun.corba.se.spi.orb.ORB.getPresentationManager().setStubFactoryFactory(true,
                 new DelegatingStubFactoryFactory());
-        org.jboss.com.sun.corba.se.spi.orb.ORB.getPresentationManager().setStubFactoryFactory(false,
+        com.sun.corba.se.spi.orb.ORB.getPresentationManager().setStubFactoryFactory(false,
                 new DelegatingStubFactoryFactory());
 
         // setup naming.
@@ -148,6 +149,8 @@ public class ORBSubsystemAdd extends AbstractAddStepHandler {
         this.setupSSLFactories(props);
 
         // create the service that initializes and starts the CORBA ORB.
+
+
         CorbaORBService orbService = new CorbaORBService(props);
         final ServiceBuilder<ORB> builder = context.getServiceTarget().addService(CorbaORBService.SERVICE_NAME, orbService);
         org.jboss.as.server.Services.addServerExecutorDependency(builder, orbService.getExecutorInjector(), false);
@@ -161,9 +164,9 @@ public class ORBSubsystemAdd extends AbstractAddStepHandler {
         String socketBinding = props.getProperty(ORBSubsystemConstants.ORB_SOCKET_BINDING);
         builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(socketBinding), SocketBinding.class,
                 orbService.getJacORBSocketBindingInjector());
-//        String sslSocketBinding = props.getProperty(ORBSubsystemConstants.ORB_SSL_SOCKET_BINDING);
-//        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(sslSocketBinding), SocketBinding.class,
-//                orbService.getJacORBSSLSocketBindingInjector());
+        String sslSocketBinding = props.getProperty(ORBSubsystemConstants.ORB_SSL_SOCKET_BINDING);
+        builder.addDependency(SocketBinding.JBOSS_BINDING_NAME.append(sslSocketBinding), SocketBinding.class,
+                orbService.getJacORBSSLSocketBindingInjector());
         builder.addListener(verificationHandler);
         // set the initial mode and install the service.
         newControllers.add(builder.setInitialMode(ServiceController.Mode.ACTIVE).install());
@@ -261,10 +264,13 @@ public class ORBSubsystemAdd extends AbstractAddStepHandler {
     private void setupInitializers(Properties props) {
         List<String> orbInitializers = new ArrayList<String>();
 
+        orbInitializers.add("org.jboss.as.jdkorb.fixme.MockInitializer");
+
         // check which groups of initializers are to be installed.
         String installSecurity = (String) props.remove(ORBSubsystemConstants.ORB_INIT_SECURITY);
-        if (installSecurity.equalsIgnoreCase("on"))
+        if (installSecurity.equalsIgnoreCase("identity")) {
             orbInitializers.addAll(Arrays.asList(ORBInitializer.SECURITY.getInitializerClasses()));
+        }
 
         String installTransaction = (String) props.remove(ORBSubsystemConstants.ORB_INIT_TRANSACTIONS);
         if (installTransaction.equalsIgnoreCase("on")) {
@@ -274,7 +280,8 @@ public class ORBSubsystemAdd extends AbstractAddStepHandler {
         }
 
         // add the standard jacorb initializer plus all configured initializers.
-        //props.setProperty(ORBSubsystemConstants.JACORB_STD_INITIALIZER_KEY, ORBSubsystemConstants.JACORB_STD_INITIALIZER_VALUE);
+        // props.setProperty(ORBSubsystemConstants.JACORB_STD_INITIALIZER_KEY,
+        // ORBSubsystemConstants.JACORB_STD_INITIALIZER_VALUE);
         for (String initializerClass : orbInitializers) {
             props.setProperty(ORBSubsystemConstants.ORB_INITIALIZER_PREFIX + initializerClass, "");
         }

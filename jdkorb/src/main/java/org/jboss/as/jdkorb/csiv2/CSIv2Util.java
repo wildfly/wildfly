@@ -53,8 +53,6 @@ import org.omg.CSIIOP.IdentityAssertion;
 import org.omg.CSIIOP.Integrity;
 import org.omg.CSIIOP.SAS_ContextSec;
 import org.omg.CSIIOP.ServiceConfiguration;
-import org.omg.CSIIOP.TAG_CSI_SEC_MECH_LIST;
-import org.omg.CSIIOP.TAG_NULL_TAG;
 import org.omg.CSIIOP.TAG_TLS_SEC_TRANS;
 import org.omg.CSIIOP.TLS_SEC_TRANS;
 import org.omg.CSIIOP.TLS_SEC_TRANSHelper;
@@ -63,6 +61,8 @@ import org.omg.GSSUP.GSSUPMechOID;
 import org.omg.GSSUP.InitialContextToken;
 import org.omg.GSSUP.InitialContextTokenHelper;
 import org.omg.IOP.Codec;
+import org.omg.IOP.TAG_CSI_SEC_MECH_LIST;
+import org.omg.IOP.TAG_NULL_TAG;
 import org.omg.IOP.CodecPackage.InvalidTypeForEncoding;
 import org.omg.IOP.TaggedComponent;
 import org.omg.PortableInterceptor.ClientRequestInfo;
@@ -151,7 +151,7 @@ public final class CSIv2Util {
 
     /**
      * <p>
-     * Return a top-level {@code IOP:TaggedComponent} to be stuffed into an IOR, containing a {@code CSIIOP}.
+     * Return a top-level {@code IOP:TaggedComponent} to be stuffed into an IOR, containing a {@code org.omg.CSIIOP}.
      * {@code CompoundSecMechList}, tagged as {@code TAG_CSI_SEC_MECH_LIST}. Only one such component can exist inside
      * an IOR.
      * </p>
@@ -177,7 +177,7 @@ public final class CSIv2Util {
         // get the the supported security mechanisms.
         CompoundSecMech[] mechList = createCompoundSecMechanisms(metadata, codec, sslPort, orb);
 
-        // the above is wrapped into a CSIIOP.CompoundSecMechList structure, which is NOT a CompoundSecMech[].
+        // the above is wrapped into a org.omg.CSIIOP.CompoundSecMechList structure, which is NOT a CompoundSecMech[].
         // we don't support stateful/reusable security contexts (false).
         CompoundSecMechList csmList = new CompoundSecMechList(false, mechList);
         // finally, the CompoundSecMechList must be encoded as a TaggedComponent
@@ -194,7 +194,7 @@ public final class CSIv2Util {
 
     /**
      * <p>
-     * Create a {@code CSIIOP.CompoundSecMechanisms} which is a sequence of {@code CompoundSecMech}. Here we only
+     * Create a {@code org.omg.CSIIOP.CompoundSecMechanisms} which is a sequence of {@code CompoundSecMech}. Here we only
      * support one security mechanism.
      * </p>
      *
@@ -323,7 +323,7 @@ public final class CSIv2Util {
      * that transport config is not supported, then a {@code TAG_NULL_TAG} (empty) {@code TaggedComponent} will be returned.
      * </p>
      * <p>
-     * Otherwise a {@code CSIIOP.TLS_SEC_TRANS}, tagged as {@code TAG_TLS_SEC_TRANS} will be returned, indicating support
+     * Otherwise a {@code org.omg.CSIIOP.TLS_SEC_TRANS}, tagged as {@code TAG_TLS_SEC_TRANS} will be returned, indicating support
      * for TLS/SSL as a CSIv2 transport mechanism.
      * </p>
      * <p>
@@ -360,6 +360,7 @@ public final class CSIv2Util {
             TransportAddress[] taList = createTransportAddress(host, sslPort);
             TLS_SEC_TRANS tst = new TLS_SEC_TRANS((short) support, (short) require, taList);
 
+
             // The tricky part, we must encode TLS_SEC_TRANS into an octet sequence.
             try {
                 Any any = orb.create_any();
@@ -386,6 +387,7 @@ public final class CSIv2Util {
     public static TransportAddress[] createTransportAddress(String host, int port) {
         // idl type is unsigned sort, so we need this trick
         short short_port = (port > 32767) ? (short) (port - 65536) : (short) port;
+
 
         TransportAddress ta = new TransportAddress(host, short_port);
         TransportAddress[] taList = new TransportAddress[1];
@@ -576,11 +578,14 @@ public final class CSIv2Util {
         try {
             out = codec.encode_value(any);
         } catch (Exception e) {
+            e.printStackTrace();
             return new byte[0];
         }
 
+
         int length = out.length + gssUpMechOidArray.length;
         int n;
+
 
         if (length < (1 << 7)) {
             n = 0;
@@ -751,7 +756,7 @@ public final class CSIv2Util {
                                                           short clientRequires) {
         CompoundSecMechList csmList;
         try {
-            TaggedComponent tc = ri.get_effective_component(TAG_CSI_SEC_MECH_LIST.value);
+            TaggedComponent tc = ri.get_effective_component(org.omg.IOP.TAG_CSI_SEC_MECH_LIST.value);
 
             Any any = codec.decode_value(tc.component_data, CompoundSecMechListHelper.type());
             csmList = CompoundSecMechListHelper.extract(any);
