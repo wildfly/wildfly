@@ -31,6 +31,7 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.auth.InvalidCredentialsException;
 import org.apache.http.auth.MalformedChallengeException;
 import org.apache.http.impl.auth.AuthSchemeBase;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BufferedHeader;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
@@ -126,6 +127,10 @@ public class JBossNegotiateScheme extends AuthSchemeBase {
             throws AuthenticationException {
         if (request == null) {
             throw new IllegalArgumentException("HTTP request may not be null");
+        }
+        if (state == State.TOKEN_GENERATED) {
+            // hack for auto redirects
+            return new BasicHeader("X-dummy", "Token already generated");
         }
         if (state != State.CHALLENGE_RECEIVED) {
             throw new IllegalStateException("Negotiation authentication process has not been initiated");
