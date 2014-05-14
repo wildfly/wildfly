@@ -33,9 +33,12 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
+import org.jboss.as.controller.SimpleOperationDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.messaging.CommonAttributes;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.dmr.ModelNode;
@@ -50,10 +53,10 @@ import org.jboss.msc.service.ServiceName;
  */
 public abstract class AbstractUpdateJndiHandler implements OperationStepHandler {
 
-    protected static final String ADD_JNDI = "add-jndi";
-    protected static final String REMOVE_JNDI = "remove-jndi";
+    private static final String ADD_JNDI = "add-jndi";
+    private static final String REMOVE_JNDI = "remove-jndi";
 
-    protected static final SimpleAttributeDefinition JNDI_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.JNDI_BINDING, ModelType.STRING)
+    private static final SimpleAttributeDefinition JNDI_BINDING = new SimpleAttributeDefinitionBuilder(CommonAttributes.JNDI_BINDING, ModelType.STRING)
             .setAllowNull(false)
             .setValidator(new StringLengthValidator(1))
             .build();
@@ -63,7 +66,14 @@ public abstract class AbstractUpdateJndiHandler implements OperationStepHandler 
      */
     private final boolean addOperation;
 
-    protected  AbstractUpdateJndiHandler(boolean addOperation) {
+    protected void registerOperation(ManagementResourceRegistration registry, ResourceDescriptionResolver resolver) {
+        SimpleOperationDefinition operation = new SimpleOperationDefinition(addOperation ? ADD_JNDI: REMOVE_JNDI,
+                resolver,
+                JNDI_BINDING);
+        registry.registerOperationHandler(operation, this);
+    }
+
+    protected AbstractUpdateJndiHandler(boolean addOperation) {
         this.addOperation = addOperation;
     }
 

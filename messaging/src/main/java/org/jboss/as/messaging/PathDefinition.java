@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -23,9 +23,7 @@
 package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.SimpleAttributeDefinitionBuilder.create;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.messaging.CommonAttributes.BINDINGS_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.JOURNAL_DIRECTORY;
 import static org.jboss.as.messaging.CommonAttributes.LARGE_MESSAGES_DIRECTORY;
@@ -39,8 +37,10 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -50,11 +50,10 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 
-
 /**
- * @author Emanuel Muckenhuber
+ * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2014 Red Hat inc.
  */
-public class MessagingPathHandlers {
+public class PathDefinition extends SimpleResourceDefinition {
 
     static final String DEFAULT_RELATIVE_TO = ServerEnvironment.SERVER_DATA_DIR;
 
@@ -91,10 +90,6 @@ public class MessagingPathHandlers {
         PATHS.put(PAGING_DIRECTORY, create(PATH_BASE).setDefaultValue(new ModelNode(DEFAULT_PAGING_DIR)).build());
     }
 
-    static final AttributeDefinition[] getAttributes(final String path) {
-        return new AttributeDefinition[] { PATHS.get(path), RELATIVE_TO };
-    }
-
     static final OperationStepHandler PATH_ADD = new OperationStepHandler() {
 
         @Override
@@ -121,14 +116,28 @@ public class MessagingPathHandlers {
         }
     };
 
-    static void register(final ManagementResourceRegistration registration, final String path) {
-        registration.registerOperationHandler(ADD, PATH_ADD, new MessagingSubsystemProviders.PathAddProvider(path));
-        registration.registerOperationHandler(REMOVE, PATH_REMOVE, MessagingSubsystemProviders.PATH_REMOVE);
+    private final PathElement path;
 
-        AttributeDefinition[] attributes = getAttributes(path);
+    static final AttributeDefinition[] getAttributes(final String path) {
+        return new AttributeDefinition[] { PATHS.get(path), RELATIVE_TO };
+    }
+
+    public PathDefinition(PathElement path) {
+        super(path,
+                MessagingExtension.getResourceDescriptionResolver(ModelDescriptionConstants.PATH),
+                PATH_ADD,
+                PATH_REMOVE);
+        this.path = path;
+    }
+
+    @Override
+    public void registerAttributes(ManagementResourceRegistration registry) {
+        super.registerAttributes(registry);
+
+        AttributeDefinition[] attributes = getAttributes(path.getValue());
         OperationStepHandler attributeHandler = new ReloadRequiredWriteAttributeHandler(attributes);
         for (AttributeDefinition attribute : attributes) {
-            registration.registerReadWriteAttribute(attribute, null, attributeHandler);
+            registry.registerReadWriteAttribute(attribute, null, attributeHandler);
         }
     }
 
@@ -151,5 +160,4 @@ public class MessagingPathHandlers {
             }, OperationContext.Stage.RUNTIME);
         }
     }
-
 }

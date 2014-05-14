@@ -119,7 +119,7 @@ public interface CommonAttributes {
             .setFlags(RESTART_ALL_SERVICES)
             .build();
 
-    AttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
+    SimpleAttributeDefinition CLIENT_ID = create("client-id", ModelType.STRING)
             .setAllowNull(true)
             .setAllowExpression(true)
             .build();
@@ -822,6 +822,7 @@ public interface CommonAttributes {
     String LOCAL_TX = "LocalTransaction";
     String MANAGE_XML_NAME = "manage";
     String MATCH = "match";
+    String MESSAGE_ID = "message-id";
     String MODE = "mode";
     String NAME = "name";
     String NETTY_ACCEPTOR = "netty-acceptor";

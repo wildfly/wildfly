@@ -110,7 +110,7 @@ public class MessagingTransformers {
         convertUndefinedAttribute(hornetqServer, ID_CACHE_SIZE);
         renameAttribute(hornetqServer, STATISTICS_ENABLED, MESSAGE_COUNTER_ENABLED);
 
-        for (String path : MessagingPathHandlers.PATHS.keySet()) {
+        for (String path : PathDefinition.PATHS.keySet()) {
             ResourceTransformationDescriptionBuilder serverPaths = hornetqServer.addChildResource(pathElement(PATH, path));
             rejectAttributesWithExpression(serverPaths, PATH);
         }

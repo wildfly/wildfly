@@ -56,9 +56,10 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class GroupingHandlerAdd extends AbstractAddStepHandler {
 
-    public static final GroupingHandlerAdd INSTANCE = new GroupingHandlerAdd();
+    public static final GroupingHandlerAdd INSTANCE = new GroupingHandlerAdd(GroupingHandlerDefinition.ATTRIBUTES);
 
-    private GroupingHandlerAdd() {
+    private GroupingHandlerAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override

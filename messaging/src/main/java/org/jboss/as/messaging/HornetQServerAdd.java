@@ -89,8 +89,8 @@ import static org.jboss.as.messaging.CommonAttributes.THREAD_POOL_MAX_SIZE;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT;
 import static org.jboss.as.messaging.CommonAttributes.TRANSACTION_TIMEOUT_SCAN_PERIOD;
 import static org.jboss.as.messaging.CommonAttributes.WILD_CARD_ROUTING_ENABLED;
-import static org.jboss.as.messaging.MessagingPathHandlers.PATHS;
-import static org.jboss.as.messaging.MessagingPathHandlers.RELATIVE_TO;
+import static org.jboss.as.messaging.PathDefinition.PATHS;
+import static org.jboss.as.messaging.PathDefinition.RELATIVE_TO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -182,7 +182,7 @@ class HornetQServerAdd implements OperationStepHandler {
                 @Override
                 public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
                     final ModelNode model = Resource.Tools.readModel(resource);
-                    for (String path : MessagingPathHandlers.PATHS.keySet()) {
+                    for (String path : PathDefinition.PATHS.keySet()) {
                         if (!model.get(ModelDescriptionConstants.PATH).hasDefined(path)) {
                             PathAddress pathAddress = PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.PATH, path));
                             context.createResource(pathAddress);
@@ -456,7 +456,7 @@ class HornetQServerAdd implements OperationStepHandler {
         QueueAdd.addQueueConfigs(context, configuration, model);
         BridgeAdd.addBridgeConfigs(context, configuration, model);
         ClusterConnectionAdd.addClusterConnectionConfigs(context, configuration, model);
-        ConnectorServiceAdd.addConnectorServiceConfigs(context, configuration, model);
+        ConnectorServiceDefinition.addConnectorServiceConfigs(context, configuration, model);
 
         return configuration;
     }

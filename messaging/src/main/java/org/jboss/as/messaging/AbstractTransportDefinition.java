@@ -54,7 +54,7 @@ public abstract class AbstractTransportDefinition extends SimpleResourceDefiniti
                         return bundle.getString(specificType);
                     }
                 },
-                new TransportConfigOperationHandlers.BasicTransportConfigAdd(isAcceptor, attrs),
+                new TransportConfigOperationHandlers.BasicTransportConfigAdd(attrs),
                 new HornetQReloadRequiredHandlers.RemoveStepHandler());
         this.registerRuntimeOnly = registerRuntimeOnly;
         this.isAcceptor = isAcceptor;

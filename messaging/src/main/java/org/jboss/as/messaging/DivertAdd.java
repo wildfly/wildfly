@@ -49,15 +49,10 @@ import org.jboss.msc.service.ServiceRegistry;
  */
 public class DivertAdd extends AbstractAddStepHandler {
 
-    public static final DivertAdd INSTANCE = new DivertAdd();
+    public static final DivertAdd INSTANCE = new DivertAdd(DivertDefinition.ATTRIBUTES);
 
-    private DivertAdd() {}
-
-    @Override
-    protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (final AttributeDefinition attributeDefinition : DivertDefinition.ATTRIBUTES) {
-            attributeDefinition.validateAndSet(operation, model);
-        }
+    private DivertAdd(AttributeDefinition... attributes) {
+        super(attributes);
     }
 
     @Override

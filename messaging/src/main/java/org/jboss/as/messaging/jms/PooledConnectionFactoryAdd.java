@@ -34,7 +34,6 @@ import static org.jboss.as.messaging.jms.ConnectionFactoryAttribute.getDefinitio
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -42,11 +41,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.messaging.AlternativeAttributeCheckHandler;
 import org.jboss.as.messaging.CommonAttributes;
-import org.jboss.as.messaging.MessagingDescriptions;
 import org.jboss.as.messaging.MessagingServices;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.dmr.ModelNode;
@@ -58,7 +55,7 @@ import org.jboss.msc.service.ServiceTarget;
  *         Date: 5/13/11
  *         Time: 1:42 PM
  */
-public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implements DescriptionProvider {
+public class PooledConnectionFactoryAdd extends AbstractAddStepHandler {
 
     public static final PooledConnectionFactoryAdd INSTANCE = new PooledConnectionFactoryAdd();
 
@@ -158,10 +155,5 @@ public class PooledConnectionFactoryAdd extends AbstractAddStepHandler implement
             }
         }
         return configs;
-    }
-
-    @Override
-    public ModelNode getModelDescription(Locale locale) {
-        return MessagingDescriptions.getPooledConnectionFactoryAdd(locale);
     }
 }

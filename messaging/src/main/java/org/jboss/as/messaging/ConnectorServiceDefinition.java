@@ -24,12 +24,22 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.registry.AttributeAccess.Flag.STORAGE_RUNTIME;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.ConnectorServiceConfiguration;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.Property;
 
 /**
  * Connector service resource definition
@@ -47,9 +57,31 @@ public class ConnectorServiceDefinition extends SimpleResourceDefinition {
     public ConnectorServiceDefinition(final boolean registerRuntimeOnly) {
         super(PATH,
                 MessagingExtension.getResourceDescriptionResolver(false, CommonAttributes.CONNECTOR_SERVICE),
-                ConnectorServiceAdd.INSTANCE,
+                new HornetQReloadRequiredHandlers.AddStepHandler(ATTRIBUTES),
                 new HornetQReloadRequiredHandlers.RemoveStepHandler());
         this.registerRuntimeOnly = registerRuntimeOnly;
+    }
+
+    static void addConnectorServiceConfigs(final OperationContext context, final Configuration configuration, final ModelNode model)  throws OperationFailedException {
+        if (model.hasDefined(CommonAttributes.CONNECTOR_SERVICE)) {
+            final List<ConnectorServiceConfiguration> configs = configuration.getConnectorServiceConfigurations();
+            for (Property prop : model.get(CommonAttributes.CONNECTOR_SERVICE).asPropertyList()) {
+                configs.add(createConnectorServiceConfiguration(context, prop.getName(), prop.getValue()));
+            }
+        }
+    }
+
+    static ConnectorServiceConfiguration createConnectorServiceConfiguration(final OperationContext context, final String name, final ModelNode model) throws OperationFailedException {
+
+        final String factoryClass = CommonAttributes.FACTORY_CLASS.resolveModelAttribute(context, model).asString();
+        final Map<String, Object> params = new HashMap<String, Object>();
+        if (model.hasDefined(CommonAttributes.PARAM)) {
+            for (Property property : model.get(CommonAttributes.PARAM).asPropertyList()) {
+                String value = ConnectorServiceParamDefinition.VALUE.resolveModelAttribute(context, property.getValue()).asString();
+                params.put(property.getName(), value);
+            }
+        }
+        return new ConnectorServiceConfiguration(factoryClass, params, name);
     }
 
     @Override
