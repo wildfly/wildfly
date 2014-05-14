@@ -22,8 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
@@ -82,7 +81,7 @@ public class CSIv2Policy extends LocalObject implements Policy {
             this.sslTaggedComponent = CSIv2Util.createSSLTaggedComponent(metadata, codec, sslPort, orb);
             this.secTaggedComponent = CSIv2Util.createSecurityTaggedComponent(metadata, codec, sslPort, orb);
         } catch (Exception e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 

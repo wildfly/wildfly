@@ -23,12 +23,11 @@ package org.jboss.as.jmx;
 
 // $Id$
 
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
-
 import java.util.Hashtable;
 
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
+import org.jboss.as.jmx.logging.JmxLogger;
 
 /**
  * A simple factory for creating safe object names.
@@ -42,7 +41,7 @@ public class ObjectNameFactory {
         try {
             return new ObjectName(name);
         } catch (MalformedObjectNameException e) {
-            throw MESSAGES.invalidObjectName(name, e.getLocalizedMessage());
+            throw JmxLogger.ROOT_LOGGER.invalidObjectName(name, e.getLocalizedMessage());
         }
     }
 
@@ -50,7 +49,7 @@ public class ObjectNameFactory {
         try {
             return new ObjectName(domain, key, value);
         } catch (MalformedObjectNameException e) {
-            throw MESSAGES.invalidObjectName(domain, key, value, e.getLocalizedMessage());
+            throw JmxLogger.ROOT_LOGGER.invalidObjectName(domain, key, value, e.getLocalizedMessage());
         }
     }
 
@@ -58,7 +57,7 @@ public class ObjectNameFactory {
         try {
             return new ObjectName(domain, table);
         } catch (MalformedObjectNameException e) {
-            throw MESSAGES.invalidObjectName(domain, table, e.getLocalizedMessage());
+            throw JmxLogger.ROOT_LOGGER.invalidObjectName(domain, table, e.getLocalizedMessage());
         }
     }
 }

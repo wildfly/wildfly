@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.deployment.processors.annotation;
 
 import org.jboss.as.ee.metadata.ClassAnnotationInformationFactory;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb3.annotation.Clustered;
 import org.jboss.jandex.AnnotationInstance;
 

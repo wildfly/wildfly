@@ -46,6 +46,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -406,7 +407,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 if (definition != null && JacORBSubsystemDefinitions.ORB_INIT_ATTRIBUTES.contains(definition))
                     node.get(definition.getName()).set("on");
                 else
-                    throw JacORBMessages.MESSAGES.invalidInitializerConfig(initializer, reader.getLocation());
+                    throw JacORBLogger.ROOT_LOGGER.invalidInitializerConfig(initializer, reader.getLocation());
             }
         }
     }
@@ -559,7 +560,7 @@ public class JacORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                 case SECURITY_SERVER_REQUIRES:
                     SSLConfigValue value = SSLConfigValue.fromValue(attrValue);
                     if (value == null)
-                        throw JacORBMessages.MESSAGES.invalidSSLConfig(attrValue, reader.getLocation());
+                        throw JacORBLogger.ROOT_LOGGER.invalidSSLConfig(attrValue, reader.getLocation());
                     attrValue = value.toString();
                 default:
                     SimpleAttributeDefinition definition = ((SimpleAttributeDefinition) JacORBSubsystemDefinitions.

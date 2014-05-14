@@ -21,7 +21,7 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -67,7 +67,7 @@ public class TransportLayerAdd implements OperationStepHandler {
                 final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(ModelKeys.PROPERTY, property.getName())));
                 final ModelNode value = property.getValue();
                 if(!value.isDefined()) {
-                    throw JGroupsMessages.MESSAGES.propertyNotDefined(property.getName(), transportRelativePath.toString());
+                    throw JGroupsLogger.ROOT_LOGGER.propertyNotDefined(property.getName(), transportRelativePath.toString());
                 }
                 // set the value of the property
                 PropertyResourceDefinition.VALUE.validateAndSet(value, param.getModel());

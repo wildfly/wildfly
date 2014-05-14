@@ -33,7 +33,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipOutputStream;
 
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
 
 /**
  * Abstracts the zipfile used for packaging the JDR Report.

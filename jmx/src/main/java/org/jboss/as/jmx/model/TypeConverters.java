@@ -24,7 +24,6 @@ package org.jboss.as.jmx.model;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -44,6 +43,7 @@ import javax.management.openmbean.SimpleType;
 import javax.management.openmbean.TabularDataSupport;
 import javax.management.openmbean.TabularType;
 
+import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -162,7 +162,7 @@ class TypeConverters {
             case LIST:
                 return new ListTypeConverter(valueTypeNode);
             default:
-                throw MESSAGES.unknownType(modelType);
+                throw JmxLogger.ROOT_LOGGER.unknownType(modelType);
         }
     }
 
@@ -244,7 +244,7 @@ class TypeConverters {
             } else {
                 if (possibleExpression) {
                     if (valueAccessor != StringValueAccessor.INSTANCE) {
-                        throw MESSAGES.expressionCannotBeConvertedIntoTargeteType(valueAccessor.getOpenType());
+                        throw JmxLogger.ROOT_LOGGER.expressionCannotBeConvertedIntoTargeteType(valueAccessor.getOpenType());
                     }
                     return new ModelNode().setExpression((String)o);
                 }
@@ -290,12 +290,12 @@ class TypeConverters {
             }
             try {
                 CompositeType rowType = new CompositeType(
-                        MESSAGES.compositeEntryTypeName(),
-                        MESSAGES.compositeEntryTypeDescription(),
+                        JmxLogger.ROOT_LOGGER.compositeEntryTypeName(),
+                        JmxLogger.ROOT_LOGGER.compositeEntryTypeDescription(),
                         new String[] {"key", "value"},
-                        new String[] {MESSAGES.compositeEntryKeyDescription(), MESSAGES.compositeEntryValueDescription()},
+                        new String[] { JmxLogger.ROOT_LOGGER.compositeEntryKeyDescription(), JmxLogger.ROOT_LOGGER.compositeEntryValueDescription()},
                         new OpenType[] {SimpleType.STRING, openType});
-                openType = new TabularType(MESSAGES.compositeMapName(), MESSAGES.compositeMapDescription(), rowType, new String[] {"key"});
+                openType = new TabularType(JmxLogger.ROOT_LOGGER.compositeMapName(), JmxLogger.ROOT_LOGGER.compositeMapDescription(), rowType, new String[] {"key"});
                 return openType;
             } catch (OpenDataException e1) {
                 throw new RuntimeException(e1);
@@ -378,7 +378,7 @@ class TypeConverters {
                     public String getKey() {
                         List<?> keyList = (List<?>)entry.getKey();
                         if (keyList.size() != 1) {
-                            throw MESSAGES.invalidKey(keyList, entry);
+                            throw JmxLogger.ROOT_LOGGER.invalidKey(keyList, entry);
                         }
                         return (String)keyList.get(0);
                     }
@@ -501,8 +501,8 @@ class TypeConverters {
                 itemTypes.add(getConverter(current).getOpenType());
             }
             try {
-                return new CompositeType(MESSAGES.complexCompositeEntryTypeName(),
-                        MESSAGES.complexCompositeEntryTypeDescription(),
+                return new CompositeType(JmxLogger.ROOT_LOGGER.complexCompositeEntryTypeName(),
+                        JmxLogger.ROOT_LOGGER.complexCompositeEntryTypeDescription(),
                         itemNames.toArray(new String[itemNames.size()]),
                         itemDescriptions.toArray(new String[itemDescriptions.size()]),
                         itemTypes.toArray(new OpenType[itemTypes.size()]));
@@ -558,7 +558,7 @@ class TypeConverters {
                 final CompositeData composite = (CompositeData)o;
                 for (String key : composite.getCompositeType().keySet()) {
                     if (!typeNode.hasDefined(key)){
-                        throw MESSAGES.unknownValue(key);
+                        throw JmxLogger.ROOT_LOGGER.unknownValue(key);
                     }
                     TypeConverter converter = getConverter(typeNode.get(key, TYPE), typeNode.get(key, VALUE_TYPE));
                     node.get(key).set(converter.toModelNode(composite.get(key)));
@@ -587,9 +587,9 @@ class TypeConverters {
             try {
                 return new CompositeType(
                         "property",
-                        MESSAGES.propertyCompositeType(),
+                        JmxLogger.ROOT_LOGGER.propertyCompositeType(),
                         new String[] {"name", "value"},
-                        new String[] {MESSAGES.propertyName(), MESSAGES.propertyValue()},
+                        new String[] { JmxLogger.ROOT_LOGGER.propertyName(), JmxLogger.ROOT_LOGGER.propertyValue()},
                         new OpenType[] {SimpleType.STRING, getConverter().getOpenType()});
             } catch (OpenDataException e) {
                 throw new RuntimeException(e);

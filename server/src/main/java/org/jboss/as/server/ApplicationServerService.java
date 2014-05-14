@@ -22,9 +22,6 @@
 
 package org.jboss.as.server;
 
-import static org.jboss.as.server.ServerLogger.AS_ROOT_LOGGER;
-import static org.jboss.as.server.ServerLogger.CONFIG_LOGGER;
-
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.Iterator;
@@ -38,6 +35,7 @@ import org.jboss.as.controller.ControlledProcessState;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.mgmt.domain.RemoteFileRepositoryService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ModuleIndexService;
@@ -94,24 +92,24 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
 
         final ProductConfig config = serverEnvironment.getProductConfig();
         final String prettyVersion = config.getPrettyVersionString();
-        AS_ROOT_LOGGER.serverStarting(prettyVersion);
-        if (CONFIG_LOGGER.isDebugEnabled()) {
+        ServerLogger.AS_ROOT_LOGGER.serverStarting(prettyVersion);
+        if (ServerLogger.CONFIG_LOGGER.isDebugEnabled()) {
             final Properties properties = System.getProperties();
             final StringBuilder b = new StringBuilder(8192);
-            b.append(ServerMessages.MESSAGES.configuredSystemPropertiesLabel());
+            b.append(ServerLogger.ROOT_LOGGER.configuredSystemPropertiesLabel());
             for (String property : new TreeSet<String>(properties.stringPropertyNames())) {
                 b.append("\n\t").append(property).append(" = ").append(properties.getProperty(property, "<undefined>"));
             }
-            CONFIG_LOGGER.debug(b);
-            CONFIG_LOGGER.debugf(ServerMessages.MESSAGES.vmArgumentsLabel(getVMArguments()));
-            if (CONFIG_LOGGER.isTraceEnabled()) {
+            ServerLogger.CONFIG_LOGGER.debug(b);
+            ServerLogger.CONFIG_LOGGER.debugf(ServerLogger.ROOT_LOGGER.vmArgumentsLabel(getVMArguments()));
+            if (ServerLogger.CONFIG_LOGGER.isTraceEnabled()) {
                 b.setLength(0);
                 final Map<String,String> env = System.getenv();
-                b.append(ServerMessages.MESSAGES.configuredSystemEnvironmentLabel());
+                b.append(ServerLogger.ROOT_LOGGER.configuredSystemEnvironmentLabel());
                 for (String key : new TreeSet<String>(env.keySet())) {
                     b.append("\n\t").append(key).append(" = ").append(env.get(key));
                 }
-                CONFIG_LOGGER.trace(b);
+                ServerLogger.CONFIG_LOGGER.trace(b);
             }
         }
         final ServiceTarget serviceTarget = context.getChildTarget();
@@ -141,7 +139,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         ExternalModuleService.addService(serviceTarget);
         ModuleIndexService.addService(serviceTarget);
         final AbstractVaultReader vaultReader = service(AbstractVaultReader.class);
-        AS_ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
+        ServerLogger.AS_ROOT_LOGGER.debugf("Using VaultReader %s", vaultReader);
         ServerService.addService(serviceTarget, configuration, processState, bootstrapListener, runningModeControl, vaultReader, configuration.getAuditLogger(), configuration.getAuthorizer());
         final ServiceActivatorContext serviceActivatorContext = new ServiceActivatorContext() {
             @Override
@@ -177,9 +175,9 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         // BES 2011/06/11 -- moved this to AbstractControllerService.start()
 //        processState.setRunning();
 
-        if (AS_ROOT_LOGGER.isDebugEnabled()) {
+        if (ServerLogger.AS_ROOT_LOGGER.isDebugEnabled()) {
             final long nanos = context.getElapsedTime();
-            AS_ROOT_LOGGER.debugf(prettyVersion + " root service started in %d.%06d ms",
+            ServerLogger.AS_ROOT_LOGGER.debugf(prettyVersion + " root service started in %d.%06d ms",
                     Long.valueOf(nanos / 1000000L), Long.valueOf(nanos % 1000000L));
         }
     }
@@ -189,7 +187,7 @@ final class ApplicationServerService implements Service<AsyncFuture<ServiceConta
         processState.setStopping();
         CurrentServiceContainer.setServiceContainer(null);
         String prettyVersion = configuration.getServerEnvironment().getProductConfig().getPrettyVersionString();
-        AS_ROOT_LOGGER.serverStopped(prettyVersion, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
+        ServerLogger.AS_ROOT_LOGGER.serverStopped(prettyVersion, Integer.valueOf((int) (context.getElapsedTime() / 1000000L)));
     }
 
     @Override

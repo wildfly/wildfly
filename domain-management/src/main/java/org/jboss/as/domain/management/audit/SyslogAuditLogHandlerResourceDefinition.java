@@ -55,7 +55,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -197,7 +197,7 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
         final Set<ResourceEntry> protocols = handlerResource.getChildren(PROTOCOL);
         if (protocols.size() == 0) {
             //We already check in SyslogAuditLogProtocolResourceDefinition that there is only one protocol
-            throw DomainManagementMessages.MESSAGES.noSyslogProtocol();
+            throw DomainManagementLogger.ROOT_LOGGER.noSyslogProtocol();
         }
         final ResourceEntry protocol = protocols.iterator().next();
         final SyslogAuditLogHandler.Transport transport = SyslogAuditLogHandler.Transport.valueOf(protocol.getPathElement().getValue().toUpperCase(Locale.ENGLISH));
@@ -284,7 +284,7 @@ public class SyslogAuditLogHandlerResourceDefinition extends AuditLogHandlerReso
             super.populateModel(context, operation, resource);
             String formatterName = operation.get(FORMATTER.getName()).asString();
             if (!HandlerUtil.lookForFormatter(context, PathAddress.pathAddress(operation.require(OP_ADDR)), formatterName)) {
-                throw DomainManagementMessages.MESSAGES.noFormatterCalled(formatterName);
+                throw DomainManagementLogger.ROOT_LOGGER.noFormatterCalled(formatterName);
             }
 
         }

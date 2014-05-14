@@ -26,8 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ProcessType;
@@ -61,7 +60,7 @@ public abstract class AbstractLegacyExtension implements Extension {
             ControllerLogger.SERVER_MANAGEMENT_LOGGER.ignoringUnsupportedLegacyExtension(subsystemNames, extensionName);
             return;
         } else if (context.getProcessType() == ProcessType.STANDALONE_SERVER) {
-            throw new UnsupportedOperationException(ControllerMessages.MESSAGES.unsupportedLegacyExtension(extensionName));
+            throw new UnsupportedOperationException(ControllerLogger.ROOT_LOGGER.unsupportedLegacyExtension(extensionName));
         }
 
         Set<ManagementResourceRegistration> subsystemRoots = initializeLegacyModel(context);
@@ -79,7 +78,7 @@ public abstract class AbstractLegacyExtension implements Extension {
             // to legacy servers to work
             return;
         } else if (context.getProcessType() == ProcessType.STANDALONE_SERVER) {
-            throw new UnsupportedOperationException(ControllerMessages.MESSAGES.unsupportedLegacyExtension(extensionName));
+            throw new UnsupportedOperationException(ControllerLogger.ROOT_LOGGER.unsupportedLegacyExtension(extensionName));
         }
 
         initializeLegacyParsers(context);

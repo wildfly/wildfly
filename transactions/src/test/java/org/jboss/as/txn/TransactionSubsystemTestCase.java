@@ -65,6 +65,7 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.as.subsystem.test.LegacyKernelServicesInitializer;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.as.txn.subsystem.CMResourceResourceDefinition;
 import org.jboss.as.txn.subsystem.TransactionExtension;
 import org.jboss.as.txn.subsystem.TransactionSubsystemRootResourceDefinition;

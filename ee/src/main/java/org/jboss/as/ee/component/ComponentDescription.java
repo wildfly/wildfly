@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.deployment.ContextNames;
@@ -43,8 +44,6 @@ import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * A description of a generic Java EE component.  The description is pre-classloading so it references everything by name.
@@ -109,16 +108,16 @@ public class ComponentDescription implements ResourceInjectionTarget {
     public ComponentDescription(final String componentName, final String componentClassName, final EEModuleDescription moduleDescription, final ServiceName deploymentUnitServiceName) {
         this.moduleDescription = moduleDescription;
         if (componentName == null) {
-            throw MESSAGES.nullVar("name");
+            throw EeLogger.ROOT_LOGGER.nullVar("name");
         }
         if (componentClassName == null) {
-            throw MESSAGES.nullVar("componentClassName");
+            throw EeLogger.ROOT_LOGGER.nullVar("componentClassName");
         }
         if (moduleDescription == null) {
-            throw MESSAGES.nullVar("moduleDescription");
+            throw EeLogger.ROOT_LOGGER.nullVar("moduleDescription");
         }
         if (deploymentUnitServiceName == null) {
-            throw MESSAGES.nullVar("deploymentUnitServiceName");
+            throw EeLogger.ROOT_LOGGER.nullVar("deploymentUnitServiceName");
         }
         serviceName = BasicComponent.serviceNameOf(deploymentUnitServiceName, componentName);
         this.componentName = componentName;
@@ -412,7 +411,7 @@ public class ComponentDescription implements ResourceInjectionTarget {
      */
     public void setNamingMode(final ComponentNamingMode namingMode) {
         if (namingMode == null) {
-            throw MESSAGES.nullVar("namingMode");
+            throw EeLogger.ROOT_LOGGER.nullVar("namingMode");
         }
         this.namingMode = namingMode;
     }
@@ -433,10 +432,10 @@ public class ComponentDescription implements ResourceInjectionTarget {
      */
     public void addDependency(ServiceName serviceName, ServiceBuilder.DependencyType type) {
         if (serviceName == null) {
-            throw MESSAGES.nullVar("serviceName");
+            throw EeLogger.ROOT_LOGGER.nullVar("serviceName");
         }
         if (type == null) {
-            throw MESSAGES.nullVar("type");
+            throw EeLogger.ROOT_LOGGER.nullVar("type");
         }
         final Map<ServiceName, ServiceBuilder.DependencyType> dependencies = this.dependencies;
         final ServiceBuilder.DependencyType dependencyType = dependencies.get(serviceName);

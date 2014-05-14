@@ -22,8 +22,7 @@
 
 package org.jboss.as.messaging.jms;
 
-import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -35,6 +34,7 @@ import org.hornetq.jms.client.HornetQTopic;
 import org.hornetq.jms.server.JMSServerManager;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.messaging.HornetQActivationService;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -76,7 +76,7 @@ public class JMSTopicService implements Service<Topic> {
                     topic = new HornetQTopic(name);
                     context.complete();
                 } catch (Throwable e) {
-                    context.failed(MESSAGES.failedToCreate(e, "queue"));
+                    context.failed(MessagingLogger.ROOT_LOGGER.failedToCreate(e, "queue"));
                 }
             }
         };

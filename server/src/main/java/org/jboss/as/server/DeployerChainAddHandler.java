@@ -43,6 +43,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.RegisteredDeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Services;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -60,7 +61,7 @@ public class DeployerChainAddHandler implements OperationStepHandler {
         Set<RegisteredDeploymentUnitProcessor> registeredDeploymentUnitProcessors = deployerMap.get(phase);
         RegisteredDeploymentUnitProcessor registeredDeploymentUnitProcessor = new RegisteredDeploymentUnitProcessor(priority, processor, subsystemName);
         if(registeredDeploymentUnitProcessors.contains(registeredDeploymentUnitProcessor)) {
-            throw ServerMessages.MESSAGES.duplicateDeploymentUnitProcessor(priority, processor.getClass());
+            throw ServerLogger.ROOT_LOGGER.duplicateDeploymentUnitProcessor(priority, processor.getClass());
         }
         registeredDeploymentUnitProcessors.add(registeredDeploymentUnitProcessor);
     }

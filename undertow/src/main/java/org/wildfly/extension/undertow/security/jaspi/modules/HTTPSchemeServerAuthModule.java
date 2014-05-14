@@ -26,6 +26,7 @@ import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.SecurityContext;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.handlers.ServletRequestContext;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.wildfly.extension.undertow.security.jaspi.JASPIAuthenticationMechanism;
 
 import javax.security.auth.Subject;
@@ -46,7 +47,6 @@ import static io.undertow.security.api.AuthenticationMechanism.AuthenticationMec
 import static io.undertow.security.api.AuthenticationMechanism.AuthenticationMechanismOutcome.NOT_AUTHENTICATED;
 import static javax.security.auth.message.AuthStatus.SEND_CONTINUE;
 import static javax.security.auth.message.AuthStatus.SUCCESS;
-import static org.wildfly.extension.undertow.UndertowLogger.ROOT_LOGGER;
 
 /**
  * <p> This class implements a JASPI {@code ServerAuthModule} that handles the standards HTTP Authentication
@@ -106,7 +106,7 @@ public class HTTPSchemeServerAuthModule implements ServerAuthModule {
                 return SEND_CONTINUE;
             }
         } catch (Exception e) {
-            ROOT_LOGGER.debug(e);
+            UndertowLogger.ROOT_LOGGER.debug(e);
             throw new AuthException("Could not validateRequest using mechanisms [" + mechanisms + ".");
         }
 

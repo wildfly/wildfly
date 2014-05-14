@@ -21,7 +21,6 @@
  */
 
 package org.jboss.as.controller.operations.global;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -41,6 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -94,7 +94,7 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
         Map<String, Set<String>> childAddresses = GlobalOperationHandlers.getChildAddresses(context, address, registry, resource, childType);
         Set<String> childNames = childAddresses.get(childType);
         if (childNames == null) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownChildType(childType)));
+            throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.unknownChildType(childType)));
         }
 
         // Track any excluded items
@@ -117,7 +117,7 @@ public class ReadChildrenResourcesHandler implements OperationStepHandler {
             // See if there was an override registered for the standard :read-resource handling (unlikely!!!)
             OperationStepHandler overrideHandler = context.getResourceRegistration().getOperationHandler(childAddress, READ_RESOURCE_OPERATION);
             if (overrideHandler == null) {
-                throw new OperationFailedException(new ModelNode().set(MESSAGES.noOperationHandler()));
+                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.noOperationHandler()));
             } else if (overrideHandler.getClass() == ReadResourceHandler.class) {
                 // not an override
                 overrideHandler = null;

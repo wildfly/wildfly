@@ -47,6 +47,7 @@ import org.jboss.as.ee.component.interceptors.InterceptorClassDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.cache.CacheInfo;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -68,8 +69,6 @@ import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.msc.service.ServiceName;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
@@ -97,7 +96,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
         StatefulRemoveMethod(final MethodIdentifier method, final boolean retainIfException) {
             if (method == null) {
-                throw MESSAGES.removeMethodIsNull();
+                throw EjbLogger.ROOT_LOGGER.removeMethodIsNull();
             }
             this.methodIdentifier = method;
             this.retainIfException = retainIfException;
@@ -179,7 +178,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
                         @Override
                         protected Interceptor create(Component component, InterceptorFactoryContext context) {
                             if (!(component instanceof StatefulSessionComponent)) {
-                                throw MESSAGES.componentNotInstanceOfSessionComponent(component, component.getComponentClass(), "stateful");
+                                throw EjbLogger.ROOT_LOGGER.componentNotInstanceOfSessionComponent(component, component.getComponentClass(), "stateful");
                             }
                             return new StatefulBMTInterceptor((StatefulSessionComponent) component);
                         }
@@ -287,7 +286,7 @@ public class StatefulComponentDescription extends SessionBeanComponentDescriptio
 
     public void addRemoveMethod(final MethodIdentifier removeMethod, final boolean retainIfException) {
         if (removeMethod == null) {
-            throw MESSAGES.removeMethodIsNull();
+            throw EjbLogger.ROOT_LOGGER.removeMethodIsNull();
         }
         this.removeMethods.put(removeMethod, new StatefulRemoveMethod(removeMethod, retainIfException));
     }

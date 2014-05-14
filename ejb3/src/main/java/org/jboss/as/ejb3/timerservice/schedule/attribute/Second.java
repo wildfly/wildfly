@@ -21,10 +21,11 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
 
 import java.util.Calendar;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Represents the value of a second constructed out of a {@link javax.ejb.ScheduleExpression#getSecond()}
  * <p/>
@@ -98,7 +99,7 @@ public class Second extends IntegerBasedExpression {
             return 0;
         }
         if (this.absoluteValues.isEmpty()) {
-            throw MESSAGES.invalidExpressionSeconds(this.origValue);
+            throw EjbLogger.ROOT_LOGGER.invalidExpressionSeconds(this.origValue);
         }
         return this.absoluteValues.first();
     }

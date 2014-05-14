@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.patching.PatchMessages;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstalledIdentity;
+import org.jboss.as.patching.logging.PatchLogger;
 
 /**
  * Utility class to validate the patched state and history.
@@ -54,7 +54,7 @@ public final class PatchHistoryValidations {
     public static void validateRollbackState(final String patchID, final InstalledIdentity identity) throws PatchingException {
         final Set<String> validHistory = processRollbackState(patchID, identity);
         if (patchID != null && !validHistory.contains(patchID)) {
-            throw PatchMessages.MESSAGES.patchNotFoundInHistory(patchID);
+            throw PatchLogger.ROOT_LOGGER.patchNotFoundInHistory(patchID);
         }
     }
 
@@ -148,21 +148,21 @@ public final class PatchHistoryValidations {
         @Override
         public <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addError(PatchingArtifact<P, S> artifact, S state) {
             if (!handleError(artifact, state)) {
-                errors.add(PatchMessages.MESSAGES.artifactInError(state));
+                errors.add(PatchLogger.ROOT_LOGGER.artifactInError(state));
             }
         }
 
         @Override
         public <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addInconsistent(PatchingArtifact<P, S> artifact, S current) {
             if (!handleError(artifact, current)) {
-                errors.add(PatchMessages.MESSAGES.inconsistentArtifact(current));
+                errors.add(PatchLogger.ROOT_LOGGER.inconsistentArtifact(current));
             }
         }
 
         @Override
         public <P extends PatchingArtifact.ArtifactState, S extends PatchingArtifact.ArtifactState> void addMissing(PatchingArtifact<P, S> artifact, S state) {
             if (!handleError(artifact, state)) {
-                errors.add(PatchMessages.MESSAGES.missingArtifact(state));
+                errors.add(PatchLogger.ROOT_LOGGER.missingArtifact(state));
             }
         }
 

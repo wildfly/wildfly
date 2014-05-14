@@ -21,10 +21,9 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 
 /**
  * Utility for {@link javax.ejb.ScheduleExpression}
@@ -41,7 +40,7 @@ public class ScheduleExpressionTypeUtil {
      */
     public static ScheduleExpressionType getType(String value) {
         if (value == null) {
-            throw MESSAGES.valueIsNull();
+            throw EjbLogger.ROOT_LOGGER.valueIsNull();
         }
         // Order of check is important.
         // TODO: Explain why this order is important

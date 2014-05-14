@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.ScheduleExpressionTypeUtil;
 import org.jboss.as.ejb3.timerservice.schedule.value.IncrementValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ListValue;
@@ -33,7 +34,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Represents a {@link Integer} type value in a {@link javax.ejb.ScheduleExpression}.
  * <p/>
@@ -66,7 +67,7 @@ public abstract class IntegerBasedExpression {
         // check the type of value
         this.scheduleExpressionType = ScheduleExpressionTypeUtil.getType(value);
         if (this.accepts(scheduleExpressionType) == false) {
-            throw MESSAGES.invalidScheduleExpressionType(value,this.getClass().getName(),this.scheduleExpressionType.toString());
+            throw EjbLogger.ROOT_LOGGER.invalidScheduleExpressionType(value, this.getClass().getName(), this.scheduleExpressionType.toString());
         }
         switch (this.scheduleExpressionType) {
             case RANGE:
@@ -99,7 +100,7 @@ public abstract class IntegerBasedExpression {
                 break;
 
             default:
-                throw MESSAGES.invalidValueForSecondInScheduleExpression(value);
+                throw EjbLogger.ROOT_LOGGER.invalidValueForSecondInScheduleExpression(value);
         }
     }
 
@@ -124,7 +125,7 @@ public abstract class IntegerBasedExpression {
                 this.processRangeValue(range);
                 return;
             default:
-                throw MESSAGES.invalidListValue(listItem);
+                throw EjbLogger.ROOT_LOGGER.invalidListValue(listItem);
         }
     }
 
@@ -201,12 +202,12 @@ public abstract class IntegerBasedExpression {
 
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value == null) {
-            throw MESSAGES.couldNotParseScheduleExpression(this.origValue);
+            throw EjbLogger.ROOT_LOGGER.couldNotParseScheduleExpression(this.origValue);
         }
         int max = this.getMaxValue();
         int min = this.getMinValue();
         if (value > max || value < min) {
-            throw MESSAGES.invalidValuesRange(value,min,max);
+            throw EjbLogger.ROOT_LOGGER.invalidValuesRange(value, min, max);
         }
     }
 

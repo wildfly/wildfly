@@ -74,6 +74,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PropertiesAttributeDefinition;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.staxmapper.XMLElementReader;
@@ -467,7 +468,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
             switch (element) {
                 case AUTHENTICATION: {
                     if (visited.contains(Element.AUTHENTICATION_JASPI)) {
-                        throw SecurityMessages.MESSAGES.xmlStreamExceptionAuth(reader.getLocation());
+                        throw SecurityLogger.ROOT_LOGGER.xmlStreamExceptionAuth(reader.getLocation());
                     }
                     parseAuthentication(list, address, reader);
                     break;
@@ -493,7 +494,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
                     break;
                 }
                 case AUTHENTICATION_JASPI: {
-                    if (visited.contains(Element.AUTHENTICATION)) { throw SecurityMessages.MESSAGES.xmlStreamExceptionAuth(reader.getLocation()); }
+                    if (visited.contains(Element.AUTHENTICATION)) { throw SecurityLogger.ROOT_LOGGER.xmlStreamExceptionAuth(reader.getLocation()); }
                     parseAuthenticationJaspi(list, address, reader);
                     break;
                 }
@@ -905,7 +906,7 @@ public class SecuritySubsystemParser implements XMLStreamConstants, XMLElementRe
         }
 
         if (!visited.containsAll(required)) {
-            throw SecurityMessages.MESSAGES.xmlStreamExceptionMissingAttribute(Attribute.KEYSTORE_PASSWORD.getLocalName(),
+            throw SecurityLogger.ROOT_LOGGER.xmlStreamExceptionMissingAttribute(Attribute.KEYSTORE_PASSWORD.getLocalName(),
                     Attribute.TRUSTSTORE_PASSWORD.getLocalName(), reader.getLocation());
         }
 

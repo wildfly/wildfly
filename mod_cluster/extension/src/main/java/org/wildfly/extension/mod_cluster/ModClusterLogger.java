@@ -22,6 +22,7 @@
 
 package org.wildfly.extension.mod_cluster;
 
+import org.jboss.dmr.ModelNode;
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
@@ -37,13 +38,14 @@ import static org.jboss.logging.Logger.Level.WARN;
  * Date: 17.06.2011
  *
  * @author <a href="mailto:jperkins@redhat.com">James R. Perkins</a>
+ * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
-@MessageLogger(projectCode = "JBAS")
+@MessageLogger(projectCode = "WFLYMODCLS", length = 4)
 interface ModClusterLogger extends BasicLogger {
     /**
      * The root logger with a category of the package name.
      */
-    ModClusterLogger ROOT_LOGGER = Logger.getMessageLogger(ModClusterLogger.class, ModClusterLogger.class.getPackage().getName());
+    ModClusterLogger ROOT_LOGGER = Logger.getMessageLogger(ModClusterLogger.class, "org.wildfly.extension.mod_cluster");
 
     /**
      * Logs an error message indicating an error when adding metrics.
@@ -51,7 +53,7 @@ interface ModClusterLogger extends BasicLogger {
      * @param cause the cause of the error.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 11700, value = "Error adding metrics.")
+    @Message(id = 1, value = "Error adding metrics.")
     void errorAddingMetrics(@Cause Throwable cause);
 
     /**
@@ -61,7 +63,7 @@ interface ModClusterLogger extends BasicLogger {
      * @param name  the name for the service that failed to start.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 11701, value = "%s failed to start.")
+    @Message(id = 2, value = "%s failed to start.")
     void startFailure(@Cause Throwable cause, String name);
 
     /**
@@ -71,35 +73,89 @@ interface ModClusterLogger extends BasicLogger {
      * @param name  the name for the service that failed to stop.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 11702, value = "%s failed to stop.")
+    @Message(id = 3, value = "%s failed to stop.")
     void stopFailure(@Cause Throwable cause, String name);
 
     /**
      * Logs an error message indicating ModCluster requires advertise, but no multi-cast interface is available.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 11703, value = "Mod_cluster requires Advertise but Multicast interface is not available")
+    @Message(id = 4, value = "Mod_cluster requires Advertise but Multicast interface is not available")
     void multicastInterfaceNotAvailable();
 
     /**
      * Logs an informational message indicating the default load balancer provider is being used.
      */
     @LogMessage(level = INFO)
-    @Message(id = 11704, value = "Mod_cluster uses default load balancer provider")
+    @Message(id = 5, value = "Mod_cluster uses default load balancer provider")
     void useDefaultLoadBalancer();
 
     /**
      * Logs an error message indicating that metric properties could not be applied on a custom load metric.
      */
     @LogMessage(level = ERROR)
-    @Message(id = 11705, value = "Error applying properties to load metric class '%s'. Metric will not be loaded.")
+    @Message(id = 6, value = "Error applying properties to load metric class '%s'. Metric will not be loaded.")
     void errorApplyingMetricProperties(@Cause Throwable cause, String metricClass);
 
     /**
      * Logs a warning message that this metric type is no longer supported.
      */
     @LogMessage(level = WARN)
-    @Message(id = 11706, value = "Metric of type '%s' is no longer supported and will be ignored.")
+    @Message(id = 7, value = "Metric of type '%s' is no longer supported and will be ignored.")
     void unsupportedMetric(String metricType);
+
+    /**
+     * A message indicating a class attribute is needed for the attribute represented by the {@code attributeName}
+     * parameter.
+     *
+     * @param attributeName the name of the required attribute.
+     * @return the message.
+     */
+    @Message(id = 8, value = "A class attribute is needed for %s")
+    String classAttributeRequired(String attributeName);
+
+    /**
+     * A message indicating the context and host are needed.
+     *
+     * @return the message.
+     */
+    @Message(id = 9, value = "need context and host")
+    String needContextAndHost();
+
+    /**
+     * A message indicating a type attribute is needed for the attribute represented by the {@code attributeName}
+     * parameter.
+     *
+     * @param attributeName the name of the required attribute.
+     * @return the message.
+     */
+    @Message(id = 10, value = "A type attribute is needed for %s")
+    String typeAttributeRequired(String attributeName);
+
+    /**
+     * A message indicating that the virtualhost or the context can't be found by modcluster.
+     * @param Host
+     * @param Context
+     * @return the message.
+     */
+    @Message(id = 11, value = "virtualhost: %s or context %s not found")
+    String ContextOrHostNotFound(String Host, String Context);
+
+    @Message(id = 12, value = "'capacity' is either an expression, is not an integer value, or has a bigger value than Integer.MAX_VALUE: %s")
+    String capacityIsExpressionOrGreaterThanIntegerMaxValue(ModelNode value);
+
+    @Message(id = 13, value = "'property' can not have more than one entry")
+    String propertyCanOnlyHaveOneEntry();
+
+    /**
+     * A message indicating a valid port and host are needed.
+    *
+    * @return the message.
+    */
+   @Message(id = 14, value = "need valid host and port")
+   String needHostAndPort();
+
+   @Message(id = 15, value = "session-draining-strategy must either be undefined or have the value \"DEFAULT\"")
+   String sessionDrainingStrategyMustBeUndefinedOrDefault();
 
 }

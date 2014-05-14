@@ -27,6 +27,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.jdr.commands.JdrCommand;
 import org.jboss.as.jdr.commands.JdrEnvironment;
+import org.jboss.as.jdr.logger.JdrLogger;
 import org.jboss.as.jdr.plugins.JdrPlugin;
 import org.jboss.as.jdr.util.JdrZipFile;
 
@@ -42,8 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
-import static org.jboss.as.jdr.JdrMessages.MESSAGES;
+import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
 
 public class JdrRunner implements JdrReportCollector {
 
@@ -75,8 +75,8 @@ public class JdrRunner implements JdrReportCollector {
             this.env.setZip(new JdrZipFile(new JdrEnvironment(this.env)));
         }
         catch (Exception e) {
-            ROOT_LOGGER.couldNotCreateZipfile(e);
-            throw MESSAGES.couldNotCreateZipfile();
+            ROOT_LOGGER.error(ROOT_LOGGER.couldNotCreateZipfile(), e);
+            throw new OperationFailedException(JdrLogger.ROOT_LOGGER.couldNotCreateZipfile());
         }
 
         List<JdrCommand> commands = new ArrayList<JdrCommand>();
@@ -99,13 +99,13 @@ public class JdrRunner implements JdrReportCollector {
             this.env.getZip().add(new ByteArrayInputStream(versionStream.toByteArray()), "version.txt");
 
         } catch (Exception e) {
-            ROOT_LOGGER.couldNotConfigureJDR(e);
-            throw MESSAGES.couldNotConfigureJDR();
+            ROOT_LOGGER.error(ROOT_LOGGER.couldNotConfigureJDR(), e);
+            throw new OperationFailedException(ROOT_LOGGER.couldNotConfigureJDR());
         }
 
         if (commands.size() < 1) {
-            ROOT_LOGGER.noCommandsToRun();
-            throw MESSAGES.noCommandsToRun();
+            ROOT_LOGGER.error(JdrLogger.ROOT_LOGGER.noCommandsToRun());
+            throw new OperationFailedException(JdrLogger.ROOT_LOGGER.noCommandsToRun());
         }
 
         JdrReport report = new JdrReport();

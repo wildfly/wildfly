@@ -34,12 +34,11 @@ import org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureValid
 import org.wildfly.extension.picketlink.federation.FederationExtension;
 import org.wildfly.extension.picketlink.federation.config.IDPConfiguration;
 import org.wildfly.extension.picketlink.federation.config.SPConfiguration;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 import org.wildfly.extension.undertow.deployment.UndertowAttachments;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
 
 /**
  * <p> Service implementation to enable a deployed applications as a Service Provider. </p>
@@ -86,7 +85,7 @@ public class ServiceProviderService extends EntityProviderService<ServiceProvide
         IDPConfiguration idpConfiguration = getFederationService().getValue().getIdpConfiguration();
 
         if (idpConfiguration == null) {
-            throw MESSAGES.federationIdentityProviderNotConfigured(getFederationService().getValue().getAlias());
+            throw PicketLinkLogger.ROOT_LOGGER.federationIdentityProviderNotConfigured(getFederationService().getValue().getAlias());
         }
 
         getConfiguration().setIdentityURL(idpConfiguration.getIdentityURL());

@@ -22,7 +22,6 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
 import static org.jboss.as.webservices.dmr.Constants.CLASS;
 import static org.jboss.as.webservices.dmr.PackageUtils.getConfigServiceName;
 import static org.jboss.as.webservices.dmr.PackageUtils.getHandlerChainServiceName;
@@ -36,6 +35,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.service.HandlerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
@@ -82,11 +82,11 @@ final class HandlerAdd extends AbstractAddStepHandler {
             final ServiceName configServiceName = getConfigServiceName(configType, configName);
             final ServiceRegistry registry = context.getServiceRegistry(false);
             if (registry.getService(configServiceName) == null) {
-                throw MESSAGES.missingConfig(configName);
+                throw WSLogger.ROOT_LOGGER.missingConfig(configName);
             }
             final ServiceName handlerChainServiceName = getHandlerChainServiceName(configServiceName, handlerChainType, handlerChainId);
             if (registry.getService(handlerChainServiceName) == null) {
-                throw MESSAGES.missingHandlerChain(configName, handlerChainType, handlerChainId);
+                throw WSLogger.ROOT_LOGGER.missingHandlerChain(configName, handlerChainType, handlerChainId);
             }
             final ServiceName handlerServiceName = getHandlerServiceName(handlerChainServiceName, handlerName);
 

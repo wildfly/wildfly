@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import java.util.Collections;
 import java.util.Set;
 
@@ -31,6 +29,7 @@ import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 
+import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.jboss.as.jsr77.subsystem.Constants;
 
 /**
@@ -68,7 +67,7 @@ class J2EEDomainHandler extends BaseHandler {
     Set<MBeanAttributeInfo> getAttributeInfos() {
         Set<MBeanAttributeInfo> attributes = super.getAttributeInfos();
 
-        attributes.add(createRoMBeanAttributeInfo(ATTR_SERVERS, String.class.getName(), MESSAGES.attrInfoServers()));
+        attributes.add(createRoMBeanAttributeInfo(ATTR_SERVERS, String.class.getName(), JSR77Logger.ROOT_LOGGER.attrInfoServers()));
 
         return attributes;
     }

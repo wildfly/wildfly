@@ -29,7 +29,7 @@ import java.util.Enumeration;
 import java.util.Set;
 
 import org.jboss.as.controller.ControlledProcessState;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizationResult;
@@ -108,7 +108,7 @@ public class ManagementPermissionAuthorizer implements Authorizer {
             Permission requiredPermission = enumeration.nextElement();
             if (!userPermissions.implies(requiredPermission)) {
                 return new AuthorizationResult(AuthorizationResult.Decision.DENY,
-                            new ModelNode(ControllerMessages.MESSAGES.permissionDenied()));
+                            new ModelNode(ControllerLogger.ROOT_LOGGER.permissionDenied()));
             }
         }
         return AuthorizationResult.PERMITTED;

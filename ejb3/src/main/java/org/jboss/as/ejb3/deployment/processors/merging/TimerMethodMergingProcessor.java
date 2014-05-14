@@ -34,6 +34,7 @@ import javax.ejb.Timeout;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.processors.dd.MethodResolutionUtils;
 import org.jboss.as.ejb3.timerservice.AutoTimer;
@@ -48,7 +49,6 @@ import org.jboss.metadata.ejb.spec.NamedMethodMetaData;
 import org.jboss.metadata.ejb.spec.ScheduleMetaData;
 import org.jboss.metadata.ejb.spec.TimerMetaData;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Deployment unit processor that merges the annotation information with the information in the deployment descriptor
  *
@@ -67,7 +67,7 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<EJBCom
         final Set<Method> timerAnnotationData = MethodAnnotationAggregator.runtimeAnnotationPresent(componentClass, applicationClasses, deploymentReflectionIndex, Timeout.class);
         final Method timeoutMethod;
         if (timerAnnotationData.size() > 1) {
-            throw MESSAGES.componentClassHasMultipleTimeoutAnnotations(componentClass);
+            throw EjbLogger.ROOT_LOGGER.componentClassHasMultipleTimeoutAnnotations(componentClass);
         } else if (timerAnnotationData.size() == 1) {
             timeoutMethod = timerAnnotationData.iterator().next();
         } else {
@@ -113,7 +113,7 @@ public class TimerMethodMergingProcessor extends AbstractMergingProcessor<EJBCom
                     final Method otherMethod = description.getTimeoutMethod();
                     if (otherMethod != null) {
                         if (!otherMethod.equals(method)) {
-                            throw MESSAGES.invalidEjbEntityTimeout("3.1 18.2.5.3",componentClass);
+                            throw EjbLogger.ROOT_LOGGER.invalidEjbEntityTimeout("3.1 18.2.5.3", componentClass);
                         }
                     }
                     description.setTimeoutMethod(method);

@@ -21,9 +21,9 @@
 */
 package org.jboss.as.controller.interfaces;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.Set;
+
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  *
@@ -77,7 +77,7 @@ class CriteriaValidator {
         @Override
         public String validate(InterfaceCriteria current, InterfaceCriteria candidate) {
             if (candidate instanceof InetAddressMatchInterfaceCriteria) {
-                return MESSAGES.cantHaveBothLoopbackAndInetAddressCriteria();
+                return ControllerLogger.ROOT_LOGGER.cantHaveBothLoopbackAndInetAddressCriteria();
             }
             return null;
         }
@@ -100,7 +100,7 @@ class CriteriaValidator {
         public String validate(InterfaceCriteria current, InterfaceCriteria candidate) {
             for (InterfaceCriteria curr : ((NotInterfaceCriteria)current).getAllCriteria()) {
                 if (curr.equals(candidate)) {
-                    return MESSAGES.cantHaveSameCriteriaForBothNotAndInclusion(candidate);
+                    return ControllerLogger.ROOT_LOGGER.cantHaveSameCriteriaForBothNotAndInclusion(candidate);
                 }
             }
             return null;

@@ -24,7 +24,7 @@ package org.jboss.as.ejb3.iiop.stub;
 import javax.rmi.CORBA.Util;
 
 import java.security.PrivilegedAction;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.iiop.LocalIIOPInvoker;
 import org.jboss.as.jacorb.rmi.marshal.strategy.StubStrategy;
 import org.jboss.ejb.iiop.HandleImplIIOP;

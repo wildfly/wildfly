@@ -24,7 +24,6 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.messaging.CommonAttributes.CORE_ADDRESS;
 import static org.jboss.as.messaging.CommonAttributes.RUNTIME_QUEUE;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -40,6 +39,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.PlaceholderResource;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -194,7 +194,7 @@ public class HornetQServerResource implements Resource {
         String type = address.getKey();
         if (CORE_ADDRESS.equals(type) ||
                 RUNTIME_QUEUE.equals(type)) {
-            throw MESSAGES.canNotRegisterResourceOfType(type);
+            throw MessagingLogger.ROOT_LOGGER.canNotRegisterResourceOfType(type);
         } else {
             delegate.registerChild(address, resource);
         }
@@ -205,7 +205,7 @@ public class HornetQServerResource implements Resource {
         String type = address.getKey();
         if (CORE_ADDRESS.equals(type) ||
                 RUNTIME_QUEUE.equals(type)) {
-            throw MESSAGES.canNotRemoveResourceOfType(type);
+            throw MessagingLogger.ROOT_LOGGER.canNotRemoveResourceOfType(type);
         } else {
             return delegate.removeChild(address);
         }

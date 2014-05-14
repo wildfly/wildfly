@@ -37,7 +37,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.MasterDomainControllerClient;
 import org.jboss.as.host.controller.resources.ServerConfigResourceDefinition;
 import org.jboss.dmr.ModelNode;
@@ -96,7 +96,7 @@ public class ServerAddHandler extends AbstractAddStepHandler {
         boolean missingData = false;
         if (!context.isBooting() && root.getChild(PathElement.pathElement(SERVER_GROUP, group)) == null) {
             if (hostControllerInfo.isMasterDomainController() || !hostControllerInfo.isRemoteDomainControllerIgnoreUnaffectedConfiguration()) {
-                throw HostControllerMessages.MESSAGES.noServerGroupCalled(group);
+                throw HostControllerLogger.ROOT_LOGGER.noServerGroupCalled(group);
             } else {
                 missingData = true;
             }
@@ -104,7 +104,7 @@ public class ServerAddHandler extends AbstractAddStepHandler {
         if (socketBindingGroup != null) {
             if (!context.isBooting() && root.getChild(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroup)) == null) {
                 if (hostControllerInfo.isMasterDomainController() || !hostControllerInfo.isRemoteDomainControllerIgnoreUnaffectedConfiguration()) {
-                    throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(socketBindingGroup);
+                    throw HostControllerLogger.ROOT_LOGGER.noSocketBindingGroupCalled(socketBindingGroup);
                 } else {
                     missingData = true;
                 }
@@ -137,11 +137,11 @@ public class ServerAddHandler extends AbstractAddStepHandler {
                         //An extra sanity check, is this necessary?
                         final Resource root = context.readResourceFromRoot(PathAddress.EMPTY_ADDRESS, false);
                         if (!root.hasChild(PathElement.pathElement(SERVER_GROUP, serverGroupName))) {
-                            throw HostControllerMessages.MESSAGES.noServerGroupCalled(serverGroupName);
+                            throw HostControllerLogger.ROOT_LOGGER.noServerGroupCalled(serverGroupName);
                         }
                         if (socketBindingGroupName != null) {
                             if (!root.hasChild(PathElement.pathElement(SOCKET_BINDING_GROUP, socketBindingGroupName))) {
-                                throw HostControllerMessages.MESSAGES.noSocketBindingGroupCalled(socketBindingGroupName);
+                                throw HostControllerLogger.ROOT_LOGGER.noSocketBindingGroupCalled(socketBindingGroupName);
                             }
                         }
                         context.stepCompleted();

@@ -23,7 +23,6 @@
 package org.jboss.as.process;
 
 import static java.lang.Thread.holdsLock;
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -40,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jboss.as.process.logging.ProcessLogger;
 import org.jboss.as.process.protocol.StreamUtils;
 import org.jboss.as.process.stdin.Base64OutputStream;
 import org.jboss.logging.Logger;
@@ -97,28 +97,28 @@ final class ManagedProcess {
 
     ManagedProcess(final String processName, final List<String> command, final Map<String, String> env, final String workingDirectory, final Object lock, final ProcessController controller, final byte[] authKey, final boolean privileged, final boolean respawn) {
         if (processName == null) {
-            throw MESSAGES.nullVar("processName");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("processName");
         }
         if (command == null) {
-            throw MESSAGES.nullVar("command");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("command");
         }
         if (env == null) {
-            throw MESSAGES.nullVar("env");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("env");
         }
         if (workingDirectory == null) {
-            throw MESSAGES.nullVar("workingDirectory");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("workingDirectory");
         }
         if (lock == null) {
-            throw MESSAGES.nullVar("lock");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("lock");
         }
         if (controller == null) {
-            throw MESSAGES.nullVar("controller");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("controller");
         }
         if (authKey == null) {
-            throw MESSAGES.nullVar("authKey");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("authKey");
         }
         if (authKey.length != 16) {
-            throw MESSAGES.invalidLength("authKey");
+            throw ProcessLogger.ROOT_LOGGER.invalidLength("authKey");
         }
         this.processName = processName;
         this.command = command;

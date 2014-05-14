@@ -25,7 +25,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -61,8 +61,7 @@ public class JGroupsSubsystemDescribe implements OperationStepHandler {
 
         AuthorizationResult authResult = context.authorize(operation, GenericSubsystemDescribeHandler.DESCRIBE_EFFECTS);
         if (authResult.getDecision() != AuthorizationResult.Decision.PERMIT) {
-            throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
-                    opAddress, authResult.getExplanation());
+            throw ControllerLogger.ROOT_LOGGER.unauthorized(operation.require(OP).asString(), opAddress, authResult.getExplanation());
         }
 
         final PathAddress rootAddress = PathAddress.pathAddress(opAddress.getLastElement());

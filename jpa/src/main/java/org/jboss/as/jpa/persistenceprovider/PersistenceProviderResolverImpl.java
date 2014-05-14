@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.persistence.spi.PersistenceProvider;
 import javax.persistence.spi.PersistenceProviderResolver;
 
-import org.jboss.as.jpa.messages.JpaMessages;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.modules.ModuleClassLoader;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -86,9 +86,9 @@ public class PersistenceProviderResolverImpl implements PersistenceProviderResol
                             ROOT_LOGGER.tracef("application has its own Persistence Provider %s", providerClass.getName());
                             providersCopy.add((PersistenceProvider) providerClass.newInstance());
                         } catch (InstantiationException e) {
-                            throw JpaMessages.MESSAGES.couldNotCreateInstanceProvider(e, providerClass.getName());
+                            throw JpaLogger.ROOT_LOGGER.couldNotCreateInstanceProvider(e, providerClass.getName());
                         } catch (IllegalAccessException e) {
-                            throw JpaMessages.MESSAGES.couldNotCreateInstanceProvider(e, providerClass.getName());
+                            throw JpaLogger.ROOT_LOGGER.couldNotCreateInstanceProvider(e, providerClass.getName());
                         }
                     }
                 }
@@ -101,9 +101,9 @@ public class PersistenceProviderResolverImpl implements PersistenceProviderResol
                 providersCopy.add((PersistenceProvider) providerClass.newInstance());
                 ROOT_LOGGER.tracef("returning global (module) Persistence Provider %s", providerClass.getName());
             } catch (InstantiationException e) {
-                throw JpaMessages.MESSAGES.couldNotCreateInstanceProvider(e, providerClass.getName());
+                throw JpaLogger.ROOT_LOGGER.couldNotCreateInstanceProvider(e, providerClass.getName());
             } catch (IllegalAccessException e) {
-                throw JpaMessages.MESSAGES.couldNotCreateInstanceProvider(e, providerClass.getName());
+                throw JpaLogger.ROOT_LOGGER.couldNotCreateInstanceProvider(e, providerClass.getName());
             }
         }
         return providersCopy;

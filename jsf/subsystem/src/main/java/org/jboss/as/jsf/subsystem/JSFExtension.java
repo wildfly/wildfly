@@ -32,7 +32,7 @@ import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
-import org.jboss.as.jsf.JSFLogger;
+import org.jboss.as.jsf.logging.JSFLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLElementWriter;

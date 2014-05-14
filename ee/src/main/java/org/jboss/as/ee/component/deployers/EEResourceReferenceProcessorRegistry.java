@@ -25,7 +25,7 @@ package org.jboss.as.ee.component.deployers;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import org.jboss.as.ee.logging.EeLogger;
 
 /**
  * User: jpai
@@ -36,11 +36,11 @@ public class EEResourceReferenceProcessorRegistry {
 
     public void registerResourceReferenceProcessor(final EEResourceReferenceProcessor resourceReferenceProcessor) {
         if (resourceReferenceProcessor == null) {
-            throw MESSAGES.nullResourceReference();
+            throw EeLogger.ROOT_LOGGER.nullResourceReference();
         }
         final String resourceReferenceType = resourceReferenceProcessor.getResourceReferenceType();
         if (resourceReferenceType == null || resourceReferenceType.trim().isEmpty()) {
-            throw MESSAGES.nullOrEmptyResourceReferenceType();
+            throw EeLogger.ROOT_LOGGER.nullOrEmptyResourceReferenceType();
         }
         resourceReferenceProcessors.put(resourceReferenceType, resourceReferenceProcessor);
     }

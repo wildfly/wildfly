@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import javax.persistence.EntityManagerFactory;
 
 import org.jboss.as.ee.component.InjectionSource;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -41,8 +42,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
-
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Represents the PersistenceUnit injected into a component.
@@ -113,7 +112,7 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                     // make sure we can access the target class type
                     extensionClass = pu.getClassLoader().loadClass(injectionTypeName);
                 } catch (ClassNotFoundException e) {
-                    throw MESSAGES.cannotLoadFromJpa(e, injectionTypeName);
+                    throw JpaLogger.ROOT_LOGGER.cannotLoadFromJpa(e, injectionTypeName);
                 }
                 // TODO:  when/if jpa supports unwrap, change to
                 //   Object targetValueToInject = emf.unwrap(extensionClass);
@@ -123,16 +122,16 @@ public class PersistenceUnitInjectionSource extends InjectionSource {
                 try {
                     getSessionFactory = emf.getClass().getMethod("getSessionFactory");
                 } catch (NoSuchMethodException e) {
-                    throw MESSAGES.hibernateOnlyEntityManagerFactory();
+                    throw JpaLogger.ROOT_LOGGER.hibernateOnlyEntityManagerFactory();
                 }
 
                 Object targetValueToInject = null;
                 try {
                     targetValueToInject = getSessionFactory.invoke(emf, new Object[0]);
                 } catch (IllegalAccessException e) {
-                    throw MESSAGES.cannotGetSessionFactory(e);
+                    throw JpaLogger.ROOT_LOGGER.cannotGetSessionFactory(e);
                 } catch (InvocationTargetException e) {
-                    throw MESSAGES.cannotGetSessionFactory(e);
+                    throw JpaLogger.ROOT_LOGGER.cannotGetSessionFactory(e);
                 }
                 return new ValueManagedReference(new ImmediateValue<Object>(targetValueToInject));
             }

@@ -54,6 +54,7 @@ import org.wildfly.clustering.ejb.BeanManager;
 import org.wildfly.clustering.ejb.IdentifierFactory;
 import org.wildfly.clustering.ejb.RemoveListener;
 import org.wildfly.clustering.ejb.Time;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 import org.wildfly.clustering.group.NodeFactory;
 import org.wildfly.clustering.registry.Registry;
 

@@ -21,8 +21,6 @@
  */
 package org.jboss.as.webservices.service;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.security.Provider;
 import java.security.Security;
 import java.util.List;
@@ -31,6 +29,7 @@ import javax.management.MBeanServer;
 
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.ServerEnvironmentService;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.msc.service.Service;
@@ -75,7 +74,7 @@ public final class ServerConfigService implements Service<ServerConfig> {
             //we fix newly added BouncyCastle security provider to remove DH KeyPairGenerator
             fixSecurityProvider();
         } catch (final Exception e) {
-            ROOT_LOGGER.configServiceCreationFailed();
+            WSLogger.ROOT_LOGGER.configServiceCreationFailed();
             throw new StartException(e);
         }
     }
@@ -85,7 +84,7 @@ public final class ServerConfigService implements Service<ServerConfig> {
         try {
             serverConfig.destroy();
         } catch (final Exception e) {
-            ROOT_LOGGER.configServiceDestroyFailed();
+            WSLogger.ROOT_LOGGER.configServiceDestroyFailed();
         }
     }
 

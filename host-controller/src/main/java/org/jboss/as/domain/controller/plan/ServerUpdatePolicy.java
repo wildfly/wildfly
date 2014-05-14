@@ -23,11 +23,10 @@
 package org.jboss.as.domain.controller.plan;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 
 import java.util.Set;
 
-import org.jboss.as.domain.controller.DomainControllerLogger;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.dmr.ModelNode;
 
@@ -111,7 +110,7 @@ class ServerUpdatePolicy {
      */
     public boolean canUpdateServer(ServerIdentity server) {
         if (!serverGroupName.equals(server.getServerGroupName()) || !servers.contains(server)) {
-            throw MESSAGES.unknownServer(server);
+            throw DomainControllerLogger.ROOT_LOGGER.unknownServer(server);
         }
 
         if (!parent.canChildProceed())
@@ -131,7 +130,7 @@ class ServerUpdatePolicy {
     public void recordServerResult(ServerIdentity server, ModelNode response) {
 
         if (!serverGroupName.equals(server.getServerGroupName()) || !servers.contains(server)) {
-            throw MESSAGES.unknownServer(server);
+            throw DomainControllerLogger.ROOT_LOGGER.unknownServer(server);
         }
 
         boolean serverFailed = response.has(FAILURE_DESCRIPTION);

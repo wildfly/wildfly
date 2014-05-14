@@ -39,11 +39,11 @@ import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.config.IDPConfiguration;
 import org.wildfly.extension.picketlink.federation.service.FederationService;
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import java.util.List;
 
 import static org.jboss.as.controller.PathAddress.EMPTY_ADDRESS;
-import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ATTRIBUTE_MANAGER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER_ROLE_GENERATOR;
 
@@ -108,7 +108,7 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
             if (securityDomain.isDefined()) {
                 idpType.setSecurityDomain(securityDomain.asString());
             } else {
-                throw MESSAGES.federationRequiredAttribute(ModelElement.COMMON_SECURITY_DOMAIN.getName(), alias);
+                throw PicketLinkLogger.ROOT_LOGGER.federationRequiredAttribute(ModelElement.COMMON_SECURITY_DOMAIN.getName(), alias);
             }
 
             boolean supportsSignatures = IdentityProviderResourceDefinition.SUPPORT_SIGNATURES.resolveModelAttribute(context, fromModel).asBoolean();
@@ -145,7 +145,7 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     roleGeneratorType = RoleGeneratorTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw MESSAGES.typeNotProvided(IDENTITY_PROVIDER_ROLE_GENERATOR.getName());
+                    throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(IDENTITY_PROVIDER_ROLE_GENERATOR.getName());
                 }
             } else {
                 roleGeneratorType = UndertowRoleGenerator.class.getName();
@@ -166,7 +166,7 @@ public class IdentityProviderAddHandler extends AbstractAddStepHandler {
                 } else if (codeNode.isDefined()) {
                     attributeManagerType = AttributeManagerTypeEnum.forType(codeNode.asString());
                 } else {
-                    throw MESSAGES.typeNotProvided(IDENTITY_PROVIDER_ATTRIBUTE_MANAGER.getName());
+                    throw PicketLinkLogger.ROOT_LOGGER.typeNotProvided(IDENTITY_PROVIDER_ATTRIBUTE_MANAGER.getName());
                 }
             } else {
                 attributeManagerType = UndertowAttributeManager.class.getName();

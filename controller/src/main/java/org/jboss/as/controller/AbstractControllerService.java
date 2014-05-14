@@ -22,8 +22,7 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -36,6 +35,7 @@ import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ConfigurationPersister;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -227,7 +227,7 @@ public abstract class AbstractControllerService implements Service<ModelControll
     public void start(final StartContext context) throws StartException {
 
         if (configurationPersister == null) {
-            throw MESSAGES.persisterNotInjected();
+            throw ControllerLogger.ROOT_LOGGER.persisterNotInjected();
         }
         final ServiceController<?> serviceController = context.getController();
         final ServiceContainer container = serviceController.getServiceContainer();

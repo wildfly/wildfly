@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.util.Indices;
 import org.jboss.as.weld.util.Reflections;
 import org.jboss.jandex.AnnotationInstance;
@@ -79,7 +79,7 @@ public class WeldAnnotationDiscovery implements ExtendedAnnotationDiscovery, Boo
     @Override
     public boolean containsAnnotation(Class<?> javaClass, Class<? extends Annotation> requiredAnnotation) {
         if (index == null) {
-            throw WeldMessages.MESSAGES.cannotUseAtRuntime(AnnotationDiscovery.class.getSimpleName());
+            throw WeldLogger.ROOT_LOGGER.cannotUseAtRuntime(AnnotationDiscovery.class.getSimpleName());
         }
         DotName className = DotName.createSimple(javaClass.getName());
         DotName requiredAnnotationName = DotName.createSimple(requiredAnnotation.getName());
@@ -128,7 +128,7 @@ public class WeldAnnotationDiscovery implements ExtendedAnnotationDiscovery, Boo
     @Override
     public Set<String> getAnnotationsAnnotatedWith(Class<? extends Annotation> annotation) {
         if (index == null) {
-            throw WeldMessages.MESSAGES.cannotUseAtRuntime(ExtendedAnnotationDiscovery.class.getSimpleName());
+            throw WeldLogger.ROOT_LOGGER.cannotUseAtRuntime(ExtendedAnnotationDiscovery.class.getSimpleName());
         }
         try {
             return ImmutableSet.copyOf(Collections2.transform(annotatedAnnotations.get(annotation), AnnotationType.TO_FQCN));

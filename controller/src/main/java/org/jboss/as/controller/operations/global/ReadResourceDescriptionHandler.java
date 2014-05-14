@@ -54,7 +54,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.NoSuchResourceException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -364,12 +364,12 @@ public class ReadResourceDescriptionHandler implements OperationStepHandler {
                     if (failures.size() == 1) {
                         Map.Entry<PathAddress, ModelNode> entry = failures.entrySet().iterator().next();
                         if (entry.getValue().getType() == ModelType.STRING) {
-                            context.getFailureDescription().set(ControllerMessages.MESSAGES.wildcardOperationFailedAtSingleAddress(op, entry.getKey(), entry.getValue().asString()));
+                            context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.wildcardOperationFailedAtSingleAddress(op, entry.getKey(), entry.getValue().asString()));
                         } else {
-                            context.getFailureDescription().set(ControllerMessages.MESSAGES.wildcardOperationFailedAtSingleAddressWithComplexFailure(op, entry.getKey()));
+                            context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.wildcardOperationFailedAtSingleAddressWithComplexFailure(op, entry.getKey()));
                         }
                     } else if (failures.size() > 1) {
-                        context.getFailureDescription().set(ControllerMessages.MESSAGES.wildcardOperationFailedAtMultipleAddresses(op, failures.keySet()));
+                        context.getFailureDescription().set(ControllerLogger.ROOT_LOGGER.wildcardOperationFailedAtMultipleAddresses(op, failures.keySet()));
                     }
                 }
             }

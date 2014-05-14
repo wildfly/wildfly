@@ -27,6 +27,7 @@ import java.lang.management.ManagementFactory;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -86,7 +87,7 @@ class OperatingSystemMXBeanAttributeHandler extends AbstractPlatformMBeanAttribu
         } else if (OperatingSystemResourceDefinition.OPERATING_SYSTEM_READ_ATTRIBUTES.contains(name)
                 || OperatingSystemResourceDefinition.OPERATING_SYSTEM_METRICS.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl8(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badReadAttributeImpl(name);
         }
     }
 }

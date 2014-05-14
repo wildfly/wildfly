@@ -27,7 +27,7 @@ import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ServiceVerificationHandler;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.resources.VaultResourceDefinition;
 import org.jboss.as.server.operations.SystemPropertyDeferredProcessor;
 import org.jboss.dmr.ModelNode;
@@ -56,7 +56,7 @@ public class VaultAddHandler extends AbstractAddStepHandler {
             attr.validateAndSet(operation, model);
         }
         if (model.hasDefined(VaultResourceDefinition.MODULE.getName()) && !model.hasDefined(VaultResourceDefinition.CODE.getName())){
-            throw ServerMessages.MESSAGES.vaultModuleWithNoCode();
+            throw ServerLogger.ROOT_LOGGER.vaultModuleWithNoCode();
         }
 
     }
@@ -85,7 +85,7 @@ public class VaultAddHandler extends AbstractAddStepHandler {
             try {
                 vaultReader.createVault(vaultClass, module, vaultOptions);
             } catch (VaultReaderException e) {
-                throw ServerMessages.MESSAGES.cannotCreateVault(e, e);
+                throw ServerLogger.ROOT_LOGGER.cannotCreateVault(e, e);
             }
 
             // WFLY-1904 if any system properties were not resolved due to needing vault resolution,

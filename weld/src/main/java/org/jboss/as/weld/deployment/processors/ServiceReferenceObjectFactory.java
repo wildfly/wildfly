@@ -21,8 +21,6 @@
  */
 package org.jboss.as.weld.deployment.processors;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
-
 import java.util.Hashtable;
 
 import javax.naming.Context;
@@ -32,6 +30,7 @@ import javax.naming.Reference;
 
 import org.jboss.as.naming.ServiceAwareObjectFactory;
 import org.jboss.as.naming.context.ModularReference;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceNotFoundException;
@@ -68,14 +67,14 @@ public class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory 
         final Reference reference = (Reference) obj;
         final ServiceNameRefAdr nameAdr = (ServiceNameRefAdr) reference.get("srof");
         if (nameAdr == null) {
-            throw MESSAGES.invalidContextReference("srof");
+            throw NamingLogger.ROOT_LOGGER.invalidContextReference("srof");
         }
         final ServiceName serviceName = (ServiceName)nameAdr.getContent();
         final ServiceController<?> controller;
         try {
             controller = serviceRegistry.getRequiredService(serviceName);
         } catch (ServiceNotFoundException e) {
-            throw MESSAGES.cannotResolveService(serviceName);
+            throw NamingLogger.ROOT_LOGGER.cannotResolveService(serviceName);
         }
 
         final StabilityMonitor monitor = new StabilityMonitor();
@@ -83,7 +82,7 @@ public class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory 
         try {
             monitor.awaitStability();
         } catch (InterruptedException e) {
-            throw MESSAGES.threadInterrupt(serviceName);
+            throw NamingLogger.ROOT_LOGGER.threadInterrupt(serviceName);
         } finally {
             monitor.removeController(controller);
         }
@@ -91,12 +90,12 @@ public class ServiceReferenceObjectFactory implements ServiceAwareObjectFactory 
             case UP:
                 return getObjectInstance(controller.getValue(), obj, name, nameCtx, environment);
             case START_FAILED:
-                throw MESSAGES.cannotResolveService(serviceName, getClass().getName(), "START_FAILED");
+                throw NamingLogger.ROOT_LOGGER.cannotResolveService(serviceName, getClass().getName(), "START_FAILED");
             case REMOVED:
-                throw MESSAGES.cannotResolveService(serviceName, getClass().getName(), "REMOVED");
+                throw NamingLogger.ROOT_LOGGER.cannotResolveService(serviceName, getClass().getName(), "REMOVED");
         }
         // we should never get here, as the listener should not notify unless the state was one of the above
-        throw MESSAGES.cannotResolveServiceBug(serviceName, getClass().getName(), controller.getState().toString());
+        throw NamingLogger.ROOT_LOGGER.cannotResolveServiceBug(serviceName, getClass().getName(), controller.getState().toString());
     }
 
     /**

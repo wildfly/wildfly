@@ -65,7 +65,7 @@ import org.infinispan.transaction.LockingMode;
 import org.infinispan.transaction.tm.BatchModeTransactionManager;
 import org.infinispan.util.concurrent.IsolationLevel;
 import org.jboss.as.clustering.infinispan.CacheContainer;
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.msc.AsynchronousService;
 import org.jboss.as.clustering.naming.JndiNameFactory;
 import org.jboss.as.controller.AbstractAddStepHandler;
@@ -139,7 +139,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
         try (InputStream input = url.openStream()) {
             return parser.parse(input);
         } catch (IOException e) {
-            throw InfinispanMessages.MESSAGES.failedToParse(e, url);
+            throw InfinispanLogger.ROOT_LOGGER.failedToParse(e, url);
         }
     }
 
@@ -633,7 +633,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
                         try {
                             builder.addServer().host(value.getResolvedDestinationAddress().getHostAddress()).port(value.getDestinationPort());
                         } catch (UnknownHostException e) {
-                            throw InfinispanMessages.MESSAGES.failedToInjectSocketBinding(e, value);
+                            throw InfinispanLogger.ROOT_LOGGER.failedToInjectSocketBinding(e, value);
                         }
                     }
                     @Override
@@ -658,7 +658,7 @@ public abstract class CacheAdd extends AbstractAddStepHandler {
             try {
                 return persistenceBuilder.addStore(StoreConfigurationBuilder.class.getClassLoader().loadClass(className).asSubclass(StoreConfigurationBuilder.class));
             } catch (Exception e) {
-                throw InfinispanMessages.MESSAGES.invalidCacheStore(e, className);
+                throw InfinispanLogger.ROOT_LOGGER.invalidCacheStore(e, className);
             }
         }
     }

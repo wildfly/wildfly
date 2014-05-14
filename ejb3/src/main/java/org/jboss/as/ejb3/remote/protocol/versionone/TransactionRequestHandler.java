@@ -29,7 +29,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
 import org.jboss.ejb.client.TransactionID;
@@ -100,7 +100,7 @@ class TransactionRequestHandler extends AbstractMessageHandler {
                     userTransactionManagementTask = new UserTransactionRollbackTask(this, this.transactionsRepository, this.marshallerFactory, (UserTransactionID) transactionID, channelAssociation, invocationId);
                     break;
                 default:
-                    throw EjbMessages.MESSAGES.unknownTransactionRequestType(this.txRequestType.name());
+                    throw EjbLogger.ROOT_LOGGER.unknownTransactionRequestType(this.txRequestType.name());
             }
             // submit to a separate thread for processing the request
             this.executorService.submit(userTransactionManagementTask);
@@ -126,7 +126,7 @@ class TransactionRequestHandler extends AbstractMessageHandler {
                     xidTransactionManagementTask = new XidTransactionBeforeCompletionTask(this, this.transactionsRepository, this.marshallerFactory, xidTransactionID, channelAssociation, invocationId);
                     break;
                 default:
-                    throw EjbMessages.MESSAGES.unknownTransactionRequestType(this.txRequestType.name());
+                    throw EjbLogger.ROOT_LOGGER.unknownTransactionRequestType(this.txRequestType.name());
             }
             // submit to a separate thread for processing the request
             this.executorService.submit(xidTransactionManagementTask);
@@ -140,7 +140,7 @@ class TransactionRequestHandler extends AbstractMessageHandler {
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Exception e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         dataOutputStream = new DataOutputStream(messageOutputStream);
         try {
@@ -165,7 +165,7 @@ class TransactionRequestHandler extends AbstractMessageHandler {
         try {
             messageOutputStream = channelAssociation.acquireChannelMessageOutputStream();
         } catch (Exception e) {
-            throw EjbMessages.MESSAGES.failedToOpenMessageOutputStream(e);
+            throw EjbLogger.ROOT_LOGGER.failedToOpenMessageOutputStream(e);
         }
         dataOutputStream = new DataOutputStream(messageOutputStream);
         try {

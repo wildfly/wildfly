@@ -46,6 +46,7 @@ import org.picketlink.identity.federation.web.handlers.saml2.SAML2LogOutHandler;
 import org.picketlink.identity.federation.web.handlers.saml2.SAML2SignatureValidationHandler;
 import org.wildfly.extension.picketlink.federation.config.ProviderConfiguration;
 import org.wildfly.extension.picketlink.federation.metrics.PicketLinkSubsystemMetrics;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,8 +54,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.wildfly.extension.picketlink.PicketLinkLogger.ROOT_LOGGER;
-import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -264,7 +264,7 @@ public abstract class EntityProviderService<T extends PicketLinkFederationServic
                 stsType = (STSType) new STSConfigParser().parse(stream);
             }
         } catch (Exception e) {
-            throw MESSAGES.federationCouldNotParseSTSConfig(e);
+            throw PicketLinkLogger.ROOT_LOGGER.federationCouldNotParseSTSConfig(e);
         } finally {
             try {
                 if (stream != null) {

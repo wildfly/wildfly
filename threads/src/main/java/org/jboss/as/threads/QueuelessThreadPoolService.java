@@ -81,7 +81,7 @@ public class QueuelessThreadPoolService implements Service<ManagedQueuelessExecu
     public synchronized ManagedQueuelessExecutorService getValue() throws IllegalStateException {
         final ManagedQueuelessExecutorService value = this.executor;
         if (value == null) {
-            throw ThreadsMessages.MESSAGES.queuelessThreadPoolExecutorUninitialized();
+            throw ThreadsLogger.ROOT_LOGGER.queuelessThreadPoolExecutorUninitialized();
         }
         return value;
     }

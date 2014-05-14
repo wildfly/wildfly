@@ -26,6 +26,7 @@ import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.component.InterceptorDescription;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.interceptor.ContainerInterceptorsMetaData;
@@ -49,8 +50,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * A {@link DeploymentUnitProcessor} which processes the container interceptor bindings that are configured the jboss-ejb3.xml
@@ -97,10 +96,10 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                 // container interceptor bindings that are applicable for all EJBs are *not* expected to specify a method
                 // since all EJBs having the same method is not really practical
                 if (containerInterceptorBinding.getMethod() != null) {
-                    throw MESSAGES.defaultInterceptorsNotBindToMethod();
+                    throw EjbLogger.ROOT_LOGGER.defaultInterceptorsNotBindToMethod();
                 }
                 if (containerInterceptorBinding.getInterceptorOrder() != null) {
-                    throw MESSAGES.defaultInterceptorsNotSpecifyOrder();
+                    throw EjbLogger.ROOT_LOGGER.defaultInterceptorsNotSpecifyOrder();
                 }
                 // Make a note that this container interceptor binding is applicable for all EJBs
                 bindingsForAllEJBs.add(containerInterceptorBinding);
@@ -136,7 +135,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
             try {
                 componentClass = module.getClassLoader().loadClass(ejbComponentDescription.getComponentClassName());
             } catch (ClassNotFoundException e) {
-                throw MESSAGES.failToLoadComponentClass(e, ejbComponentDescription.getComponentClassName());
+                throw EjbLogger.ROOT_LOGGER.failToLoadComponentClass(e, ejbComponentDescription.getComponentClassName());
             }
             final List<InterceptorBindingMetaData> bindingsApplicableForCurrentEJB = bindingsPerEJB.get(ejbComponentDescription.getComponentName());
             final Map<Method, List<InterceptorBindingMetaData>> methodInterceptors = new HashMap<Method, List<InterceptorBindingMetaData>>();
@@ -161,7 +160,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                         }
                         if (binding.isTotalOrdering()) {
                             if (classLevelAbsoluteOrder) {
-                                throw MESSAGES.twoEjbBindingsSpecifyAbsoluteOrder(componentClass.toString());
+                                throw EjbLogger.ROOT_LOGGER.twoEjbBindingsSpecifyAbsoluteOrder(componentClass.toString());
                             } else {
                                 classLevelAbsoluteOrder = true;
                             }
@@ -175,9 +174,9 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                         if (methodData.getMethodParams() == null) {
                             final Collection<Method> methods = classIndex.getAllMethods(methodData.getMethodName());
                             if (methods.isEmpty()) {
-                                throw MESSAGES.failToFindMethodInEjbJarXml(componentClass.getName(), methodData.getMethodName());
+                                throw EjbLogger.ROOT_LOGGER.failToFindMethodInEjbJarXml(componentClass.getName(), methodData.getMethodName());
                             } else if (methods.size() > 1) {
-                                throw MESSAGES.multipleMethodReferencedInEjbJarXml(methodData.getMethodName(), componentClass.getName());
+                                throw EjbLogger.ROOT_LOGGER.multipleMethodReferencedInEjbJarXml(methodData.getMethodName(), componentClass.getName());
                             }
                             resolvedMethod = methods.iterator().next();
                         } else {
@@ -196,7 +195,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                                 }
                             }
                             if (resolvedMethod == null) {
-                                throw MESSAGES.failToFindMethodWithParameterTypes(componentClass.getName(), methodData.getMethodName(), methodData.getMethodParams());
+                                throw EjbLogger.ROOT_LOGGER.failToFindMethodWithParameterTypes(componentClass.getName(), methodData.getMethodName(), methodData.getMethodParams());
                             }
                         }
                         List<InterceptorBindingMetaData> methodSpecificInterceptorBindings = methodInterceptors.get(resolvedMethod);
@@ -213,7 +212,7 @@ public class ContainerInterceptorBindingsDDProcessor implements DeploymentUnitPr
                         }
                         if (binding.isTotalOrdering()) {
                             if (methodLevelAbsoluteOrder.containsKey(resolvedMethod)) {
-                                throw MESSAGES.twoEjbBindingsSpecifyAbsoluteOrder(resolvedMethod.toString());
+                                throw EjbLogger.ROOT_LOGGER.twoEjbBindingsSpecifyAbsoluteOrder(resolvedMethod.toString());
                             } else {
                                 methodLevelAbsoluteOrder.put(resolvedMethod, true);
                             }

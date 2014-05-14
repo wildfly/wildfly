@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.ConstantDef;
@@ -249,7 +249,7 @@ class ExceptionDefImpl
     }
 
     public void members(StructMember[] arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     // Package protected ---------------------------------------------

@@ -28,7 +28,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.wildfly.extension.security.manager.Constants;
-import org.wildfly.extension.security.manager.SecurityManagerLogger;
+import org.wildfly.extension.security.manager.logging.SecurityManagerLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**

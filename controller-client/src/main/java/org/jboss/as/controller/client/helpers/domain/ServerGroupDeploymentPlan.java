@@ -22,9 +22,9 @@
 
 package org.jboss.as.controller.client.helpers.domain;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.io.Serializable;
+
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 
 /**
  * Indicates how the actions in a {@link DeploymentSetPlan} are to be
@@ -48,7 +48,7 @@ public class ServerGroupDeploymentPlan implements Serializable {
 
     private ServerGroupDeploymentPlan(final String serverGroupName, final boolean rollback, final boolean rollingToServers, final int maxFailures, final int maxFailurePercentage) {
         if (serverGroupName == null) {
-            throw MESSAGES.nullVar("serverGroupName");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("serverGroupName");
         }
         this.serverGroupName = serverGroupName;
         this.rollback = rollback;
@@ -111,13 +111,13 @@ public class ServerGroupDeploymentPlan implements Serializable {
 
     public ServerGroupDeploymentPlan createAllowFailures(int serverFailures) {
         if (serverFailures < 1)
-            throw MESSAGES.invalidValue("serverFailures", serverFailures, 0);
+            throw ControllerClientLogger.ROOT_LOGGER.invalidValue("serverFailures", serverFailures, 0);
         return new ServerGroupDeploymentPlan(serverGroupName, true, rollingToServers, serverFailures, maxFailurePercentage);
     }
 
     public ServerGroupDeploymentPlan createAllowFailurePercentage(int serverFailurePercentage) {
         if (serverFailurePercentage < 1 || serverFailurePercentage > 99)
-            throw MESSAGES.invalidValue("serverFailurePercentage", serverFailurePercentage, 0, 100);
+            throw ControllerClientLogger.ROOT_LOGGER.invalidValue("serverFailurePercentage", serverFailurePercentage, 0, 100);
         return new ServerGroupDeploymentPlan(serverGroupName, true, rollingToServers, maxFailures, serverFailurePercentage);
     }
 

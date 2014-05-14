@@ -22,11 +22,11 @@
 
 package org.jboss.as.domain.management.security.password;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * A {@link PasswordValidation} to verify that a password is not in a list of banned passwords.
@@ -49,7 +49,7 @@ public class ValueRestriction implements PasswordRestriction {
                 sb.append(", ");
             }
         }
-        requirementsMessage = must ? MESSAGES.passwordMustNotEqualInfo(sb.toString()) : MESSAGES.passwordShouldNotEqualInfo(sb.toString());
+        requirementsMessage = must ? DomainManagementLogger.ROOT_LOGGER.passwordMustNotEqualInfo(sb.toString()) : DomainManagementLogger.ROOT_LOGGER.passwordShouldNotEqualInfo(sb.toString());
     }
 
     @Override
@@ -60,7 +60,7 @@ public class ValueRestriction implements PasswordRestriction {
     @Override
     public void validate(String userName, String password) throws PasswordValidationException {
         if (forbiddenValues.contains(password)) {
-            throw MESSAGES.passwordMustNotBeEqual(password);
+            throw DomainManagementLogger.ROOT_LOGGER.passwordMustNotBeEqual(password);
         }
     }
 

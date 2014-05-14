@@ -21,13 +21,12 @@
  */
 package org.jboss.as.controller.remote;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.xnio.IoUtils;
 
 /**
@@ -97,7 +96,7 @@ final class Pipe {
             final Object lock = Pipe.this.lock;
             synchronized (lock) {
                 if (killed) {
-                    throw MESSAGES.streamWasKilled();
+                    throw ControllerLogger.ROOT_LOGGER.streamWasKilled();
                 }
                 if (writeClosed && size == 0) {
                     return -1;
@@ -106,7 +105,7 @@ final class Pipe {
                     try {
                         lock.wait();
                         if (killed) {
-                            throw MESSAGES.streamWasKilled();
+                            throw ControllerLogger.ROOT_LOGGER.streamWasKilled();
                         }
                         if (writeClosed && size == 0) {
                             return -1;
@@ -131,7 +130,7 @@ final class Pipe {
             final Object lock = Pipe.this.lock;
             synchronized (lock) {
                 if (killed) {
-                    throw MESSAGES.streamWasKilled();
+                    throw ControllerLogger.ROOT_LOGGER.streamWasKilled();
                 }
                 if (writeClosed && size == 0) {
                     return -1;
@@ -144,7 +143,7 @@ final class Pipe {
                     try {
                         lock.wait();
                         if (killed) {
-                            throw MESSAGES.streamWasKilled();
+                            throw ControllerLogger.ROOT_LOGGER.streamWasKilled();
                         }
                         if (writeClosed && (size = Pipe.this.size) == 0) {
                             return -1;
@@ -202,10 +201,10 @@ final class Pipe {
             final Object lock = Pipe.this.lock;
             synchronized (lock) {
                 if (killed) {
-                    throw MESSAGES.streamWasKilled();
+                    throw ControllerLogger.ROOT_LOGGER.streamWasKilled();
                 }
                 if (writeClosed) {
-                    throw MESSAGES.streamWasClosed();
+                    throw ControllerLogger.ROOT_LOGGER.streamWasClosed();
                 }
                 final byte[] buffer = Pipe.this.buffer;
                 final int bufLen = buffer.length;
@@ -213,10 +212,10 @@ final class Pipe {
                     try {
                         lock.wait();
                         if (killed) {
-                            throw MESSAGES.streamWasKilled();
+                            throw ControllerLogger.ROOT_LOGGER.streamWasKilled();
                         }
                         if (writeClosed) {
-                            throw MESSAGES.streamWasClosed();
+                            throw ControllerLogger.ROOT_LOGGER.streamWasClosed();
                         }
                     } catch (InterruptedException e) {
                         Thread.currentThread().interrupt();
@@ -240,10 +239,10 @@ final class Pipe {
             final Object lock = Pipe.this.lock;
             synchronized (lock) {
                 if (killed) {
-                    throw MESSAGES.streamWasKilled();
+                    throw ControllerLogger.ROOT_LOGGER.streamWasKilled();
                 }
                 if (writeClosed) {
-                    throw MESSAGES.streamWasClosed();
+                    throw ControllerLogger.ROOT_LOGGER.streamWasClosed();
                 }
                 final byte[] buffer = Pipe.this.buffer;
                 final int bufLen = buffer.length;
@@ -255,10 +254,10 @@ final class Pipe {
                         try {
                             lock.wait();
                             if (killed) {
-                                throw MESSAGES.streamWasKilled();
+                                throw ControllerLogger.ROOT_LOGGER.streamWasKilled();
                             }
                             if (writeClosed) {
-                                throw MESSAGES.streamWasClosed();
+                                throw ControllerLogger.ROOT_LOGGER.streamWasClosed();
                             }
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();

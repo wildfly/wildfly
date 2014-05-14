@@ -37,7 +37,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanAssociatingInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanEjbCreateMethodInterceptor;
 import org.jboss.as.ejb3.component.entity.interceptors.EntityBeanIdentityInterceptorFactory;
@@ -52,8 +52,6 @@ import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.MethodIdentifier;
 import org.jboss.msc.service.ServiceBuilder;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * configurator that sets up interceptors for an EJB's object view
@@ -118,7 +116,7 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
                     handleNonBeanMethod(componentConfiguration, configuration, index, method);
                 } else {
                     if(!Modifier.isPublic(componentMethod.getModifiers())) {
-                        throw EjbMessages.MESSAGES.ejbBusinessMethodMustBePublic(componentMethod);
+                        throw EjbLogger.ROOT_LOGGER.ejbBusinessMethodMustBePublic(componentMethod);
                     }
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
@@ -143,7 +141,7 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
      */
     protected void handleNonBeanMethod(final ComponentConfiguration componentConfiguration, final ViewConfiguration configuration, final DeploymentReflectionIndex index, final Method method) throws DeploymentUnitProcessingException {
         if(method.getDeclaringClass() != Object.class && method.getDeclaringClass() != WriteReplaceInterface.class) {
-            throw EjbMessages.MESSAGES.couldNotFindViewMethodOnEjb(method, configuration.getViewClass().getName(), componentConfiguration.getComponentName());
+            throw EjbLogger.ROOT_LOGGER.couldNotFindViewMethodOnEjb(method, configuration.getViewClass().getName(), componentConfiguration.getComponentName());
         }
     }
 
@@ -168,6 +166,6 @@ public class EntityBeanObjectViewConfigurator implements ViewConfigurator {
             }
             clazz = clazz.getSuperclass();
         }
-        throw MESSAGES.failToResolveEjbRemoveForInterface(ejbName);
+        throw EjbLogger.ROOT_LOGGER.failToResolveEjbRemoveForInterface(ejbName);
     }
 }

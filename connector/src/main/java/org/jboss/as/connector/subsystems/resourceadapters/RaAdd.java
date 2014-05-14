@@ -22,7 +22,7 @@
 
 package org.jboss.as.connector.subsystems.resourceadapters;
 
-import org.jboss.as.connector.logging.ConnectorMessages;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
@@ -63,7 +63,7 @@ public class RaAdd extends AbstractAddStepHandler {
         final String name = PathAddress.pathAddress(address).getLastElement().getValue();
         final String archiveOrModuleName;
         if (!model.hasDefined(ARCHIVE.getName()) && ! model.hasDefined(MODULE.getName())) {
-            throw ConnectorMessages.MESSAGES.archiveOrModuleRequired();
+            throw ConnectorLogger.ROOT_LOGGER.archiveOrModuleRequired();
         }
         if (model.get(ARCHIVE.getName()).isDefined()) {
             archiveOrModuleName = model.get(ARCHIVE.getName()).asString();

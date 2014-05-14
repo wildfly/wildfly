@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.deployment.scanner;
 
-import static org.jboss.as.server.deployment.scanner.DeploymentScannerLogger.ROOT_LOGGER;
+import static org.jboss.as.server.deployment.scanner.logging.DeploymentScannerLogger.ROOT_LOGGER;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
@@ -35,6 +35,7 @@ import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
+import org.jboss.as.server.deployment.scanner.logging.DeploymentScannerLogger;
 
 /**
  * @author Emanuel Muckenhuber
@@ -62,7 +63,7 @@ public class DeploymentScannerExtension implements Extension {
         ROOT_LOGGER.debug("Initializing Deployment Scanner Extension");
 
         if (context.getProcessType() == ProcessType.HOST_CONTROLLER) {
-            throw DeploymentScannerMessages.MESSAGES.deploymentScannerNotForDomainMode();
+            throw DeploymentScannerLogger.ROOT_LOGGER.deploymentScannerNotForDomainMode();
         }
 
         final SubsystemRegistration subsystem = context.registerSubsystem(CommonAttributes.DEPLOYMENT_SCANNER, MANAGEMENT_API_MAJOR_VERSION,

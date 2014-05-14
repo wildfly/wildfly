@@ -22,8 +22,7 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.ProtocolLogger;
-import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.threads.AsyncFuture;
 import org.jboss.threads.AsyncFutureTask;
 import org.xnio.Cancellable;
@@ -151,14 +150,14 @@ class ActiveOperationSupport {
             } else {
                 // Check that the operationId is not already taken
                 if(! operationIdManager.lockBatchId(id)) {
-                    throw ProtocolMessages.MESSAGES.operationIdAlreadyExists(id);
+                    throw ProtocolLogger.ROOT_LOGGER.operationIdAlreadyExists(id);
                 }
                 operationId = id;
             }
             final ActiveOperationImpl<T, A> request = new ActiveOperationImpl<T, A>(operationId, attachment, getCheckedCallback(callback));
             final ActiveOperation<?, ?> existing =  activeRequests.putIfAbsent(operationId, request);
             if(existing != null) {
-                throw ProtocolMessages.MESSAGES.operationIdAlreadyExists(operationId);
+                throw ProtocolLogger.ROOT_LOGGER.operationIdAlreadyExists(operationId);
             }
             activeCount++; // condition.signalAll();
             return request;

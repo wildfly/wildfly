@@ -30,6 +30,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -51,7 +52,7 @@ class BufferPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHan
 
         final ObjectName objectName = PlatformMBeanUtil.getObjectNameWithNameKey(PlatformMBeanConstants.BUFFER_POOL_MXBEAN_DOMAIN_TYPE, bpName);
         if (!ManagementFactory.getPlatformMBeanServer().isRegistered(objectName)) {
-            throw PlatformMBeanMessages.MESSAGES.unknownBufferPool(bpName);
+            throw PlatformMBeanLogger.ROOT_LOGGER.unknownBufferPool(bpName);
         }
 
         final String name = operation.require(ModelDescriptionConstants.NAME).asString();
@@ -68,7 +69,7 @@ class BufferPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHan
             context.getResult().set(Long.class.cast(PlatformMBeanUtil.getMBeanAttribute(objectName, "TotalCapacity")));
         } else if (BufferPoolResourceDefinition.BUFFER_POOL_METRICS.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl1(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badReadAttributeImpl(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);

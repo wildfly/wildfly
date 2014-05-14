@@ -26,6 +26,7 @@ import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.as.pojo.descriptor.ConfigVisitor;
 import org.jboss.as.pojo.descriptor.DefaultConfigVisitor;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptor;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.service.DescribedPojoPhase;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -63,12 +64,12 @@ public class ParsedKernelDeploymentProcessor implements DeploymentUnitProcessor 
 
         final Module module = unit.getAttachment(Attachments.MODULE);
         if (module == null)
-            throw PojoMessages.MESSAGES.noModuleFound(unit);
+            throw PojoLogger.ROOT_LOGGER.noModuleFound(unit);
 
         final ServiceTarget serviceTarget = phaseContext.getServiceTarget();
         final DeploymentReflectionIndex index = unit.getAttachment(Attachments.REFLECTION_INDEX);
         if (index == null)
-            throw PojoMessages.MESSAGES.missingReflectionIndex(unit);
+            throw PojoLogger.ROOT_LOGGER.missingReflectionIndex(unit);
 
         for (KernelDeploymentXmlDescriptor kdXmlDescriptor : kdXmlDescriptors) {
             final List<BeanMetaDataConfig> beanConfigs = kdXmlDescriptor.getBeans();

@@ -24,7 +24,6 @@ package org.jboss.as.jsr77.managedobject;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBDEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,6 +36,7 @@ import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 import javax.management.QueryExp;
 
+import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -205,7 +205,7 @@ public class J2EEDeployedObjectHandlers extends Handler {
                 }
             }
         }
-        throw MESSAGES.couldNotFindJ2eeType(j2eeType);
+        throw JSR77Logger.ROOT_LOGGER.couldNotFindJ2eeType(j2eeType);
     }
 
     private static class J2EEApplicationHandler extends J2EEDeployedObjectHandler {
@@ -214,7 +214,7 @@ public class J2EEDeployedObjectHandlers extends Handler {
 
         @Override
         Set<ObjectName> queryObjectNames(ModelReader reader, ObjectName name, QueryExp query) {
-            throw MESSAGES.shouldNotGetCalled();
+            throw JSR77Logger.ROOT_LOGGER.shouldNotGetCalled();
         }
 
         @Override
@@ -242,7 +242,7 @@ public class J2EEDeployedObjectHandlers extends Handler {
 
         @Override
         Set<ObjectName> queryObjectNames(ModelReader reader, ObjectName name, QueryExp query) {
-            throw MESSAGES.shouldNotGetCalled();
+            throw JSR77Logger.ROOT_LOGGER.shouldNotGetCalled();
         }
 
         @Override

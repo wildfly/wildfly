@@ -22,9 +22,7 @@
 
 package org.jboss.as.controller.client.impl;
 
-import org.jboss.as.controller.client.ControllerClientLogger;
-import org.jboss.as.controller.client.ControllerClientMessages;
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
@@ -114,7 +112,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
 
     protected synchronized Channel getOrCreateChannel() throws IOException {
         if (closed) {
-            throw MESSAGES.objectIsClosed( ModelControllerClient.class.getSimpleName());
+            throw ControllerClientLogger.ROOT_LOGGER.objectIsClosed(ModelControllerClient.class.getSimpleName());
         }
         if (strategy == null) {
             try {
@@ -153,7 +151,7 @@ public class RemotingModelControllerClient extends AbstractModelControllerClient
         try {
             if(! closed) {
                 // Create the leak description
-                final Throwable t = ControllerClientMessages.MESSAGES.controllerClientNotClosed();
+                final Throwable t = ControllerClientLogger.ROOT_LOGGER.controllerClientNotClosed();
                 t.setStackTrace(allocationStackTrace);
                 ControllerClientLogger.ROOT_LOGGER.leakedControllerClient(t);
                 // Close

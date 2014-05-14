@@ -22,76 +22,76 @@
 
 package org.jboss.as.process;
 
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
-
 import java.io.PrintStream;
+
+import org.jboss.as.process.logging.ProcessLogger;
 
 public class CommandLineArgumentUsageImpl extends CommandLineArgumentUsage {
 
     public static void init(){
 
         addArguments(CommandLineConstants.ADMIN_ONLY);
-        instructions.add(MESSAGES.argAdminOnly());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argAdminOnly());
 
         addArguments(CommandLineConstants.PUBLIC_BIND_ADDRESS + " <value>", CommandLineConstants.PUBLIC_BIND_ADDRESS + "=<value>" );
-        instructions.add(MESSAGES.argPublicBindAddress());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argPublicBindAddress());
 
         addArguments(CommandLineConstants.PUBLIC_BIND_ADDRESS + "<interface>=<value>" );
-        instructions.add(MESSAGES.argInterfaceBindAddress());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argInterfaceBindAddress());
 
         addArguments(CommandLineConstants.BACKUP_DC);
-        instructions.add(MESSAGES.argBackup());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argBackup());
 
         addArguments(CommandLineConstants.SHORT_DOMAIN_CONFIG + " <config>", CommandLineConstants.SHORT_DOMAIN_CONFIG + "=<config>");
-        instructions.add(MESSAGES.argShortDomainConfig());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argShortDomainConfig());
 
         addArguments(CommandLineConstants.CACHED_DC);
-        instructions.add(MESSAGES.argCachedDc());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argCachedDc());
 
         addArguments(CommandLineConstants.SYS_PROP + "<name>[=<value>]");
-        instructions.add(MESSAGES.argSystem());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argSystem());
 
         addArguments(CommandLineConstants.DOMAIN_CONFIG + "=<config>");
-        instructions.add(MESSAGES.argDomainConfig());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argDomainConfig());
 
         addArguments(CommandLineConstants.SHORT_HELP, CommandLineConstants.HELP);
-        instructions.add(MESSAGES.argHelp());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argHelp());
 
         addArguments(CommandLineConstants.HOST_CONFIG + "=<config>");
-        instructions.add(MESSAGES.argHostConfig());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argHostConfig());
 
         addArguments(CommandLineConstants.INTERPROCESS_HC_ADDRESS + "=<address>");
-        instructions.add(MESSAGES.argInterProcessHcAddress());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argInterProcessHcAddress());
 
         addArguments(CommandLineConstants.INTERPROCESS_HC_PORT + "=<port>");
-        instructions.add(MESSAGES.argInterProcessHcPort());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argInterProcessHcPort());
 
         addArguments(CommandLineConstants.MASTER_ADDRESS +"=<address>");
-        instructions.add(MESSAGES.argMasterAddress());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argMasterAddress());
 
         addArguments(CommandLineConstants.MASTER_PORT + "=<port>");
-        instructions.add(MESSAGES.argMasterPort());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argMasterPort());
 
         addArguments(CommandLineConstants.READ_ONLY_DOMAIN_CONFIG + "=<config>");
-        instructions.add(MESSAGES.argReadOnlyDomainConfig());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argReadOnlyDomainConfig());
 
         addArguments(CommandLineConstants.READ_ONLY_HOST_CONFIG + "=<config>");
-        instructions.add(MESSAGES.argReadOnlyHostConfig());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argReadOnlyHostConfig());
 
         addArguments(CommandLineConstants.SHORT_PROPERTIES + " <url>", CommandLineConstants.SHORT_PROPERTIES + "=<url>", CommandLineConstants.PROPERTIES + "=<url>");
-        instructions.add(MESSAGES.argProperties());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argProperties());
 
         addArguments(CommandLineConstants.PROCESS_CONTROLLER_BIND_ADDR + "=<address>");
-        instructions.add(MESSAGES.argPcAddress());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argPcAddress());
 
         addArguments(CommandLineConstants.PROCESS_CONTROLLER_BIND_PORT + "=<port>");
-        instructions.add(MESSAGES.argPcPort());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argPcPort());
 
         addArguments(CommandLineConstants.DEFAULT_MULTICAST_ADDRESS + " <value>", CommandLineConstants.DEFAULT_MULTICAST_ADDRESS + "=<value>");
-        instructions.add(MESSAGES.argDefaultMulticastAddress());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argDefaultMulticastAddress());
 
         addArguments(CommandLineConstants.OLD_SHORT_VERSION, CommandLineConstants.SHORT_VERSION, CommandLineConstants.VERSION);
-        instructions.add(MESSAGES.argVersion());
+        instructions.add(ProcessLogger.ROOT_LOGGER.argVersion());
     }
 
     public static void printUsage(final PrintStream out) {

@@ -39,6 +39,7 @@ import org.jboss.as.jpa.container.ExtendedEntityManager;
 import org.jboss.as.jpa.container.ExtendedPersistenceDeepInheritance;
 import org.jboss.as.jpa.container.ExtendedPersistenceShallowInheritance;
 import org.jboss.as.jpa.container.TransactionScopedEntityManager;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.service.JPAService;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.naming.ManagedReference;
@@ -54,7 +55,6 @@ import org.jboss.msc.value.ImmediateValue;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Represents the PersistenceContext injected into a component.
@@ -213,7 +213,7 @@ public class PersistenceContextInjectionSource extends InjectionSource {
                     // provider classes should be on application classpath
                     extensionClass = pu.getClassLoader().loadClass(injectionTypeName);
                 } catch (ClassNotFoundException e) {
-                    throw MESSAGES.cannotLoadFromJpa(e, injectionTypeName);
+                    throw JpaLogger.ROOT_LOGGER.cannotLoadFromJpa(e, injectionTypeName);
                 }
                 // get example of target object
                 Object targetValueToInject = entityManager.unwrap(extensionClass);

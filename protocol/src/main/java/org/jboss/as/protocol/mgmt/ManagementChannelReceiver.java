@@ -22,8 +22,8 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.MessageInputStream;
 import org.jboss.remoting3.MessageOutputStream;
@@ -63,21 +63,21 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
     @Override
     public void handleMessage(final Channel channel, final MessageInputStream message) {
         try {
-            ROOT_LOGGER.tracef("%s handling incoming data", this);
+            ProtocolLogger.ROOT_LOGGER.tracef("%s handling incoming data", this);
             lastMessageTime = System.currentTimeMillis();
             final DataInput input = new DataInputStream(message);
             final ManagementProtocolHeader header = ManagementProtocolHeader.parse(input);
             final byte type = header.getType();
             if(type == ManagementProtocol.TYPE_PING) {
                 // Handle legacy ping/pong directly
-                ROOT_LOGGER.tracef("Received ping on %s", this);
+                ProtocolLogger.ROOT_LOGGER.tracef("Received ping on %s", this);
                 handlePing(channel, header);
             } else if (type == ManagementProtocol.TYPE_PONG) {
                 // Nothing to do here
-                ROOT_LOGGER.tracef("Received on on %s", this);
+                ProtocolLogger.ROOT_LOGGER.tracef("Received on on %s", this);
             } else if (type == ManagementProtocol.TYPE_BYE_BYE) {
                 // Close the channel
-                ROOT_LOGGER.tracef("Received bye bye on %s, closing", this);
+                ProtocolLogger.ROOT_LOGGER.tracef("Received bye bye on %s, closing", this);
                 handleChannelReset(channel);
             } else {
                 // Handle a message
@@ -90,7 +90,7 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
             handleError(channel, new IOException(e));
         } finally {
             StreamUtils.safeClose(message);
-            ROOT_LOGGER.tracef("%s done handling incoming data", this);
+            ProtocolLogger.ROOT_LOGGER.tracef("%s done handling incoming data", this);
         }
         final Channel.Receiver next = next();
         if(next != null) {
@@ -113,11 +113,11 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
 
     @Override
     public void handleError(final Channel channel, final IOException error) {
-        ROOT_LOGGER.tracef(error, "%s error handling incoming data", this);
+        ProtocolLogger.ROOT_LOGGER.tracef(error, "%s error handling incoming data", this);
         try {
             channel.close();
         } catch (IOException e) {
-            ROOT_LOGGER.errorClosingChannel(e.getMessage());
+            ProtocolLogger.ROOT_LOGGER.errorClosingChannel(e.getMessage());
         }
     }
 
@@ -126,7 +126,7 @@ public abstract class ManagementChannelReceiver implements ManagementMessageHand
         try {
             channel.close();
         } catch (IOException e) {
-            ROOT_LOGGER.errorClosingChannel(e.getMessage());
+            ProtocolLogger.ROOT_LOGGER.errorClosingChannel(e.getMessage());
         }
     }
 

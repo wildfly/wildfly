@@ -25,7 +25,7 @@ package org.jboss.as.controller.transform;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.registry.LegacyResourceDefinition;

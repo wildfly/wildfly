@@ -27,14 +27,12 @@ import java.lang.reflect.Method;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.Ejb2xViewType;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorContext;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * An interceptor which handles an invocation on a {@link javax.ejb.Remove} method of a stateful session bean. This interceptor
@@ -67,13 +65,13 @@ public class StatefulRemoveInterceptor implements Interceptor {
                 //which is not allowed to remove while enrolled in a TX
                 final StatefulTransactionMarker marker = context.getPrivateData(StatefulTransactionMarker.class);
                 if(marker != null && !marker.isFirstInvocation()) {
-                    throw EjbMessages.MESSAGES.cannotRemoveWhileParticipatingInTransaction();
+                    throw EjbLogger.ROOT_LOGGER.cannotRemoveWhileParticipatingInTransaction();
                 }
             }
         }
         // just log a WARN and throw back the original exception
         if (component instanceof StatefulSessionComponent == false) {
-            throw MESSAGES.unexpectedComponent(component, StatefulSessionComponent.class);
+            throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, StatefulSessionComponent.class);
         }
         final StatefulSessionComponent statefulComponent = (StatefulSessionComponent) component;
         Object invocationResult = null;

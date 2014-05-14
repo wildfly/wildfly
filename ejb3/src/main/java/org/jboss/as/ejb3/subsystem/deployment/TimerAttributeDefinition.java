@@ -28,8 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TYPE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNIT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 import java.util.Date;
 import java.util.Locale;
@@ -48,6 +47,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -83,7 +83,7 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
 
     @Override
     protected void addValueTypeDescription(ModelNode node, ResourceBundle bundle) {
-        throw MESSAGES.resourceBundleDescriptionsNotSupported(getName());
+        throw EjbLogger.ROOT_LOGGER.resourceBundleDescriptionsNotSupported(getName());
     }
 
     @Override
@@ -98,7 +98,7 @@ public class TimerAttributeDefinition extends ListAttributeDefinition {
 
     @Override
     public void marshallAsElement(ModelNode resourceModel, final boolean marshalDefault, XMLStreamWriter writer) throws XMLStreamException {
-        throw MESSAGES.runtimeAttributeNotMarshallable(getName());
+        throw EjbLogger.ROOT_LOGGER.runtimeAttributeNotMarshallable(getName());
     }
 
     private void addValueTypeDescription(ModelNode node, ResourceDescriptionResolver resolver, Locale locale, ResourceBundle bundle) {

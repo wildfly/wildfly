@@ -36,7 +36,7 @@ import java.util.Set;
 
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.DirectoryStructure;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.runner.PatchUtils;
 import org.jboss.as.version.ProductConfig;
 
@@ -164,7 +164,7 @@ class LayersFactory {
         if (!layersDir.exists()) {
             if (layersConfig.isConfigured()) {
                 // Bad config from user
-                throw PatchMessages.MESSAGES.installationNoLayersConfigFound(layersDir.getAbsolutePath());
+                throw PatchLogger.ROOT_LOGGER.installationNoLayersConfigFound(layersDir.getAbsolutePath());
             }
             // else this isn't a root that has layers and add-ons
         } else {
@@ -174,7 +174,7 @@ class LayersFactory {
                 if (!layerDir.exists()) {
                     if (layersConfig.isConfigured()) {
                         // Bad config from user
-                        throw PatchMessages.MESSAGES.installationMissingLayer(layer, layersDir.getAbsolutePath());
+                        throw PatchLogger.ROOT_LOGGER.installationMissingLayer(layer, layersDir.getAbsolutePath());
                     }
                     // else this isn't a standard layers and add-ons structure
                     return;
@@ -302,7 +302,7 @@ class LayersFactory {
             }
             if (!setter.setPath(pending, root)) {
                 // Already set means duplicate
-                throw PatchMessages.MESSAGES.installationDuplicateLayer("layer", name);
+                throw PatchLogger.ROOT_LOGGER.installationDuplicateLayer("layer", name);
             }
         }
 
@@ -317,7 +317,7 @@ class LayersFactory {
             }
             if (!setter.setPath(pending, root)) {
                 // Already set means duplicate
-                throw PatchMessages.MESSAGES.installationDuplicateLayer("add-on", name);
+                throw PatchLogger.ROOT_LOGGER.installationDuplicateLayer("add-on", name);
             }
         }
 

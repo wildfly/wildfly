@@ -22,8 +22,6 @@
 
 package org.jboss.as.ee.structure;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -106,7 +105,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             final String xmlLibDirName = earMetaData.getLibraryDirectory();
             if (xmlLibDirName != null) {
                 if (xmlLibDirName.length() == 1 && xmlLibDirName.charAt(0) == '/') {
-                    throw MESSAGES.rootAsLibraryDirectory();
+                    throw EeLogger.ROOT_LOGGER.rootAsLibraryDirectory();
                 }
                 libDirName = xmlLibDirName;
             }
@@ -179,19 +178,19 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                 for (final ModuleMetaData module : earMetaData.getModules()) {
 
                     if(module.getFileName().endsWith(".xml")) {
-                        throw MESSAGES.unsupportedModuleType(module.getFileName());
+                        throw EeLogger.ROOT_LOGGER.unsupportedModuleType(module.getFileName());
                     }
 
                     final VirtualFile moduleFile = virtualFile.getChild(module.getFileName());
                     if (!moduleFile.exists()) {
-                        throw MESSAGES.cannotProcessEarModule(virtualFile, module.getFileName());
+                        throw EeLogger.ROOT_LOGGER.cannotProcessEarModule(virtualFile, module.getFileName());
                     }
 
                     if (libDir != null) {
                         VirtualFile moduleParentFile = moduleFile.getParent();
                         if (moduleParentFile != null) {
                             if (libDir.equals(moduleParentFile)) {
-                                throw MESSAGES.earModuleChildOfLibraryDirectory(libDirName, module.getFileName());
+                                throw EeLogger.ROOT_LOGGER.earModuleChildOfLibraryDirectory(libDirName, module.getFileName());
                             }
                         }
                     }
@@ -211,7 +210,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                     if (alternativeDD != null && alternativeDD.trim().length() > 0) {
                         final VirtualFile alternateDeploymentDescriptor = deploymentRoot.getRoot().getChild(alternativeDD);
                         if (!alternateDeploymentDescriptor.exists()) {
-                            throw MESSAGES.alternateDeploymentDescriptor(alternateDeploymentDescriptor, moduleFile);
+                            throw EeLogger.ROOT_LOGGER.alternateDeploymentDescriptor(alternateDeploymentDescriptor, moduleFile);
                         }
                         switch (module.getType()) {
                             case Client:
@@ -227,7 +226,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
                                 childResource.putAttachment(org.jboss.as.ee.structure.Attachments.ALTERNATE_WEB_DEPLOYMENT_DESCRIPTOR, alternateDeploymentDescriptor);
                                 break;
                             case Service:
-                                throw MESSAGES.unsupportedModuleType(module.getFileName());
+                                throw EeLogger.ROOT_LOGGER.unsupportedModuleType(module.getFileName());
 
                         }
                     }
@@ -245,7 +244,7 @@ public class EarStructureProcessor implements DeploymentUnitProcessor {
             }
 
         } catch (IOException e) {
-            throw MESSAGES.failedToProcessChild(e, virtualFile);
+            throw EeLogger.ROOT_LOGGER.failedToProcessChild(e, virtualFile);
         }
     }
 

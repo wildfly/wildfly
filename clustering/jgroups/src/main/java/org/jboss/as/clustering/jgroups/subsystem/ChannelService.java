@@ -21,10 +21,10 @@
  */
 package org.jboss.as.clustering.jgroups.subsystem;
 
-import static org.jboss.as.clustering.jgroups.JGroupsLogger.ROOT_LOGGER;
+import static org.jboss.as.clustering.jgroups.logging.JGroupsLogger.ROOT_LOGGER;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -103,7 +103,7 @@ public class ChannelService implements Service<Channel>, ChannelListener {
             String name = channel.getName(address);
             if ((name != null) && name.equals(localName) && !address.equals(localAddress)) {
                 channel.close();
-                throw JGroupsMessages.MESSAGES.duplicateNodeName(this.factory.getValue().getProtocolStackConfiguration().getEnvironment().getNodeName());
+                throw JGroupsLogger.ROOT_LOGGER.duplicateNodeName(this.factory.getValue().getProtocolStackConfiguration().getEnvironment().getNodeName());
             }
         }
     }

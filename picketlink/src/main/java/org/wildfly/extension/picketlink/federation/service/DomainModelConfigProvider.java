@@ -31,7 +31,7 @@ import org.picketlink.identity.federation.web.config.AbstractSAMLConfigurationPr
 import org.picketlink.identity.federation.web.config.IDPMetadataConfigurationProvider;
 import org.picketlink.identity.federation.web.config.SPPostMetadataConfigurationProvider;
 import org.picketlink.identity.federation.web.config.SPRedirectMetadataConfigurationProvider;
-import org.wildfly.extension.picketlink.PicketLinkMessages;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 import org.wildfly.extension.picketlink.federation.config.IDPConfiguration;
 import org.wildfly.extension.picketlink.federation.config.SPConfiguration;
 
@@ -66,7 +66,7 @@ public class DomainModelConfigProvider extends AbstractSAMLConfigurationProvider
 
                     providerType = metadataConfig;
                 } catch (ProcessingException e) {
-                    throw PicketLinkMessages.MESSAGES.federationSAMLMetadataConfigError(configuration.getAlias(), e);
+                    throw PicketLinkLogger.ROOT_LOGGER.federationSAMLMetadataConfigError(configuration.getAlias(), e);
                 }
             }
 
@@ -97,7 +97,7 @@ public class DomainModelConfigProvider extends AbstractSAMLConfigurationProvider
 
                     providerType = metadataConfig;
                 } catch (ProcessingException e) {
-                    throw PicketLinkMessages.MESSAGES.federationSAMLMetadataConfigError(configuration.getAlias(), e);
+                    throw PicketLinkLogger.ROOT_LOGGER.federationSAMLMetadataConfigError(configuration.getAlias(), e);
                 }
             }
 

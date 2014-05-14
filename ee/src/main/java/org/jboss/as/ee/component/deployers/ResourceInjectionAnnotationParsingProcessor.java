@@ -22,6 +22,7 @@
 
 package org.jboss.as.ee.component.deployers;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -58,8 +59,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for analyzing each attached {@link org.jboss.as.ee.component.ComponentDescription} instance to configure
@@ -181,7 +180,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
     protected void processMethodResource(final DeploymentPhaseContext phaseContext, final MethodInfo methodInfo, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription, final Module module, final EEApplicationClasses applicationClasses, final boolean replacement, final PropertyReplacer replacer) throws DeploymentUnitProcessingException {
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
-            throw MESSAGES.setterMethodOnly("@Resource", methodInfo);
+            throw EeLogger.ROOT_LOGGER.setterMethodOnly("@Resource", methodInfo);
         }
 
         final String contextNameSuffix = methodName.substring(3, 4).toLowerCase(Locale.ENGLISH) + methodName.substring(4);
@@ -194,7 +193,7 @@ public class ResourceInjectionAnnotationParsingProcessor implements DeploymentUn
 
     protected void processClassResource(final DeploymentPhaseContext phaseContext, final String name, final String type, final EEModuleClassDescription classDescription, final AnnotationInstance annotation, final EEModuleDescription eeModuleDescription, final Module module, final EEApplicationClasses applicationClasses, final boolean replacement, final PropertyReplacer replacer) throws DeploymentUnitProcessingException {
         if (isEmpty(name)) {
-            throw MESSAGES.annotationAttributeMissing("@Resource", "name");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@Resource", "name");
         }
         final String realType;
         if (isEmpty(type)) {

@@ -22,10 +22,9 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.regex.Pattern;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -84,11 +83,11 @@ public class PathElement {
     PathElement(final String key, final String value) {
         if (key == null || !VALID_KEY_PATTERN.matcher(key).matches()) {
             final String element = key + "=" + value;
-            throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementKey(element, key));
+            throw new OperationClientIllegalArgumentException(ControllerLogger.ROOT_LOGGER.invalidPathElementKey(element, key));
         }
         if (value == null) {
             final String element = key + "=" + value;
-            throw new OperationClientIllegalArgumentException(MESSAGES.invalidPathElementValue(element, value, ' '));
+            throw new OperationClientIllegalArgumentException(ControllerLogger.ROOT_LOGGER.invalidPathElementValue(element, value, ' '));
         }
         boolean multiTarget = false;
         if(key.equals(WILDCARD_VALUE)) {

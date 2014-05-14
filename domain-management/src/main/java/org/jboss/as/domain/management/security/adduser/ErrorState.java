@@ -22,8 +22,9 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
+
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * State to report an error to the user, optionally a nextState can be supplied so the process can continue even though an
@@ -56,7 +57,7 @@ public class ErrorState implements State {
         // Errors should be output in all modes.
         printf(NEW_LINE, direct);
         printf(" * ", direct);
-        printf(MESSAGES.errorHeader(), direct);
+        printf(DomainManagementLogger.ROOT_LOGGER.errorHeader(), direct);
         printf(" * ", direct);
         printf(NEW_LINE, direct);
         printf(errorMessage, direct);

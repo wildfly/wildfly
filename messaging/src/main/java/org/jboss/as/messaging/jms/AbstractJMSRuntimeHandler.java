@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.messaging.MessagingMessages;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INCLUDE_DEFAULTS;
@@ -73,7 +73,7 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
     protected abstract void executeReadAttribute(final String attributeName, final OperationContext context, final T destination, final PathAddress address, final boolean includeDefault);
 
     private static IllegalStateException unknownOperation(String opName) {
-        throw MessagingMessages.MESSAGES.operationNotValid(opName);
+        throw MessagingLogger.ROOT_LOGGER.operationNotValid(opName);
     }
 
     private T getResourceConfig(final PathAddress operationAddress) throws OperationFailedException {
@@ -84,7 +84,7 @@ public abstract class AbstractJMSRuntimeHandler<T> extends AbstractRuntimeOnlyHa
         T config = resources.get(new ResourceConfig(server, name));
 
         if (config == null) {
-            String exceptionMessage = MessagingMessages.MESSAGES.noDestinationRegisteredForAddress(operationAddress);
+            String exceptionMessage = MessagingLogger.ROOT_LOGGER.noDestinationRegisteredForAddress(operationAddress);
             throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
 

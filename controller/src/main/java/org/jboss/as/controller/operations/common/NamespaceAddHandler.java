@@ -19,10 +19,10 @@
 package org.jboss.as.controller.operations.common;
 
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAMESPACES;
 
 import org.jboss.as.controller.AbstractModelUpdateHandler;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ExpressionResolver;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -94,7 +94,7 @@ public class NamespaceAddHandler extends AbstractModelUpdateHandler {
             String namespaceString = namespace.asString();
             for (ModelNode node : namespaces.asList()) {
                 if (namespaceString.equals(node.asProperty().getName())) {
-                    throw new OperationFailedException(new ModelNode().set(MESSAGES.namespaceAlreadyRegistered(namespaceString, node.asProperty().getValue().asString())));
+                    throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.namespaceAlreadyRegistered(namespaceString, node.asProperty().getValue().asString())));
                 }
             }
         }

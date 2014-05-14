@@ -46,6 +46,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.server.deployment.scanner.logging.DeploymentScannerLogger;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;

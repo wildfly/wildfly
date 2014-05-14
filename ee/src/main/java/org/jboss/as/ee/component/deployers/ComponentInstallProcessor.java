@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.BasicComponentCreateService;
@@ -67,8 +68,7 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 import static org.jboss.as.ee.component.Attachments.COMPONENT_REGISTRY;
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_CONFIGURATION;
 import static org.jboss.as.server.deployment.Attachments.MODULE;
@@ -106,7 +106,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                 //we only add a dependency on components in the same sub deployment, otherwise we get circular dependencies when initialize-in-order is used
                 deploymentUnit.addToAttachmentList(org.jboss.as.server.deployment.Attachments.WEB_DEPENDENCIES, configuration.getComponentDescription().getStartServiceName());
             } catch (Exception e) {
-                throw MESSAGES.failedToInstallComponent(e, configuration.getComponentName());
+                throw EeLogger.ROOT_LOGGER.failedToInstallComponent(e, configuration.getComponentName());
             }
         }
     }
@@ -223,7 +223,7 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
                     try {
                         interceptorClass = module.getClassLoader().loadClass(interceptor.getInterceptorClassName());
                     } catch (ClassNotFoundException e) {
-                        throw MESSAGES.cannotLoadInterceptor(e, interceptor.getInterceptorClassName(), configuration.getComponentClass());
+                        throw EeLogger.ROOT_LOGGER.cannotLoadInterceptor(e, interceptor.getInterceptorClassName(), configuration.getComponentClass());
                     }
                     if (interceptorClass != null) {
                         new ClassDescriptionTraversal(interceptorClass, applicationClasses) {
@@ -270,9 +270,9 @@ public final class ComponentInstallProcessor implements DeploymentUnitProcessor 
 
                     BinderService service = (BinderService) registered.getService();
                     if (!service.getSource().equals(bindingConfiguration.getSource()))
-                        throw MESSAGES.conflictingBinding(bindingName, bindingConfiguration.getSource());
+                        throw EeLogger.ROOT_LOGGER.conflictingBinding(bindingName, bindingConfiguration.getSource());
                 } catch (CircularDependencyException e) {
-                    throw MESSAGES.circularDependency(bindingName);
+                    throw EeLogger.ROOT_LOGGER.circularDependency(bindingName);
                 }
             }
         }

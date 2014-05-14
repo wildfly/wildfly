@@ -28,6 +28,7 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.appclient.logging.AppClientLogger;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
@@ -49,8 +50,6 @@ import org.jboss.metadata.appclient.spec.ApplicationClientMetaData;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 
 /**
  * @author Stuart Douglas
@@ -117,7 +116,7 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
                 ApplicationClientMetaData data = new ApplicationClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
                 return data;
             } catch (XMLStreamException e) {
-                throw MESSAGES.failedToParseXml(e, descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
+                throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, descriptor, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
             } catch (IOException e) {
                 throw new DeploymentUnitProcessingException("Failed to parse " + descriptor, e);
             } finally {
@@ -144,10 +143,10 @@ public class ApplicationClientParsingDeploymentProcessor implements DeploymentUn
                 JBossClientMetaData data = new JBossClientMetaDataParser().parse(getXMLStreamReader(is), propertyReplacer);
                 return data;
             } catch (XMLStreamException e) {
-                throw MESSAGES.failedToParseXml(e, appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
+                throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, appXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber());
 
             } catch (IOException e) {
-                throw MESSAGES.failedToParseXml(e, appXml);
+                throw AppClientLogger.ROOT_LOGGER.failedToParseXml(e, appXml);
             } finally {
                 try {
                     if (is != null) {

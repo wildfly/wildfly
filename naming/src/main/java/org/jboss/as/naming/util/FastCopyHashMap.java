@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
+import org.jboss.as.naming.logging.NamingLogger;
 
 /**
  * A HashMap that is optimized for fast shallow copies. If the copy-ctor is
@@ -108,13 +108,13 @@ public class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
 
     public FastCopyHashMap(int initialCapacity, float loadFactor) {
         if (initialCapacity < 0)
-            throw MESSAGES.invalidTableSize();
+            throw NamingLogger.ROOT_LOGGER.invalidTableSize();
 
         if (initialCapacity > MAXIMUM_CAPACITY)
             initialCapacity = MAXIMUM_CAPACITY;
 
         if (!(loadFactor > 0F && loadFactor <= 1F))
-            throw MESSAGES.invalidLoadFactor();
+            throw NamingLogger.ROOT_LOGGER.invalidLoadFactor();
 
         this.loadFactor = loadFactor;
         init(initialCapacity, loadFactor);
@@ -266,7 +266,7 @@ public class FastCopyHashMap<K, V> extends AbstractMap<K, V> implements Map<K, V
 
             index = nextIndex(index, length);
             if (index == start)
-                throw MESSAGES.tableIsFull();
+                throw NamingLogger.ROOT_LOGGER.tableIsFull();
         }
 
         modCount++;

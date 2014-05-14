@@ -30,7 +30,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 
 /**
  * Common base class of ValueAnalysis and InterfaceAnalysis.
@@ -170,7 +170,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
         super(cls);
 
         if (cls == java.lang.Object.class || cls == java.io.Serializable.class || cls == java.io.Externalizable.class)
-            throw JacORBMessages.MESSAGES.cannotAnalyzeSpecialClass(cls.getName());
+            throw JacORBLogger.ROOT_LOGGER.cannotAnalyzeSpecialClass(cls.getName());
 
         this.cls = cls;
     }
@@ -478,7 +478,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
         else if (name.startsWith("is"))
             name = name.substring(2);
         else
-            throw JacORBMessages.MESSAGES.notAnAccessor(name);
+            throw JacORBLogger.ROOT_LOGGER.notAnAccessor(name);
 
         return name;
     }
@@ -491,7 +491,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
         if (name.startsWith("set"))
             name = name.substring(3);
         else
-            throw JacORBMessages.MESSAGES.notAnAccessor(name);
+            throw JacORBLogger.ROOT_LOGGER.notAnAccessor(name);
 
         return name;
     }
@@ -515,7 +515,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
             if (!type.isPrimitive() && type != java.lang.String.class) {
                 // It is an RMI/IIOP violation for interfaces.
                 if (cls.isInterface())
-                    throw JacORBMessages.MESSAGES.badRMIIIOPConstantType(fields[i].getName(), cls.getName(), "1.2.3");
+                    throw JacORBLogger.ROOT_LOGGER.badRMIIIOPConstantType(fields[i].getName(), cls.getName(), "1.2.3");
                 continue;
             }
 
@@ -732,7 +732,7 @@ public abstract class ContainerAnalysis  extends ClassAnalysis {
      */
     protected void calculateRepositoryId() {
         if (cls.isArray() || cls.isPrimitive())
-            throw JacORBMessages.MESSAGES.notAnClassOrInterface(cls.getName());
+            throw JacORBLogger.ROOT_LOGGER.notAnClassOrInterface(cls.getName());
 
         if (cls.isInterface() &&
                 org.omg.CORBA.Object.class.isAssignableFrom(cls) &&

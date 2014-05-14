@@ -35,7 +35,7 @@ import java.util.Map;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.naming.NamingMessages;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -53,12 +53,12 @@ class BindingType11RejectChecker extends RejectAttributeChecker.DefaultRejectAtt
         if (type.equals(SIMPLE) && model.hasDefined(TYPE)) {
             if (URL.class.getName().equals(model.get(TYPE).asString())) {
                 // simple binding with type URL, not supported on 1.1.0
-                rejectMessage = NamingMessages.MESSAGES.failedToTransformSimpleURLNameBindingAddOperation("1.1.0");
+                rejectMessage = NamingLogger.ROOT_LOGGER.failedToTransformSimpleURLNameBindingAddOperation("1.1.0");
                 return true;
             }
         } else if (type.equals(OBJECT_FACTORY) && model.hasDefined(ENVIRONMENT)) {
             // object factory bind with environment, not supported on 1.1.0
-            rejectMessage = NamingMessages.MESSAGES.failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation("1.1.0");
+            rejectMessage = NamingLogger.ROOT_LOGGER.failedToTransformObjectFactoryWithEnvironmentNameBindingAddOperation("1.1.0");
             return true;
         }
         return false;

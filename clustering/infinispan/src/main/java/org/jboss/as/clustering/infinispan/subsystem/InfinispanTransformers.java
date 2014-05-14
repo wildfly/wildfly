@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.infinispan.configuration.cache.CacheMode;
-import org.jboss.as.clustering.infinispan.InfinispanMessages;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
@@ -420,7 +420,7 @@ public class InfinispanTransformers {
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return InfinispanMessages.MESSAGES.segmentsDoesNotSupportExpressions();
+            return InfinispanLogger.ROOT_LOGGER.segmentsDoesNotSupportExpressions();
         }
 
         @Override

@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.AttributeDef;
@@ -238,7 +238,7 @@ class InterfaceDefImpl
     }
 
     public void base_interfaces(org.omg.CORBA.InterfaceDef[] arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_abstract() {
@@ -246,7 +246,7 @@ class InterfaceDefImpl
     }
 
     public void is_abstract(boolean arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_a(java.lang.String interface_id) {
@@ -283,7 +283,7 @@ class InterfaceDefImpl
     public AttributeDef create_attribute(String id, String name,
                                          String version, IDLType type,
                                          AttributeMode mode) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public OperationDef create_operation(String id, String name, String version,
@@ -291,7 +291,7 @@ class InterfaceDefImpl
                                          ParameterDescription[] params,
                                          ExceptionDef[] exceptions,
                                          String[] contexts) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
 

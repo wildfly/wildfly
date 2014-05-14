@@ -37,6 +37,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * A service to setup a redirect for the web administration console.

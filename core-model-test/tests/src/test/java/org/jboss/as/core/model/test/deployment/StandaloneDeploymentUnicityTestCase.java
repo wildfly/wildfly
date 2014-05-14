@@ -24,7 +24,8 @@ package org.jboss.as.core.model.test.deployment;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 import static org.hamcrest.CoreMatchers.containsString;
-import org.jboss.as.controller.ControllerMessages;
+
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
 import org.jboss.as.core.model.test.TestModelType;
@@ -56,7 +57,7 @@ public class StandaloneDeploymentUnicityTestCase extends AbstractCoreModelTest {
             .createContentRepositoryContent("12345678901234567890")
             .build();
         } catch (XMLStreamException ex) {
-            String expectedMessage = ControllerMessages.MESSAGES.duplicateNamedElement("abc.war", new Location() {
+            String expectedMessage = ControllerLogger.ROOT_LOGGER.duplicateNamedElement("abc.war", new Location() {
                 public int getLineNumber() {
                     return 287;
                 }
@@ -77,7 +78,7 @@ public class StandaloneDeploymentUnicityTestCase extends AbstractCoreModelTest {
                     return "";
                 }
             }).getMessage();
-            expectedMessage = expectedMessage.substring(expectedMessage.indexOf("JBAS014664:"));
+            expectedMessage = expectedMessage.substring(expectedMessage.indexOf("WFLYCTL0073:"));
             Assert.assertThat(ex.getMessage(), containsString(expectedMessage));
         }
     }

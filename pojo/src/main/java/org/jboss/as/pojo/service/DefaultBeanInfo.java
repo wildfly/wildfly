@@ -22,7 +22,7 @@
 
 package org.jboss.as.pojo.service;
 
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 
@@ -88,7 +88,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
                     public Constructor<T> lookup(ClassReflectionIndex index) {
                         final Constructor ctor = index.getConstructor(parameterTypes);
                         if (ctor == null)
-                            throw PojoMessages.MESSAGES.ctorNotFound(Arrays.toString(parameterTypes), beanClass.getName());
+                            throw PojoLogger.ROOT_LOGGER.ctorNotFound(Arrays.toString(parameterTypes), beanClass.getName());
                         return ctor;
                     }
                 }, 0, 1);
@@ -104,7 +104,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
                     if (Configurator.equals(parameterTypes, c.getParameterTypes()))
                         return c;
                 }
-                throw PojoMessages.MESSAGES.ctorNotFound(Arrays.toString(parameterTypes), beanClass.getName());
+                throw PojoLogger.ROOT_LOGGER.ctorNotFound(Arrays.toString(parameterTypes), beanClass.getName());
             }
         }, 0, 1);
     }
@@ -118,7 +118,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             }
         }, 0, Integer.MAX_VALUE);
         if (lookup == null)
-            throw PojoMessages.MESSAGES.fieldNotFound(name, beanClass.getName());
+            throw PojoLogger.ROOT_LOGGER.fieldNotFound(name, beanClass.getName());
         return lookup;
     }
 
@@ -135,12 +135,12 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
                     case 1:
                         return methods.iterator().next();
                     default:
-                        throw PojoMessages.MESSAGES.ambiguousMatch(methods, name, beanClass.getName());
+                        throw PojoLogger.ROOT_LOGGER.ambiguousMatch(methods, name, beanClass.getName());
                 }
             }
         }, 0, Integer.MAX_VALUE);
         if (lookup == null)
-            throw PojoMessages.MESSAGES.methodNotFound(name, Arrays.toString(parameterTypes), beanClass.getName());
+            throw PojoLogger.ROOT_LOGGER.methodNotFound(name, Arrays.toString(parameterTypes), beanClass.getName());
         return lookup;
     }
 
@@ -172,7 +172,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             }
         }, 0, Integer.MAX_VALUE);
         if (result == null)
-            throw PojoMessages.MESSAGES.getterNotFound(type, beanClass.getName());
+            throw PojoLogger.ROOT_LOGGER.getterNotFound(type, beanClass.getName());
         return result;
     }
 
@@ -198,7 +198,7 @@ public class DefaultBeanInfo<T> implements BeanInfo<T> {
             }
         }, 0, Integer.MAX_VALUE);
         if (result == null)
-            throw PojoMessages.MESSAGES.setterNotFound(type, beanClass.getName());
+            throw PojoLogger.ROOT_LOGGER.setterNotFound(type, beanClass.getName());
         return result;
     }
 

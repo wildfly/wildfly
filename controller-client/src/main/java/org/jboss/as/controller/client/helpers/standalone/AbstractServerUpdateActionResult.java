@@ -22,11 +22,9 @@
 
 package org.jboss.as.controller.client.helpers.standalone;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.util.UUID;
 
-
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 
 /**
  * Abstract superclass of implementations of {@link ServerUpdateActionResult}.
@@ -57,9 +55,9 @@ public abstract class AbstractServerUpdateActionResult<T extends ServerUpdateAct
 
     public AbstractServerUpdateActionResult(UUID id, Result result, Throwable deploymentException) {
         if (id == null)
-            throw MESSAGES.nullVar("id");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("id");
         if (result == null)
-            throw MESSAGES.nullVar("result");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("result");
         this.id = id;
         this.result = result;
         this.deploymentException = deploymentException;

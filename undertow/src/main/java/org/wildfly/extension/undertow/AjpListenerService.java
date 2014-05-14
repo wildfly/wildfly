@@ -28,6 +28,7 @@ import java.net.InetSocketAddress;
 import io.undertow.server.OpenListener;
 import io.undertow.server.protocol.ajp.AjpOpenListener;
 import org.jboss.msc.service.StartContext;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;

@@ -71,7 +71,7 @@ public final class ScheduledThreadPoolService implements Service<ManagedSchedule
     public synchronized ManagedScheduledExecutorService getValue() throws IllegalStateException {
         final ManagedScheduledExecutorService value = this.executor;
         if (value == null) {
-            throw ThreadsMessages.MESSAGES.scheduledThreadPoolExecutorUninitialized();
+            throw ThreadsLogger.ROOT_LOGGER.scheduledThreadPoolExecutorUninitialized();
         }
         return value;
     }

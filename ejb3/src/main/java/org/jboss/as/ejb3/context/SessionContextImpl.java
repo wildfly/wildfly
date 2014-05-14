@@ -29,7 +29,7 @@ import javax.transaction.UserTransaction;
 import javax.xml.rpc.handler.MessageContext;
 
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.component.interceptors.CancellationFlag;
@@ -37,8 +37,6 @@ import org.jboss.as.ejb3.component.session.SessionBeanComponent;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentInstance;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.invocation.InterceptorContext;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Implementation of the SessionContext interface.
@@ -80,7 +78,7 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
         final InterceptorContext invocation = CurrentInvocationContext.get();
         final ComponentView view = invocation.getPrivateData(ComponentView.class);
         if (view.getViewClass().equals(getComponent().getEjbObjectType()) || view.getViewClass().equals(getComponent().getEjbLocalObjectType())) {
-            throw MESSAGES.cannotCall("getInvokedBusinessInterface", "EjbObject", "EJBLocalObject");
+            throw EjbLogger.ROOT_LOGGER.cannotCall("getInvokedBusinessInterface", "EjbObject", "EJBLocalObject");
         }
         return view.getViewClass();
     }
@@ -93,7 +91,7 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
         final InterceptorContext invocation = CurrentInvocationContext.get();
         final MessageContext context = invocation.getPrivateData(MessageContext.class);
         if (context == null) {
-            throw MESSAGES.cannotCall("getMessageContext()", "MessageContext");
+            throw EjbLogger.ROOT_LOGGER.cannotCall("getMessageContext()", "MessageContext");
 
         }
         return context;
@@ -103,7 +101,7 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
         final InterceptorContext invocation = CurrentInvocationContext.get();
         final CancellationFlag flag = invocation.getPrivateData(CancellationFlag.class);
         if (flag == null) {
-            throw EjbMessages.MESSAGES.noAsynchronousInvocationInProgress();
+            throw EjbLogger.ROOT_LOGGER.noAsynchronousInvocationInProgress();
         }
         return flag.get();
     }
@@ -112,7 +110,7 @@ public class SessionContextImpl extends EJBContextImpl implements SessionContext
     public TimerService getTimerService() throws IllegalStateException {
         AllowedMethodsInformation.checkAllowed(MethodType.GET_TIMER_SERVICE);
         if (stateful) {
-            throw MESSAGES.notAllowedFromStatefulBeans("getTimerService()");
+            throw EjbLogger.ROOT_LOGGER.notAllowedFromStatefulBeans("getTimerService()");
         }
         return super.getTimerService();
     }

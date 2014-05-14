@@ -46,7 +46,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
@@ -95,7 +95,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 //        final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
 //        boolean exists = root.hasChild(deploymentPath);
 //        if (!exists) {
-//            throw ServerMessages.MESSAGES.noSuchDeployment(name);
+//            throw ServerLogger.ROOT_LOGGER.noSuchDeployment(name);
 //        }
 
         final ModelNode deploymentModel = context.readResourceForUpdate(PathAddress.pathAddress(deploymentPath)).getModel();
@@ -162,7 +162,7 @@ public class DeploymentFullReplaceHandler implements OperationStepHandler {
 
     DeploymentHandlerUtil.ContentItem addFromHash(byte[] hash) throws OperationFailedException {
         if (!contentRepository.syncContent(hash)) {
-            throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+            throw ServerLogger.ROOT_LOGGER.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
         }
         return new DeploymentHandlerUtil.ContentItem(hash);
     }

@@ -51,7 +51,7 @@ import org.jboss.as.server.deployment.annotation.AnnotationIndexUtils;
 import org.jboss.as.server.deployment.module.ModuleRootMarker;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
-import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl.BeanArchiveType;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;

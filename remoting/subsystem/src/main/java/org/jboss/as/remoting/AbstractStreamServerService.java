@@ -27,6 +27,7 @@ import java.net.InetSocketAddress;
 import org.jboss.as.network.ManagedBinding;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.network.SocketBindingManager;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.logging.Logger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.StartContext;
@@ -40,9 +41,6 @@ import org.xnio.IoUtils;
 import org.xnio.OptionMap;
 import org.xnio.channels.AcceptingChannel;
 import org.xnio.channels.ConnectedStreamChannel;
-
-import static org.jboss.as.remoting.RemotingLogger.*;
-import static org.jboss.as.remoting.RemotingMessages.*;
 
 /**
  * Contains the remoting stream server
@@ -104,12 +102,12 @@ public abstract class AbstractStreamServerService implements Service<AcceptingCh
             if (sbm != null) {
                 managedBinding = registerSocketBinding(sbm);
             }
-            ROOT_LOGGER.listeningOnSocket(NetworkUtils.formatAddress(getSocketAddress()));
+            RemotingLogger.ROOT_LOGGER.listeningOnSocket(NetworkUtils.formatAddress(getSocketAddress()));
 
         } catch (BindException e) {
-            throw MESSAGES.couldNotBindToSocket(e.getMessage() + " " + NetworkUtils.formatAddress(getSocketAddress()), e);
+            throw RemotingLogger.ROOT_LOGGER.couldNotBindToSocket(e.getMessage() + " " + NetworkUtils.formatAddress(getSocketAddress()), e);
         } catch (Exception e) {
-            throw MESSAGES.couldNotStart(e);
+            throw RemotingLogger.ROOT_LOGGER.couldNotStart(e);
 
         }
     }

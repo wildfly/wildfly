@@ -37,6 +37,7 @@ import javax.ejb.Remote;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -48,7 +49,6 @@ import org.jboss.metadata.ejb.spec.EjbJarVersion;
 import org.jboss.modules.Module;
 
 import static org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
 
 /**
@@ -159,7 +159,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             // For version < 3.2, the EJB spec didn't allow more than one implementing interfaces to be considered as remote when the bean class had the @Remote annotation without any explicit value.
             // EJB 3.2 allows it (core spec, section 4.9.7)
             if (interfaces.size() != 1 && !isEjbVersionGreaterThanOrEqualTo32(deploymentUnit)) {
-                throw MESSAGES.beanWithRemoteAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
+                throw EjbLogger.ROOT_LOGGER.beanWithRemoteAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
             }
             return interfaces;
         }
@@ -181,7 +181,7 @@ public class BusinessViewAnnotationProcessor implements DeploymentUnitProcessor 
             // For version < 3.2, the EJB spec didn't allow more than one implementing interfaces to be considered as local when the bean class had the @Local annotation without any explicit value.
             // EJB 3.2 allows it (core spec, section 4.9.7)
             if (interfaces.size() != 1 && !isEjbVersionGreaterThanOrEqualTo32(deploymentUnit)) {
-                throw MESSAGES.beanWithLocalAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
+                throw EjbLogger.ROOT_LOGGER.beanWithLocalAnnotationImplementsMoreThanOneInterface(sessionBeanClass);
             }
             return interfaces;
         }

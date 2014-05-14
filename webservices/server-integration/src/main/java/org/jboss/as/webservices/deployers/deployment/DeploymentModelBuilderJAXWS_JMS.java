@@ -21,13 +21,13 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getOptionalAttachment;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JMS_ENDPOINT_METADATA_KEY;
 import static org.jboss.wsf.spi.deployment.DeploymentType.JAXWS;
 import static org.jboss.wsf.spi.deployment.EndpointType.JAXWS_JSE;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointMetaData;
 import org.jboss.wsf.spi.metadata.jms.JMSEndpointsMetaData;
@@ -49,14 +49,14 @@ final class DeploymentModelBuilderJAXWS_JMS extends AbstractDeploymentModelBuild
         final JMSEndpointsMetaData jmsEndpointsMD = getOptionalAttachment(unit, JMS_ENDPOINT_METADATA_KEY);
         dep.addAttachment(JMSEndpointsMetaData.class, jmsEndpointsMD);
 
-        ROOT_LOGGER.creatingEndpointsMetaDataModel("JAXWS", "JMS");
+        WSLogger.ROOT_LOGGER.trace("Creating JAXWS JMS endpoints meta data model");
         for (final JMSEndpointMetaData jmsEndpoint : jmsEndpointsMD.getEndpointsMetaData()) {
             final String jmsEndpointName = jmsEndpoint.getName();
-            ROOT_LOGGER.jmsName(jmsEndpointName);
+            WSLogger.ROOT_LOGGER.tracef("JMS name: %s", jmsEndpointName);
             final String jmsEndpointClassName = jmsEndpoint.getImplementor();
-            ROOT_LOGGER.jmsClass(jmsEndpointClassName);
+            WSLogger.ROOT_LOGGER.tracef("JMS class: %s", jmsEndpointClassName);
             final String jmsEndpointAddress = jmsEndpoint.getSoapAddress();
-            ROOT_LOGGER.jmsAddress(jmsEndpointAddress);
+            WSLogger.ROOT_LOGGER.tracef("JMS address: %s", jmsEndpointAddress);
             newJMSEndpoint(jmsEndpointClassName, jmsEndpointName, jmsEndpointAddress, dep);
         }
     }

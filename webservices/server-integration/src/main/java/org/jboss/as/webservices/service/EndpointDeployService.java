@@ -21,11 +21,10 @@
  */
 package org.jboss.as.webservices.service;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.util.Map;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.publish.EndpointPublisherHelper;
 import org.jboss.as.webservices.util.WSServices;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
@@ -69,7 +68,7 @@ public final class EndpointDeployService implements Service<DeploymentUnit> {
 
     @Override
     public void start(final StartContext ctx) throws StartException {
-        ROOT_LOGGER.starting(name);
+        WSLogger.ROOT_LOGGER.starting(name);
         try {
             EndpointPublisherHelper.doDeployStep(ctx.getChildTarget(), unit);
         } catch (Exception e) {
@@ -79,7 +78,7 @@ public final class EndpointDeployService implements Service<DeploymentUnit> {
 
     @Override
     public void stop(final StopContext ctx) {
-        ROOT_LOGGER.stopping(name);
+        WSLogger.ROOT_LOGGER.stopping(name);
         try {
             EndpointPublisherHelper.undoDeployStep(unit);
         } catch (Exception e) {

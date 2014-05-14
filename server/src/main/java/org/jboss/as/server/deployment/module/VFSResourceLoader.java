@@ -40,7 +40,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.jar.Manifest;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.modules.AbstractResourceLoader;
 import org.jboss.modules.ClassSpec;
 import org.jboss.modules.IterableResourceLoader;
@@ -147,7 +147,7 @@ public class VFSResourceLoader extends AbstractResourceLoader implements Iterabl
                                 spec.setCodeSource(new CodeSource(rootUrl, file.getCodeSigners()));
                                 return spec;
                             } else {
-                                throw ServerMessages.MESSAGES.resourceTooLarge();
+                                throw ServerLogger.ROOT_LOGGER.resourceTooLarge();
                             }
                         } finally {
                             VFSUtils.safeClose(is);

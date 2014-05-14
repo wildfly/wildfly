@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.extension;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
 import java.util.ArrayList;
@@ -40,8 +39,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.xml.namespace.QName;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersionRange;
 import org.jboss.as.controller.OperationDefinition;
@@ -327,7 +325,7 @@ public class ExtensionRegistry {
                     if (rootResource.getChild(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, subsystem)) != null) {
                         // Restore the data
                         extensions.put(moduleName, extension);
-                        throw MESSAGES.removingExtensionWithRegisteredSubsystem(moduleName, subsystem);
+                        throw ControllerLogger.ROOT_LOGGER.removingExtensionWithRegisteredSubsystem(moduleName, subsystem);
                     }
                 }
                 for (Map.Entry<String, SubsystemInformation> entry : extension.subsystems.entrySet()) {
@@ -401,7 +399,7 @@ public class ExtensionRegistry {
     private void checkNewSubystem(final String extensionModuleName, final String subsystemName) {
         String existingModule = reverseMap.putIfAbsent(subsystemName, extensionModuleName);
         if (existingModule != null && !extensionModuleName.equals(existingModule)) {
-            throw ControllerMessages.MESSAGES.duplicateSubsystem(subsystemName, extensionModuleName, existingModule);
+            throw ControllerLogger.ROOT_LOGGER.duplicateSubsystem(subsystemName, extensionModuleName, existingModule);
         }
     }
 
@@ -559,7 +557,7 @@ public class ExtensionRegistry {
         @Override
         public PathManager getPathManager() {
             if (!processType.isServer()) {
-                throw ControllerMessages.MESSAGES.pathManagerNotAvailable(processType);
+                throw ControllerLogger.ROOT_LOGGER.pathManagerNotAvailable(processType);
             }
             return pathManager;
         }

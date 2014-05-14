@@ -23,7 +23,6 @@
 package org.jboss.as.appclient.subsystem.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.appclient.logging.AppClientMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -45,7 +44,8 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.appclient.logging.AppClientLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
@@ -366,16 +366,14 @@ public class AppClientXml extends CommonXml {
                     // FIXME JBAS-8825
                     final String bindingName = parseSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw ControllerMessages.MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
-                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
                 case OUTBOUND_SOCKET_BINDING: {
                     final String bindingName = parseOutboundSocketBinding(reader, interfaces, groupAddress, updates);
                     if (!uniqueBindingNames.add(bindingName)) {
-                        throw ControllerMessages.MESSAGES.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(),
-                                bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDeclared(Element.SOCKET_BINDING.getLocalName(), Element.OUTBOUND_SOCKET_BINDING.getLocalName(), bindingName, Element.SOCKET_BINDING_GROUP.getLocalName(), socketBindingGroupName, reader.getLocation());
                     }
                     break;
                 }
@@ -397,7 +395,7 @@ public class AppClientXml extends CommonXml {
                 throw unexpectedElement(reader);
             }
             if (!configuredSubsystemTypes.add(reader.getNamespaceURI())) {
-                throw MESSAGES.duplicateSubsystemDeclaration(reader.getLocation());
+                throw AppClientLogger.ROOT_LOGGER.duplicateSubsystemDeclaration(reader.getLocation());
             }
             // parse subsystem
             final List<ModelNode> subsystems = new ArrayList<ModelNode>();

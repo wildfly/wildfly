@@ -32,7 +32,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.USER;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.util.Collections;
 import java.util.HashMap;

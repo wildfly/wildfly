@@ -23,7 +23,6 @@
 package org.jboss.as.server.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ANY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
@@ -76,6 +75,7 @@ import java.util.Set;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.HashUtil;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
@@ -325,10 +325,10 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     case NAME: {
                         name = value.trim();
                         if (RESTRICTED_PATHS.contains(value)) {
-                            throw MESSAGES.reserved(name, reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.reserved(name, reader.getLocation());
                         }
                         if (!defined.add(name)) {
-                            throw MESSAGES.alreadyDefined(name, reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.alreadyDefined(name, reader.getLocation());
                         }
                         break;
                     }
@@ -492,7 +492,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     try {
                         content.get(HASH).set(HashUtil.hexStringToByteArray(value));
                     } catch (final Exception e) {
-                        throw MESSAGES.invalidSha1Value(e, value, attribute.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.invalidSha1Value(e, value, attribute.getLocalName(), reader.getLocation());
                     }
                     break;
                 default:
@@ -609,7 +609,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             requireSingleAttribute(reader, Attribute.NAME.getLocalName());
             final String name = reader.getAttributeValue(0);
             if (!names.add(name)) {
-                throw MESSAGES.duplicateInterfaceDeclaration(reader.getLocation());
+                throw ControllerLogger.ROOT_LOGGER.duplicateInterfaceDeclaration(reader.getLocation());
             }
             final ModelNode interfaceAdd = new ModelNode();
             interfaceAdd.get(OP_ADDR).set(address).add(ModelDescriptionConstants.INTERFACE, name);
@@ -690,8 +690,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         AbstractSocketBindingResourceDefinition.INTERFACE.parseAndSetParameter(value, binding, reader);
                         if (binding.get(AbstractSocketBindingResourceDefinition.INTERFACE.getName()).getType() != ModelType.EXPRESSION
                                 && !interfaces.contains(value)) {
-                            throw MESSAGES.unknownInterface(value, attribute.getLocalName(),
-                                    Element.INTERFACES.getLocalName(), reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.unknownInterface(value, attribute.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
                         binding.get(INTERFACE).set(value);
                         break;
@@ -765,7 +764,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             }
         }
         if (!hasDestinationAddress) {
-            throw MESSAGES.missingRequiredAttributes(new StringBuilder(DESTINATION_ADDRESS), reader.getLocation());
+            throw ControllerLogger.ROOT_LOGGER.missingRequiredAttributes(new StringBuilder(DESTINATION_ADDRESS), reader.getLocation());
         }
 
         requireNoContent(reader);
@@ -800,8 +799,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                         OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.parseAndSetParameter(value, outboundSocketBindingAddOperation, reader);
                         if (!interfaces.contains(value)
                                 && outboundSocketBindingAddOperation.get(OutboundSocketBindingResourceDefinition.SOURCE_INTERFACE.getName()).getType() != ModelType.EXPRESSION) {
-                            throw MESSAGES.unknownValueForElement(Attribute.SOURCE_INTERFACE.getLocalName(), value,
-                                    Element.INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.unknownValueForElement(Attribute.SOURCE_INTERFACE.getLocalName(), value, Element.INTERFACE.getLocalName(), Element.INTERFACES.getLocalName(), reader.getLocation());
                         }
                         break;
                     }
@@ -828,8 +826,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
             switch (Element.forName(reader.getLocalName())) {
                 case LOCAL_DESTINATION: {
                     if (mutuallyExclusiveElementAlreadyFound) {
-                        throw MESSAGES.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(),
-                                Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(), Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
                     } else {
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
@@ -843,8 +840,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
                 case REMOTE_DESTINATION: {
                     if (mutuallyExclusiveElementAlreadyFound) {
-                        throw MESSAGES.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(),
-                                Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.invalidOutboundSocketBinding(outboundSocketBindingName, Element.LOCAL_DESTINATION.getLocalName(), Element.REMOTE_DESTINATION.getLocalName(), reader.getLocation());
                     } else {
                         mutuallyExclusiveElementAlreadyFound = true;
                     }
@@ -1414,7 +1410,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 break;
             default: {
                 // TODO we perhaps should just log a warning.
-                throw MESSAGES.unknownCriteriaInterfaceProperty(property.getName());
+                throw ControllerLogger.ROOT_LOGGER.unknownCriteriaInterfaceProperty(property.getName());
             }
         }
     }

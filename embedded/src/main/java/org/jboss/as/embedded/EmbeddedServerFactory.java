@@ -22,8 +22,7 @@
 
 package org.jboss.as.embedded;
 
-import static org.jboss.as.embedded.EmbeddedMessages.MESSAGES;
-
+import org.jboss.as.embedded.logging.EmbeddedLogger;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.modules.ModuleIdentifier;
@@ -84,11 +83,11 @@ public class EmbeddedServerFactory {
 
     public static StandaloneServer create(String jbossHomePath, String modulePath, String bundlePath, String[] systemPackages, String[] cmdargs) {
         if (jbossHomePath == null || jbossHomePath.isEmpty()) {
-            throw MESSAGES.invalidJBossHome(jbossHomePath);
+            throw EmbeddedLogger.ROOT_LOGGER.invalidJBossHome(jbossHomePath);
         }
         File jbossHomeDir = new File(jbossHomePath);
         if (!jbossHomeDir.isDirectory()) {
-            throw MESSAGES.invalidJBossHome(jbossHomePath);
+            throw EmbeddedLogger.ROOT_LOGGER.invalidJBossHome(jbossHomePath);
         }
 
         if (modulePath == null)
@@ -118,7 +117,7 @@ public class EmbeddedServerFactory {
         try {
             embeddedModule = moduleLoader.loadModule(ModuleIdentifier.create(MODULE_ID_EMBEDDED));
         } catch (final ModuleLoadException mle) {
-            throw MESSAGES.moduleLoaderError(mle, MODULE_ID_EMBEDDED, moduleLoader);
+            throw EmbeddedLogger.ROOT_LOGGER.moduleLoaderError(mle, MODULE_ID_EMBEDDED, moduleLoader);
         }
 
         // Load the Embedded Server Factory via the modular environment
@@ -129,7 +128,7 @@ public class EmbeddedServerFactory {
             embeddedServerFactoryClass = embeddedModuleCL.loadClass(EmbeddedStandAloneServerFactory.class.getName());
             standaloneServerClass = embeddedModuleCL.loadClass(StandaloneServer.class.getName());
         } catch (final ClassNotFoundException cnfe) {
-            throw MESSAGES.cannotLoadEmbeddedServerFactory(cnfe, EmbeddedStandAloneServerFactory.class.getName());
+            throw EmbeddedLogger.ROOT_LOGGER.cannotLoadEmbeddedServerFactory(cnfe, EmbeddedStandAloneServerFactory.class.getName());
         }
 
         // Get a handle to the method which will create the server
@@ -137,7 +136,7 @@ public class EmbeddedServerFactory {
         try {
             createServerMethod = embeddedServerFactoryClass.getMethod("create", File.class, ModuleLoader.class, Properties.class, Map.class, String[].class);
         } catch (final NoSuchMethodException nsme) {
-            throw MESSAGES.cannotGetReflectiveMethod(nsme, "create", embeddedServerFactoryClass.getName());
+            throw EmbeddedLogger.ROOT_LOGGER.cannotGetReflectiveMethod(nsme, "create", embeddedServerFactoryClass.getName());
         }
 
         // Create the server
@@ -148,9 +147,9 @@ public class EmbeddedServerFactory {
             String[] args = cmdargs != null ? cmdargs : new String[0];
             standaloneServerImpl = createServerMethod.invoke(null, jbossHomeDir, moduleLoader, sysprops, sysenv, args);
         } catch (final InvocationTargetException ite) {
-            throw MESSAGES.cannotCreateStandaloneServer(ite.getCause(), createServerMethod);
+            throw EmbeddedLogger.ROOT_LOGGER.cannotCreateStandaloneServer(ite.getCause(), createServerMethod);
         } catch (final IllegalAccessException iae) {
-            throw MESSAGES.cannotCreateStandaloneServer(iae, createServerMethod);
+            throw EmbeddedLogger.ROOT_LOGGER.cannotCreateStandaloneServer(iae, createServerMethod);
         }
         return new StandaloneServerIndirection(standaloneServerClass, standaloneServerImpl);
     }
@@ -200,7 +199,7 @@ public class EmbeddedServerFactory {
         try {
             vfsModule = moduleLoader.loadModule(vfsModuleID);
         } catch (final ModuleLoadException mle) {
-            throw MESSAGES.moduleLoaderError(mle, MODULE_ID_VFS, moduleLoader);
+            throw EmbeddedLogger.ROOT_LOGGER.moduleLoaderError(mle, MODULE_ID_VFS, moduleLoader);
         }
         Module.registerURLStreamHandlerFactoryModule(vfsModule);
     }
@@ -211,7 +210,7 @@ public class EmbeddedServerFactory {
         try {
             logModule = moduleLoader.loadModule(logModuleId);
         } catch (final ModuleLoadException mle) {
-            throw MESSAGES.moduleLoaderError(mle, MODULE_ID_LOGMANAGER, moduleLoader);
+            throw EmbeddedLogger.ROOT_LOGGER.moduleLoaderError(mle, MODULE_ID_LOGMANAGER, moduleLoader);
         }
 
         final ModuleClassLoader logModuleClassLoader = logModule.getClassLoader();

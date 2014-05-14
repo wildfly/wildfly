@@ -29,6 +29,7 @@ import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleListAttributeDefinition;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.logging.resolvers.HandlerResolver;
 import org.jboss.as.logging.resolvers.ModelNodeResolver;
 import org.jboss.dmr.ModelNode;
@@ -70,7 +71,7 @@ public class LogHandlerListAttributeDefinition extends SimpleListAttributeDefini
 
     @Override
     public void setPropertyValue(final OperationContext context, final ModelNode model, final PropertyConfigurable configuration) throws OperationFailedException {
-        throw LoggingMessages.MESSAGES.unsupportedMethod("setPropertyValue", getClass().getName());
+        throw LoggingLogger.ROOT_LOGGER.unsupportedMethod("setPropertyValue", getClass().getName());
     }
 
     public static class Builder extends ListAttributeDefinition.Builder<Builder, LogHandlerListAttributeDefinition> {

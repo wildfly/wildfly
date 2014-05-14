@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.iiop;
 
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentModuleIdentifier;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.deployment.EjbDeploymentInformation;

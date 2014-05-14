@@ -31,7 +31,7 @@ import org.jboss.as.clustering.marshalling.MarshallingContext;
 import org.wildfly.clustering.ejb.PassivationListener;
 import org.wildfly.clustering.ejb.infinispan.BeanGroup;
 import org.wildfly.clustering.ejb.infinispan.BeanGroupEntry;
-import org.wildfly.clustering.ejb.infinispan.InfinispanEjbMessages;
+import org.wildfly.clustering.ejb.infinispan.logging.InfinispanEjbLogger;
 
 /**
  * A {@link org.wildfly.clustering.ejb.infinispan.BeanGroup} implementation backed by an infinispan cache.
@@ -67,7 +67,7 @@ public class InfinispanBeanGroup<G, I, T> implements BeanGroup<G, I, T> {
         try {
             return this.entry.getBeans().get(this.context);
         } catch (IOException | ClassNotFoundException e) {
-            throw InfinispanEjbMessages.MESSAGES.deserializationFailure(e, this.id);
+            throw InfinispanEjbLogger.ROOT_LOGGER.deserializationFailure(e, this.id);
         }
     }
 

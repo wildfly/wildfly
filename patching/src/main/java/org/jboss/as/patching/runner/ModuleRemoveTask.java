@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.ModificationType;
 import org.jboss.as.patching.metadata.ModuleItem;
@@ -57,7 +57,7 @@ class ModuleRemoveTask extends AbstractModuleTask {
     byte[] apply(PatchingTaskContext context, PatchContentLoader loader) throws IOException {
         final File targetDir = context.getTargetFile(contentItem);
         if(! targetDir.mkdirs()) {
-            throw PatchMessages.MESSAGES.cannotCreateDirectory(targetDir.getAbsolutePath());
+            throw PatchLogger.ROOT_LOGGER.cannotCreateDirectory(targetDir.getAbsolutePath());
         }
         final File moduleXml = new File(targetDir, MODULE_XML);
         final ByteArrayInputStream is = new ByteArrayInputStream(getFileContent(contentItem));

@@ -22,14 +22,13 @@
 
 package org.jboss.as.connector.deployers.datasource;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.annotation.sql.DataSourceDefinition;
 import javax.annotation.sql.DataSourceDefinitions;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.BindingConfiguration;
 import org.jboss.as.ee.component.EEApplicationClasses;
@@ -71,7 +70,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
             for (AnnotationInstance annotation : datasourceDefinitions) {
                 final AnnotationTarget target = annotation.target();
                 if (target instanceof ClassInfo == false) {
-                    throw MESSAGES.classOnlyAnnotation("@DataSourceDefinitions", target);
+                    throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@DataSourceDefinitions", target);
                 }
                 // get the nested @DataSourceDefinition out of the outer @DataSourceDefinitions
                 List<AnnotationInstance> datasources = this.getNestedDataSourceAnnotations(annotation);
@@ -89,7 +88,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
             for (AnnotationInstance datasource : datasources) {
                 final AnnotationTarget target = datasource.target();
                 if (target instanceof ClassInfo == false) {
-                    throw MESSAGES.classOnlyAnnotation("@DataSourceDefinition", target);
+                    throw EeLogger.ROOT_LOGGER.classOnlyAnnotation("@DataSourceDefinition", target);
                 }
                 // create binding configurations out of it
                 this.processDataSourceDefinition(eeModuleDescription, datasource, (ClassInfo) target, applicationClasses);
@@ -113,7 +112,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
 
         final AnnotationValue nameValue = datasourceAnnotation.value("name");
         if (nameValue == null || nameValue.asString().isEmpty()) {
-            throw MESSAGES.annotationAttributeMissing("@DataSourceDefinition", "name");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@DataSourceDefinition", "name");
         }
         String name = nameValue.asString();
         // if the name doesn't have a namespace then it defaults to java:comp/env
@@ -123,7 +122,7 @@ public class DataSourceDefinitionAnnotationParser implements DeploymentUnitProce
 
         final AnnotationValue classValue = datasourceAnnotation.value("className");
         if (classValue == null || classValue.asString().equals(Object.class.getName())) {
-            throw MESSAGES.annotationAttributeMissing("@DataSourceDefinition", "className");
+            throw EeLogger.ROOT_LOGGER.annotationAttributeMissing("@DataSourceDefinition", "className");
         }
 
         final String type = classValue.asString();

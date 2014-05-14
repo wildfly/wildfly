@@ -50,6 +50,7 @@ import org.jboss.as.jpa.config.JPADeploymentSettings;
 import org.jboss.as.jpa.container.PersistenceUnitSearch;
 import org.jboss.as.jpa.injectors.PersistenceContextInjectionSource;
 import org.jboss.as.jpa.injectors.PersistenceUnitInjectionSource;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -69,7 +70,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jipijapa.plugin.spi.PersistenceUnitMetadata;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 /**
  * Handle PersistenceContext and PersistenceUnit annotations.
@@ -188,7 +188,7 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
 
         final String methodName = methodInfo.name();
         if (!methodName.startsWith("set") || methodInfo.args().length != 1) {
-            eeModuleClassDescription.setInvalid(MESSAGES.setterMethodOnlyAnnotation(annotation.name().toString(), methodInfo));
+            eeModuleClassDescription.setInvalid(JpaLogger.ROOT_LOGGER.setterMethodOnlyAnnotation(annotation.name().toString(), methodInfo));
             return;
         }
 
@@ -236,7 +236,7 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
             if (injectionSource != null) {
                 final AnnotationValue nameValue = annotation.value("name");
                 if (nameValue == null || nameValue.asString().isEmpty()) {
-                    classDescription.setInvalid(MESSAGES.classLevelAnnotationParameterRequired(annotation.name().toString(), classDescription.getClassName(), "name"));
+                    classDescription.setInvalid(JpaLogger.ROOT_LOGGER.classLevelAnnotationParameterRequired(annotation.name().toString(), classDescription.getClassName(), "name"));
                     return;
                 }
                 final String name = nameValue.asString();
@@ -256,7 +256,7 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
                     if (injectionSource != null) {
                         final AnnotationValue nameValue = arrayPersistenceUnits[source].value("name");
                         if (nameValue == null || nameValue.asString().isEmpty()) {
-                            classDescription.setInvalid(MESSAGES.classLevelAnnotationParameterRequired(arrayPersistenceUnits[source].name().toString(), classDescription.getClassName(), "name"));
+                            classDescription.setInvalid(JpaLogger.ROOT_LOGGER.classLevelAnnotationParameterRequired(arrayPersistenceUnits[source].name().toString(), classDescription.getClassName(), "name"));
                             return;
                         }
                         final String name = nameValue.asString();
@@ -278,7 +278,7 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
                     if (injectionSource != null) {
                         final AnnotationValue nameValue = arrayPersistenceContexts[source].value("name");
                         if (nameValue == null || nameValue.asString().isEmpty()) {
-                            classDescription.setInvalid(MESSAGES.classLevelAnnotationParameterRequired(arrayPersistenceContexts[source].name().toString(), classDescription.getClassName(), "name"));
+                            classDescription.setInvalid(JpaLogger.ROOT_LOGGER.classLevelAnnotationParameterRequired(arrayPersistenceContexts[source].name().toString(), classDescription.getClassName(), "name"));
                             return;
                         }
                         final String name = nameValue.asString();
@@ -301,7 +301,7 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
         ServiceName puServiceName = getPuServiceName(scopedPuName);
         if (isPersistenceContext(annotation)) {
             if (pu.getTransactionType() == PersistenceUnitTransactionType.RESOURCE_LOCAL) {
-                classDescription.setInvalid(MESSAGES.cannotInjectResourceLocalEntityManager());
+                classDescription.setInvalid(JpaLogger.ROOT_LOGGER.cannotInjectResourceLocalEntityManager());
                 return null;
             }
             AnnotationValue pcType = annotation.value("type");
@@ -371,7 +371,7 @@ public class JPAAnnotationProcessor implements DeploymentUnitProcessor {
         ROOT_LOGGER.debugf("persistence unit search for unitName=%s referenced from class=%s (annotation=%s)", searchName, classDescription.getClassName(), annotation.toString());
         PersistenceUnitMetadata pu = PersistenceUnitSearch.resolvePersistenceUnitSupplier(deploymentUnit, searchName);
         if (null == pu) {
-            classDescription.setInvalid(MESSAGES.persistenceUnitNotFound(searchName, deploymentUnit));
+            classDescription.setInvalid(JpaLogger.ROOT_LOGGER.persistenceUnitNotFound(searchName, deploymentUnit));
             return null;
         }
         return pu;

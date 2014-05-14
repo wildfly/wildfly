@@ -28,6 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceController;
@@ -73,7 +74,7 @@ public class HornetQActivationService implements Service<Void> {
         if (isHornetQServerActive(context, operation)) {
             return false;
         }
-        context.getFailureDescription().set(MessagingMessages.MESSAGES.hqServerInBackupMode(pathAddress(operation.require(OP_ADDR))));
+        context.getFailureDescription().set(MessagingLogger.ROOT_LOGGER.hqServerInBackupMode(pathAddress(operation.require(OP_ADDR))));
         context.setRollbackOnly();
         context.stepCompleted();
         return true;

@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -136,9 +136,9 @@ public class DiscardUndefinedAttributesTransformer implements ResourceTransforme
 
                 // Target is  7.2.x or higher so we should throw an error
                 if (subsystemName != null) {
-                    throw ControllerMessages.MESSAGES.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, msg);
+                    throw ControllerLogger.ROOT_LOGGER.rejectAttributesSubsystemModelResourceTransformer(address, legacyHostName, subsystemName, usedVersion, msg);
                 }
-                throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, msg);
+                throw ControllerLogger.ROOT_LOGGER.rejectAttributesCoreModelResourceTransformer(address, legacyHostName, usedVersion, msg);
             } else {
                 // 7.1.x slave; resource *may* be ignored so we can't fail; just log
                 context.getLogger().logAttributeWarning(address, problems);

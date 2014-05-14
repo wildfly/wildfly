@@ -38,7 +38,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.DeploymentRepository;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
@@ -187,6 +187,6 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         if ("xnio".equals(optionType)) {
             return Options.class.getName();
         }
-        throw EjbMessages.MESSAGES.unknownChannelCreationOptionType(optionType);
+        throw EjbLogger.ROOT_LOGGER.unknownChannelCreationOptionType(optionType);
     }
 }

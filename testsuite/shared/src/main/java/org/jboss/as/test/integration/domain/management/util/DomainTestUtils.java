@@ -245,7 +245,7 @@ public class DomainTestUtils {
         } catch (MgmtOperationException ex) {
             if(! checkType) {
                 final String failureDescription = ex.getResult().get(FAILURE_DESCRIPTION).asString();
-                if(failureDescription.contains("JBAS014793") && failureDescription.contains(element.getKey())) {
+                if(failureDescription.contains("WFLYCTL0202") && failureDescription.contains(element.getKey())) {
                     return false;
                 }
             }

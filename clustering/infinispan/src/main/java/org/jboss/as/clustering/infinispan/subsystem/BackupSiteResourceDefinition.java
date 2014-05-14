@@ -22,13 +22,13 @@
 
 package org.jboss.as.clustering.infinispan.subsystem;
 
-import static org.jboss.as.clustering.infinispan.InfinispanMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.BackupConfiguration.BackupStrategy;
 import org.infinispan.configuration.cache.BackupFailurePolicy;
 import org.infinispan.xsite.XSiteAdminOperations;
+import org.jboss.as.clustering.infinispan.InfinispanLogger;
 import org.jboss.as.clustering.infinispan.subsystem.CacheConfigOperationHandlers.CacheConfigAdd;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -175,7 +175,7 @@ public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
                 String stringResult = xSiteAdminOperations.bringSiteOnline(site);
                 result = new ModelNode().set(stringResult);
             } catch(Exception e) {
-                throw MESSAGES.failedToInvokeOperation(e.getCause(), "bring-site-online");
+                throw InfinispanLogger.ROOT_LOGGER.failedToInvokeOperation(e.getCause(), "bring-site-online");
             }
 
             if (result != null) {
@@ -211,7 +211,7 @@ public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
                 String stringResult = xSiteAdminOperations.takeSiteOffline(site);
                 result = new ModelNode().set(stringResult);
             } catch(Exception e) {
-                throw MESSAGES.failedToInvokeOperation(e.getCause(), "take-site-offline");
+                throw InfinispanLogger.ROOT_LOGGER.failedToInvokeOperation(e.getCause(), "take-site-offline");
             }
 
             if (result != null) {
@@ -247,7 +247,7 @@ public class BackupSiteResourceDefinition extends SimpleResourceDefinition {
                 String stringResult = xSiteAdminOperations.siteStatus(site);
                 result = new ModelNode().set(stringResult);
             } catch(Exception e) {
-                throw MESSAGES.failedToInvokeOperation(e.getCause(), "site-status");
+                throw InfinispanLogger.ROOT_LOGGER.failedToInvokeOperation(e.getCause(), "site-status");
             }
 
             if (result != null) {

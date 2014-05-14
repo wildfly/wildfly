@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.component.entity.entitycache;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +32,7 @@ import javax.ejb.NoSuchEJBException;
 import javax.transaction.Synchronization;
 import javax.transaction.TransactionSynchronizationRegistry;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 
@@ -140,7 +139,7 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
         if (map != null) {
             final CacheEntry cacheEntry = map.get(instance.getPrimaryKey());
             if (cacheEntry == null) {
-                throw MESSAGES.entityBeanInstanceNotFoundInCache(instance);
+                throw EjbLogger.ROOT_LOGGER.entityBeanInstanceNotFoundInCache(instance);
             }
             if (cacheEntry.referenceCount.decrementAndGet() <= 0) {
                 final Object pk = instance.getPrimaryKey();
@@ -158,7 +157,7 @@ public class TransactionLocalEntityCache implements ReadyEntityCache {
         final Map<Object, CacheEntry> cache = prepareCache();
         final CacheEntry cacheEntry = cache.get(instance.getPrimaryKey());
         if (cacheEntry == null) {
-            throw MESSAGES.entityBeanInstanceNotFoundInCache(instance);
+            throw EjbLogger.ROOT_LOGGER.entityBeanInstanceNotFoundInCache(instance);
         }
         cacheEntry.referenceCount.incrementAndGet();
     }

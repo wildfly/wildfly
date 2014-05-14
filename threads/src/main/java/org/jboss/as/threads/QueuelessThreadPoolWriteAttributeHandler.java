@@ -63,7 +63,7 @@ public class QueuelessThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
             pool.setMaxThreads(PoolAttributeDefinitions.MAX_THREADS.resolveModelAttribute(context, model).asInt());
         } else if (!forRollback) {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
-            throw ThreadsMessages.MESSAGES.unsupportedQueuelessThreadPoolAttribute(attributeName);
+            throw ThreadsLogger.ROOT_LOGGER.unsupportedQueuelessThreadPoolAttribute(attributeName);
         }
     }
 
@@ -73,7 +73,7 @@ public class QueuelessThreadPoolWriteAttributeHandler extends ThreadsWriteAttrib
         final ServiceName serviceName = serviceNameBase.append(name);
         ServiceController<?> controller = context.getServiceRegistry(true).getService(serviceName);
         if(controller == null) {
-            throw ThreadsMessages.MESSAGES.queuelessThreadPoolServiceNotFound(serviceName);
+            throw ThreadsLogger.ROOT_LOGGER.queuelessThreadPoolServiceNotFound(serviceName);
         }
         return controller;
     }

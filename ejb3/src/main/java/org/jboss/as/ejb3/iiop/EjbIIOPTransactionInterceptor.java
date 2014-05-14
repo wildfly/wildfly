@@ -27,7 +27,7 @@ import javax.transaction.Transaction;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.jacorb.tm.ForeignTransaction;
@@ -65,7 +65,7 @@ public class EjbIIOPTransactionInterceptor implements Interceptor {
 
             final TransactionAttributeType attr = component.getTransactionAttributeType(methodIntf, invocation.getMethod());
             if (attr != TransactionAttributeType.NOT_SUPPORTED && attr != TransactionAttributeType.REQUIRES_NEW) {
-                throw EjbMessages.MESSAGES.transactionPropagationNotSupported();
+                throw EjbLogger.ROOT_LOGGER.transactionPropagationNotSupported();
             }
         }
         return invocation.proceed();

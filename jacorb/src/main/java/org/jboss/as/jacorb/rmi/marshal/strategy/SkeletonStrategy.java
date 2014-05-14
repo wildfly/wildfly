@@ -25,7 +25,7 @@ import java.lang.reflect.Method;
 
 import java.rmi.RemoteException;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.omg.CORBA.UserException;
 import org.omg.CORBA.portable.IDLEntity;
@@ -219,9 +219,9 @@ public class SkeletonStrategy {
                             {org.omg.CORBA.portable.OutputStream.class, clz};
                     writeMethod = helperClass.getMethod("write", paramTypes);
                 } catch (ClassNotFoundException e) {
-                    throw JacORBMessages.MESSAGES.errorLoadingClass(helperClassName, e);
+                    throw JacORBLogger.ROOT_LOGGER.errorLoadingClass(helperClassName, e);
                 } catch (NoSuchMethodException e) {
-                    throw JacORBMessages.MESSAGES.noWriteMethodInHelper(helperClassName, e);
+                    throw JacORBLogger.ROOT_LOGGER.noWriteMethodInHelper(helperClassName, e);
                 }
 
             } else {
@@ -231,7 +231,7 @@ public class SkeletonStrategy {
                     this.reposId = ExceptionAnalysis.getExceptionAnalysis(clz)
                             .getExceptionRepositoryId();
                 } catch (RMIIIOPViolationException e) {
-                    throw JacORBMessages.MESSAGES.cannotObtainExceptionRepositoryID(clz.getName(),  e);
+                    throw JacORBLogger.ROOT_LOGGER.cannotObtainExceptionRepositoryID(clz.getName(), e);
                 }
             }
         }
@@ -251,9 +251,9 @@ public class SkeletonStrategy {
                 try {
                     writeMethod.invoke(null, new Object[]{out, excep});
                 } catch (IllegalAccessException e) {
-                    throw JacORBMessages.MESSAGES.unexpectedException(e);
+                    throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
                 } catch (java.lang.reflect.InvocationTargetException e) {
-                    throw JacORBMessages.MESSAGES.errorMarshaling(IDLEntity.class, e.getTargetException());
+                    throw JacORBLogger.ROOT_LOGGER.errorMarshaling(IDLEntity.class, e.getTargetException());
                 }
             } else {
                 out.write_string(reposId);

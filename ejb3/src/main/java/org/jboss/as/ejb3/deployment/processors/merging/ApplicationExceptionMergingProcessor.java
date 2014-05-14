@@ -24,6 +24,7 @@ package org.jboss.as.ejb3.deployment.processors.merging;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.ApplicationExceptionDescriptions;
 import org.jboss.as.ejb3.deployment.ApplicationExceptions;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
@@ -41,8 +42,8 @@ import org.jboss.metadata.ejb.spec.ApplicationExceptionsMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+
 /**
  * @author Stuart Douglas
  */
@@ -92,7 +93,7 @@ public class ApplicationExceptionMergingProcessor implements DeploymentUnitProce
                             // add the application exception to the ejb jar description
                             applicationExceptions.addApplicationException(index.getModuleClass(), new ApplicationExceptionDetails(exceptionClassName, inherited, rollback));
                         } catch (ClassNotFoundException e) {
-                            throw MESSAGES.failToLoadAppExceptionClassInEjbJarXml(exceptionClassName,e);
+                            throw EjbLogger.ROOT_LOGGER.failToLoadAppExceptionClassInEjbJarXml(exceptionClassName, e);
                         }
                     }
                 }

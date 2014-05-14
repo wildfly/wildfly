@@ -25,8 +25,8 @@ package org.jboss.as.ejb3.component;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 
 /**
  * @author Jaikiran Pai
@@ -52,7 +52,7 @@ public class EJBBusinessMethod implements Serializable {
 
     public EJBBusinessMethod(MethodIntf view, String methodName, Class<?>... paramTypes) {
         if (methodName == null) {
-            throw MESSAGES.methodNameIsNull();
+            throw EjbLogger.ROOT_LOGGER.methodNameIsNull();
         }
         this.methodName = methodName;
         this.methodParamTypes = paramTypes == null ? new Class<?>[0] : paramTypes;

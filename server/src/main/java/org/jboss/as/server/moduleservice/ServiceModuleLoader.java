@@ -24,8 +24,7 @@ package org.jboss.as.server.moduleservice;
 import java.util.concurrent.CountDownLatch;
 
 import org.jboss.as.server.Bootstrap;
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.Services;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -172,7 +171,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     @Override
     public synchronized void start(StartContext context) throws StartException {
         if (serviceContainer != null) {
-            throw ServerMessages.MESSAGES.serviceModuleLoaderAlreadyStarted();
+            throw ServerLogger.ROOT_LOGGER.serviceModuleLoaderAlreadyStarted();
         }
         serviceContainer = context.getController().getServiceContainer();
     }
@@ -180,7 +179,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
     @Override
     public synchronized void stop(StopContext context) {
         if (serviceContainer == null) {
-            throw ServerMessages.MESSAGES.serviceModuleLoaderAlreadyStopped();
+            throw ServerLogger.ROOT_LOGGER.serviceModuleLoaderAlreadyStopped();
         }
         serviceContainer = null;
     }
@@ -208,7 +207,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleSpecServiceName(ModuleIdentifier identifier) {
         if (!isDynamicModule(identifier)) {
-            throw ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
+            throw ServerLogger.ROOT_LOGGER.missingModulePrefix(identifier, MODULE_PREFIX);
         }
         return MODULE_SPEC_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
@@ -232,7 +231,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleResolvedServiceName(ModuleIdentifier identifier) {
         if (!isDynamicModule(identifier)) {
-            throw ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
+            throw ServerLogger.ROOT_LOGGER.missingModulePrefix(identifier, MODULE_PREFIX);
         }
         return MODULE_RESOLVED_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }
@@ -252,7 +251,7 @@ public class ServiceModuleLoader extends ModuleLoader implements Service<Service
      */
     public static ServiceName moduleServiceName(ModuleIdentifier identifier) {
         if (!identifier.getName().startsWith(MODULE_PREFIX)) {
-            throw ServerMessages.MESSAGES.missingModulePrefix(identifier, MODULE_PREFIX);
+            throw ServerLogger.ROOT_LOGGER.missingModulePrefix(identifier, MODULE_PREFIX);
         }
         return MODULE_SERVICE_PREFIX.append(identifier.getName()).append(identifier.getSlot());
     }

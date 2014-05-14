@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.tm;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
 import org.omg.IOP.ENCODING_CDR_ENCAPS;
@@ -65,7 +65,7 @@ public class TxServerInterceptorInitializer extends LocalObject implements ORBIn
             TxServerInterceptor interceptor = new TxServerInterceptor();
             info.add_server_request_interceptor(interceptor);
         } catch (Exception e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 

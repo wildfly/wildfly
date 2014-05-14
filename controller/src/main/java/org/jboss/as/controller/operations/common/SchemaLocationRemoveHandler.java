@@ -19,9 +19,9 @@
 package org.jboss.as.controller.operations.common;
 
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SCHEMA_LOCATIONS;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -91,7 +91,7 @@ public class SchemaLocationRemoveHandler implements OperationStepHandler {
         if (toRemove != null) {
             locations.set(newList);
         } else {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.schemaNotFound(uri)));
+            throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.schemaNotFound(uri)));
         }
 
         context.stepCompleted();

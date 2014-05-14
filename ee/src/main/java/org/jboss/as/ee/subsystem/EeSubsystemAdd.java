@@ -89,7 +89,7 @@ import org.jboss.dmr.ModelNode;
 import org.jboss.metadata.ear.jboss.JBossAppMetaData;
 import org.jboss.msc.service.ServiceController;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * Handler for adding the ee subsystem.

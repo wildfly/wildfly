@@ -25,7 +25,7 @@ package org.jboss.as.server.deployment.module;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -53,7 +53,7 @@ public class TempFileProviderService implements Service<TempFileProvider> {
            PROVIDER = TempFileProvider.create("deployment", Executors.newScheduledThreadPool(0, threadFactory), true);
        }
        catch (final IOException ioe) {
-          throw ServerMessages.MESSAGES.failedToCreateTempFileProvider(ioe);
+          throw ServerLogger.ROOT_LOGGER.failedToCreateTempFileProvider(ioe);
        }
     }
 

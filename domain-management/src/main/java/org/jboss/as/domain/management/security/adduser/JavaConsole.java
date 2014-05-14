@@ -24,7 +24,7 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.ROOT_LOGGER;
 
 import java.io.Console;
 import java.io.IOError;
@@ -62,7 +62,7 @@ public class JavaConsole implements ConsoleWrapper {
         if (hasConsole()) {
             return theConsole.readLine(fmt, args);
         } else {
-            throw MESSAGES.noConsoleAvailable();
+            throw ROOT_LOGGER.noConsoleAvailable();
         }
     }
 
@@ -71,7 +71,7 @@ public class JavaConsole implements ConsoleWrapper {
         if (hasConsole()) {
             return theConsole.readPassword(fmt, args);
         } else {
-            throw MESSAGES.noConsoleAvailable();
+            throw ROOT_LOGGER.noConsoleAvailable();
         }
     }
 

@@ -20,6 +20,7 @@
  */
 package org.jboss.as.test.integration.domain.management.cli;
 
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.test.integration.management.util.SimpleHelloWorldServlet;
 import java.io.File;
 import java.io.IOException;
@@ -29,7 +30,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
-import org.jboss.as.domain.controller.DomainControllerMessages;
+
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.domain.management.util.DomainTestSupport;
 import org.jboss.as.test.integration.domain.suites.CLITestSuite;
@@ -95,7 +96,7 @@ public class DomainDeployWithRuntimeNameTestCase extends AbstractCliTestBase {
         checkURL("/SimpleServlet/hello", "SimpleHelloWorldServlet", serverGroups[1], true);
         warFile = createWarFile("Shouldn't be deployed, as runtime already exist");
         cli.sendLine(buildDeployCommand(serverGroups[0], RUNTIME_NAME, OTHER_APP_NAME), true);
-        assertThat(cli.readOutput(), containsString(DomainControllerMessages.MESSAGES.runtimeNameMustBeUnique(APP_NAME, RUNTIME_NAME, serverGroups[0]).getMessage()));
+        assertThat(cli.readOutput(), containsString(DomainControllerLogger.ROOT_LOGGER.runtimeNameMustBeUnique(APP_NAME, RUNTIME_NAME, serverGroups[0]).getMessage()));
         checkURL("/SimpleServlet/hello", "SimpleHelloWorldServlet", serverGroups[0], false);
         checkURL("/SimpleServlet/page.html", "Version1", serverGroups[0], false);
     }

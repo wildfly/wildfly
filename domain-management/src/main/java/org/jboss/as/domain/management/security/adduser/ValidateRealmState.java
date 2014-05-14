@@ -22,10 +22,10 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.DEFAULT_APPLICATION_REALM;
 import static org.jboss.as.domain.management.security.adduser.AddUser.DEFAULT_MANAGEMENT_REALM;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.security.adduser.AddUser.FileMode;
 
 /**
@@ -51,7 +51,7 @@ public class ValidateRealmState implements State {
     public State execute() {
         String enteredRealm = stateValues.getRealm();
         if (enteredRealm.length() == 0) {
-            return new ErrorState(theConsole, MESSAGES.realmMustBeSpecified(), new PromptRealmState(theConsole, stateValues));
+            return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.realmMustBeSpecified(), new PromptRealmState(theConsole, stateValues));
         }
 
         if (stateValues.getFileMode() != FileMode.UNDEFINED) {
@@ -59,8 +59,8 @@ public class ValidateRealmState implements State {
                     : DEFAULT_APPLICATION_REALM;
 
             if (expectedRealm.equals(enteredRealm) == false) {
-                String message = MESSAGES.alternativeRealm(expectedRealm);
-                String prompt = MESSAGES.realmConfirmation(enteredRealm) + " " + MESSAGES.yes() + "/" + MESSAGES.no() + "?";
+                String message = DomainManagementLogger.ROOT_LOGGER.alternativeRealm(expectedRealm);
+                String prompt = DomainManagementLogger.ROOT_LOGGER.realmConfirmation(enteredRealm) + " " + DomainManagementLogger.ROOT_LOGGER.yes() + "/" + DomainManagementLogger.ROOT_LOGGER.no() + "?";
 
                 return new ConfirmationChoice(theConsole, message, prompt, new PromptNewUserState(theConsole, stateValues),
                         new PromptRealmState(theConsole, stateValues));

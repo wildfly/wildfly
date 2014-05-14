@@ -29,7 +29,7 @@ import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
 import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.ViewDescription;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -63,16 +63,16 @@ public class EJBValidationConfigurator implements ComponentConfigurator {
         }
         if(ctor == null && noInterface) {
             //we only validate this for no interface views
-            throw EjbMessages.MESSAGES.ejbMustHavePublicDefaultConstructor(description.getComponentName(), description.getComponentClassName());
+            throw EjbLogger.ROOT_LOGGER.ejbMustHavePublicDefaultConstructor(description.getComponentName(), description.getComponentClassName());
         }
         if(configuration.getComponentClass().getEnclosingClass() != null) {
-            throw EjbMessages.MESSAGES.ejbMustNotBeInnerClass(description.getComponentName(), description.getComponentClassName());
+            throw EjbLogger.ROOT_LOGGER.ejbMustNotBeInnerClass(description.getComponentName(), description.getComponentClassName());
         }
         if(!Modifier.isPublic(configuration.getComponentClass().getModifiers())) {
-            throw EjbMessages.MESSAGES.ejbMustBePublicClass(description.getComponentName(), description.getComponentClassName());
+            throw EjbLogger.ROOT_LOGGER.ejbMustBePublicClass(description.getComponentName(), description.getComponentClassName());
         }
         if(Modifier.isFinal(configuration.getComponentClass().getModifiers())) {
-            throw EjbMessages.MESSAGES.ejbMustNotBeFinalClass(description.getComponentName(), description.getComponentClassName());
+            throw EjbLogger.ROOT_LOGGER.ejbMustNotBeFinalClass(description.getComponentName(), description.getComponentClassName());
         }
     }
 }

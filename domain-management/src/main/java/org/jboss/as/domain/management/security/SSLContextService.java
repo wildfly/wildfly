@@ -21,8 +21,6 @@
  */
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
@@ -30,6 +28,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -82,9 +81,9 @@ public class SSLContextService implements Service<SSLContext> {
             this.theSSLContext = sslContext;
 
         } catch (NoSuchAlgorithmException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         } catch (KeyManagementException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         }
     }
 

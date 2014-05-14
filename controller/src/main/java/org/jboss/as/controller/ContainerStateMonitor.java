@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.msc.service.AbstractServiceListener;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -37,8 +38,7 @@ import org.jboss.msc.service.ServiceRegistry;
 import org.jboss.msc.service.StabilityMonitor;
 import org.jboss.msc.service.StartException;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -165,29 +165,29 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
     private synchronized String createChangeReportLogMessage(ContainerStateChangeReport changeReport) {
 
         final StringBuilder msg = new StringBuilder();
-        msg.append(MESSAGES.serviceStatusReportHeader());
+        msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportHeader());
         if (!changeReport.getMissingServices().isEmpty()) {
-            msg.append(MESSAGES.serviceStatusReportDependencies());
+            msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportDependencies());
             for (Map.Entry<ServiceName, MissingDependencyInfo> entry : changeReport.getMissingServices().entrySet()) {
                 if (!entry.getValue().isUnavailable()) {
-                    msg.append(MESSAGES.serviceStatusReportMissing(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
+                    msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportMissing(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
                 } else {
-                    msg.append(MESSAGES.serviceStatusReportUnavailable(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
+                    msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportUnavailable(entry.getKey(), createDependentsString(entry.getValue().getDependents())));
                 }
             }
         }
         if (!changeReport.getNoLongerMissingServices().isEmpty()) {
-            msg.append(MESSAGES.serviceStatusReportCorrected());
+            msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportCorrected());
             for (Map.Entry<ServiceName, Boolean> entry : changeReport.getNoLongerMissingServices().entrySet()) {
                 if (entry.getValue()) {
-                    msg.append(MESSAGES.serviceStatusReportAvailable(entry.getKey()));
+                    msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportAvailable(entry.getKey()));
                 } else {
-                    msg.append(MESSAGES.serviceStatusReportNoLongerRequired(entry.getKey()));
+                    msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportNoLongerRequired(entry.getKey()));
                 }
             }
         }
         if (!changeReport.getFailedControllers().isEmpty()) {
-            msg.append(MESSAGES.serviceStatusReportFailed());
+            msg.append(ControllerLogger.ROOT_LOGGER.serviceStatusReportFailed());
             for (ServiceController<?> controller : changeReport.getFailedControllers()) {
                 msg.append("      ").append(controller.getName());
                 final StartException startException = controller.getStartException();
@@ -246,7 +246,7 @@ public final class ContainerStateMonitor extends AbstractServiceListener<Object>
                 ret.append(", ");
                 ++count;
             }
-            ret.append(MESSAGES.andNMore(serviceNames.size() - 3));
+            ret.append(ControllerLogger.ROOT_LOGGER.andNMore(serviceNames.size() - 3));
             ret.append(" ]");
             return ret.toString();
         }

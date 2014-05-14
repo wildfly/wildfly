@@ -22,12 +22,12 @@
 
 package org.jboss.as.process;
 
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+
+import org.jboss.as.process.logging.ProcessLogger;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
 public abstract class CommandLineArgumentUsage {
@@ -139,7 +139,7 @@ public abstract class CommandLineArgumentUsage {
 
         if (USAGE == null) {
             final StringBuilder sb = new StringBuilder();
-            sb.append(NEW_LINE).append(MESSAGES.argUsage(executableName)).append(NEW_LINE);
+            sb.append(NEW_LINE).append(ProcessLogger.ROOT_LOGGER.argUsage(executableName)).append(NEW_LINE);
 
             for (int i = 0; i < arguments.size(); i++) {
                 sb.append(getCommand(i)).append(NEW_LINE);

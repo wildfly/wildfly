@@ -38,7 +38,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.controller.resources.DeploymentAttributes;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
@@ -74,7 +74,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler {
         String toReplace = DeploymentAttributes.REPLACE_DEPLOYMENT_ATTRIBUTES.get(TO_REPLACE).resolveModelAttribute(context, operation).asString();
 
         if (name.equals(toReplace)) {
-            throw ServerMessages.MESSAGES.cannotReplaceDeployment(OPERATION_NAME, NAME, TO_REPLACE,
+            throw ServerLogger.ROOT_LOGGER.cannotReplaceDeployment(OPERATION_NAME, NAME, TO_REPLACE,
                     DeploymentRedeployHandler.OPERATION_NAME, DeploymentFullReplaceHandler.OPERATION_NAME);
         }
 
@@ -83,7 +83,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler {
 
         final Resource root = context.readResource(PathAddress.EMPTY_ADDRESS);
         if (! root.hasChild(replacePath)) {
-            throw ServerMessages.MESSAGES.noSuchDeployment(toReplace);
+            throw ServerLogger.ROOT_LOGGER.noSuchDeployment(toReplace);
         }
 
         final ModelNode replaceNode = context.readResourceForUpdate(PathAddress.pathAddress(replacePath)).getModel();
@@ -93,7 +93,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler {
         String runtimeName;
         if (!root.hasChild(deployPath)) {
             if (!operation.hasDefined(CONTENT)) {
-                throw ServerMessages.MESSAGES.noSuchDeployment(name);
+                throw ServerLogger.ROOT_LOGGER.noSuchDeployment(name);
             }
             // else -- the HostController handles a server group replace-deployment like an add, so we do too
 
@@ -120,7 +120,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler {
         } else {
             deployNode = context.readResourceForUpdate(PathAddress.pathAddress(deployPath)).getModel();
             if (ENABLED.resolveModelAttribute(context, deployNode).asBoolean()) {
-                throw ServerMessages.MESSAGES.deploymentAlreadyStarted(toReplace);
+                throw ServerLogger.ROOT_LOGGER.deploymentAlreadyStarted(toReplace);
             }
             runtimeName = deployNode.require(RUNTIME_NAME).asString();
         }
@@ -136,7 +136,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler {
 
     protected void addFromHash(byte[] hash) throws OperationFailedException {
         if (!contentRepository.syncContent(hash)) {
-            throw ServerMessages.MESSAGES.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
+            throw ServerLogger.ROOT_LOGGER.noSuchDeploymentContent(HashUtil.bytesToHexString(hash));
         }
     }
 

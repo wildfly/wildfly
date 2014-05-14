@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jboss.as.clustering.marshalling.MarshallingConfigurationFactory;
 import org.jboss.as.clustering.marshalling.VersionedMarshallingConfiguration;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.ModuleDeployment;
 import org.jboss.marshalling.MarshallingConfiguration;
 import org.jboss.modules.ModuleLoader;
@@ -85,7 +85,7 @@ public class VersionedMarshallingConfigurationService implements Service<Version
     public MarshallingConfiguration getMarshallingConfiguration(int version) {
         MarshallingConfiguration configuration = this.configurations.get(version);
         if (configuration == null) {
-            throw EjbMessages.MESSAGES.unsupportedMarshallingVersion(version);
+            throw EjbLogger.ROOT_LOGGER.unsupportedMarshallingVersion(version);
         }
         return configuration;
     }

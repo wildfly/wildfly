@@ -25,11 +25,11 @@ package org.jboss.as.logging.validators;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.PATH;
 import static org.jboss.as.controller.services.path.PathResourceDefinition.RELATIVE_TO;
 import static org.jboss.as.logging.Logging.createOperationFailure;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.services.path.AbstractPathService;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -63,7 +63,7 @@ public class FileValidator extends ModelTypeValidator {
                 final String relativeTo = value.get(RELATIVE_TO.getName()).asString();
                 // Can't be an absolute path
                 if (AbstractPathService.isAbsoluteUnixOrWindowsPath(relativeTo)) {
-                    throw createOperationFailure(MESSAGES.invalidRelativeTo(relativeTo));
+                    throw createOperationFailure(LoggingLogger.ROOT_LOGGER.invalidRelativeTo(relativeTo));
                 }
             }
         }

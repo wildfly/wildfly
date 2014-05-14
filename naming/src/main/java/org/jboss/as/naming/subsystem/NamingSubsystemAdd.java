@@ -46,7 +46,7 @@ import org.jboss.msc.service.ServiceTarget;
 
 import java.util.List;
 
-import static org.jboss.as.naming.NamingLogger.ROOT_LOGGER;
+import static org.jboss.as.naming.logging.NamingLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>

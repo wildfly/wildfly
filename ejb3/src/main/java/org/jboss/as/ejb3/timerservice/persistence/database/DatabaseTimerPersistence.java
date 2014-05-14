@@ -42,7 +42,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
@@ -153,10 +153,10 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                         }
                     }
                 } catch (SQLException e1) {
-                    EjbLogger.EJB3_LOGGER.couldNotCreateTable(e1);
+                    EjbLogger.ROOT_LOGGER.couldNotCreateTable(e1);
                 }
             } else {
-                EjbLogger.EJB3_LOGGER.couldNotCreateTable(e);
+                EjbLogger.ROOT_LOGGER.couldNotCreateTable(e);
             }
         } finally {
             safeClose(resultSet);
@@ -445,7 +445,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 resource.close();
             }
         } catch (Throwable t) {
-            EjbLogger.EJB3_LOGGER.tracef(t, "Closing resource failed");
+            EjbLogger.ROOT_LOGGER.tracef(t, "Closing resource failed");
         }
     }
 
@@ -455,7 +455,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 resource.close();
             }
         } catch (Throwable t) {
-            EjbLogger.EJB3_LOGGER.tracef(t, "Closing resource failed");
+            EjbLogger.ROOT_LOGGER.tracef(t, "Closing resource failed");
         }
     }
 
@@ -465,7 +465,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 resource.close();
             }
         } catch (Throwable t) {
-            EjbLogger.EJB3_LOGGER.tracef(t, "Closing resource failed");
+            EjbLogger.ROOT_LOGGER.tracef(t, "Closing resource failed");
         }
     }
 
@@ -475,7 +475,7 @@ public class DatabaseTimerPersistence implements TimerPersistence, Service<Datab
                 resource.close();
             }
         } catch (Throwable t) {
-            EjbLogger.EJB3_LOGGER.tracef(t, "Closing resource failed");
+            EjbLogger.ROOT_LOGGER.tracef(t, "Closing resource failed");
         }
     }
 }

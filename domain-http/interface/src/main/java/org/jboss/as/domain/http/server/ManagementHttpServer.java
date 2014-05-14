@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.http.server;
 
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.logging.HttpServerLogger.ROOT_LOGGER;
 import static org.xnio.Options.SSL_CLIENT_AUTH_MODE;
 import static org.xnio.SslClientAuthMode.REQUESTED;
 import static org.xnio.SslClientAuthMode.REQUIRED;
@@ -59,6 +59,7 @@ import javax.net.ssl.SSLContext;
 
 import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.domain.http.server.logging.HttpServerLogger;
 import org.jboss.as.domain.http.server.security.AnonymousMechanism;
 import org.jboss.as.domain.http.server.security.AuthenticationMechanismWrapper;
 import org.jboss.as.domain.http.server.security.DmrFailureReadinessHandler;

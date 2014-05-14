@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.remote;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClientContext;
 import org.jboss.ejb.client.EJBClientContextIdentifier;
@@ -86,7 +86,7 @@ class DefaultEJBClientContextSelector implements ContextSelector<EJBClientContex
     @Override
     public void registerContext(final EJBClientContextIdentifier identifier, final EJBClientContext context) {
         if (this.tcclEJBClientContextService == null) {
-            throw EjbMessages.MESSAGES.ejbClientContextSelectorUnableToFunctionDueToMissingService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
+            throw EjbLogger.ROOT_LOGGER.ejbClientContextSelectorUnableToFunctionDueToMissingService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
         }
         this.tcclEJBClientContextService.registerContext(identifier, context);
     }
@@ -94,7 +94,7 @@ class DefaultEJBClientContextSelector implements ContextSelector<EJBClientContex
     @Override
     public EJBClientContext unRegisterContext(final EJBClientContextIdentifier identifier) {
         if (this.tcclEJBClientContextService == null) {
-            throw EjbMessages.MESSAGES.ejbClientContextSelectorUnableToFunctionDueToMissingService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
+            throw EjbLogger.ROOT_LOGGER.ejbClientContextSelectorUnableToFunctionDueToMissingService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
         }
         return this.tcclEJBClientContextService.unRegisterContext(identifier);
     }
@@ -102,7 +102,7 @@ class DefaultEJBClientContextSelector implements ContextSelector<EJBClientContex
     @Override
     public EJBClientContext getContext(final EJBClientContextIdentifier identifier) {
         if (this.tcclEJBClientContextService == null) {
-            throw EjbMessages.MESSAGES.ejbClientContextSelectorUnableToFunctionDueToMissingService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
+            throw EjbLogger.ROOT_LOGGER.ejbClientContextSelectorUnableToFunctionDueToMissingService(TCCLEJBClientContextSelectorService.TCCL_BASED_EJB_CLIENT_CONTEXT_SELECTOR_SERVICE_NAME);
         }
         return this.tcclEJBClientContextService.getContext(identifier);
     }

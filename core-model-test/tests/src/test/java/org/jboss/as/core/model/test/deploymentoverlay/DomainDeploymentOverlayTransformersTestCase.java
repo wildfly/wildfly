@@ -114,7 +114,7 @@ public class DomainDeploymentOverlayTransformersTestCase extends AbstractCoreMod
             mainServices.applyMasterDomainModel(modelVersion, null);
             Assert.fail("Should have failed to apply model without deployment-overlay ignored on host");
         } catch(Exception e) {
-            Assert.assertTrue(e.getMessage(), e.getMessage().contains("14738")); //14738 comes from ControllerMessages.noChildType(String)
+            Assert.assertTrue(e.getMessage(), e.getMessage().contains("WFLYCTL0147") || e.getMessage().contains("JBAS014738")); //WFLYCTL0147 comes from ControllerMessages.noChildType(String)
         }
     }
 
@@ -147,7 +147,7 @@ public class DomainDeploymentOverlayTransformersTestCase extends AbstractCoreMod
             mainServices.applyMasterDomainModel(modelVersion, null);
             Assert.fail("Should have failed to apply model since server group still has a deployment overlay");
         } catch(Exception e) {
-            Assert.assertTrue(e.getMessage(), e.getMessage().contains("14738")); //14738 comes from ControllerMessages.noChildType(String)
+            Assert.assertTrue(e.getMessage(), e.getMessage().contains("WFLYCTL0147") || e.getMessage().contains("JBAS014738")); //WFLYCTL0147 comes from ControllerMessages.noChildType(String)
         }
     }
 

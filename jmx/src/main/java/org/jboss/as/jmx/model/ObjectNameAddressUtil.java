@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jmx.model;
 
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -35,6 +33,7 @@ import javax.management.ObjectName;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.jmx.logging.JmxLogger;
 
 /**
  * Utility class to convert between PathAddress and ObjectName
@@ -80,7 +79,7 @@ class ObjectNameAddressUtil {
         try {
             return ObjectName.getInstance(sb.toString());
         } catch (MalformedObjectNameException e) {
-            throw MESSAGES.cannotCreateObjectName(e, pathAddress, sb.toString());
+            throw JmxLogger.ROOT_LOGGER.cannotCreateObjectName(e, pathAddress, sb.toString());
         }
     }
 

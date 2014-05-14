@@ -25,7 +25,7 @@ package org.jboss.as.controller.access.permission;
 import java.security.Permission;
 import java.util.List;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.constraint.Constraint;
 

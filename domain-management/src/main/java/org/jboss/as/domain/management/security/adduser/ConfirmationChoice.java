@@ -22,12 +22,13 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
 import static org.jboss.as.domain.management.security.adduser.AddUser.SPACE;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * State to display a message to the user with option to confirm a choice.
@@ -79,13 +80,13 @@ public class ConfirmationChoice implements State {
                 return noState;
             default: {
                 List<String> acceptedValues = new ArrayList<String>(4);
-                acceptedValues.add(MESSAGES.yes());
-                if (MESSAGES.shortYes().length() > 0) {
-                    acceptedValues.add(MESSAGES.shortYes());
+                acceptedValues.add(DomainManagementLogger.ROOT_LOGGER.yes());
+                if (DomainManagementLogger.ROOT_LOGGER.shortYes().length() > 0) {
+                    acceptedValues.add(DomainManagementLogger.ROOT_LOGGER.shortYes());
                 }
-                acceptedValues.add(MESSAGES.no());
-                if (MESSAGES.shortNo().length() > 0) {
-                    acceptedValues.add(MESSAGES.shortNo());
+                acceptedValues.add(DomainManagementLogger.ROOT_LOGGER.no());
+                if (DomainManagementLogger.ROOT_LOGGER.shortNo().length() > 0) {
+                    acceptedValues.add(DomainManagementLogger.ROOT_LOGGER.shortNo());
                 }
                 StringBuilder sb = new StringBuilder(acceptedValues.get(0));
                 for (int i = 1; i < acceptedValues.size() - 1; i++) {
@@ -93,8 +94,7 @@ public class ConfirmationChoice implements State {
                     sb.append(acceptedValues.get(i));
                 }
 
-                return new ErrorState(theConsole, MESSAGES.invalidConfirmationResponse(sb.toString(),
-                        acceptedValues.get(acceptedValues.size() - 1)), this);
+                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.invalidConfirmationResponse(sb.toString(), acceptedValues.get(acceptedValues.size() - 1)), this);
             }
         }
     }
@@ -102,11 +102,11 @@ public class ConfirmationChoice implements State {
     private int convertResponse(final String response) {
         if (response != null) {
             String temp = response.toLowerCase(); // We now need to match on the current local.
-            if (MESSAGES.yes().equals(temp) || MESSAGES.shortYes().equals(temp)) {
+            if (DomainManagementLogger.ROOT_LOGGER.yes().equals(temp) || DomainManagementLogger.ROOT_LOGGER.shortYes().equals(temp)) {
                 return YES;
             }
 
-            if (MESSAGES.no().equals(temp) || MESSAGES.shortNo().equals(temp)) {
+            if (DomainManagementLogger.ROOT_LOGGER.no().equals(temp) || DomainManagementLogger.ROOT_LOGGER.shortNo().equals(temp)) {
                 return NO;
             }
         }

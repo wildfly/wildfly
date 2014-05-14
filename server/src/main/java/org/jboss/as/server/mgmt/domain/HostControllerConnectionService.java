@@ -40,7 +40,7 @@ import org.jboss.as.controller.ControlledProcessStateService;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.protocol.ProtocolConnectionConfiguration;
 import org.jboss.as.protocol.StreamUtils;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
@@ -183,7 +183,7 @@ public class HostControllerConnectionService implements Service<HostControllerCl
 
             return sslContext;
         } catch (GeneralSecurityException e) {
-            throw ServerMessages.MESSAGES.unableToInitialiseSSLContext(e.getMessage());
+            throw ServerLogger.ROOT_LOGGER.unableToInitialiseSSLContext(e.getMessage());
         }
     }
 

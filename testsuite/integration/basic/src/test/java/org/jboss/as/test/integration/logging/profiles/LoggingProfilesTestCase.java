@@ -306,7 +306,7 @@ public class LoggingProfilesTestCase extends AbstractLoggingTest {
 		String line;
 		while ((line = br.readLine()) != null) {
 			// Look for message id in order to support all languages.
-			if (line.contains("JBAS011509")) {
+			if (line.contains("WFLYLOG0010")) {
 				br.close();
 				Assert.fail("Every deployment should have defined its own logging profile. But found this line in logs: "
 						+ line);

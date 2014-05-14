@@ -25,7 +25,7 @@ package org.jboss.as.server.deployment.dependencies;
 import javax.xml.namespace.QName;
 
 import org.jboss.as.server.DeployerChainAddHandler;
-import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.ServerService;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;

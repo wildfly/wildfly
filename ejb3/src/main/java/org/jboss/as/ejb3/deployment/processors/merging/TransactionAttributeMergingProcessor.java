@@ -33,6 +33,7 @@ import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -52,8 +53,6 @@ import org.jboss.metadata.ejb.spec.MethodMetaData;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.metadata.ejb.spec.MethodsMetaData;
 import org.jboss.modules.Module;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Because trans-attr and trans-timeout are both contained in container-transaction
@@ -81,7 +80,7 @@ public class TransactionAttributeMergingProcessor extends AbstractMergingProcess
                 processTransactionAttributeAnnotation(applicationClasses, deploymentReflectionIndex, viewClass, ejbView.getMethodIntf(), componentConfiguration);
                 processTransactionTimeoutAnnotation(applicationClasses, deploymentReflectionIndex, viewClass, ejbView.getMethodIntf(), componentConfiguration);
             } catch (ClassNotFoundException e) {
-                throw MESSAGES.failToLoadEjbViewClass(e);
+                throw EjbLogger.ROOT_LOGGER.failToLoadEjbViewClass(e);
             }
 
         }

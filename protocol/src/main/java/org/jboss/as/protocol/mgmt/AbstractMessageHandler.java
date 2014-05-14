@@ -34,8 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jboss.as.protocol.ProtocolLogger;
-import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
 import org.jboss.remoting3.Channel;
 import org.jboss.remoting3.CloseHandler;
@@ -56,7 +55,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
 
     protected AbstractMessageHandler(final ExecutorService executorService) {
         if(executorService == null) {
-            throw ProtocolMessages.MESSAGES.nullExecutor();
+            throw ProtocolLogger.ROOT_LOGGER.nullExecutor();
         }
         this.executorService = executorService;
     }
@@ -107,7 +106,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
             final ActiveRequest<?, ?> request = requests.remove(response.getResponseId());
             if(request == null) {
                 ProtocolLogger.CONNECTION_LOGGER.noSuchRequest(response.getResponseId(), channel);
-                safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(response.getResponseId()));
+                safeWriteErrorResponse(channel, header, ProtocolLogger.ROOT_LOGGER.responseHandlerNotFound(response.getResponseId()));
             } else if(response.getError() != null) {
                 request.handleFailed(response);
             } else {
@@ -119,7 +118,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
                 final ManagementRequestHeader requestHeader = validateRequest(header);
                 final ManagementRequestHandler<?, ?> handler = getRequestHandler(requestHeader);
                 if(handler == null) {
-                    safeWriteErrorResponse(channel, header, ProtocolMessages.MESSAGES.responseHandlerNotFound(requestHeader.getBatchId()));
+                    safeWriteErrorResponse(channel, header, ProtocolLogger.ROOT_LOGGER.responseHandlerNotFound(requestHeader.getBatchId()));
                 } else {
                     handleMessage(channel, input, requestHeader, handler);
                 }
@@ -232,7 +231,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
     protected <T, A> void handleMessage(final Channel channel, final DataInput message, final ManagementRequestHeader header, ManagementRequestHandler<T, A> handler) throws IOException {
         final ActiveOperation<T, A> support = getActiveOperation(header);
         if(support == null) {
-            throw ProtocolMessages.MESSAGES.responseHandlerNotFound(header.getBatchId());
+            throw ProtocolLogger.ROOT_LOGGER.responseHandlerNotFound(header.getBatchId());
         }
         handleMessage(channel, message, header, support, handler);
     }
@@ -447,7 +446,7 @@ public abstract class AbstractMessageHandler extends ActiveOperationSupport impl
         return new ManagementRequestHandler<T, A>() {
             @Override
             public void handleRequest(final DataInput input, ActiveOperation.ResultHandler<T> resultHandler, ManagementRequestContext<A> context) throws IOException {
-                final Exception error = ProtocolMessages.MESSAGES.noSuchResponseHandler(Integer.toHexString(header.getRequestId()));
+                final Exception error = ProtocolLogger.ROOT_LOGGER.noSuchResponseHandler(Integer.toHexString(header.getRequestId()));
                 if(resultHandler.failed(error)) {
                     safeWriteErrorResponse(context.getChannel(), context.getRequestHeader(), error);
                 }

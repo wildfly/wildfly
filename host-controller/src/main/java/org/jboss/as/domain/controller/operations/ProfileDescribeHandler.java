@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
@@ -70,7 +70,7 @@ public class ProfileDescribeHandler implements OperationStepHandler {
 
         AuthorizationResult authResult = context.authorize(operation, DESCRIBE_EFFECTS);
         if (authResult.getDecision() != AuthorizationResult.Decision.PERMIT) {
-            throw ControllerMessages.MESSAGES.unauthorized(opName, address, authResult.getExplanation());
+            throw ControllerLogger.ROOT_LOGGER.unauthorized(opName, address, authResult.getExplanation());
         }
 
         final ModelNode result = new ModelNode();
@@ -132,9 +132,9 @@ public class ProfileDescribeHandler implements OperationStepHandler {
                     String errMsg;
                     ImmutableManagementResourceRegistration child = registry.getSubModel(relativeAddress);
                     if (child == null) {
-                       errMsg = ControllerMessages.MESSAGES.noSuchResourceType(fullAddress);
+                       errMsg = ControllerLogger.ROOT_LOGGER.noSuchResourceType(fullAddress);
                     } else {
-                        errMsg = ControllerMessages.MESSAGES.noHandlerForOperation(opName, fullAddress);
+                        errMsg = ControllerLogger.ROOT_LOGGER.noHandlerForOperation(opName, fullAddress);
                     }
                     throw new OperationFailedException(new ModelNode(errMsg));
                 }

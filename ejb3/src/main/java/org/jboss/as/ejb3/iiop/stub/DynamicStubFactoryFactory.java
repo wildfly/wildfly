@@ -22,8 +22,7 @@
 
 package org.jboss.as.ejb3.iiop.stub;
 
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.classfilewriter.ClassFile;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryBase;
 import org.jboss.com.sun.corba.se.impl.presentation.rmi.StubFactoryFactoryDynamicBase;
@@ -54,7 +53,7 @@ public class DynamicStubFactoryFactory extends StubFactoryFactoryDynamicBase {
             cl = myClass.getClassLoader();
         }
         if (cl == null) {
-            throw EjbMessages.MESSAGES.couldNotFindClassLoaderForStub(stubClassName);
+            throw EjbLogger.ROOT_LOGGER.couldNotFindClassLoaderForStub(stubClassName);
         }
         Class<?> theClass;
         try {
@@ -68,7 +67,7 @@ public class DynamicStubFactoryFactory extends StubFactoryFactoryDynamicBase {
                 try {
                     theClass = cl.loadClass(stubClassName);
                 } catch (ClassNotFoundException e1) {
-                    EjbLogger.EJB3_LOGGER.dynamicStubCreationFailed(stubClassName, ex);
+                    EjbLogger.ROOT_LOGGER.dynamicStubCreationFailed(stubClassName, ex);
                     throw ex;
                 }
             }

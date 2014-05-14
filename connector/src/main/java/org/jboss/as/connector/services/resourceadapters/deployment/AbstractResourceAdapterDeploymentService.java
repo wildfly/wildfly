@@ -25,7 +25,6 @@ package org.jboss.as.connector.services.resourceadapters.deployment;
 import static java.lang.Thread.currentThread;
 import static java.security.AccessController.doPrivileged;
 import static org.jboss.as.connector.logging.ConnectorLogger.DEPLOYMENT_CONNECTOR_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -40,6 +39,7 @@ import javax.naming.Reference;
 import javax.resource.spi.ResourceAdapter;
 import javax.transaction.TransactionManager;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.deployment.ResourceAdapterDeployment;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.AdminObjectReferenceFactoryService;
@@ -306,7 +306,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
                     unregisterAll(deploymentName);
                 } finally {
                     WritableServiceBasedNamingStore.popOwner();
-                    context.failed(MESSAGES.failedToStartRaDeployment(cause, deploymentName));
+                    context.failed(ConnectorLogger.ROOT_LOGGER.failedToStartRaDeployment(cause, deploymentName));
                 }
             }
         };
@@ -369,7 +369,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         public String[] bindConnectionFactory(URL url, String deployment, Object cf) throws Throwable {
-            throw MESSAGES.jndiBindingsNotSupported();
+            throw ConnectorLogger.ROOT_LOGGER.jndiBindingsNotSupported();
         }
 
         @Override
@@ -440,7 +440,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
         @Override
         public String[] bindAdminObject(URL url, String deployment, Object ao) throws Throwable {
-            throw MESSAGES.jndiBindingsNotSupported();
+            throw ConnectorLogger.ROOT_LOGGER.jndiBindingsNotSupported();
         }
 
         @Override
@@ -570,7 +570,7 @@ public abstract class AbstractResourceAdapterDeploymentService {
 
                 return o;
             } catch (Throwable t) {
-                throw MESSAGES.deploymentFailed(t, className);
+                throw ConnectorLogger.ROOT_LOGGER.deploymentFailed(t, className);
             }
         }
 

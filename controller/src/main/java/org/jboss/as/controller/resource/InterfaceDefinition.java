@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.resource;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALTERNATIVES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE_TYPE;
@@ -39,6 +38,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.AttributeMarshaller;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.OperationFailedException;
@@ -364,7 +364,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
                         final ModelNode v = value.get(name);
                         if (NESTED_LIST_ATTRIBUTES.contains(def)) {
                             if (ModelType.LIST != v.getType()) {
-                                throw new OperationFailedException(new ModelNode().set(MESSAGES.invalidType(v.getType())));
+                                throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.invalidType(v.getType())));
                             }
                         } else {
                             def.getValidator().validateParameter(name, v);

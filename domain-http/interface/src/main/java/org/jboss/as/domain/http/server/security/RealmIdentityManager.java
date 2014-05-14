@@ -22,8 +22,7 @@
 package org.jboss.as.domain.http.server.security;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+import static org.jboss.as.domain.http.server.logging.HttpServerLogger.ROOT_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import io.undertow.security.idm.Account;
 import io.undertow.security.idm.Credential;
@@ -50,6 +49,7 @@ import javax.security.sasl.RealmCallback;
 import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.SimplePrincipal;
 import org.jboss.as.core.security.SubjectUserInfo;
+import org.jboss.as.domain.http.server.logging.HttpServerLogger;
 import org.jboss.as.domain.management.AuthMechanism;
 import org.jboss.as.domain.management.AuthorizingCallbackHandler;
 import org.jboss.as.domain.management.SecurityRealm;
@@ -122,7 +122,7 @@ public class RealmIdentityManager implements IdentityManager {
             return verify(id, (DigestCredential) credential);
         }
 
-        throw MESSAGES.invalidCredentialType(credential.getClass().getName());
+        throw HttpServerLogger.ROOT_LOGGER.invalidCredentialType(credential.getClass().getName());
     }
 
     private Account verify(String id, PasswordCredential credential) {

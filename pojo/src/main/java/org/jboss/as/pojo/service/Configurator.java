@@ -22,7 +22,7 @@
 
 package org.jboss.as.pojo.service;
 
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.descriptor.ValueConfig;
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
@@ -68,7 +68,7 @@ public class Configurator {
             ParameterizedType pt = (ParameterizedType) type;
             return toClass(pt.getRawType());
         } else {
-            throw PojoMessages.MESSAGES.unknownType(type);
+            throw PojoLogger.ROOT_LOGGER.unknownType(type);
         }
     }
 
@@ -172,10 +172,10 @@ public class Configurator {
     @SuppressWarnings("unchecked")
     public static Method findMethod(DeploymentReflectionIndex index, Class classInfo, String name, String[] paramTypes, boolean isStatic, boolean isPublic, boolean strict) throws IllegalArgumentException {
         if (name == null)
-            throw PojoMessages.MESSAGES.nullName();
+            throw PojoLogger.ROOT_LOGGER.nullName();
 
         if (classInfo == null)
-            throw PojoMessages.MESSAGES.nullClassInfo();
+            throw PojoLogger.ROOT_LOGGER.nullClassInfo();
 
         if (paramTypes == null)
             paramTypes = NO_PARAMS_TYPES;
@@ -188,7 +188,7 @@ public class Configurator {
                 return result;
             current = current.getSuperclass();
         }
-        throw PojoMessages.MESSAGES.methodNotFound(name, Arrays.toString(paramTypes), classInfo.getName());
+        throw PojoLogger.ROOT_LOGGER.methodNotFound(name, Arrays.toString(paramTypes), classInfo.getName());
     }
 
     /**

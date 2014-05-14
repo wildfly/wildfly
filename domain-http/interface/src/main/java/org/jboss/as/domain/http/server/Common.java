@@ -116,7 +116,7 @@ public class Common {
         // is set on the response from the OperationFailedException and stripped from non-HTTP interfaces.
         // But this will do for now.
         int result = 500;
-        if (failureMsg != null && failureMsg.contains("JBAS013456")) {
+        if (failureMsg != null && failureMsg.contains("WFLYCTL0313")) {
             result = 403;
         }
         return result;

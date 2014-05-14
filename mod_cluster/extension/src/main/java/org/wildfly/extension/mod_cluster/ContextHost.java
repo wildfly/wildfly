@@ -29,8 +29,6 @@ import org.jboss.dmr.Property;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.wildfly.extension.mod_cluster.ModClusterMessages.MESSAGES;
-
 public class ContextHost {
     String webcontext = null;
     String webhost = null;
@@ -53,7 +51,7 @@ public class ContextHost {
                 waittime = Integer.parseInt(RemoveQuotes(prop.getValue().toString()));
             }
         }
-        if (webcontext == null || webhost == null) { throw new OperationFailedException(new ModelNode().set(MESSAGES.needContextAndHost())); }
+        if (webcontext == null || webhost == null) { throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.needContextAndHost())); }
 
         webcontext = RemoveQuotes(webcontext);
         webhost = RemoveQuotes(webhost);

@@ -24,7 +24,6 @@ package org.jboss.as.connector.services.resourceadapters;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
 import static org.jboss.as.connector.logging.ConnectorLogger.SUBSYSTEM_RA_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,6 +31,7 @@ import java.util.Map;
 
 import javax.resource.spi.TransactionSupport;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.services.mdr.AS7MetadataRepository;
 import org.jboss.as.connector.services.resourceadapters.deployment.registry.ResourceAdapterDeploymentRegistry;
 import org.jboss.as.connector.subsystems.jca.JcaSubsystemConfiguration;
@@ -146,7 +146,7 @@ public class DirectConnectionFactoryActivatorService implements Service<ContextN
             }
 
             if (cfInterface == null || !cfInterface.equals(interfaceName)) {
-                throw MESSAGES.invalidConnectionFactory(cfInterface, resourceAdapter, jndiName);
+                throw ConnectorLogger.ROOT_LOGGER.invalidConnectionFactory(cfInterface, resourceAdapter, jndiName);
             }
 
             Map<String, String> raConfigProperties = new HashMap<String, String>();

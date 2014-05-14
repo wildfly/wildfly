@@ -22,8 +22,6 @@
 
 package org.jboss.as.process;
 
-import static org.jboss.as.process.ProcessLogger.CLIENT_LOGGER;
-import static org.jboss.as.process.ProcessMessages.MESSAGES;
 import static org.jboss.as.process.protocol.StreamUtils.readFully;
 import static org.jboss.as.process.protocol.StreamUtils.readInt;
 import static org.jboss.as.process.protocol.StreamUtils.readLong;
@@ -41,6 +39,7 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jboss.as.process.logging.ProcessLogger;
 import org.jboss.as.process.protocol.Connection;
 import org.jboss.as.process.protocol.MessageHandler;
 import org.jboss.as.process.protocol.ProtocolClient;
@@ -63,13 +62,13 @@ public final class ProcessControllerClient implements Closeable {
 
     public static ProcessControllerClient connect(final ProtocolClient.Configuration configuration, final byte[] authCode, final ProcessMessageHandler messageHandler) throws IOException {
         if (configuration == null) {
-            throw MESSAGES.nullVar("configuration");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("configuration");
         }
         if (authCode == null) {
-            throw MESSAGES.nullVar("authCode");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("authCode");
         }
         if (messageHandler == null) {
-            throw MESSAGES.nullVar("messageHandler");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("messageHandler");
         }
         configuration.setMessageHandler(new MessageHandler() {
             public void handleMessage(final Connection connection, final InputStream dataStream) throws IOException {
@@ -79,14 +78,14 @@ public final class ProcessControllerClient implements Closeable {
                     case Protocol.PROCESS_ADDED: {
                         final String processName = readUTFZBytes(dataStream);
                         dataStream.close();
-                        CLIENT_LOGGER.tracef("Received process_added for process %s", processName);
+                        ProcessLogger.CLIENT_LOGGER.tracef("Received process_added for process %s", processName);
                         messageHandler.handleProcessAdded(client, processName);
                         break;
                     }
                     case Protocol.PROCESS_STARTED: {
                         final String processName = readUTFZBytes(dataStream);
                         dataStream.close();
-                        CLIENT_LOGGER.tracef("Received process_started for process %s", processName);
+                        ProcessLogger.CLIENT_LOGGER.tracef("Received process_started for process %s", processName);
                         messageHandler.handleProcessStarted(client, processName);
                         break;
                     }
@@ -94,14 +93,14 @@ public final class ProcessControllerClient implements Closeable {
                         final String processName = readUTFZBytes(dataStream);
                         final long uptimeMillis = readLong(dataStream);
                         dataStream.close();
-                        CLIENT_LOGGER.tracef("Received process_stopped for process %s", processName);
+                        ProcessLogger.CLIENT_LOGGER.tracef("Received process_stopped for process %s", processName);
                         messageHandler.handleProcessStopped(client, processName, uptimeMillis);
                         break;
                     }
                     case Protocol.PROCESS_REMOVED: {
                         final String processName = readUTFZBytes(dataStream);
                         dataStream.close();
-                        CLIENT_LOGGER.tracef("Received process_removed for process %s", processName);
+                        ProcessLogger.CLIENT_LOGGER.tracef("Received process_removed for process %s", processName);
                         messageHandler.handleProcessRemoved(client, processName);
                         break;
                     }
@@ -117,7 +116,7 @@ public final class ProcessControllerClient implements Closeable {
                             inventory.put(processName, new ProcessInfo(processName, processAuthCode, processRunning, processStopping));
                         }
                         dataStream.close();
-                        CLIENT_LOGGER.tracef("Received process_inventory");
+                        ProcessLogger.CLIENT_LOGGER.tracef("Received process_inventory");
                         messageHandler.handleProcessInventory(client, inventory);
                         break;
                     } case Protocol.OPERATION_FAILED : {
@@ -125,11 +124,11 @@ public final class ProcessControllerClient implements Closeable {
                         final ProcessMessageHandler.OperationType type = ProcessMessageHandler.OperationType.fromCode(operationType);
                         final String processName = readUTFZBytes(dataStream);
                         dataStream.close();
-                        CLIENT_LOGGER.tracef("Received operation_failed for process %s", processName);
+                        ProcessLogger.CLIENT_LOGGER.tracef("Received operation_failed for process %s", processName);
                         messageHandler.handleOperationFailed(client, type, processName);
                         break;
                     } default: {
-                        CLIENT_LOGGER.receivedUnknownMessageCode(Integer.valueOf(cmd));
+                        ProcessLogger.CLIENT_LOGGER.receivedUnknownMessageCode(Integer.valueOf(cmd));
                         // ignore
                         dataStream.close();
                         break;
@@ -163,7 +162,7 @@ public final class ProcessControllerClient implements Closeable {
                 os.write(authCode);
                 final ProcessControllerClient processControllerClient = new ProcessControllerClient(connection);
                 connection.attach(processControllerClient);
-                CLIENT_LOGGER.trace("Sent initial greeting message");
+                ProcessLogger.CLIENT_LOGGER.trace("Sent initial greeting message");
                 os.close();
                 ok = true;
                 return processControllerClient;
@@ -194,25 +193,25 @@ public final class ProcessControllerClient implements Closeable {
 
     public void addProcess(String processName, byte[] authKey, String[] cmd, String workingDir, Map<String, String> env) throws IOException {
         if (processName == null) {
-            throw MESSAGES.nullVar("processName");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("processName");
         }
         if (authKey == null) {
-            throw MESSAGES.nullVar("authKey");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("authKey");
         }
         if (cmd == null) {
-            throw MESSAGES.nullVar("cmd");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("cmd");
         }
         if (workingDir == null) {
-            throw MESSAGES.nullVar("workingDir");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("workingDir");
         }
         if (env == null) {
-            throw MESSAGES.nullVar("env");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("env");
         }
         if (cmd.length < 1) {
-            throw MESSAGES.invalidCommandLen();
+            throw ProcessLogger.ROOT_LOGGER.invalidCommandLen();
         }
         if (authKey.length != 16) {
-            throw MESSAGES.invalidAuthKeyLen();
+            throw ProcessLogger.ROOT_LOGGER.invalidAuthKeyLen();
         }
         final OutputStream os = connection.writeMessage();
         try {
@@ -242,7 +241,7 @@ public final class ProcessControllerClient implements Closeable {
 
     public void startProcess(String processName) throws IOException {
         if (processName == null) {
-            throw MESSAGES.nullVar("processName");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("processName");
         }
         final OutputStream os = connection.writeMessage();
         try {
@@ -256,7 +255,7 @@ public final class ProcessControllerClient implements Closeable {
 
     public void stopProcess(String processName) throws IOException {
         if (processName == null) {
-            throw MESSAGES.nullVar("processName");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("processName");
         }
         final OutputStream os = connection.writeMessage();
         try {
@@ -270,7 +269,7 @@ public final class ProcessControllerClient implements Closeable {
 
     public void removeProcess(String processName) throws IOException {
         if (processName == null) {
-            throw MESSAGES.nullVar("processName");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("processName");
         }
         final OutputStream os = connection.writeMessage();
         try {
@@ -294,7 +293,7 @@ public final class ProcessControllerClient implements Closeable {
 
     public void reconnectProcess(final String processName, final String hostName, final int port, final boolean managementSubsystemEndpoint, final byte[] authKey) throws IOException {
         if (processName == null){
-            throw MESSAGES.nullVar("processName");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("processName");
         }
         final OutputStream os = connection.writeMessage();
         try{
@@ -327,7 +326,7 @@ public final class ProcessControllerClient implements Closeable {
 
     public void destroyProcess(String processName) throws IOException {
         if (processName == null) {
-            throw MESSAGES.nullVar("processName");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("processName");
         }
         final OutputStream os = connection.writeMessage();
         try {
@@ -341,7 +340,7 @@ public final class ProcessControllerClient implements Closeable {
 
     public void killProcess(String processName) throws IOException {
         if (processName == null) {
-            throw MESSAGES.nullVar("processName");
+            throw ProcessLogger.ROOT_LOGGER.nullVar("processName");
         }
         final OutputStream os = connection.writeMessage();
         try {

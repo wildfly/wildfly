@@ -21,8 +21,6 @@
  */
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +29,7 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
@@ -57,9 +56,9 @@ abstract class AbstractTrustManagerService implements Service<TrustManager[]> {
         try {
             theTrustManagers = createTrustManagers();
         } catch (NoSuchAlgorithmException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         } catch (KeyStoreException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         }
     }
 

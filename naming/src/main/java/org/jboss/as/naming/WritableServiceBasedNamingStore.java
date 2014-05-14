@@ -24,6 +24,7 @@ package org.jboss.as.naming;
 
 import org.jboss.as.naming.deployment.JndiNamingDependencyProcessor;
 import org.jboss.as.naming.deployment.RuntimeBindReleaseService;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.as.naming.service.BinderService;
 import org.jboss.as.naming.util.ThreadLocalStack;
 import org.jboss.msc.service.ServiceBuilder;
@@ -39,7 +40,6 @@ import javax.naming.Name;
 import javax.naming.NamingException;
 import java.util.Hashtable;
 
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 import static org.jboss.as.naming.util.NamingUtils.isLastComponentEmpty;
 import static org.jboss.as.naming.util.NamingUtils.namingException;
 
@@ -133,7 +133,7 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
         final ServiceName bindName = buildServiceName(name);
         final ServiceController<?> controller = getServiceRegistry().getService(bindName);
         if (controller == null) {
-            throw MESSAGES.cannotResolveService(bindName);
+            throw NamingLogger.ROOT_LOGGER.cannotResolveService(bindName);
         }
         controller.setMode(ServiceController.Mode.REMOVE);
         final StabilityMonitor monitor = new StabilityMonitor();
@@ -150,7 +150,7 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
     public Context createSubcontext(final Name name) throws NamingException {
         requireOwner();
         if (isLastComponentEmpty(name)) {
-            throw MESSAGES.emptyNameNotAllowed();
+            throw NamingLogger.ROOT_LOGGER.emptyNameNotAllowed();
         }
         return new NamingContext(name, WritableServiceBasedNamingStore.this, new Hashtable<String, Object>());
     }
@@ -158,7 +158,7 @@ public class WritableServiceBasedNamingStore extends ServiceBasedNamingStore imp
     private Object requireOwner() {
         final Object owner = WRITE_OWNER.peek();
         if (owner == null) {
-            throw MESSAGES.readOnlyNamingContext();
+            throw NamingLogger.ROOT_LOGGER.readOnlyNamingContext();
         }
         return owner;
     }

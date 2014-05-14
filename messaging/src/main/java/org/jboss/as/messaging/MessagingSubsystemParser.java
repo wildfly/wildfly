@@ -55,7 +55,6 @@ import static org.jboss.as.messaging.CommonAttributes.ROLE;
 import static org.jboss.as.messaging.CommonAttributes.SECURITY_SETTING;
 import static org.jboss.as.messaging.CommonAttributes.SELECTOR;
 import static org.jboss.as.messaging.CommonAttributes.SUBSYSTEM;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.Collections;
 import java.util.EnumSet;
@@ -70,13 +69,14 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.ListAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.staxmapper.XMLElementReader;
@@ -322,7 +322,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     }
 
     protected void handleComplexConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation) throws XMLStreamException {
-        throw MESSAGES.unsupportedElement(element.getLocalName());
+        throw MessagingLogger.ROOT_LOGGER.unsupportedElement(element.getLocalName());
     }
 
     protected void handleUnknownConfigurationAttribute(XMLExtendedStreamReader reader, Element element, ModelNode operation)
@@ -1025,9 +1025,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     case TYPE_ATTR_NAME:
                         perm = SecurityRoleDefinition.ROLE_ATTRIBUTES_BY_XML_NAME.get(reader.getAttributeValue(i));
                         if (perm == null) {
-                            throw ControllerMessages.MESSAGES.invalidAttributeValue(reader.getAttributeValue(i),
-                                    reader.getAttributeName(i), SecurityRoleDefinition.ROLE_ATTRIBUTES_BY_XML_NAME.keySet(),
-                                    reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.invalidAttributeValue(reader.getAttributeValue(i), reader.getAttributeName(i), SecurityRoleDefinition.ROLE_ATTRIBUTES_BY_XML_NAME.keySet(), reader.getLocation());
                         }
                         break;
                     default:
@@ -1341,7 +1339,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     }
 
     static void unhandledElement(XMLExtendedStreamReader reader, Element element) throws XMLStreamException {
-        throw MESSAGES.ignoringUnhandledElement(element, reader.getLocation().toString());
+        throw MessagingLogger.ROOT_LOGGER.ignoringUnhandledElement(element, reader.getLocation().toString());
     }
 
     static void handleElementText(final XMLExtendedStreamReader reader, final Element element, final ModelNode node) throws XMLStreamException {
@@ -1405,14 +1403,14 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                             toSet.set(modelValue.asString());
                             break;
                         default:
-                            throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName()), reader.getLocation());
+                            throw new XMLStreamException(MessagingLogger.ROOT_LOGGER.illegalValue(value, element.getLocalName()), reader.getLocation());
                     }
                 } catch (IllegalArgumentException iae) {
-                    throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName(), expectedType), reader.getLocation());
+                    throw new XMLStreamException(MessagingLogger.ROOT_LOGGER.illegalValue(value, element.getLocalName(), expectedType), reader.getLocation());
                 }
             }
         } else if (!allowNull) {
-            throw new XMLStreamException(MESSAGES.illegalValue(value, element.getLocalName()), reader.getLocation());
+            throw new XMLStreamException(MessagingLogger.ROOT_LOGGER.illegalValue(value, element.getLocalName()), reader.getLocation());
         }
     }
 
@@ -1689,7 +1687,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
 
     protected void checkOtherElementIsNotAlreadyDefined(XMLStreamReader reader, Set<Element> seen, Element currentElement, Element otherElement) throws XMLStreamException {
         if (seen.contains(otherElement)) {
-            throw new XMLStreamException(MESSAGES.illegalElement(currentElement.getLocalName(), otherElement.getLocalName()), reader.getLocation());
+            throw new XMLStreamException(MessagingLogger.ROOT_LOGGER.illegalElement(currentElement.getLocalName(), otherElement.getLocalName()), reader.getLocation());
         }
     }
 
@@ -1698,10 +1696,10 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
      */
     protected static void checkOnlyOneOfElements(XMLExtendedStreamReader reader, Set<Element> seen, Element element1, Element element2) throws XMLStreamException {
         if (!seen.contains(element1) && !seen.contains(element2)) {
-            throw new XMLStreamException(MESSAGES.required(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
+            throw new XMLStreamException(MessagingLogger.ROOT_LOGGER.required(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
         }
         if (seen.contains(element1) && seen.contains(element2)) {
-            throw new XMLStreamException(MESSAGES.onlyOneRequired(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
+            throw new XMLStreamException(MessagingLogger.ROOT_LOGGER.onlyOneRequired(element1.getLocalName(), element2.getLocalName()), reader.getLocation());
         }
     }
 }

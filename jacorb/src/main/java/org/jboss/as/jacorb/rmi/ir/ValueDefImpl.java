@@ -21,7 +21,7 @@
  */
 package org.jboss.as.jacorb.rmi.ir;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.AliasDef;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.AttributeDef;
@@ -138,7 +138,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
             try {
                 baseValue = baseValueTypeCode.id();
             } catch (BadKind ex) {
-                throw JacORBMessages.MESSAGES.badKindForSuperValueType(id());
+                throw JacORBLogger.ROOT_LOGGER.badKindForSuperValueType(id());
             }
             Contained c = repository.lookup_id(baseValue);
             base_value_ref = ValueDefHelper.narrow(c);
@@ -151,7 +151,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
             InterfaceDef iDef = InterfaceDefHelper.narrow(
                     repository.lookup_id(supported_interfaces[i]));
             if (iDef == null)
-                throw JacORBMessages.MESSAGES.errorResolvingRefToImplementedInterface(id(), supported_interfaces[i]);
+                throw JacORBLogger.ROOT_LOGGER.errorResolvingRefToImplementedInterface(id(), supported_interfaces[i]);
             supported_interfaces_ref[i] = iDef;
         }
 
@@ -162,7 +162,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
             ValueDef vDef = ValueDefHelper.narrow(
                     repository.lookup_id(abstract_base_valuetypes[i]));
             if (vDef == null)
-                throw JacORBMessages.MESSAGES.errorResolvingRefToAbstractValuetype(id(), abstract_base_valuetypes[i]);
+                throw JacORBLogger.ROOT_LOGGER.errorResolvingRefToAbstractValuetype(id(), abstract_base_valuetypes[i]);
             abstract_base_valuetypes_ref[i] = vDef;
         }
     }
@@ -271,7 +271,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void supported_interfaces(InterfaceDef[] arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public Initializer[] initializers() {
@@ -281,7 +281,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void initializers(Initializer[] arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ValueDef base_value() {
@@ -289,7 +289,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void base_value(ValueDef arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public ValueDef[] abstract_base_values() {
@@ -297,7 +297,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void abstract_base_values(ValueDef[] arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_abstract() {
@@ -305,7 +305,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void is_abstract(boolean arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_custom() {
@@ -313,7 +313,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void is_custom(boolean arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_truncatable() {
@@ -321,7 +321,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     }
 
     public void is_truncatable(boolean arg) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public boolean is_a(String id) {
@@ -361,12 +361,12 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
     public ValueMemberDef create_value_member(String id, String name,
                                               String version, IDLType type,
                                               short access) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public AttributeDef create_attribute(String id, String name, String version,
                                          IDLType type, AttributeMode mode) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
     public OperationDef create_operation(String id, String name, String version,
@@ -374,7 +374,7 @@ class ValueDefImpl  extends ContainedImpl  implements ValueDefOperations, LocalC
                                          ParameterDescription[] params,
                                          ExceptionDef[] exceptions,
                                          String[] contexts) {
-        throw JacORBMessages.MESSAGES.cannotChangeRMIIIOPMapping();
+        throw JacORBLogger.ROOT_LOGGER.cannotChangeRMIIIOPMapping();
     }
 
 

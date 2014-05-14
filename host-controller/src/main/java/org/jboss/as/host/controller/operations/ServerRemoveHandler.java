@@ -27,7 +27,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNNING_SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SOCKET_BINDING_GROUP;
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
 
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
@@ -36,6 +35,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -90,7 +90,7 @@ public class ServerRemoveHandler extends AbstractRemoveStepHandler {
                 final PathAddress serverAddress = PathAddress.EMPTY_ADDRESS.append(PathElement.pathElement(SERVER, serverName));
                 final ProxyController controller = context.getResourceRegistration().getProxyController(serverAddress);
                 if (controller != null) {
-                    context.getFailureDescription().set(MESSAGES.serverStillRunning(serverName));
+                    context.getFailureDescription().set(HostControllerLogger.ROOT_LOGGER.serverStillRunning(serverName));
                 }
                 context.stepCompleted();
             }

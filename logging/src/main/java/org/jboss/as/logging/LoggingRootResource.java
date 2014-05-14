@@ -66,6 +66,7 @@ import org.jboss.as.controller.transform.description.AttributeTransformationDesc
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -254,12 +255,12 @@ public class LoggingRootResource extends TransformerResourceDefinition {
 
             // The file must exist
             if (!path.exists()) {
-                throw LoggingMessages.MESSAGES.logFileNotFound(fileName, ServerEnvironment.SERVER_LOG_DIR);
+                throw LoggingLogger.ROOT_LOGGER.logFileNotFound(fileName, ServerEnvironment.SERVER_LOG_DIR);
             }
             final List<File> logFiles = findFiles(pathManager, context);
             // User must have permissions to read the file
             if (!path.canRead() || !logFiles.contains(path)) {
-                throw LoggingMessages.MESSAGES.readNotAllowed(fileName);
+                throw LoggingLogger.ROOT_LOGGER.readNotAllowed(fileName);
             }
 
             // Read the contents of the log file
@@ -275,7 +276,7 @@ public class LoggingRootResource extends TransformerResourceDefinition {
                     result.add(line);
                 }
             } catch (IOException e) {
-                throw LoggingMessages.MESSAGES.failedToReadLogFile(e, fileName);
+                throw LoggingLogger.ROOT_LOGGER.failedToReadLogFile(e, fileName);
             }
             context.completeStep(ResultHandler.NOOP_RESULT_HANDLER);
         }

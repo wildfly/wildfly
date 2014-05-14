@@ -20,7 +20,6 @@ package org.jboss.as.domain.controller.operations.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ALL;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_HASH;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.DOMAIN_ADD_ATTRIBUTES;
@@ -37,7 +36,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.controller.DomainControllerLogger;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.repository.ContentRepository;
 import org.jboss.as.server.deployment.DeploymentHandlerUtils;
 import org.jboss.dmr.ModelNode;
@@ -107,16 +106,16 @@ public class DeploymentAddHandler implements OperationStepHandler {
                         // install services. In ADMIN-ONLY mode we allow it to give the admin a chance to correct the problem
                         DomainControllerLogger.HOST_CONTROLLER_LOGGER.reportAdminOnlyMissingDeploymentContent(HashUtil.bytesToHexString(hash), name);
                     } else {
-                        throw createFailureException(MESSAGES.noDeploymentContentWithHashAtBoot(HashUtil.bytesToHexString(hash), name));
+                        throw createFailureException(DomainControllerLogger.ROOT_LOGGER.noDeploymentContentWithHashAtBoot(HashUtil.bytesToHexString(hash), name));
                     }
                 } else {
-                    throw createFailureException(MESSAGES.noDeploymentContentWithHash(HashUtil.bytesToHexString(hash)));
+                    throw createFailureException(DomainControllerLogger.ROOT_LOGGER.noDeploymentContentWithHash(HashUtil.bytesToHexString(hash)));
                 }
             }
         } else if (DeploymentHandlerUtils.hasValidContentAdditionParameterDefined(contentItemNode)) {
             if (contentRepository == null) {
                 // This is a slave DC. We can't handle this operation; it should have been fixed up on the master DC
-                throw createFailureException(MESSAGES.slaveCannotAcceptUploads());
+                throw createFailureException(DomainControllerLogger.ROOT_LOGGER.slaveCannotAcceptUploads());
             }
             try {
                 // Store and transform operation

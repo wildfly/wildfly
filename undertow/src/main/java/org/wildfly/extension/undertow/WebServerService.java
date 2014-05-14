@@ -32,6 +32,7 @@ import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * @author Stuart Douglas
@@ -64,7 +65,7 @@ class WebServerService implements CommonWebServer, Service<WebServerService> {
             SocketBinding binding = (SocketBinding) listener.getBinding().getValue();
             return binding.getAbsolutePort();
         }
-        throw UndertowMessages.MESSAGES.noPortListeningForProtocol(protocol);
+        throw UndertowLogger.ROOT_LOGGER.noPortListeningForProtocol(protocol);
 
     }
 

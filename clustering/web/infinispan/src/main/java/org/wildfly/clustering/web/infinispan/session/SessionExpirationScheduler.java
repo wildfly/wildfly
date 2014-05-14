@@ -35,7 +35,7 @@ import org.jboss.as.clustering.infinispan.invoker.Remover;
 import org.jboss.threads.JBossThreadFactory;
 import org.wildfly.clustering.web.Batch;
 import org.wildfly.clustering.web.Batcher;
-import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 

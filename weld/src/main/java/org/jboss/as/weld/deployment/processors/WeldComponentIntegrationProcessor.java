@@ -54,7 +54,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.reflect.ClassIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentClassIndex;
 import org.jboss.as.weld.WeldBootstrapService;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.deployment.WeldClassIntrospector;
 import org.jboss.as.weld.ejb.EjbRequestScopeActivationInterceptor;
@@ -125,7 +125,7 @@ public class WeldComponentIntegrationProcessor implements DeploymentUnitProcesso
                             final ClassIndex index = classIndex.classIndex(interceptorDescription.getInterceptorClassName());
                             interceptorClasses.add(index.getModuleClass());
                         } catch (ClassNotFoundException e) {
-                            throw WeldMessages.MESSAGES.couldNotLoadInterceptorClass(interceptorDescription.getInterceptorClassName(), e);
+                            throw WeldLogger.ROOT_LOGGER.couldNotLoadInterceptorClass(interceptorDescription.getInterceptorClassName(), e);
                         }
                     }
 

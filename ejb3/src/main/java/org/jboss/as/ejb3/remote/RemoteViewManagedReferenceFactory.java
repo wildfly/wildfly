@@ -21,12 +21,10 @@
  */
 package org.jboss.as.ejb3.remote;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import javax.ejb.EJBHome;
 import javax.ejb.EJBLocalHome;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.naming.ContextListAndJndiViewManagedReferenceFactory;
 import org.jboss.as.naming.JndiViewManagedReferenceFactory;
 import org.jboss.as.naming.ManagedReference;
@@ -83,12 +81,12 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
             viewClass = Class.forName(this.viewClass, false, WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
         } catch (ClassNotFoundException e) {
             if(viewClassLoader == null || viewClassLoader.getValue() == null) {
-                throw MESSAGES.failToLoadViewClassEjb(beanName, e);
+                throw EjbLogger.ROOT_LOGGER.failToLoadViewClassEjb(beanName, e);
             }
             try {
                 viewClass = Class.forName(this.viewClass, false, viewClassLoader.getValue());
             } catch (ClassNotFoundException ce) {
-                throw MESSAGES.failToLoadViewClassEjb(beanName, ce);
+                throw EjbLogger.ROOT_LOGGER.failToLoadViewClassEjb(beanName, ce);
             }
         }
         EJBLocator ejbLocator = null;
@@ -98,7 +96,7 @@ public class RemoteViewManagedReferenceFactory implements ContextListAndJndiView
             try {
                 ejbLocator = EJBClient.createSession(viewClass, appName, moduleName, beanName, distinctName);
             } catch (Exception e) {
-                throw EjbMessages.MESSAGES.failedToCreateSessionForStatefulBean(e, beanName);
+                throw EjbLogger.ROOT_LOGGER.failedToCreateSessionForStatefulBean(e, beanName);
             }
         } else {
             ejbLocator = new StatelessEJBLocator(viewClass, appName, moduleName, beanName, distinctName);

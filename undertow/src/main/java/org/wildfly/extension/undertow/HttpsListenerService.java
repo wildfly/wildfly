@@ -28,6 +28,7 @@ import javax.net.ssl.SSLContext;
 
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.value.InjectedValue;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.xnio.ChannelListener;
 import org.xnio.IoUtils;
 import org.xnio.OptionMap;

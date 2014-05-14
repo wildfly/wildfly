@@ -25,7 +25,7 @@ package org.jboss.as.ee.component;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.invocation.Interceptor;
@@ -33,8 +33,6 @@ import org.jboss.invocation.InterceptorContext;
 import org.jboss.invocation.InterceptorFactory;
 import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.msc.value.Value;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -93,14 +91,14 @@ final class ManagedReferenceFieldInjectionInterceptorFactory implements Intercep
             } else {
                 target = ((ManagedReference) componentInstance.getInstanceData(targetKey)).getInstance();
                 if (target == null) {
-                    throw MESSAGES.injectionTargetNotFound();
+                    throw EeLogger.ROOT_LOGGER.injectionTargetNotFound();
                 }
             }
             final ManagedReference reference = factory.getReference();
             if (reference == null && optional) {
                 return context.proceed();
             } else if(reference == null) {
-                throw EeMessages.MESSAGES.managedReferenceWasNull(field);
+                throw EeLogger.ROOT_LOGGER.managedReferenceWasNull(field);
             }
             boolean ok = false;
             try {

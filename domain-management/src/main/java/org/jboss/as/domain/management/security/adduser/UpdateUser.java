@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * Describe the purpose
@@ -49,7 +49,7 @@ public class UpdateUser extends UpdatePropertiesHandler implements State {
          * offer to display the Base64 password of the user - otherwise the util can end.
          */
         if (nextState == null && stateValues.isInteractive() && stateValues.getPassword() != null) {
-            nextState = new ConfirmationChoice(theConsole, MESSAGES.serverUser(), MESSAGES.yesNo(),
+            nextState = new ConfirmationChoice(theConsole, DomainManagementLogger.ROOT_LOGGER.serverUser(), DomainManagementLogger.ROOT_LOGGER.yesNo(),
                     new DisplaySecret(theConsole, stateValues), null);
 
         }
@@ -58,16 +58,16 @@ public class UpdateUser extends UpdatePropertiesHandler implements State {
 
     @Override
     String consoleUserMessage(String fileName) {
-        return MESSAGES.updateUser(stateValues.getUserName(), fileName);
+        return DomainManagementLogger.ROOT_LOGGER.updateUser(stateValues.getUserName(), fileName);
     }
 
     @Override
     String consoleGroupsMessage(String fileName) {
-        return MESSAGES.updatedGroups(stateValues.getUserName(), stateValues.getGroups(), fileName);
+        return DomainManagementLogger.ROOT_LOGGER.updatedGroups(stateValues.getUserName(), stateValues.getGroups(), fileName);
     }
 
     @Override
     String errorMessage(String fileName, Throwable e) {
-        return MESSAGES.unableToUpdateUser(fileName, e.getMessage());
+        return DomainManagementLogger.ROOT_LOGGER.unableToUpdateUser(fileName, e.getMessage());
     }
 }

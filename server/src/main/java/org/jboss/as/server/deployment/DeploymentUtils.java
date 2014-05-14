@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
@@ -68,7 +68,7 @@ public final class DeploymentUtils {
      */
     public static DeploymentUnit getTopDeploymentUnit(DeploymentUnit unit) {
         if (unit == null)
-            throw ServerMessages.MESSAGES.nullInitialDeploymentUnit();
+            throw ServerLogger.ROOT_LOGGER.nullInitialDeploymentUnit();
 
         DeploymentUnit parent = unit.getParent();
         while (parent != null) {

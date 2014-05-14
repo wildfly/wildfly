@@ -28,6 +28,7 @@ import javax.ejb.PostActivate;
 import javax.ejb.PrePassivate;
 import javax.interceptor.InvocationContext;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleClassDescription;
@@ -46,8 +47,7 @@ import org.jboss.jandex.DotName;
 import org.jboss.jandex.MethodInfo;
 import org.jboss.jandex.Type;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * Deployment processor responsible for finding @PostConstruct and @PreDestroy annotated methods.
@@ -78,7 +78,7 @@ public class PassivationAnnotationParsingProcessor implements DeploymentUnitProc
 
     private void processPassivation(final EEModuleDescription eeModuleDescription, final AnnotationTarget target, final DotName annotationType, final EEApplicationClasses applicationClasses) throws DeploymentUnitProcessingException {
         if (!(target instanceof MethodInfo)) {
-            throw MESSAGES.methodOnlyAnnotation(annotationType);
+            throw EeLogger.ROOT_LOGGER.methodOnlyAnnotation(annotationType);
         }
         final MethodInfo methodInfo = MethodInfo.class.cast(target);
         final ClassInfo classInfo = methodInfo.declaringClass();
@@ -86,10 +86,10 @@ public class PassivationAnnotationParsingProcessor implements DeploymentUnitProc
 
         final Type[] args = methodInfo.args();
         if (args.length > 1) {
-            ROOT_LOGGER.warn(MESSAGES.invalidNumberOfArguments(methodInfo.name(), annotationType, classInfo.name()));
+            ROOT_LOGGER.warn(EeLogger.ROOT_LOGGER.invalidNumberOfArguments(methodInfo.name(), annotationType, classInfo.name()));
             return;
         } else if (args.length == 1 && !args[0].name().toString().equals(InvocationContext.class.getName())) {
-            ROOT_LOGGER.warn(MESSAGES.invalidSignature(methodInfo.name(), annotationType, classInfo.name(), "void methodName(InvocationContext ctx)"));
+            ROOT_LOGGER.warn(EeLogger.ROOT_LOGGER.invalidSignature(methodInfo.name(), annotationType, classInfo.name(), "void methodName(InvocationContext ctx)"));
             return;
         }
 

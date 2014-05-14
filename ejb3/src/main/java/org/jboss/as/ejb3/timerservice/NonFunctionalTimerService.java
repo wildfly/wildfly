@@ -22,7 +22,7 @@
 package org.jboss.as.ejb3.timerservice;
 
 import org.jboss.as.ee.component.Component;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.TimerServiceRegistry;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
@@ -47,14 +47,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 /**
  * Non-functional timer service that is bound when the timer service is disabled.
  */
 public class NonFunctionalTimerService implements TimerService, Service<TimerService> {
 
-    public static final NonFunctionalTimerService DISABLED = new NonFunctionalTimerService(EjbMessages.MESSAGES.timerServiceIsNotActive(), null);
+    public static final NonFunctionalTimerService DISABLED = new NonFunctionalTimerService(EjbLogger.ROOT_LOGGER.timerServiceIsNotActive(), null);
 
     private final String message;
     private final TimerServiceRegistry timerServiceRegistry;
@@ -151,7 +149,7 @@ public class NonFunctionalTimerService implements TimerService, Service<TimerSer
             // it's a lifecycle callback
             Component component = currentInvocationContext.getPrivateData(Component.class);
             if (!(component instanceof SingletonComponent)) {
-                throw MESSAGES.failToInvokeTimerServiceDoLifecycle();
+                throw EjbLogger.ROOT_LOGGER.failToInvokeTimerServiceDoLifecycle();
             }
         }
     }

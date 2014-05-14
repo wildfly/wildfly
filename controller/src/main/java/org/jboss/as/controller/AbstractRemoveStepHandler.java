@@ -22,12 +22,13 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.dmr.ModelNode;
 
@@ -73,7 +74,7 @@ public abstract class AbstractRemoveStepHandler implements OperationStepHandler 
             context.removeResource(PathAddress.EMPTY_ADDRESS);
         } else {
             List<PathElement> children = getChildren(resource);
-            throw ControllerMessages.MESSAGES.cannotRemoveResourceWithChildren(children);
+            throw ControllerLogger.ROOT_LOGGER.cannotRemoveResourceWithChildren(children);
         }
     }
 

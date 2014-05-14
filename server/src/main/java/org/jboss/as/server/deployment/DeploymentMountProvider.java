@@ -27,8 +27,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.wildfly.security.manager.action.GetAccessControlContextAction;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -101,7 +100,7 @@ public interface DeploymentMountProvider {
                     case REAL:
                         return VFS.mountReal(contents.getPhysicalFile(), mountPoint);
                     default:
-                        throw ServerMessages.MESSAGES.unknownMountType(type);
+                        throw ServerLogger.ROOT_LOGGER.unknownMountType(type);
                 }
             }
 
@@ -111,7 +110,7 @@ public interface DeploymentMountProvider {
                     final JBossThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("ServerDeploymentRepository-temp-threads"), true, null, "%G - %t", null, null, doPrivileged(GetAccessControlContextAction.getInstance()));
                     tempFileProvider = TempFileProvider.create("temp", Executors.newScheduledThreadPool(2, threadFactory), true);
                 } catch (IOException e) {
-                    throw ServerMessages.MESSAGES.failedCreatingTempProvider();
+                    throw ServerLogger.ROOT_LOGGER.failedCreatingTempProvider();
                 }
                 ServerLogger.ROOT_LOGGER.debugf("%s started", DeploymentMountProvider.class.getSimpleName());
             }

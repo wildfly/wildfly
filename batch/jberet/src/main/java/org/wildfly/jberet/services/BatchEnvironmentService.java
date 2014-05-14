@@ -39,7 +39,6 @@ import org.jboss.msc.value.InjectedValue;
 import org.wildfly.jberet.BatchEnvironmentFactory;
 import org.wildfly.jberet.WildFlyArtifactFactory;
 import org.wildfly.jberet._private.WildFlyBatchLogger;
-import org.wildfly.jberet._private.WildFlyBatchMessages;
 import org.wildfly.jberet.services.ContextHandle.ChainedContextHandle;
 import org.wildfly.jberet.services.ContextHandle.Handle;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -128,7 +127,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         @Override
         public ArtifactFactory getArtifactFactory() {
             if (artifactFactory == null) {
-                throw WildFlyBatchMessages.MESSAGES.serviceNotInstalled("BeanManager");
+                throw WildFlyBatchLogger.LOGGER.serviceNotInstalled("BeanManager");
             }
             return artifactFactory;
         }
@@ -184,7 +183,7 @@ public class BatchEnvironmentService implements Service<BatchEnvironment> {
         @Override
         public TransactionManager getTransactionManager() {
             if (transactionManager == null) {
-                throw WildFlyBatchMessages.MESSAGES.serviceNotInstalled("TransactionManager");
+                throw WildFlyBatchLogger.LOGGER.serviceNotInstalled("TransactionManager");
             }
             return transactionManager;
         }

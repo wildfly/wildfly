@@ -21,7 +21,7 @@
  */
 package org.jboss.as.ee.concurrent.handle;
 
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.naming.WritableServiceBasedNamingStore;
 import org.jboss.as.naming.context.NamespaceContextSelector;
 import org.jboss.msc.service.ServiceName;
@@ -111,11 +111,11 @@ public class NamingContextHandleFactory implements ContextHandleFactory {
         // serialization
 
         private void writeObject(ObjectOutputStream out) throws IOException {
-            throw EeMessages.MESSAGES.serializationMustBeHandledByThefactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
 
         private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-            throw EeMessages.MESSAGES.serializationMustBeHandledByThefactory();
+            throw EeLogger.ROOT_LOGGER.serializationMustBeHandledByTheFactory();
         }
     }
 }

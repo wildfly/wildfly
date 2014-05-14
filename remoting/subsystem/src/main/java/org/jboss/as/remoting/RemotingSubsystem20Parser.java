@@ -48,6 +48,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.PersistentResourceXMLDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -121,7 +122,7 @@ class RemotingSubsystem20Parser extends RemotingSubsystem11Parser implements XML
 
     private static XMLStreamException workerThreadPoolEndpointChoiceRequired(XMLExtendedStreamReader reader) {
         return new XMLStreamException(
-                RemotingMessages.MESSAGES.workerThreadsEndpointConfigurationChoiceRequired(
+                RemotingLogger.ROOT_LOGGER.workerThreadsEndpointConfigurationChoiceRequired(
                         Element.WORKER_THREAD_POOL.getLocalName(), Element.ENDPOINT.getLocalName()
                 ), reader.getLocation());
     }

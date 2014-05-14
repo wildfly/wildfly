@@ -36,8 +36,7 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jboss.as.controller.ControllerLogger;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext.ResultAction;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.audit.SyslogAuditLogHandler.Facility;
@@ -127,7 +126,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
     public ManagedAuditLoggerImpl createNewConfiguration(boolean manualCommit) {
         if (childImpls == null) {
-            throw ControllerMessages.MESSAGES.canOnlyCreateChildAuditLoggerForMainAuditLogger();
+            throw ControllerLogger.ROOT_LOGGER.canOnlyCreateChildAuditLoggerForMainAuditLogger();
         }
         ManagedAuditLoggerImpl child = new ManagedAuditLoggerImpl(this, manualCommit);
         childImpls.add(child);
@@ -777,7 +776,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             assert config.isCore() : "Not available for non-core configuration";
 
             if (removedHandlers != null && removedHandlers.contains(handler.getName())) {
-                throw ControllerMessages.MESSAGES.attemptToBothRemoveAndAddHandlerUpdateInstead();
+                throw ControllerLogger.ROOT_LOGGER.attemptToBothRemoveAndAddHandlerUpdateInstead();
             }
             if (addedHandlers == null){
                 addedHandlers = new HashMap<String, AuditLogHandler>();
@@ -808,10 +807,10 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             assert config.isCore() : "Not available for non-core configuration";
 
             if (addedHandlers != null && addedHandlers.containsKey(name)){
-                throw ControllerMessages.MESSAGES.attemptToBothAddAndRemoveAndHandlerFromCompositeOperation();
+                throw ControllerLogger.ROOT_LOGGER.attemptToBothAddAndRemoveAndHandlerFromCompositeOperation();
             }
             if (replacedHandlers != null && replacedHandlers.containsKey(name)){
-                throw ControllerMessages.MESSAGES.attemptToBothUpdateAndRemoveHandlerFromCompositeOperation();
+                throw ControllerLogger.ROOT_LOGGER.attemptToBothUpdateAndRemoveHandlerFromCompositeOperation();
             }
             final AuditLogHandler handler = config.getConfiguredHandler(name);
             if (handler != null){
@@ -820,7 +819,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
                     if (!references.containsAll(removedReferences)){
                         Set<PathAddress> activeReferences = new HashSet<PathAddress>(references);
                         activeReferences.removeAll(removedReferences);
-                        throw ControllerMessages.MESSAGES.handlerIsReferencedBy(removedReferences);
+                        throw ControllerLogger.ROOT_LOGGER.handlerIsReferencedBy(removedReferences);
                     }
                 }
             }
@@ -833,7 +832,7 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
 
         void addHandlerReference(PathAddress referenceAddress){
             if (removedReferences != null && removedReferences.contains(referenceAddress)){
-                throw ControllerMessages.MESSAGES.attemptToBothRemoveAndAddHandlerReferenceFromCompositeOperation();
+                throw ControllerLogger.ROOT_LOGGER.attemptToBothRemoveAndAddHandlerReferenceFromCompositeOperation();
             }
             if (addedReferences == null){
                 addedReferences = new HashSet<PathAddress>();
@@ -845,14 +844,14 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
             final String name = org.jboss.as.controller.operations.common.Util.getNameFromAddress(referenceAddress);
             final AuditLogHandler handler = config.getConfiguredHandler(name);
             if (handler == null){
-                throw ControllerMessages.MESSAGES.noHandlerCalled(name);
+                throw ControllerLogger.ROOT_LOGGER.noHandlerCalled(name);
             }
             handler.addReference(referenceAddress);
         }
 
         void removeHandlerReference(PathAddress address){
             if (addedReferences != null && addedReferences.contains(address)){
-                throw ControllerMessages.MESSAGES.attemptToBothRemoveAndAddHandlerReferenceFromCompositeOperation();
+                throw ControllerLogger.ROOT_LOGGER.attemptToBothRemoveAndAddHandlerReferenceFromCompositeOperation();
             }
             if (removedReferences == null){
                 removedReferences = new HashSet<PathAddress>();

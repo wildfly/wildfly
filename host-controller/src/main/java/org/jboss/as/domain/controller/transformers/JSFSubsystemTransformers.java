@@ -26,14 +26,13 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAM
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
 import static org.jboss.as.domain.controller.transformers.DomainTransformers.IGNORED_SUBSYSTEMS;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -47,6 +46,7 @@ import org.jboss.as.controller.transform.ResourceTransformer;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 
@@ -67,7 +67,7 @@ class JSFSubsystemTransformers {
                 if (model.hasDefined(SLOT_ATTRIBUTE_NAME)) {
                     ModelNode slot = model.get(SLOT_ATTRIBUTE_NAME);
                     if (!SLOT_DEFAULT_VALUE.equals(slot.asString())) {
-                        context.getLogger().logAttributeWarning(address, MESSAGES.invalidJSFSlotValue(slot.asString()), SLOT_ATTRIBUTE_NAME);
+                        context.getLogger().logAttributeWarning(address, DomainControllerLogger.ROOT_LOGGER.invalidJSFSlotValue(slot.asString()), SLOT_ATTRIBUTE_NAME);
                     }
                 }
                 Set<String> attributes = new HashSet<String>();
@@ -76,7 +76,7 @@ class JSFSubsystemTransformers {
                 }
                 attributes.remove(SLOT_ATTRIBUTE_NAME);
                 if (!attributes.isEmpty()) {
-                    context.getLogger().logAttributeWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributes);
+                    context.getLogger().logAttributeWarning(address, ControllerLogger.ROOT_LOGGER.attributesAreNotUnderstoodAndMustBeIgnored(), attributes);
                 }
             }
         });
@@ -90,7 +90,7 @@ class JSFSubsystemTransformers {
                     ModelNode slot = operation.get(SLOT_ATTRIBUTE_NAME);
                     if (!SLOT_DEFAULT_VALUE.equals(slot.asString())) {
                         return new TransformedOperation(operation,
-                                new RejectionWithFailurePolicy(MESSAGES.invalidJSFSlotValue(slot.asString())),
+                                new RejectionWithFailurePolicy(DomainControllerLogger.ROOT_LOGGER.invalidJSFSlotValue(slot.asString())),
                                 OperationResultTransformer.ORIGINAL_RESULT);
                     }
                 }
@@ -101,10 +101,7 @@ class JSFSubsystemTransformers {
                 attributes.remove(SLOT_ATTRIBUTE_NAME);
                 if (!attributes.isEmpty()) {
                     return new TransformedOperation(operation,
-                            new RejectionWithFailurePolicy(MESSAGES.unknownAttributesFromSubsystemVersion(ADD,
-                                    JSF_SUBSYSTEM,
-                                    context.getTarget().getSubsystemVersion(JSF_SUBSYSTEM),
-                                    attributes)),
+                            new RejectionWithFailurePolicy(DomainControllerLogger.ROOT_LOGGER.unknownAttributesFromSubsystemVersion(ADD, JSF_SUBSYSTEM, context.getTarget().getSubsystemVersion(JSF_SUBSYSTEM), attributes)),
                             OperationResultTransformer.ORIGINAL_RESULT);
                 }
                 return DISCARD.transformOperation(context, address, operation);
@@ -121,16 +118,13 @@ class JSFSubsystemTransformers {
                         return DISCARD.transformOperation(context, address, operation);
                     } else {
                         return new TransformedOperation(operation,
-                                new RejectionWithFailurePolicy(MESSAGES.invalidJSFSlotValue(value.asString())),
+                                new RejectionWithFailurePolicy(DomainControllerLogger.ROOT_LOGGER.invalidJSFSlotValue(value.asString())),
                                 OperationResultTransformer.ORIGINAL_RESULT);
                     }
                 }
                 // reject the operation for any other attribute
                 return new TransformedOperation(operation,
-                        new RejectionWithFailurePolicy(MESSAGES.unknownAttributesFromSubsystemVersion(ADD,
-                                JSF_SUBSYSTEM,
-                                context.getTarget().getSubsystemVersion(JSF_SUBSYSTEM),
-                                Arrays.asList(name))),
+                        new RejectionWithFailurePolicy(DomainControllerLogger.ROOT_LOGGER.unknownAttributesFromSubsystemVersion(ADD, JSF_SUBSYSTEM, context.getTarget().getSubsystemVersion(JSF_SUBSYSTEM), Arrays.asList(name))),
                         OperationResultTransformer.ORIGINAL_RESULT);
             }
         });
@@ -141,7 +135,7 @@ class JSFSubsystemTransformers {
                 if (!SLOT_ATTRIBUTE_NAME.equals(attributeName)) {
                     return DEFAULT.transformOperation(context, address, operation);
                 } else {
-                    context.getLogger().logAttributeWarning(address, ControllerMessages.MESSAGES.attributesAreNotUnderstoodAndMustBeIgnored(), attributeName);
+                    context.getLogger().logAttributeWarning(address, ControllerLogger.ROOT_LOGGER.attributesAreNotUnderstoodAndMustBeIgnored(), attributeName);
                     return DISCARD.transformOperation(context, address, operation);
                 }
             }

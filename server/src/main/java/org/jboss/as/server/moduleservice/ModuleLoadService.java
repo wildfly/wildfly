@@ -24,7 +24,7 @@ package org.jboss.as.server.moduleservice;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.Services;
 import org.jboss.as.server.deployment.module.ModuleDependency;
 import org.jboss.modules.Module;
@@ -41,8 +41,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.server.ServerLogger.PRIVATE_DEP_LOGGER;
-import static org.jboss.as.server.ServerLogger.UNSUPPORTED_DEP_LOGGER;
 import static org.jboss.msc.service.ServiceBuilder.DependencyType.OPTIONAL;
 import static org.jboss.msc.service.ServiceBuilder.DependencyType.REQUIRED;
 
@@ -76,9 +74,9 @@ public class ModuleLoadService implements Service<Module> {
                         String val = moduleLoader.loadModule(id).getProperty("jboss.api");
                         if (val != null) {
                             if (val.equals("private")) {
-                                PRIVATE_DEP_LOGGER.privateApiUsed(moduleDefinitionInjectedValue.getValue().getModuleIdentifier().getName(), id);
+                                ServerLogger.PRIVATE_DEP_LOGGER.privateApiUsed(moduleDefinitionInjectedValue.getValue().getModuleIdentifier().getName(), id);
                             } else if (val.equals("unsupported")) {
-                                UNSUPPORTED_DEP_LOGGER.unsupportedApiUsed(moduleDefinitionInjectedValue.getValue().getModuleIdentifier().getName(), id);
+                                ServerLogger.UNSUPPORTED_DEP_LOGGER.unsupportedApiUsed(moduleDefinitionInjectedValue.getValue().getModuleIdentifier().getName(), id);
                             }
                         }
                     } catch (ModuleNotFoundException ignore) {
@@ -88,7 +86,7 @@ public class ModuleLoadService implements Service<Module> {
             }
             this.module = module;
         } catch (ModuleLoadException e) {
-            throw ServerMessages.MESSAGES.failedToLoadModule(moduleDefinitionInjectedValue.getValue().getModuleIdentifier(), e);
+            throw ServerLogger.ROOT_LOGGER.failedToLoadModule(moduleDefinitionInjectedValue.getValue().getModuleIdentifier(), e);
         }
     }
 

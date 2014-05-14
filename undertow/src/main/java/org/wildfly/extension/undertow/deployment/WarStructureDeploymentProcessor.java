@@ -52,8 +52,7 @@ import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.VisitorAttributes;
 import org.jboss.vfs.util.SuffixMatchFilter;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 /**
  * Create and mount classpath entries in the .war deployment.
@@ -177,7 +176,7 @@ public class WarStructureDeploymentProcessor implements DeploymentUnitProcessor 
                     ModuleRootMarker.mark(webInfArchiveRoot);
                     entries.add(webInfArchiveRoot);
                 } catch (IOException e) {
-                    throw new DeploymentUnitProcessingException(MESSAGES.failToProcessWebInfLib(archive), e);
+                    throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToProcessWebInfLib(archive), e);
                 }
             }
         }

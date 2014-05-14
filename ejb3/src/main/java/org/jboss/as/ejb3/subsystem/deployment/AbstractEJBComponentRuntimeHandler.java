@@ -35,6 +35,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.pool.Pool;
 import org.jboss.as.ejb3.security.EJBSecurityMetaData;
@@ -44,7 +45,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceRegistry;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.COMPONENT_CLASS_NAME;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.DECLARED_ROLES;
 import static org.jboss.as.ejb3.subsystem.deployment.AbstractEJBComponentResourceDefinition.POOL_AVAILABLE_COUNT;
@@ -169,7 +169,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
             }
         } else {
             // Bug; we were registered for an attribute but there is no code for handling it
-            throw MESSAGES.unknownAttribute(attributeName);
+            throw EjbLogger.ROOT_LOGGER.unknownAttribute(attributeName);
         }
     }
 
@@ -188,7 +188,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
             });
         } else {
             // Bug; we were registered for an attribute but there is no code for handling it
-            throw MESSAGES.unknownAttribute(attributeName);
+            throw EjbLogger.ROOT_LOGGER.unknownAttribute(attributeName);
         }
     }
 
@@ -201,7 +201,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
     }
 
     private static IllegalStateException unknownOperation(String opName) {
-        throw MESSAGES.unknownOperations(opName);
+        throw EjbLogger.ROOT_LOGGER.unknownOperations(opName);
     }
 
     private boolean isForWrite(String opName) {
@@ -240,7 +240,7 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
       final PathAddress pa = PathAddress.pathAddress(relativeAddress);
       final ServiceName config = componentConfigs.get(pa);
       if (config == null) {
-          String exceptionMessage = MESSAGES.noComponentRegisteredForAddress(operationAddress);
+          String exceptionMessage = EjbLogger.ROOT_LOGGER.noComponentRegisteredForAddress(operationAddress);
           throw new OperationFailedException(new ModelNode().set(exceptionMessage));
       }
 
@@ -253,12 +253,12 @@ public abstract class AbstractEJBComponentRuntimeHandler<T extends EJBComponent>
         ServiceRegistry registry = context.getServiceRegistry(forWrite);
         ServiceController<?> controller = registry.getService(serviceName);
         if (controller == null) {
-            String exceptionMessage = MESSAGES.noComponentAvailableForAddress(operationAddress);
+            String exceptionMessage = EjbLogger.ROOT_LOGGER.noComponentAvailableForAddress(operationAddress);
             throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
         ServiceController.State controllerState = controller.getState();
         if (controllerState != ServiceController.State.UP) {
-            String exceptionMessage = MESSAGES.invalidComponentState(operationAddress,controllerState,ServiceController.State.UP);
+            String exceptionMessage = EjbLogger.ROOT_LOGGER.invalidComponentState(operationAddress, controllerState, ServiceController.State.UP);
             throw new OperationFailedException(new ModelNode().set(exceptionMessage));
         }
         return componentClass.cast(controller.getValue());

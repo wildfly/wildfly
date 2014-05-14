@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.jboss.as.patching.PatchLogger;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.validation.PatchingGarbageLocator;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.msc.service.Service;

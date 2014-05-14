@@ -32,6 +32,7 @@ import java.util.List;
 
 import org.jboss.as.server.deployment.reflect.ClassReflectionIndex;
 import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
+import org.jboss.as.service.logging.SarLogger;
 
 /**
  * Reflection utility methods.
@@ -62,7 +63,7 @@ final class ReflectionUtils {
         }
 
         final String className = classHierarchy.get(0).getIndexedClass().getName();
-        throw SarMessages.MESSAGES.propertyMethodNotFound("Get", propertyName, className);
+        throw SarLogger.ROOT_LOGGER.propertyMethodNotFound("Get", propertyName, className);
     }
 
     static Method getSetter(final List<ClassReflectionIndex<?>> classHierarchy, final String propertyName) {
@@ -82,7 +83,7 @@ final class ReflectionUtils {
         }
 
         final String className = classHierarchy.get(0).getIndexedClass().getName();
-        throw SarMessages.MESSAGES.propertyMethodNotFound("Set", propertyName, className);
+        throw SarLogger.ROOT_LOGGER.propertyMethodNotFound("Set", propertyName, className);
     }
 
     static Method getMethod(final List<ClassReflectionIndex<?>> classHierarchy, final String methodName, final Class<?>[] types, final boolean fail) {
@@ -94,7 +95,7 @@ final class ReflectionUtils {
         }
         if (fail) {
             final String className = classHierarchy.get(0).getIndexedClass().getName();
-            throw SarMessages.MESSAGES.methodNotFound(methodName, parameterList(types), className);
+            throw SarLogger.ROOT_LOGGER.methodNotFound(methodName, parameterList(types), className);
         } else {
             return null;
         }
@@ -104,7 +105,7 @@ final class ReflectionUtils {
         try {
             return constructor.newInstance(args);
         } catch (Exception e) {
-            throw SarMessages.MESSAGES.classNotInstantiated(e);
+            throw SarLogger.ROOT_LOGGER.classNotInstantiated(e);
         }
     }
 
@@ -112,7 +113,7 @@ final class ReflectionUtils {
         try {
             return Class.forName(className, false, classLoader);
         } catch (final ClassNotFoundException e) {
-            throw SarMessages.MESSAGES.classNotFound(e);
+            throw SarLogger.ROOT_LOGGER.classNotFound(e);
         }
     }
 

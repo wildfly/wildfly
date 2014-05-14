@@ -35,7 +35,6 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.cli.CommandLineException;
-import org.jboss.as.server.ServerMessages;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
@@ -130,7 +129,7 @@ public class DeployWithRuntimeNameTestCase {
         try {
         ctx.handle(buildDeployCommand(RUNTIME_NAME, OTHER_APP_NAME));
         } catch(CommandLineException ex) {
-            assertThat(ex.getMessage(), containsString(ServerMessages.MESSAGES.runtimeNameMustBeUnique(APP_NAME, RUNTIME_NAME).getMessage()));
+            assertThat(ex.getMessage(), containsString("WFLYSRV0205"));
         }
         checkURL("SimpleServlet/hello", "SimpleHelloWorldServlet",  false);
         checkURL("SimpleServlet/page.html", "Version1",  false);

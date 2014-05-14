@@ -22,12 +22,12 @@
 
 package org.jboss.as.controller.services.path;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 
 import java.io.File;
 import java.util.List;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -78,10 +78,10 @@ public class AbsolutePathService extends AbstractPathService {
 
     public static String convertPath(String abstractPath) {
         if (abstractPath == null) {
-            throw MESSAGES.nullVar("abstractPath");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("abstractPath");
         }
         if (abstractPath.length() == 0) {
-            throw MESSAGES.emptyVar("abstractPath");
+            throw ControllerLogger.ROOT_LOGGER.emptyVar("abstractPath");
         }
         // Use File.getAbsolutePath() to make relative paths absolute
         File f = new File(abstractPath);

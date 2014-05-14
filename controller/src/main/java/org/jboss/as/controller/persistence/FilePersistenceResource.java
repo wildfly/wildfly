@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.persistence;
 
-import static org.jboss.as.controller.ControllerLogger.MGMT_OP_LOGGER;
+import static org.jboss.as.controller.logging.ControllerLogger.MGMT_OP_LOGGER;
 
 import java.io.File;
 

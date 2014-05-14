@@ -28,7 +28,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.Phase;
 import org.wildfly.extension.picketlink.federation.service.PicketLinkFederationService;
 
-import static org.wildfly.extension.picketlink.PicketLinkLogger.ROOT_LOGGER;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * <p> {@link org.jboss.as.server.deployment.DeploymentUnitProcessor} that configures a {@link PicketLinkFederationService}

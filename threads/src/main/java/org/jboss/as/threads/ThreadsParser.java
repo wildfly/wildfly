@@ -792,7 +792,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     try {
                         count = new BigDecimal(value);
                         if (count.compareTo(BigDecimal.ZERO) < 0) {
-                            throw ThreadsMessages.MESSAGES.countMustBePositive(attribute, reader.getLocation());
+                            throw ThreadsLogger.ROOT_LOGGER.countMustBePositive(attribute, reader.getLocation());
                         }
                     } catch (NumberFormatException e) {
                         throw invalidAttributeValue(reader, i);
@@ -803,7 +803,7 @@ public final class ThreadsParser implements XMLStreamConstants, XMLElementReader
                     try {
                         perCpu = new BigDecimal(value);
                         if (perCpu.compareTo(BigDecimal.ZERO) < 0) {
-                            throw ThreadsMessages.MESSAGES.perCpuMustBePositive(attribute, reader.getLocation());
+                            throw ThreadsLogger.ROOT_LOGGER.perCpuMustBePositive(attribute, reader.getLocation());
                         }
                     } catch (NumberFormatException e) {
                         throw invalidAttributeValue(reader, i);

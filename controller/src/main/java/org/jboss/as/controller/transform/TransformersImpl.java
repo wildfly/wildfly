@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_
 import java.util.Iterator;
 import java.util.List;
 
-import org.jboss.as.controller.ControllerLogger;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;

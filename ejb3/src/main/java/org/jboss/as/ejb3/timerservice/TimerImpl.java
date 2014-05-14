@@ -30,12 +30,11 @@ import javax.ejb.ScheduleExpression;
 import javax.ejb.Timer;
 import javax.ejb.TimerHandle;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.as.ejb3.timerservice.spi.TimedObjectInvoker;
 import org.jboss.as.ejb3.timerservice.task.TimerTask;
-
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * Implementation of EJB3.1 {@link Timer}
@@ -194,7 +193,7 @@ public class TimerImpl implements Timer {
 
         // for non-persistent timers throws an exception (mandated by EJB3 spec)
         if (this.persistent == false) {
-            throw MESSAGES.invalidTimerHandlersForPersistentTimers("EJB3.1 Spec 18.2.6");
+            throw EjbLogger.ROOT_LOGGER.invalidTimerHandlersForPersistentTimers("EJB3.1 Spec 18.2.6");
         }
         return this.handle;
     }
@@ -259,7 +258,7 @@ public class TimerImpl implements Timer {
         // first check the validity of the timer state
         this.assertTimerState();
         if (this.nextExpiration == null) {
-            throw MESSAGES.noMoreTimeoutForTimer(this);
+            throw EjbLogger.ROOT_LOGGER.noMoreTimeoutForTimer(this);
         }
         return this.nextExpiration;
     }
@@ -290,7 +289,7 @@ public class TimerImpl implements Timer {
     @Override
     public ScheduleExpression getSchedule() throws IllegalStateException, EJBException {
         this.assertTimerState();
-        throw MESSAGES.invalidTimerNotCalendarBaseTimer(this);
+        throw EjbLogger.ROOT_LOGGER.invalidTimerNotCalendarBaseTimer(this);
     }
 
     /**
@@ -303,7 +302,7 @@ public class TimerImpl implements Timer {
         // first check the validity of the timer state
         this.assertTimerState();
         if (this.nextExpiration == null) {
-            throw MESSAGES.noMoreTimeoutForTimer(this);
+            throw EjbLogger.ROOT_LOGGER.noMoreTimeoutForTimer(this);
         }
         long currentTimeInMillis = System.currentTimeMillis();
         long nextTimeoutInMillis = this.nextExpiration.getTime();
@@ -457,9 +456,9 @@ public class TimerImpl implements Timer {
      */
     protected void assertTimerState() {
         if (timerState == TimerState.EXPIRED)
-            throw MESSAGES.timerHasExpired();
+            throw EjbLogger.ROOT_LOGGER.timerHasExpired();
         if (timerState == TimerState.CANCELED)
-            throw MESSAGES.timerWasCanceled();
+            throw EjbLogger.ROOT_LOGGER.timerWasCanceled();
         AllowedMethodsInformation.checkAllowed(MethodType.TIMER_SERVICE_METHOD);
     }
 

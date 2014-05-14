@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -255,7 +255,7 @@ public class ChannelInstanceResourceDefinition extends SimpleResourceDefinition 
         try {
             protocolClass = Protocol.class.getClassLoader().loadClass(className).asSubclass(Protocol.class);
         } catch (Exception e) {
-            throw JGroupsMessages.MESSAGES.unableToLoadProtocolClass(className);
+            throw JGroupsLogger.ROOT_LOGGER.unableToLoadProtocolClass(className);
         }
 
         // create the attributes

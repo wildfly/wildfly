@@ -31,7 +31,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import static org.jboss.as.jdr.JdrLogger.ROOT_LOGGER;
+import static org.jboss.as.jdr.logger.JdrLogger.ROOT_LOGGER;
 
 public class JarCheck extends JdrCommand {
 

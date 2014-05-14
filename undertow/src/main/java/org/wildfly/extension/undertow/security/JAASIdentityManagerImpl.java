@@ -36,8 +36,7 @@ import org.jboss.security.SecurityContext;
 import org.jboss.security.callbacks.SecurityContextCallbackHandler;
 import org.jboss.security.identity.Role;
 import org.jboss.security.identity.RoleGroup;
-import org.wildfly.extension.undertow.UndertowLogger;
-import org.wildfly.extension.undertow.UndertowMessages;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 import javax.security.auth.Subject;
 import java.security.Principal;
@@ -112,7 +111,7 @@ public class JAASIdentityManagerImpl implements IdentityManager {
             if (isValid) {
                 UndertowLogger.ROOT_LOGGER.tracef("User: %s is authenticated", incomingPrincipal);
                 if (sc == null) {
-                    throw UndertowMessages.MESSAGES.noSecurityContext();
+                    throw UndertowLogger.ROOT_LOGGER.noSecurityContext();
                 }
                 Principal userPrincipal = getPrincipal(subject);
                 sc.getUtil().createSubjectInfo(incomingPrincipal, credential, subject);

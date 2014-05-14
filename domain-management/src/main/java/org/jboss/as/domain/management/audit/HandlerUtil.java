@@ -31,7 +31,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -49,7 +49,7 @@ public class HandlerUtil {
         PathElement check = element.getKey().equals(SYSLOG_HANDLER) ? PathElement.pathElement(FILE_HANDLER, element.getValue()) : PathElement.pathElement(SYSLOG_HANDLER, element.getValue());
 
         if (resource.hasChild(check)) {
-            throw DomainManagementMessages.MESSAGES.handlerAlreadyExists(check.getValue(), parentAddress.append(check));
+            throw DomainManagementLogger.ROOT_LOGGER.handlerAlreadyExists(check.getValue(), parentAddress.append(check));
         }
     }
 

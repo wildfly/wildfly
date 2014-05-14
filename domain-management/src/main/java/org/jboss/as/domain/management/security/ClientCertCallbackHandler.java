@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 
 import java.io.IOException;
 import java.util.Collections;

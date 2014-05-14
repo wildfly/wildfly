@@ -21,10 +21,10 @@
  */
 package org.jboss.as.jpa.container;
 
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.jboss.as.jpa.messages.JpaLogger;
 
 /**
  * Comment
@@ -66,7 +66,7 @@ public class ThreadLocalStack<T> {
     public void replace(T obj) {
         ArrayList<T> list = stack.get();
         if (list == null) {
-            throw MESSAGES.cannotReplaceStack();
+            throw JpaLogger.ROOT_LOGGER.cannotReplaceStack();
         }
         list.set(list.size() - 1, obj);  // replace top of stack item, with the specified time.
     }

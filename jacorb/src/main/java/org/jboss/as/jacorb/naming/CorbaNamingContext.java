@@ -31,7 +31,7 @@ import java.util.Map;
 
 import org.jacorb.naming.BindingIteratorImpl;
 import org.jacorb.naming.Name;
-import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.INTERNAL;
 import org.omg.CORBA.ORB;
 import org.omg.CosNaming.Binding;

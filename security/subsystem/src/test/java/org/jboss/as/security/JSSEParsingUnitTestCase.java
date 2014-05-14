@@ -111,7 +111,7 @@ public class JSSEParsingUnitTestCase {
             parse("securityErrorMissingPassword.xml");
             Assert.fail("There should have been an error.");
         } catch (XMLStreamException ex) {
-            Assert.assertTrue(ex.getMessage(), ex.getMessage().contains("JBAS013319"));
+            Assert.assertTrue(ex.getMessage(), ex.getMessage().contains("WFLYSEC0023"));
         }
     }
 
@@ -122,7 +122,7 @@ public class JSSEParsingUnitTestCase {
             parse("securityParserError.xml");
             Assert.fail("There should have been an error.");
         } catch (XMLStreamException ex) {
-            Assert.assertTrue(ex.getMessage(), ex.getMessage().contains("JBAS013319"));
+            Assert.assertTrue(ex.getMessage(), ex.getMessage().contains("WFLYSEC0023"));
         }
     }
 

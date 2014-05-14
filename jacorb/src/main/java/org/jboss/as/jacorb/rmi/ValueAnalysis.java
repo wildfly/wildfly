@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.portable.IDLEntity;
 import org.omg.CORBA.portable.ValueBase;
 
@@ -107,16 +107,16 @@ public class ValueAnalysis extends ContainerAnalysis {
         super.doAnalyze();
 
         if (cls == String.class)
-            throw JacORBMessages.MESSAGES.cannotAnalyzeStringType();
+            throw JacORBLogger.ROOT_LOGGER.cannotAnalyzeStringType();
 
         if (cls == Class.class)
-            throw JacORBMessages.MESSAGES.cannotAnalyzeClassType();
+            throw JacORBLogger.ROOT_LOGGER.cannotAnalyzeClassType();
 
         if (Remote.class.isAssignableFrom(cls))
-            throw JacORBMessages.MESSAGES.valueTypeCantImplementRemote(cls.getName(), "1.2.4");
+            throw JacORBLogger.ROOT_LOGGER.valueTypeCantImplementRemote(cls.getName(), "1.2.4");
 
         if (cls.getName().indexOf('$') != -1)
-            throw JacORBMessages.MESSAGES.valueTypeCantBeProxy(cls.getName());
+            throw JacORBLogger.ROOT_LOGGER.valueTypeCantBeProxy(cls.getName());
 
         externalizable = Externalizable.class.isAssignableFrom(cls);
 
@@ -150,7 +150,7 @@ public class ValueAnalysis extends ContainerAnalysis {
                 try {
                     serialPersistentFields = (ObjectStreamField[]) spf.get(null);
                 } catch (IllegalAccessException ex) {
-                    throw JacORBMessages.MESSAGES.unexpectedException(ex);
+                    throw JacORBLogger.ROOT_LOGGER.unexpectedException(ex);
                 }
 
                 // Mark this in the fields array

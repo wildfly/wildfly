@@ -37,7 +37,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.ComponentDispatcherInterceptor;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.interceptors.GetHomeInterceptorFactory;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -104,12 +104,12 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
 
                 if (componentMethod != null) {
                     if(!Modifier.isPublic(componentMethod.getModifiers())) {
-                        throw EjbMessages.MESSAGES.ejbBusinessMethodMustBePublic(componentMethod);
+                        throw EjbLogger.ROOT_LOGGER.ejbBusinessMethodMustBePublic(componentMethod);
                     }
                     configuration.addViewInterceptor(method, new ImmediateInterceptorFactory(new ComponentDispatcherInterceptor(componentMethod)), InterceptorOrder.View.COMPONENT_DISPATCHER);
                     configuration.addClientInterceptor(method, ViewDescription.CLIENT_DISPATCHER_INTERCEPTOR_FACTORY, InterceptorOrder.Client.CLIENT_DISPATCHER);
                 } else if(method.getDeclaringClass() != Object.class && method.getDeclaringClass() != WriteReplaceInterface.class) {
-                    throw EjbMessages.MESSAGES.couldNotFindViewMethodOnEjb(method, description.getViewClassName(), componentConfiguration.getComponentName());
+                    throw EjbLogger.ROOT_LOGGER.couldNotFindViewMethodOnEjb(method, description.getViewClassName(), componentConfiguration.getComponentName());
                 }
             }
         }
@@ -127,7 +127,7 @@ public abstract class SessionBeanObjectViewConfigurator implements ViewConfigura
     private static final InterceptorFactory PRIMARY_KEY_INTERCEPTOR = new ImmediateInterceptorFactory(new Interceptor() {
         @Override
         public Object processInvocation(final InterceptorContext context) throws Exception {
-            throw EjbMessages.MESSAGES.cannotCallGetPKOnSessionBean();
+            throw EjbLogger.ROOT_LOGGER.cannotCallGetPKOnSessionBean();
         }
     });
 

@@ -28,6 +28,7 @@ import org.jboss.as.ee.component.ComponentDescription;
 import org.jboss.as.ee.component.EEApplicationClasses;
 import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -38,7 +39,7 @@ import org.jboss.as.server.deployment.reflect.DeploymentReflectionIndex;
 import org.jboss.metadata.ejb.spec.MethodInterfaceType;
 import org.jboss.metadata.ejb.spec.MethodParametersMetaData;
 import org.jboss.modules.Module;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Superclass for the EJB metadata merging processors
  *
@@ -72,7 +73,7 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
                 try {
                     processComponentConfig(deploymentUnit, applicationClasses, module, deploymentReflectionIndex, (T) componentConfiguration);
                 } catch (Exception e) {
-                    throw MESSAGES.failToMergeData(componentConfiguration.getComponentName(),e);
+                    throw EjbLogger.ROOT_LOGGER.failToMergeData(componentConfiguration.getComponentName(), e);
                 }
             }
         }
@@ -84,7 +85,7 @@ public abstract class AbstractMergingProcessor<T extends EJBComponentDescription
         try {
             componentClass = module.getClassLoader().loadClass(description.getEJBClassName());
         } catch (ClassNotFoundException e) {
-            throw MESSAGES.failToLoadEjbClass(description.getEJBClassName(),e);
+            throw EjbLogger.ROOT_LOGGER.failToLoadEjbClass(description.getEJBClassName(), e);
         }
 
         if (!MetadataCompleteMarker.isMetadataComplete(deploymentUnit)) {

@@ -29,7 +29,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.global.WriteAttributeHandlers.WriteAttributeOperationHandler;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.server.ServerLogger;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**

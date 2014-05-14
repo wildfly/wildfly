@@ -29,8 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.jboss.as.pojo.BeanState;
-import org.jboss.as.pojo.PojoLogger;
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.descriptor.BeanMetaDataConfig;
 import org.jboss.as.pojo.descriptor.CallbackConfig;
 import org.jboss.as.pojo.descriptor.ConfigVisitor;
@@ -181,7 +180,7 @@ public abstract class AbstractPojoPhase implements Service<Object> {
     protected Joinpoint createJoinpoint(InstallConfig config) {
         String methodName = config.getMethodName();
         if (methodName == null)
-            throw PojoMessages.MESSAGES.nullMethodName();
+            throw PojoLogger.ROOT_LOGGER.nullMethodName();
 
         ValueConfig[] parameters = config.getParameters();
         String[] types = Configurator.getTypes(parameters);

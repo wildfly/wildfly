@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.zip.InflaterInputStream;
 
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.protocol.AbstractMessageHandler;
 import org.jboss.as.ejb3.remote.protocol.versionone.ChannelAssociation;
 

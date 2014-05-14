@@ -29,7 +29,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.mgmt.HttpManagementResourceDefinition;
 import org.jboss.dmr.ModelNode;
 
@@ -59,7 +59,7 @@ public class HttpManagementWriteAttributeHandler extends ReloadRequiredWriteAttr
                         && (model.hasDefined(HttpManagementResourceDefinition.SOCKET_BINDING.getName())
                         || model.hasDefined(HttpManagementResourceDefinition.SECURE_SOCKET_BINDING.getName())
                 )) {
-                    throw ServerMessages.MESSAGES.illegalCombinationOfHttpManagementInterfaceConfigurations(
+                    throw ServerLogger.ROOT_LOGGER.illegalCombinationOfHttpManagementInterfaceConfigurations(
                             INTERFACE.getName(),
                             HttpManagementResourceDefinition.SOCKET_BINDING.getName(),
                             HttpManagementResourceDefinition.SECURE_SOCKET_BINDING.getName());

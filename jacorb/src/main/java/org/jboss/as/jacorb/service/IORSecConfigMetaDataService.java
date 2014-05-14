@@ -22,7 +22,7 @@
 
 package org.jboss.as.jacorb.service;
 
-import org.jboss.as.jacorb.JacORBLogger;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.metadata.ejb.jboss.IORSecurityConfigMetaData;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;

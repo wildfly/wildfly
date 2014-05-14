@@ -22,6 +22,7 @@
 
 package org.jboss.as.protocol;
 
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.remoting3.CloseHandler;
 import org.jboss.remoting3.Connection;
 
@@ -41,7 +42,7 @@ public class ProtocolConnectionManager {
 
     protected ProtocolConnectionManager(final ConnectTask initial) {
         if(initial == null) {
-            throw ProtocolMessages.MESSAGES.nullVar("connectTask");
+            throw ProtocolLogger.ROOT_LOGGER.nullVar("connectTask");
         }
         this.connectTask = initial;
     }
@@ -64,12 +65,12 @@ public class ProtocolConnectionManager {
     public Connection connect() throws IOException {
         Connection connection;
         synchronized (this) {
-            if(shutdown) throw ProtocolMessages.MESSAGES.channelClosed();
+            if(shutdown) throw ProtocolLogger.ROOT_LOGGER.channelClosed();
             connection = this.connection;
             if(connection == null) {
                 connection = connectTask.connect();
                 if(connection == null) {
-                    throw ProtocolMessages.MESSAGES.channelClosed();
+                    throw ProtocolLogger.ROOT_LOGGER.channelClosed();
                 }
                 boolean ok = false;
                 try {
@@ -311,7 +312,7 @@ public class ProtocolConnectionManager {
 
         @Override
         public Connection connect() throws IOException {
-            throw ProtocolMessages.MESSAGES.channelClosed();
+            throw ProtocolLogger.ROOT_LOGGER.channelClosed();
         }
 
         @Override

@@ -36,8 +36,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
-import static org.jboss.as.domain.http.server.HttpServerMessages.MESSAGES;
+import static org.jboss.as.domain.http.server.logging.HttpServerLogger.ROOT_LOGGER;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -63,6 +62,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.OperationBuilder;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.core.security.AccessMechanism;
+import org.jboss.as.domain.http.server.logging.HttpServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.xnio.IoUtils;
 import org.xnio.streams.ChannelInputStream;
@@ -201,7 +201,7 @@ class DomainApiHandler implements HttpHandler {
                 operation = GetOperation.valueOf(value.toUpperCase(Locale.ENGLISH).replace('-', '_'));
                 value = operation.realOperation();
             } catch (Exception e) {
-                throw MESSAGES.invalidOperation(e, value);
+                throw HttpServerLogger.ROOT_LOGGER.invalidOperation(e, value);
             }
         }
 

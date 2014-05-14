@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller.registry;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.ListIterator;
@@ -31,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProxyController;
@@ -83,7 +82,7 @@ final class NodeSubregistry {
         final AbstractResourceRegistration newRegistry = new ConcreteResourceRegistration(elementValue, this, provider, constraintUtilizationRegistry, runtimeOnly);
         final AbstractResourceRegistration existingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (existingRegistry != null) {
-            throw MESSAGES.nodeAlreadyRegistered(getLocationString(), elementValue);
+            throw ControllerLogger.ROOT_LOGGER.nodeAlreadyRegistered(getLocationString(), elementValue);
         }
         return newRegistry;
     }
@@ -92,7 +91,7 @@ final class NodeSubregistry {
         final ProxyControllerRegistration newRegistry = new ProxyControllerRegistration(elementValue, this, proxyController);
         final AbstractResourceRegistration appearingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (appearingRegistry != null) {
-            throw MESSAGES.nodeAlreadyRegistered(getLocationString(), elementValue);
+            throw ControllerLogger.ROOT_LOGGER.nodeAlreadyRegistered(getLocationString(), elementValue);
         }
         //register(elementValue, newRegistry);
         return newRegistry;
@@ -107,7 +106,7 @@ final class NodeSubregistry {
         final AliasResourceRegistration newRegistry = new AliasResourceRegistration(elementValue, this, aliasEntry, target);
         final AbstractResourceRegistration existingRegistry = childRegistriesUpdater.putIfAbsent(this, elementValue, newRegistry);
         if (existingRegistry != null) {
-            throw MESSAGES.nodeAlreadyRegistered(getLocationString(), elementValue);
+            throw ControllerLogger.ROOT_LOGGER.nodeAlreadyRegistered(getLocationString(), elementValue);
         }
         return newRegistry;
     }

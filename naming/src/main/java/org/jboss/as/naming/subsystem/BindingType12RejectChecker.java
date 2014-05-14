@@ -31,7 +31,7 @@ import java.util.Map;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
-import org.jboss.as.naming.NamingMessages;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -50,6 +50,6 @@ class BindingType12RejectChecker extends RejectAttributeChecker.DefaultRejectAtt
 
     @Override
     public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-        return NamingMessages.MESSAGES.failedToTransformExternalContext("1.2.0");
+        return NamingLogger.ROOT_LOGGER.failedToTransformExternalContext("1.2.0");
     }
 }

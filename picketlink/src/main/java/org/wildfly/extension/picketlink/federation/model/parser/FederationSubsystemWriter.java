@@ -33,11 +33,12 @@ import org.wildfly.extension.picketlink.federation.Namespace;
 
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER_PARAMETER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_NAME;
@@ -95,7 +96,7 @@ public class FederationSubsystemWriter implements XMLStreamConstants, XMLElement
             if (modelName.equals(FEDERATION.getName())) {
                 writers.get(FEDERATION.getName()).write(writer, modelNode);
             } else {
-                MESSAGES.parserUnexpectedElement(modelName);
+                PicketLinkLogger.ROOT_LOGGER.parserUnexpectedElement(modelName);
             }
         }
 

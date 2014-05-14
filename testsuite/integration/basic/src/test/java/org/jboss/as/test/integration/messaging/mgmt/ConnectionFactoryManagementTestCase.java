@@ -94,7 +94,7 @@ public class ConnectionFactoryManagementTestCase extends ContainerResourceMgmtTe
         } catch (MgmtOperationException e) {
             assertEquals(FAILED, e.getResult().get(OUTCOME).asString());
             assertEquals(true, e.getResult().get(ROLLED_BACK).asBoolean());
-            assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().contains("JBAS011630"));
+            assertTrue(e.getResult().get(FAILURE_DESCRIPTION).asString().contains("WFLYMSG0019"));
         }
 
         final ModelNode remove = new ModelNode();

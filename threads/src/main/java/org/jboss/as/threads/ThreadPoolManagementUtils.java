@@ -185,10 +185,10 @@ class ThreadPoolManagementUtils {
         if (model.hasDefined(KEEPALIVE_TIME)) {
             ModelNode keepaliveTime = model.get(KEEPALIVE_TIME);
             if (!keepaliveTime.hasDefined(TIME)) {
-                throw ThreadsMessages.MESSAGES.missingKeepAliveTime(TIME, KEEPALIVE_TIME);
+                throw ThreadsLogger.ROOT_LOGGER.missingKeepAliveTime(TIME, KEEPALIVE_TIME);
             }
             if (!keepaliveTime.hasDefined(UNIT)) {
-                throw ThreadsMessages.MESSAGES.missingKeepAliveUnit(UNIT, KEEPALIVE_TIME);
+                throw ThreadsLogger.ROOT_LOGGER.missingKeepAliveUnit(UNIT, KEEPALIVE_TIME);
             }
             long time = KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_TIME.resolveModelAttribute(context, keepaliveTime).asLong();
             String unit = KeepAliveTimeAttributeDefinition.KEEPALIVE_TIME_UNIT.resolveModelAttribute(context, keepaliveTime).asString();

@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.management.MBeanServer;
 
 import org.jboss.as.server.ServerEnvironment;
-import org.jboss.as.webservices.WSMessages;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.msc.value.InjectedValue;
 import org.jboss.ws.common.management.AbstractServerConfig;
 import org.jboss.ws.common.management.AbstractServerConfigMBean;
@@ -169,13 +169,13 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
         @Override
         public void onBeforeUpdate() {
             if (!dmrSynched) {
-                throw WSMessages.MESSAGES.couldNotUpdateServerConfigBecauseOfReloadRequired();
+                throw WSLogger.ROOT_LOGGER.couldNotUpdateServerConfigBecauseOfReloadRequired();
             }
             //prevent any modification to the AbstractServerConfig members
             //when there's at least a WS endpoint deployment on the server
             if (!isModifiable()) {
                 dmrSynched = false;
-                throw WSMessages.MESSAGES.couldNotUpdateServerConfigBecauseOfExistingWSDeployment();
+                throw WSLogger.ROOT_LOGGER.couldNotUpdateServerConfigBecauseOfExistingWSDeployment();
             }
         }
 

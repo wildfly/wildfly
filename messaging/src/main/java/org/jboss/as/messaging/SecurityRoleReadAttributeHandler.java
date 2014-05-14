@@ -24,17 +24,17 @@ package org.jboss.as.messaging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.NAME;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import org.hornetq.api.core.management.AddressControl;
 import org.hornetq.api.core.management.ResourceNames;
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -68,7 +68,7 @@ public class SecurityRoleReadAttributeHandler extends AbstractRuntimeOnlyHandler
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         try {
@@ -77,7 +77,7 @@ public class SecurityRoleReadAttributeHandler extends AbstractRuntimeOnlyHandler
             ModelNode roles = ManagementUtil.convertSecurityRole(res);
             ModelNode matchedRole = findRole(roleName, roles);
             if (matchedRole == null || !matchedRole.hasDefined(attributeName)) {
-                throw MESSAGES.unsupportedAttribute(attributeName);
+                throw MessagingLogger.ROOT_LOGGER.unsupportedAttribute(attributeName);
             }
             boolean value = matchedRole.get(attributeName).asBoolean();
             context.getResult().set(value);

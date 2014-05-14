@@ -28,6 +28,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceController;
@@ -40,7 +41,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * @author Jaikiran Pai
@@ -51,10 +51,10 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
 
     static ModelNode getAddOperation(final String connectionName, final String uri, PathAddress address) {
         if (connectionName == null || connectionName.trim().isEmpty()) {
-            throw MESSAGES.connectionNameEmpty();
+            throw RemotingLogger.ROOT_LOGGER.connectionNameEmpty();
         }
         if (uri == null || uri.trim().isEmpty()) {
-            throw MESSAGES.connectionUriEmpty(connectionName);
+            throw RemotingLogger.ROOT_LOGGER.connectionUriEmpty(connectionName);
         }
         final ModelNode addOperation = new ModelNode();
         addOperation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.ADD);
@@ -117,7 +117,7 @@ class GenericOutboundConnectionAdd extends AbstractOutboundConnectionAddHandler 
         try {
             return new URI(uri);
         } catch (URISyntaxException e) {
-            throw MESSAGES.couldNotCreateURI(uri,e.toString());
+            throw RemotingLogger.ROOT_LOGGER.couldNotCreateURI(uri,e.toString());
         }
     }
 }

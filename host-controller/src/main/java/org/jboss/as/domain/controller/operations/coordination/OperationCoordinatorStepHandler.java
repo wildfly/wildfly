@@ -28,8 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ROLLOUT_PLAN;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,6 +43,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ProxyController;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.LocalHostControllerInfo;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.as.repository.ContentRepository;
@@ -124,8 +124,7 @@ public class OperationCoordinatorStepHandler {
         // master may overly complicate the security infrastructure. Therefore,
         // the ability to do this is being disabled until it's clear that it's
         // not a problem
-        context.getFailureDescription().set(MESSAGES.masterDomainControllerOnlyOperation(operation.get(OP).asString(),
-                PathAddress.pathAddress(operation.get(OP_ADDR))));
+        context.getFailureDescription().set(DomainControllerLogger.ROOT_LOGGER.masterDomainControllerOnlyOperation(operation.get(OP).asString(), PathAddress.pathAddress(operation.get(OP_ADDR))));
         context.stepCompleted();
     }
 
@@ -192,7 +191,7 @@ public class OperationCoordinatorStepHandler {
                     if (proxy != null) {
                         remoteProxies.put(host, proxy);
                     } else if (!global) {
-                        throw MESSAGES.invalidOperationTargetHost(host);
+                        throw DomainControllerLogger.ROOT_LOGGER.invalidOperationTargetHost(host);
                     }
                 }
 

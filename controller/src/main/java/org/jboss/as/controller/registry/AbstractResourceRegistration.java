@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -103,18 +103,18 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     @Override
     public ManagementResourceRegistration registerOverrideModel(String name, OverrideDescriptionProvider descriptionProvider) {
         if (name == null) {
-            throw ControllerMessages.MESSAGES.nullVar("name");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("name");
         }
         if (descriptionProvider == null) {
-            throw ControllerMessages.MESSAGES.nullVar("descriptionProvider");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("descriptionProvider");
         }
 
         if (parent == null) {
-            throw ControllerMessages.MESSAGES.cannotOverrideRootRegistration();
+            throw ControllerLogger.ROOT_LOGGER.cannotOverrideRootRegistration();
         }
 
         if (!PathElement.WILDCARD_VALUE.equals(valueString)) {
-            throw ControllerMessages.MESSAGES.cannotOverrideNonWildCardRegistration(valueString);
+            throw ControllerLogger.ROOT_LOGGER.cannotOverrideNonWildCardRegistration(valueString);
         }
         PathElement pe = PathElement.pathElement(parent.getKeyName(), name);
 
@@ -131,13 +131,13 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     @Override
     public void unregisterOverrideModel(String name) {
         if (name == null) {
-            throw ControllerMessages.MESSAGES.nullVar("name");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("name");
         }
         if (PathElement.WILDCARD_VALUE.equals(name)) {
-            throw ControllerMessages.MESSAGES.wildcardRegistrationIsNotAnOverride();
+            throw ControllerLogger.ROOT_LOGGER.wildcardRegistrationIsNotAnOverride();
         }
         if (parent == null) {
-            throw ControllerMessages.MESSAGES.rootRegistrationIsNotOverridable();
+            throw ControllerLogger.ROOT_LOGGER.rootRegistrationIsNotOverridable();
         }
         PathElement pe = PathElement.pathElement(parent.getKeyName(), name);
         parent.getParent().unregisterSubModel(pe);
@@ -367,15 +367,15 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     public final ManagementResourceRegistration getOverrideModel(String name) {
 
         if (name == null) {
-            throw ControllerMessages.MESSAGES.nullVar("name");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("name");
         }
 
         if (parent == null) {
-            throw ControllerMessages.MESSAGES.cannotOverrideRootRegistration();
+            throw ControllerLogger.ROOT_LOGGER.cannotOverrideRootRegistration();
         }
 
         if (!PathElement.WILDCARD_VALUE.equals(valueString)) {
-            throw ControllerMessages.MESSAGES.cannotOverrideNonWildCardRegistration(valueString);
+            throw ControllerLogger.ROOT_LOGGER.cannotOverrideNonWildCardRegistration(valueString);
         }
         PathElement pe = PathElement.pathElement(parent.getKeyName(),name);
 
@@ -480,7 +480,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
         alias.setAddresses(targetAddress, myaddr.append(address));
         AbstractResourceRegistration target = (AbstractResourceRegistration)root.getSubModel(alias.getTargetAddress());
         if (target == null) {
-            throw ControllerMessages.MESSAGES.aliasTargetResourceRegistrationNotFound(alias.getTargetAddress());
+            throw ControllerLogger.ROOT_LOGGER.aliasTargetResourceRegistrationNotFound(alias.getTargetAddress());
         }
 
         registerAlias(address, alias, target);
@@ -497,7 +497,7 @@ abstract class AbstractResourceRegistration implements ManagementResourceRegistr
     @Override
     public AliasEntry getAliasEntry() {
         //Overridden by AliasResourceRegistration
-        throw ControllerMessages.MESSAGES.resourceRegistrationIsNotAnAlias();
+        throw ControllerLogger.ROOT_LOGGER.resourceRegistrationIsNotAnAlias();
     }
 
     PathAddress getPathAddress() {

@@ -31,7 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
 
@@ -80,7 +80,7 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
         final MiscContentItem item = contentItem;
         if(item.isDirectory()) {
             if(! target.mkdirs() && ! target.isDirectory()) {
-                throw PatchMessages.MESSAGES.cannotCreateDirectory(target.getAbsolutePath());
+                throw PatchLogger.ROOT_LOGGER.cannotCreateDirectory(target.getAbsolutePath());
             }
             return NO_CONTENT;
         } else {
@@ -110,7 +110,7 @@ abstract class AbstractFileTask extends AbstractPatchingTask<MiscContentItem> {
                 createParentDirectories(parent, path, depth - 1, context);
             }
             if(! parent.mkdir() && ! parent.isDirectory()) {
-                throw PatchMessages.MESSAGES.cannotCreateDirectory(target.getAbsolutePath());
+                throw PatchLogger.ROOT_LOGGER.cannotCreateDirectory(target.getAbsolutePath());
             }
             // TODO record changes
 //            final String[] newPath = Arrays.copyOf(path, depth - 1);

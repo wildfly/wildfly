@@ -34,10 +34,10 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.extension.picketlink.common.model.ModelElement;
 import org.wildfly.extension.picketlink.federation.service.PicketLinkFederationService;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
 
 /**
  * @author <a href="mailto:psilva@redhat.com">Pedro Silva</a>
@@ -94,7 +94,7 @@ public abstract class AbstractPicketLinkMetricsOperationHandler implements Opera
 
                     doPopulateResult(service.getMetrics(), context.getResult(), attributeName);
                 } catch (Exception e) {
-                    throw MESSAGES.failedToGetMetrics(e.getMessage());
+                    throw PicketLinkLogger.ROOT_LOGGER.failedToGetMetrics(e.getMessage());
                 }
 
                 context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);

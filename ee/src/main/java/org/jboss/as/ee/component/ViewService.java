@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.utils.DescriptorUtils;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.invocation.Interceptor;
@@ -45,8 +46,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -208,7 +208,7 @@ public final class ViewService implements Service<ComponentView> {
         public Method getMethod(final String name, final String descriptor) {
             Method method = this.methods.get(new MethodDescription(name, descriptor));
             if (method == null) {
-                throw MESSAGES.viewMethodNotFound(name, descriptor, viewClass, component.getComponentClass());
+                throw EeLogger.ROOT_LOGGER.viewMethodNotFound(name, descriptor, viewClass, component.getComponentClass());
             }
             return method;
         }

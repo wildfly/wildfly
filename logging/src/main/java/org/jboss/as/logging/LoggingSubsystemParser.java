@@ -66,7 +66,6 @@ import static org.jboss.as.logging.CommonAttributes.PROPERTIES;
 import static org.jboss.as.logging.FileHandlerResourceDefinition.FILE_HANDLER;
 import static org.jboss.as.logging.LoggerResourceDefinition.LOGGER;
 import static org.jboss.as.logging.LoggerResourceDefinition.USE_PARENT_HANDLERS;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.PERIODIC_ROTATING_FILE_HANDLER;
 import static org.jboss.as.logging.PeriodicHandlerResourceDefinition.SUFFIX;
 import static org.jboss.as.logging.RootLoggerResourceDefinition.ROOT_LOGGER_ATTRIBUTE_NAME;
@@ -97,6 +96,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
@@ -906,7 +906,7 @@ public class LoggingSubsystemParser implements XMLStreamConstants, XMLElementRea
                 }
                 case FORMATTER: {
                     if (reader.nextTag() != START_ELEMENT) {
-                        throw new XMLStreamException(MESSAGES.missingRequiredNestedFilterElement(), reader.getLocation());
+                        throw new XMLStreamException(LoggingLogger.ROOT_LOGGER.missingRequiredNestedFilterElement(), reader.getLocation());
                     }
                     switch (Element.forName(reader.getLocalName())) {
                         case SYSLOG_FORMATTER: {

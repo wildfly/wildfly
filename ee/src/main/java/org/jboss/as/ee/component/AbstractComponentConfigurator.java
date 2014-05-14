@@ -20,7 +20,7 @@ import org.jboss.invocation.InterceptorFactoryContext;
 import org.jboss.invocation.Interceptors;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.ee.EeLogger.SERVER_DEPLOYMENT_LOGGER;
+import static org.jboss.as.ee.logging.EeLogger.SERVER_DEPLOYMENT_LOGGER;
 
 /**
  * @author Stuart Douglas

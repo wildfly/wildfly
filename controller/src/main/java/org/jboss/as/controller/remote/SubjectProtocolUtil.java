@@ -21,8 +21,6 @@
  */
 package org.jboss.as.controller.remote;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
@@ -37,6 +35,7 @@ import java.util.Map;
 
 import javax.security.auth.Subject;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.client.impl.ModelControllerProtocol;
 import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.RealmGroup;
@@ -122,7 +121,7 @@ class SubjectProtocolUtil {
                 byte type = input.readByte();
                 PrincipalReader reader = findReader(type);
                 if (reader == null) {
-                    throw MESSAGES.unsupportedPrincipalType(type);
+                    throw ControllerLogger.ROOT_LOGGER.unsupportedPrincipalType(type);
                 }
                 principals.add(reader.read(input));
             }
@@ -176,7 +175,7 @@ class SubjectProtocolUtil {
                 if (paramType == NAME_PARAM) {
                     name = in.readUTF();
                 } else {
-                    throw MESSAGES.unsupportedPrincipalParameter(paramType, REALM_USER_PRINCIPAL);
+                    throw ControllerLogger.ROOT_LOGGER.unsupportedPrincipalParameter(paramType, REALM_USER_PRINCIPAL);
                 }
 
                 return realm == null ? new RealmUser(name) : new RealmUser(realm, name);
@@ -232,7 +231,7 @@ class SubjectProtocolUtil {
                 if (paramType == NAME_PARAM) {
                     name = in.readUTF();
                 } else {
-                    throw MESSAGES.unsupportedPrincipalParameter(paramType, REALM_GROUP_PRINCIPAL);
+                    throw ControllerLogger.ROOT_LOGGER.unsupportedPrincipalParameter(paramType, REALM_GROUP_PRINCIPAL);
                 }
 
                 return realm == null ? new RealmGroup(name) : new RealmGroup(realm, name);
@@ -283,7 +282,7 @@ class SubjectProtocolUtil {
                 if (paramType == NAME_PARAM) {
                     name = in.readUTF();
                 } else {
-                    throw MESSAGES.unsupportedPrincipalParameter(paramType, REALM_ROLE_PRINCIPAL);
+                    throw ControllerLogger.ROOT_LOGGER.unsupportedPrincipalParameter(paramType, REALM_ROLE_PRINCIPAL);
                 }
 
                 return new RealmRole(name);
@@ -330,7 +329,7 @@ class SubjectProtocolUtil {
                 if (paramType == HOST_PARAM) {
                     host = in.readUTF();
                 } else {
-                    throw MESSAGES.unsupportedPrincipalParameter(paramType, INET_ADDRESS_PRINCIPAL);
+                    throw ControllerLogger.ROOT_LOGGER.unsupportedPrincipalParameter(paramType, INET_ADDRESS_PRINCIPAL);
                 }
 
                 paramType = in.readByte();
@@ -339,7 +338,7 @@ class SubjectProtocolUtil {
                     addr = new byte[length];
                     in.readFully(addr);
                 } else {
-                    throw MESSAGES.unsupportedPrincipalParameter(paramType, INET_ADDRESS_PRINCIPAL);
+                    throw ControllerLogger.ROOT_LOGGER.unsupportedPrincipalParameter(paramType, INET_ADDRESS_PRINCIPAL);
                 }
 
                 InetAddress address = InetAddress.getByAddress(host, addr);

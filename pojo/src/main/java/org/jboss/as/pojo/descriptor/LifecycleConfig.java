@@ -22,7 +22,7 @@
 
 package org.jboss.as.pojo.descriptor;
 
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.pojo.service.BeanInfo;
 import org.jboss.as.pojo.service.Configurator;
 
@@ -52,7 +52,7 @@ public class LifecycleConfig extends AbstractConfigVisitorNode implements Serial
     @Override
     public Class<?> getType(ConfigVisitor visitor, ConfigVisitorNode previous) {
         if (previous instanceof ValueConfig == false)
-            throw PojoMessages.MESSAGES.notValueConfig(previous);
+            throw PojoLogger.ROOT_LOGGER.notValueConfig(previous);
 
         ValueConfig vc = (ValueConfig) previous;
         BeanInfo beanInfo = visitor.getBeanInfo();

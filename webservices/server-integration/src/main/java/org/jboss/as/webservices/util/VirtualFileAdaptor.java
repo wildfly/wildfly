@@ -21,14 +21,12 @@
  */
 package org.jboss.as.webservices.util;
 
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.wsf.spi.deployment.UnifiedVirtualFile;
 
@@ -58,9 +56,9 @@ public final class VirtualFileAdaptor implements UnifiedVirtualFile {
         final VirtualFile childFile = file.getChild(child);
         if (!childFile.exists()) {
             if (throwExceptionIfNotFound) {
-                throw MESSAGES.missingChild(child, virtualFile);
+                throw WSLogger.ROOT_LOGGER.missingChild(child, virtualFile);
             } else {
-                if (ROOT_LOGGER.isTraceEnabled()) ROOT_LOGGER.missingChild(child, virtualFile);
+                if (WSLogger.ROOT_LOGGER.isTraceEnabled()) WSLogger.ROOT_LOGGER.tracef("Child '%s' not found for VirtualFile: %s", child, virtualFile);
                 return null;
             }
         }

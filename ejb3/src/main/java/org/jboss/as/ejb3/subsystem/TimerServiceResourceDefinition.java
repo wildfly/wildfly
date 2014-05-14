@@ -22,8 +22,6 @@
 
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,7 +29,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jboss.as.controller.AttributeDefinition;
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -56,7 +54,7 @@ import org.jboss.as.controller.transform.TransformationTarget;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -218,10 +216,10 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
             TransformationTarget tgt = context.getTarget();
             if (tgt.isIgnoredResourceListAvailableAtRegistration()) {
                 // Slave is 7.2.x or higher and we know this resource is not ignored
-                throw new OperationFailedException(EjbMessages.MESSAGES.untransformableTimerService(address));
+                throw new OperationFailedException(EjbLogger.ROOT_LOGGER.untransformableTimerService(address));
             } else {
                 // 7.1.x slave; resource *may* be ignored so we can't fail; just log
-                context.getLogger().logWarning(EjbMessages.MESSAGES.untransformableTimerService(address));
+                context.getLogger().logWarning(EjbLogger.ROOT_LOGGER.untransformableTimerService(address));
             }
         }
 
@@ -236,11 +234,11 @@ public class TimerServiceResourceDefinition extends SimpleResourceDefinition {
                 TransformationTarget tgt = context.getTarget();
                 if (tgt.isIgnoredResourceListAvailableAtRegistration()) {
                     // Slave is 7.2.x or higher and we know this resource is not ignored
-                    List<String> msg = Collections.singletonList(context.getLogger().getAttributeWarning(fileStoreAddress, null, MESSAGES.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName()));
-                    throw ControllerMessages.MESSAGES.rejectAttributesCoreModelResourceTransformer(fileStoreAddress, tgt.getHostName(), tgt.getVersion(), msg);
+                    List<String> msg = Collections.singletonList(context.getLogger().getAttributeWarning(fileStoreAddress, null, ControllerLogger.ROOT_LOGGER.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName()));
+                    throw ControllerLogger.ROOT_LOGGER.rejectAttributesCoreModelResourceTransformer(fileStoreAddress, tgt.getHostName(), tgt.getVersion(), msg);
                 } else {
                     // 7.1.x slave; resource *may* be ignored so we can't fail; just log
-                    context.getLogger().logAttributeWarning(fileStoreAddress, MESSAGES.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName());
+                    context.getLogger().logAttributeWarning(fileStoreAddress, ControllerLogger.ROOT_LOGGER.attributesDontSupportExpressions(), FileDataStoreResourceDefinition.PATH.getName());
                 }
             }
         }

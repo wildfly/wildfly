@@ -54,7 +54,7 @@ import org.jboss.modules.ModuleIdentifier;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
 /**
  * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>

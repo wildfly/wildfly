@@ -32,7 +32,6 @@ import static org.jboss.as.messaging.CommonAttributes.IN_VM_CONNECTOR;
 import static org.jboss.as.messaging.CommonAttributes.PARAM;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_ACCEPTOR;
 import static org.jboss.as.messaging.CommonAttributes.REMOTE_CONNECTOR;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -55,6 +54,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 /**
@@ -219,7 +219,7 @@ class TransportConfigOperationHandlers {
                     final Resource param = context.createResource(PathAddress.pathAddress(PathElement.pathElement(CommonAttributes.PARAM, property.getName())));
                     final ModelNode value = property.getValue();
                     if(! value.isDefined()) {
-                        throw new OperationFailedException(new ModelNode().set(MESSAGES.parameterNotDefined(property.getName())));
+                        throw new OperationFailedException(new ModelNode().set(MessagingLogger.ROOT_LOGGER.parameterNotDefined(property.getName())));
                     }
                     param.getModel().get(ModelDescriptionConstants.VALUE).set(value);
                 }

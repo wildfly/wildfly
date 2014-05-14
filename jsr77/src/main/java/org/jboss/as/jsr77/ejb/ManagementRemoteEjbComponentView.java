@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jsr77.ejb;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
@@ -46,6 +44,7 @@ import javax.management.ReflectionException;
 import javax.management.j2ee.Management;
 
 import org.jboss.as.ee.utils.DescriptorUtils;
+import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.jboss.invocation.InterceptorContext;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
@@ -143,11 +142,11 @@ public class ManagementRemoteEjbComponentView extends BaseManagementEjbComponent
             return server.getDefaultDomain();
         } else if (method == getListenerRegistry) {
             //TODO read spec ;-) and find out what this should do
-            throw MESSAGES.notYetImplemented();
+            throw JSR77Logger.ROOT_LOGGER.notYetImplemented();
         } else if (method == remove) {
             return null;
         }
-        throw MESSAGES.unknownMethod(method);
+        throw JSR77Logger.ROOT_LOGGER.unknownMethod(method);
     }
 
     @Override
@@ -197,7 +196,7 @@ public class ManagementRemoteEjbComponentView extends BaseManagementEjbComponent
 
     private <T> T getParameter(Class<T> clazz, Object[] params, int index) {
         if (index >= params.length) {
-            throw MESSAGES.wrongParamLength(index, params.length);
+            throw JSR77Logger.ROOT_LOGGER.wrongParamLength(index, params.length);
         }
         Object o = params[index];
         if (o == null) {
@@ -206,7 +205,7 @@ public class ManagementRemoteEjbComponentView extends BaseManagementEjbComponent
         try {
             return clazz.cast(o);
         } catch (Exception e) {
-            throw MESSAGES.wrongParamType(index, clazz.getName(), o.getClass().getName());
+            throw JSR77Logger.ROOT_LOGGER.wrongParamType(index, clazz.getName(), o.getClass().getName());
         }
     }
 

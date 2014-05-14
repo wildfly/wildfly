@@ -29,9 +29,9 @@ import org.jboss.as.controller.PathAddress;
 import org.wildfly.extension.picketlink.idm.service.PartitionManagerService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_CONFIGURATION;
 
 /**
@@ -60,7 +60,7 @@ public class PartitionManagerRemoveHandler extends AbstractRemoveStepHandler {
         ModelNode identityConfigurationNode = model.get(IDENTITY_CONFIGURATION.getName());
 
         if (!identityConfigurationNode.isDefined()) {
-            throw MESSAGES.idmNoIdentityConfigurationProvided();
+            throw PicketLinkLogger.ROOT_LOGGER.idmNoIdentityConfigurationProvided();
         }
 
         for (Property identityConfiguration : identityConfigurationNode.asPropertyList()) {

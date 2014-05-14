@@ -34,10 +34,9 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.txn.logging.TransactionLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
-
-import static org.jboss.as.txn.TransactionMessages.MESSAGES;
 
 /**
  * Handler for transaction manager metrics
@@ -91,7 +90,7 @@ public class TxStatsHandler extends AbstractRuntimeOnlyHandler {
 
         TxStat stat = TxStat.getStat(operation.require(ModelDescriptionConstants.NAME).asString());
         if (stat == null) {
-            context.getFailureDescription().set(MESSAGES.unknownMetric(operation.require(ModelDescriptionConstants.NAME).asString()));
+            context.getFailureDescription().set(TransactionLogger.ROOT_LOGGER.unknownMetric(operation.require(ModelDescriptionConstants.NAME).asString()));
         }
         else {
             ModelNode result = new ModelNode();
@@ -124,7 +123,7 @@ public class TxStatsHandler extends AbstractRuntimeOnlyHandler {
                     result.set(txStats.getNumberOfResourceRollbacks());
                     break;
                 default:
-                    throw new IllegalStateException(MESSAGES.unknownMetric(stat));
+                    throw new IllegalStateException(TransactionLogger.ROOT_LOGGER.unknownMetric(stat));
             }
             context.getResult().set(result);
         }

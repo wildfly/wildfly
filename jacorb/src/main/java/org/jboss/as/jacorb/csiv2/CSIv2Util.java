@@ -25,8 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.ietf.jgss.GSSException;
 import org.ietf.jgss.Oid;
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.as.jacorb.service.CorbaORBService;
 import org.jboss.metadata.ejb.jboss.IORASContextMetaData;
@@ -144,7 +143,7 @@ public final class CSIv2Util {
             byte[] componentData = codec.encode_value(any);
             tc = new TaggedComponent(TAG_SSL_SEC_TRANS.value, componentData);
         } catch (InvalidTypeForEncoding e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
         return tc;
     }
@@ -187,7 +186,7 @@ public final class CSIv2Util {
             byte[] b = codec.encode_value(any);
             tc = new TaggedComponent(TAG_CSI_SEC_MECH_LIST.value, b);
         } catch (InvalidTypeForEncoding e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
         return tc;
     }
@@ -367,7 +366,7 @@ public final class CSIv2Util {
                 byte[] b = codec.encode_value(any);
                 tc = new TaggedComponent(TAG_TLS_SEC_TRANS.value, b);
             } catch (InvalidTypeForEncoding e) {
-                throw JacORBMessages.MESSAGES.unexpectedException(e);
+                throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
             }
         }
 
@@ -791,10 +790,10 @@ public final class CSIv2Util {
             return null;
         } catch (org.omg.IOP.CodecPackage.TypeMismatch e) {
             // unexpected exception in codec
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         } catch (org.omg.IOP.CodecPackage.FormatMismatch e) {
             // unexpected exception in codec
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 

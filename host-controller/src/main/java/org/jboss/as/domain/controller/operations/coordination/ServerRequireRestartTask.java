@@ -27,7 +27,7 @@ import org.jboss.as.controller.ProxyController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.domain.controller.DomainControllerLogger;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.ServerIdentity;
 import org.jboss.as.server.operations.ServerRestartRequiredHandler;
 import org.jboss.dmr.ModelNode;

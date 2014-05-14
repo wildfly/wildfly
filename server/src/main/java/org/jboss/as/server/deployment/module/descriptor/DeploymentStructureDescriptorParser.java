@@ -41,8 +41,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.server.DeployerChainAddHandler;
-import org.jboss.as.server.ServerLogger;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.ServerService;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;
@@ -272,7 +271,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
             }
             builder.append(dep);
         }
-        return ServerMessages.MESSAGES.subdeploymentNotFound(path, builder);
+        return ServerLogger.ROOT_LOGGER.subdeploymentNotFound(path, builder);
     }
 
     @Override
@@ -288,7 +287,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
         try {
             fis = new FileInputStream(file);
         } catch (FileNotFoundException e) {
-            throw ServerMessages.MESSAGES.deploymentStructureFileNotFound(file);
+            throw ServerLogger.ROOT_LOGGER.deploymentStructureFileNotFound(file);
         }
         try {
             return parse(fis, file, deploymentUnit, moduleLoader);
@@ -319,7 +318,7 @@ public class DeploymentStructureDescriptorParser implements DeploymentUnitProces
                 safeClose(streamReader);
             }
         } catch (XMLStreamException e) {
-            throw ServerMessages.MESSAGES.errorLoadingDeploymentStructureFile(file.getPath(), e);
+            throw ServerLogger.ROOT_LOGGER.errorLoadingDeploymentStructureFile(file.getPath(), e);
         }
     }
 

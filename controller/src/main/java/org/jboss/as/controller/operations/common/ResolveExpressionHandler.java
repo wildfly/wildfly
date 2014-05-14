@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.operations.common;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -82,9 +82,9 @@ public class ResolveExpressionHandler implements OperationStepHandler {
                     }
                     context.completeStep(OperationContext.RollbackHandler.NOOP_ROLLBACK_HANDLER);
                 } catch (SecurityException e) {
-                    throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.noPermissionToResolveExpression(toResolve, e)));
+                    throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.noPermissionToResolveExpression(toResolve, e)));
                 } catch (IllegalStateException e) {
-                    throw new OperationFailedException(new ModelNode().set(ControllerMessages.MESSAGES.cannotResolveExpression(toResolve, e)));
+                    throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.cannotResolveExpression(toResolve, e)));
                 }
             }
         }, OperationContext.Stage.RUNTIME);

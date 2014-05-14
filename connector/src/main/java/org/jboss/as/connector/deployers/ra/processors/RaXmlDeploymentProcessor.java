@@ -22,6 +22,7 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.connector.metadata.xmldescriptors.ConnectorXmlDescriptor;
 import org.jboss.as.connector.services.resourceadapters.deployment.InactiveResourceAdapterDeploymentService;
 import org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersService;
@@ -47,7 +48,6 @@ import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.ServiceTarget;
 
 import static org.jboss.as.connector.logging.ConnectorLogger.ROOT_LOGGER;
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * DeploymentUnitProcessor responsible for using IronJacamar metadata and create
@@ -101,7 +101,7 @@ public class RaXmlDeploymentProcessor implements DeploymentUnitProcessor {
         Module module = deploymentUnit.getAttachment(Attachments.MODULE);
 
         if (module == null)
-            throw MESSAGES.failedToGetModuleAttachment(deploymentUnit);
+            throw ConnectorLogger.ROOT_LOGGER.failedToGetModuleAttachment(deploymentUnit);
 
         try {
             final ServiceTarget serviceTarget = phaseContext.getServiceTarget();

@@ -24,8 +24,7 @@ package org.jboss.as.ejb3.deployment.processors;
 
 import org.jboss.as.ee.metadata.EJBClientDescriptorMetaData;
 import org.jboss.as.ee.structure.Attachments;
-import org.jboss.as.ejb3.EjbLogger;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.deployment.EjbDeploymentAttachmentKeys;
 import org.jboss.as.ejb3.remote.DescriptorBasedEJBClientContextService;
 import org.jboss.as.ejb3.remote.EJBClientClusterConfig;
@@ -150,7 +149,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 final Class<?> deploymentNodeSelectorClass = classLoader.loadClass(deploymentNodeSelectorClassName);
                 ejbClientConfig.setDeploymentNodeSelector((DeploymentNodeSelector) deploymentNodeSelectorClass.newInstance());
             } catch (Exception e) {
-                throw EjbMessages.MESSAGES.failedToCreateDeploymentNodeSelector(e, deploymentNodeSelectorClassName);
+                throw EjbLogger.ROOT_LOGGER.failedToCreateDeploymentNodeSelector(e, deploymentNodeSelectorClassName);
             }
         }
 
@@ -176,7 +175,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
                 final Option<?> option = Option.fromString(propertyName, classLoader);
                 optionMapBuilder.parse(option, properties.getProperty(propertyName), classLoader);
             } catch (IllegalArgumentException e) {
-                EjbLogger.EJB3_LOGGER.failedToCreateOptionForProperty(propertyName, e.getMessage());
+                EjbLogger.ROOT_LOGGER.failedToCreateOptionForProperty(propertyName, e.getMessage());
             }
         }
         return optionMapBuilder.getMap();

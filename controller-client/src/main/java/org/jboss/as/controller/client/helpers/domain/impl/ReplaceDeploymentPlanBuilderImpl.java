@@ -22,8 +22,7 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.domain.DeploymentAction;
 import org.jboss.as.controller.client.helpers.domain.DeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.domain.ReplaceDeploymentPlanBuilder;
@@ -54,7 +53,7 @@ class ReplaceDeploymentPlanBuilderImpl extends DeploymentPlanBuilderImpl impleme
     public DeploymentPlanBuilder andRemoveUndeployed() {
         DeploymentSetPlanImpl currentSet = getCurrentDeploymentSetPlan();
         if (currentSet.hasServerGroupPlans()) {
-            throw MESSAGES.cannotAddDeploymentAction();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotAddDeploymentAction();
         }
         DeploymentActionImpl mod = DeploymentActionImpl.getRemoveAction(replacementModification.getReplacedDeploymentUnitUniqueName());
         DeploymentSetPlanImpl newSet = currentSet.addAction(mod);

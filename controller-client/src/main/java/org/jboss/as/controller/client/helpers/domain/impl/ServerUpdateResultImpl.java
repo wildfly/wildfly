@@ -22,11 +22,10 @@
 
 package org.jboss.as.controller.client.helpers.domain.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.io.Serializable;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.domain.ServerIdentity;
 import org.jboss.as.controller.client.helpers.domain.ServerUpdateResult;
 import org.jboss.dmr.ModelNode;
@@ -104,13 +103,13 @@ class ServerUpdateResultImpl implements ServerUpdateResult, Serializable {
             return null;
         }
         else if (rollbackResult.isCancelled()) {
-            return MESSAGES.rollbackCancelled();
+            return ControllerClientLogger.ROOT_LOGGER.rollbackCancelled();
         }
         else if (rollbackResult.isRolledBack()) {
-            return MESSAGES.rollbackRolledBack();
+            return ControllerClientLogger.ROOT_LOGGER.rollbackRolledBack();
         }
         else if (rollbackResult.isTimedOut()) {
-            return MESSAGES.rollbackTimedOut();
+            return ControllerClientLogger.ROOT_LOGGER.rollbackTimedOut();
         }
         else {
             return rollbackResult.getFailureResult();

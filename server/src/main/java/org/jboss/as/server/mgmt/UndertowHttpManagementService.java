@@ -40,7 +40,7 @@ import org.jboss.as.network.ManagedBindingRegistry;
 import org.jboss.as.network.NetworkInterfaceBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.network.SocketBindingManager;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.mgmt.domain.HttpManagement;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.Service;
@@ -259,7 +259,7 @@ public class UndertowHttpManagementService implements Service<HttpManagement> {
                 sb.append(" ").append(secureBindAddress);
             throw new StartException(sb.toString(), e);
         } catch (Exception e) {
-            throw ServerMessages.MESSAGES.failedToStartHttpManagementService(e);
+            throw ServerLogger.ROOT_LOGGER.failedToStartHttpManagementService(e);
         }
     }
 

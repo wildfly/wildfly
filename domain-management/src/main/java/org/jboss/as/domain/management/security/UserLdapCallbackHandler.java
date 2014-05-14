@@ -22,8 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
 import java.io.IOException;
@@ -42,6 +41,7 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.connections.ldap.LdapConnectionManager;
 import org.jboss.as.domain.management.security.LdapSearcherCache.AttachmentKey;
@@ -182,16 +182,16 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
 
             if (username == null || username.length() == 0) {
                 SECURITY_LOGGER.trace("No username or 0 length username supplied.");
-                throw MESSAGES.noUsername();
+                throw DomainManagementLogger.ROOT_LOGGER.noUsername();
             }
             if (verifyPasswordCallback == null) {
                 SECURITY_LOGGER.trace("No password supplied.");
-                throw MESSAGES.noPassword();
+                throw DomainManagementLogger.ROOT_LOGGER.noPassword();
             }
             String password = verifyPasswordCallback.getPassword();
             if (password == null || (allowEmptyPassword == false && password.length() == 0)) {
                 SECURITY_LOGGER.trace("No password or 0 length password supplied.");
-                throw MESSAGES.noPassword();
+                throw DomainManagementLogger.ROOT_LOGGER.noPassword();
             }
 
             final VerifyPasswordCallback theVpc = verifyPasswordCallback;
@@ -247,7 +247,7 @@ public class UserLdapCallbackHandler implements Service<CallbackHandlerService>,
                 }
             } catch (Exception e) {
                 SECURITY_LOGGER.trace("Unable to verify identity.", e);
-                throw MESSAGES.cannotPerformVerification(e);
+                throw DomainManagementLogger.ROOT_LOGGER.cannotPerformVerification(e);
             } finally {
                 if (shareConnection && lch != null && theVpc != null && theVpc.isVerified()) {
                     sharedState.put(LdapConnectionHandler.class.getName(), lch);

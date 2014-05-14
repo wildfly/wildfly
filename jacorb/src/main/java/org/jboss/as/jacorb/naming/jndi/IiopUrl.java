@@ -32,7 +32,7 @@ import java.util.Vector;
 import javax.naming.Name;
 import javax.naming.NamingException;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 
 /**
  * Extract components of an "iiop" or "iiopname" URL.
@@ -91,13 +91,13 @@ public final class IiopUrl {
             } else {
                 int dot = hostPortVers.indexOf('.');
                 if (dot < 0) {
-                    throw JacORBMessages.MESSAGES.invalidIIOPURLVersion(hostPortVers);
+                    throw JacORBLogger.ROOT_LOGGER.invalidIIOPURLVersion(hostPortVers);
                 }
                 try {
                     major = Integer.parseInt(hostPortVers.substring(0, dot));
                     minor = Integer.parseInt(hostPortVers.substring(dot + 1, at));
                 } catch (NumberFormatException e) {
-                    throw JacORBMessages.MESSAGES.invalidIIOPURLVersion(hostPortVers);
+                    throw JacORBLogger.ROOT_LOGGER.invalidIIOPURLVersion(hostPortVers);
                 }
                 start = at + 1;  // skip '@' sign
             }
@@ -110,7 +110,7 @@ public final class IiopUrl {
             if (hostPortVers.startsWith("[", start)) {  // at IPv6 literal
                 int brac = hostPortVers.indexOf(']', start + 1);
                 if (brac < 0 || brac > slash) {
-                    throw JacORBMessages.MESSAGES.invalidURL("iiopname", hostPortVers);
+                    throw JacORBLogger.ROOT_LOGGER.invalidURL("iiopname", hostPortVers);
                 }
 
                 // include brackets
@@ -132,7 +132,7 @@ public final class IiopUrl {
                     port = Integer.parseInt(hostPortVers.
                             substring(start, slash));
                 } else {
-                    throw JacORBMessages.MESSAGES.invalidURL("iiopname", hostPortVers);
+                    throw JacORBLogger.ROOT_LOGGER.invalidURL("iiopname", hostPortVers);
                 }
             }
             start = slash;
@@ -173,7 +173,7 @@ public final class IiopUrl {
             oldFormat = true;
             addrStart = 7;
         } else {
-            throw JacORBMessages.MESSAGES.invalidURL("iiop/iiopname", url);
+            throw JacORBLogger.ROOT_LOGGER.invalidURL("iiop/iiopname", url);
         }
         int addrEnd = url.indexOf('/', addrStart);
         if (addrEnd < 0) {

@@ -59,7 +59,7 @@ public class QueuelessThreadPoolMetricsHandler extends ThreadPoolMetricsHandler 
             context.getResult().set(pool.getRejectedCount());
         } else {
             // Programming bug. Throw a RuntimeException, not OFE, as this is not a client error
-            throw ThreadsMessages.MESSAGES.unsupportedQueuelessThreadPoolMetric(attributeName);
+            throw ThreadsLogger.ROOT_LOGGER.unsupportedQueuelessThreadPoolMetric(attributeName);
         }
     }
 }

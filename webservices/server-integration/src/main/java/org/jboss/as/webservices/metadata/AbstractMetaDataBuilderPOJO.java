@@ -21,7 +21,6 @@
  */
 package org.jboss.as.webservices.metadata;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
 import static org.jboss.as.webservices.util.ASHelper.getContextRoot;
 
 import java.util.HashMap;
@@ -30,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.metadata.model.POJOEndpoint;
 import org.jboss.as.webservices.util.WebMetaDataHelper;
 import org.jboss.metadata.javaee.spec.ParamValueMetaData;
@@ -68,7 +68,7 @@ abstract class AbstractMetaDataBuilderPOJO {
      * @return universal JSE meta data model
      */
     JSEArchiveMetaData create(final Deployment dep) {
-        ROOT_LOGGER.creatingPojoDeployment(dep.getSimpleName());
+        WSLogger.ROOT_LOGGER.tracef("Creating JBoss agnostic meta data for POJO webservice deployment: %s", dep.getSimpleName());
         final JBossWebMetaData jbossWebMD = WSHelper.getRequiredAttachment(dep, JBossWebMetaData.class);
         final DeploymentUnit unit = WSHelper.getRequiredAttachment(dep, DeploymentUnit.class);
         final List<POJOEndpoint> pojoEndpoints = getPojoEndpoints(unit);
@@ -77,7 +77,7 @@ abstract class AbstractMetaDataBuilderPOJO {
         // set context root
         final String contextRoot = getContextRoot(dep, jbossWebMD);
         jseArchiveMD.setContextRoot(contextRoot);
-        ROOT_LOGGER.settingContextRoot(contextRoot);
+        WSLogger.ROOT_LOGGER.tracef("Setting context root: %s", contextRoot);
 
         // set servlet url patterns mappings
         final Map<String, String> servletMappings = getServletUrlPatternsMappings(jbossWebMD, pojoEndpoints);
@@ -121,10 +121,10 @@ abstract class AbstractMetaDataBuilderPOJO {
            if (jbossWebservicesMD.getConfigName() != null) {
               final String configName = jbossWebservicesMD.getConfigName();
               jseArchiveMD.setConfigName(configName);
-              ROOT_LOGGER.settingConfigName(configName);
+              WSLogger.ROOT_LOGGER.tracef("Setting config name: %s", configName);
               final String configFile = jbossWebservicesMD.getConfigFile();
               jseArchiveMD.setConfigFile(configFile);
-              ROOT_LOGGER.settingConfigFile(configFile);
+               WSLogger.ROOT_LOGGER.tracef("Setting config file: %s", configFile);
 
               // ensure higher priority against web.xml context parameters
               return;
@@ -137,12 +137,12 @@ abstract class AbstractMetaDataBuilderPOJO {
                 if (WSConstants.JBOSSWS_CONFIG_NAME.equals(contextParam.getParamName())) {
                     final String configName = contextParam.getParamValue();
                     jseArchiveMD.setConfigName(configName);
-                    ROOT_LOGGER.settingConfigName(configName);
+                    WSLogger.ROOT_LOGGER.tracef("Setting config name: %s", configName);
                 }
                 if (WSConstants.JBOSSWS_CONFIG_FILE.equals(contextParam.getParamName())) {
                     final String configFile = contextParam.getParamValue();
                     jseArchiveMD.setConfigFile(configFile);
-                    ROOT_LOGGER.settingConfigFile(configFile);
+                    WSLogger.ROOT_LOGGER.tracef("Setting config file: %s", configFile);
                 }
             }
         }

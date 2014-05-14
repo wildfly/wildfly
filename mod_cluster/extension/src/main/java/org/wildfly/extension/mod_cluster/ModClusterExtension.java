@@ -221,7 +221,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ModClusterMessages.MESSAGES.capacityIsExpressionOrGreaterThanIntegerMaxValue(attributes.get(CAPACITY.getName()));
+            return ModClusterLogger.ROOT_LOGGER.capacityIsExpressionOrGreaterThanIntegerMaxValue(attributes.get(CAPACITY.getName()));
         }
 
         @Override
@@ -268,7 +268,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
         private static final PropertyCheckerAndConverter INSTANCE = new PropertyCheckerAndConverter();
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ModClusterMessages.MESSAGES.propertyCanOnlyHaveOneEntry();
+            return ModClusterLogger.ROOT_LOGGER.propertyCanOnlyHaveOneEntry();
         }
 
         @Override
@@ -303,7 +303,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         @Override
         public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
-            return ModClusterMessages.MESSAGES.sessionDrainingStrategyMustBeUndefinedOrDefault();
+            return ModClusterLogger.ROOT_LOGGER.sessionDrainingStrategyMustBeUndefinedOrDefault();
         }
 
         @Override

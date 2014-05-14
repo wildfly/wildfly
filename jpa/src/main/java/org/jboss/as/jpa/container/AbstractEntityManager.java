@@ -23,7 +23,6 @@
 package org.jboss.as.jpa.container;
 
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.util.List;
 import java.util.Map;
@@ -43,6 +42,7 @@ import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
+import org.jboss.as.jpa.messages.JpaLogger;
 
 /**
  * Abstract entity manager used by all container managed entity managers.
@@ -864,7 +864,7 @@ public abstract class AbstractEntityManager implements EntityManager {
     // will throw TransactionRequiredException for any calls to entity manager remove/merge/persist/refresh.
     private void transactionIsRequired() {
         if (!this.isExtendedPersistenceContext() && !this.isInTx()) {
-            throw MESSAGES.transactionRequired();
+            throw JpaLogger.ROOT_LOGGER.transactionRequired();
         }
     }
 

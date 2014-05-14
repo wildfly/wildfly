@@ -56,6 +56,7 @@ import org.wildfly.clustering.provider.ServiceProviderRegistration;
 import org.wildfly.clustering.provider.ServiceProviderRegistrationFactory;
 import org.wildfly.clustering.server.dispatcher.CommandDispatcherFactoryProvider;
 import org.wildfly.clustering.server.group.CacheGroupProvider;
+import org.wildfly.clustering.server.logging.ClusteringServerLogger;
 import org.wildfly.clustering.server.provider.ServiceProviderRegistrationFactoryProvider;
 import org.wildfly.clustering.singleton.Singleton;
 import org.wildfly.clustering.singleton.SingletonElectionPolicy;
@@ -173,12 +174,12 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     public void providersChanged(Set<Node> nodes) {
         if (this.elected(nodes)) {
             if (!this.master.get()) {
-                SingletonLogger.ROOT_LOGGER.electedMaster(this.singletonServiceName.getCanonicalName());
+                ClusteringServerLogger.ROOT_LOGGER.electedMaster(this.singletonServiceName.getCanonicalName());
                 this.singletonDispatcher.stopOldMaster();
                 this.startNewMaster();
             }
         } else if (this.master.get()) {
-            SingletonLogger.ROOT_LOGGER.electedSlave(this.singletonServiceName.getCanonicalName());
+            ClusteringServerLogger.ROOT_LOGGER.electedSlave(this.singletonServiceName.getCanonicalName());
             this.stopOldMaster();
         }
     }
@@ -186,14 +187,14 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
     private boolean elected(Set<Node> candidates) {
         int size = candidates.size();
         if (size < this.quorum) {
-            SingletonLogger.ROOT_LOGGER.quorumNotReached(this.singletonServiceName.getCanonicalName(), this.quorum);
+            ClusteringServerLogger.ROOT_LOGGER.quorumNotReached(this.singletonServiceName.getCanonicalName(), this.quorum);
             return false;
         } else if (size == this.quorum) {
-            SingletonLogger.ROOT_LOGGER.quorumJustReached(this.singletonServiceName.getCanonicalName(), this.quorum);
+            ClusteringServerLogger.ROOT_LOGGER.quorumJustReached(this.singletonServiceName.getCanonicalName(), this.quorum);
         }
         Node elected = this.election(candidates);
         if (elected != null) {
-            SingletonLogger.ROOT_LOGGER.elected(elected.getName(), this.singletonServiceName.getCanonicalName());
+            ClusteringServerLogger.ROOT_LOGGER.elected(elected.getName(), this.singletonServiceName.getCanonicalName());
         }
         return (elected != null) ? elected.equals(this.group.getValue().getLocalNode()) : false;
     }
@@ -211,7 +212,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
         try {
             ServiceContainerHelper.start(service);
         } catch (StartException e) {
-            SingletonLogger.ROOT_LOGGER.serviceStartFailed(e, this.targetServiceName.getCanonicalName());
+            ClusteringServerLogger.ROOT_LOGGER.serviceStartFailed(e, this.targetServiceName.getCanonicalName());
             ServiceContainerHelper.stop(service);
         }
     }
@@ -255,7 +256,7 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
                 Map<Node, CommandResponse<AtomicReference<T>>> results = Collections.emptyMap();
                 while (results.isEmpty()) {
                     if (!SingletonService.this.started) {
-                        throw new IllegalStateException(SingletonMessages.MESSAGES.notStarted(SingletonService.this.singletonServiceName.getCanonicalName()));
+                        throw new IllegalStateException(ClusteringServerLogger.ROOT_LOGGER.notStarted(SingletonService.this.singletonServiceName.getCanonicalName()));
                     }
                     results = SingletonService.this.dispatcher.executeOnCluster(new SingletonValueCommand<T>());
                     Iterator<CommandResponse<AtomicReference<T>>> responses = results.values().iterator();
@@ -269,10 +270,10 @@ public class SingletonService<T extends Serializable> implements Service<T>, Ser
                     int count = results.size();
                     if (count > 1) {
                         // This would mean there are multiple masters!
-                        throw SingletonMessages.MESSAGES.unexpectedResponseCount(SingletonService.this.singletonServiceName.getCanonicalName(), count);
+                        throw ClusteringServerLogger.ROOT_LOGGER.unexpectedResponseCount(SingletonService.this.singletonServiceName.getCanonicalName(), count);
                     }
                     if (count == 0) {
-                        SingletonLogger.ROOT_LOGGER.noResponseFromMaster(SingletonService.this.singletonServiceName.getCanonicalName());
+                        ClusteringServerLogger.ROOT_LOGGER.noResponseFromMaster(SingletonService.this.singletonServiceName.getCanonicalName());
                         // Verify whether there is no master because a quorum was not reached during the last election
                         if (SingletonService.this.registration.getProviders().size() < SingletonService.this.quorum) {
                             return new AtomicReference<>();

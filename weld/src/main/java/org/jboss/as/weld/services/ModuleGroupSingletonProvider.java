@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.modules.ModuleClassLoader;
 import org.jboss.weld.bootstrap.api.Singleton;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
@@ -74,7 +74,7 @@ public class ModuleGroupSingletonProvider extends SingletonProvider {
         public T get() {
             T instance = store.get(findParentModuleCl(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged()));
             if (instance == null) {
-                throw WeldMessages.MESSAGES.singletonNotSet(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
+                throw WeldLogger.ROOT_LOGGER.singletonNotSet(WildFlySecurityManager.getCurrentContextClassLoaderPrivileged());
             }
             return instance;
         }

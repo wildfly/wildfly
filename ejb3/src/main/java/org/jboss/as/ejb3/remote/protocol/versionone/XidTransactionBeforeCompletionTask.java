@@ -23,7 +23,7 @@
 package org.jboss.as.ejb3.remote.protocol.versionone;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.jca.SubordinateTransaction;
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.ejb.client.XidTransactionID;
 import org.jboss.marshalling.MarshallerFactory;
@@ -43,7 +43,7 @@ class XidTransactionBeforeCompletionTask extends XidTransactionManagementTask {
     protected void manageTransaction() throws Throwable {
         final SubordinateTransaction subordinateTransaction = this.transactionsRepository.getImportedTransaction(this.xidTransactionID);
         if (subordinateTransaction == null) {
-            throw EjbMessages.MESSAGES.noSubordinateTransactionPresentForXid(this.xidTransactionID.getXid());
+            throw EjbLogger.ROOT_LOGGER.noSubordinateTransactionPresentForXid(this.xidTransactionID.getXid());
         }
         // first associate the tx on this thread, by resuming the tx
         this.resumeTransaction(subordinateTransaction);

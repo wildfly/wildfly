@@ -21,7 +21,7 @@
  */
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 import static org.jboss.as.naming.deployment.ContextNames.BindInfo;
 
 import javax.naming.InitialContext;

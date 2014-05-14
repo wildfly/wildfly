@@ -23,8 +23,7 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXTENSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
@@ -47,6 +46,7 @@ import java.util.concurrent.Future;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.dmr.ModelNode;
@@ -150,9 +150,9 @@ public class ExtensionXml {
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
-                    throw MESSAGES.moduleLoadingInterrupted(entry.getKey());
+                    throw ControllerLogger.ROOT_LOGGER.moduleLoadingInterrupted(entry.getKey());
                 } catch (ExecutionException e) {
-                    throw MESSAGES.failedToLoadModule(e, entry.getKey());
+                    throw ControllerLogger.ROOT_LOGGER.failedToLoadModule(e, entry.getKey());
                 }
 
                 addExtensionAddOperation(address, list, entry.getKey());
@@ -189,11 +189,11 @@ public class ExtensionXml {
                 }
             }
             if (!initialized) {
-                throw MESSAGES.notFound("META-INF/services/", Extension.class.getName(), module.getIdentifier());
+                throw ControllerLogger.ROOT_LOGGER.notFound("META-INF/services/", Extension.class.getName(), module.getIdentifier());
             }
             return null;
         } catch (final ModuleLoadException e) {
-            throw MESSAGES.failedToLoadModule(e);
+            throw ControllerLogger.ROOT_LOGGER.failedToLoadModule(e);
         }
     }
 }

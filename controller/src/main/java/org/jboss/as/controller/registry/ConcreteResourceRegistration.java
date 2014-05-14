@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.registry;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 
 import java.util.ArrayList;
@@ -37,6 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
@@ -131,18 +131,18 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     @Override
     public ManagementResourceRegistration registerSubModel(final ResourceDefinition resourceDefinition) {
         if (resourceDefinition == null) {
-            throw MESSAGES.nullVar("resourceDefinition");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("resourceDefinition");
         }
         final PathElement address = resourceDefinition.getPathElement();
         if (address == null) {
-            throw MESSAGES.cannotRegisterSubmodelWithNullPath();
+            throw ControllerLogger.ROOT_LOGGER.cannotRegisterSubmodelWithNullPath();
         }
         if (isRuntimeOnly()) {
-            throw MESSAGES.cannotRegisterSubmodel();
+            throw ControllerLogger.ROOT_LOGGER.cannotRegisterSubmodel();
         }
         final AbstractResourceRegistration existing = getSubRegistration(PathAddress.pathAddress(address));
         if (existing != null && existing.getValueString().equals(address.getValue())) {
-            throw MESSAGES.nodeAlreadyRegistered(existing.getLocationString());
+            throw ControllerLogger.ROOT_LOGGER.nodeAlreadyRegistered(existing.getLocationString());
         }
         final String key = address.getKey();
         final NodeSubregistry child = getOrCreateSubregistry(key);
@@ -385,7 +385,7 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     public void registerProxyController(final PathElement address, final ProxyController controller) throws IllegalArgumentException {
         final AbstractResourceRegistration existing = getSubRegistration(PathAddress.pathAddress(address));
         if (existing != null && existing.getValueString().equals(address.getValue())) {
-            throw MESSAGES.nodeAlreadyRegistered(existing.getLocationString());
+            throw ControllerLogger.ROOT_LOGGER.nodeAlreadyRegistered(existing.getLocationString());
         }
         getOrCreateSubregistry(address.getKey()).registerProxyController(address.getValue(), controller);
     }
@@ -596,11 +596,11 @@ final class ConcreteResourceRegistration extends AbstractResourceRegistration {
     }
 
     private IllegalArgumentException alreadyRegistered(final String type, final String name) {
-        return MESSAGES.alreadyRegistered(type, name, getLocationString());
+        return ControllerLogger.ROOT_LOGGER.alreadyRegistered(type, name, getLocationString());
     }
 
     private IllegalArgumentException operationNotRegisteredException(String op, PathElement address) {
-        return MESSAGES.operationNotRegisteredException(op, PathAddress.pathAddress(address));
+        return ControllerLogger.ROOT_LOGGER.operationNotRegisteredException(op, PathAddress.pathAddress(address));
     }
 
     @Override

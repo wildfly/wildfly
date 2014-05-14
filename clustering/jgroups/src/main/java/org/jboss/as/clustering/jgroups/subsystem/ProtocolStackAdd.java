@@ -41,7 +41,7 @@ import java.util.concurrent.ThreadFactory;
 import javax.management.MBeanServer;
 
 import org.jboss.as.clustering.jgroups.ChannelFactory;
-import org.jboss.as.clustering.jgroups.JGroupsMessages;
+import org.jboss.as.clustering.jgroups.logging.JGroupsLogger;
 import org.jboss.as.clustering.jgroups.ProtocolConfiguration;
 import org.jboss.as.clustering.jgroups.ProtocolDefaults;
 import org.jboss.as.clustering.jgroups.ProtocolStackConfiguration;
@@ -330,12 +330,12 @@ public class ProtocolStackAdd extends AbstractAddStepHandler {
 
          ModelNode transport = model.get(ModelKeys.TRANSPORT, ModelKeys.TRANSPORT_NAME);
          if (!transport.isDefined()) {
-            throw JGroupsMessages.MESSAGES.transportNotDefined(stackName);
+            throw JGroupsLogger.ROOT_LOGGER.transportNotDefined(stackName);
          }
 
          List<Property> protocols = getOrderedProtocolPropertyList(model);
          if ( protocols == null || !(protocols.size() > 0)) {
-             throw JGroupsMessages.MESSAGES.protocolListNotDefined(stackName);
+             throw JGroupsLogger.ROOT_LOGGER.protocolListNotDefined(stackName);
          }
     }
 

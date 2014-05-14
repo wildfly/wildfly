@@ -22,14 +22,13 @@
 
 package org.jboss.as.connector.deployers.ra.processors;
 
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -108,7 +107,7 @@ public class RaStructureProcessor implements DeploymentUnitProcessor {
                 resourceRoot.addToAttachmentList(Attachments.INDEX_IGNORE_PATHS, child.getPathNameRelativeTo(deploymentRoot));
             }
         } catch (IOException e) {
-            throw MESSAGES.failedToProcessRaChild(e, deploymentRoot);
+            throw ConnectorLogger.ROOT_LOGGER.failedToProcessRaChild(e, deploymentRoot);
         }
     }
 

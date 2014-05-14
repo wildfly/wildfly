@@ -18,13 +18,14 @@
  */
 package org.jboss.as.controller.interfaces;
 
-import static org.jboss.as.controller.ControllerLogger.SERVER_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.SERVER_LOGGER;
 
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+
+import org.jboss.as.controller.logging.ControllerLogger;
 
 /**
  * A loopback criteria with a specified bind address.
@@ -50,7 +51,7 @@ public class LoopbackAddressInterfaceCriteria extends AbstractInterfaceCriteria 
      */
     public LoopbackAddressInterfaceCriteria(final InetAddress address) {
         if (address == null)
-            throw MESSAGES.nullVar("address");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("address");
         this.resolved = address;
         this.address = resolved.getHostAddress();
     }
@@ -65,7 +66,7 @@ public class LoopbackAddressInterfaceCriteria extends AbstractInterfaceCriteria 
      */
     public LoopbackAddressInterfaceCriteria(final String address) {
         if (address == null)
-            throw MESSAGES.nullVar("address");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("address");
         this.address = address;
     }
 

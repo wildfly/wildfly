@@ -24,6 +24,8 @@ package org.jboss.as.process;
 
 import java.util.concurrent.TimeUnit;
 
+import org.jboss.as.process.logging.ProcessLogger;
+
 /**
  * Policy used to automatically restart a crashed process.
  *

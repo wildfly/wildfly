@@ -42,11 +42,11 @@ import org.wildfly.extension.picketlink.federation.service.EntityProviderService
 import org.wildfly.extension.picketlink.federation.service.IdentityProviderService;
 import org.wildfly.extension.picketlink.federation.service.SAMLHandlerService;
 import org.wildfly.extension.picketlink.federation.service.ServiceProviderService;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 
 import java.util.List;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADDRESS;
-import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.COMMON_HANDLER_PARAMETER;
 import static org.wildfly.extension.picketlink.common.model.ModelElement.IDENTITY_PROVIDER;
 import static org.wildfly.extension.picketlink.federation.service.SAMLHandlerService.createServiceName;
@@ -74,7 +74,7 @@ public class HandlerAddHandler extends AbstractAddStepHandler {
         } else if (codeNode.isDefined()) {
             typeName = HandlerTypeEnum.forType(codeNode.asString());
         } else {
-            throw MESSAGES.federationHandlerTypeNotProvided();
+            throw PicketLinkLogger.ROOT_LOGGER.federationHandlerTypeNotProvided();
         }
 
         newHandler.setClazz(typeName);

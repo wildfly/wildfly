@@ -22,7 +22,7 @@
 package org.jboss.as.webservices.dmr;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
+
 import static org.jboss.as.webservices.dmr.Constants.WSDL_HOST;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_PORT;
 import static org.jboss.as.webservices.dmr.Constants.WSDL_SECURE_PORT;
@@ -45,6 +45,7 @@ import org.jboss.as.jmx.JMXExtension;
 import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.web.host.CommonWebServer;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.config.ServerConfigImpl;
 import org.jboss.as.webservices.service.ServerConfigService;
 import org.jboss.as.webservices.service.XTSClientIntegrationService;
@@ -71,7 +72,7 @@ class WSSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
 
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        ROOT_LOGGER.activatingWebservicesExtension();
+        WSLogger.ROOT_LOGGER.activatingWebservicesExtension();
         ModuleClassLoaderProvider.register();
         final boolean appclient = context.getProcessType() == ProcessType.APPLICATION_CLIENT;
 

@@ -123,6 +123,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
 import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.messaging.jms.JMSService;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.as.network.OutboundSocketBinding;
 import org.jboss.as.network.SocketBinding;
 import org.jboss.as.security.plugins.SecurityDomainContext;
@@ -168,7 +169,7 @@ class HornetQServerAdd implements OperationStepHandler {
         if (mceVal.isDefined()) {
             ModelNode seVal = model.get(STATISTICS_ENABLED.getName());
             if (seVal.isDefined() && !seVal.equals(mceVal)) {
-                throw MessagingMessages.MESSAGES.inconsistentStatisticsSettings(MESSAGE_COUNTER_ENABLED.getName(), STATISTICS_ENABLED.getName());
+                throw MessagingLogger.ROOT_LOGGER.inconsistentStatisticsSettings(MESSAGE_COUNTER_ENABLED.getName(), STATISTICS_ENABLED.getName());
             }
             seVal.set(mceVal);
             mceVal.set(new ModelNode());

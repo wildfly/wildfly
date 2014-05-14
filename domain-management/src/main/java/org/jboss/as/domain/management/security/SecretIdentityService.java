@@ -22,9 +22,10 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.ROOT_LOGGER;
 
 import org.jboss.as.domain.management.CallbackHandlerFactory;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
@@ -41,9 +42,6 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.sasl.RealmCallback;
 import javax.security.sasl.RealmChoiceCallback;
 import java.io.IOException;
-
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 
 /**
  * A simple identity service for an identity represented by a single secret or password.
@@ -112,7 +110,7 @@ public class SecretIdentityService implements Service<CallbackHandlerFactory> {
                     String defaultText = rcb.getDefaultText();
                     rcb.setText(defaultText); // For now just use the realm suggested.
                 } else if (current instanceof RealmChoiceCallback) {
-                    throw MESSAGES.realmNotSupported(current);
+                    throw DomainManagementLogger.ROOT_LOGGER.realmNotSupported(current);
                 } else if (current instanceof NameCallback) {
                     NameCallback ncb = (NameCallback) current;
                     ncb.setName(userName);

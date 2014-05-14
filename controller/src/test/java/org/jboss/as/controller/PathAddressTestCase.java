@@ -24,6 +24,7 @@ package org.jboss.as.controller;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HOST;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER;
 
+import org.jboss.as.controller._private.OperationFailedRuntimeException;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;

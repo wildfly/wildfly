@@ -29,6 +29,7 @@ import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.as.messaging.HornetQActivationService;
 import org.jboss.as.messaging.HornetQDefaultCredentials;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceContainer;
@@ -42,8 +43,7 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.msc.value.InjectedValue;
 
-import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 import static org.jboss.as.server.Services.addServerExecutorDependency;
 import static org.jboss.msc.service.ServiceController.Mode.ACTIVE;
 import static org.jboss.msc.service.ServiceController.Mode.REMOVE;
@@ -170,7 +170,7 @@ public class JMSService implements Service<JMSServerManager> {
         } catch(StartException e){
             throw e;
         } catch (Exception e) {
-            throw MESSAGES.failedToStartService(e);
+            throw MessagingLogger.ROOT_LOGGER.failedToStartService(e);
         } finally {
             WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(oldTccl);
         }

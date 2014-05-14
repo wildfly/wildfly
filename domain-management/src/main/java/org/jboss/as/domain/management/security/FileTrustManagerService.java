@@ -21,8 +21,6 @@
  */
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
-
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -35,7 +33,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
@@ -97,7 +95,7 @@ class FileTrustManagerService extends AbstractTrustManagerService {
         try {
             trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
         } catch (NoSuchAlgorithmException e) {
-            throw MESSAGES.unableToStart(e);
+            throw DomainManagementLogger.ROOT_LOGGER.unableToStart(e);
         }
         // Do our initialisation first as the parent implementation will
         // expect that to be complete.
@@ -167,7 +165,7 @@ class FileTrustManagerService extends AbstractTrustManagerService {
                 try {
                     theTrustStore.load();
                 } catch (StartException e1) {
-                    throw DomainManagementMessages.MESSAGES.unableToLoadKeyTrustFile(e1.getCause());
+                    throw DomainManagementLogger.ROOT_LOGGER.unableToLoadKeyTrustFile(e1.getCause());
                 }
                 try {
                     trustManagerFactory.init(theTrustStore.getKeyStore());
@@ -179,12 +177,12 @@ class FileTrustManagerService extends AbstractTrustManagerService {
                         }
                     }
                 } catch (GeneralSecurityException e) {
-                    throw DomainManagementMessages.MESSAGES.unableToOperateOnTrustStore(e);
+                    throw DomainManagementLogger.ROOT_LOGGER.unableToOperateOnTrustStore(e);
 
                 }
             }
             if (delegate == null) {
-                throw DomainManagementMessages.MESSAGES.unableToCreateDelegateTrustManager();
+                throw DomainManagementLogger.ROOT_LOGGER.unableToCreateDelegateTrustManager();
             }
 
             return delegate;

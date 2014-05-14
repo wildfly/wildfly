@@ -22,12 +22,12 @@
 
 package org.jboss.as.ejb3.component.pool;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.msc.service.Service;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.service.StartContext;
 import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
@@ -46,7 +46,7 @@ public class PoolConfigService implements Service<PoolConfig> {
 
     public PoolConfigService(final PoolConfig poolConfig) {
         if (poolConfig == null) {
-            throw MESSAGES.poolConfigIsNull();
+            throw EjbLogger.ROOT_LOGGER.poolConfigIsNull();
         }
         this.poolConfig = poolConfig;
     }

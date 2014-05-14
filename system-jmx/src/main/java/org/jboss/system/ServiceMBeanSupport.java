@@ -31,6 +31,7 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.ObjectName;
 
 import org.jboss.logging.Logger;
+import org.jboss.system.logging.ServiceMBeanLogger;
 
 /**
  * An abstract base class JBoss services can subclass to implement a service that conforms to the ServiceMBean interface.
@@ -169,7 +170,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         try {
             jbossInternalStop();
         } catch (Throwable t) {
-            log.warn(ServiceMBeanMessages.MESSAGES.errorInStop(t, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.errorInStop(t, jbossInternalDescription()));
         }
     }
 
@@ -177,7 +178,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         try {
             jbossInternalDestroy();
         } catch (Throwable t) {
-            log.warn(ServiceMBeanMessages.MESSAGES.errorInDestroy(t, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.errorInDestroy(t, jbossInternalDescription()));
         }
     }
 
@@ -190,7 +191,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
 
     public void jbossInternalLifecycle(String method) throws Exception {
         if (method == null)
-            throw ServiceMBeanMessages.MESSAGES.nullMethodName();
+            throw ServiceMBeanLogger.ROOT_LOGGER.nullMethodName();
 
         if (method.equals("create"))
             jbossInternalCreate();
@@ -201,7 +202,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         else if (method.equals("destroy"))
             jbossInternalDestroy();
         else
-            throw ServiceMBeanMessages.MESSAGES.unknownLifecycleMethod(method);
+            throw ServiceMBeanLogger.ROOT_LOGGER.unknownLifecycleMethod(method);
     }
 
     protected void jbossInternalCreate() throws Exception {
@@ -224,7 +225,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
             createService();
             state = CREATED;
         } catch (Exception e) {
-            log.warn(ServiceMBeanMessages.MESSAGES.initializationFailed(e, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.initializationFailed(e, jbossInternalDescription()));
             throw e;
         }
 
@@ -259,7 +260,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         } catch (Exception e) {
             state = FAILED;
             sendStateChangeNotification(STARTING, FAILED, getName() + " failed", e);
-            log.warn(ServiceMBeanMessages.MESSAGES.startingFailed(e, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.startingFailed(e, jbossInternalDescription()));
             throw e;
         }
 
@@ -295,7 +296,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         } catch (Throwable e) {
             state = FAILED;
             sendStateChangeNotification(STOPPING, FAILED, getName() + " failed", e);
-            log.warn(ServiceMBeanMessages.MESSAGES.stoppingFailed(e, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.stoppingFailed(e, jbossInternalDescription()));
             return;
         }
 
@@ -327,7 +328,7 @@ public class ServiceMBeanSupport extends NotificationBroadcasterSupport implemen
         try {
             destroyService();
         } catch (Throwable t) {
-            log.warn(ServiceMBeanMessages.MESSAGES.destroyingFailed(t, jbossInternalDescription()));
+            log.warn(ServiceMBeanLogger.ROOT_LOGGER.destroyingFailed(t, jbossInternalDescription()));
         }
         state = DESTROYED;
         if (log.isDebugEnabled()) {

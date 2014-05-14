@@ -91,6 +91,7 @@ import org.jboss.as.controller.audit.AuditLogger;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.security.InetAddressPrincipal;
 import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.as.server.jmx.MBeanServerPlugin;
 import org.jboss.as.server.jmx.PluggableMBeanServer;
 import org.wildfly.security.manager.WildFlySecurityManager;
@@ -1070,7 +1071,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     private MBeanServerPlugin findDelegate(ObjectName name) throws InstanceNotFoundException {
         if (name == null) {
-            throw JmxMessages.MESSAGES.objectNameCantBeNull();
+            throw JmxLogger.ROOT_LOGGER.objectNameCantBeNull();
         }
         if (delegates.size() > 0) {
             for (MBeanServerPlugin delegate : delegates) {
@@ -1087,7 +1088,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
 
     private MBeanServerPlugin findDelegateForNewObject(ObjectName name) {
         if (name == null) {
-            throw JmxMessages.MESSAGES.objectNameCantBeNull();
+            throw JmxLogger.ROOT_LOGGER.objectNameCantBeNull();
         }
         if (delegates.size() > 0) {
             for (MBeanServerPlugin delegate : delegates) {
@@ -1166,7 +1167,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             AuthorizationResult authorizationResult = authorizer.authorizeJmxOperation(createCaller(), null, target);
             if (authorizationResult.getDecision() != Decision.PERMIT) {
                 if (exception) {
-                    throw JmxMessages.MESSAGES.unauthorized();
+                    throw JmxLogger.ROOT_LOGGER.unauthorized();
                 } else {
                     return false;
                 }
@@ -1180,7 +1181,7 @@ class PluggableMBeanServerImpl implements PluggableMBeanServer {
             //TODO populate the 'environment' variable
             AuthorizationResult authorizationResult = authorizer.authorizeJmxOperation(createCaller(), null, new JmxAction(methodName, JmxAction.Impact.EXTRA_SENSITIVE));
             if (authorizationResult.getDecision() != Decision.PERMIT) {
-                throw JmxMessages.MESSAGES.unauthorized();
+                throw JmxLogger.ROOT_LOGGER.unauthorized();
             }
         }
         return true;

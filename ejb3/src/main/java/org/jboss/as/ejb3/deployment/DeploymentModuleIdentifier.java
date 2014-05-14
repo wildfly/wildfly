@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 
 import java.io.Serializable;
 
@@ -39,13 +39,13 @@ public final class DeploymentModuleIdentifier implements Serializable {
 
     public DeploymentModuleIdentifier(String applicationName, String moduleName, String distinctName) {
         if (applicationName == null) {
-            throw EjbMessages.MESSAGES.paramCannotBeNull("Application name");
+            throw EjbLogger.ROOT_LOGGER.paramCannotBeNull("Application name");
         }
         if (moduleName == null) {
-            throw EjbMessages.MESSAGES.paramCannotBeNull("Module name");
+            throw EjbLogger.ROOT_LOGGER.paramCannotBeNull("Module name");
         }
         if (distinctName == null) {
-            throw EjbMessages.MESSAGES.paramCannotBeNull("Distinct name");
+            throw EjbLogger.ROOT_LOGGER.paramCannotBeNull("Distinct name");
         }
         this.applicationName = applicationName;
         this.moduleName = moduleName;

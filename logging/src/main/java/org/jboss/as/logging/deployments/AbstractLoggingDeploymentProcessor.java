@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.jboss.as.logging.LoggingLogger;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.logging.logmanager.WildFlyLogContextSelector;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.Attachments;

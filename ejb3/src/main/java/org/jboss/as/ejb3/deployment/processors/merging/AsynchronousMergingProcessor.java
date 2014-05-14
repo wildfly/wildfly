@@ -41,6 +41,7 @@ import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.metadata.MethodAnnotationAggregator;
 import org.jboss.as.ee.metadata.RuntimeAnnotationInformation;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.interceptors.AsyncFutureInterceptorFactory;
 import org.jboss.as.ejb3.component.interceptors.LogDiagnosticContextRecoveryInterceptor;
@@ -61,7 +62,6 @@ import org.jboss.metadata.ejb.spec.SessionBeanMetaData;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 /**
  * Merging processor that handles EJB async methods, and adds a configurator to configure any that are found.
  *
@@ -162,7 +162,7 @@ public class AsynchronousMergingProcessor extends AbstractMergingProcessor<Sessi
             configuration.addClientInterceptor(method, AsyncFutureInterceptorFactory.INSTANCE, InterceptorOrder.Client.LOCAL_ASYNC_INVOCATION);
             configuration.addClientInterceptor(method, LogDiagnosticContextRecoveryInterceptor.getFactory(), InterceptorOrder.Client.LOCAL_ASYNC_LOG_RESTORE);
         } else {
-            throw MESSAGES.wrongReturnTypeForAsyncMethod(method);
+            throw EjbLogger.ROOT_LOGGER.wrongReturnTypeForAsyncMethod(method);
         }
     }
 }

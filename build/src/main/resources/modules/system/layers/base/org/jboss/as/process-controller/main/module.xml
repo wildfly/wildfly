@@ -28,6 +28,10 @@
         <property name="jboss.require-java-version" value="1.7"/>
     </properties>
 
+    <exports>
+        <exclude path="org/jboss/as/process/logging"/>
+    </exports>
+
     <main-class name="org.jboss.as.process.Main"/>
 
     <resources>

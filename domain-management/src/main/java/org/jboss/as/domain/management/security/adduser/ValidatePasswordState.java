@@ -21,13 +21,13 @@
  */
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.security.password.PasswordCheckResult;
 import org.jboss.as.domain.management.security.password.RestrictionLevel;
 
@@ -96,12 +96,12 @@ public class ValidatePasswordState extends AbstractValidationState {
     private State confirmWeakPassword(PasswordCheckResult result) {
         if (stateValues.getOptions().isConfirmWarning()) {
             theConsole.printf(result.getMessage());
-            theConsole.printf(MESSAGES.sureToSetPassword());
+            theConsole.printf(DomainManagementLogger.ROOT_LOGGER.sureToSetPassword());
             theConsole.printf(NEW_LINE);
             return ValidatePasswordState.this;
         } else {
             String message = result.getMessage();
-            String prompt = MESSAGES.sureToSetPassword();
+            String prompt = DomainManagementLogger.ROOT_LOGGER.sureToSetPassword();
             State noState = new PromptNewUserState(theConsole, stateValues);
             return new ConfirmationChoice(theConsole, message, prompt, this, noState);
         }

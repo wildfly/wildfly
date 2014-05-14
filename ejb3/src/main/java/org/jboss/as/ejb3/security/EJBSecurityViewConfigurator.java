@@ -35,6 +35,7 @@ import org.jboss.as.ee.component.ViewConfigurator;
 import org.jboss.as.ee.component.ViewDescription;
 import org.jboss.as.ee.component.interceptors.InterceptorOrder;
 import org.jboss.as.ee.component.serialization.WriteReplaceInterface;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentDescription;
 import org.jboss.as.ejb3.component.EJBViewDescription;
 import org.jboss.as.ejb3.component.MethodIntf;
@@ -50,8 +51,8 @@ import org.jboss.invocation.ImmediateInterceptorFactory;
 import org.jboss.invocation.Interceptor;
 import org.jboss.msc.service.ServiceName;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
+
 /**
  * {@link ViewConfigurator} responsible for setting up necessary security interceptors on an EJB view.
  * <p/>
@@ -62,7 +63,7 @@ public class EJBSecurityViewConfigurator implements ViewConfigurator {
     @Override
     public void configure(DeploymentPhaseContext context, ComponentConfiguration componentConfiguration, ViewDescription viewDescription, ViewConfiguration viewConfiguration) throws DeploymentUnitProcessingException {
         if (componentConfiguration.getComponentDescription() instanceof EJBComponentDescription == false) {
-            throw MESSAGES.invalidEjbComponent(componentConfiguration.getComponentName(), componentConfiguration.getComponentClass());
+            throw EjbLogger.ROOT_LOGGER.invalidEjbComponent(componentConfiguration.getComponentName(), componentConfiguration.getComponentClass());
         }
         final DeploymentReflectionIndex deploymentReflectionIndex = context.getDeploymentUnit().getAttachment(org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX);
         final EJBComponentDescription ejbComponentDescription = (EJBComponentDescription) componentConfiguration.getComponentDescription();

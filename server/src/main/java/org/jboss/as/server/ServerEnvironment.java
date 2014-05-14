@@ -21,8 +21,6 @@
  */
 package org.jboss.as.server;
 
-import static org.jboss.as.server.ServerMessages.MESSAGES;
-
 import java.io.File;
 import java.io.Serializable;
 import java.net.UnknownHostException;
@@ -33,7 +31,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningMode;
@@ -44,6 +42,7 @@ import org.jboss.as.controller.interfaces.InetAddressUtil;
 import org.jboss.as.controller.operations.common.ProcessEnvironment;
 import org.jboss.as.controller.persistence.ConfigurationFile;
 import org.jboss.as.network.NetworkUtils;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -313,7 +312,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     public ServerEnvironment(final String hostControllerName, final Properties props, final Map<String, String> env, final String serverConfig, final String initialServerConfig,
                              final LaunchType launchType, final RunningMode initialRunningMode, ProductConfig productConfig) {
         if (props == null) {
-            throw ControllerMessages.MESSAGES.nullVar("props");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("props");
         }
 
         this.launchType = launchType;
@@ -324,10 +323,10 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
 
         this.hostControllerName = hostControllerName;
         if (standalone && hostControllerName != null) {
-            throw MESSAGES.hostControllerNameNonNullInStandalone();
+            throw ServerLogger.ROOT_LOGGER.hostControllerNameNonNullInStandalone();
         }
         if (!standalone && hostControllerName == null) {
-            throw MESSAGES.hostControllerNameNullInDomain();
+            throw ServerLogger.ROOT_LOGGER.hostControllerNameNullInDomain();
         }
 
         // Calculate qualified and unqualified host names, default server name, cluster node name
@@ -339,10 +338,10 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         // Must have HOME_DIR
         homeDir = getFileFromProperty(HOME_DIR, props);
         if (homeDir == null) {
-            throw MESSAGES.missingHomeDirConfiguration(HOME_DIR);
+            throw ServerLogger.ROOT_LOGGER.missingHomeDirConfiguration(HOME_DIR);
         }
         if (!homeDir.exists() || !homeDir.isDirectory()) {
-            throw MESSAGES.homeDirectoryDoesNotExist(homeDir);
+            throw ServerLogger.ROOT_LOGGER.homeDirectoryDoesNotExist(homeDir);
         }
 
         @SuppressWarnings("deprecation")
@@ -350,7 +349,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         if (tmp == null) {
             tmp = new File(homeDir, "modules");
         } else if (!tmp.exists() || !tmp.isDirectory()) {
-            throw MESSAGES.modulesDirectoryDoesNotExist(tmp);
+            throw ServerLogger.ROOT_LOGGER.modulesDirectoryDoesNotExist(tmp);
         }
         modulesDir = tmp;
 
@@ -362,18 +361,18 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
         if (standalone) {
             if (!tmp.exists()) {
-                throw MESSAGES.serverBaseDirectoryDoesNotExist(tmp);
+                throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryDoesNotExist(tmp);
             } else if (!tmp.isDirectory()) {
-                throw MESSAGES.serverBaseDirectoryIsNotADirectory(tmp);
+                throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(tmp);
             }
         } else {
             if (tmp.exists()) {
                 if (!tmp.isDirectory()) {
-                    throw MESSAGES.serverBaseDirectoryIsNotADirectory(tmp);
+                    throw ServerLogger.ROOT_LOGGER.serverBaseDirectoryIsNotADirectory(tmp);
                 }
             }
             else if (!tmp.mkdirs()) {
-                throw MESSAGES.couldNotCreateServerBaseDirectory(tmp);
+                throw ServerLogger.ROOT_LOGGER.couldNotCreateServerBaseDirectory(tmp);
             }
         }
         serverBaseDir = tmp;
@@ -385,7 +384,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
         serverConfigurationDir = tmp;
         if (standalone && (!serverConfigurationDir.exists() || !serverConfigurationDir.isDirectory())) {
-            throw MESSAGES.configDirectoryDoesNotExist(serverConfigurationDir);
+            throw ServerLogger.ROOT_LOGGER.configDirectoryDoesNotExist(serverConfigurationDir);
         }
 
         String defaultServerConfig = WildFlySecurityManager.getPropertyPrivileged(JBOSS_SERVER_DEFAULT_CONFIG, "standalone.xml");
@@ -404,11 +403,11 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         serverDataDir = tmp;
         if (serverDataDir.exists()) {
             if (!serverDataDir.isDirectory()) {
-                throw MESSAGES.serverDataDirectoryIsNotDirectory(serverDataDir);
+                throw ServerLogger.ROOT_LOGGER.serverDataDirectoryIsNotDirectory(serverDataDir);
             }
         } else {
             if (!serverDataDir.mkdirs()) {
-                throw MESSAGES.couldNotCreateServerDataDirectory(serverDataDir);
+                throw ServerLogger.ROOT_LOGGER.couldNotCreateServerDataDirectory(serverDataDir);
             }
         }
 
@@ -424,10 +423,10 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         serverContentDir = tmp;
         if (serverContentDir.exists()) {
             if (!serverContentDir.isDirectory()) {
-                throw MESSAGES.serverContentDirectoryIsNotDirectory(serverContentDir);
+                throw ServerLogger.ROOT_LOGGER.serverContentDirectoryIsNotDirectory(serverContentDir);
             }
         } else if (!serverContentDir.mkdirs()) {
-            throw MESSAGES.couldNotCreateServerContentDirectory(serverContentDir);
+            throw ServerLogger.ROOT_LOGGER.couldNotCreateServerContentDirectory(serverContentDir);
         }
 
 
@@ -437,20 +436,20 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
         if (tmp.exists()) {
             if (!tmp.isDirectory()) {
-                throw MESSAGES.logDirectoryIsNotADirectory(tmp);
+                throw ServerLogger.ROOT_LOGGER.logDirectoryIsNotADirectory(tmp);
             }
         } else if (!tmp.mkdirs()) {
-            throw MESSAGES.couldNotCreateLogDirectory(tmp);
+            throw ServerLogger.ROOT_LOGGER.couldNotCreateLogDirectory(tmp);
         }
         serverLogDir = tmp;
 
         tmp = configureServerTempDir(props.getProperty(SERVER_TEMP_DIR), props);
         if (tmp.exists()) {
             if (!tmp.isDirectory()) {
-                throw MESSAGES.serverTempDirectoryIsNotADirectory(tmp);
+                throw ServerLogger.ROOT_LOGGER.serverTempDirectoryIsNotADirectory(tmp);
             }
         } else if (!tmp.mkdirs()){
-            throw MESSAGES.couldNotCreateServerTempDirectory(tmp);
+            throw ServerLogger.ROOT_LOGGER.couldNotCreateServerTempDirectory(tmp);
         }
 
         tmp = getFileFromProperty(CONTROLLER_TEMP_DIR, props);
@@ -459,10 +458,10 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         }
         if (tmp.exists()) {
             if (!tmp.isDirectory()) {
-                throw MESSAGES.controllerTempDirectoryIsNotADirectory(tmp);
+                throw ServerLogger.ROOT_LOGGER.controllerTempDirectoryIsNotADirectory(tmp);
             }
         } else if (!tmp.mkdirs()){
-            throw MESSAGES.couldNotCreateControllerTempDirectory(tmp);
+            throw ServerLogger.ROOT_LOGGER.couldNotCreateControllerTempDirectory(tmp);
         }
         controllerTempDir = tmp;
 
@@ -470,7 +469,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         tmp = getFileFromProperty(DOMAIN_BASE_DIR, props);
         if (tmp != null) {
             if (!tmp.exists() || !tmp.isDirectory()) {
-                throw MESSAGES.domainBaseDirDoesNotExist(tmp);
+                throw ServerLogger.ROOT_LOGGER.domainBaseDirDoesNotExist(tmp);
             }
             this.domainBaseDir = tmp;
         } else {
@@ -479,7 +478,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         tmp = getFileFromProperty(DOMAIN_CONFIG_DIR, props);
         if (tmp != null) {
             if (!tmp.exists() || !tmp.isDirectory()) {
-                throw MESSAGES.domainConfigDirDoesNotExist(tmp);
+                throw ServerLogger.ROOT_LOGGER.domainConfigDirDoesNotExist(tmp);
             }
             this.domainConfigurationDir = tmp;
         } else {
@@ -741,7 +740,7 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
         File tmp = getFileFromPath(dirPath);
         if (tmp == null) {
             if (haveDirProperty) {
-                throw MESSAGES.bundlesDirectoryDoesNotExist(new File(dirPath).getAbsoluteFile());
+                throw ServerLogger.ROOT_LOGGER.bundlesDirectoryDoesNotExist(new File(dirPath).getAbsoluteFile());
             }
             providedProperties.remove(BUNDLES_DIR);
             tmp = new File(homeDir, "bundles");
@@ -972,10 +971,10 @@ public class ServerEnvironment extends ProcessEnvironment implements Serializabl
     @Override
     protected boolean isRuntimeSystemPropertyUpdateAllowed(String propertyName, String propertyValue, boolean bootTime) throws OperationFailedException {
         if (ILLEGAL_PROPERTIES.contains(propertyName)) {
-            throw MESSAGES.systemPropertyNotManageable(propertyName);
+            throw ServerLogger.ROOT_LOGGER.systemPropertyNotManageable(propertyName);
         }
         if (processNameSet && SERVER_NAME.equals(propertyName)) {
-            throw MESSAGES.systemPropertyCannotOverrideServerName(SERVER_NAME);
+            throw ServerLogger.ROOT_LOGGER.systemPropertyCannotOverrideServerName(SERVER_NAME);
         }
         return bootTime || !BOOT_PROPERTIES.contains(propertyName);
     }

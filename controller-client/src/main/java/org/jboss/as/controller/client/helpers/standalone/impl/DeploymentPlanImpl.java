@@ -22,12 +22,11 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentAction;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.protocol.StreamUtils;
@@ -49,7 +48,7 @@ public class DeploymentPlanImpl implements DeploymentPlan {
 
     DeploymentPlanImpl(List<DeploymentActionImpl> actions, boolean globalRollback, boolean shutdown, long gracefulTimeout) {
         if (actions == null)
-            throw MESSAGES.nullVar("actions");
+            throw ControllerClientLogger.ROOT_LOGGER.nullVar("actions");
         this.deploymentActions.addAll(actions);
         this.globalRollback = globalRollback;
         this.shutdown = shutdown;

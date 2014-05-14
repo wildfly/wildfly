@@ -32,8 +32,7 @@ import java.util.List;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.logging.CommonAttributes;
-import org.jboss.as.logging.LoggingLogger;
-import org.jboss.as.logging.LoggingMessages;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.as.logging.resolvers.FileResolver;
 import org.jboss.logmanager.Configurator;
 import org.jboss.logmanager.LogContext;
@@ -383,7 +382,7 @@ public class ConfigurationPersistence implements Configurator, LogContextConfigu
             }
         }
         if (loggingConfig == null) {
-            LoggingLogger.ROOT_LOGGER.pathManagerServiceNotStarted();
+            LoggingLogger.ROOT_LOGGER.warn(LoggingLogger.ROOT_LOGGER.pathManagerServiceNotStarted());
         } else {
             final File configFile = new File(loggingConfig);
             synchronized (LOCK) {
@@ -406,7 +405,7 @@ public class ConfigurationPersistence implements Configurator, LogContextConfigu
                         }
                         LoggingLogger.ROOT_LOGGER.tracef("Logging configuration file '%s' successfully written.", configFile.getAbsolutePath());
                     } catch (IOException e) {
-                        throw LoggingMessages.MESSAGES.failedToWriteConfigurationFile(e, configFile);
+                        throw LoggingLogger.ROOT_LOGGER.failedToWriteConfigurationFile(e, configFile);
                     } finally {
                         safeClose(out);
                     }

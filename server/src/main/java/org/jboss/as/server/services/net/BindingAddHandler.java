@@ -23,7 +23,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -154,7 +154,7 @@ public class BindingAddHandler extends SocketBindingAddHandler {
             ModelNode destinationNode = mappingNode.get(DESTINATION_ADDRESS);
             if (! destinationNode.isDefined()) {
                 // Validation prevents this, but just in case
-                throw ControllerMessages.MESSAGES.nullNotAllowed(DESTINATION_ADDRESS);
+                throw ControllerLogger.ROOT_LOGGER.nullNotAllowed(DESTINATION_ADDRESS);
             }
             destination = destinationNode.asString();
 

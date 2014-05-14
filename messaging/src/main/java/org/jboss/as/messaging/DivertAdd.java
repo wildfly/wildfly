@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
 import java.util.List;
 
 import org.hornetq.api.core.management.HornetQServerControl;
@@ -37,6 +35,7 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.msc.service.ServiceController;
@@ -71,7 +70,7 @@ public class DivertAdd extends AbstractAddStepHandler {
 
             // The original subsystem initialization is complete; use the control object to create the divert
             if (hqService.getState() != ServiceController.State.UP) {
-                throw MESSAGES.invalidServiceState(hqServiceName, ServiceController.State.UP, hqService.getState());
+                throw MessagingLogger.ROOT_LOGGER.invalidServiceState(hqServiceName, ServiceController.State.UP, hqService.getState());
             }
 
             final String name = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();

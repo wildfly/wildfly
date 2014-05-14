@@ -21,9 +21,6 @@
  */
 package org.jboss.as.webservices.deployers.deployment;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-import static org.jboss.as.webservices.WSMessages.MESSAGES;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -32,6 +29,7 @@ import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.parser.WSDeploymentAspectParser;
 import org.jboss.ws.common.sort.DeploymentAspectSorter;
 import org.jboss.wsf.spi.classloading.ClassLoaderProvider;
@@ -79,11 +77,11 @@ public class DeploymentAspectsProvider {
                 }
             }
             else {
-                ROOT_LOGGER.cannotLoadDeploymentAspectsDefinitionFile(resourcePath);
+                WSLogger.ROOT_LOGGER.cannotLoadDeploymentAspectsDefinitionFile(resourcePath);
                 return Collections.emptyList();
             }
         } catch (IOException e) {
-            throw MESSAGES.cannotLoadDeploymentAspectsDefinitionFile(e, resourcePath);
+            throw WSLogger.ROOT_LOGGER.cannotLoadDeploymentAspectsDefinitionFile(e, resourcePath);
         }
     }
 }

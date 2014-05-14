@@ -44,6 +44,7 @@ import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.persistence.AbstractConfigurationPersister;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.mgmt.domain.HostControllerClient;
 import org.jboss.as.server.mgmt.domain.HostControllerConnectionService;
 import org.jboss.as.server.mgmt.domain.ServerBootOperationsService;
@@ -194,19 +195,19 @@ public final class ServerStartTask implements ServerTask, Serializable, ObjectIn
     @Override
     public void validateObject() throws InvalidObjectException {
         if (serverName == null) {
-            throw ServerMessages.MESSAGES.invalidObject("serverName");
+            throw ServerLogger.ROOT_LOGGER.invalidObject("serverName");
         }
         if(hostControllerName == null) {
-            throw ServerMessages.MESSAGES.invalidObject("hostControllerName");
+            throw ServerLogger.ROOT_LOGGER.invalidObject("hostControllerName");
         }
         if (portOffset < 0) {
-            throw ServerMessages.MESSAGES.invalidPortOffset();
+            throw ServerLogger.ROOT_LOGGER.invalidPortOffset();
         }
         if (updates == null) {
-            throw ServerMessages.MESSAGES.invalidObject("updates");
+            throw ServerLogger.ROOT_LOGGER.invalidObject("updates");
         }
         if (startServices == null) {
-            throw ServerMessages.MESSAGES.invalidObject("startServices");
+            throw ServerLogger.ROOT_LOGGER.invalidObject("startServices");
         }
     }
 

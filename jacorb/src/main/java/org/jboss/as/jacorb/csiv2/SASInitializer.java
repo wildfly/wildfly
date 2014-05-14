@@ -22,7 +22,7 @@
 
 package org.jboss.as.jacorb.csiv2;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.csiv2.idl.SASCurrent;
 import org.omg.CORBA.LocalObject;
 import org.omg.IOP.Codec;
@@ -50,7 +50,7 @@ public class SASInitializer extends LocalObject implements ORBInitializer {
             SASCurrent sasCurrent = new SASCurrentImpl();
             info.register_initial_reference("SASCurrent", sasCurrent);
         } catch (InvalidName e) {
-            throw JacORBMessages.MESSAGES.errorRegisteringSASCurrentInitRef(e);
+            throw JacORBLogger.ROOT_LOGGER.errorRegisteringSASCurrentInitRef(e);
         }
     }
 
@@ -85,7 +85,7 @@ public class SASInitializer extends LocalObject implements ORBInitializer {
 //                          }
 //                       });
         } catch (Exception e) {
-            throw JacORBMessages.MESSAGES.unexpectedException(e);
+            throw JacORBLogger.ROOT_LOGGER.unexpectedException(e);
         }
     }
 }

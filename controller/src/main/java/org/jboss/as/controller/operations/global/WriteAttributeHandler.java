@@ -22,13 +22,12 @@
 
 package org.jboss.as.controller.operations.global;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.NAME;
 import static org.jboss.as.controller.operations.global.GlobalOperationAttributes.VALUE;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -71,13 +70,13 @@ public class WriteAttributeHandler implements OperationStepHandler {
         final String attributeName = operation.require(NAME.getName()).asString();
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         if (registry == null) {
-            throw new OperationFailedException(ControllerMessages.MESSAGES.noSuchResourceType(PathAddress.pathAddress(operation.get(OP_ADDR))));
+            throw new OperationFailedException(ControllerLogger.ROOT_LOGGER.noSuchResourceType(PathAddress.pathAddress(operation.get(OP_ADDR))));
         }
         final AttributeAccess attributeAccess = registry.getAttributeAccess(PathAddress.EMPTY_ADDRESS, attributeName);
         if (attributeAccess == null) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownAttribute(attributeName)));
+            throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.unknownAttribute(attributeName)));
         } else if (attributeAccess.getAccessType() != AttributeAccess.AccessType.READ_WRITE) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.attributeNotWritable(attributeName)));
+            throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.attributeNotWritable(attributeName)));
         } else {
 
             // Authorize
@@ -90,9 +89,7 @@ public class WriteAttributeHandler implements OperationStepHandler {
             }
             AuthorizationResult authorizationResult = context.authorize(operation, attributeName, currentValue);
             if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
-                throw ControllerMessages.MESSAGES.unauthorized(operation.require(OP).asString(),
-                        PathAddress.pathAddress(operation.get(OP_ADDR)),
-                        authorizationResult.getExplanation());
+                throw ControllerLogger.ROOT_LOGGER.unauthorized(operation.require(OP).asString(), PathAddress.pathAddress(operation.get(OP_ADDR)), authorizationResult.getExplanation());
             }
 
             OperationStepHandler handler = attributeAccess.getWriteHandler();

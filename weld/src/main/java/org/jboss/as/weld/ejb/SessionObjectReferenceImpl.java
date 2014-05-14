@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
@@ -97,7 +97,7 @@ public class SessionObjectReferenceImpl implements SessionObjectReference {
                 throw new RuntimeException(e);
             }
         } else {
-            throw WeldMessages.MESSAGES.viewNotFoundOnEJB(businessInterfaceType.getName(), ejbName);
+            throw WeldLogger.ROOT_LOGGER.viewNotFoundOnEJB(businessInterfaceType.getName(), ejbName);
         }
     }
 

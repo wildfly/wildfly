@@ -22,8 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.DIGEST_PLAIN_TEXT;
 import static org.jboss.as.domain.management.RealmConfigurationConstants.VERIFY_PASSWORD_CALLBACK_SUPPORTED;
 
@@ -45,6 +44,7 @@ import javax.security.sasl.AuthorizeCallback;
 import javax.security.sasl.RealmCallback;
 
 import org.jboss.as.domain.management.AuthMechanism;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.plugin.AuthenticationPlugIn;
 import org.jboss.as.domain.management.plugin.Credential;
@@ -134,7 +134,7 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
             try {
                 pcf.init(getConfiguration(), sharedState);
             } catch (IOException e) {
-                throw MESSAGES.unableToInitialisePlugIn(name, e.getMessage());
+                throw DomainManagementLogger.ROOT_LOGGER.unableToInitialisePlugIn(name, e.getMessage());
             }
         }
 
@@ -173,7 +173,7 @@ public class PlugInAuthenticationCallbackHandler extends AbstractPlugInService i
                     } else if (current instanceof RealmCallback) {
                         String realm = ((RealmCallback) current).getDefaultText();
                         if (realmName.equals(realm) == false) {
-                            throw MESSAGES.invalidRealm(realm, realmName);
+                            throw DomainManagementLogger.ROOT_LOGGER.invalidRealm(realm, realmName);
                         }
                     } else {
                         throw new UnsupportedCallbackException(current);

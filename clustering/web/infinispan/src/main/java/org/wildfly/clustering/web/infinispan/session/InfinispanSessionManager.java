@@ -54,7 +54,7 @@ import org.jboss.as.clustering.concurrent.Scheduler;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.wildfly.clustering.web.Batcher;
 import org.wildfly.clustering.web.IdentifierFactory;
-import org.wildfly.clustering.web.infinispan.InfinispanWebLogger;
+import org.wildfly.clustering.web.infinispan.logging.InfinispanWebLogger;
 import org.wildfly.clustering.web.session.ImmutableHttpSessionAdapter;
 import org.wildfly.clustering.web.session.ImmutableSession;
 import org.wildfly.clustering.web.session.ImmutableSessionAttributes;

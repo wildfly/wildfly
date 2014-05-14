@@ -35,6 +35,7 @@ import java.util.StringTokenizer;
 import org.jboss.as.controller.RunningMode;
 import org.jboss.as.process.CommandLineConstants;
 import org.jboss.as.process.ExitCodes;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.version.ProductConfig;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -192,7 +193,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        STDERR.println(ServerMessages.MESSAGES.noArgValue(arg));
+                        STDERR.println(ServerLogger.ROOT_LOGGER.noArgValue(arg));
                         usage();
                         return null;
                     }
@@ -214,7 +215,7 @@ public final class Main {
 
                     int idx = arg.indexOf('=');
                     if (idx == arg.length() - 1) {
-                        STDERR.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
+                        STDERR.println(ServerLogger.ROOT_LOGGER.valueExpectedForCommandLineOption(arg));
                         usage();
                         return null;
                     }
@@ -243,19 +244,19 @@ public final class Main {
                         }
                     }
                 } else {
-                    STDERR.println(ServerMessages.MESSAGES.invalidCommandLineOption(arg));
+                    STDERR.println(ServerLogger.ROOT_LOGGER.invalidCommandLineOption(arg));
                     usage();
                     return null;
                 }
             } catch (IndexOutOfBoundsException e) {
-                STDERR.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(arg));
+                STDERR.println(ServerLogger.ROOT_LOGGER.valueExpectedForCommandLineOption(arg));
                 usage();
                 return null;
             }
         }
 
         if (serverConfig != null && initialServerConfig != null) {
-            throw ServerMessages.MESSAGES.cannotHaveBothInitialServerConfigAndServerConfig();
+            throw ServerLogger.ROOT_LOGGER.cannotHaveBothInitialServerConfigAndServerConfig();
         }
         String hostControllerName = null; // No host controller unless in domain mode.
         productConfig = new ProductConfig(Module.getBootModuleLoader(), WildFlySecurityManager.getPropertyPrivileged(ServerEnvironment.HOME_DIR, null), systemProperties);
@@ -290,11 +291,11 @@ public final class Main {
              systemProperties.load(url.openConnection().getInputStream());
              return true;
          } catch (MalformedURLException e) {
-             STDERR.println(ServerMessages.MESSAGES.malformedCommandLineURL(urlSpec, arg));
+             STDERR.println(ServerLogger.ROOT_LOGGER.malformedCommandLineURL(urlSpec, arg));
              usage();
              return false;
          } catch (IOException e) {
-             STDERR.println(ServerMessages.MESSAGES.unableToLoadProperties(url));
+             STDERR.println(ServerLogger.ROOT_LOGGER.unableToLoadProperties(url));
              usage();
              return false;
          }
@@ -332,7 +333,7 @@ public final class Main {
 
             int idx = token.indexOf('=');
             if (idx == token.length() - 1) {
-                STDERR.println(ServerMessages.MESSAGES.valueExpectedForCommandLineOption(secProperties));
+                STDERR.println(ServerLogger.ROOT_LOGGER.valueExpectedForCommandLineOption(secProperties));
                 usage();
                 return;
             }

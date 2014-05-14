@@ -51,7 +51,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management._private.DomainManagementResolver;
 import org.jboss.as.domain.management.security.KeystoreAttributes;
 import org.jboss.dmr.ModelNode;
@@ -313,7 +313,7 @@ public abstract class SyslogAuditLogProtocolResourceDefinition extends SimpleRes
                 for (ResourceEntry entry : existing) {
                     PathElement mine = addr.getLastElement();
                     if (!entry.getPathElement().equals(mine)) {
-                        throw DomainManagementMessages.MESSAGES.sysLogProtocolAlreadyConfigured(addr.append(mine));
+                        throw DomainManagementLogger.ROOT_LOGGER.sysLogProtocolAlreadyConfigured(addr.append(mine));
                     }
                 }
             }

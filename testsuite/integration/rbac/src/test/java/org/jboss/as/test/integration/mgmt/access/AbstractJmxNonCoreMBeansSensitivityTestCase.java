@@ -129,7 +129,7 @@ public abstract class AbstractJmxNonCoreMBeansSensitivityTestCase {
             assertTrue("Failure was expected", successExpected);
             assertEquals(System.getProperty("os.name"), attribute.toString());
         } catch (JMRuntimeException e) {
-            if (e.getMessage().contains("11360")) {
+            if (e.getMessage().contains("WFLYJMX0037")) {
                 assertFalse("Success was expected but failure happened: " + e, successExpected);
             } else {
                 throw e;
@@ -147,7 +147,7 @@ public abstract class AbstractJmxNonCoreMBeansSensitivityTestCase {
             connection.setAttribute(domain, new Attribute("Verbose", false)); // back to default to not pollute the logs
             assertTrue("Failure was expected", successExpected);
         } catch (JMRuntimeException e) {
-            if (e.getMessage().contains("11360")) {
+            if (e.getMessage().contains("WFLYJMX0037")) {
                 assertFalse("Success was expected but failure happened: " + e, successExpected);
             } else {
                 throw e;
@@ -182,7 +182,7 @@ public abstract class AbstractJmxNonCoreMBeansSensitivityTestCase {
             connection.invoke(domain, operationName, ArrayUtils.EMPTY_OBJECT_ARRAY, ArrayUtils.EMPTY_STRING_ARRAY);
             assertTrue("Failure was expected but success happened", successExpected);
         } catch (JMRuntimeException e) {
-            if (e.getMessage().contains("11360")) {
+            if (e.getMessage().contains("WFLYJMX0037")) {
                 assertFalse("Success was expected but failure happened: " + e, successExpected);
             } else {
                 throw e;

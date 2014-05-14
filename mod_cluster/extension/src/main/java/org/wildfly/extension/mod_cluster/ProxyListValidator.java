@@ -31,8 +31,6 @@ import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.dmr.ModelNode;
 
-import static org.wildfly.extension.mod_cluster.ModClusterMessages.MESSAGES;
-
 /**
  * @author Jean-Frederic Clere
  */
@@ -57,7 +55,7 @@ public class ProxyListValidator implements ParameterValidator {
                 } catch (UnknownHostException e) {
                     host = null;
                 }
-                if (host == null || port == 0) { throw new OperationFailedException(new ModelNode().set(MESSAGES.needHostAndPort())); }
+                if (host == null || port == 0) { throw new OperationFailedException(new ModelNode().set(ModClusterLogger.ROOT_LOGGER.needHostAndPort())); }
             }
         }
 

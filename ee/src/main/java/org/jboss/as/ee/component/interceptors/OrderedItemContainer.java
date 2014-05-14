@@ -29,7 +29,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static java.lang.Integer.toHexString;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+
+import org.jboss.as.ee.logging.EeLogger;
 
 /**
  * Container for an ordered list of object. Objects are added to the container, and can be sorted and
@@ -48,14 +49,14 @@ public class OrderedItemContainer<T> {
 
     public void add(final T item, int priority) {
         if(sortedItems != null) {
-            throw MESSAGES.cannotAddMoreItems();
+            throw EeLogger.ROOT_LOGGER.cannotAddMoreItems();
         }
         if(item == null) {
-            throw MESSAGES.nullVar("item");
+            throw EeLogger.ROOT_LOGGER.nullVar("item");
         }
         final T current = items.get(priority);
         if (current != null) {
-            throw MESSAGES.priorityAlreadyExists(item, toHexString(priority), current);
+            throw EeLogger.ROOT_LOGGER.priorityAlreadyExists(item, toHexString(priority), current);
         }
         items.put(priority, item);
     }

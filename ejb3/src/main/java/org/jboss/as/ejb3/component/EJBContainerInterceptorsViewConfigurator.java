@@ -22,6 +22,7 @@
 
 package org.jboss.as.ejb3.component;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ClassDescriptionTraversal;
 import org.jboss.as.ee.component.ComponentConfiguration;
@@ -68,7 +69,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 import static org.jboss.as.server.deployment.Attachments.REFLECTION_INDEX;
 
 /**
@@ -125,7 +125,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
             try {
                 interceptorClassIndex = deploymentClassIndex.classIndex(interceptorClassName);
             } catch (ClassNotFoundException e) {
-                throw MESSAGES.cannotLoadInterceptor(e, interceptorClassName);
+                throw EeLogger.ROOT_LOGGER.cannotLoadInterceptor(e, interceptorClassName);
             }
             // run the interceptor class (and its super class hierarchy) through the InterceptorClassDescriptionTraversal so that it can
             // find the relevant @AroundInvoke/@AroundTimeout methods
@@ -263,7 +263,7 @@ public class EJBContainerInterceptorsViewConfigurator implements ViewConfigurato
             final ClassReflectionIndex<?> interceptorClassReflectionIndex = deploymentReflectionIndex.getClassIndex(interceptorClass);
             final Constructor<?> interceptorClassConstructor = interceptorClassReflectionIndex.getConstructor(EMPTY_CLASS_ARRAY);
             if (interceptorClassConstructor == null) {
-                throw MESSAGES.defaultConstructorNotFound(interceptorClass);
+                throw EeLogger.ROOT_LOGGER.defaultConstructorNotFound(interceptorClass);
             }
 
             final MethodIdentifier aroundInvokeMethodIdentifier = interceptorConfig.getAroundInvoke();

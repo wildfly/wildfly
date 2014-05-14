@@ -37,7 +37,7 @@ import javax.naming.RefAddr;
 import javax.naming.Reference;
 import javax.naming.spi.NamingManager;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CosNaming.NameComponent;
 import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextPackage.AlreadyBound;
@@ -219,7 +219,7 @@ public final class ExceptionMapper {
             } catch (NamingException ge) {
                 throw ge;
             } catch (Exception ge) {
-                NamingException ne = JacORBMessages.MESSAGES.errorGeneratingObjectViaFactory();
+                NamingException ne = JacORBLogger.ROOT_LOGGER.errorGeneratingObjectViaFactory();
                 ne.setRootCause(ge);
                 throw ne;
             }

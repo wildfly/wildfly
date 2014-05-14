@@ -25,20 +25,19 @@ package org.jboss.as.messaging;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.messaging.CommonAttributes.FILTER;
 import static org.jboss.as.messaging.HornetQActivationService.rollbackOperationIfServerNotActive;
-import static org.jboss.as.messaging.MessagingLogger.ROOT_LOGGER;
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
+import static org.jboss.as.messaging.logging.MessagingLogger.ROOT_LOGGER;
 
 import java.util.EnumSet;
 import java.util.Locale;
 
 import org.hornetq.core.server.HornetQServer;
 import org.jboss.as.controller.AbstractRuntimeOnlyHandler;
-import org.jboss.as.controller.ControllerMessages;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -46,6 +45,7 @@ import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
+import org.jboss.as.messaging.logging.MessagingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceController;
@@ -295,7 +295,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
         if (control == null) {
             PathAddress address = PathAddress.pathAddress(operation.require(OP_ADDR));
-            throw ControllerMessages.MESSAGES.managementResourceNotFound(address);
+            throw ControllerLogger.ROOT_LOGGER.managementResourceNotFound(address);
         }
 
         boolean reversible = false;
@@ -426,7 +426,7 @@ public abstract class AbstractQueueControlHandler<T> extends AbstractRuntimeOnly
 
     protected final void throwUnimplementedOperationException(final String operationName) {
         // Bug
-        throw MESSAGES.unsupportedOperation(operationName);
+        throw MessagingLogger.ROOT_LOGGER.unsupportedOperation(operationName);
     }
 
     private String getFilter(ModelNode operation) throws OperationFailedException {

@@ -28,6 +28,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.jboss.as.network.OutboundSocketBinding;
+import org.jboss.as.remoting.logging.RemotingLogger;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.msc.value.InjectedValue;
@@ -35,8 +36,6 @@ import org.jboss.remoting3.Connection;
 import org.jboss.remoting3.Endpoint;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
-
-import static org.jboss.as.remoting.RemotingMessages.MESSAGES;
 
 /**
  * A {@link LocalOutboundConnectionService} manages a local remoting connection (i.e. a connection created with local:// URI scheme).
@@ -67,7 +66,7 @@ public class LocalOutboundConnectionService extends AbstractOutboundConnectionSe
             // if nothing really wants to create a connection out of it.
             uri = this.getConnectionURI();
         } catch (URISyntaxException e) {
-            throw MESSAGES.couldNotConnect(e);
+            throw RemotingLogger.ROOT_LOGGER.couldNotConnect(e);
         }
         final Endpoint endpoint = this.endpointInjectedValue.getValue();
         return endpoint.connect(uri, this.connectionCreationOptions, getCallbackHandler());

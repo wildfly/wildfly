@@ -37,9 +37,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.jboss.as.controller._private.OperationFailedRuntimeException;
 import org.jboss.as.controller.client.MessageSeverity;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.transform.OperationResultTransformer;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.dmr.ModelNode;
@@ -243,10 +245,10 @@ public class ProxyStepHandler implements OperationStepHandler {
     private static OperationFailedRuntimeException translateFailureDescription(ModelNode failureDescription) {
 
         String failureDesc = failureDescription.asString();
-        if (failureDesc.startsWith("JBAS014807")) {
+        if (failureDesc.startsWith("WFLYCTL0216")) {
             return new NoSuchResourceException(failureDesc);
         }
-        else if (failureDesc.startsWith("JBAS013456")) {
+        else if (failureDesc.startsWith("WFLYCTL0313")) {
             return new UnauthorizedException(failureDesc);
         }
         return null;

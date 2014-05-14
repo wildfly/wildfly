@@ -32,12 +32,13 @@ import javax.ejb.EJBLocalHome;
 import javax.ejb.TimerService;
 import javax.transaction.UserTransaction;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponent;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.component.allowedmethods.AllowedMethodsInformation;
 import org.jboss.as.ejb3.component.allowedmethods.MethodType;
 import org.jboss.invocation.InterceptorContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -50,7 +51,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext, Serializab
 
     @SuppressWarnings({"deprecation"})
     public Identity getCallerIdentity() {
-        throw MESSAGES.isDeprecated("getCallerIdentity");
+        throw EjbLogger.ROOT_LOGGER.isDeprecated("getCallerIdentity");
     }
 
     public Principal getCallerPrincipal() {
@@ -73,7 +74,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext, Serializab
     }
 
     public Properties getEnvironment() {
-        throw MESSAGES.isDeprecated("getCallerIdentity");
+        throw EjbLogger.ROOT_LOGGER.isDeprecated("getCallerIdentity");
     }
 
     public EJBComponent getComponent() {
@@ -84,7 +85,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext, Serializab
         // to allow override per invocation
         final InterceptorContext context = CurrentInvocationContext.get();
         if (context.getMethod() == null) {
-            throw MESSAGES.lifecycleMethodNotAllowed("getRollbackOnly");
+            throw EjbLogger.ROOT_LOGGER.lifecycleMethodNotAllowed("getRollbackOnly");
         }
         return instance.getComponent().getRollbackOnly();
     }
@@ -106,7 +107,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext, Serializab
 
     @SuppressWarnings({"deprecation"})
     public boolean isCallerInRole(Identity role) {
-        throw MESSAGES.isDeprecatedIllegalState("isCallerInRole");
+        throw EjbLogger.ROOT_LOGGER.isDeprecatedIllegalState("isCallerInRole");
     }
 
     public boolean isCallerInRole(String roleName) {
@@ -122,7 +123,7 @@ public abstract class EJBContextImpl implements javax.ejb.EJBContext, Serializab
         // to allow override per invocation
         final InterceptorContext context = CurrentInvocationContext.get();
         if (context.getMethod() == null) {
-            throw MESSAGES.lifecycleMethodNotAllowed("getRollbackOnly");
+            throw EjbLogger.ROOT_LOGGER.lifecycleMethodNotAllowed("getRollbackOnly");
         }
         instance.getComponent().setRollbackOnly();
     }

@@ -21,8 +21,6 @@
  */
 package org.jboss.as.protocol;
 
-import static org.jboss.as.protocol.ProtocolMessages.MESSAGES;
-
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Map;
@@ -31,6 +29,7 @@ import java.util.concurrent.Executor;
 import javax.net.ssl.SSLContext;
 import javax.security.auth.callback.CallbackHandler;
 
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.remoting3.Connection;
 import org.xnio.IoFuture;
 
@@ -50,7 +49,7 @@ public class ProtocolChannelClient implements Closeable {
 
     public static ProtocolChannelClient create(final Configuration configuration) throws IOException {
         if (configuration == null) {
-            throw MESSAGES.nullVar("configuration");
+            throw ProtocolLogger.ROOT_LOGGER.nullVar("configuration");
         }
         configuration.validate();
         return new ProtocolChannelClient(configuration);

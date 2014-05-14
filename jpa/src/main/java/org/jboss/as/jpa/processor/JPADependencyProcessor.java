@@ -24,7 +24,6 @@ package org.jboss.as.jpa.processor;
 
 import static org.jboss.as.jpa.messages.JpaLogger.JPA_LOGGER;
 import static org.jboss.as.jpa.messages.JpaLogger.ROOT_LOGGER;
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
 
 import java.io.IOException;
 import java.net.JarURLConnection;
@@ -41,6 +40,7 @@ import org.jboss.as.ee.component.EEModuleDescription;
 import org.jboss.as.jpa.config.Configuration;
 import org.jboss.as.jpa.config.PersistenceUnitMetadataHolder;
 import org.jboss.as.jpa.config.PersistenceUnitsInApplication;
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.service.PersistenceUnitServiceImpl;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
@@ -254,7 +254,7 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
 
             final URLConnection connection = url.openConnection();
             if (!(connection instanceof JarURLConnection)) {
-                throw MESSAGES.invalidUrlConnection("hibernate 3", connection);
+                throw JpaLogger.ROOT_LOGGER.invalidUrlConnection("hibernate 3", connection);
             }
 
             final JarFile jarFile = ((JarURLConnection) connection).getJarFile();
@@ -265,9 +265,9 @@ public class JPADependencyProcessor implements DeploymentUnitProcessor {
             // TODO:  do this automatically (adding dependencies found in HIBERNATE_3_PROVIDER).
             addDependency(moduleSpecification, moduleLoader, deploymentUnit, JBOSS_AS_NAMING_ID, JBOSS_JANDEX_ID);
         } catch (ModuleLoadException e) {
-            throw MESSAGES.cannotLoadModule(e, HIBERNATE_3_PROVIDER, "hibernate 3");
+            throw JpaLogger.ROOT_LOGGER.cannotLoadModule(e, HIBERNATE_3_PROVIDER, "hibernate 3");
         } catch (MalformedURLException e) {
-            throw MESSAGES.cannotAddIntegration(e, "hibernate 3");
+            throw JpaLogger.ROOT_LOGGER.cannotAddIntegration(e, "hibernate 3");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

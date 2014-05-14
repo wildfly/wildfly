@@ -28,6 +28,10 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/wildfly/extension/security/manager/logging"/>
+    </exports>
+
     <resources>
         <!-- Insert resources here -->
     </resources>

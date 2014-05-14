@@ -42,8 +42,7 @@ import org.jboss.metadata.parser.jbossweb.JBossWebMetaDataParser;
 import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.web.jboss.JBossWebMetaData;
 import org.jboss.vfs.VirtualFile;
-
-import static org.wildfly.extension.undertow.UndertowMessages.MESSAGES;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 
 
 /**
@@ -79,9 +78,9 @@ public class JBossWebParsingDeploymentProcessor implements DeploymentUnitProcess
                     deploymentUnit.putAttachment(org.jboss.as.ee.structure.Attachments.DISTINCT_NAME, jBossWebMetaData.getDistinctName());
                 }
             } catch (XMLStreamException e) {
-                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()), e);
+                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(jbossWebXml, e.getLocation().getLineNumber(), e.getLocation().getColumnNumber()), e);
             } catch (IOException e) {
-                throw new DeploymentUnitProcessingException(MESSAGES.failToParseXMLDescriptor(jbossWebXml), e);
+                throw new DeploymentUnitProcessingException(UndertowLogger.ROOT_LOGGER.failToParseXMLDescriptor(jbossWebXml), e);
             } finally {
                 try {
                     if (is != null) {

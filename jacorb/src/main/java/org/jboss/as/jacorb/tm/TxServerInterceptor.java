@@ -23,8 +23,7 @@ package org.jboss.as.jacorb.tm;
 
 import javax.transaction.Transaction;
 
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CORBA.Any;
 import org.omg.CORBA.BAD_PARAM;
 import org.omg.CORBA.LocalObject;
@@ -89,7 +88,7 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
                     tx = ForeignTransaction.INSTANCE;
                 }
             } catch (InvalidSlot e) {
-                throw JacORBMessages.MESSAGES.errorGettingSlotInTxInterceptor(e);
+                throw JacORBLogger.ROOT_LOGGER.errorGettingSlotInTxInterceptor(e);
             }
 
         }
@@ -113,11 +112,11 @@ public class TxServerInterceptor extends LocalObject implements ServerRequestInt
         } catch (BAD_PARAM e) {
             // no service context with txContextId: do nothing
         } catch (FormatMismatch e) {
-            throw JacORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw JacORBLogger.ROOT_LOGGER.errorDecodingContextData(this.name(), e);
         } catch (TypeMismatch e) {
-            throw JacORBMessages.MESSAGES.errorDecodingContextData(this.name(), e);
+            throw JacORBLogger.ROOT_LOGGER.errorDecodingContextData(this.name(), e);
         } catch (InvalidSlot e) {
-            throw JacORBMessages.MESSAGES.errorSettingSlotInTxInterceptor(e);
+            throw JacORBLogger.ROOT_LOGGER.errorSettingSlotInTxInterceptor(e);
         }
     }
 

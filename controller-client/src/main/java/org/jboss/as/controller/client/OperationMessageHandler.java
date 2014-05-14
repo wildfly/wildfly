@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.client;
 
-import static org.jboss.as.controller.client.ControllerClientLogger.ROOT_LOGGER;
+import static org.jboss.as.controller.client.logging.ControllerClientLogger.ROOT_LOGGER;
 
 /**
  * An operation message handler for handling progress reports.

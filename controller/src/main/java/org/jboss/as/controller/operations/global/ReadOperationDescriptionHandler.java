@@ -21,7 +21,6 @@
  */
 
 package org.jboss.as.controller.operations.global;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.EXECUTE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -35,6 +34,7 @@ import static org.jboss.as.controller.operations.global.GlobalOperationAttribute
 import java.util.Locale;
 import java.util.Set;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -86,8 +86,7 @@ public class ReadOperationDescriptionHandler implements OperationStepHandler {
 
         final DescribedOp describedOp = getDescribedOp(context, operationName, operation, !accessControl);
         if (describedOp == null || (context.getProcessType() == ProcessType.DOMAIN_SERVER && !describedOp.flags.contains(OperationEntry.Flag.RUNTIME_ONLY))) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.operationNotRegistered(operationName,
-                    PathAddress.pathAddress(operation.require(OP_ADDR)))));
+            throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.operationNotRegistered(operationName, PathAddress.pathAddress(operation.require(OP_ADDR)))));
         } else {
             final ModelNode result = describedOp.description;
             Set<OperationEntry.Flag> flags = describedOp.flags;

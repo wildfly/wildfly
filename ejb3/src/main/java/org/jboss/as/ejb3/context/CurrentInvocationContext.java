@@ -22,10 +22,10 @@
 package org.jboss.as.ejb3.context;
 
 import org.jboss.as.ee.component.ComponentInstance;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EjbComponentInstance;
 import org.jboss.as.ejb3.util.ThreadLocalStack;
 import org.jboss.invocation.InterceptorContext;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * @author <a href="cdewolf@redhat.com">Carlo de Wolf</a>
@@ -45,11 +45,11 @@ public class CurrentInvocationContext {
     public static EJBContextImpl getEjbContext() {
         final InterceptorContext context = get();
         if(context == null) {
-            throw MESSAGES.noEjbContextAvailable();
+            throw EjbLogger.ROOT_LOGGER.noEjbContextAvailable();
         }
         final ComponentInstance component = context.getPrivateData(ComponentInstance.class);
         if(!(component instanceof EjbComponentInstance)) {
-            throw MESSAGES.currentComponentNotAEjb(component);
+            throw EjbLogger.ROOT_LOGGER.currentComponentNotAEjb(component);
         }
         return ((EjbComponentInstance)component).getEjbContext();
     }

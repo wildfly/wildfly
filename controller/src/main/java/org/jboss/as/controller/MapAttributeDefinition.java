@@ -32,6 +32,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.jboss.as.controller.access.management.AccessConstraintDefinition;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.validation.MapValidator;
 import org.jboss.as.controller.operations.validation.NillableOrExpressionParameterValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
@@ -362,7 +363,7 @@ public abstract class MapAttributeDefinition extends AttributeDefinition {
          */
         public final BUILDER setElementValidator(ParameterValidator elementValidator) {
             if (elementValidator == null) {
-                throw ControllerMessages.MESSAGES.nullVar("elementValidator");
+                throw ControllerLogger.ROOT_LOGGER.nullVar("elementValidator");
             }
             this.elementValidator = elementValidator;
             // Setting an element validator invalidates any existing overall attribute validator

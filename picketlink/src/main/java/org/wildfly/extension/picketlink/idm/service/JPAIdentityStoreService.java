@@ -46,6 +46,8 @@ import javax.persistence.metamodel.EntityType;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -57,8 +59,7 @@ import java.util.Set;
 
 import static java.lang.reflect.Modifier.isAbstract;
 import static org.picketlink.common.util.StringUtil.isNullOrEmpty;
-import static org.wildfly.extension.picketlink.PicketLinkLogger.ROOT_LOGGER;
-import static org.wildfly.extension.picketlink.PicketLinkMessages.MESSAGES;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * @author Pedro Igor
@@ -83,7 +84,7 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
             configureEntityManagerFactory();
             configureEntities();
         } catch (Exception e) {
-            throw MESSAGES.idmJpaStartFailed(e);
+            throw PicketLinkLogger.ROOT_LOGGER.idmJpaStartFailed(e);
         }
 
         configureEntities();
@@ -129,7 +130,7 @@ public class JPAIdentityStoreService implements Service<JPAIdentityStoreService>
         try {
             return (EntityManagerFactory) new InitialContext().lookup(this.storeConfig.getEntityManagerFactoryJndiName());
         } catch (NamingException e) {
-            throw MESSAGES.idmJpaEMFLookupFailed(this.storeConfig.getEntityManagerFactoryJndiName());
+            throw PicketLinkLogger.ROOT_LOGGER.idmJpaEMFLookupFailed(this.storeConfig.getEntityManagerFactoryJndiName());
         }
     }
 

@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.jar.Manifest;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -75,7 +75,7 @@ public class ManifestAttachmentProcessor implements DeploymentUnitProcessor {
             try {
                 manifest = VFSUtils.getManifest(deploymentRoot);
             } catch (IOException e) {
-                throw ServerMessages.MESSAGES.failedToGetManifest(deploymentRoot, e);
+                throw ServerLogger.ROOT_LOGGER.failedToGetManifest(deploymentRoot, e);
             }
         }
         return manifest;

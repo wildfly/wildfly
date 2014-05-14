@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jboss.as.connector.logging.ConnectorLogger;
-import org.jboss.as.connector.logging.ConnectorMessages;
 import org.jboss.as.connector.services.driver.registry.DriverRegistry;
 import org.jboss.as.connector.subsystems.datasources.AbstractDataSourceService;
 import org.jboss.as.connector.subsystems.datasources.DataSourceReferenceFactoryService;
@@ -137,7 +136,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                             startDataSource(lds, jndiName, ds.getDriver(), serviceTarget, verificationHandler,
                                     getRegistration(false, deploymentUnit), getResource(dsName, false, deploymentUnit), dsName);
                         } catch (Exception e) {
-                            throw ConnectorMessages.MESSAGES.exceptionDeployingDatasource(e, ds.getJndiName());
+                            throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, ds.getJndiName());
                         }
                     } else {
                         ConnectorLogger.DS_DEPLOYER_LOGGER.debugf("Ignoring: %s", ds.getJndiName());
@@ -160,7 +159,7 @@ public class DsXmlDeploymentInstallProcessor implements DeploymentUnitProcessor 
                                     getRegistration(true, deploymentUnit), getResource(dsName, true, deploymentUnit), dsName);
 
                         } catch (Exception e) {
-                            throw ConnectorMessages.MESSAGES.exceptionDeployingDatasource(e, xads.getJndiName());
+                            throw ConnectorLogger.ROOT_LOGGER.exceptionDeployingDatasource(e, xads.getJndiName());
                         }
                     } else {
                         ConnectorLogger.DS_DEPLOYER_LOGGER.debugf("Ignoring %s", xads.getJndiName());

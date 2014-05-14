@@ -28,7 +28,7 @@ import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_RE
 import static org.hornetq.core.remoting.impl.netty.NettyConnector.SEC_HORNETQ_REMOTING_KEY;
 import static org.hornetq.core.remoting.impl.netty.TransportConstants.HTTP_UPGRADE_ENDPOINT_PROP_NAME;
 import static org.jboss.as.messaging.CommonAttributes.CORE;
-import static org.jboss.as.messaging.MessagingLogger.MESSAGING_LOGGER;
+import static org.jboss.as.messaging.logging.MessagingLogger.MESSAGING_LOGGER;
 
 import java.io.IOException;
 import java.util.List;

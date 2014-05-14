@@ -21,8 +21,6 @@
 */
 package org.jboss.as.host.controller.model.jvm;
 
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -34,6 +32,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.descriptions.HostResolver;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -66,7 +65,7 @@ final class JVMOptionAddHandler implements OperationStepHandler {
         if (jvmOptions.isDefined()) {
             for (ModelNode optionNode : jvmOptions.asList()) {
                 if (optionNode.equals(option)) {
-                    throw MESSAGES.jvmOptionAlreadyExists(option.asString());
+                    throw HostControllerLogger.ROOT_LOGGER.jvmOptionAlreadyExists(option.asString());
                 }
             }
         }

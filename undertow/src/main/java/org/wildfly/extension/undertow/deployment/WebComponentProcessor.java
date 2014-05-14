@@ -41,7 +41,7 @@ import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
 import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndex;
-import org.wildfly.extension.undertow.UndertowMessages;
+import org.wildfly.extension.undertow.logging.UndertowLogger;
 import org.jboss.as.web.common.WarMetaData;
 import org.jboss.as.web.common.WebComponentDescription;
 import org.jboss.jandex.ClassInfo;
@@ -113,7 +113,7 @@ public class WebComponentProcessor implements DeploymentUnitProcessor {
                 //this will generally be a managed bean, but it could also be an EJB
                 //TODO: make sure the component is a managed bean
                 if (!(description.getViews().size() == 1)) {
-                    throw UndertowMessages.MESSAGES.wrongComponentType(clazz);
+                    throw UndertowLogger.ROOT_LOGGER.wrongComponentType(clazz);
                 }
             } else {
                 //we do not make the standard tags into components, as there is no need

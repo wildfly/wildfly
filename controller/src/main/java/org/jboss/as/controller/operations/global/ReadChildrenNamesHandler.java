@@ -21,7 +21,6 @@
  */
 
 package org.jboss.as.controller.operations.global;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
@@ -34,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -77,7 +77,7 @@ public class ReadChildrenNamesHandler implements OperationStepHandler {
         Map<String, Set<String>> childAddresses = GlobalOperationHandlers.getChildAddresses(context, address, registry, resource, childType);
         Set<String> childNames = childAddresses.get(childType);
         if (childNames == null) {
-            throw new OperationFailedException(new ModelNode().set(MESSAGES.unknownChildType(childType)));
+            throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.unknownChildType(childType)));
         }
         // Sort the result
         childNames = new TreeSet<String>(childNames);

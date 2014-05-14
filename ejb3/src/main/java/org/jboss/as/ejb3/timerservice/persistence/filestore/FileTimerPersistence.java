@@ -22,6 +22,7 @@
 package org.jboss.as.ejb3.timerservice.persistence.filestore;
 
 import org.jboss.as.controller.services.path.PathManager;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.stateful.CurrentSynchronizationCallback;
 import org.jboss.as.ejb3.timerservice.CalendarTimer;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
@@ -63,8 +64,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * File based persistent timer store.
@@ -112,14 +112,14 @@ public class FileTimerPersistence implements TimerPersistence, Service<FileTimer
         if (!baseDir.exists()) {
             if (createIfNotExists) {
                 if (!baseDir.mkdirs()) {
-                    throw MESSAGES.failToCreateTimerFileStoreDir(baseDir);
+                    throw EjbLogger.ROOT_LOGGER.failToCreateTimerFileStoreDir(baseDir);
                 }
             } else {
-                throw MESSAGES.timerFileStoreDirNotExist(baseDir);
+                throw EjbLogger.ROOT_LOGGER.timerFileStoreDirNotExist(baseDir);
             }
         }
         if (!baseDir.isDirectory()) {
-            throw MESSAGES.invalidTimerFileStoreDir(baseDir);
+            throw EjbLogger.ROOT_LOGGER.invalidTimerFileStoreDir(baseDir);
         }
     }
 

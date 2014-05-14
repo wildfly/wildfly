@@ -25,6 +25,7 @@ package org.jboss.as.controller;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -70,11 +71,11 @@ public abstract class AttributeMarshaller {
      */
 
     public void marshallAsAttribute(final AttributeDefinition attribute,final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException{
-        throw ControllerMessages.MESSAGES.couldNotMarshalAttributeAsAttribute(attribute.getName());
+        throw ControllerLogger.ROOT_LOGGER.couldNotMarshalAttributeAsAttribute(attribute.getName());
     }
 
     public void marshallAsElement(final AttributeDefinition attribute, final ModelNode resourceModel, final boolean marshallDefault, final XMLStreamWriter writer) throws XMLStreamException{
-        throw ControllerMessages.MESSAGES.couldNotMarshalAttributeAsElement(attribute.getName());
+        throw ControllerLogger.ROOT_LOGGER.couldNotMarshalAttributeAsElement(attribute.getName());
     }
 
     public boolean isMarshallableAsElement(){

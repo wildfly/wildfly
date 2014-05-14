@@ -20,6 +20,10 @@
         <property name="jboss.api" value="private"/>
     </properties>
 
+    <exports>
+        <exclude path="org/wildfly/extension/picketlink/logging"/>
+    </exports>
+
     <resources>
         <!-- Insert resources here -->
     </resources>

@@ -36,7 +36,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.pojo.BeanState;
 import org.jboss.as.pojo.ParseResult;
-import org.jboss.as.pojo.PojoMessages;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.staxmapper.XMLElementReader;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -315,7 +315,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
     private String parseAlias(final XMLExtendedStreamReader reader) throws XMLStreamException {
         final String alias = parseTextElement(reader);
         if (alias == null || alias.trim().length() == 0)
-            throw PojoMessages.MESSAGES.nullOrEmptyAlias();
+            throw PojoLogger.ROOT_LOGGER.nullOrEmptyAlias();
         return alias;
     }
 
@@ -555,7 +555,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
 
         String dependency = parseTextElement(reader);
         if (dependency == null || dependency.trim().length() == 0)
-            throw PojoMessages.MESSAGES.nullOrEmptyDependency();
+            throw PojoLogger.ROOT_LOGGER.nullOrEmptyDependency();
         dependsConfig.setDependency(dependency);
 
         return dependsConfig;
@@ -628,7 +628,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
                     break;
                 case END_ELEMENT:
                     if (valueConfig == null)
-                        throw new XMLStreamException(PojoMessages.MESSAGES.missingValue(), reader.getLocation());
+                        throw new XMLStreamException(PojoLogger.ROOT_LOGGER.missingValue(), reader.getLocation());
                     if (valueConfig.getType() == null)
                         valueConfig.setType(type);
                     return valueConfig;
@@ -849,7 +849,7 @@ public class KernelDeploymentXmlDescriptorParser implements XMLElementReader<Par
             switch (reader.next()) {
                 case END_ELEMENT:
                     if (value == null)
-                        throw new XMLStreamException(PojoMessages.MESSAGES.missingValue(), reader.getLocation());
+                        throw new XMLStreamException(PojoLogger.ROOT_LOGGER.missingValue(), reader.getLocation());
                     return value;
                 case START_ELEMENT:
                     switch (Element.of(reader.getLocalName())) {

@@ -23,7 +23,6 @@
 package org.jboss.as.host.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DIRECTORY_GROUPING;
@@ -78,6 +77,7 @@ import java.util.Set;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.parsing.Attribute;
 import org.jboss.as.controller.parsing.Element;
@@ -86,7 +86,7 @@ import org.jboss.as.controller.parsing.ParseUtils;
 import org.jboss.as.controller.persistence.ModelMarshallingContext;
 import org.jboss.as.domain.management.parsing.AuditLogXml;
 import org.jboss.as.domain.management.parsing.ManagementXml;
-import org.jboss.as.host.controller.HostControllerMessages;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.discovery.DiscoveryOptionResourceDefinition;
 import org.jboss.as.host.controller.discovery.StaticDiscoveryResourceDefinition;
 import org.jboss.as.host.controller.ignored.IgnoredDomainTypeResourceDefinition;
@@ -879,11 +879,9 @@ public class HostXml extends CommonXml {
             switch (element) {
                 case LOCAL: {
                     if (hasLocal) {
-                        throw MESSAGES.childAlreadyDeclared(element.getLocalName(),
-                                Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.childAlreadyDeclared(element.getLocalName(), Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     } else if (hasRemote) {
-                        throw MESSAGES.childAlreadyDeclared(Element.REMOTE.getLocalName(),
-                                Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.childAlreadyDeclared(Element.REMOTE.getLocalName(), Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     }
                     switch (expectedNs) {
                         case DOMAIN_1_0:
@@ -905,11 +903,9 @@ public class HostXml extends CommonXml {
                 }
                 case REMOTE: {
                     if (hasRemote) {
-                        throw MESSAGES.childAlreadyDeclared(element.getLocalName(),
-                                Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.childAlreadyDeclared(element.getLocalName(), Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     } else if (hasLocal) {
-                        throw MESSAGES.childAlreadyDeclared(Element.LOCAL.getLocalName(),
-                                Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.childAlreadyDeclared(Element.LOCAL.getLocalName(), Element.DOMAIN_CONTROLLER.getLocalName(), reader.getLocation());
                     }
                     switch (expectedNs) {
                         case DOMAIN_1_0:
@@ -939,8 +935,7 @@ public class HostXml extends CommonXml {
             }
         }
         if (!hasLocal && !hasRemote) {
-            throw MESSAGES.domainControllerMustBeDeclared(Element.REMOTE.getLocalName(), Element.LOCAL.getLocalName(),
-                    reader.getLocation());
+            throw ControllerLogger.ROOT_LOGGER.domainControllerMustBeDeclared(Element.REMOTE.getLocalName(), Element.LOCAL.getLocalName(), reader.getLocation());
         }
 
         if (hasLocal) {
@@ -964,7 +959,7 @@ public class HostXml extends CommonXml {
             switch (element) {
                 case DISCOVERY_OPTIONS: {
                     if (hasDiscoveryOptions) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseDiscoveryOptions(reader, address, expectedNs, list, staticDiscoveryOptionNames, discoveryOptionNames);
                     hasDiscoveryOptions = true;
@@ -1043,7 +1038,7 @@ public class HostXml extends CommonXml {
                         throw unexpectedElement(reader);
                     }
                     if (hasDiscoveryOptions) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseDiscoveryOptions(reader, address, expectedNs, list, staticDiscoveryOptionNames, discoveryOptionNames);
                     hasDiscoveryOptions = true;
@@ -1055,7 +1050,7 @@ public class HostXml extends CommonXml {
         }
 
         if (requireDiscoveryOptions && !hasDiscoveryOptions) {
-            throw MESSAGES.discoveryOptionsMustBeDeclared(Element.DISCOVERY_OPTIONS.getLocalName(), Attribute.HOST.getLocalName(),
+            throw ControllerLogger.ROOT_LOGGER.discoveryOptionsMustBeDeclared(Element.DISCOVERY_OPTIONS.getLocalName(), Attribute.HOST.getLocalName(),
                     Attribute.PORT.getLocalName(), reader.getLocation());
         }
     }
@@ -1084,10 +1079,10 @@ public class HostXml extends CommonXml {
                             try {
                                 int portNo = Integer.parseInt(value);
                                 if (portNo < 1) {
-                                    throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                                    throw ControllerLogger.ROOT_LOGGER.invalidPort(attribute.getLocalName(), value, reader.getLocation());
                                 }
                             }catch(NumberFormatException e) {
-                                throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                                throw ControllerLogger.ROOT_LOGGER.invalidPort(attribute.getLocalName(), value, reader.getLocation());
                             }
                         }
                         break;
@@ -1144,10 +1139,10 @@ public class HostXml extends CommonXml {
                             try {
                                 int portNo = Integer.parseInt(value);
                                 if (portNo < 1) {
-                                    throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                                    throw ControllerLogger.ROOT_LOGGER.invalidPort(attribute.getLocalName(), value, reader.getLocation());
                                 }
                             }catch(NumberFormatException e) {
-                                throw MESSAGES.invalidPort(attribute.getLocalName(), value, reader.getLocation());
+                                throw ControllerLogger.ROOT_LOGGER.invalidPort(attribute.getLocalName(), value, reader.getLocation());
                             }
                         }
                         break;
@@ -1270,7 +1265,7 @@ public class HostXml extends CommonXml {
             switch (attribute) {
                 case TYPE: {
                     if (!foundTypes.add(value)) {
-                        throw HostControllerMessages.MESSAGES.duplicateIgnoredResourceType(Element.IGNORED_RESOURCE.getLocalName(), value, reader.getLocation());
+                        throw HostControllerLogger.ROOT_LOGGER.duplicateIgnoredResourceType(Element.IGNORED_RESOURCE.getLocalName(), value, reader.getLocation());
                     }
                     type = value;
                     break;
@@ -1589,7 +1584,7 @@ public class HostXml extends CommonXml {
                 }
                 case JVM: {
                     if (sawJvm) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
 
                     JvmXml.parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
@@ -1602,7 +1597,7 @@ public class HostXml extends CommonXml {
                 }
                 case SOCKET_BINDING_GROUP: {
                     if (sawSocketBinding) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseSocketBindingGroupRef(reader, serverAddOperation, ServerConfigResourceDefinition.SOCKET_BINDING_GROUP,
                             ServerConfigResourceDefinition.SOCKET_BINDING_PORT_OFFSET);
@@ -1611,7 +1606,7 @@ public class HostXml extends CommonXml {
                 }
                 case SYSTEM_PROPERTIES: {
                     if (sawSystemProperties) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseSystemProperties(reader, serverAddress, expectedNs, list, false);
                     sawSystemProperties = true;
@@ -1641,7 +1636,7 @@ public class HostXml extends CommonXml {
                 }
                 case JVM: {
                     if (sawJvm) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
 
                     JvmXml.parseJvm(reader, serverAddress, expectedNs, list, new HashSet<String>(), true);
@@ -1654,7 +1649,7 @@ public class HostXml extends CommonXml {
                 }
                 case SOCKET_BINDINGS: {
                     if (sawSocketBinding) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseServerSocketBindings(reader, serverAddOperation);
                     sawSocketBinding = true;
@@ -1662,7 +1657,7 @@ public class HostXml extends CommonXml {
                 }
                 case SYSTEM_PROPERTIES: {
                     if (sawSystemProperties) {
-                        throw MESSAGES.alreadyDefined(element.getLocalName(), reader.getLocation());
+                        throw ControllerLogger.ROOT_LOGGER.alreadyDefined(element.getLocalName(), reader.getLocation());
                     }
                     parseSystemProperties(reader, serverAddress, expectedNs, list, false);
                     sawSystemProperties = true;
@@ -1693,7 +1688,7 @@ public class HostXml extends CommonXml {
                 switch (attribute) {
                     case NAME: {
                         if (!serverNames.add(value)) {
-                            throw MESSAGES.duplicateDeclaration("server", value, reader.getLocation());
+                            throw ControllerLogger.ROOT_LOGGER.duplicateDeclaration("server", value, reader.getLocation());
                         }
                         final ModelNode address = parentAddress.clone().add(SERVER_CONFIG, value);
                         addUpdate.get(OP_ADDR).set(address);
@@ -1838,7 +1833,7 @@ public class HostXml extends CommonXml {
                     break;
                 }
                 default:
-                    throw new RuntimeException(MESSAGES.unknownChildType(element.getLocalName()));
+                    throw new RuntimeException(ControllerLogger.ROOT_LOGGER.unknownChildType(element.getLocalName()));
             }
         }
         writer.writeEndElement();

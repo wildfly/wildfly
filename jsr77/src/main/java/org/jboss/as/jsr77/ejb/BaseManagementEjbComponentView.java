@@ -21,14 +21,13 @@
 */
 package org.jboss.as.jsr77.ejb;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.jboss.as.naming.ManagedReference;
 
 /**
@@ -40,17 +39,17 @@ abstract class BaseManagementEjbComponentView implements ComponentView {
     private volatile Map<String, Map<String, Method>> methods;
 
     public ManagedReference createInstance() {
-        throw MESSAGES.onlyRequiredInLocalView();
+        throw JSR77Logger.ROOT_LOGGER.onlyRequiredInLocalView();
     }
 
     public ManagedReference createInstance(Map<Object, Object> contextData) {
-        throw MESSAGES.onlyRequiredInLocalView();
+        throw JSR77Logger.ROOT_LOGGER.onlyRequiredInLocalView();
     }
 
 
     @Override
     public Component getComponent() {
-        throw MESSAGES.onlyRequiredInLocalView();
+        throw JSR77Logger.ROOT_LOGGER.onlyRequiredInLocalView();
     }
 
     @Override

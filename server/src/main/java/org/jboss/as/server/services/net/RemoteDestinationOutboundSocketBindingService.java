@@ -22,7 +22,7 @@
 
 package org.jboss.as.server.services.net;
 
-import org.jboss.as.network.NetworkMessages;
+import org.jboss.as.network.logging.NetworkMessages;
 import org.jboss.as.network.OutboundSocketBinding;
 
 /**

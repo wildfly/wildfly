@@ -1,6 +1,6 @@
 package org.jboss.as.ee.component;
 
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.invocation.InterceptorContext;
 
 import java.io.Serializable;
@@ -33,7 +33,7 @@ public class ComponentClientInstance implements Serializable {
 
     public void setViewInstanceData(final Object key, final Object data) {
         if(constructionComplete) {
-            throw EeMessages.MESSAGES.instanceDataCanOnlyBeSetDuringConstruction();
+            throw EeLogger.ROOT_LOGGER.instanceDataCanOnlyBeSetDuringConstruction();
         }
         contextInformation.put(key, data);
     }

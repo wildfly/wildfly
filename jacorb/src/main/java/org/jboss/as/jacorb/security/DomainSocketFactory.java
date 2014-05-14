@@ -38,8 +38,7 @@ import org.jacorb.config.Configuration;
 import org.jacorb.config.ConfigurationException;
 import org.jacorb.orb.ORB;
 import org.jacorb.orb.factory.SocketFactory;
-import org.jboss.as.jacorb.JacORBLogger;
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.JacORBSubsystemConstants;
 import org.jboss.security.JSSESecurityDomain;
 import org.jboss.security.SecurityConstants;
@@ -130,7 +129,7 @@ public class DomainSocketFactory implements SocketFactory, Configurable {
         // get the configured security domain name.
         String securityDomain = configuration.getAttribute(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
         if (securityDomain == null)
-            throw JacORBMessages.MESSAGES.errorConfiguringDomainSF();
+            throw JacORBLogger.ROOT_LOGGER.errorConfiguringDomainSF();
 
         // use the security domain name to obtain the JSSE security domain.
         try {
@@ -142,7 +141,7 @@ public class DomainSocketFactory implements SocketFactory, Configurable {
             JacORBLogger.ROOT_LOGGER.failedToObtainJSSEDomain(securityDomain);
         }
         if (this.jsseSecurityDomain == null)
-            throw JacORBMessages.MESSAGES.failedToLookupJSSEDomain();
+            throw JacORBLogger.ROOT_LOGGER.failedToLookupJSSEDomain();
     }
 
     /**

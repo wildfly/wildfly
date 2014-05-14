@@ -23,13 +23,13 @@ package org.jboss.as.ejb3.timerservice.task;
 
 import java.util.Date;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.TimerImpl;
 import org.jboss.as.ejb3.timerservice.TimerServiceImpl;
 import org.jboss.as.ejb3.timerservice.TimerState;
 import org.jboss.as.ejb3.timerservice.spi.BeanRemovedException;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * A timer task which will be invoked at appropriate intervals based on a {@link javax.ejb.Timer}
@@ -69,7 +69,7 @@ public class TimerTask<T extends TimerImpl> implements Runnable {
      */
     public TimerTask(T timer) {
         if (timer == null) {
-            throw MESSAGES.timerIsNull();
+            throw EjbLogger.ROOT_LOGGER.timerIsNull();
         }
 
         this.timedObjectId = timer.getTimedObjectId();

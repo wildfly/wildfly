@@ -22,7 +22,6 @@
 
 package org.jboss.as.controller.client.helpers.standalone.impl;
 
-import static org.jboss.as.controller.client.ControllerClientMessages.MESSAGES;
 import static org.jboss.as.controller.client.helpers.ClientConstants.ADD;
 import static org.jboss.as.controller.client.helpers.ClientConstants.COMPOSITE;
 import static org.jboss.as.controller.client.helpers.ClientConstants.CONTENT;
@@ -47,6 +46,7 @@ import java.util.concurrent.Future;
 
 import org.jboss.as.controller.client.Operation;
 import org.jboss.as.controller.client.OperationBuilder;
+import org.jboss.as.controller.client.logging.ControllerClientLogger;
 import org.jboss.as.controller.client.helpers.standalone.DeploymentPlan;
 import org.jboss.as.controller.client.helpers.standalone.InitialDeploymentPlanBuilder;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentManager;
@@ -72,7 +72,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
     @Override
     public Future<ServerDeploymentPlanResult> execute(DeploymentPlan plan) {
         if (!(plan instanceof DeploymentPlanImpl)) {
-            throw MESSAGES.cannotUseDeploymentPlan();
+            throw ControllerClientLogger.ROOT_LOGGER.cannotUseDeploymentPlan();
         }
         DeploymentPlanImpl planImpl = (DeploymentPlanImpl) plan;
         Operation operation = getCompositeOperation(planImpl);
@@ -140,7 +140,7 @@ public abstract class AbstractServerDeploymentManager implements ServerDeploymen
                 break;
             }
             default: {
-                throw MESSAGES.unknownActionType(action.getType());
+                throw ControllerClientLogger.ROOT_LOGGER.unknownActionType(action.getType());
             }
             }
             steps.add(step);

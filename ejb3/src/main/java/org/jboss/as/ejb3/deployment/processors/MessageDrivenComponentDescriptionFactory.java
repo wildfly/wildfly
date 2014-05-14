@@ -34,7 +34,7 @@ import javax.jms.MessageListener;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.ee.metadata.MetadataCompleteMarker;
 import org.jboss.as.ee.structure.Attachments;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.messagedriven.DefaultResourceAdapterService;
 import org.jboss.as.ejb3.component.messagedriven.MessageDrivenComponentDescription;
 import org.jboss.as.ejb3.deployment.EjbJarDescription;
@@ -60,7 +60,6 @@ import org.jboss.msc.service.ServiceRegistry;
 
 import static org.jboss.as.ejb3.deployment.processors.AbstractDeploymentUnitProcessor.getEjbJarDescription;
 import static org.jboss.as.ejb3.deployment.processors.ViewInterfaces.getPotentialViewInterfaces;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 
 /**
  * User: jpai
@@ -181,7 +180,7 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         }
 
         if (interfaces.size() != 1)
-            throw MESSAGES.mdbDoesNotImplementNorSpecifyMessageListener(beanClass);
+            throw EjbLogger.ROOT_LOGGER.mdbDoesNotImplementNorSpecifyMessageListener(beanClass);
         return interfaces.iterator().next().toString();
     }
 
@@ -199,12 +198,12 @@ public class MessageDrivenComponentDescriptionFactory extends EJBComponentDescri
         final String className = mdbClass.name().toString();
         // must *not* be an interface
         if (Modifier.isInterface(flags)) {
-            EjbLogger.EJB3_LOGGER.mdbClassCannotBeAnInterface(className);
+            EjbLogger.ROOT_LOGGER.mdbClassCannotBeAnInterface(className);
             return false;
         }
         // bean class must be public, must *not* be abstract or final
         if (!Modifier.isPublic(flags) || Modifier.isAbstract(flags) || Modifier.isFinal(flags)) {
-            EjbLogger.EJB3_LOGGER.mdbClassMustBePublicNonAbstractNonFinal(className);
+            EjbLogger.ROOT_LOGGER.mdbClassMustBePublicNonAbstractNonFinal(className);
             return false;
         }
         // valid class

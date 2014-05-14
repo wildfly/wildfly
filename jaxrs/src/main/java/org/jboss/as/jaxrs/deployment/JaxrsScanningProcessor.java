@@ -34,7 +34,7 @@ import java.util.Set;
 import javax.ws.rs.core.Application;
 
 import org.jboss.as.jaxrs.JaxrsAnnotations;
-import org.jboss.as.jaxrs.JaxrsMessages;
+import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -57,8 +57,7 @@ import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrapClasses;
 import org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters;
 
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
-import static org.jboss.as.jaxrs.JaxrsMessages.MESSAGES;
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN;
 import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_PROVIDERS;
 import static org.jboss.resteasy.plugins.server.servlet.ResteasyContextParameters.RESTEASY_SCAN_RESOURCES;
@@ -202,7 +201,7 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
                     resteasyDeploymentData.getScannedApplicationClasses().add(scanned);
                 }
             } catch (ClassNotFoundException e) {
-                throw MESSAGES.cannotLoadApplicationClass(e);
+                throw JaxrsLogger.JAXRS_LOGGER.cannotLoadApplicationClass(e);
             }
         }
 
@@ -313,14 +312,14 @@ public class JaxrsScanningProcessor implements DeploymentUnitProcessor {
 
     private boolean valueOf(String paramName, String value) throws DeploymentUnitProcessingException {
         if (value == null) {
-            throw JaxrsMessages.MESSAGES.invalidParamValue(paramName, value);
+            throw JaxrsLogger.JAXRS_LOGGER.invalidParamValue(paramName, value);
         }
         if (value.toLowerCase(Locale.ENGLISH).equals("true")) {
             return true;
         } else if (value.toLowerCase(Locale.ENGLISH).equals("false")) {
             return false;
         } else {
-            throw JaxrsMessages.MESSAGES.invalidParamValue(paramName, value);
+            throw JaxrsLogger.JAXRS_LOGGER.invalidParamValue(paramName, value);
         }
     }
 

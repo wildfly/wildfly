@@ -6,7 +6,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.wildfly.jberet._private.WildFlyBatchMessages;
+import org.wildfly.jberet._private.WildFlyBatchLogger;
 
 /**
  * Configures properties to the batch configuration.
@@ -44,7 +44,7 @@ public class BatchConfiguration {
             if (MAP.containsKey(value)) {
                 return MAP.get(value);
             }
-            throw WildFlyBatchMessages.MESSAGES.invalidJobRepositoryType(value);
+            throw WildFlyBatchLogger.LOGGER.invalidJobRepositoryType(value);
         }
     }
 
@@ -121,7 +121,7 @@ public class BatchConfiguration {
         if (JobRepositoryType.MAP.containsKey(jobRepositoryType)) {
             put(JOB_REPOSITORY_TYPE, jobRepositoryType);
         } else {
-            throw WildFlyBatchMessages.MESSAGES.invalidJobRepositoryType(jobRepositoryType);
+            throw WildFlyBatchLogger.LOGGER.invalidJobRepositoryType(jobRepositoryType);
         }
     }
 

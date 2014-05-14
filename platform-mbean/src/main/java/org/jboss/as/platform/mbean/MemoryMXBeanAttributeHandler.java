@@ -28,6 +28,7 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -64,7 +65,7 @@ class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
         } else if (MemoryResourceDefinition.MEMORY_METRICS.contains(name)
                 || MemoryResourceDefinition.MEMORY_READ_WRITE_ATTRIBUTES.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl6(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badReadAttributeImpl(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);
@@ -81,7 +82,7 @@ class MemoryMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHandler
             ManagementFactory.getMemoryMXBean().setVerbose(operation.require(ModelDescriptionConstants.VALUE).asBoolean());
         } else if (MemoryResourceDefinition.MEMORY_READ_WRITE_ATTRIBUTES.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl2(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badWriteAttributeImpl(name);
         } else {
             // Shouldn't happen; the global handler should reject
             throw unknownAttribute(operation);

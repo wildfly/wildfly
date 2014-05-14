@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jmx;
 
-import static org.jboss.as.jmx.JmxMessages.MESSAGES;
-
 import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -38,6 +36,7 @@ import org.jboss.as.controller.access.management.JmxAuthorizer;
 import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceName;
 
@@ -68,7 +67,7 @@ abstract class ExposeModelResource extends SimpleResourceDefinition {
             return ExposeModelResourceExpression.DOMAIN_NAME;
         }
 
-        throw MESSAGES.unknownChild(childName);
+        throw JmxLogger.ROOT_LOGGER.unknownChild(childName);
     }
 
     @Override

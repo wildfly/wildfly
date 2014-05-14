@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.registry;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationClientException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
@@ -290,7 +290,7 @@ public interface Resource extends Cloneable {
         private static final long serialVersionUID = -2409240663987141424L;
 
         public NoSuchResourceException(PathElement childPath) {
-            super(ControllerMessages.MESSAGES.childResourceNotFound(childPath));
+            super(ControllerLogger.ROOT_LOGGER.childResourceNotFound(childPath));
         }
 
         @Override

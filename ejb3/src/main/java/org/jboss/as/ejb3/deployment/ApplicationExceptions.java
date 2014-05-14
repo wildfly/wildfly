@@ -22,7 +22,7 @@
 
 package org.jboss.as.ejb3.deployment;
 
-import org.jboss.as.ejb3.EjbMessages;
+import org.jboss.as.ejb3.logging.EjbLogger;
 
 import java.rmi.RemoteException;
 import java.util.Collections;
@@ -52,20 +52,20 @@ public class ApplicationExceptions {
 
     public void addApplicationException(Class<?> exceptionClass, org.jboss.as.ejb3.tx.ApplicationExceptionDetails applicationException) {
         if (exceptionClass == null) {
-            throw EjbMessages.MESSAGES.paramCannotBeNull("Exception class");
+            throw EjbLogger.ROOT_LOGGER.paramCannotBeNull("Exception class");
         }
         if (applicationException == null) {
-            throw EjbMessages.MESSAGES.paramCannotBeNull("ApplicationException");
+            throw EjbLogger.ROOT_LOGGER.paramCannotBeNull("ApplicationException");
         }
         // EJB 3.1 spec, section 14.1.1
         // application exception *must* be of type Exception
         if (!Exception.class.isAssignableFrom(exceptionClass)) {
-            throw EjbMessages.MESSAGES.cannotBeApplicationExceptionBecauseNotAnExceptionType(exceptionClass);
+            throw EjbLogger.ROOT_LOGGER.cannotBeApplicationExceptionBecauseNotAnExceptionType(exceptionClass);
         }
         // EJB 3.1 spec, section 14.1.1:
         // application exception *cannot* be of type java.rmi.RemoteException
         if (RemoteException.class.isAssignableFrom(exceptionClass)) {
-            throw EjbMessages.MESSAGES.rmiRemoteExceptionCannotBeApplicationException(exceptionClass);
+            throw EjbLogger.ROOT_LOGGER.rmiRemoteExceptionCannotBeApplicationException(exceptionClass);
         }
         // add it to our map
         this.applicationExceptions.put(exceptionClass, applicationException);

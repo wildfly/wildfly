@@ -43,6 +43,7 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.patching.Constants;
 import org.jboss.as.patching.installation.Identity;
 import org.jboss.as.patching.installation.PatchableTarget;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -179,7 +180,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                         try {
                             result.set(layer.loadTargetInfo().getCumulativePatchID());
                         } catch (IOException e) {
-                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+                            throw new OperationFailedException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
                         }
                     }
                 });
@@ -192,7 +193,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                                 result.add(id);
                             }
                         } catch (IOException e) {
-                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+                            throw new OperationFailedException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
                         }
                     }
                 });
@@ -216,7 +217,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                         try {
                             result.set(addon.loadTargetInfo().getCumulativePatchID());
                         } catch (IOException e) {
-                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+                            throw new OperationFailedException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
                         }
                     }
                 });
@@ -229,7 +230,7 @@ class PatchResourceDefinition extends SimpleResourceDefinition {
                                 result.add(id);
                             }
                         } catch (IOException e) {
-                            throw new OperationFailedException(PatchManagementMessages.MESSAGES.failedToLoadIdentity(), e);
+                            throw new OperationFailedException(PatchLogger.ROOT_LOGGER.failedToLoadIdentity(), e);
                         }
                     }
                 });

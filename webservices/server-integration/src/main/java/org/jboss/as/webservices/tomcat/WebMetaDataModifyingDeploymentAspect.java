@@ -21,8 +21,7 @@
  */
 package org.jboss.as.webservices.tomcat;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
 import org.jboss.wsf.spi.deployment.Deployment;
 
@@ -35,7 +34,7 @@ public final class WebMetaDataModifyingDeploymentAspect extends AbstractDeployme
 
     @Override
     public void start(final Deployment dep) {
-        ROOT_LOGGER.modifyingWebMetaData(dep.getSimpleName());
+        WSLogger.ROOT_LOGGER.tracef("Modifying web meta data for webservice deployment: %s", dep.getSimpleName());
         webMetaDataModifier.modify(dep);
     }
 

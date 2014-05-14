@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ee.utils;
 
-import static org.jboss.as.ee.EeMessages.MESSAGES;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -30,6 +28,8 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jboss.as.ee.logging.EeLogger;
 
 /**
  * Utility class for working with method descriptors
@@ -183,17 +183,17 @@ public class DescriptorUtils {
      */
     public static String validateDescriptor(String descriptor) {
         if (descriptor.length() == 0) {
-            throw MESSAGES.cannotBeEmpty("descriptors");
+            throw EeLogger.ROOT_LOGGER.cannotBeEmpty("descriptors");
         }
         if (descriptor.length() > 1) {
             if (descriptor.startsWith("L")) {
                 if (!descriptor.endsWith(";")) {
-                    throw MESSAGES.invalidDescriptor(descriptor);
+                    throw EeLogger.ROOT_LOGGER.invalidDescriptor(descriptor);
                 }
             } else if (descriptor.startsWith("[")) {
 
             } else {
-                    throw MESSAGES.invalidDescriptor(descriptor);
+                    throw EeLogger.ROOT_LOGGER.invalidDescriptor(descriptor);
             }
         } else {
             char type = descriptor.charAt(0);
@@ -209,7 +209,7 @@ public class DescriptorUtils {
                 case 'C':
                     break;
                 default:
-                    throw MESSAGES.invalidDescriptor(descriptor);
+                    throw EeLogger.ROOT_LOGGER.invalidDescriptor(descriptor);
             }
         }
         return descriptor;

@@ -22,8 +22,7 @@
 
 package org.jboss.as.domain.management.security;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -35,6 +34,7 @@ import javax.security.auth.Subject;
 
 import org.jboss.as.core.security.RealmGroup;
 import org.jboss.as.core.security.RealmUser;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.domain.management.plugin.AuthorizationPlugIn;
 import org.jboss.as.domain.management.plugin.PlugInConfigurationSupport;
@@ -74,7 +74,7 @@ public class PlugInSubjectSupplemental extends AbstractPlugInService implements 
             try {
                 pcf.init(getConfiguration(), sharedState);
             } catch (IOException e) {
-                throw MESSAGES.unableToInitialisePlugIn(name, e.getMessage());
+                throw DomainManagementLogger.ROOT_LOGGER.unableToInitialisePlugIn(name, e.getMessage());
             }
         }
 

@@ -36,6 +36,7 @@ import javax.xml.stream.XMLStreamReader;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptor;
 import org.jboss.as.pojo.descriptor.KernelDeploymentXmlDescriptorParser;
 import org.jboss.as.pojo.descriptor.LegacyKernelDeploymentXmlDescriptorParser;
+import org.jboss.as.pojo.logging.PojoLogger;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -153,11 +154,11 @@ public class KernelDeploymentParsingProcessor implements DeploymentUnitProcessor
             if (xmlDescriptor != null)
                 unit.addToAttachmentList(KernelDeploymentXmlDescriptor.ATTACHMENT_KEY, xmlDescriptor);
             else
-                throw PojoMessages.MESSAGES.failedToParse(beansXmlFile);
+                throw PojoLogger.ROOT_LOGGER.failedToParse(beansXmlFile);
         } catch (DeploymentUnitProcessingException e) {
             throw e;
         } catch (Exception e) {
-            throw PojoMessages.MESSAGES.parsingException(beansXmlFile, e);
+            throw PojoLogger.ROOT_LOGGER.parsingException(beansXmlFile, e);
         } finally {
             VFSUtils.safeClose(xmlStream);
         }

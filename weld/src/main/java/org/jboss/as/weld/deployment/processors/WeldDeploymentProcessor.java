@@ -57,7 +57,7 @@ import org.jboss.as.server.deployment.module.ResourceRoot;
 import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.as.weld.WeldBootstrapService;
-import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.as.weld.WeldStartService;
 import org.jboss.as.weld.deployment.BeanDeploymentArchiveImpl;
 import org.jboss.as.weld.deployment.BeanDeploymentModule;

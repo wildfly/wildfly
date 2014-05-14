@@ -21,7 +21,7 @@
  */
 package org.jboss.as.controller.operations.validation;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -49,7 +49,7 @@ public class URIValidator extends StringLengthValidator {
         try {
             new URI(str);
         } catch (URISyntaxException e) {
-            throw MESSAGES.badUriSyntax(str);
+            throw ROOT_LOGGER.badUriSyntax(str);
         }
     }
 

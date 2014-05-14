@@ -21,7 +21,7 @@
 */
 package org.jboss.as.controller.remote;
 
-import static org.jboss.as.controller.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
+import static org.jboss.as.controller.logging.ControllerLogger.SERVER_MANAGEMENT_LOGGER;
 
 import java.util.concurrent.ExecutorService;
 

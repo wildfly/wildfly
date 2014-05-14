@@ -22,7 +22,7 @@
 
 package org.jboss.as.controller.access.rbac;
 
-import static org.jboss.as.controller.ControllerLogger.ACCESS_LOGGER;
+import static org.jboss.as.controller.logging.ControllerLogger.ACCESS_LOGGER;
 
 import java.security.Permission;
 import java.util.Collections;
@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.access.Action;
 import org.jboss.as.controller.access.AuthorizerConfiguration;
 import org.jboss.as.controller.access.Caller;
@@ -84,7 +84,7 @@ public class StandardRoleMapper implements RoleMapper {
          */
 
         if (isSuperUser && hasRole == false) {
-            throw ControllerMessages.MESSAGES.unknownRole(runAsRole);
+            throw ControllerLogger.ROOT_LOGGER.unknownRole(runAsRole);
         }
 
         return hasRole && isSuperUser;

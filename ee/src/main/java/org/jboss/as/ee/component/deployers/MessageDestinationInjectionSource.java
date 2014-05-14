@@ -24,7 +24,7 @@ package org.jboss.as.ee.component.deployers;
 
 import java.util.Set;
 
-import org.jboss.as.ee.EeMessages;
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.EEApplicationDescription;
 import org.jboss.as.ee.component.InjectionSource;
 import org.jboss.as.naming.ManagedReferenceFactory;
@@ -91,11 +91,11 @@ public class MessageDestinationInjectionSource extends InjectionSource {
         final Set<String> names = applicationDescription.resolveMessageDestination(messageDestinationName, deploymentRoot.getRoot());
 
         if (names.isEmpty()) {
-            error = EeMessages.MESSAGES.noMessageDestination(messageDestinationName, bindingName);
+            error = EeLogger.ROOT_LOGGER.noMessageDestination(messageDestinationName, bindingName);
             return;
         }
         if (names.size() > 1) {
-            error = EeMessages.MESSAGES.moreThanOneMessageDestination(messageDestinationName, bindingName, names);
+            error = EeLogger.ROOT_LOGGER.moreThanOneMessageDestination(messageDestinationName, bindingName, names);
             return;
         }
         resolvedLookupName = names.iterator().next();

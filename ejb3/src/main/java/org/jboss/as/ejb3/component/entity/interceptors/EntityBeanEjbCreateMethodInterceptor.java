@@ -21,8 +21,6 @@
  */
 package org.jboss.as.ejb3.component.entity.interceptors;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -33,6 +31,7 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import org.jboss.as.ee.component.Component;
 import org.jboss.as.ee.component.ComponentClientInstance;
 import org.jboss.as.ee.component.interceptors.InvocationType;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponent;
 import org.jboss.as.ejb3.component.entity.EntityBeanComponentInstance;
 import org.jboss.invocation.ImmediateInterceptorFactory;
@@ -70,7 +69,7 @@ public class EntityBeanEjbCreateMethodInterceptor implements Interceptor {
         }
         final Component component = context.getPrivateData(Component.class);
         if (!(component instanceof EntityBeanComponent)) {
-            throw MESSAGES.unexpectedComponent(component, EntityBeanComponent.class);
+            throw EjbLogger.ROOT_LOGGER.unexpectedComponent(component, EntityBeanComponent.class);
         }
         final EntityBeanComponent entityBeanComponent = (EntityBeanComponent) component;
         //grab an unasociated entity bean from the pool

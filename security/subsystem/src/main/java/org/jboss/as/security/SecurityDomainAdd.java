@@ -79,6 +79,7 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.SecurityDomainContext;
 import org.jboss.as.security.service.JaasConfigurationService;
 import org.jboss.as.security.service.SecurityDomainService;
@@ -382,7 +383,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             }
             if (loginStackRef != null) {
                 if (!holders.containsKey(loginStackRef)) {
-                    throw SecurityMessages.MESSAGES.loginModuleStackIllegalArgument(loginStackRef);
+                    throw SecurityLogger.ROOT_LOGGER.loginModuleStackIllegalArgument(loginStackRef);
                 }
                 entry.setLoginModuleStackHolder(holders.get(loginStackRef));
             }
@@ -544,7 +545,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             try {
                 jsseSecurityDomain.setServiceAuthToken(value);
             } catch (Exception e) {
-                throw SecurityMessages.MESSAGES.runtimeException(e);
+                throw SecurityLogger.ROOT_LOGGER.runtimeException(e);
             }
         }
         if (node.hasDefined(CIPHER_SUITES)) {
@@ -589,7 +590,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             try {
                 config.setKeyStorePassword(context.resolveExpressions(value).asString());
             } catch (Exception e) {
-                throw SecurityMessages.MESSAGES.runtimeException(e);
+                throw SecurityLogger.ROOT_LOGGER.runtimeException(e);
             }
         }
 
@@ -601,7 +602,7 @@ class SecurityDomainAdd extends AbstractAddStepHandler {
             try {
                 config.setKeyStoreURL(context.resolveExpressions(url).asString());
             } catch (Exception e) {
-                throw SecurityMessages.MESSAGES.runtimeException(e);
+                throw SecurityLogger.ROOT_LOGGER.runtimeException(e);
             }
         }
 

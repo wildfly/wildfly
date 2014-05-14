@@ -38,6 +38,7 @@ import org.jboss.as.controller.ServiceVerificationHandler;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.jacorb.deployment.JacORBDependencyProcessor;
 import org.jboss.as.jacorb.deployment.JacORBMarkerProcessor;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.jboss.as.jacorb.naming.jndi.JBossCNCtxFactory;
 import org.jboss.as.jacorb.rmi.DelegatingStubFactoryFactory;
 import org.jboss.as.jacorb.security.DomainServerSocketFactory;
@@ -334,7 +335,7 @@ public class JacORBSubsystemAdd extends AbstractAddStepHandler {
             // if SSL is to be used, check if a security domain has been specified.
             String securityDomain = props.getProperty(JacORBSubsystemConstants.SECURITY_SECURITY_DOMAIN);
             if (securityDomain == null || securityDomain.isEmpty())
-                throw JacORBMessages.MESSAGES.noSecurityDomainSpecified();
+                throw JacORBLogger.ROOT_LOGGER.noSecurityDomainSpecified();
 
             // add the domain socket factories.
             props.setProperty(JacORBSubsystemConstants.JACORB_SSL_SOCKET_FACTORY, DomainSocketFactory.class.getName());

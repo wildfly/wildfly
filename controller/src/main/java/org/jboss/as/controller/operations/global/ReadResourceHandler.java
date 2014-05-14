@@ -21,7 +21,6 @@
  */
 
 package org.jboss.as.controller.operations.global;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ACCESS_CONTROL;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATTRIBUTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEFAULT;
@@ -48,6 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.NoSuchResourceException;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
@@ -106,10 +106,10 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
             super.validate(operation);
             if (operation.hasDefined(ModelDescriptionConstants.ATTRIBUTES_ONLY)) {
                 if (operation.hasDefined(ModelDescriptionConstants.RECURSIVE)) {
-                    throw MESSAGES.cannotHaveBothParameters(ModelDescriptionConstants.ATTRIBUTES_ONLY, ModelDescriptionConstants.RECURSIVE);
+                    throw ControllerLogger.ROOT_LOGGER.cannotHaveBothParameters(ModelDescriptionConstants.ATTRIBUTES_ONLY, ModelDescriptionConstants.RECURSIVE);
                 }
                 if (operation.hasDefined(ModelDescriptionConstants.RECURSIVE_DEPTH)) {
-                    throw MESSAGES.cannotHaveBothParameters(ModelDescriptionConstants.ATTRIBUTES_ONLY, ModelDescriptionConstants.RECURSIVE_DEPTH);
+                    throw ControllerLogger.ROOT_LOGGER.cannotHaveBothParameters(ModelDescriptionConstants.ATTRIBUTES_ONLY, ModelDescriptionConstants.RECURSIVE_DEPTH);
                 }
             }
         }
@@ -226,7 +226,7 @@ public class ReadResourceHandler extends GlobalOperationHandlers.AbstractMultiTa
                     if (recursive) {
                         ImmutableManagementResourceRegistration childReg = registry.getSubModel(relativeAddr);
                         if (childReg == null) {
-                            throw new OperationFailedException(new ModelNode().set(MESSAGES.noChildRegistry(childType, child)));
+                            throw new OperationFailedException(new ModelNode().set(ControllerLogger.ROOT_LOGGER.noChildRegistry(childType, child)));
                         }
                         // Decide if we want to invoke on this child resource
                         boolean proxy = childReg.isRemote();

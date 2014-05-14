@@ -39,7 +39,7 @@ import org.jboss.metadata.ear.spec.EarMetaData;
 import org.jboss.metadata.ejb.spec.AssemblyDescriptorMetaData;
 import org.jboss.metadata.ejb.spec.EjbJarMetaData;
 
-import static org.jboss.as.ejb3.EjbLogger.ROOT_LOGGER;
+import static org.jboss.as.ejb3.logging.EjbLogger.ROOT_LOGGER;
 
 /**
  * @author Stuart Douglas

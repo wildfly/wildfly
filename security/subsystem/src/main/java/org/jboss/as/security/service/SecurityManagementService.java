@@ -23,7 +23,7 @@
 package org.jboss.as.security.service;
 
 import org.jboss.as.security.SecurityExtension;
-import org.jboss.as.security.SecurityLogger;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.as.security.plugins.JNDIBasedSecurityManagement;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
 import org.jboss.msc.inject.Injector;

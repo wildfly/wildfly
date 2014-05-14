@@ -21,7 +21,7 @@
  */
 package org.jboss.as.server.moduleservice;
 
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.as.server.Services;
 import org.jboss.modules.ModuleIdentifier;
 import org.jboss.msc.service.Service;
@@ -80,7 +80,7 @@ public class ExternalModuleService implements Service<ExternalModuleService> {
     @Override
     public void start(StartContext context) throws StartException {
         if (serviceContainer != null) {
-            throw ServerMessages.MESSAGES.externalModuleServiceAlreadyStarted();
+            throw ServerLogger.ROOT_LOGGER.externalModuleServiceAlreadyStarted();
         }
         serviceContainer = context.getController().getServiceContainer();
     }

@@ -33,7 +33,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
 import static org.jboss.as.domain.http.server.DomainUtil.writeResponse;
-import static org.jboss.as.domain.http.server.HttpServerLogger.ROOT_LOGGER;
+import static org.jboss.as.domain.http.server.logging.HttpServerLogger.ROOT_LOGGER;
 
 import java.io.ByteArrayInputStream;
 import java.util.Deque;

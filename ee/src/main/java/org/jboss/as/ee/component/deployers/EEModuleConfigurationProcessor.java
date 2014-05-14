@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.Attachments;
 import org.jboss.as.ee.component.ComponentConfiguration;
 import org.jboss.as.ee.component.ComponentConfigurator;
@@ -42,8 +43,7 @@ import org.jboss.modules.Module;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static org.jboss.as.ee.EeLogger.ROOT_LOGGER;
-import static org.jboss.as.ee.EeMessages.MESSAGES;
+import static org.jboss.as.ee.logging.EeLogger.ROOT_LOGGER;
 
 /**
  * Deployment processor responsible for creating a {@link org.jboss.as.ee.component.EEModuleConfiguration} from a {@link org.jboss.as.ee.component.EEModuleDescription} and
@@ -92,7 +92,7 @@ public class EEModuleConfigurationProcessor implements DeploymentUnitProcessor {
                         failed.add(componentDescription.getServiceName());
                         iterator.remove();
                     } else {
-                        throw MESSAGES.cannotConfigureComponent(e, componentDescription.getComponentName());
+                        throw EeLogger.ROOT_LOGGER.cannotConfigureComponent(e, componentDescription.getComponentName());
                     }
                 }
             }

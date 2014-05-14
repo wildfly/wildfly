@@ -36,6 +36,7 @@ import javax.ejb.TimerService;
 import org.jboss.as.ee.component.BasicComponentInstance;
 import org.jboss.as.ee.component.ComponentInstance;
 import org.jboss.as.ee.component.ComponentView;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.cache.Cache;
 import org.jboss.as.ejb3.cache.StatefulObjectFactory;
 import org.jboss.as.ejb3.component.DefaultAccessTimeoutService;
@@ -57,7 +58,6 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.wildfly.security.manager.WildFlySecurityManager;
 
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
 import org.jboss.as.ejb3.cache.CacheFactory;
 import org.jboss.msc.value.Value;
 import org.wildfly.clustering.ejb.IdentifierFactory;
@@ -172,7 +172,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     @Override
     public <T> T getBusinessObject(Class<T> businessInterface, final InterceptorContext context) throws IllegalStateException {
         if (businessInterface == null) {
-            throw MESSAGES.businessInterfaceIsNull();
+            throw EjbLogger.ROOT_LOGGER.businessInterfaceIsNull();
         }
         return createViewInstanceProxy(businessInterface, Collections.<Object, Object>singletonMap(SessionID.class, getSessionIdOf(context)));
     }
@@ -180,7 +180,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     @Override
     public EJBLocalObject getEJBLocalObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbLocalObjectViewServiceName() == null) {
-            throw MESSAGES.ejbLocalObjectUnavailable(getComponentName());
+            throw EjbLogger.ROOT_LOGGER.ejbLocalObjectUnavailable(getComponentName());
         }
         return createViewInstanceProxy(EJBLocalObject.class, Collections.<Object, Object>singletonMap(SessionID.class, getSessionIdOf(ctx)), getEjbLocalObjectViewServiceName());
     }
@@ -189,7 +189,7 @@ public class StatefulSessionComponent extends SessionBeanComponent implements St
     @Override
     public EJBObject getEJBObject(final InterceptorContext ctx) throws IllegalStateException {
         if (getEjbObjectViewServiceName() == null) {
-            throw MESSAGES.beanComponentMissingEjbObject(getComponentName(), "EJBObject");
+            throw EjbLogger.ROOT_LOGGER.beanComponentMissingEjbObject(getComponentName(), "EJBObject");
         }
         final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(getEjbObjectViewServiceName());
         final ComponentView view = (ComponentView) serviceController.getValue();

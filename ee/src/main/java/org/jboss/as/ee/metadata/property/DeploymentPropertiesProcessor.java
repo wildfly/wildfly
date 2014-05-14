@@ -25,7 +25,8 @@ package org.jboss.as.ee.metadata.property;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
-import org.jboss.as.ee.EeMessages;
+
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -58,7 +59,7 @@ public class DeploymentPropertiesProcessor implements DeploymentUnitProcessor {
             propertyFileStream = propertiesFile.openStream();
             properties.load(propertyFileStream);
         } catch (IOException e) {
-            throw EeMessages.MESSAGES.failedToLoadJbossProperties(e);
+            throw EeLogger.ROOT_LOGGER.failedToLoadJbossProperties(e);
         } finally {
             VFSUtils.safeClose(propertyFileStream);
         }

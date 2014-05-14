@@ -26,18 +26,16 @@ import org.jboss.as.naming.ImmediateManagedReference;
 import org.jboss.as.naming.ManagedReference;
 import org.jboss.as.naming.ManagedReferenceFactory;
 import org.jboss.as.naming.NamingContext;
-import org.jboss.as.naming.NamingLogger;
 import org.jboss.as.naming.NamingStore;
 import org.jboss.as.naming.context.external.ExternalContexts;
 import org.jboss.as.server.deployment.DeploymentUnit;
+import org.jboss.as.naming.logging.NamingLogger;
 import org.jboss.msc.inject.InjectionException;
 import org.jboss.msc.inject.Injector;
 import org.jboss.msc.service.ServiceBuilder;
 import org.jboss.msc.service.ServiceName;
 
 import javax.naming.NamingException;
-
-import static org.jboss.as.naming.NamingMessages.MESSAGES;
 
 /**
  * @author John Bailey
@@ -310,7 +308,7 @@ public class ContextNames {
                                 return new ImmediateManagedReference(storeBaseContext.lookup(getBindName()));
                             } catch (NamingException e) {
                                 if(!optional) {
-                                    throw MESSAGES.resourceLookupForInjectionFailed(getAbsoluteJndiName(),e);
+                                    throw NamingLogger.ROOT_LOGGER.resourceLookupForInjectionFailed(getAbsoluteJndiName(), e);
                                 } else {
                                     NamingLogger.ROOT_LOGGER.tracef(e,"failed to lookup %s", getAbsoluteJndiName());
                                 }
@@ -357,7 +355,7 @@ public class ContextNames {
             parentContextName = JAVA_CONTEXT_SERVICE_NAME;
             bindName = bindName.substring(1);
         } else {
-            throw MESSAGES.illegalContextInName(jndiName);
+            throw NamingLogger.ROOT_LOGGER.illegalContextInName(jndiName);
         }
         return new BindInfo(parentContextName, bindName);
     }

@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.jboss.as.connector.deployers.Util;
 import org.jboss.as.connector.deployers.ds.DsXmlParser;
+import org.jboss.as.connector.logging.ConnectorLogger;
 import org.jboss.as.server.deployment.AttachmentKey;
 import org.jboss.as.server.deployment.AttachmentList;
 import org.jboss.as.server.deployment.Attachments;
@@ -43,8 +44,6 @@ import org.jboss.jca.common.api.metadata.ds.DataSources;
 import org.jboss.metadata.property.PropertyResolver;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.connector.logging.ConnectorMessages.MESSAGES;
 
 /**
  * Picks up -ds.xml deployments
@@ -91,7 +90,7 @@ public class DsXmlDeploymentParsingProcessor implements DeploymentUnitProcessor 
                 if (dataSources != null) {
                     for (DataSource ds : dataSources.getDataSource()) {
                         if (ds.getDriver() == null) {
-                            throw MESSAGES.FailedDeployDriverNotSpecified(ds.getJndiName());
+                            throw ConnectorLogger.ROOT_LOGGER.FailedDeployDriverNotSpecified(ds.getJndiName());
                         }
                     }
                     deploymentUnit.addToAttachmentList(DATA_SOURCES_ATTACHMENT_KEY, dataSources);

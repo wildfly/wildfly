@@ -36,7 +36,7 @@ import javax.naming.Name;
 import javax.naming.NameParser;
 import javax.naming.NamingException;
 
-import org.jboss.as.jacorb.JacORBMessages;
+import org.jboss.as.jacorb.logging.JacORBLogger;
 import org.omg.CosNaming.NameComponent;
 
 /**
@@ -158,7 +158,7 @@ public final class CNNameParser implements NameParser {
 
                 } else if (str.charAt(i) == escapeChar) {
                     if (i + 1 >= len) {
-                        throw JacORBMessages.MESSAGES.unescapedCharacter(str);
+                        throw JacORBLogger.ROOT_LOGGER.unescapedCharacter(str);
                     } else if (isMeta(str.charAt(i + 1))) {
                         ++i; // skip escape and let meta through
                         if (idMode) {
@@ -167,7 +167,7 @@ public final class CNNameParser implements NameParser {
                             kind[kindCount++] = str.charAt(i++);
                         }
                     } else {
-                        throw JacORBMessages.MESSAGES.invalidEscapedCharacter(str);
+                        throw JacORBLogger.ROOT_LOGGER.invalidEscapedCharacter(str);
                     }
 
                 } else if (idMode && str.charAt(i) == kindSeparator) {
@@ -215,11 +215,11 @@ public final class CNNameParser implements NameParser {
                 escaped = false;
             } else if (compStr.charAt(i) == escapeChar) {
                 if (i + 1 >= len) {
-                    throw JacORBMessages.MESSAGES.unescapedCharacter(compStr);
+                    throw JacORBLogger.ROOT_LOGGER.unescapedCharacter(compStr);
                 } else if (isMeta(compStr.charAt(i + 1))) {
                     escaped = true;
                 } else {
-                    throw JacORBMessages.MESSAGES.invalidEscapedCharacter(compStr);
+                    throw JacORBLogger.ROOT_LOGGER.invalidEscapedCharacter(compStr);
                 }
             } else if (compStr.charAt(i) == kindSeparator) {
                 kindSep = i;
@@ -244,11 +244,11 @@ public final class CNNameParser implements NameParser {
                     escaped = false;
                 } else if (compStr.charAt(i) == escapeChar) {
                     if (i + 1 >= len) {
-                        throw JacORBMessages.MESSAGES.unescapedCharacter(compStr);
+                        throw JacORBLogger.ROOT_LOGGER.unescapedCharacter(compStr);
                     } else if (isMeta(compStr.charAt(i + 1))) {
                         escaped = true;
                     } else {
-                        throw JacORBMessages.MESSAGES.invalidEscapedCharacter(compStr);
+                        throw JacORBLogger.ROOT_LOGGER.invalidEscapedCharacter(compStr);
                     }
                 } else {
                     newStr[j++] = compStr.charAt(i);

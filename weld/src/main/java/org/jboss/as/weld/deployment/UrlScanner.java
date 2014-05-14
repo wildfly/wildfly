@@ -34,7 +34,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
-import org.jboss.as.weld.WeldLogger;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 

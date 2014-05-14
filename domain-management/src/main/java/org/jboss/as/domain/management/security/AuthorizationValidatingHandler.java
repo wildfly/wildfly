@@ -34,7 +34,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -77,7 +77,7 @@ public class AuthorizationValidatingHandler implements OperationStepHandler {
         if (children.size() > 1) {
             String realmName = PathAddress.pathAddress(operation.require(ModelDescriptionConstants.OP_ADDR)).getLastElement().getValue();
             Set<String> invalid = new HashSet<String>(children);
-            throw DomainManagementMessages.MESSAGES.multipleAuthorizationConfigurationsDefined(realmName, invalid);
+            throw DomainManagementLogger.ROOT_LOGGER.multipleAuthorizationConfigurationsDefined(realmName, invalid);
         }
         context.stepCompleted();
     }

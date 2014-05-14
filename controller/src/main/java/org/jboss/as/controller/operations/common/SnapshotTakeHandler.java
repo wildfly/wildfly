@@ -21,7 +21,7 @@ package org.jboss.as.controller.operations.common;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -64,8 +64,7 @@ public class SnapshotTakeHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         AuthorizationResult authorizationResult = context.authorize(operation);
         if (authorizationResult.getDecision() == AuthorizationResult.Decision.DENY) {
-            throw ControllerMessages.MESSAGES.unauthorized(operation.get(OP).asString(),
-                    PathAddress.pathAddress(operation.get(OP_ADDR)), authorizationResult.getExplanation());
+            throw ControllerLogger.ROOT_LOGGER.unauthorized(operation.get(OP).asString(), PathAddress.pathAddress(operation.get(OP_ADDR)), authorizationResult.getExplanation());
         }
 
         try {

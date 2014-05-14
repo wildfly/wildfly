@@ -30,7 +30,7 @@ import org.jboss.as.server.AbstractDeploymentChainStep;
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
-import org.wildfly.extension.picketlink.PicketLinkLogger;
+import org.wildfly.extension.picketlink.logging.PicketLinkLogger;
 import org.wildfly.extension.picketlink.federation.deployment.FederationDependencyProcessor;
 import org.wildfly.extension.picketlink.federation.deployment.FederationDeploymentProcessor;
 

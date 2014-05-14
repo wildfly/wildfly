@@ -22,10 +22,9 @@
 
 package org.jboss.as.jpa.management;
 
-import static org.jboss.as.jpa.messages.JpaMessages.MESSAGES;
-
 import javax.persistence.EntityManagerFactory;
 
+import org.jboss.as.jpa.messages.JpaLogger;
 import org.jboss.as.jpa.subsystem.PersistenceUnitRegistryImpl;
 import org.jipijapa.management.spi.EntityManagerFactoryAccess;
 import org.jipijapa.plugin.spi.PersistenceUnitService;
@@ -41,7 +40,7 @@ public class EntityManagerFactoryLookup implements EntityManagerFactoryAccess {
     public EntityManagerFactory entityManagerFactory(final String scopedPersistenceUnitName) {
         PersistenceUnitService persistenceUnitService = PersistenceUnitRegistryImpl.INSTANCE.getPersistenceUnitService(scopedPersistenceUnitName);
         if (persistenceUnitService == null) {
-            throw MESSAGES.PersistenceUnitNotAvailable(scopedPersistenceUnitName);
+            throw JpaLogger.ROOT_LOGGER.PersistenceUnitNotAvailable(scopedPersistenceUnitName);
         }
         return persistenceUnitService.getEntityManagerFactory();
 

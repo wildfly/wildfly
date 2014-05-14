@@ -22,13 +22,12 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
 import static org.jboss.as.domain.management.security.adduser.AddUser.NEW_LINE;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.as.domain.management.security.password.PasswordRestriction;
 import org.jboss.as.domain.management.security.password.RestrictionLevel;
 
@@ -60,9 +59,9 @@ public class PromptPasswordState implements State {
                     final List<PasswordRestriction> passwordRestrictions = stateValues.getOptions().getCheckUtil().getPasswordRestrictions();
                     if (passwordRestrictions.size() > 0) {
                         if (level == RestrictionLevel.REJECT) {
-                            theConsole.printf(DomainManagementMessages.MESSAGES.passwordRequirements());
+                            theConsole.printf(DomainManagementLogger.ROOT_LOGGER.passwordRequirements());
                         } else {
-                            theConsole.printf(DomainManagementMessages.MESSAGES.passwordRecommendations());
+                            theConsole.printf(DomainManagementLogger.ROOT_LOGGER.passwordRecommendations());
                         }
                         theConsole.printf(NEW_LINE);
                         for (PasswordRestriction passwordRestriction : passwordRestrictions) {
@@ -76,17 +75,17 @@ public class PromptPasswordState implements State {
                     }
                 }
                 // Prompt for password.
-                theConsole.printf(MESSAGES.passwordPrompt());
+                theConsole.printf(DomainManagementLogger.ROOT_LOGGER.passwordPrompt());
                 char[] tempChar = theConsole.readPassword(" : ");
                 if (tempChar == null || tempChar.length == 0) {
-                    return new ErrorState(theConsole, MESSAGES.noPasswordExiting());
+                    return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.noPasswordExiting());
                 }
                 stateValues.setPassword(new String(tempChar));
 
                 return new ValidatePasswordState(theConsole, stateValues);
             } else {
 
-                theConsole.printf(MESSAGES.passwordConfirmationPrompt());
+                theConsole.printf(DomainManagementLogger.ROOT_LOGGER.passwordConfirmationPrompt());
                 char[] secondTempChar = theConsole.readPassword(" : ");
                 if (secondTempChar == null) {
                     secondTempChar = new char[0]; // If re-entry missed allow fall through to comparison.
@@ -94,7 +93,7 @@ public class PromptPasswordState implements State {
 
                 if (Arrays.equals(stateValues.getPassword().toCharArray(), secondTempChar) == false) {
                     // Start again at the first password.
-                    return new ErrorState(theConsole, MESSAGES.passwordMisMatch(), new PromptPasswordState(theConsole, stateValues, false));
+                    return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.passwordMisMatch(), new PromptPasswordState(theConsole, stateValues, false));
                 }
 
                 // As long as it matches the actual value has already been validated.

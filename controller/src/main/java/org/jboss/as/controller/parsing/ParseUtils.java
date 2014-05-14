@@ -23,7 +23,6 @@
 package org.jboss.as.controller.parsing;
 
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 
 import java.lang.reflect.Array;
 import java.util.Collections;
@@ -34,6 +33,7 @@ import javax.xml.XMLConstants;
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.dmr.Property;
@@ -82,7 +82,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException unexpectedElement(final XMLExtendedStreamReader reader) {
-        return MESSAGES.unexpectedElement(reader.getName(), reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.unexpectedElement(reader.getName(), reader.getLocation());
     }
 
     /**
@@ -91,7 +91,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException unexpectedEndElement(final XMLExtendedStreamReader reader) {
-        return MESSAGES.unexpectedEndElement(reader.getName(), reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.unexpectedEndElement(reader.getName(), reader.getLocation());
     }
 
     /**
@@ -101,7 +101,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException unexpectedAttribute(final XMLExtendedStreamReader reader, final int index) {
-        return MESSAGES.unexpectedAttribute(reader.getAttributeName(index), reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.unexpectedAttribute(reader.getAttributeName(index), reader.getLocation());
     }
 
     /**
@@ -111,7 +111,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException invalidAttributeValue(final XMLExtendedStreamReader reader, final int index) {
-        return MESSAGES.invalidAttributeValue(reader.getAttributeValue(index), reader.getAttributeName(index), reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.invalidAttributeValue(reader.getAttributeValue(index), reader.getAttributeName(index), reader.getLocation());
     }
 
     /**
@@ -131,7 +131,7 @@ public final class ParseUtils {
                 b.append(", ");
             }
         }
-        return MESSAGES.missingRequiredAttributes(b, reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.missingRequiredAttributes(b, reader.getLocation());
     }
 
     /**
@@ -150,7 +150,7 @@ public final class ParseUtils {
                 b.append(", ");
             }
         }
-        return MESSAGES.missingRequiredAttributes(b, reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.missingRequiredAttributes(b, reader.getLocation());
     }
 
     /**
@@ -170,7 +170,7 @@ public final class ParseUtils {
                 b.append(", ");
             }
         }
-        return MESSAGES.missingRequiredElements(b, reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.missingRequiredElements(b, reader.getLocation());
     }
 
     /**
@@ -190,7 +190,7 @@ public final class ParseUtils {
                 b.append(", ");
             }
         }
-        return MESSAGES.missingOneOf(b, reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.missingOneOf(b, reader.getLocation());
     }
 
     /**
@@ -240,7 +240,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException duplicateAttribute(final XMLExtendedStreamReader reader, final String name) {
-        return MESSAGES.duplicateAttribute(name, reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.duplicateAttribute(name, reader.getLocation());
     }
 
     /**
@@ -251,7 +251,7 @@ public final class ParseUtils {
      * @return the exception
      */
     public static XMLStreamException duplicateNamedElement(final XMLExtendedStreamReader reader, final String name) {
-        return MESSAGES.duplicateNamedElement(name, reader.getLocation());
+        return ControllerLogger.ROOT_LOGGER.duplicateNamedElement(name, reader.getLocation());
     }
 
     /**
@@ -433,11 +433,11 @@ public final class ParseUtils {
         try {
             final int value = Integer.parseInt(stringValue);
             if (value < minInclusive || value > maxInclusive) {
-                throw MESSAGES.invalidAttributeValue(value, reader.getAttributeName(index), minInclusive, maxInclusive, reader.getLocation());
+                throw ControllerLogger.ROOT_LOGGER.invalidAttributeValue(value, reader.getAttributeName(index), minInclusive, maxInclusive, reader.getLocation());
             }
             return new ModelNode().set(value);
         } catch (NumberFormatException nfe) {
-            throw MESSAGES.invalidAttributeValueInt(nfe, stringValue, reader.getAttributeName(index), reader.getLocation());
+            throw ControllerLogger.ROOT_LOGGER.invalidAttributeValueInt(nfe, stringValue, reader.getAttributeName(index), reader.getLocation());
         }
     }
 
@@ -458,6 +458,6 @@ public final class ParseUtils {
     }
 
     public static String getWarningMessage(final String msg, final Location location) {
-        return MESSAGES.parsingProblem(location.getLineNumber(), location.getColumnNumber(), msg);
+        return ControllerLogger.ROOT_LOGGER.parsingProblem(location.getLineNumber(), location.getColumnNumber(), msg);
     }
 }

@@ -32,7 +32,7 @@ import org.jboss.as.ee.managedbean.component.ManagedBeanComponentDescription;
 import org.jboss.as.ee.weld.WeldDeploymentMarker;
 import org.jboss.as.ejb3.component.session.SessionBeanComponentDescription;
 import org.jboss.as.ejb3.component.stateful.StatefulComponentDescription;
-import org.jboss.as.jaxrs.JaxrsMessages;
+import org.jboss.as.jaxrs.logging.JaxrsLogger;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
 import org.jboss.as.server.deployment.DeploymentUnitProcessingException;
@@ -40,7 +40,7 @@ import org.jboss.as.server.deployment.DeploymentUnitProcessor;
 import org.jboss.modules.Module;
 import org.jboss.resteasy.util.GetRestful;
 
-import static org.jboss.as.jaxrs.JaxrsLogger.JAXRS_LOGGER;
+import static org.jboss.as.jaxrs.logging.JaxrsLogger.JAXRS_LOGGER;
 
 /**
  * Integrates JAX-RS with managed beans and EJB's
@@ -114,7 +114,7 @@ public class JaxrsComponentDeployer implements DeploymentUnitProcessor {
                         }
                     }
                     if (!found) {
-                        throw JaxrsMessages.MESSAGES.typeNameNotAnEjbView(Arrays.asList(jaxrsType), component.getComponentName());
+                        throw JaxrsLogger.JAXRS_LOGGER.typeNameNotAnEjbView(Arrays.asList(jaxrsType), component.getComponentName());
                     }
                     jndiName = "java:app/" + moduleDescription.getModuleName() + "/" + component.getComponentName() + "!" + foundType;
                 }

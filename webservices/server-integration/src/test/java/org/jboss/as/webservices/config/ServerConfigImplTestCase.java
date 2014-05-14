@@ -138,7 +138,7 @@ public class ServerConfigImplTestCase {
             fail();
         } catch (DisabledOperationException e) {
             //check the error message says the operation can't be done because there's an active deployment
-            assertTrue("Expected JBAS015616 message, but got " + e.getMessage(), e.getMessage().contains("JBAS015616"));
+            assertTrue("Expected WFLYWS0064 message, but got " + e.getMessage(), e.getMessage().contains("WFLYWS0064"));
         }
         sc.decrementWSDeploymentCount();
         assertTrue(sc.isModifiable());
@@ -147,7 +147,7 @@ public class ServerConfigImplTestCase {
             fail();
         } catch (DisabledOperationException e) {
             //check the error message says the operation can't be done because of pending former model update(s) requiring reload 
-            assertTrue("Expected JBAS015615 message, but got " + e.getMessage(), e.getMessage().contains("JBAS015615"));
+            assertTrue("Expected WFLYWS0063 message, but got " + e.getMessage(), e.getMessage().contains("WFLYWS0063"));
         }
         sc.create();
         assertTrue(sc.isModifiable());
@@ -166,7 +166,7 @@ public class ServerConfigImplTestCase {
             fail();
         } catch (DisabledOperationException e) {
             //check the error message says the operation can't be done because there's an active deployment
-            assertTrue("Expected JBAS015616 message, but got " + e.getMessage(), e.getMessage().contains("JBAS015616"));
+            assertTrue("Expected WFLYWS0064 message, but got " + e.getMessage(), e.getMessage().contains("WFLYWS0064"));
         }
         sc.decrementWSDeploymentCount();
         assertTrue(sc.isModifiable());
@@ -175,7 +175,7 @@ public class ServerConfigImplTestCase {
             fail();
         } catch (DisabledOperationException e) {
             //check the error message says the operation can't be done because of pending former model update(s) requiring reload 
-            assertTrue("Expected JBAS015615 message, but got " + e.getMessage(), e.getMessage().contains("JBAS015615"));
+            assertTrue("Expected WFLYWS0063 message, but got " + e.getMessage(), e.getMessage().contains("WFLYWS0063"));
         }
         //other attributes are still modified properly as they're still in synch
         for (Callback cb : otherCbs) {

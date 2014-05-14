@@ -22,12 +22,11 @@
 
 package org.jboss.as.webservices.dmr;
 
-import static org.jboss.as.webservices.WSLogger.ROOT_LOGGER;
-
 import java.util.List;
 
 import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.deployment.Phase;
+import org.jboss.as.webservices.logging.WSLogger;
 import org.jboss.as.webservices.deployers.AspectDeploymentProcessor;
 import org.jboss.as.webservices.deployers.JBossWebservicesDescriptorDeploymentProcessor;
 import org.jboss.as.webservices.deployers.WSClassVerificationProcessor;
@@ -80,7 +79,7 @@ final class WSDeploymentActivator {
         int index = 1;
         List<DeploymentAspect> aspects = DeploymentAspectsProvider.getSortedDeploymentAspects();
         for (final DeploymentAspect da : aspects) {
-            ROOT_LOGGER.installingAspect(da.getClass().getName());
+            WSLogger.ROOT_LOGGER.tracef("Installing aspect %s", da.getClass().getName());
             processorTarget.addDeploymentProcessor(WSExtension.SUBSYSTEM_NAME, phase, priority + index++, new AspectDeploymentProcessor(da));
         }
     }

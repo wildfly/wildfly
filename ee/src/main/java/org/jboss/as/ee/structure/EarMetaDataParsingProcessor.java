@@ -27,6 +27,7 @@ import java.io.InputStream;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.ee.logging.EeLogger;
 import org.jboss.as.ee.component.DeploymentDescriptorEnvironment;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -42,8 +43,6 @@ import org.jboss.metadata.parser.util.NoopXMLResolver;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.vfs.VFSUtils;
 import org.jboss.vfs.VirtualFile;
-
-import static org.jboss.as.ee.EeMessages.MESSAGES;
 
 /**
  * Deployment processor responsible for parsing the application.xml file of an ear.
@@ -102,7 +101,7 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
             return EarMetaDataParser.INSTANCE.parse(xmlReader, propertyReplacer);
 
         } catch (Exception e) {
-            throw MESSAGES.failedToParse(e, applicationXmlFile);
+            throw EeLogger.ROOT_LOGGER.failedToParse(e, applicationXmlFile);
         } finally {
             VFSUtils.safeClose(inputStream);
         }
@@ -124,7 +123,7 @@ public class EarMetaDataParsingProcessor implements DeploymentUnitProcessor {
             return JBossAppMetaDataParser.INSTANCE.parse(xmlReader, propertyReplacer);
 
         } catch (Exception e) {
-            throw MESSAGES.failedToParse(e, applicationXmlFile);
+            throw EeLogger.ROOT_LOGGER.failedToParse(e, applicationXmlFile);
         } finally {
             VFSUtils.safeClose(inputStream);
         }

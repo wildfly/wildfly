@@ -22,8 +22,6 @@
 
 package org.jboss.as.messaging;
 
-import static org.jboss.as.messaging.MessagingMessages.MESSAGES;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +32,7 @@ import org.jboss.as.messaging.jms.ConnectionFactoryAttributes;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Common;
 import org.jboss.as.messaging.jms.ConnectionFactoryAttributes.Pooled;
 import org.jboss.as.messaging.jms.bridge.JMSBridgeDefinition;
+import org.jboss.as.messaging.logging.MessagingLogger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -293,10 +292,10 @@ public enum Element {
             if (ourName == null) {
                 ourName = def.getXmlName();
             } else if (!ourName.equals(def.getXmlName())) {
-                throw MESSAGES.attributeDefinitionsMustMatch(def.getXmlName(), ourName);
+                throw MessagingLogger.ROOT_LOGGER.attributeDefinitionsMustMatch(def.getXmlName(), ourName);
             }
             if (this.definitions.put(def.getName(), def) != null) {
-                throw MESSAGES.attributeDefinitionsNotUnique(def.getName());
+                throw MessagingLogger.ROOT_LOGGER.attributeDefinitionsNotUnique(def.getName());
             }
         }
        this.name = ourName;
@@ -311,7 +310,7 @@ public enum Element {
             if (ourName == null) {
                 ourName = xmlName;
             } else if (!ourName.equals(xmlName)) {
-                throw MESSAGES.attributeDefinitionsMustMatch(xmlName, ourName);
+                throw MessagingLogger.ROOT_LOGGER.attributeDefinitionsMustMatch(xmlName, ourName);
             }
             this.definitions.put(def.getKey(), def.getValue());
         }

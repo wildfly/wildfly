@@ -27,9 +27,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAI
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FAILURE_DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
-import static org.jboss.as.domain.controller.DomainControllerLogger.CONTROLLER_LOGGER;
-import static org.jboss.as.domain.controller.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
-import static org.jboss.as.domain.controller.DomainControllerMessages.MESSAGES;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.CONTROLLER_LOGGER;
+import static org.jboss.as.domain.controller.logging.DomainControllerLogger.HOST_CONTROLLER_LOGGER;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,6 +48,7 @@ import org.jboss.as.controller.TransformingProxyController;
 import org.jboss.as.controller.operations.DomainOperationTransformer;
 import org.jboss.as.controller.operations.OperationAttachments;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.host.controller.mgmt.DomainControllerRuntimeIgnoreTransformationRegistry;
 import org.jboss.dmr.ModelNode;
 
@@ -166,10 +166,10 @@ public class DomainSlaveHandler implements OperationStepHandler {
                         final ModelNode result = new ModelNode();
                         result.get(OUTCOME).set(FAILED);
                         if (e instanceof InterruptedException) {
-                            result.get(FAILURE_DESCRIPTION).set(MESSAGES.interruptedAwaitingResultFromHost(entry.getKey()));
+                            result.get(FAILURE_DESCRIPTION).set(DomainControllerLogger.ROOT_LOGGER.interruptedAwaitingResultFromHost(entry.getKey()));
                             interrupted = true;
                         } else {
-                            result.get(FAILURE_DESCRIPTION).set(MESSAGES.exceptionAwaitingResultFromHost(entry.getKey(), e.getMessage()));
+                            result.get(FAILURE_DESCRIPTION).set(DomainControllerLogger.ROOT_LOGGER.exceptionAwaitingResultFromHost(entry.getKey(), e.getMessage()));
                         }
                         domainOperationContext.addHostControllerResult(hostName, result);
                     }

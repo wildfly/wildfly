@@ -48,6 +48,7 @@ import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.registry.Resource.ResourceEntry;
 import org.jboss.as.domain.management.CoreManagementResourceDefinition;
 import org.jboss.as.domain.management.audit.AccessAuditResourceDefinition;
+import org.jboss.as.jmx.logging.JmxLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.msc.service.ServiceController;
 
@@ -84,7 +85,7 @@ public class JmxAuditLogHandlerReferenceResourceDefinition extends SimpleResourc
             String name = addr.getLastElement().getValue();
             boolean found = context.getProcessType().isServer() ? lookForHandlerForServer(context, name) : lookForHandlerForHc(context, name);
             if (!found) {
-                throw JmxMessages.MESSAGES.noHandlerCalled(name);
+                throw JmxLogger.ROOT_LOGGER.noHandlerCalled(name);
             }
             resource.getModel().setEmptyObject();
         }

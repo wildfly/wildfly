@@ -22,7 +22,7 @@
 
 package org.jboss.as.domain.management.security.adduser;
 
-import static org.jboss.as.domain.management.DomainManagementMessages.MESSAGES;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 
 /**
  * State to prompt the user for the realm, username and password to use, this State can be called back to so allows for a
@@ -47,8 +47,8 @@ public class PromptNewUserState implements State {
             * Prompt for username.
             */
             String existingUsername = stateValues.getUserName();
-            String usernamePrompt = existingUsername == null ? MESSAGES.usernamePrompt() :
-                    MESSAGES.usernamePrompt(existingUsername);
+            String usernamePrompt = existingUsername == null ? DomainManagementLogger.ROOT_LOGGER.usernamePrompt() :
+                    DomainManagementLogger.ROOT_LOGGER.usernamePrompt(existingUsername);
             theConsole.printf(usernamePrompt);
             String temp = theConsole.readLine(" : ");
             if (temp != null && temp.length() > 0) {
@@ -56,7 +56,7 @@ public class PromptNewUserState implements State {
             }
             // The user could have pressed Ctrl-D, in which case we do not use the default value.
             if (temp == null || existingUsername == null || existingUsername.length() == 0) {
-                return new ErrorState(theConsole,MESSAGES.noUsernameExiting());
+                return new ErrorState(theConsole, DomainManagementLogger.ROOT_LOGGER.noUsernameExiting());
             }
             stateValues.setUserName(existingUsername);
         }

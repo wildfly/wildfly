@@ -22,8 +22,6 @@
 
 package org.jboss.as.controller;
 
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -35,6 +33,7 @@ import org.jboss.as.controller.descriptions.DefaultResourceDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
@@ -69,7 +68,7 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition {
     @Deprecated
     public SimpleResourceDefinition(final PathElement pathElement, final DescriptionProvider descriptionProvider) {
         if (descriptionProvider == null) {
-            throw MESSAGES.nullVar("descriptionProvider");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("descriptionProvider");
         }
         this.pathElement = pathElement;
         this.descriptionResolver = null;
@@ -170,7 +169,7 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition {
                                     final OperationEntry.Flag addRestartLevel, final OperationEntry.Flag removeRestartLevel,
                                     final DeprecationData deprecationData) {
         if (descriptionResolver == null) {
-            throw MESSAGES.nullVar("descriptionProvider");
+            throw ControllerLogger.ROOT_LOGGER.nullVar("descriptionProvider");
         }
         this.pathElement = pathElement;
         this.descriptionResolver = descriptionResolver;
@@ -287,7 +286,7 @@ public class SimpleResourceDefinition implements ConstrainedResourceDefinition {
 
     private static OperationEntry.Flag validateRestartLevel(String paramName, OperationEntry.Flag flag) {
         if (flag != null && !RESTART_FLAGS.contains(flag)) {
-            throw MESSAGES.invalidParameterValue(flag, paramName, RESTART_FLAGS);
+            throw ControllerLogger.ROOT_LOGGER.invalidParameterValue(flag, paramName, RESTART_FLAGS);
         }
         return flag;
     }

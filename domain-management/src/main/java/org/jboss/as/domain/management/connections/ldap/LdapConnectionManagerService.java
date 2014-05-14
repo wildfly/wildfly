@@ -21,7 +21,7 @@
  */
 package org.jboss.as.domain.management.connections.ldap;
 
-import static org.jboss.as.domain.management.DomainManagementLogger.SECURITY_LOGGER;
+import static org.jboss.as.domain.management.logging.DomainManagementLogger.SECURITY_LOGGER;
 
 import java.net.URI;
 import java.util.Hashtable;

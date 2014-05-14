@@ -44,7 +44,7 @@ import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManagerService;
-import org.jboss.as.domain.management.DomainManagementMessages;
+import org.jboss.as.domain.management.logging.DomainManagementLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
@@ -181,7 +181,7 @@ public class AuditLogHandlerResourceDefinition extends SimpleResourceDefinition 
             if (attributeName.equals(FORMATTER.getName())) {
                 String formatterName = newValue.asString();
                 if (!HandlerUtil.lookForFormatter(context, PathAddress.pathAddress(operation.require(OP_ADDR)), formatterName)) {
-                    throw DomainManagementMessages.MESSAGES.noFormatterCalled(formatterName);
+                    throw DomainManagementLogger.ROOT_LOGGER.noFormatterCalled(formatterName);
                 }
             }
         }

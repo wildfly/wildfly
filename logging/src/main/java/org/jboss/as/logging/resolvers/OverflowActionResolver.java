@@ -23,10 +23,10 @@
 package org.jboss.as.logging.resolvers;
 
 import static org.jboss.as.logging.Logging.createOperationFailure;
-import static org.jboss.as.logging.LoggingMessages.MESSAGES;
 
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
+import org.jboss.as.logging.logging.LoggingLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.logmanager.handlers.AsyncHandler.OverflowAction;
 
@@ -49,7 +49,7 @@ public class OverflowActionResolver implements ModelNodeResolver<String> {
         try {
             return OverflowAction.valueOf(value.asString()).toString();
         } catch (IllegalArgumentException e) {
-            throw createOperationFailure(MESSAGES.invalidOverflowAction(value.asString()));
+            throw createOperationFailure(LoggingLogger.ROOT_LOGGER.invalidOverflowAction(value.asString()));
         }
     }
 }

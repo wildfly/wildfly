@@ -33,7 +33,7 @@ import javax.xml.stream.XMLStreamReader;
 
 import org.jboss.as.jpa.config.ExtendedPersistenceInheritance;
 import org.jboss.as.jpa.config.JPADeploymentSettings;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.metadata.property.PropertyReplacer;
 import org.jboss.staxmapper.XMLExtendedStreamReader;
 
@@ -201,7 +201,7 @@ public class JBossJPAParser  {
                 break;
         }
 
-        return ServerMessages.MESSAGES.unexpectedContent(kind, (reader.hasName() ? reader.getName() : null),
+        return ServerLogger.ROOT_LOGGER.unexpectedContent(kind, (reader.hasName() ? reader.getName() : null),
                 (reader.hasText() ? reader.getText() : null), reader.getLocation());
     }
 
@@ -210,7 +210,7 @@ public class JBossJPAParser  {
     }
 
     private static XMLStreamException endOfDocument(final Location location) {
-        return ServerMessages.MESSAGES.unexpectedEndOfDocument(location);
+        return ServerLogger.ROOT_LOGGER.unexpectedEndOfDocument(location);
     }
 
 }

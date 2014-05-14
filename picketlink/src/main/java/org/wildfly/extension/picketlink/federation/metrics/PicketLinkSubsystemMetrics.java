@@ -28,7 +28,7 @@ import org.picketlink.identity.federation.core.audit.PicketLinkAuditEvent;
 import org.picketlink.identity.federation.core.audit.PicketLinkAuditEventType;
 import org.picketlink.identity.federation.core.audit.PicketLinkAuditHelper;
 
-import static org.wildfly.extension.picketlink.PicketLinkLogger.ROOT_LOGGER;
+import static org.wildfly.extension.picketlink.logging.PicketLinkLogger.ROOT_LOGGER;
 
 /**
  * <p> This class provides ways to store metrics collected from the PicketLink providers (IDPs and SPs). </p>

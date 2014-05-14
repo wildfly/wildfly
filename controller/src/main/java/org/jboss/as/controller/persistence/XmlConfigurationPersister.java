@@ -22,8 +22,7 @@
 
 package org.jboss.as.controller.persistence;
 
-import static org.jboss.as.controller.ControllerLogger.ROOT_LOGGER;
-import static org.jboss.as.controller.ControllerMessages.MESSAGES;
+import static org.jboss.as.controller.logging.ControllerLogger.ROOT_LOGGER;
 
 import java.io.BufferedInputStream;
 import java.io.Closeable;
@@ -39,6 +38,7 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
 
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
@@ -109,7 +109,7 @@ public class XmlConfigurationPersister extends AbstractConfigurationPersister {
                 safeClose(fis);
             }
         } catch (Exception e) {
-            throw MESSAGES.failedToParseConfiguration(e);
+            throw ControllerLogger.ROOT_LOGGER.failedToParseConfiguration(e);
         }
         return updates;
     }

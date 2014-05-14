@@ -22,7 +22,7 @@
 
 package org.jboss.as.protocol.mgmt;
 
-import org.jboss.as.protocol.ProtocolMessages;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.AsyncFuture;
@@ -106,7 +106,7 @@ public final class ManagementChannelHandler extends AbstractMessageHandler imple
     public <T, A> AsyncFuture<T> executeRequest(final Integer operationId, final ManagementRequest<T, A> request) throws IOException {
         final ActiveOperation<T, A> operation = super.getActiveOperation(operationId);
         if(operation == null) {
-            throw ProtocolMessages.MESSAGES.responseHandlerNotFound(operationId);
+            throw ProtocolLogger.ROOT_LOGGER.responseHandlerNotFound(operationId);
         }
         return executeRequest(operation, request);
     }

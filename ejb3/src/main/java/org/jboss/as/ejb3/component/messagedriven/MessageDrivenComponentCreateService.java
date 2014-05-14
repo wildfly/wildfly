@@ -30,7 +30,7 @@ import javax.resource.spi.ResourceAdapter;
 import org.jboss.as.connector.util.ConnectorServices;
 import org.jboss.as.ee.component.BasicComponent;
 import org.jboss.as.ee.component.ComponentConfiguration;
-import org.jboss.as.ejb3.EjbLogger;
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.component.EJBComponentCreateService;
 import org.jboss.as.ejb3.component.EJBUtilities;
 import org.jboss.as.ejb3.component.pool.PoolConfig;

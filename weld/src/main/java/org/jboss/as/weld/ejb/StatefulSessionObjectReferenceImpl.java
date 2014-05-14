@@ -34,7 +34,7 @@ import java.util.Set;
 import org.jboss.as.ee.component.ComponentView;
 import org.jboss.as.ejb3.component.stateful.StatefulSessionComponent;
 import org.jboss.as.server.CurrentServiceContainer;
-import org.jboss.as.weld.WeldMessages;
+import org.jboss.as.weld.logging.WeldLogger;
 import org.jboss.ejb.client.SessionID;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
@@ -120,7 +120,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
     @SuppressWarnings({"unchecked"})
     public synchronized <S> S getBusinessObject(Class<S> businessInterfaceType) {
         if (isRemoved()) {
-            throw WeldMessages.MESSAGES.ejbHashBeenRemoved();
+            throw WeldLogger.ROOT_LOGGER.ejbHashBeenRemoved();
         }
         if (viewServices.containsKey(businessInterfaceType.getName())) {
             final ServiceController<?> serviceController = currentServiceContainer().getRequiredService(viewServices.get(businessInterfaceType.getName()));
@@ -131,7 +131,7 @@ public class StatefulSessionObjectReferenceImpl implements SessionObjectReferenc
                 throw new RuntimeException(e);
             }
         } else {
-            throw WeldMessages.MESSAGES.viewNotFoundOnEJB(businessInterfaceType.getName(), ejbComponent.getComponentName());
+            throw WeldLogger.ROOT_LOGGER.viewNotFoundOnEJB(businessInterfaceType.getName(), ejbComponent.getComponentName());
         }
     }
 

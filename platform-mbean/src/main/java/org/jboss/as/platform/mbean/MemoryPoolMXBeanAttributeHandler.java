@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.validation.LongRangeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
+import org.jboss.as.platform.mbean.logging.PlatformMBeanLogger;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -92,7 +93,7 @@ class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHan
                 memoryPoolMXBean.setCollectionUsageThreshold(operation.require(ModelDescriptionConstants.VALUE).asLong());
             } else if (MemoryPoolResourceDefinition.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)) {
                 // Bug
-                throw PlatformMBeanMessages.MESSAGES.badWriteAttributeImpl3(name);
+                throw PlatformMBeanLogger.ROOT_LOGGER.badWriteAttributeImpl(name);
             } else {
                 // Shouldn't happen; the global handler should reject
                 throw unknownAttribute(operation);
@@ -150,7 +151,7 @@ class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHan
                 || MemoryPoolResourceDefinition.MEMORY_POOL_READ_WRITE_ATTRIBUTES.contains(name)
                 || MemoryPoolResourceDefinition.MEMORY_POOL_METRICS.contains(name)) {
             // Bug
-            throw PlatformMBeanMessages.MESSAGES.badReadAttributeImpl7(name);
+            throw PlatformMBeanLogger.ROOT_LOGGER.badReadAttributeImpl(name);
         }
 
     }
@@ -166,7 +167,7 @@ class MemoryPoolMXBeanAttributeHandler extends AbstractPlatformMBeanAttributeHan
         }
 
         if (memoryPoolMXBean == null) {
-            throw PlatformMBeanMessages.MESSAGES.unknownMemoryPool1(memPoolName);
+            throw PlatformMBeanLogger.ROOT_LOGGER.unknownMemoryPool(memPoolName);
         }
         return memoryPoolMXBean;
     }

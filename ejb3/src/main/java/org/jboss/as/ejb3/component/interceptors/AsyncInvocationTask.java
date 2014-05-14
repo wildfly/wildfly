@@ -26,7 +26,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
+import org.jboss.as.ejb3.logging.EjbLogger;
 
 /**
  * runnable used to invoke local ejb async methods
@@ -139,11 +140,11 @@ public abstract class AsyncInvocationTask implements Runnable, Future {
         if (!isDone()) {
             wait(unit.toMillis(timeout));
             if (!isDone()) {
-                throw MESSAGES.failToCompleteTaskBeforeTimeOut(timeout, unit);
+                throw EjbLogger.ROOT_LOGGER.failToCompleteTaskBeforeTimeOut(timeout, unit);
             }
         }
         if (cancelledFlag.get()) {
-            throw MESSAGES.taskWasCancelled();
+            throw EjbLogger.ROOT_LOGGER.taskWasCancelled();
         } else if (failed != null) {
             throw new ExecutionException(failed);
         }

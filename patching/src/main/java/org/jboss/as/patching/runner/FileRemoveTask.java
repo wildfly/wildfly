@@ -33,7 +33,7 @@ import java.util.List;
 
 import org.jboss.as.patching.HashUtils;
 import org.jboss.as.patching.IoUtils;
-import org.jboss.as.patching.PatchMessages;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.metadata.ContentItem;
 import org.jboss.as.patching.metadata.ContentModification;
 import org.jboss.as.patching.metadata.MiscContentItem;
@@ -97,7 +97,7 @@ class FileRemoveTask implements PatchingTask {
             context.recordChange(null, mod);
         }
         if(! ok) {
-            throw PatchMessages.MESSAGES.failedToDelete(target.getAbsolutePath());
+            throw PatchLogger.ROOT_LOGGER.failedToDelete(target.getAbsolutePath());
         }
     }
 

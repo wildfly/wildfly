@@ -140,15 +140,15 @@ public class CoreQueueManagementTestCase {
 
         // resource does not exist
         ModelNode result = execute(readQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
+        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
         result = execute(readRuntimeQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
+        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
 
         session.createQueue(address, queueName, false);
 
         // resource does not exist for core queue...
         result = execute(readQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
+        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
         // ... but it does for runtime-queue
         result = execute(readRuntimeQueueResourceOp, true);
         assertTrue(result.isDefined());
@@ -158,9 +158,9 @@ public class CoreQueueManagementTestCase {
 
         // resource no longer exists
         result = execute(readQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
+        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
         result = execute(readRuntimeQueueResourceOp, false);
-        assertTrue(result.toJSONString(false), result.asString().contains("JBAS014807"));
+        assertTrue(result.toJSONString(false), result.asString().contains("WFLYCTL0216"));
     }
 
     @Test

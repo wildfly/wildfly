@@ -22,14 +22,13 @@
 
 package org.jboss.as.patching.management;
 
-import static org.jboss.as.patching.management.PatchManagementMessages.MESSAGES;
-
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.patching.PatchingException;
 import org.jboss.as.patching.installation.InstallationManager;
 import org.jboss.as.patching.installation.InstallationManagerService;
+import org.jboss.as.patching.logging.PatchLogger;
 import org.jboss.as.patching.tool.ContentVerificationPolicy;
 import org.jboss.as.patching.tool.PatchOperationTarget;
 import org.jboss.as.patching.tool.PatchTool;
@@ -55,7 +54,7 @@ public class LocalPatchRollbackHandler implements OperationStepHandler {
         final InstallationManager installationManager = (InstallationManager) registry.getRequiredService(InstallationManagerService.NAME).getValue();
 
         if (installationManager.requiresRestart()) {
-            throw MESSAGES.serverRequiresRestart();
+            throw PatchLogger.ROOT_LOGGER.serverRequiresRestart();
         }
 
         final PatchTool runner = PatchTool.Factory.create(installationManager);

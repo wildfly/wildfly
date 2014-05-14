@@ -38,7 +38,7 @@ import org.jboss.logging.annotations.MessageBundle;
  *
  * @author <a href="mailto:jperkins@redhat.com">Kabir Khan</a>
  */
-@MessageBundle(projectCode = "JBAS")
+@MessageBundle(projectCode = "N/A")
 public interface CoreSecurityMessages {
 
     /**
@@ -46,7 +46,7 @@ public interface CoreSecurityMessages {
      */
     CoreSecurityMessages MESSAGES = Messages.getBundle(CoreSecurityMessages.class);
 
-    @Message(id = 20900, value = "'%s' can not be null.")
+    @Message(value = "'%s' can not be null.")
     IllegalArgumentException canNotBeNull(String name);
 
 }

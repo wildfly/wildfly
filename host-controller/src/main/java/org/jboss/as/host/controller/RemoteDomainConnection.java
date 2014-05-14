@@ -45,6 +45,7 @@ import org.jboss.as.domain.controller.SlaveRegistrationException;
 import org.jboss.as.domain.management.CallbackHandlerFactory;
 import org.jboss.as.domain.management.SecurityRealm;
 import org.jboss.as.host.controller.discovery.DiscoveryOption;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.as.host.controller.mgmt.DomainControllerProtocol;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.protocol.ProtocolChannelClient;

@@ -22,8 +22,6 @@
 
 package org.jboss.as.host.controller.discovery;
 
-import static org.jboss.as.host.controller.HostControllerMessages.MESSAGES;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
@@ -56,6 +54,7 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import org.jboss.as.host.controller.logging.HostControllerLogger;
 import org.jboss.util.Base64;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -193,17 +192,17 @@ public class S3Util {
                 String[] pathParts = path.split("/");
 
                 if (pathParts.length < 3) {
-                    throw MESSAGES.preSignedUrlMustPointToFile(preSignedUrl);
+                    throw HostControllerLogger.ROOT_LOGGER.preSignedUrlMustPointToFile(preSignedUrl);
                 }
                 if (pathParts.length > 4) {
-                    throw MESSAGES.invalidPreSignedUrlLength(preSignedUrl);
+                    throw HostControllerLogger.ROOT_LOGGER.invalidPreSignedUrlLength(preSignedUrl);
                 }
                 this.bucket = pathParts[1];
                 if (pathParts.length > 3) {
                     this.prefix = pathParts[2];
                 }
             } catch (MalformedURLException ex) {
-                throw MESSAGES.invalidPreSignedUrl(preSignedUrl);
+                throw HostControllerLogger.ROOT_LOGGER.invalidPreSignedUrl(preSignedUrl);
             }
         }
 
@@ -306,15 +305,15 @@ public class S3Util {
             }
             else if(LOCATION_EU.equals(location)) {
                 if(!callingFormat.supportsLocatedBuckets())
-                    throw MESSAGES.creatingBucketWithUnsupportedCallingFormat();
+                    throw HostControllerLogger.ROOT_LOGGER.creatingBucketWithUnsupportedCallingFormat();
                 body="<CreateBucketConstraint><LocationConstraint>" + location + "</LocationConstraint></CreateBucketConstraint>";
             }
             else
-                throw MESSAGES.invalidS3Location(location);
+                throw HostControllerLogger.ROOT_LOGGER.invalidS3Location(location);
 
             // validate bucket name
             if(!Utils.validateBucketName(bucket, callingFormat))
-                throw MESSAGES.invalidS3Bucket(bucket);
+                throw HostControllerLogger.ROOT_LOGGER.invalidS3Bucket(bucket);
 
             HttpURLConnection request=makeRequest("PUT", bucket, "", null, headers);
             if(body != null) {
@@ -337,7 +336,7 @@ public class S3Util {
                 return true;
             if(httpCode == HttpURLConnection.HTTP_NOT_FOUND) // bucket doesn't exist
                 return false;
-            throw MESSAGES.bucketAuthenticationFailure(bucket, httpCode, response.getResponseMessage());
+            throw HostControllerLogger.ROOT_LOGGER.bucketAuthenticationFailure(bucket, httpCode, response.getResponseMessage());
         }
 
         /**
@@ -470,7 +469,7 @@ public class S3Util {
                     // It worked!
                 }
                 else {
-                    throw MESSAGES.unexpectedResponse(message);
+                    throw HostControllerLogger.ROOT_LOGGER.unexpectedResponse(message);
                 }
             }
             return response;
@@ -691,7 +690,7 @@ public class S3Util {
             // Ensure that redirects are supported.
             if(!connection.getInstanceFollowRedirects()
                     && format.supportsLocatedBuckets())
-                throw MESSAGES.httpRedirectSupportRequired();
+                throw HostControllerLogger.ROOT_LOGGER.httpRedirectSupportRequired();
 
             addHeaders(connection, headers);
             if(object != null) addMetadataHeaders(connection, object.metadata);
@@ -904,7 +903,7 @@ public class S3Util {
                     this.location=handler.loc;
                 }
                 catch(SAXException e) {
-                    throw MESSAGES.errorParsingBucketListings(e);
+                    throw HostControllerLogger.ROOT_LOGGER.errorParsingBucketListings(e);
                 }
             }
             else {
@@ -1055,7 +1054,7 @@ public class S3Util {
 
                 }
                 catch(SAXException e) {
-                    throw MESSAGES.errorParsingBucketListings(e);
+                    throw HostControllerLogger.ROOT_LOGGER.errorParsingBucketListings(e);
                 }
             }
         }
@@ -1141,7 +1140,7 @@ public class S3Util {
                         this.keyEntry.lastModified=this.iso8601Parser.parse(this.currText.toString());
                     }
                     catch(ParseException e) {
-                        throw MESSAGES.errorParsingBucketListings(e);
+                        throw HostControllerLogger.ROOT_LOGGER.errorParsingBucketListings(e);
                     }
                 }
                 else if(name.equals("ETag")) {
@@ -1241,7 +1240,7 @@ public class S3Util {
                     this.entries=handler.getEntries();
                 }
                 catch(SAXException e) {
-                    throw MESSAGES.errorParsingBucketListings(e);
+                    throw HostControllerLogger.ROOT_LOGGER.errorParsingBucketListings(e);
                 }
             }
         }
@@ -1287,7 +1286,7 @@ public class S3Util {
                         this.currBucket.creationDate=this.iso8601Parser.parse(this.currText.toString());
                     }
                     catch(ParseException e) {
-                        throw MESSAGES.errorParsingBucketListings(e);
+                        throw HostControllerLogger.ROOT_LOGGER.errorParsingBucketListings(e);
                     }
                 }
                 this.currText=new StringBuffer();
@@ -1645,7 +1644,7 @@ public class S3Util {
                 return XMLReaderFactory.createXMLReader();
             }
             catch(SAXException e) {
-                throw MESSAGES.cannotInitializeSaxDriver();
+                throw HostControllerLogger.ROOT_LOGGER.cannotInitializeSaxDriver();
             }
         }
 

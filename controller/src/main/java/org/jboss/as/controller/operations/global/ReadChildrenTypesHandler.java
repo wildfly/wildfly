@@ -28,7 +28,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jboss.as.controller.ControllerMessages;
+import org.jboss.as.controller.logging.ControllerLogger;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationDefinition;
 import org.jboss.as.controller.OperationFailedException;
@@ -61,7 +61,7 @@ public class ReadChildrenTypesHandler implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         final ImmutableManagementResourceRegistration registry = context.getResourceRegistration();
         if (registry == null) {
-            throw new OperationFailedException(ControllerMessages.MESSAGES.noSuchResourceType(PathAddress.pathAddress(operation.get(OP_ADDR))));
+            throw new OperationFailedException(ControllerLogger.ROOT_LOGGER.noSuchResourceType(PathAddress.pathAddress(operation.get(OP_ADDR))));
         }
         Set<String> childTypes = new TreeSet<String>(registry.getChildNames(PathAddress.EMPTY_ADDRESS));
         final ModelNode result = context.getResult();

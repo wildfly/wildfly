@@ -35,7 +35,7 @@ import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerMessages;
+import org.jboss.as.server.logging.ServerLogger;
 import org.jboss.dmr.ModelNode;
 import org.jboss.vfs.VirtualFile;
 
@@ -63,7 +63,7 @@ public class ReadContentHandler implements OperationStepHandler {
         try {
             context.getResult().set(readFile(file));
         } catch (IOException e) {
-            throw ServerMessages.MESSAGES.failedToLoadFile(file, e);
+            throw ServerLogger.ROOT_LOGGER.failedToLoadFile(file, e);
         }
 
         context.stepCompleted();

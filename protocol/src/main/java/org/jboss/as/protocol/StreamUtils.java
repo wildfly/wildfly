@@ -32,7 +32,7 @@ import java.net.Socket;
 
 import javax.xml.stream.XMLStreamWriter;
 
-import static org.jboss.as.protocol.ProtocolLogger.ROOT_LOGGER;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 
 /**
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
@@ -65,7 +65,7 @@ public final class StreamUtils {
         if (closeable != null) try {
             closeable.close();
         } catch (Throwable t) {
-            ROOT_LOGGER.failedToCloseResource(t, closeable);
+            ProtocolLogger.ROOT_LOGGER.failedToCloseResource(t, closeable);
         }
     }
 
@@ -73,7 +73,7 @@ public final class StreamUtils {
         if (socket != null) try {
             socket.close();
         } catch (Throwable t) {
-            ROOT_LOGGER.failedToCloseResource(t, socket);
+            ProtocolLogger.ROOT_LOGGER.failedToCloseResource(t, socket);
         }
     }
 
@@ -81,7 +81,7 @@ public final class StreamUtils {
         if (serverSocket != null) try {
             serverSocket.close();
         } catch (IOException e) {
-            ROOT_LOGGER.failedToCloseServerSocket(e, serverSocket);
+            ProtocolLogger.ROOT_LOGGER.failedToCloseServerSocket(e, serverSocket);
         }
     }
 
@@ -89,7 +89,7 @@ public final class StreamUtils {
         if (writer != null) try {
             writer.close();
         } catch (Throwable t) {
-            ROOT_LOGGER.failedToCloseResource(t, writer);
+            ProtocolLogger.ROOT_LOGGER.failedToCloseResource(t, writer);
         }
     }
 }

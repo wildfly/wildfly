@@ -36,8 +36,7 @@ import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.jboss.as.security.SecurityLogger;
-import org.jboss.as.security.SecurityMessages;
+import org.jboss.as.security.logging.SecurityLogger;
 import org.jboss.modules.ModuleLoader;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.AuthorizationManager;
@@ -334,7 +333,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private AuthenticationManager createAuthenticationManager(String securityDomain) throws Exception {
         int i = callbackHandlerClassName.lastIndexOf(":");
         if (i == -1)
-            throw SecurityMessages.MESSAGES.missingModuleName("default-callback-handler-class-name attribute");
+            throw SecurityLogger.ROOT_LOGGER.missingModuleName("default-callback-handler-class-name attribute");
         String moduleSpec = callbackHandlerClassName.substring(0, i);
         String className = callbackHandlerClassName.substring(i + 1);
         Class<?> callbackHandlerClazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
@@ -342,7 +341,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
 
         i = authenticationManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw SecurityMessages.MESSAGES.missingModuleName("authentication-manager-class-name attribute");
+            throw SecurityLogger.ROOT_LOGGER.missingModuleName("authentication-manager-class-name attribute");
         moduleSpec = authenticationManagerClassName.substring(0, i);
         className = authenticationManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
@@ -360,7 +359,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private AuthorizationManager createAuthorizationManager(String securityDomain) throws Exception {
         int i = authorizationManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw SecurityMessages.MESSAGES.missingModuleName("authorization manager class");
+            throw SecurityLogger.ROOT_LOGGER.missingModuleName("authorization manager class");
         String moduleSpec = authorizationManagerClassName.substring(0, i);
         String className = authorizationManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
@@ -378,7 +377,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private AuditManager createAuditManager(String securityDomain) throws Exception {
         int i = auditManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw SecurityMessages.MESSAGES.missingModuleName("audit manager class");
+            throw SecurityLogger.ROOT_LOGGER.missingModuleName("audit manager class");
         String moduleSpec = auditManagerClassName.substring(0, i);
         String className = auditManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
@@ -396,7 +395,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private IdentityTrustManager createIdentityTrustManager(String securityDomain) throws Exception {
         int i = identityTrustManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw SecurityMessages.MESSAGES.missingModuleName("identity trust manager class");
+            throw SecurityLogger.ROOT_LOGGER.missingModuleName("identity trust manager class");
         String moduleSpec = identityTrustManagerClassName.substring(0, i);
         String className = identityTrustManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);
@@ -414,7 +413,7 @@ public class JNDIBasedSecurityManagement implements ISecurityManagement {
     private MappingManager createMappingManager(String securityDomain) throws Exception {
         int i = mappingManagerClassName.lastIndexOf(":");
         if (i == -1)
-            throw SecurityMessages.MESSAGES.missingModuleName("mapping manager class");
+            throw SecurityLogger.ROOT_LOGGER.missingModuleName("mapping manager class");
         String moduleSpec = mappingManagerClassName.substring(0, i);
         String className = mappingManagerClassName.substring(i + 1);
         Class<?> clazz = SecurityActions.getModuleClassLoader(loader, moduleSpec).loadClass(className);

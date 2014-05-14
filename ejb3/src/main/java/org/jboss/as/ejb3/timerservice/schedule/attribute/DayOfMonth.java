@@ -21,6 +21,7 @@
  */
 package org.jboss.as.ejb3.timerservice.schedule.attribute;
 
+import org.jboss.as.ejb3.logging.EjbLogger;
 import org.jboss.as.ejb3.timerservice.schedule.util.CalendarUtil;
 import org.jboss.as.ejb3.timerservice.schedule.value.RangeValue;
 import org.jboss.as.ejb3.timerservice.schedule.value.ScheduleExpressionType;
@@ -36,7 +37,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
-import static org.jboss.as.ejb3.EjbMessages.MESSAGES;
+
 /**
  * Represents the value of a day in a month, constructed out of a {@link javax.ejb.ScheduleExpression#getDayOfMonth()}
  * <p/>
@@ -183,7 +184,7 @@ public class DayOfMonth extends IntegerBasedExpression {
     @Override
     protected void assertValid(Integer value) throws IllegalArgumentException {
         if (value != null && value == 0) {
-            throw MESSAGES.invalidValueDayOfMonth(value);
+            throw EjbLogger.ROOT_LOGGER.invalidValueDayOfMonth(value);
         }
         super.assertValid(value);
     }
@@ -259,7 +260,7 @@ public class DayOfMonth extends IntegerBasedExpression {
 
     private int getAbsoluteDayOfMonth(Calendar cal, String relativeDayOfMonth) {
         if (relativeDayOfMonth == null || relativeDayOfMonth.trim().isEmpty()) {
-            throw MESSAGES.relativeDayOfMonthIsNull();
+            throw EjbLogger.ROOT_LOGGER.relativeDayOfMonthIsNull();
         }
         String trimmedRelativeDayOfMonth = relativeDayOfMonth.trim();
         if (trimmedRelativeDayOfMonth.equalsIgnoreCase("last")) {
@@ -296,7 +297,7 @@ public class DayOfMonth extends IntegerBasedExpression {
 
             return date;
         }
-        throw MESSAGES.invalidRelativeValue(relativeDayOfMonth);
+        throw EjbLogger.ROOT_LOGGER.invalidRelativeValue(relativeDayOfMonth);
     }
 
     private boolean isValidNegativeDayOfMonth(String dayOfMonth) {
@@ -342,7 +343,7 @@ public class DayOfMonth extends IntegerBasedExpression {
     @Override
     public boolean isRelativeValue(String value) {
         if (value == null) {
-            throw MESSAGES.relativeValueIsNull();
+            throw EjbLogger.ROOT_LOGGER.relativeValueIsNull();
         }
         if (value.equalsIgnoreCase("last")) {
             return true;

@@ -21,8 +21,6 @@
 */
 package org.jboss.as.jsr77.managedobject;
 
-import static org.jboss.as.jsr77.JSR77Messages.MESSAGES;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,6 +37,7 @@ import javax.management.ObjectName;
 import javax.management.QueryExp;
 
 import org.jboss.as.controller.ModelController;
+import org.jboss.as.jsr77.logging.JSR77Logger;
 import org.jboss.as.jsr77.subsystem.Constants;
 
 
@@ -86,7 +85,7 @@ public class ManagedObjectHandlerRegistry {
     public Object getAttribute(ModelController controller, ObjectName name, String attribute) throws InstanceNotFoundException, MBeanException, AttributeNotFoundException {
         Handler handler = handlers.get(name.getKeyProperty(Handler.J2EE_TYPE));
         if (handler == null) {
-            throw MESSAGES.noMBeanCalled(name);
+            throw JSR77Logger.ROOT_LOGGER.noMBeanCalled(name);
         }
         return handler.getAttribute(new ModelReader(controller), name, attribute);
     }
@@ -107,7 +106,7 @@ public class ManagedObjectHandlerRegistry {
     public MBeanInfo getMBeanInfo(ModelController controller, ObjectName name) throws InstanceNotFoundException {
         Handler handler = handlers.get(name.getKeyProperty(Handler.J2EE_TYPE));
         if (handler == null) {
-            throw MESSAGES.noMBeanCalled(name);
+            throw JSR77Logger.ROOT_LOGGER.noMBeanCalled(name);
         }
         return handler.getMBeanInfo(new ModelReader(controller), name);
     }
