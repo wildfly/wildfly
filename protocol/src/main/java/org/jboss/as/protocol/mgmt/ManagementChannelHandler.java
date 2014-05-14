@@ -27,6 +27,7 @@ import org.jboss.remoting3.Attachments;
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.AsyncFuture;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
@@ -37,6 +38,11 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * @author Emanuel Muckenhuber
  */
 public final class ManagementChannelHandler extends AbstractMessageHandler implements ManagementChannelAssociation {
+
+    /**
+     * Optional attachment for a temp file directory.
+     */
+    public static final Attachments.Key<File> TEMP_DIR = new Attachments.Key(File.class);
 
     private static final AtomicReferenceFieldUpdater<ManagementChannelHandler, ManagementRequestHandlerFactory[]> updater = AtomicReferenceFieldUpdater.newUpdater(ManagementChannelHandler.class, ManagementRequestHandlerFactory[].class, "handlers");
     private static final ManagementRequestHandlerFactory[] NO_HANDLERS = new ManagementRequestHandlerFactory[0];

@@ -161,6 +161,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final DomainController domainController;
     private final HostControllerEnvironment hostControllerEnvironment;
     private final RunningMode runningMode;
+    private final File tempDir;
 
     /** Used to invoke ModelController ops on the master */
     private volatile ModelControllerClient masterProxy;
@@ -198,6 +199,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         this.hostControllerEnvironment = hostControllerEnvironment;
         this.executor = executor;
         this.runningMode = runningMode;
+        this.tempDir = hostControllerEnvironment.getDomainTempDir();
     }
 
     public static Future<MasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller, final ExtensionRegistry extensionRegistry,
@@ -413,6 +415,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             }, runningMode);
             // Setup the management channel handler
             handler = connection.getChannelHandler();
+            handler.getAttachments().attach(ManagementChannelHandler.TEMP_DIR, tempDir);
         } catch (Exception e) {
             throw new StartException(e);
         } finally {

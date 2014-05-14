@@ -29,8 +29,10 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUT
 import static org.jboss.as.protocol.mgmt.ProtocolUtils.expectHeader;
 
 import javax.security.auth.Subject;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInput;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -51,6 +53,7 @@ import org.jboss.as.protocol.mgmt.AbstractManagementRequest;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelAssociation;
+import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
 import org.jboss.as.protocol.mgmt.ManagementProtocol;
 import org.jboss.as.protocol.mgmt.ManagementRequestContext;
 import org.jboss.as.protocol.mgmt.ManagementRequestHandler;
@@ -59,6 +62,7 @@ import org.jboss.as.protocol.mgmt.ManagementRequestHeader;
 import org.jboss.as.protocol.mgmt.ManagementResponseHeader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.threads.AsyncFuture;
+import org.wildfly.security.manager.WildFlySecurityManager;
 
 /**
  * Base implementation for the transactional protocol.
@@ -68,10 +72,20 @@ import org.jboss.threads.AsyncFuture;
  */
 class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory, TransactionalProtocolClient {
 
+    private static final File javaTempDir = new File(WildFlySecurityManager.getPropertyPrivileged("java.io.tmpdir", null));
+
+    private final File tempDir;
     private final ManagementChannelAssociation channelAssociation;
+
     public TransactionalProtocolClientImpl(final ManagementChannelAssociation channelAssociation) {
         assert channelAssociation != null;
         this.channelAssociation = channelAssociation;
+        final File temp = channelAssociation.getAttachments().getAttachment(ManagementChannelHandler.TEMP_DIR);
+        if (temp != null && temp.isDirectory()) {
+            tempDir = temp;
+        } else {
+            tempDir = javaTempDir;
+        }
     }
 
     /** {@inheritDoc} */
@@ -95,7 +109,7 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
     @Override
     public <T extends Operation> AsyncFuture<ModelNode> execute(TransactionalOperationListener<T> listener, T operation) throws IOException {
         final Subject subject = SecurityActions.getSubject();
-        final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation), subject);
+        final ExecuteRequestContext context = new ExecuteRequestContext(new OperationWrapper<T>(listener, operation), subject, tempDir);
         final ActiveOperation<ModelNode, ExecuteRequestContext> op = channelAssociation.initializeOperation(context, context);
         final AsyncFuture<ModelNode> result = new AbstractDelegatingAsyncFuture<ModelNode>(op.getResult()) {
             @Override
@@ -268,17 +282,27 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
                     final ManagementResponseHeader response = new ManagementResponseHeader(header.getVersion(), header.getRequestId(), null);
                     final InputStream is = exec.getAttachments().getInputStreams().get(index);
                     try {
-                        final ByteArrayOutputStream bout = copyStream(is);
-                        final FlushableDataOutput output = context.writeMessage(response);
+                        final File temp = copyStream(is, exec.tempDir);
                         try {
-                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
-                            output.writeInt(bout.size());
-                            output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
-                            output.write(bout.toByteArray());
-                            output.writeByte(ManagementProtocol.RESPONSE_END);
-                            output.close();
+                            final FlushableDataOutput output = context.writeMessage(response);
+                            try {
+                                output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_LENGTH);
+                                output.writeInt((int) temp.length()); // the int is required by the protocol
+                                output.writeByte(ModelControllerProtocol.PARAM_INPUTSTREAM_CONTENTS);
+                                final FileInputStream fis = new FileInputStream(temp);
+                                try {
+                                    StreamUtils.copyStream(fis, output);
+                                    fis.close();
+                                } finally {
+                                    StreamUtils.safeClose(fis);
+                                }
+                                output.writeByte(ManagementProtocol.RESPONSE_END);
+                                output.close();
+                            } finally {
+                                StreamUtils.safeClose(output);
+                            }
                         } finally {
-                            StreamUtils.safeClose(output);
+                            temp.delete();
                         }
                     } finally {
                         // the caller is responsible for closing the input streams
@@ -288,24 +312,31 @@ class TransactionalProtocolClientImpl implements ManagementRequestHandlerFactory
             });
         }
 
-        protected ByteArrayOutputStream copyStream(final InputStream is) throws IOException {
-            final ByteArrayOutputStream bout = new ByteArrayOutputStream();
-            if(is != null) {
-                StreamUtils.copyStream(is, bout);
+        protected File copyStream(final InputStream is, final File tempDir) throws IOException {
+            final File temp = File.createTempFile("upload", "temp", tempDir);
+            if (is != null) {
+                final FileOutputStream os = new FileOutputStream(temp);
+                try {
+                    StreamUtils.copyStream(is, os);
+                    os.close();
+                } finally {
+                    StreamUtils.safeClose(os);
+                }
             }
-            return bout;
+            return temp;
         }
-
     }
 
     static class ExecuteRequestContext implements ActiveOperation.CompletedCallback<ModelNode> {
         final OperationWrapper<?> wrapper;
         final AtomicBoolean completed = new AtomicBoolean(false);
         final Subject subject;
+        final File tempDir;
 
-        ExecuteRequestContext(OperationWrapper<?> operationWrapper, Subject subject) {
+        ExecuteRequestContext(OperationWrapper<?> operationWrapper, Subject subject, File tempDir) {
             this.wrapper = operationWrapper;
             this.subject = subject;
+            this.tempDir = tempDir;
         }
 
         void initialize(final AsyncFuture<ModelNode> result) {
