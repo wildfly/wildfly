@@ -22,12 +22,7 @@
 
 package org.jboss.as.connector.subsystems.datasources;
 
-import org.jboss.as.connector.dynamicresource.descriptionproviders.StatisticsDescriptionProvider;
-import org.jboss.as.connector.dynamicresource.operations.ClearStatisticsHandler;
-import org.jboss.as.connector.subsystems.common.pool.PoolMetrics;
-import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeReadHandler;
-import org.jboss.as.connector.subsystems.common.pool.PoolStatisticsRuntimeAttributeWriteHandler;
-import org.jboss.as.controller.OperationStepHandler;
+import org.jboss.as.connector.dynamicresource.StatisticsResourceDefinition;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.PlaceholderResource;
@@ -75,35 +70,14 @@ public class DataSourceStatisticsListener extends AbstractServiceListener<Object
                 if (jdbcStatsSize > 0 || poolStatsSize > 0) {
                     if (overrideRegistration != null) {
                         if (jdbcStatsSize > 0) {
-                            ManagementResourceRegistration jdbcRegistration = overrideRegistration.registerSubModel(JDBC_STATISTICS, new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", jdbcStats));
+                            ManagementResourceRegistration jdbcRegistration = overrideRegistration.registerSubModel(new StatisticsResourceDefinition(JDBC_STATISTICS,DataSourcesSubsystemProviders.RESOURCE_NAME, jdbcStats));
                             jdbcRegistration.setRuntimeOnly(true);
-                            jdbcRegistration.registerOperationHandler(Constants.CLEAR_STATISTICS, new ClearStatisticsHandler(jdbcStats));
-
-                            for (String statName : jdbcStats.getNames()) {
-                                jdbcRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(jdbcStats));
-                            }
-                            //adding enable/disable for pool stats
-                            OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(jdbcStats);
-                            OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(jdbcStats);
-                            jdbcRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
-
                             resource.registerChild(JDBC_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                         }
 
                         if (poolStatsSize > 0) {
-                            ManagementResourceRegistration poolRegistration = overrideRegistration.registerSubModel(POOL_STATISTICS, new StatisticsDescriptionProvider(DataSourcesSubsystemProviders.RESOURCE_NAME, "statistics", poolStats));
+                            ManagementResourceRegistration poolRegistration = overrideRegistration.registerSubModel(new StatisticsResourceDefinition(POOL_STATISTICS, DataSourcesSubsystemProviders.RESOURCE_NAME, poolStats));
                             poolRegistration.setRuntimeOnly(true);
-                            poolRegistration.registerOperationHandler(Constants.CLEAR_STATISTICS, new ClearStatisticsHandler(poolStats));
-
-                            for (String statName : poolStats.getNames()) {
-                                poolRegistration.registerMetric(statName, new PoolMetrics.ParametrizedPoolMetricsHandler(poolStats));
-                            }
-
-                            //adding enable/disable for pool stats
-                            OperationStepHandler readHandler = new PoolStatisticsRuntimeAttributeReadHandler(poolStats);
-                            OperationStepHandler writeHandler = new PoolStatisticsRuntimeAttributeWriteHandler(poolStats);
-                            poolRegistration.registerReadWriteAttribute(org.jboss.as.connector.subsystems.common.pool.Constants.POOL_STATISTICS_ENABLED, readHandler, writeHandler);
-
                             resource.registerChild(POOL_STATISTICS, new PlaceholderResource.PlaceholderResourceEntry(JDBC_STATISTICS));
                         }
                     }

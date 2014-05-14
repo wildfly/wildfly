@@ -80,7 +80,12 @@ public class Constants {
     private static final String CAPACITY_DECREMENTER_PROPERTIES_NAME = "capacity-decrementer-properties";
 
 
-    public static final SimpleAttributeDefinition BLOCKING_TIMEOUT_WAIT_MILLIS = new SimpleAttributeDefinition(BLOCKING_TIMEOUT_WAIT_MILLIS_NAME, TimeOut.Tag.BLOCKING_TIMEOUT_MILLIS.getLocalName(),  new ModelNode(), ModelType.LONG, true , true, MeasurementUnit.MILLISECONDS);
+    public static final SimpleAttributeDefinition BLOCKING_TIMEOUT_WAIT_MILLIS = new SimpleAttributeDefinitionBuilder(BLOCKING_TIMEOUT_WAIT_MILLIS_NAME, ModelType.LONG, true)
+    .setXmlName(TimeOut.Tag.BLOCKING_TIMEOUT_MILLIS.getLocalName())
+    .setMeasurementUnit(MeasurementUnit.MILLISECONDS)
+    .setAllowExpression(true)
+    .build();
+
 
     public static final SimpleAttributeDefinition IDLETIMEOUTMINUTES = new SimpleAttributeDefinition(IDLETIMEOUTMINUTES_NAME, TimeOut.Tag.IDLE_TIMEOUT_MINUTES.getLocalName(),  new ModelNode(), ModelType.LONG, true, true, MeasurementUnit.MINUTES);
 
@@ -143,9 +148,17 @@ public class Constants {
             .build();
 
 
-    public static final SimpleAttributeDefinition POOL_PREFILL = new SimpleAttributeDefinition(POOL_PREFILL_NAME, CommonPool.Tag.PREFILL.getLocalName(), new ModelNode(Defaults.PREFILL), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition POOL_PREFILL = new SimpleAttributeDefinitionBuilder(POOL_PREFILL_NAME, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(Defaults.PREFILL))
+            .setAllowExpression(true)
+            .setXmlName(CommonPool.Tag.PREFILL.getLocalName())
+            .build();
 
-    public static final SimpleAttributeDefinition POOL_USE_STRICT_MIN = new SimpleAttributeDefinition(POOL_USE_STRICT_MIN_NAME, CommonPool.Tag.USE_STRICT_MIN.getLocalName(), new ModelNode(Defaults.USE_STRICT_MIN), ModelType.BOOLEAN, true, true, MeasurementUnit.NONE);
+    public static final SimpleAttributeDefinition POOL_USE_STRICT_MIN = new SimpleAttributeDefinitionBuilder(POOL_USE_STRICT_MIN_NAME, ModelType.BOOLEAN, true)
+            .setDefaultValue(new ModelNode(Defaults.USE_STRICT_MIN))
+            .setAllowExpression(true)
+            .setXmlName(CommonPool.Tag.USE_STRICT_MIN.getLocalName())
+            .build();
 
     public static final SimpleAttributeDefinition POOL_FLUSH_STRATEGY = new SimpleAttributeDefinitionBuilder(FLUSH_STRATEGY_NAME, ModelType.STRING)
             .setDefaultValue(new ModelNode(Defaults.FLUSH_STRATEGY.getName()))
