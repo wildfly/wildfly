@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -27,7 +27,7 @@ import org.jboss.wsf.spi.deployment.ServletDelegate;
 import org.jboss.wsf.spi.deployment.ServletDelegateFactory;
 
 /**
- * AS7 implementation of {@link org.jboss.wsf.spi.deployment.ServletDelegateFactory}
+ * WildFly implementation of {@link org.jboss.wsf.spi.deployment.ServletDelegateFactory}
  * that uses modular classloading for creating the delegate instance.
  *
  * @author alessio.soldano@jboss.com
@@ -37,11 +37,10 @@ import org.jboss.wsf.spi.deployment.ServletDelegateFactory;
 public final class ServletDelegateFactoryImpl implements ServletDelegateFactory {
 
     @Override
-    public ServletDelegate newServletDelegate(final String servletClassName, final boolean isJaxWs) {
+    public ServletDelegate newServletDelegate(final String servletClassName) {
         final ClassLoaderProvider provider = ClassLoaderProvider.getDefaultProvider();
-        final ClassLoader classLoader = isJaxWs ? provider.getServerIntegrationClassLoader() : provider.getServerJAXRPCIntegrationClassLoader();
         try {
-            final Class<?> clazz = classLoader.loadClass(servletClassName);
+            final Class<?> clazz = provider.getServerIntegrationClassLoader().loadClass(servletClassName);
             return (ServletDelegate) clazz.newInstance();
         } catch (final Exception e) {
             throw WSLogger.ROOT_LOGGER.cannotInstantiateServletDelegate(e, servletClassName);

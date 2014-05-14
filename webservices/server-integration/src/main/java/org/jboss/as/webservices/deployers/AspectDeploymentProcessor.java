@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -65,17 +65,15 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
         if (isWebServiceDeployment(unit)) {
             ensureAspectInitialized();
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
-            if (aspect.canHandle(dep)) {
-                WSLogger.ROOT_LOGGER.tracef("%s start: %s", aspect, unit.getName());
-                ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-                try {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(aspect.getLoader());
-                    dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());
-                    aspect.start(dep);
-                    dep.removeAttachment(ServiceTarget.class);
-                } finally {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
-                }
+            WSLogger.ROOT_LOGGER.tracef("%s start: %s", aspect, unit.getName());
+            ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(aspect.getLoader());
+                dep.addAttachment(ServiceTarget.class, phaseContext.getServiceTarget());
+                aspect.start(dep);
+                dep.removeAttachment(ServiceTarget.class);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
             }
         }
     }
@@ -84,15 +82,13 @@ public final class AspectDeploymentProcessor implements DeploymentUnitProcessor 
     public void undeploy(final DeploymentUnit unit) {
         if (isWebServiceDeployment(unit)) {
             final Deployment dep = ASHelper.getRequiredAttachment(unit, WSAttachmentKeys.DEPLOYMENT_KEY);
-            if (aspect.canHandle(dep)) {
-                WSLogger.ROOT_LOGGER.tracef("%s stop: %s", aspect, unit.getName());
-                ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
-                try {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(aspect.getLoader());
-                    aspect.stop(dep);
-                } finally {
-                    WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
-                }
+            WSLogger.ROOT_LOGGER.tracef("%s stop: %s", aspect, unit.getName());
+            ClassLoader origClassLoader = WildFlySecurityManager.getCurrentContextClassLoaderPrivileged();
+            try {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(aspect.getLoader());
+                aspect.stop(dep);
+            } finally {
+                WildFlySecurityManager.setCurrentContextClassLoaderPrivileged(origClassLoader);
             }
         }
     }

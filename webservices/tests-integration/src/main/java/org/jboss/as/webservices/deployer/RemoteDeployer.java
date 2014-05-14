@@ -67,6 +67,7 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPE
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELEASE_VERSION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REQUIRED;
@@ -413,6 +414,33 @@ public final class RemoteDeployer implements Deployer {
         } finally {
             httpsConnSemaphore.release();
         }
+    }
+
+    public String setSystemProperty(String propName, String propValue) throws Exception {
+        if (propName == null || propName.trim().length() == 0) {
+            throw new IllegalArgumentException("Empty system property name specified!");
+        }
+        ModelNode op = createOpNode("system-property=" + propName, READ_RESOURCE_OPERATION);
+        String previousValue = null;
+        try {
+            ModelNode response = applyUpdate(op);
+            String rawResult = response.get(RESULT).asString();
+            previousValue = rawResult.substring(13, rawResult.length() - 2); //{"value" => "xyz"}
+        } catch (Exception e) {
+            if (!e.getMessage().contains("WFLYCTL0216")) {
+                throw e;
+            }
+        }
+        if (previousValue != null) {
+            op = createOpNode("system-property=" + propName, REMOVE);
+            applyUpdate(op);
+        }
+        if (propValue != null) {
+            op = createOpNode("system-property=" + propName, ADD);
+            op.get("value").set(propValue);
+            applyUpdate(op);
+        }
+        return previousValue;
     }
 
     private static void applyUpdates(final List<ModelNode> updates) throws Exception {

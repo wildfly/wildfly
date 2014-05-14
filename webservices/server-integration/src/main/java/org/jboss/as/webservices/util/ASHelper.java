@@ -27,6 +27,7 @@ import static org.jboss.as.webservices.util.DotNames.JAXWS_SERVICE_CLASS;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_ANNOTATION;
 import static org.jboss.as.webservices.util.DotNames.WEB_SERVICE_PROVIDER_ANNOTATION;
 import static org.jboss.as.webservices.util.WSAttachmentKeys.JAXWS_ENDPOINTS_KEY;
+import static org.jboss.as.webservices.util.WSAttachmentKeys.JBOSS_WEBSERVICES_METADATA_KEY;
 
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -68,6 +69,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
+import org.jboss.wsf.spi.metadata.webservices.JBossPortComponentMetaData;
+import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 
 /**
  * JBoss AS integration helper class.
@@ -294,6 +297,51 @@ public final class ASHelper {
             unit.putAttachment(JAXWS_ENDPOINTS_KEY, wsDeployment);
         }
         return wsDeployment;
+    }
+
+    /**
+     * Return a named port-component from the jboss-webservices.xml
+     * @param unit
+     * @param name
+     * @return
+     */
+    public static JBossPortComponentMetaData getJBossWebserviceMetaDataPortComponent(
+        final DeploymentUnit unit, final String name) {
+
+        if (name != null) {
+            final JBossWebservicesMetaData jbossWebserviceMetaData = unit.getAttachment(JBOSS_WEBSERVICES_METADATA_KEY);
+
+            if (jbossWebserviceMetaData != null) {
+                JBossPortComponentMetaData[] portComponent = jbossWebserviceMetaData.getPortComponents();
+
+                if (portComponent != null) {
+                    for (JBossPortComponentMetaData component : portComponent) {
+                        if (name.equals(component.getEjbName())) {
+                            return component;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns an EJBEndpoint based upon fully qualified classname.
+     * @param jaxwsDeployment
+     * @param className
+     * @return
+     */
+    public static EJBEndpoint getWebserviceMetadataEJBEndpoint(final JAXWSDeployment jaxwsDeployment,
+                                                               final String className) {
+
+        java.util.List<EJBEndpoint> ejbEndpointList = jaxwsDeployment.getEjbEndpoints();
+        for (EJBEndpoint ejbEndpoint : ejbEndpointList) {
+            if (className.equals(ejbEndpoint.getClassName())) {
+                return ejbEndpoint;
+            }
+        }
+        return null;
     }
 
     /**

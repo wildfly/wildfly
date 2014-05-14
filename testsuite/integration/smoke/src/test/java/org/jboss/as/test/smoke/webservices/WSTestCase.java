@@ -54,6 +54,12 @@ import org.junit.runner.RunWith;
 @RunAsClient
 public class WSTestCase {
 
+	private static final ModelNode webserviceAddress;
+	static {
+        webserviceAddress = new ModelNode();
+        webserviceAddress.add("subsystem", "webservices");
+	}
+	
     @ContainerResource
     private ManagementClient managementClient;
 
@@ -85,6 +91,7 @@ public class WSTestCase {
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
 
         final ModelNode result = managementClient.getControllerClient().execute(operation);
@@ -96,24 +103,27 @@ public class WSTestCase {
             Assert.assertTrue(endpoint.hasDefined("name"));
             Assert.assertTrue(endpoint.hasDefined("wsdl-url"));
             Assert.assertTrue(endpoint.get("wsdl-url").asString().endsWith("?wsdl"));
+            Assert.assertTrue(endpoint.hasDefined("request-count"));
+            Assert.assertTrue(endpoint.get("request-count").asString().contains("No metrics available"));
         }
     }
 
     @Test
     public void testManagementDescriptionMetrics() throws Exception {
-        final ModelNode address = new ModelNode();
+    	setStatisticsEnabled(true);  	
+    	final ModelNode address = new ModelNode();
         address.add(ModelDescriptionConstants.DEPLOYMENT, "ws-example.war");
         address.add(ModelDescriptionConstants.SUBSYSTEM, WSExtension.SUBSYSTEM_NAME); //EndpointService
         address.add("endpoint", "*"); // get all endpoints
-
+       
         final ModelNode operation = new ModelNode();
         operation.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.READ_RESOURCE_OPERATION);
         operation.get(ModelDescriptionConstants.OP_ADDR).set(address);
+        operation.get(ModelDescriptionConstants.INCLUDE_RUNTIME).set(true);
         operation.get(ModelDescriptionConstants.RECURSIVE).set(true);
-
-        final ModelNode result = managementClient.getControllerClient().execute(operation);
+                
+        ModelNode result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
-
         for (final ModelNode endpointResult : result.get("result").asList()) {
             final ModelNode endpoint = endpointResult.get("result");
             // Get the wsdl again to be sure the endpoint has been hit at least once
@@ -123,6 +133,15 @@ public class WSTestCase {
             // Read metrics
             checkCountMetric(endpointResult, managementClient.getControllerClient(), "request-count");
             checkCountMetric(endpointResult, managementClient.getControllerClient(), "response-count");
+        }
+               
+        setStatisticsEnabled(false);     
+        result = managementClient.getControllerClient().execute(operation);
+        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
+        for (final ModelNode endpointResult : result.get("result").asList()) {
+            final ModelNode endpoint = endpointResult.get("result");
+            Assert.assertTrue(endpoint.hasDefined("request-count"));
+            Assert.assertTrue(endpoint.get("request-count").asString().contains("No metrics available"));
         }
     }
 
@@ -150,5 +169,16 @@ public class WSTestCase {
     private String performCall(String params) throws Exception {
         URL url = new URL(this.url.toExternalForm() + "ws-example/" + params);
         return HttpRequest.get(url.toExternalForm(), 30, TimeUnit.SECONDS);
+    }
+    
+    
+    private void setStatisticsEnabled(boolean enabled) throws Exception {
+        final ModelNode updateStatistics = new ModelNode();
+        updateStatistics.get(ModelDescriptionConstants.OP).set(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION);
+        updateStatistics.get(ModelDescriptionConstants.OP_ADDR).set(webserviceAddress);
+        updateStatistics.get(ModelDescriptionConstants.NAME).set("statistics-enabled");
+        updateStatistics.get(ModelDescriptionConstants.VALUE).set(enabled);
+        final ModelNode result = managementClient.getControllerClient().execute(updateStatistics);
+        Assert.assertEquals(ModelDescriptionConstants.SUCCESS, result.get(ModelDescriptionConstants.OUTCOME).asString());
     }
 }

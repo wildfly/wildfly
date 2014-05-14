@@ -89,8 +89,8 @@ public final class WSRefDDProcessor extends AbstractDeploymentDescriptorBindings
             throw WSLogger.ROOT_LOGGER.jaxRpcNotSupported();
         }
         // construct service ref
-        final UnifiedServiceRefMetaData serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
-        translate(serviceRefMD, serviceRefUMDM);
+        final UnifiedServiceRefMetaData serviceRefUMDM = translate(serviceRefMD);
+        serviceRefUMDM.setVfsRoot(getUnifiedVirtualFile(unit));
         processWSFeatures(unit, serviceRefMD.getInjectionTargets(), serviceRefUMDM);
         final WSRefRegistry wsRefRegistry = ASHelper.getWSRefRegistry(unit);
         wsRefRegistry.add(getCacheKey(componentDescription, serviceRefUMDM), serviceRefUMDM);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -92,8 +92,6 @@ final class WebMetaDataModifier {
                     final List<ParamValueMetaData> initParams = WebMetaDataHelper.getServletInitParams(servletMD);
                     // configure transport class name
                     WebMetaDataHelper.newParamValue(WSFServlet.STACK_SERVLET_DELEGATE_CLASS, transportClassName, initParams);
-                    // configure the integration classloader to be used (JAXRPC or JAXWS)
-                    WebMetaDataHelper.newParamValue(WSFServlet.INTEGRATION_CLASSLOADER, dep.getType().toString(), initParams);
                     // configure webservice endpoint
                     WebMetaDataHelper.newParamValue(Endpoint.SEPID_DOMAIN_ENDPOINT, endpointClassName, initParams);
                 }

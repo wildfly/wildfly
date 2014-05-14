@@ -27,6 +27,7 @@ import java.util.Map;
 /**
  * @author alessio.soldano@jboss.com
  * @author <a href="mailto:ropalka@redhat.com">Richard Opalka</a>
+ * @author <a href="mailto:ema@redhat.com">Jim Ma</a>
  */
 enum Namespace {
 
@@ -39,6 +40,8 @@ enum Namespace {
 
     WEBSERVICES_1_2("urn:jboss:domain:webservices:1.2"),
 
+    WEBSERVICES_2_0("urn:jboss:domain:webservices:2.0"),
+
     JAVAEE("http://java.sun.com/xml/ns/javaee"),
 
     JAVAEE_7_0("http://xmlns.jcp.org/xml/ns/javaee"),
@@ -48,7 +51,7 @@ enum Namespace {
     /**
      * The current namespace version.
      */
-    static final Namespace CURRENT = WEBSERVICES_1_2;
+    static final Namespace CURRENT = WEBSERVICES_2_0;
 
     private final String name;
 

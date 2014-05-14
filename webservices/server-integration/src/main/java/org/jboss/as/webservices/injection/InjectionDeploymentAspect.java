@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,7 +19,6 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-
 package org.jboss.as.webservices.injection;
 
 import java.security.AccessController;
@@ -35,7 +34,6 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jboss.ws.common.deployment.ReferenceFactory;
 import org.jboss.ws.common.integration.AbstractDeploymentAspect;
-import org.jboss.ws.common.integration.WSHelper;
 import org.jboss.wsf.spi.deployment.Deployment;
 import org.jboss.wsf.spi.deployment.Endpoint;
 import org.jboss.wsf.spi.deployment.InstanceProvider;
@@ -48,8 +46,6 @@ public final class InjectionDeploymentAspect extends AbstractDeploymentAspect {
 
     @Override
     public void start(final Deployment dep) {
-        if (WSHelper.isJaxrpcDeployment(dep)) return;
-
         for (final Endpoint ep : dep.getService().getEndpoints()) {
             setInjectionAwareInstanceProvider(ep);
         }

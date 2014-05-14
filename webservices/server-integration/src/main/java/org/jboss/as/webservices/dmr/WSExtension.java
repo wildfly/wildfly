@@ -29,9 +29,10 @@ import static org.jboss.as.webservices.dmr.Constants.HANDLER;
 import static org.jboss.as.webservices.dmr.Constants.POST_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PRE_HANDLER_CHAIN;
 import static org.jboss.as.webservices.dmr.Constants.PROPERTY;
+import static org.jboss.as.webservices.dmr.Constants.WSDL_URI_SCHEME;
 
-import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathElement;
@@ -44,6 +45,7 @@ import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.controller.transform.description.TransformationDescription;
@@ -62,6 +64,7 @@ public final class WSExtension implements Extension {
 
     static final PathElement ENDPOINT_PATH = PathElement.pathElement(ENDPOINT);
     static final PathElement CLIENT_CONFIG_PATH = PathElement.pathElement(CLIENT_CONFIG);
+    static final PathElement WSDL_URI_SCHEME_PATH = PathElement.pathElement(WSDL_URI_SCHEME);
     static final PathElement ENDPOINT_CONFIG_PATH = PathElement.pathElement(ENDPOINT_CONFIG);
     private static final PathElement PROPERTY_PATH = PathElement.pathElement(PROPERTY);
     static final PathElement PRE_HANDLER_CHAIN_PATH = PathElement.pathElement(PRE_HANDLER_CHAIN);
@@ -71,8 +74,8 @@ public final class WSExtension implements Extension {
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
     private static final String RESOURCE_NAME = WSExtension.class.getPackage().getName() + ".LocalDescriptions";
 
-    private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MAJOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 0;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     // attributes on the endpoint element
@@ -156,7 +159,10 @@ public final class WSExtension implements Extension {
                 .addReadWriteAttribute(Attributes.WSDL_HOST, null, new WSServerConfigAttributeHandler(Attributes.WSDL_HOST))
                 .addReadWriteAttribute(Attributes.WSDL_PORT, null, new WSServerConfigAttributeHandler(Attributes.WSDL_PORT))
                 .addReadWriteAttribute(Attributes.WSDL_SECURE_PORT, null, new WSServerConfigAttributeHandler(Attributes.WSDL_SECURE_PORT))
+                .addReadWriteAttribute(Attributes.WSDL_URI_SCHEME, null, new WSServerConfigAttributeHandler(Attributes.WSDL_URI_SCHEME))
+                .addReadWriteAttribute(Attributes.WSDL_PATH_REWRITE_RULE, null, new WSServerConfigAttributeHandler(Attributes.WSDL_PATH_REWRITE_RULE))
                 .addReadWriteAttribute(Attributes.MODIFY_WSDL_ADDRESS, null, new WSServerConfigAttributeHandler(Attributes.MODIFY_WSDL_ADDRESS))
+                .addReadWriteAttribute(Attributes.STATISTICS_ENABLED, null, new WSServerConfigAttributeHandler(Attributes.STATISTICS_ENABLED))
                 .build();
         ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(subsystemResource);
         subsystemRegistration.registerSubModel(epConfigsDef);
@@ -176,6 +182,7 @@ public final class WSExtension implements Extension {
 
         if (context.isRegisterTransformers()) {
             registerTransformers1_1_0(subsystem);
+            registerTransformers1_2_0(subsystem);
         }
     }
 
@@ -183,21 +190,33 @@ public final class WSExtension implements Extension {
     @Override
     public void initializeParsers(final ExtensionParsingContext context) {
         context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_0.getUriString(), WSSubsystemLegacyReader.getInstance());
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_1.getUriString(), WSSubsystemReader.getInstance());
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_2.getUriString(), WSSubsystemReader.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_1.getUriString(), WSSubsystem11Reader.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_1_2.getUriString(), WSSubSystem12Reader.getInstance());
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, Namespace.WEBSERVICES_2_0.getUriString(), WSSubSystem20Reader.getInstance());
     }
 
     private void registerTransformers1_1_0(SubsystemRegistration registration) {
         ModelVersion version = ModelVersion.create(1, 1, 0);
 
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.STATISTICS_ENABLED);
         builder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.SUBSYSTEM_ATTRIBUTES).end();
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.WSDL_URI_SCHEME);
         builder.rejectChildResource(CLIENT_CONFIG_PATH);
 
         ResourceTransformationDescriptionBuilder endpoint = builder.addChildResource(ENDPOINT_CONFIG_PATH);
         endpoint.addChildResource(PRE_HANDLER_CHAIN_PATH).getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.PROTOCOL_BINDINGS).end();
         endpoint.addChildResource(POST_HANDLER_CHAIN_PATH).getAttributeBuilder().addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, Attributes.PROTOCOL_BINDINGS).end();
 
+        TransformationDescription.Tools.register(builder.build(), registration, version);
+    }
+
+    private void registerTransformers1_2_0(SubsystemRegistration registration) {
+        ModelVersion version = ModelVersion.create(1, 2, 0);
+        ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.STATISTICS_ENABLED);
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.WSDL_URI_SCHEME);
+        builder.getAttributeBuilder().setDiscard(DiscardAttributeChecker.ALWAYS, Attributes.WSDL_PATH_REWRITE_RULE);
         TransformationDescription.Tools.register(builder.build(), registration, version);
     }
 }

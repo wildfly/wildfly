@@ -89,31 +89,6 @@ public class TestDA1 implements DeploymentAspect {
     }
 
     @Override
-    public boolean canHandle(Deployment dep) {
-        return false;
-    }
-
-    @Override
-    public boolean isForJaxWs() {
-        return false;
-    }
-
-    @Override
-    public void setForJaxWs(boolean isForJaxWs) {
-
-    }
-
-    @Override
-    public boolean isForJaxRpc() {
-        return false;
-    }
-
-    @Override
-    public void setForJaxRpc(boolean isForJaxRpc) {
-
-    }
-
-    @Override
     public ClassLoader getLoader() {
         return null;
     }

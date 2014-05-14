@@ -41,7 +41,7 @@ public final class VirtualFileAdaptor implements UnifiedVirtualFile {
 
     private static final long serialVersionUID = -4509594124653184349L;
 
-    private transient VirtualFile file;
+    private final transient VirtualFile file;
 
     public VirtualFileAdaptor(VirtualFile file) {
         this.file = file;

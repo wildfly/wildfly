@@ -51,7 +51,9 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
     private final DMRSynchCheckHandler webServiceHostUCH = new DMRSynchCheckHandler();
     private final DMRSynchCheckHandler webServicePortUCH = new DMRSynchCheckHandler();
     private final DMRSynchCheckHandler webServiceSecurePortUCH = new DMRSynchCheckHandler();
+    private final DMRSynchCheckHandler webServiceUriSchemeUCH = new DMRSynchCheckHandler();
     private final DMRSynchCheckHandler modifySOAPAddressUCH = new DMRSynchCheckHandler();
+    private final DMRSynchCheckHandler webServicePathRewriteRuleUCH = new DMRSynchCheckHandler();
 
     private ServerConfigImpl() {
         // forbidden inheritance
@@ -65,6 +67,7 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
         webServicePortUCH.reset();
         webServiceSecurePortUCH.reset();
         modifySOAPAddressUCH.reset();
+        webServicePathRewriteRuleUCH.reset();
     }
 
     public void incrementWSDeploymentCount() {
@@ -89,6 +92,15 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
         setWebServiceHost(host, webServiceHostUCH);
     }
 
+    public void setWebServicePathRewriteRule(String path, boolean forceUpdate) {
+        setWebServicePathRewriteRule(path, forceUpdate ? null : webServicePathRewriteRuleUCH);
+    }
+
+    @Override
+    public void setWebServicePathRewriteRule(String path) {
+        setWebServicePathRewriteRule(path, webServicePathRewriteRuleUCH);
+    }
+
     public void setWebServicePort(int port, boolean forceUpdate) {
         setWebServicePort(port, forceUpdate ? null : webServicePortUCH);
     }
@@ -103,6 +115,9 @@ public final class ServerConfigImpl extends AbstractServerConfig implements Abst
         setWebServiceSecurePort(port, forceUpdate ? null : webServiceSecurePortUCH);
     }
 
+    public void setWebServiceUriScheme(String scheme, boolean forceUpdate) {
+        setWebServiceUriScheme(scheme, forceUpdate ? null : webServiceUriSchemeUCH);
+    }
     @Override
     public void setWebServiceSecurePort(int port) {
         //prevent any change if the DMR configuration is not in synch anymore with the runtime
