@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2014, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -52,12 +52,17 @@ import org.jboss.metadata.javaee.spec.ServiceReferenceHandlerChainMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferenceHandlerChainsMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferenceHandlerMetaData;
 import org.jboss.metadata.javaee.spec.ServiceReferenceMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.AddressingMetadata;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.MTOMMetadata;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.RespectBindingMetadata;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerChainsMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedHandlerMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedInitParamMetaData;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedPortComponentRefMetaDataBuilder;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaData;
+import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedServiceRefMetaDataBuilder;
 import org.jboss.wsf.spi.metadata.j2ee.serviceref.UnifiedStubPropertyMetaData;
 import org.jboss.wsf.spi.serviceref.ServiceRefType;
 
@@ -73,22 +78,22 @@ final class WSRefUtils {
     private WSRefUtils() {
     }
 
-    static UnifiedServiceRefMetaData translate(final ServiceReferenceMetaData serviceRefMD, final UnifiedServiceRefMetaData serviceRefUMDM) {
-        serviceRefUMDM.setServiceRefName(serviceRefMD.getName());
-        serviceRefUMDM.setServiceRefType(serviceRefMD.getServiceRefType());
-        serviceRefUMDM.setServiceInterface(serviceRefMD.getServiceInterface());
-        serviceRefUMDM.setWsdlFile(serviceRefMD.getWsdlFile());
-        serviceRefUMDM.setMappingFile(serviceRefMD.getJaxrpcMappingFile());
-        serviceRefUMDM.setServiceQName(serviceRefMD.getServiceQname());
+    static UnifiedServiceRefMetaData translate(final ServiceReferenceMetaData serviceRefMD) {
+        UnifiedServiceRefMetaDataBuilder builder = new UnifiedServiceRefMetaDataBuilder();
+        builder.setServiceRefName(serviceRefMD.getName());
+        builder.setServiceRefType(serviceRefMD.getServiceRefType());
+        builder.setServiceInterface(serviceRefMD.getServiceInterface());
+        builder.setWsdlFile(serviceRefMD.getWsdlFile());
+        builder.setMappingFile(serviceRefMD.getJaxrpcMappingFile());
+        builder.setServiceQName(serviceRefMD.getServiceQname());
 
         // propagate port components
         final Collection<? extends PortComponentRef> portComponentsMD = serviceRefMD.getPortComponentRef();
         if (portComponentsMD != null) {
             for (final PortComponentRef portComponentMD : portComponentsMD) {
-                final UnifiedPortComponentRefMetaData portComponentUMDM = getUnifiedPortComponentRefMetaData(serviceRefUMDM,
-                        portComponentMD);
+                final UnifiedPortComponentRefMetaData portComponentUMDM = getUnifiedPortComponentRefMetaData(portComponentMD);
                 if (portComponentUMDM.getServiceEndpointInterface() != null || portComponentUMDM.getPortQName() != null) {
-                    serviceRefUMDM.addPortComponentRef(portComponentUMDM);
+                    builder.addPortComponentRef(portComponentUMDM);
                 } else {
                     WSLogger.ROOT_LOGGER.ignoringPortComponentRef(portComponentUMDM);
                 }
@@ -100,7 +105,7 @@ final class WSRefUtils {
         if (handlersMD != null) {
            for (final ServiceReferenceHandlerMetaData handlerMD : handlersMD) {
               final UnifiedHandlerMetaData handlerUMDM = getUnifiedHandlerMetaData(handlerMD);
-              serviceRefUMDM.addHandler(handlerUMDM);
+              builder.addHandler(handlerUMDM);
            }
         }
 
@@ -108,81 +113,73 @@ final class WSRefUtils {
         ServiceReferenceHandlerChainsMetaData handlerChainsMD = serviceRefMD.getHandlerChains();
         if (handlerChainsMD != null) {
            final UnifiedHandlerChainsMetaData handlerChainsUMDM = getUnifiedHandlerChainsMetaData(handlerChainsMD);
-           serviceRefUMDM.setHandlerChains(handlerChainsUMDM);
+           builder.setHandlerChains(handlerChainsUMDM);
         }
 
         // propagate jboss specific MD
         if (serviceRefMD instanceof JBossServiceReferenceMetaData) {
-           processUnifiedJBossServiceRefMetaData(serviceRefUMDM, serviceRefMD);
+           final JBossServiceReferenceMetaData jbossServiceRefMD = (JBossServiceReferenceMetaData) serviceRefMD;
+           builder.setServiceImplClass(jbossServiceRefMD.getServiceClass());
+           builder.setConfigName(jbossServiceRefMD.getConfigName());
+           builder.setConfigFile(jbossServiceRefMD.getConfigFile());
+           builder.setWsdlOverride(jbossServiceRefMD.getWsdlOverride());
+           builder.setHandlerChain(jbossServiceRefMD.getHandlerChain());
         }
 
-        serviceRefUMDM.setType(ServiceRefType.JAXWS);
+        builder.setType(ServiceRefType.JAXWS);
 
-        return serviceRefUMDM;
+        return builder.build();
     }
 
-    private static void processUnifiedJBossServiceRefMetaData(final UnifiedServiceRefMetaData serviceRefUMDM, final ServiceReferenceMetaData serviceRefMD) {
-        final JBossServiceReferenceMetaData jbossServiceRefMD = (JBossServiceReferenceMetaData) serviceRefMD;
-        serviceRefUMDM.setServiceImplClass(jbossServiceRefMD.getServiceClass());
-        serviceRefUMDM.setConfigName(jbossServiceRefMD.getConfigName());
-        serviceRefUMDM.setConfigFile(jbossServiceRefMD.getConfigFile());
-        serviceRefUMDM.setWsdlOverride(jbossServiceRefMD.getWsdlOverride());
-        serviceRefUMDM.setHandlerChain(jbossServiceRefMD.getHandlerChain());
-    }
-
-    private static UnifiedPortComponentRefMetaData getUnifiedPortComponentRefMetaData(final UnifiedServiceRefMetaData serviceRefUMDM, final PortComponentRef portComponentMD) {
-        final UnifiedPortComponentRefMetaData portComponentUMDM = new UnifiedPortComponentRefMetaData(serviceRefUMDM);
+    private static UnifiedPortComponentRefMetaData getUnifiedPortComponentRefMetaData(final PortComponentRef portComponentMD) {
+        final UnifiedPortComponentRefMetaDataBuilder builder = new UnifiedPortComponentRefMetaDataBuilder();
 
         // propagate service endpoint interface
-        portComponentUMDM.setServiceEndpointInterface(portComponentMD.getServiceEndpointInterface());
+        builder.setServiceEndpointInterface(portComponentMD.getServiceEndpointInterface());
 
         // propagate MTOM properties
-        portComponentUMDM.setMtomEnabled(portComponentMD.isEnableMtom());
-        portComponentUMDM.setMtomThreshold(portComponentMD.getMtomThreshold());
+        builder.setMtomEnabled(portComponentMD.isEnableMtom());
+        builder.setMtomThreshold(portComponentMD.getMtomThreshold());
 
         // propagate addressing properties
         final Addressing addressingMD = portComponentMD.getAddressing();
         if (addressingMD != null) {
-            portComponentUMDM.setAddressingAnnotationSpecified(true);
-            portComponentUMDM.setAddressingEnabled(addressingMD.isEnabled());
-            portComponentUMDM.setAddressingRequired(addressingMD.isRequired());
-            portComponentUMDM.setAddressingResponses(addressingMD.getResponses());
+            builder.setAddressingAnnotationSpecified(true);
+            builder.setAddressingEnabled(addressingMD.isEnabled());
+            builder.setAddressingRequired(addressingMD.isRequired());
+            builder.setAddressingResponses(addressingMD.getResponses());
         }
 
         // propagate respect binding properties
         if (portComponentMD.getRespectBinding() != null) {
-            portComponentUMDM.setRespectBindingAnnotationSpecified(true);
-            portComponentUMDM.setRespectBindingEnabled(true);
+            builder.setRespectBindingAnnotationSpecified(true);
+            builder.setRespectBindingEnabled(true);
         }
 
         // propagate link
-        portComponentUMDM.setPortComponentLink(portComponentMD.getPortComponentLink());
+        builder.setPortComponentLink(portComponentMD.getPortComponentLink());
 
         // propagate jboss specific MD
         if (portComponentMD instanceof JBossPortComponentRef) {
-            processUnifiedJBossPortComponentRefMetaData(portComponentUMDM, portComponentMD);
-        }
+            final JBossPortComponentRef jbossPortComponentMD = (JBossPortComponentRef) portComponentMD;
 
-        return portComponentUMDM;
-    }
+            // propagate port QName
+            builder.setPortQName(jbossPortComponentMD.getPortQname());
 
-    private static void processUnifiedJBossPortComponentRefMetaData(final UnifiedPortComponentRefMetaData portComponentUMDM, final PortComponentRef portComponentMD) {
-        final JBossPortComponentRef jbossPortComponentMD = (JBossPortComponentRef) portComponentMD;
+            // propagate configuration properties
+            builder.setConfigName(jbossPortComponentMD.getConfigName());
+            builder.setConfigFile(jbossPortComponentMD.getConfigFile());
 
-        // propagate port QName
-        portComponentUMDM.setPortQName(jbossPortComponentMD.getPortQname());
-
-        // propagate configuration properties
-        portComponentUMDM.setConfigName(jbossPortComponentMD.getConfigName());
-        portComponentUMDM.setConfigFile(jbossPortComponentMD.getConfigFile());
-
-        // propagate stub properties
-        final List<StubPropertyMetaData> stubPropertiesMD = jbossPortComponentMD.getStubProperties();
-        if (stubPropertiesMD != null) {
-            for (final StubPropertyMetaData stubPropertyMD : stubPropertiesMD) {
-                portComponentUMDM.addStubProperty(new UnifiedStubPropertyMetaData(stubPropertyMD.getPropName(), stubPropertyMD.getPropValue()));
+            // propagate stub properties
+            final List<StubPropertyMetaData> stubPropertiesMD = jbossPortComponentMD.getStubProperties();
+            if (stubPropertiesMD != null) {
+                for (final StubPropertyMetaData stubPropertyMD : stubPropertiesMD) {
+                    builder.addStubProperty(new UnifiedStubPropertyMetaData(stubPropertyMD.getPropName(), stubPropertyMD.getPropValue()));
+                }
             }
         }
+
+        return builder.build();
     }
 
     private static UnifiedHandlerMetaData getUnifiedHandlerMetaData(ServiceReferenceHandlerMetaData srhmd) {
@@ -229,10 +226,10 @@ final class WSRefUtils {
          final javax.xml.ws.soap.Addressing addressingAnnotation = getAnnotation(anElement, javax.xml.ws.soap.Addressing.class);
 
          if (addressingAnnotation != null) {
-            serviceRefUMDM.setAddressingAnnotationSpecified(true);
-            serviceRefUMDM.setAddressingEnabled(addressingAnnotation.enabled());
-            serviceRefUMDM.setAddressingRequired(addressingAnnotation.required());
-            serviceRefUMDM.setAddressingResponses(addressingAnnotation.responses().toString());
+             serviceRefUMDM.setAddressingMedadata(new AddressingMetadata(true,
+                    addressingAnnotation.enabled(),
+                    addressingAnnotation.required(),
+                    addressingAnnotation.responses().toString()));
          }
       }
 
@@ -240,9 +237,7 @@ final class WSRefUtils {
          final MTOM mtomAnnotation = getAnnotation(anElement, MTOM.class);
 
          if (mtomAnnotation != null) {
-            serviceRefUMDM.setMtomAnnotationSpecified(true);
-            serviceRefUMDM.setMtomEnabled(mtomAnnotation.enabled());
-            serviceRefUMDM.setMtomThreshold(mtomAnnotation.threshold());
+            serviceRefUMDM.setMTOMMetadata(new MTOMMetadata(true, mtomAnnotation.enabled(), mtomAnnotation.threshold()));
          }
       }
 
@@ -250,8 +245,7 @@ final class WSRefUtils {
          final javax.xml.ws.RespectBinding respectBindingAnnotation = getAnnotation(anElement, javax.xml.ws.RespectBinding.class);
 
          if (respectBindingAnnotation != null) {
-            serviceRefUMDM.setRespectBindingAnnotationSpecified(true);
-            serviceRefUMDM.setRespectBindingEnabled(respectBindingAnnotation.enabled());
+            serviceRefUMDM.setRespectBindingMetadata(new RespectBindingMetadata(true, respectBindingAnnotation.enabled()));
          }
       }
 

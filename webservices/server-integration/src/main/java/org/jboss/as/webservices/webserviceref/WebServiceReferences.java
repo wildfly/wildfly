@@ -45,8 +45,7 @@ public class WebServiceReferences {
         final WSRefRegistry wsRefRegistry = ASHelper.getWSRefRegistry(unit);
         UnifiedServiceRefMetaData serviceRefUMDM = wsRefRegistry.get(refKey);
         if (serviceRefUMDM == null) {
-            serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit));
-            serviceRefUMDM.setServiceRefName(bindingName);
+            serviceRefUMDM = new UnifiedServiceRefMetaData(getUnifiedVirtualFile(unit), bindingName);
             wsRefRegistry.add(refKey, serviceRefUMDM);
         }
         initServiceRef(unit, serviceRefUMDM, type, annotation);

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2014, Red Hat Middleware LLC, and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -42,14 +42,14 @@ import org.jboss.wsf.spi.metadata.webservices.JBossWebservicesMetaData;
 final class MetaDataBuilderJAXWS_EJB extends AbstractMetaDataBuilderEJB {
 
     @Override
-    protected void buildEnterpriseBeansMetaData(final Deployment dep, final EJBArchiveMetaData ejbArchiveMD) {
+    protected void buildEnterpriseBeansMetaData(final Deployment dep, final EJBArchiveMetaData.Builder ejbArchiveMDBuilder) {
         if (!WSHelper.isJaxwsJseDeployment(dep)) { // [AS7-1605] support
             final JBossWebMetaData jbossWebMD = WSHelper.getOptionalAttachment(dep, JBossWebMetaData.class);
             final String contextRoot = getContextRoot(dep, jbossWebMD);
             if (contextRoot != null) {
-                final JSEArchiveMetaData jseArchiveMD = new JSEArchiveMetaData();
-                jseArchiveMD.setContextRoot(contextRoot);
-                dep.addAttachment(JSEArchiveMetaData.class, jseArchiveMD);
+                final JSEArchiveMetaData.Builder jseArchiveMDBuilder = new JSEArchiveMetaData.Builder();
+                jseArchiveMDBuilder.setContextRoot(contextRoot);
+                dep.addAttachment(JSEArchiveMetaData.class, jseArchiveMDBuilder.build());
             }
         }
 
@@ -61,7 +61,7 @@ final class MetaDataBuilderJAXWS_EJB extends AbstractMetaDataBuilderEJB {
             buildEnterpriseBeanMetaData(wsEjbsMD, jbossEjbMD, jbossWebservicesMD);
         }
 
-        ejbArchiveMD.setEnterpriseBeans(wsEjbsMD);
+        ejbArchiveMDBuilder.setEnterpriseBeans(wsEjbsMD);
     }
 
 }
