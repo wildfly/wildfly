@@ -55,12 +55,12 @@ import org.jboss.as.controller.transform.TransformationTargetImpl;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.controller.transform.Transformers;
 import org.jboss.as.domain.controller.DomainController;
-import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.SlaveRegistrationException;
+import org.jboss.as.domain.controller.logging.DomainControllerLogger;
 import org.jboss.as.domain.controller.operations.ReadMasterDomainModelHandler;
 import org.jboss.as.host.controller.logging.HostControllerLogger;
-import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.StreamUtils;
+import org.jboss.as.protocol.logging.ProtocolLogger;
 import org.jboss.as.protocol.mgmt.ActiveOperation;
 import org.jboss.as.protocol.mgmt.FlushableDataOutput;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -371,7 +371,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         }
 
         /**
-         *  Process the registration of the slave whose informatin was provided to {@code initialize()}.
+         *  Process the registration of the slave whose information was provided to {@code initialize()}.
          */
         private void processRegistration() {
 
@@ -567,23 +567,23 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     try {
                         task.sendMessage(output);
                     } catch (IOException e) {
-                        failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                        failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerLogger.ROOT_LOGGER.failedToSendMessage(e.getMessage()));
                         throw new IllegalStateException(e);
                     } finally {
                         StreamUtils.safeClose(output);
                     }
                 } catch (IOException e) {
-                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerLogger.ROOT_LOGGER.failedToSendResponseHeader(e.getMessage()));
                     throw new IllegalStateException(e);
                 }
             }
             try {
                 return task.get();
             } catch (InterruptedException e) {
-                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerLogger.ROOT_LOGGER.registrationTaskGotInterrupted());
                 throw new IllegalStateException(e);
             } catch (ExecutionException e) {
-                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerLogger.ROOT_LOGGER.registrationTaskFailed(e.getMessage()));
                 throw new IllegalStateException(e);
             }
         }
@@ -655,7 +655,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             // send error code
             output.writeByte(errorCode);
             // error message
-            output.writeUTF(message);
+            if (message == null) {
+                output.writeUTF("unknown error");
+            } else {
+                output.writeUTF(message);
+            }
             // response end
             output.writeByte(ManagementProtocol.RESPONSE_END);
             output.close();

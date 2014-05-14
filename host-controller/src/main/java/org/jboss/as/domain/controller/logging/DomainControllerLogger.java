@@ -703,4 +703,16 @@ public interface DomainControllerLogger extends BasicLogger {
     @Message(id = 65, value = "Wildcard operations are not supported as part of composite operations")
     OperationFailedException unsupportedWildcardOperation();
 
+    @Message(id = 66, value = "Failed to send message: %s")
+    String failedToSendMessage(String cause);
+
+    @Message(id = 67, value = "Failed to send response header: %s")
+    String failedToSendResponseHeader(String cause);
+
+    @Message(id = 68, value = "Host registration task got interrupted")
+    String registrationTaskGotInterrupted();
+
+    @Message(id = 69, value = "Host registration task failed: %s")
+    String registrationTaskFailed(String cause);
+
 }
