@@ -133,6 +133,8 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     public E get(K key) throws NoSuchEJBException {
         this.trace("get(%s)", key);
 
+        this.cancelExpirationPassivation(key);
+
         boolean valid = false;
         boolean lock = true;
         while (!valid) {
@@ -153,7 +155,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
                     entry.setPrePassivated(false);
 
                     entry.increaseUsageCount();
-                    this.cancelExpirationPassivation(key);
+
                     return entry;
                 }
                 // else discard and reacquire
@@ -246,8 +248,9 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
 
         E entry = store.remove(key);
 
-        if (entry == null)
+        if (entry == null) {
             throw EjbMessages.MESSAGES.couldNotFindEjb(String.valueOf(key));
+        }
 
         entry.lock();
         try {
@@ -264,13 +267,13 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     private void cancelExpirationPassivation(K id) {
         if (this.executor != null) {
             if (this.store.getTimeout() != null) {
-                this.cancel(this.expirationFutures, id);
+                this.cancel(this.expirationFutures, id, true);
             }
-            this.cancel(this.passivationFutures, id);
+            this.cancel(this.passivationFutures, id, false);
         }
     }
 
-    private void cancel(Map<K, Future<?>> futures, K id) {
+    private void cancel(Map<K, Future<?>> futures, K id, boolean block) {
         Future<?> future = futures.remove(id);
         if (future != null) {
             if (future.cancel(false)) {
@@ -278,6 +281,14 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
                 // The Future is really a RunnableScheduledFuture so this cast will always work
                 if (future instanceof Runnable) {
                     this.executor.remove((Runnable) future);
+                }
+            } else {
+                if (block) {
+                    try {
+                        // if the cancel task is in progress, wait until it completes
+                        future.get();
+                    } catch (Exception e) {
+                    }
                 }
             }
         }

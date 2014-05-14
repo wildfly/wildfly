@@ -118,10 +118,10 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
 
     @Override
     public NonPassivatingBackingCacheEntry<K, V> get(K key) throws NoSuchEJBException {
+        this.scheduleExpiration(key, true);
         NonPassivatingBackingCacheEntry<K, V> entry = cache.get(key);
         if (entry == null) return null;
         entry.increaseUsageCount();
-        this.scheduleExpiration(key, true);
         return entry;
     }
 
@@ -213,6 +213,12 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
                     // The Future is really a RunnableScheduledFuture so this cast will always work
                     if (future instanceof Runnable) {
                         this.executor.remove((Runnable) future);
+                    }
+                } else {
+                    try {
+                        // if the cancel task is in progress, wait until it completes
+                        future.get();
+                    } catch (Exception e) {
                     }
                 }
             }
