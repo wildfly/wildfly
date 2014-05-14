@@ -25,6 +25,11 @@
   -->
 
 <module xmlns="urn:jboss:module:1.3" name="org.wildfly.extension.io">
+
+    <exports>
+        <exclude path="org/wildfly/extension/io/logging"/>
+    </exports>
+
     <resources>
         <!-- Insert resources here -->
     </resources>
