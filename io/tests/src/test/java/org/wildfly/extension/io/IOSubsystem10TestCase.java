@@ -66,6 +66,7 @@ public class IOSubsystem10TestCase extends AbstractSubsystemBaseTest {
         }
         ServiceController<XnioWorker> workerServiceController = (ServiceController<XnioWorker>) mainServices.getContainer().getService(IOServices.WORKER.append("default"));
         workerServiceController.setMode(ServiceController.Mode.ACTIVE);
+        workerServiceController.awaitValue();
         XnioWorker worker = workerServiceController.getService().getValue();
         Assert.assertEquals(Runtime.getRuntime().availableProcessors() * 2, worker.getIoThreadCount());
         Assert.assertEquals(Runtime.getRuntime().availableProcessors() * 16, worker.getOption(Options.WORKER_TASK_MAX_THREADS).intValue());
