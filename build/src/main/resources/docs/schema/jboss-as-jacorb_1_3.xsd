@@ -130,7 +130,7 @@
                 * security: indicates whether the security (SAS and CSIv2) initializers should be installed. There are three possibilities:
                     client   - The client interceptor will be installed. Remote calls from this server will propagate
                                by sending the current username and password
-                    identity - The server will just send the current username. The recieving server must trust this
+                    identity - The server will just send the current username. The receiving server must trust this
                                server.
                     off      - Security interceptors are not installed
                 * transactions: indicates which transaction initializers should be installed. There are three possibilities:
@@ -139,7 +139,7 @@
                     spec - This does not require JTS to be enabled, but will install the minimum set of transaction interceptors
                            required for EJB spec compliance. These interceptors detect an incoming transaction and throw an
                            exception if the invocation should be run in the incoming transaction context.
-                    off  - No transaction initalizers will be installed.
+                    off  - No transaction initializers will be installed.
                         ]]>
             </xs:documentation>
         </xs:annotation>

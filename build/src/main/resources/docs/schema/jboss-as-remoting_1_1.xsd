@@ -49,7 +49,7 @@
             <xs:element name="outbound-connections" minOccurs="0" type="outbound-connectionsType" />
         </xs:sequence>
     </xs:complexType>
-    
+
     <xs:complexType name="workerThreadsType">
         <xs:annotation>
             <xs:documentation>
@@ -67,7 +67,7 @@
         <xs:attribute name="task-keepalive" type="xs:integer" use="optional"/>
         <xs:attribute name="task-limit" type="xs:integer" use="optional"/>
     </xs:complexType>
-    
+
 
     <xs:complexType name="connector">
         <xs:annotation>
@@ -93,7 +93,7 @@
         </xs:all>
         <xs:attribute name="socket-binding" type="name-list" use="required"/>
         <xs:attribute name="name" type="xs:string" use="required"/>
-        <xs:attribute name="security-realm" type="xs:string" use="optional"/>        
+        <xs:attribute name="security-realm" type="xs:string" use="optional"/>
     </xs:complexType>
 
     <xs:complexType name="sasl">
@@ -191,7 +191,7 @@
             </xs:documentation>
         </xs:annotation>
         <xs:attribute name="value" type="name-list" use="required"/>
-    </xs:complexType>   
+    </xs:complexType>
 
     <xs:simpleType name="name-list">
         <xs:annotation>

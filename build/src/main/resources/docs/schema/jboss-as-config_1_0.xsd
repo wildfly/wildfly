@@ -1008,7 +1008,7 @@
         <xs:attribute name="value" type="xs:string" use="required">
             <xs:annotation>
                 <xs:documentation>
-                    Either a IP address in IPv6 or IPv4 dotted decimal notation,
+                    Either an IP address in IPv6 or IPv4 dotted decimal notation,
                     or a hostname that can be resolved to an IP address.
                 </xs:documentation>
             </xs:annotation>
@@ -1278,7 +1278,7 @@
                         The name of the path. Cannot be one of the standard fixed paths
                         provided by the system:
 
-                        jboss.home - the root directory of the JBoss AS distribution
+                        jboss.home.dir - the root directory of the JBoss AS distribution
                         user.home - user's home directory
                         user.dir - user's current working directory
                         java.home - java installation directory
@@ -1332,7 +1332,7 @@
                 relative to the path specified by this attribute. The standard
                 paths provided by the system include:
 
-                jboss.home - the root directory of the JBoss AS distribution
+                jboss.home.dir - the root directory of the JBoss AS distribution
                 user.home - user's home directory
                 user.dir - user's current working directory
                 java.home - java installation directory

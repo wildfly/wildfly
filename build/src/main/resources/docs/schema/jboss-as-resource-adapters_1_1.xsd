@@ -533,7 +533,7 @@
             <xs:annotation>
               <xs:documentation>
                 <![CDATA[[
-                   Should the XAResource instances be wrapped in a org.jboss.tm.XAResourceWrapper
+                   Should the XAResource instances be wrapped in an org.jboss.tm.XAResourceWrapper
                    instance
                    Ex: <wrap-xa-resource>true</wrap-xa-resource>
                  ]]>

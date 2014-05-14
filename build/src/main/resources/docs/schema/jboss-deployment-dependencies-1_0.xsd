@@ -25,7 +25,7 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="urn:jboss:deployment-dependencies:1.0"
             xmlns="urn:jboss:deployment-dependencies:1.0"
-            elementFormDefault="unqualified"
+            elementFormDefault="qualified"
             attributeFormDefault="unqualified"
             version="1.0">
 
@@ -33,7 +33,7 @@
     <xsd:element name="jboss-deployment-dependencies" type="jbossDependenciesType">
         <xsd:annotation>
             <xsd:documentation>
-                Root element for a a jboss-dependencies file.
+                Root element for a jboss-dependencies file.
             </xsd:documentation>
         </xsd:annotation>
     </xsd:element>

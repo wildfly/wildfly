@@ -55,7 +55,7 @@
                 <xs:element ref="connection-timeout" minOccurs="0" maxOccurs="1"/>
 
                 <xs:element ref="ssl" minOccurs="0" maxOccurs="1"/>
-                
+
                 <xs:element ref="silent" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
         </xs:complexType>
@@ -136,7 +136,7 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    
+
     <xs:element name="silent" type="xs:boolean" default="false">
         <xs:annotation>
             <xs:documentation>

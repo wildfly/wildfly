@@ -24,7 +24,7 @@
 <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="urn:jboss:ejb-client:1.0"
             xmlns="urn:jboss:ejb-client:1.0"
-            elementFormDefault="unqualified"
+            elementFormDefault="qualified"
             attributeFormDefault="unqualified"
             version="1.0">
 

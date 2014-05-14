@@ -120,7 +120,7 @@
       <xs:annotation>
         <xs:documentation>
 
-          Property value. May be omited.
+          Property value. May be omitted.
 
         </xs:documentation>
       </xs:annotation>
@@ -153,7 +153,7 @@
       <xs:annotation>
         <xs:documentation>
 
-          If protocol-bindings attribute on the handler chain element is omited
+          If protocol-bindings attribute on the handler chain element is omitted
           then the handlers specified in the handler chain will be applied on 
           every endpoint.
 

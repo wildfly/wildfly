@@ -183,7 +183,7 @@
         <xs:complexType name="sizeFileHandlerType">
         <xs:annotation>
             <xs:documentation>
-                Defines a handler which writes to a file, rotating the log after a the size of the file grows beyond a
+                Defines a handler which writes to a file, rotating the log after the size of the file grows beyond a
                 certain point and keeping a fixed number of backups.
             </xs:documentation>
         </xs:annotation>
