@@ -582,4 +582,24 @@ public interface DomainControllerMessages {
     @Message(id = 10881, value = "There is already a deployment called %s with the same runtime name %s on server group %s")
     OperationFailedException runtimeNameMustBeUnique(String existingDeployment, String runtimeName, String serverGroup);
 
+    // 10882 is reserved for possible backport of AS7-6808, which used this id in WildFly 8. It is id=64 in WF9
+//    @Message(id = 10882, value = "Cannot remove server-group '%s' since it's still in use by servers %s")
+//    OperationFailedException cannotRemoveUsedServerGroup(String group, Set<String> servers);
+
+    // 10883 is reserved for possible backport of WFLY-1997, which used this id in WildFly 8. It is id=65 in WF9
+//    @Message(id = 10883, value = "Wildcard operations are not supported as part of composite operations")
+//    OperationFailedException unsupportedWildcardOperation();
+
+    @Message(id = 10884, value = "Failed to send message: %s")
+    String failedToSendMessage(String cause);
+
+    @Message(id = 10885, value = "Failed to send response header: %s")
+    String failedToSendResponseHeader(String cause);
+
+    @Message(id = 10886, value = "Host registration task got interrupted")
+    String registrationTaskGotInterrupted();
+
+    @Message(id = 10887, value = "Host registration task failed: %s")
+    String registrationTaskFailed(String cause);
+
 }

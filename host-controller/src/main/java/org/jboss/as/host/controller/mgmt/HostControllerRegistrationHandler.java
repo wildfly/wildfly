@@ -354,7 +354,7 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
         }
 
         /**
-         *  Process the registration of the slave whose informatin was provided to {@code initialize()}.
+         *  Process the registration of the slave whose information was provided to {@code initialize()}.
          */
         private void processRegistration() {
 
@@ -550,24 +550,23 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
                     try {
                         task.sendMessage(output);
                     } catch (IOException e) {
-                        failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                        failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerMessages.MESSAGES.failedToSendMessage(e.getMessage()));
                         throw new IllegalStateException(e);
                     } finally {
                         StreamUtils.safeClose(output);
                     }
                 } catch (IOException e) {
-                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                    failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerMessages.MESSAGES.failedToSendResponseHeader(e.getMessage()));
                     throw new IllegalStateException(e);
                 }
             }
             try {
                 return task.get();
             } catch (InterruptedException e) {
-                e.printStackTrace(System.out);
-                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerMessages.MESSAGES.registrationTaskGotInterrupted());
                 throw new IllegalStateException(e);
             } catch (ExecutionException e) {
-                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, e.getMessage());
+                failed(SlaveRegistrationException.ErrorCode.UNKNOWN, DomainControllerMessages.MESSAGES.registrationTaskFailed(e.getMessage()));
                 throw new IllegalStateException(e);
             }
         }
@@ -639,7 +638,11 @@ public class HostControllerRegistrationHandler implements ManagementRequestHandl
             // send error code
             output.writeByte(errorCode);
             // error message
-            output.writeUTF(message);
+            if (message == null) {
+                output.writeUTF("unknown error");
+            } else {
+                output.writeUTF(message);
+            }
             // response end
             output.writeByte(ManagementProtocol.RESPONSE_END);
             output.close();
