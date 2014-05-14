@@ -22,15 +22,14 @@
 
 package org.jboss.as.controller.remote;
 
+import java.io.IOException;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.client.OperationAttachments;
 import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.dmr.ModelNode;
 import org.jboss.remoting3.Attachments;
 import org.jboss.threads.AsyncFuture;
-
-import java.io.IOException;
-import java.util.concurrent.Future;
 
 /**
  * A transactional protocol client.

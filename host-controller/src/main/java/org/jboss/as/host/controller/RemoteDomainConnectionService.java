@@ -136,6 +136,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
     private final RemoteFileRepository remoteFileRepository;
     private final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry;
     private final RunningMode runningMode;
+    private final File tempDir;
 
     /** Used to invoke ModelController ops on the master */
     private volatile ModelControllerClient masterProxy;
@@ -154,6 +155,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
                                           final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig,
                                           final RemoteFileRepository remoteFileRepository,
                                           final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                          final HostControllerEnvironment hostControllerEnvironment,
                                           final RunningMode runningMode){
         this.controller = controller;
         this.extensionRegistry = extensionRegistry;
@@ -163,15 +165,17 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
         remoteFileRepository.setRemoteFileRepositoryExecutor(remoteFileRepositoryExecutor);
         this.ignoredDomainResourceRegistry = ignoredDomainResourceRegistry;
         this.runningMode = runningMode;
+        this.tempDir = hostControllerEnvironment.getDomainTempDir();
     }
 
     public static Future<MasterDomainControllerClient> install(final ServiceTarget serviceTarget, final ModelController controller, final ExtensionRegistry extensionRegistry,
                                                                final LocalHostControllerInfo localHostControllerInfo, final ProductConfig productConfig,
                                                                final String securityRealm, final RemoteFileRepository remoteFileRepository,
                                                                final IgnoredDomainResourceRegistry ignoredDomainResourceRegistry,
+                                                               final HostControllerEnvironment hostControllerEnvironment,
                                                                final RunningMode currentRunningMode) {
         RemoteDomainConnectionService service = new RemoteDomainConnectionService(controller, extensionRegistry, localHostControllerInfo,
-                productConfig, remoteFileRepository, ignoredDomainResourceRegistry, currentRunningMode);
+                productConfig, remoteFileRepository, ignoredDomainResourceRegistry, hostControllerEnvironment,currentRunningMode);
         ServiceBuilder<MasterDomainControllerClient> builder = serviceTarget.addService(MasterDomainControllerClient.SERVICE_NAME, service)
                 .addDependency(ManagementRemotingServices.MANAGEMENT_ENDPOINT, Endpoint.class, service.endpointInjector)
                 .setInitialMode(ServiceController.Mode.ACTIVE);
@@ -350,6 +354,7 @@ public class RemoteDomainConnectionService implements MasterDomainControllerClie
             }, runningMode);
             // Setup the management channel handler
             handler = connection.getChannelHandler();
+            handler.getAttachments().attach(ManagementChannelHandler.TEMP_DIR, tempDir);
         } catch (Exception e) {
             throw new StartException(e);
         } finally {

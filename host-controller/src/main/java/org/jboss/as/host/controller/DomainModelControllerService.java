@@ -526,7 +526,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                                     public ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step, int permit) {
                                         return executeReadOnlyOperation(operation, handler, control, attachments, step, permit);
                                     }
-                                }),
+                                }, environment.getDomainTempDir()),
                                 DomainModelControllerService.SERVICE_NAME, ManagementRemotingServices.DOMAIN_CHANNEL, null, null);
 
                         // Block for the ServerInventory
@@ -547,7 +547,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                     public ModelNode joinActiveOperation(ModelNode operation, OperationMessageHandler handler, ModelController.OperationTransactionControl control, OperationAttachments attachments, OperationStepHandler step, int permit) {
                         return executeReadOnlyOperation(operation, handler, control, attachments, step, permit);
                     }
-                }, this, expressionResolver);
+                }, this, expressionResolver, environment.getDomainTempDir());
 
                 // demand native mgmt services
                 serviceTarget.addService(ServiceName.JBOSS.append("native-mgmt-startup"), Service.NULL)
@@ -596,6 +596,7 @@ public class DomainModelControllerService extends AbstractControllerService impl
                 hostControllerInfo.getRemoteDomainControllerSecurityRealm(),
                 remoteFileRepository,
                 ignoredRegistry,
+                environment,
                 currentRunningMode);
         MasterDomainControllerClient masterDomainControllerClient = getFuture(clientFuture);
         //Registers us with the master and gets down the master copy of the domain model to our DC

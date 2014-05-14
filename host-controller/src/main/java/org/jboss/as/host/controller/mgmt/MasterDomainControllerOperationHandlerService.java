@@ -21,6 +21,14 @@
 */
 package org.jboss.as.host.controller.mgmt;
 
+import java.io.File;
+import java.security.AccessController;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.as.controller.remote.AbstractModelControllerOperationHandlerFactoryService;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandler;
 import org.jboss.as.controller.remote.ModelControllerClientOperationHandlerFactoryService;
@@ -34,13 +42,6 @@ import org.jboss.msc.service.StartException;
 import org.jboss.msc.service.StopContext;
 import org.jboss.remoting3.Channel;
 import org.jboss.threads.JBossThreadFactory;
-
-import java.security.AccessController;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Installs {@link MasterDomainControllerOperationHandlerImpl} which handles requests from slave DC to master DC.
@@ -56,10 +57,13 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     private final ManagementPongRequestHandler pongRequestHandler = new ManagementPongRequestHandler();
     private final ThreadFactory threadFactory = new JBossThreadFactory(new ThreadGroup("slave-request-threads"), Boolean.FALSE, null, "%G - %t", null, null, AccessController.getContext());
     private volatile ExecutorService slaveRequestExecutor;
+    private final File tempDir;
 
-    public MasterDomainControllerOperationHandlerService(final DomainController domainController, final HostControllerRegistrationHandler.OperationExecutor operationExecutor) {
+    public MasterDomainControllerOperationHandlerService(final DomainController domainController,
+                                                         final HostControllerRegistrationHandler.OperationExecutor operationExecutor, File tempDir) {
         this.domainController = domainController;
         this.operationExecutor = operationExecutor;
+        this.tempDir = tempDir;
     }
 
     protected String getThreadGroupName() {
@@ -85,6 +89,7 @@ public class MasterDomainControllerOperationHandlerService extends AbstractModel
     @Override
     public ManagementChannelHandler startReceiving(final Channel channel) {
         final ManagementChannelHandler handler = new ManagementChannelHandler(ManagementClientChannelStrategy.create(channel), getExecutor());
+        handler.getAttachments().attach(ManagementChannelHandler.TEMP_DIR, tempDir);
         // Assemble the request handlers for the domain channel
         handler.addHandlerFactory(new HostControllerRegistrationHandler(handler, domainController, operationExecutor, slaveRequestExecutor));
         handler.addHandlerFactory(new ModelControllerClientOperationHandler(getController(), handler));
