@@ -107,7 +107,10 @@ public class EeSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
 
     public EeSubsystemAdd(final DefaultEarSubDeploymentsIsolationProcessor isolationProcessor,
-                          final GlobalModuleDependencyProcessor moduleDependencyProcessor, final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor, final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor, final AnnotationPropertyReplacementProcessor ejbAnnotationPropertyReplacementProcessor) {
+                          final GlobalModuleDependencyProcessor moduleDependencyProcessor,
+                          final DescriptorPropertyReplacementProcessor specDescriptorPropertyReplacementProcessor,
+                          final DescriptorPropertyReplacementProcessor jbossDescriptorPropertyReplacementProcessor,
+                          final AnnotationPropertyReplacementProcessor ejbAnnotationPropertyReplacementProcessor) {
         this.isolationProcessor = isolationProcessor;
         this.moduleDependencyProcessor = moduleDependencyProcessor;
         this.specDescriptorPropertyReplacementProcessor = specDescriptorPropertyReplacementProcessor;

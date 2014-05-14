@@ -30,7 +30,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.BytesValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.OperationEntry;
 import org.jboss.dmr.ModelType;
@@ -43,7 +42,7 @@ import org.jboss.dmr.ModelType;
 public class ManagedDMRContentResourceDefinition extends SimpleResourceDefinition {
 
     public static final AttributeDefinition HASH = new SimpleAttributeDefinitionBuilder(ModelDescriptionConstants.HASH,
-            ModelType.BYTES, false).setValidator(BytesValidator.createSha1(false)).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+            ModelType.BYTES, false).setValidator(BytesValidator.createSha1(false)).build();
 
     private final AttributeDefinition contentDefinition;
 
@@ -56,7 +55,9 @@ public class ManagedDMRContentResourceDefinition extends SimpleResourceDefinitio
     private ManagedDMRContentResourceDefinition(final String childType,
                                                final AttributeDefinition contentDefinition,
                                                final ResourceDescriptionResolver descriptionResolver) {
-        super(PathElement.pathElement(childType), descriptionResolver, new ManagedDMRContentAddHandler(contentDefinition, descriptionResolver),
+        super(PathElement.pathElement(childType),
+                descriptionResolver,
+                new ManagedDMRContentAddHandler(contentDefinition),
                 ManagedDMRContentRemoveHandler.INSTANCE, OperationEntry.Flag.RESTART_NONE, OperationEntry.Flag.RESTART_NONE);
         this.contentDefinition = contentDefinition;
     }
@@ -72,11 +73,11 @@ public class ManagedDMRContentResourceDefinition extends SimpleResourceDefinitio
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
         final ManagedDMRContentStoreHandler handler = new ManagedDMRContentStoreHandler(contentDefinition, getResourceDescriptionResolver());
-        resourceRegistration.registerOperationHandler(ManagedDMRContentStoreHandler.OPERATION_NAME, handler, handler);
+        resourceRegistration.registerOperationHandler(handler.getDefinition(), handler);
     }
 
     private static AttributeDefinition getContentAttributeDefinition(final ParameterValidator contentValidator) {
         return SimpleAttributeDefinitionBuilder.create(ModelDescriptionConstants.CONTENT, ModelType.OBJECT)
-                .setValidator(contentValidator).setFlags(AttributeAccess.Flag.STORAGE_RUNTIME).build();
+                .setValidator(contentValidator).build();
     }
 }
