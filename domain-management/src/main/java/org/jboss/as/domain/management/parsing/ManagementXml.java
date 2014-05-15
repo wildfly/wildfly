@@ -3767,11 +3767,11 @@ public class ManagementXml {
     }
 
     private void writeAuthorization(XMLExtendedStreamWriter writer, ModelNode realm) throws XMLStreamException {
-        boolean defaultMapGroupsToRoles = SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.getDefaultValue().asBoolean();
-        boolean mapGroupsToRoles = realm.hasDefined(MAP_GROUPS_TO_ROLES) ? realm.require(MAP_GROUPS_TO_ROLES).asBoolean()
-                : defaultMapGroupsToRoles;
+        // A String comparison in-case it is an expression.
+        String defaultMapGroupsToRoles = Boolean.toString(SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.getDefaultValue().asBoolean());
+        String mapGroupsToRoles = realm.hasDefined(MAP_GROUPS_TO_ROLES) ? realm.require(MAP_GROUPS_TO_ROLES).asString() : defaultMapGroupsToRoles;
 
-        if (realm.hasDefined(AUTHORIZATION) || mapGroupsToRoles != defaultMapGroupsToRoles) {
+        if (realm.hasDefined(AUTHORIZATION) || defaultMapGroupsToRoles.equals(mapGroupsToRoles) == false) {
             writer.writeStartElement(Element.AUTHORIZATION.getLocalName());
             SecurityRealmResourceDefinition.MAP_GROUPS_TO_ROLES.marshallAsAttribute(realm, writer);
             if (realm.hasDefined(AUTHORIZATION)) {
