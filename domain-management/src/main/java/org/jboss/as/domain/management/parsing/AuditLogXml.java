@@ -718,14 +718,13 @@ public class AuditLogXml {
             }
             if (hasChildren(auditLog, ModelDescriptionConstants.CUSTOM_FORMATTER)) {
                 for (Property prop : auditLog.get(ModelDescriptionConstants.CUSTOM_FORMATTER).asPropertyList()) {
-                    writer.writeStartElement(Element.JSON_FORMATTER.getLocalName());
                     writer.writeStartElement(Element.CUSTOM_FORMATTER.getLocalName());
                     writer.writeAttribute(Attribute.NAME.getLocalName(), prop.getName());
                     CustomAuditLogFormatterResourceDefinition.CODE.marshallAsAttribute(prop.getValue(), writer);
                     CustomAuditLogFormatterResourceDefinition.MODULE.marshallAsAttribute(prop.getValue(), writer);
                     if (hasChildren(prop.getValue(), ModelDescriptionConstants.PROPERTY)) {
                         writer.writeStartElement(Element.PROPERTIES.getLocalName());
-                        for (Property p : prop.getValue().asPropertyList()) {
+                        for (Property p : prop.getValue().get(ModelDescriptionConstants.PROPERTY).asPropertyList()) {
                             writer.writeStartElement(Element.PROPERTY.getLocalName());
                             writer.writeAttribute(Attribute.NAME.getLocalName(), p.getName());
                             CustomAuditLogFormatterPropertyResourceDefinition.VALUE.marshallAsAttribute(p.getValue(), writer);

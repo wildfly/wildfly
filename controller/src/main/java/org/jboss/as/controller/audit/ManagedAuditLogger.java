@@ -194,6 +194,11 @@ public interface ManagedAuditLogger extends AuditLogger {
     void bootDone();
 
     /**
+     * Return true if we have a flat classpath, e.g. for testing
+     */
+    boolean fallbackToFlatClasspath();
+
+    /**
      * <p>The audit log handler updater. Additive changes will be used for the audit log record as a result of
      * management operations causing updates here. Removals and updates will not take effect until the current audit log
      * record has been written.

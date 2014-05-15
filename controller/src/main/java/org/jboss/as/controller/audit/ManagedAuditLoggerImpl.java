@@ -963,4 +963,9 @@ public class ManagedAuditLoggerImpl implements ManagedAuditLogger, ManagedAuditL
         }
     }
 
+    @Override
+    public boolean fallbackToFlatClasspath() {
+        return false;
+    }
+
  }

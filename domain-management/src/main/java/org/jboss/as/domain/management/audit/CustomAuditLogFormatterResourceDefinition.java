@@ -103,12 +103,13 @@ public class CustomAuditLogFormatterResourceDefinition extends SimpleResourceDef
         resourceRegistration.registerSubModel(new CustomAuditLogFormatterPropertyResourceDefinition(auditLogger));
     }
 
-    private static CustomAuditLogEventFormatter createFormatter(OperationContext context, ModelNode operation, boolean rollback) throws OperationFailedException {
+    private static CustomAuditLogEventFormatter createFormatter(OperationContext context, ModelNode operation, ManagedAuditLogger auditLogger, boolean rollback) throws OperationFailedException {
         final PathAddress address = getFormatterAddress(operation);
         ModelNode model = getModelForOperation(context, address, rollback);
         CustomAuditLogEventFormatterFactory factory;
         try {
             factory = SecurityActions.createAuditLogEventFormatterFactory(
+                    auditLogger,
                     MODULE.resolveModelAttribute(context, model).asString(),
                     CODE.resolveModelAttribute(context, model).asString());
         } catch (Exception e) {
@@ -193,7 +194,7 @@ public class CustomAuditLogFormatterResourceDefinition extends SimpleResourceDef
         protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model,
                 ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers)
                 throws OperationFailedException {
-            AuditLogEventFormatter formatter = createFormatter(context, operation, false);
+            AuditLogEventFormatter formatter = createFormatter(context, operation, auditLogger, false);
             auditLogger.addFormatter(formatter);
         }
 
@@ -245,7 +246,7 @@ public class CustomAuditLogFormatterResourceDefinition extends SimpleResourceDef
         @Override
         protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model)
                 throws OperationFailedException {
-            AuditLogEventFormatter formatter = createFormatter(context, operation, true);
+            AuditLogEventFormatter formatter = createFormatter(context, operation, auditLogger, true);
             auditLogger.addFormatter(formatter);
         }
     }

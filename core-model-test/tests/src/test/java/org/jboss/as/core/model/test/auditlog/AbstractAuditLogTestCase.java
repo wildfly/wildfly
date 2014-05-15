@@ -21,7 +21,6 @@
 */
 package org.jboss.as.core.model.test.auditlog;
 
-import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;

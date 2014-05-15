@@ -25,6 +25,7 @@ package org.jboss.as.domain.management.audit;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 
+import org.jboss.as.controller.audit.ManagedAuditLogger;
 import org.jboss.as.controller.audit.spi.CustomAuditLogEventFormatterFactory;
 import org.jboss.modules.Module;
 import org.jboss.modules.ModuleIdentifier;
@@ -37,13 +38,13 @@ import org.wildfly.security.manager.WildFlySecurityManager;
  */
 class SecurityActions {
 
-    static CustomAuditLogEventFormatterFactory createAuditLogEventFormatterFactory(final String moduleSpec, final String code) throws Exception {
+    static CustomAuditLogEventFormatterFactory createAuditLogEventFormatterFactory(final ManagedAuditLogger auditLogger, final String moduleSpec, final String code) throws Exception {
 
         if (WildFlySecurityManager.isChecking()){
             try {
                 return WildFlySecurityManager.doChecked(new PrivilegedExceptionAction<CustomAuditLogEventFormatterFactory>() {
                     public CustomAuditLogEventFormatterFactory run() throws Exception {
-                        return internalCreateAuditLogEventFormatterFactory(moduleSpec, code);
+                        return internalCreateAuditLogEventFormatterFactory(auditLogger, moduleSpec, code);
                     }
                 });
             } catch (PrivilegedActionException e) {
@@ -54,13 +55,21 @@ class SecurityActions {
                 throw new RuntimeException(t);
             }
         }
-        return internalCreateAuditLogEventFormatterFactory(moduleSpec, code);
+        return internalCreateAuditLogEventFormatterFactory(auditLogger, moduleSpec, code);
     }
 
-    private static CustomAuditLogEventFormatterFactory internalCreateAuditLogEventFormatterFactory(String moduleSpec, String code) throws Exception {
+    private static CustomAuditLogEventFormatterFactory internalCreateAuditLogEventFormatterFactory(ManagedAuditLogger auditLogger, String moduleSpec, String code) throws Exception {
         ModuleLoader loader = Module.getCallerModuleLoader();
-        final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
-        Class<?> clazz = module.getClassLoader().loadClass(code);
+        final ClassLoader cl;
+        if (loader == null && auditLogger.fallbackToFlatClasspath()){
+            //Testing only
+            cl = SecurityActions.class.getClassLoader();
+        } else {
+            //The real path
+            final Module module = loader.loadModule(ModuleIdentifier.fromString(moduleSpec));
+            cl = module.getClassLoader();
+        }
+        Class<?> clazz = cl.loadClass(code);
         return CustomAuditLogEventFormatterFactory.class.cast(clazz.newInstance());
     }
 }
