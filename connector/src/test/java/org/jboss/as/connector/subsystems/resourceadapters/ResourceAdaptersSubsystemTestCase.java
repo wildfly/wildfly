@@ -136,7 +136,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
                 .addOperationValidationResolve("add", PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, mainSubsystemName),
+                        PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
                         PathElement.pathElement("resource-adapter", "*"),
                         PathElement.pathElement("connection-definitions", "*")))
                 .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class))
@@ -195,7 +195,7 @@ public class ResourceAdaptersSubsystemTestCase extends AbstractSubsystemBaseTest
                 .addMavenResourceURL("org.jboss.as:jboss-as-connector:" + controllerVersion.getMavenGavVersion())
                 .setExtensionClassName("org.jboss.as.connector.subsystems.resourceadapters.ResourceAdaptersExtension")
                 .addOperationValidationResolve("add", PathAddress.pathAddress(
-                        PathElement.pathElement(SUBSYSTEM, mainSubsystemName),
+                        PathElement.pathElement(SUBSYSTEM, getMainSubsystemName()),
                         PathElement.pathElement("resource-adapter", "*"),
                         PathElement.pathElement("connection-definitions", "*")))
                 .excludeFromParent(SingleClassFilter.createFilter(ConnectorLogger.class));
