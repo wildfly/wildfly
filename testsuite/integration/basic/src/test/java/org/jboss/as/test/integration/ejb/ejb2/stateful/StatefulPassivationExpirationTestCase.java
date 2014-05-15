@@ -80,7 +80,7 @@ public class StatefulPassivationExpirationTestCase {
         long end = System.currentTimeMillis();
         log.info("End bean creation, elapsed="+(end - start));
 
-        int N = 5000;
+        int N = 2000;
         long min = 99999, max = 0, maxInactive = 0;
         for(int n = 0; n < N; n ++)
         {
@@ -114,13 +114,6 @@ public class StatefulPassivationExpirationTestCase {
             }
         }
         log.info(N+" calls complete, max="+max+", min="+min+", maxInactive="+maxInactive);
-
-        log.info("WAITING now");
-        try {
-            Thread.sleep(15000);
-        } catch (Exception e) {
-
-        }
 
         for(int n = 0; n < beans.length; n ++)
         {
