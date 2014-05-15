@@ -291,7 +291,7 @@ public class GenericTypeOperationHandler extends BatchModeCommandHandler {
         try {
             handler = getHandler(ctx, op);
         } catch (CommandLineException e) {
-            return null;
+            return Collections.emptyList();
         }
         return handler.getArguments(ctx);
     }
