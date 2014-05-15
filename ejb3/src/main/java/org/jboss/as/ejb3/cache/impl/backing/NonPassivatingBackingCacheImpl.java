@@ -118,7 +118,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
 
     @Override
     public NonPassivatingBackingCacheEntry<K, V> get(K key) throws NoSuchEJBException {
-        this.scheduleExpiration(key, true);
+        this.scheduleExpiration(key, true, true);
         NonPassivatingBackingCacheEntry<K, V> entry = cache.get(key);
         if (entry == null) return null;
         entry.increaseUsageCount();
@@ -142,7 +142,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
         }
         entry.decreaseUsageCount();
         if(!entry.isInUse()) {
-            this.scheduleExpiration(key, false);
+            this.scheduleExpiration(key, false, false);
         }
         return entry;
     }
@@ -154,7 +154,7 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
 
     @Override
     public void remove(K key) {
-        this.scheduleExpiration(key, true);
+        this.scheduleExpiration(key, true, false);
         NonPassivatingBackingCacheEntry<K, V> entry = cache.remove(key);
         if (entry != null && entry.isInUse()) {
             entry.decreaseUsageCount();
@@ -204,21 +204,17 @@ public class NonPassivatingBackingCacheImpl<K extends Serializable, V extends Ca
         }
     }
 
-    private void scheduleExpiration(K id, boolean cancel) {
+    private void scheduleExpiration(K id, boolean cancel, boolean block) {
         if (this.timeout != null && timeout.getValue() != -1) {
             Future<?> future = cancel ? this.expirationFutures.remove(id) : this.expirationFutures.put(id, this.executor.schedule(new RemoveTask<K>(this, id), this.timeout.getValue(), this.timeout.getTimeUnit()));
             if (future != null) {
-                if (future.cancel(false)) {
-                    // BZ 1031199 Canceling the task doesn't remove it from the task queue, so we need to explicitly remove it.
-                    // The Future is really a RunnableScheduledFuture so this cast will always work
-                    if (future instanceof Runnable) {
-                        this.executor.remove((Runnable) future);
-                    }
-                } else {
-                    try {
-                        // if the cancel task is in progress, wait until it completes
-                        future.get();
-                    } catch (Exception e) {
+                if (! this.executor.remove((Runnable) future)) {
+                    if (block) {
+                        try {
+                            // the task has been started, wait for completition
+                            future.get();
+                        } catch (Exception e) {
+                        }
                     }
                 }
             }

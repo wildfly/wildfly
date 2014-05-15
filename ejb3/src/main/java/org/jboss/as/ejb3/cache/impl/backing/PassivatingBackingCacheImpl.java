@@ -27,12 +27,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
 import javax.ejb.NoSuchEJBException;
-
 import org.jboss.as.ejb3.EjbLogger;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.Cacheable;
@@ -41,9 +40,9 @@ import org.jboss.as.ejb3.cache.spi.BackingCacheEntry;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryFactory;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStore;
 import org.jboss.as.ejb3.cache.spi.BackingCacheEntryStoreConfig;
+import org.jboss.as.ejb3.cache.spi.BackingCacheLifecycleListener.LifecycleState;
 import org.jboss.as.ejb3.cache.spi.GroupCompatibilityChecker;
 import org.jboss.as.ejb3.cache.spi.PassivatingBackingCache;
-import org.jboss.as.ejb3.cache.spi.BackingCacheLifecycleListener.LifecycleState;
 import org.jboss.as.ejb3.cache.spi.ReplicationPassivationManager;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCache;
 import org.jboss.as.ejb3.cache.spi.impl.PassivateTask;
@@ -133,7 +132,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     public E get(K key) throws NoSuchEJBException {
         this.trace("get(%s)", key);
 
-        this.cancelExpirationPassivation(key);
+        this.cancelExpirationPassivation(key, true);
 
         boolean valid = false;
         boolean lock = true;
@@ -244,7 +243,7 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     public void remove(K key) {
         this.trace("remove(%s)", key);
 
-        this.cancelExpirationPassivation(key);
+        this.cancelExpirationPassivation(key, false);
 
         E entry = store.remove(key);
 
@@ -264,10 +263,10 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
         }
     }
 
-    private void cancelExpirationPassivation(K id) {
+    private void cancelExpirationPassivation(K id, boolean blockExpiration) {
         if (this.executor != null) {
             if (this.store.getTimeout() != null) {
-                this.cancel(this.expirationFutures, id, true);
+                this.cancel(this.expirationFutures, id, blockExpiration);
             }
             this.cancel(this.passivationFutures, id, false);
         }
@@ -276,21 +275,15 @@ public class PassivatingBackingCacheImpl<K extends Serializable, V extends Cache
     private void cancel(Map<K, Future<?>> futures, K id, boolean block) {
         Future<?> future = futures.remove(id);
         if (future != null) {
-            if (future.cancel(false)) {
-                // BZ 1031199 Canceling the task doesn't remove it from the task queue, so we need to explicitly remove it.
-                // The Future is really a RunnableScheduledFuture so this cast will always work
-                if (future instanceof Runnable) {
-                    this.executor.remove((Runnable) future);
-                }
-            } else {
+            if (! this.executor.remove((Runnable) future)) {
                 if (block) {
                     try {
-                        // if the cancel task is in progress, wait until it completes
                         future.get();
                     } catch (Exception e) {
                     }
                 }
             }
+
         }
     }
 
