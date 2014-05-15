@@ -22,6 +22,22 @@
 
 package org.jboss.as.controller.test;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.client.ModelControllerClient;
@@ -30,8 +46,8 @@ import org.jboss.as.controller.client.OperationMessageHandler;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.remote.BlockingQueueOperationListener;
 import org.jboss.as.controller.remote.TransactionalOperationImpl;
-import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.remote.TransactionalProtocolClient;
+import org.jboss.as.controller.remote.TransactionalProtocolHandlers;
 import org.jboss.as.controller.support.ChannelServer;
 import org.jboss.as.protocol.ProtocolChannelClient;
 import org.jboss.as.protocol.mgmt.ManagementChannelHandler;
@@ -44,23 +60,9 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.xnio.FutureResult;
 import org.xnio.IoFuture;
 import org.xnio.OptionMap;
-
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Transactional protocol tests.
@@ -109,6 +111,7 @@ public class TransactionalProtocolClientTestCase {
                 final ManagementChannelHandler channels = new ManagementChannelHandler(channel, remoteExecutors);
                 TransactionalProtocolHandlers.addAsHandlerFactory(channels, controller);
                 transferQueue.offer(controller);
+                channel.addCloseHandler(channels);
                 channel.receiveMessage(channels.getReceiver());
             }
 
@@ -187,6 +190,29 @@ public class TransactionalProtocolClientTestCase {
         wrapper.assertResultAction(OperationContext.ResultAction.ROLLBACK);
         final ModelNode result = futureResult.get();
         Assert.assertEquals(FAILURE, result);
+    }
+
+    @Test
+    public void testClosePrepared() throws Exception {
+        final BlockingOperationListener listener = new BlockingOperationListener();
+        final TestOperationHandler handler = new TestOperationHandler() {
+            @Override
+            public void execute(ModelNode operation, OperationMessageHandler handler, OperationAttachments attachments) throws Exception {
+                //
+            }
+        };
+        final TestUpdateWrapper wrapper = createTestClient(0, handler);
+        final Future<ModelNode> futureResult = wrapper.execute(listener);
+        listener.retrievePreparedOperation();
+
+        futureConnection.get().close();
+
+        try {
+            futureResult.get();
+            Assert.fail();
+        } catch (CancellationException expected) {
+            //
+        }
     }
 
     @Test
@@ -321,6 +347,7 @@ public class TransactionalProtocolClientTestCase {
         channels.add(channel);
         final ManagementChannelHandler channelAssociation = new ManagementChannelHandler(channel, clientExecutor);
         final TransactionalProtocolClient client = TransactionalProtocolHandlers.createClient(channelAssociation);
+        channel.addCloseHandler(channelAssociation);
         channel.receiveMessage(channelAssociation.getReceiver());
         return client;
     }
@@ -368,12 +395,12 @@ public class TransactionalProtocolClientTestCase {
         }
 
         OperationContext.ResultAction getResultAction() {
-            return controller.action;
+            return controller.getAction();
         }
 
         void assertResultAction(final OperationContext.ResultAction expected) {
             Assert.assertEquals(expected, getResultAction());
-            controller.action = null;
+            // controller.action = null;
         }
 
         Future<ModelNode> execute(TransactionalProtocolClient.TransactionalOperationListener<TestUpdateWrapper> listener) throws IOException {
@@ -387,8 +414,16 @@ public class TransactionalProtocolClientTestCase {
      */
     private static class MockController implements ModelController {
         private final ReentrantLock lock = new ReentrantLock();
-        private OperationContext.ResultAction action;
+        private final FutureResult<OperationContext.ResultAction> action = new FutureResult<>();
         private TestOperationHandler handler;
+
+        OperationContext.ResultAction getAction() {
+            try {
+                return action.getIoFuture().getInterruptibly();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
         @Override
         public ModelNode execute(final ModelNode operation, final OperationMessageHandler messageHandler,
@@ -404,15 +439,15 @@ public class TransactionalProtocolClientTestCase {
                 control.operationPrepared(new OperationTransaction() {
                     @Override
                     public void commit() {
-                        action = OperationContext.ResultAction.KEEP;
+                        action.setResult(OperationContext.ResultAction.KEEP);
                     }
 
                     @Override
                     public void rollback() {
-                        action = OperationContext.ResultAction.ROLLBACK;
+                        action.setResult(OperationContext.ResultAction.ROLLBACK);
                     }
                 }, SUCCESS);
-                return action == OperationContext.ResultAction.KEEP ? SUCCESS : FAILURE;
+                return getAction() == OperationContext.ResultAction.KEEP ? SUCCESS : FAILURE;
             } finally {
                 lock.unlock();
             }
